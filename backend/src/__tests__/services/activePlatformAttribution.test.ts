@@ -72,7 +72,10 @@ describe("resolveActivePlatform — Wave 0 RED scaffolding", () => {
     const prisma = getMockPrisma();
     prisma.orderEvent.findFirst.mockResolvedValue(null);
     prisma.shift.findFirst.mockResolvedValue(null);
-    prisma.driver.findUnique.mockResolvedValue({
+    // Tier 3 driver lookup now uses findFirst({ id, tenantId }) — the DB
+    // layer enforces the tenant boundary so a cross-tenant row simply does
+    // not return (defense-in-depth + lint:tenant compliance).
+    prisma.driver.findFirst.mockResolvedValue({
       id: "drv1",
       tenantId: "tenA",
       platform: "DELIVEROO",
@@ -98,7 +101,7 @@ describe("resolveActivePlatform — Wave 0 RED scaffolding", () => {
     const prisma = getMockPrisma();
     prisma.orderEvent.findFirst.mockResolvedValue(null);
     prisma.shift.findFirst.mockResolvedValue(null);
-    prisma.driver.findUnique.mockResolvedValue({
+    prisma.driver.findFirst.mockResolvedValue({
       id: "drv1",
       tenantId: "tenA",
       platform: "DELIVEROO",
@@ -123,7 +126,10 @@ describe("resolveActivePlatform — Wave 0 RED scaffolding", () => {
     const prisma = getMockPrisma();
     prisma.orderEvent.findFirst.mockResolvedValue(null);
     prisma.shift.findFirst.mockResolvedValue(null);
-    prisma.driver.findUnique.mockResolvedValue(null);
+    // findFirst({ id, tenantId }) returns null when the driver row exists in
+    // another tenant — the DB simply does not match, so the impl returns
+    // UNKNOWN without any post-fetch tenant check.
+    prisma.driver.findFirst.mockResolvedValue(null);
 
     const result = await resolveActivePlatform({
       tenantId: "tenA",
@@ -148,7 +154,7 @@ describe("resolveActivePlatform — Wave 0 RED scaffolding", () => {
       if (args?.where?.tenantId === "tenA") return Promise.resolve(null);
       return Promise.resolve({ id: "s-cross", platform: "KEETA" });
     });
-    prisma.driver.findUnique.mockResolvedValue({
+    prisma.driver.findFirst.mockResolvedValue({
       id: "drv1",
       tenantId: "tenA",
       platform: "DELIVEROO",
