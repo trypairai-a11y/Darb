@@ -1,8 +1,9 @@
-// Phase 6 Wave 1 — getAdapter factory (per-platform CompositeAdapter).
+// Phase 6 Wave 2a — getAdapter factory (per-platform CompositeAdapter).
 //
-// Wave 1 returns CompositeAdapters with EMPTY tier arrays. Wave 2 plans
-// (per-platform adapters: services/ingest/{keeta,talabat,deliveroo,americana}/)
-// push concrete tiers via this factory.
+// This wave fills KEETA + AMERICANA tier arrays. Wave 2b ships TALABAT +
+// DELIVEROO and will edit the two remaining `case` branches below — the
+// 2a / 2b split keeps the merge surface alphabetical so the two waves
+// can run in parallel without conflicting on this file.
 //
 // Threat T-06-01 (Spoofing) — there is no caller-supplied adapter
 // substitution path. The composition is hard-coded per Platform here, so
@@ -13,6 +14,8 @@
 
 import { CompositeAdapter } from "./composite";
 import type { Platform } from "./types";
+import { americanaTiers } from "./americana";
+import { keetaTiers } from "./keeta";
 
 export interface AdapterContext {
   tenantId: string;
@@ -23,21 +26,20 @@ export function getAdapter(
   _ctx: AdapterContext,
 ): CompositeAdapter {
   switch (platform) {
-    case "KEETA":
-      // Wave 2 tiers (pending): [KeetaMobileAdapter, KeetaScraperAdapter, KeetaXlsxAdapter]
-      return new CompositeAdapter("KEETA", []);
-    case "TALABAT":
-      // Wave 2 tiers (pending): [TalabatMobileAdapter, TalabatOcrAdapter,
-      //                          TalabatXlsxAdapter, TalabatScraperAdapter (NotAvailable)]
-      return new CompositeAdapter("TALABAT", []);
-    case "DELIVEROO":
-      // Wave 2 tiers (pending): [DeliverooMobileAdapter, DeliverooOcrAdapter,
-      //                          DeliverooXlsxAdapter, DeliverooScraperAdapter (NotAvailable)]
-      return new CompositeAdapter("DELIVEROO", []);
+    // --- 2a (this wave) ---
     case "AMERICANA":
-      // Wave 2 tiers (pending): [AmericanaEmailAdapter, AmericanaXlsxAdapter]
-      // — no mobile, no scraper for Americana.
-      return new CompositeAdapter("AMERICANA", []);
+      return new CompositeAdapter("AMERICANA", americanaTiers);
+    case "KEETA":
+      return new CompositeAdapter("KEETA", keetaTiers);
+    // --- 2b (pending) ---
+    case "DELIVEROO":
+      // Wave 2b tiers: [DeliverooMobileAdapter, DeliverooOcrAdapter,
+      //                 DeliverooXlsxAdapter, DeliverooScraperAdapter (NotAvailable)]
+      return new CompositeAdapter("DELIVEROO", []);
+    case "TALABAT":
+      // Wave 2b tiers: [TalabatMobileAdapter, TalabatOcrAdapter,
+      //                 TalabatXlsxAdapter, TalabatScraperAdapter (NotAvailable)]
+      return new CompositeAdapter("TALABAT", []);
     default: {
       const exhaustive: never = platform;
       throw new Error(`Unknown platform: ${exhaustive as string}`);
