@@ -4,7 +4,7 @@
 // REQ-ingest-adapter-layer: Deliveroo adapters.
 // WARNING 12: compile-time pin on @@unique key shape per schema.prisma:1355.
 
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "../../../../generated/prisma";
 
 type _PinDeliverooUnique = Prisma.DeliverooDailyMetricsWhereUniqueInput["tenantId_driverId_shiftDate"];
 const _pin: _PinDeliverooUnique = { tenantId: "x", driverId: "x", shiftDate: new Date() };
