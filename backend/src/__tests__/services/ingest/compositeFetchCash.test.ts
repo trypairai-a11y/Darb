@@ -3,13 +3,20 @@
 // REQ-ingest-adapter-layer / BLOCKER 2: Cash is XLSX-import-only.
 // The composite.fetchCash path MUST return [] in BACKWASH context.
 // pullChunkPhase6 MUST never call adapter.fetchCash.
+//
+// Wave 4 deviation note (Rule 3 — blocking jest infra mismatch, mirrors the
+// fix audit.test.ts shipped in Wave 1 and talabatImport.test.ts in Wave 3):
+// pullChunkPhase6.ts and its transitive imports load `prisma` via 2-level
+// paths (e.g. audit.ts → "../../config", adapters → "../../../config"). The
+// moduleNameMapper in jest.config.js covers 1- and 2-level paths but
+// INTENTIONALLY leaves 3-level paths unmapped (see jest.config.js:9-14).
+// Without pinning the 3-level path explicitly, the test gets the REAL
+// PrismaClient (no `mock` property, no `mockResolvedValue`), while the
+// adapters use the shared mocks/config — two different prisma instances.
+// Pinning BOTH levels converges them on a single mocks/config stub. Same
+// idiom as audit.test.ts:18 and talabatImport.test.ts:18-19.
 
-jest.mock("../../../config", () => ({
-  prisma: {
-    ingestRun: { create: jest.fn() },
-  },
-  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
-}));
+jest.mock("../../../config", () => require("../../mocks/config"));
 
 import { CompositeAdapter } from "../../../services/ingest/composite";
 import type { IngestAdapter, Platform } from "../../../services/ingest/types";

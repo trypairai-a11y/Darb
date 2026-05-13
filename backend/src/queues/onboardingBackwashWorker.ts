@@ -43,6 +43,12 @@ import { prisma } from "../config";
 import { env } from "../config/env";
 import { logger } from "../config/logger";
 
+// Phase 6 Wave 4: real backwash chunk handler. Re-exported below so existing
+// callers can keep importing from this barrel (`onboardingBackwashWorker`)
+// while the implementation lives in its own file for test ergonomics.
+import { pullChunkPhase6 } from "./pullChunkPhase6";
+export { pullChunkPhase6 } from "./pullChunkPhase6";
+
 export const ONBOARDING_BACKWASH_QUEUE = "onboarding:backwash";
 
 const CHUNK_DAYS = 5;
@@ -263,8 +269,12 @@ export async function getBackwashJob(jobId: string): Promise<{
 /**
  * Boot the BullMQ worker. No-op when REDIS_URL is missing.
  *
- * Phase 2 ships the worker but uses defaultPullChunkPhase2 (which counts
- * existing rows). Phase 6 will rewire this to the real scraper interface.
+ * Phase 2 shipped the worker with `defaultPullChunkPhase2` (which counted
+ * existing OrderLog rows). Phase 6 Wave 4 wired in `pullChunkPhase6`, which
+ * calls `getAdapter(platform, {tenantId}).fetch{Orders,Shifts,Attendance,
+ * Violations}` per chunk and writes 1 IngestRun row (source: 'BACKWASH').
+ * Per-chunk failures are captured as FAILED IngestRun rows (Pitfall 6) —
+ * the 30-day window keeps iterating.
  */
 export function startOnboardingBackwashWorker(): Worker<BackwashJobData> | null {
   if (!env.REDIS_URL || env.REDIS_URL === "redis://localhost:6379") {
@@ -287,7 +297,10 @@ export function startOnboardingBackwashWorker(): Worker<BackwashJobData> | null 
         tenantId,
         platforms,
         windowDays,
-        pullChunk: defaultPullChunkPhase2,
+        // Phase 6 Wave 4: real ingest-adapter invocation per chunk. The
+        // Phase 2 `defaultPullChunkPhase2` stays exported for tests that
+        // still inject it; production uses `pullChunkPhase6`.
+        pullChunk: pullChunkPhase6,
         job: {
           updateProgress: async (p) => {
             await job.updateProgress(p);
