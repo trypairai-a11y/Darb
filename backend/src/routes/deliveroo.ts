@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import fs from "fs";
 import { prisma } from "../config";
+import { logger } from "../config/logger";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
 import { rbac } from "../middleware/rbac";
@@ -12,6 +13,7 @@ import { AiOcrService } from "../services/aiOcrService";
 import { detectDeliverooUnassignedOrders } from "../services/violationEngine";
 import { createViolationNotifications } from "../services/notificationService";
 import { getAdapter } from "../adapters";
+import { makeXlsxImportRoute } from "../services/ingest/xlsxRouteFactory";
 
 const router = Router();
 router.use(authMiddleware, tenantScope);
@@ -330,7 +332,7 @@ router.post(
             driverId,
             metricId: row.id,
           },
-        }).catch(() => {});
+        }).catch((err) => { logger.warn({ err }, "deliveroo OCR review notification failed"); });
       }
 
       res.json({
@@ -338,131 +340,6 @@ router.post(
         extracted,
         metricId: row.id,
       });
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
-  }
-);
-
-/**
- * GET /api/deliveroo/metrics/pending-review
- * Paginated list of DeliverooDailyMetrics awaiting Ops review.
- */
-router.get("/metrics/pending-review", async (req: Request, res: Response) => {
-  try {
-    const { skip, limit, page } = getPagination(req);
-    const tenantId = req.user!.tenantId;
-
-    const where = { tenantId, status: "PENDING_REVIEW" };
-    const [data, total] = await Promise.all([
-      prisma.deliverooDailyMetrics.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: "desc" },
-        include: {
-          driver: { select: { id: true, name: true, phone: true, zone: true } },
-        },
-      }),
-      prisma.deliverooDailyMetrics.count({ where }),
-    ]);
-
-    res.json(paginatedResponse(data, total, page, limit));
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-/**
- * POST /api/deliveroo/metrics/:id/approve
- * Body: { codCollectedKwd?, tipsKwd?, deliveriesCount?, unassignedCount?, hourlyBuckets?, note? }
- */
-router.post(
-  "/metrics/:id/approve",
-  rbac(...MUTATORS),
-  async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const tenantId = req.user!.tenantId;
-      const {
-        codCollectedKwd,
-        tipsKwd,
-        deliveriesCount,
-        unassignedCount,
-        hourlyBuckets,
-        note,
-      } = req.body ?? {};
-
-      const existing = await prisma.deliverooDailyMetrics.findFirst({
-        where: { id, tenantId },
-      });
-      if (!existing) return res.status(404).json({ error: "Metric not found" });
-
-      const prevUnassigned = existing.unassignedCount;
-      const nextUnassigned =
-        unassignedCount != null ? Number(unassignedCount) : prevUnassigned;
-
-      const updated = await prisma.deliverooDailyMetrics.update({
-        where: { id },
-        data: {
-          status: "APPROVED",
-          codCollectedKwd:
-            codCollectedKwd != null ? codCollectedKwd.toString() : undefined,
-          tipsKwd: tipsKwd != null ? tipsKwd.toString() : undefined,
-          deliveriesCount:
-            deliveriesCount != null ? Number(deliveriesCount) : undefined,
-          unassignedCount:
-            unassignedCount != null ? Number(unassignedCount) : undefined,
-          hourlyBuckets: hourlyBuckets ?? undefined,
-          reviewedBy: req.user!.userId,
-          reviewedAt: new Date(),
-          reviewNote: note ?? null,
-        },
-      });
-
-      // If review promotes unassigned > 0, trigger violation creation.
-      if (nextUnassigned > 0) {
-        detectDeliverooUnassignedOrders({ tenantId, metricId: updated.id }).catch(
-          () => {}
-        );
-      }
-
-      res.json(updated);
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
-  }
-);
-
-/**
- * POST /api/deliveroo/metrics/:id/reject
- * Body: { note? }
- */
-router.post(
-  "/metrics/:id/reject",
-  rbac(...MUTATORS),
-  async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const tenantId = req.user!.tenantId;
-      const { note } = req.body ?? {};
-
-      const existing = await prisma.deliverooDailyMetrics.findFirst({
-        where: { id, tenantId },
-      });
-      if (!existing) return res.status(404).json({ error: "Metric not found" });
-
-      const updated = await prisma.deliverooDailyMetrics.update({
-        where: { id },
-        data: {
-          status: "REJECTED",
-          reviewedBy: req.user!.userId,
-          reviewedAt: new Date(),
-          reviewNote: note ?? null,
-        },
-      });
-
-      res.json(updated);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
@@ -631,5 +508,16 @@ router.get("/export/orders", async (req: Request, res: Response) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ── Phase 6 / REQ-ingest-adapter-layer ─────────────────────────────────────
+// POST /api/deliveroo/import — XLSX-fallback ingest per CON-xlsx-fallback.
+// Mirrors the Talabat /import shape via makeXlsxImportRoute('DELIVEROO')
+// + DeliverooXlsxAdapter (services/ingest/deliveroo/xlsx.ts).
+//
+// Auth + tenantScope inherited from router.use at file top.
+// Response shape: { success: true, rowsIn, rowsOk, errors[] }.
+// Failure: HTTP 400 + { error } on malformed headers or driver mismatch.
+// ─────────────────────────────────────────────────────────────────────────────
+router.post("/import", upload.single("file"), makeXlsxImportRoute("DELIVEROO"));
 
 export default router;

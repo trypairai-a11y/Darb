@@ -2,22 +2,27 @@
 // backend/src/routes/deliveroo.ts::POST /import.
 //
 // REQ-ingest-adapter-layer: POST /api/deliveroo/import — same shape as Talabat.
+//
+// Wave 3 deviation note: same jest infra mismatch as talabatImport.test.ts.
+// See that file's header comment for the full diagnosis. Short version: the
+// moduleNameMapper rewrites the route's 2-level `../config` to mocks/config.ts
+// but leaves the adapter's 3-level `../../../config` unmapped — so without
+// intervention the test sees mocks/config.ts and the adapter sees the real
+// PrismaClient. Fix: jest.doMock with an absolute path keyed by the adapter's
+// resolved src/config target.
 
+import path from "path";
 import request from "supertest";
 import express from "express";
 
-jest.mock("../../config", () => ({
-  prisma: {
-    driver: { findFirst: jest.fn() },
-    deliverooDailyMetrics: { upsert: jest.fn() },
-    ingestRun: { create: jest.fn() },
-  },
-  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
-  env: { JWT_SECRET: "test" },
-}));
+const ABS_SRC_CONFIG = path.resolve(__dirname, "..", "..", "config");
+
+// Route the adapter's 3-level `../../../config` import to the shared mock.
+jest.doMock(ABS_SRC_CONFIG, () => require("../mocks/config"));
 
 import { prisma } from "../../config";
-import deliverooRouter from "../../routes/deliveroo";
+// require() (not import) so the doMock above is registered first.
+const deliverooRouter = require("../../routes/deliveroo").default;
 import { buildDeliverooXlsxBuffer } from "../services/ingest/fixtures";
 
 function makeApp() {
