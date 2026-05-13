@@ -150,7 +150,7 @@ Plans:
 Plans:
 - [x] 06-00-PLAN.md — Wave 0: 13 RED test files + 4 XLSX fixture builders + lint negative fixture + lint:tenant scope extension to services/ingest/
 - [x] 06-01-PLAN.md — Wave 1: Core scaffolding (types/composite/registry/audit/normalize/index/xlsxRouteFactory) + OrderSource.MOBILE_GPS schema edit + migration
-- [ ] 06-02a-PLAN.md — Wave 2a (parallel with 02b): Keeta×4 + Americana×3 adapter files + registry update (consumes 02b's barrels)
+- [x] 06-02a-PLAN.md — Wave 2a (parallel with 02b): Keeta×4 + Americana×3 adapter files + registry update (consumes 02b's barrels)
 - [ ] 06-02b-PLAN.md — Wave 2b (parallel with 02a): Talabat×6 + Deliveroo×6 adapter files
 - [ ] 06-03-PLAN.md — Wave 3: POST /api/talabat/import + POST /api/deliveroo/import via makeXlsxImportRoute factory
 - [ ] 06-04-PLAN.md — Wave 4: pullChunkPhase6 + Keeta /import refactor + keetaPortalScraperWorker refactor + Phase 6 close-out (migration applied in Wave 1)
@@ -165,7 +165,13 @@ Plans:
   3. Clicking a dot opens a right-slide panel showing phone, vehicle, current order, last GPS, today's stats; the panel can be dismissed without losing map state.
   4. The "Ping (WhatsApp)" button on the panel produces an agent-drafted message; one click sends it (after a confirm card).
   5. Map state updates in real time via WebSocket; existing SSE notifications continue to work in parallel.
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [ ] 07-00-PLAN.md — Wave 0: RED tests (10 backend + 8 frontend) + shared fixtures
+- [ ] 07-01-PLAN.md — Wave 1: Backend wire-in (DarbEventType extension, publishEvent in POST /api/agent/location, liveFleetStatus.orderRejectionCount, orderRejectionToday tool, /api/floor router with /snapshot + /counters + /ping)
+- [ ] 07-02-PLAN.md — Wave 2: Frontend foundation (pin react-leaflet@4.2.1 + react-leaflet-cluster@2.1.0, types/floor.ts, LiveFloorMap, CourierMarker, useFloorRealtime hook)
+- [ ] 07-03-PLAN.md — Wave 3: UI composition (/floor route, LiveFloorPage, FloorPillCounters, FloorFilters, CourierDetailPanel, PingButton, FloorListOverlay)
+- [ ] 07-04-PLAN.md — Wave 4: Polish (flight-mode visual, ConnectionIndicator, EmptyFloorState, SSE reconnect integration test, Vercel maxDuration=300)
 **UI hint**: yes
 
 ### Phase 8: Finance Workbench + Action Tool Surface (the moat)
