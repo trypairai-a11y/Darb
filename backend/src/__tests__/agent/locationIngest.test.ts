@@ -33,7 +33,11 @@ describe("/api/agent/location — Wave 0 RED scaffolding", () => {
       driver: { id: "drv1", tenantId: "tenA" },
     });
     prisma.locationLog.createMany.mockResolvedValue({ count: 5 });
-    prisma.courierOnlineSession.upsert.mockResolvedValue({});
+    // CourierOnlineSession has no @@unique → no prisma.upsert available. The
+    // handler uses findFirst + (update if exists OR create). Returning null
+    // here forces the create branch.
+    prisma.courierOnlineSession.findFirst.mockResolvedValue(null);
+    prisma.courierOnlineSession.create.mockResolvedValue({});
     prisma.device.update.mockResolvedValue({});
 
     const t0 = Date.parse("2026-05-13T10:00:00.000Z");
@@ -52,9 +56,19 @@ describe("/api/agent/location — Wave 0 RED scaffolding", () => {
 
     expect(res.status).toBe(200);
     expect(prisma.locationLog.createMany).toHaveBeenCalledTimes(1);
-    expect(prisma.courierOnlineSession.upsert).toHaveBeenCalledWith(
+    // Confirms tenantId is scoped on the session lookup AND that lastGpsAt
+    // is a fresh Date sourced from the GPS payload.
+    expect(prisma.courierOnlineSession.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
-        update: expect.objectContaining({
+        where: expect.objectContaining({ tenantId: "tenA", driverId: "drv1", isOnline: true }),
+      }),
+    );
+    expect(prisma.courierOnlineSession.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          tenantId: "tenA",
+          driverId: "drv1",
+          isOnline: true,
           lastGpsAt: expect.any(Date),
         }),
       }),
@@ -72,7 +86,8 @@ describe("/api/agent/location — Wave 0 RED scaffolding", () => {
       driver: { id: "drv1", tenantId: "tenA" },
     });
     prisma.locationLog.createMany.mockResolvedValue({ count: 1 });
-    prisma.courierOnlineSession.upsert.mockResolvedValue({});
+    prisma.courierOnlineSession.findFirst.mockResolvedValue(null);
+    prisma.courierOnlineSession.create.mockResolvedValue({});
 
     const point = {
       latitude: 29.3759,
@@ -105,7 +120,8 @@ describe("/api/agent/location — Wave 0 RED scaffolding", () => {
       driver: { id: "drv1", tenantId: "tenA" },
     });
     prisma.locationLog.createMany.mockResolvedValue({ count: 1 });
-    prisma.courierOnlineSession.upsert.mockResolvedValue({});
+    prisma.courierOnlineSession.findFirst.mockResolvedValue(null);
+    prisma.courierOnlineSession.create.mockResolvedValue({});
 
     let blocked = false;
     for (let i = 0; i < 201; i++) {

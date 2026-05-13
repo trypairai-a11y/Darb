@@ -12,6 +12,19 @@ import express from "express";
 import request from "supertest";
 import { getMockPrisma, resetAllMocks } from "../setup";
 
+// Mock R2 so the test does not need real AWS SDK creds. We assert the URL is
+// returned to the client and that the key prefix follows the documented
+// `{tenantId}/{orderId}/{deviceId}/<ts>.jpg` shape; we don't unit-test the
+// AWS SDK itself.
+jest.mock("../../services/r2Service", () => ({
+  presignPutUrl: jest.fn(
+    async (key: string) => `https://r2.test.invalid/${key}?signature=stub`,
+  ),
+  presignGetUrl: jest.fn(
+    async (key: string) => `https://r2.test.invalid/${key}?get=stub`,
+  ),
+}));
+
 const agentRouter = require("../../routes/agent").default;
 
 const app = express();

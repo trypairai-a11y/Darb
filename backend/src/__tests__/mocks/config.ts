@@ -114,9 +114,13 @@ export const prisma = {
     count: jest.fn(),
   },
   courierOnlineSession: {
+    // CourierOnlineSession has no @@unique suitable for prisma.upsert, so the
+    // /api/agent/location handler uses findFirst + update OR create. `upsert`
+    // is kept here for legacy tests; new tests should mock findFirst/update/create.
     upsert: jest.fn(),
     findFirst: jest.fn(),
     update: jest.fn(),
+    create: jest.fn(),
   },
   orderEvent: {
     create: jest.fn(),
