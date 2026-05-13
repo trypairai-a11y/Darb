@@ -3,23 +3,43 @@
 //
 // REQ-ingest-adapter-layer: POST /api/talabat/import — canonical XLSX upload shape
 // {success, rowsIn, rowsOk, errors} per CON-xlsx-fallback. Mirrors Keeta /import.
+//
+// Wave 3 deviation note (Rule 3 — blocking jest infra mismatch): jest.config.js
+// `moduleNameMapper` rewrites the route file's `from "../config"` to
+// src/__tests__/mocks/config.ts, but the TalabatXlsxAdapter (loaded
+// transitively via the route) imports `from "../../../config"` — a 3-level
+// path that the mapper intentionally leaves unmapped (Phase 1 agent/tools
+// tests rely on the unmapped path). Without intervention the test and the
+// adapter end up with TWO different prisma instances (mock vs. real).
+//
+// Fix: use jest.doMock with an ABSOLUTE PATH to register a mock keyed at
+// the resolved src/config module file. Because the moduleNameMapper rewrites
+// happen on the import-request string (not the resolved file path), this
+// bypasses the mapper. The factory returns the shared mocks/config.ts so
+// the adapter and the test converge on a single prisma stub. Then we
+// require() the router so the doMock takes effect BEFORE the router's
+// transitive adapter import loads.
 
+import path from "path";
 import request from "supertest";
 import express from "express";
 
-// Mocks must be hoisted before the route under test imports prisma.
-jest.mock("../../config", () => ({
-  prisma: {
-    driver: { findFirst: jest.fn() },
-    talabatDailyMetrics: { upsert: jest.fn() },
-    ingestRun: { create: jest.fn() },
-  },
-  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
-  env: { JWT_SECRET: "test" },
-}));
+// Compute absolute path to src/config from this test file's __dirname.
+// `path.resolve` runs at module-load time but BEFORE the require() below,
+// which is what matters for doMock + require ordering.
+const ABS_SRC_CONFIG = path.resolve(__dirname, "..", "..", "config");
 
+// Route the adapter's 3-level `../../../config` import to the shared mock.
+// doMock (not jest.mock) is intentional: jest.mock requires a literal first
+// arg for hoisting; absolute paths via path.resolve are computed.
+jest.doMock(ABS_SRC_CONFIG, () => require("../mocks/config"));
+
+// The test's own `import { prisma } from "../../config"` is rewritten by the
+// moduleNameMapper to the shared mock — so test-side `prisma` is already the
+// same instance the adapter now sees via the doMock above.
 import { prisma } from "../../config";
-import talabatRouter from "../../routes/talabat";
+// require() (not import) so the doMock above is registered first.
+const talabatRouter = require("../../routes/talabat").default;
 import { buildTalabatXlsxBuffer } from "../services/ingest/fixtures";
 
 function makeApp() {

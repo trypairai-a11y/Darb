@@ -143,6 +143,20 @@ export const prisma = {
     findMany: jest.fn(),
     update: jest.fn(),
   },
+  // Phase 6 Wave 3 — XLSX-fallback ingest routes (talabatImport.test.ts,
+  // deliverooImport.test.ts). Both route tests pin "../../../config" to this
+  // shared mock so the adapter's 3-level import shares the same prisma stub
+  // as the test (Rule 3 fix mirroring audit.test.ts:19).
+  talabatDailyMetrics: {
+    upsert: jest.fn(),
+    findFirst: jest.fn(),
+    findMany: jest.fn(),
+  },
+  deliverooDailyMetrics: {
+    upsert: jest.fn(),
+    findFirst: jest.fn(),
+    findMany: jest.fn(),
+  },
   $transaction: jest.fn(),
 };
 

@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../config";
+import { logger } from "../config/logger";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
 import { getPagination, paginatedResponse } from "../utils/pagination";
@@ -12,6 +13,7 @@ import { getAdapter } from "../adapters";
 import { reconcilePlatformClock } from "../services/attendanceReconciliation";
 import { upload } from "../utils/upload";
 import { AiOcrService } from "../services/aiOcrService";
+import { makeXlsxImportRoute } from "../services/ingest/xlsxRouteFactory";
 import fs from "fs";
 
 const router = Router();
@@ -289,7 +291,7 @@ router.post("/sessions", rbac(...MUTATORS), validateBody(createTalabatSessionSch
         platformClockIn: session.actualStart,
         platformClockOut: session.actualEnd,
         scheduledStart: session.plannedStart,
-      }).catch(() => {});
+      }).catch((err) => { logger.warn({ err }, "talabat reconcilePlatformClock failed"); });
     }
     res.status(201).json(session);
   } catch (err: any) {
@@ -320,9 +322,21 @@ router.post("/sessions", rbac(...MUTATORS), validateBody(createTalabatSessionSch
  */
 router.put("/sessions/:id", rbac(...MUTATORS), async (req: Request, res: Response) => {
   try {
+    const allowed = [
+      "shiftId", "date", "zone", "vehicleType", "sessionCode",
+      "plannedStart", "plannedEnd", "approvedStart", "approvedEnd",
+      "actualStart", "actualEnd",
+      "plannedHours", "approvedHours", "actualHours",
+      "deliveries", "cashCollected", "tips", "distanceKm",
+      "status", "faceVerified", "equipmentVerified", "gpsViolation",
+    ] as const;
+    const data: Record<string, unknown> = {};
+    for (const k of allowed) {
+      if (k in (req.body ?? {})) data[k] = (req.body as any)[k];
+    }
     const session = await prisma.talabatSession.updateMany({
       where: { id: req.params.id, tenantId: req.user!.tenantId },
-      data: req.body,
+      data,
     });
     if (session.count === 0) { res.status(404).json({ error: "Session not found" }); return; }
     const updated = await prisma.talabatSession.findUnique({ where: { id: req.params.id } });
@@ -334,7 +348,7 @@ router.put("/sessions/:id", rbac(...MUTATORS), async (req: Request, res: Respons
         platformClockIn: updated.actualStart,
         platformClockOut: updated.actualEnd,
         scheduledStart: updated.plannedStart,
-      }).catch(() => {});
+      }).catch((err) => { logger.warn({ err }, "talabat reconcilePlatformClock failed"); });
     }
     res.json(updated);
   } catch (err: any) {
@@ -444,9 +458,17 @@ router.post("/deliveries", async (req: Request, res: Response) => {
 // PUT /deliveries/:id - Update delivery
 router.put("/deliveries/:id", async (req: Request, res: Response) => {
   try {
+    const allowed = [
+      "date", "platformOrderId", "shortCode", "finishedAt",
+      "orderType", "amount", "tip", "distanceKm", "status",
+    ] as const;
+    const data: Record<string, unknown> = {};
+    for (const k of allowed) {
+      if (k in (req.body ?? {})) data[k] = (req.body as any)[k];
+    }
     const delivery = await prisma.talabatDelivery.updateMany({
       where: { id: req.params.id, tenantId: req.user!.tenantId },
-      data: req.body,
+      data,
     });
     if (delivery.count === 0) { res.status(404).json({ error: "Delivery not found" }); return; }
     const updated = await prisma.talabatDelivery.findUnique({ where: { id: req.params.id } });
@@ -793,6 +815,8 @@ router.get("/overview", async (req: Request, res: Response) => {
       overdueCashRecords,
       driversOnLeaveToday,
       restaurantOrders,
+      todayMetrics,
+      shiftSettings,
     ] = await Promise.all([
       // All active drivers
       prisma.driver.findMany({
@@ -914,6 +938,16 @@ router.get("/overview", async (req: Request, res: Response) => {
         where: { tenantId, platform: "TALABAT", date: { gte: todayStart, lt: todayEnd }, ...companyFilter, restaurantName: { not: null } },
         select: { restaurantName: true, orderCount: true, date: true },
       }),
+      // Today's per-driver online hours (for UTR shift-eligibility filter)
+      prisma.talabatDailyMetrics.findMany({
+        where: { tenantId, shiftDate: { gte: todayStart, lt: todayEnd }, ...(companyId ? { driver: { companyId } } : {}) },
+        select: { driverId: true, onlineHours: true, utr: true },
+      }),
+      // Platform shift rules (defaultHoursPerDay)
+      prisma.platformSettings.findUnique({
+        where: { tenantId_platform: { tenantId, platform: "TALABAT" } },
+        select: { shiftRules: true },
+      }),
     ]);
 
     // Build per-driver maps
@@ -1004,10 +1038,27 @@ router.get("/overview", async (req: Request, res: Response) => {
       .slice(0, 5)
       .filter((d) => d.todayOrders > 0);
 
-    // UTR: average UTR of drivers who had orders today
-    const driversWithOrders = driverRows.filter((d) => d.todayOrders > 0 && d.utr != null);
-    const avgUtr = driversWithOrders.length > 0
-      ? Math.round((driversWithOrders.reduce((sum, d) => sum + Number(d.utr), 0) / driversWithOrders.length) * 100) / 100
+    // UTR: average UTR of drivers who hit the default shift period today
+    const shiftRules = (shiftSettings?.shiftRules as any) || {};
+    const defaultHoursPerDay = Number(
+      shiftRules?.MOTORCYCLE?.defaultHoursPerDay ??
+      shiftRules?.CAR?.defaultHoursPerDay ??
+      shiftRules?.defaultHoursPerDay ??
+      12
+    );
+    const hoursByDriver = new Map<string, number>();
+    const utrByDriver = new Map<string, number>();
+    for (const m of todayMetrics) {
+      if (m.onlineHours != null) hoursByDriver.set(m.driverId, Number(m.onlineHours));
+      if (m.utr != null) utrByDriver.set(m.driverId, Number(m.utr));
+    }
+    const eligibleDrivers = driverRows.filter((d) => {
+      const utrVal = utrByDriver.get(d.id) ?? (d.utr != null ? Number(d.utr) : null);
+      const hours = hoursByDriver.get(d.id) ?? 0;
+      return utrVal != null && hours >= defaultHoursPerDay;
+    });
+    const avgUtr = eligibleDrivers.length > 0
+      ? Math.round((eligibleDrivers.reduce((sum, d) => sum + Number(utrByDriver.get(d.id) ?? d.utr ?? 0), 0) / eligibleDrivers.length) * 100) / 100
       : null;
 
     // Drivers who haven't booked any shift for the next 7 days
@@ -1209,7 +1260,7 @@ router.post(
             driverId,
             metricId: row.id,
           },
-        }).catch(() => {});
+        }).catch((err) => { logger.warn({ err }, "talabat reconcilePlatformClock failed"); });
       }
 
       res.json({
@@ -1217,107 +1268,6 @@ router.post(
         extracted,
         metricId: row.id,
       });
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
-  }
-);
-
-/**
- * GET /api/talabat/metrics/pending-review
- * Paginated list of TalabatDailyMetrics awaiting Ops review.
- */
-router.get("/metrics/pending-review", async (req: Request, res: Response) => {
-  try {
-    const { skip, limit, page } = getPagination(req);
-    const tenantId = req.user!.tenantId;
-
-    const where = { tenantId, status: "PENDING_REVIEW" };
-    const [data, total] = await Promise.all([
-      prisma.talabatDailyMetrics.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: "desc" },
-        include: { driver: { select: { id: true, name: true, phone: true, zone: true } } },
-      }),
-      prisma.talabatDailyMetrics.count({ where }),
-    ]);
-
-    res.json(paginatedResponse(data, total, page, limit));
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-/**
- * POST /api/talabat/metrics/:id/approve
- * Body: { utr?, ordersCompleted?, onlineHours?, earnings?, note? }
- */
-router.post(
-  "/metrics/:id/approve",
-  rbac(...MUTATORS),
-  async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const tenantId = req.user!.tenantId;
-      const { utr, ordersCompleted, onlineHours, earnings, note } = req.body ?? {};
-
-      const existing = await prisma.talabatDailyMetrics.findFirst({
-        where: { id, tenantId },
-      });
-      if (!existing) return res.status(404).json({ error: "Metric not found" });
-
-      const updated = await prisma.talabatDailyMetrics.update({
-        where: { id },
-        data: {
-          status: "APPROVED",
-          utr: utr ?? existing.utr,
-          ordersCompleted: ordersCompleted ?? existing.ordersCompleted,
-          onlineHours: onlineHours ?? existing.onlineHours,
-          earnings: earnings ?? existing.earnings,
-          reviewedBy: req.user!.userId,
-          reviewedAt: new Date(),
-          reviewNote: note ?? null,
-        },
-      });
-
-      res.json(updated);
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
-  }
-);
-
-/**
- * POST /api/talabat/metrics/:id/reject
- * Body: { note? }
- */
-router.post(
-  "/metrics/:id/reject",
-  rbac(...MUTATORS),
-  async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const tenantId = req.user!.tenantId;
-      const { note } = req.body ?? {};
-
-      const existing = await prisma.talabatDailyMetrics.findFirst({
-        where: { id, tenantId },
-      });
-      if (!existing) return res.status(404).json({ error: "Metric not found" });
-
-      const updated = await prisma.talabatDailyMetrics.update({
-        where: { id },
-        data: {
-          status: "REJECTED",
-          reviewedBy: req.user!.userId,
-          reviewedAt: new Date(),
-          reviewNote: note ?? null,
-        },
-      });
-
-      res.json(updated);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
@@ -1336,5 +1286,20 @@ router.post("/rules/run", async (req: Request, res: Response) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ── Phase 6 / REQ-ingest-adapter-layer ─────────────────────────────────────
+// POST /api/talabat/import — XLSX-fallback ingest per CON-xlsx-fallback.
+// Mirrors the canonical Keeta /import shape via makeXlsxImportRoute factory
+// + TalabatXlsxAdapter (services/ingest/talabat/xlsx.ts).
+//
+// Auth + tenantScope are inherited from router.use(authMiddleware, tenantScope)
+// at the top of this file. Multer's upload.single("file") writes to /tmp;
+// the factory reads the buffer, dispatches to the adapter, and writes one
+// IngestRun audit row.
+//
+// Response shape: { success: true, rowsIn, rowsOk, errors[] }.
+// Failure: HTTP 400 + { error: message } when headers malformed (Pitfall 10).
+// ─────────────────────────────────────────────────────────────────────────────
+router.post("/import", upload.single("file"), makeXlsxImportRoute("TALABAT"));
 
 export default router;
