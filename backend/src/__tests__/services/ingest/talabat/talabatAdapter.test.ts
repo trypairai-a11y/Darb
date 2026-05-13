@@ -4,7 +4,7 @@
 // REQ-ingest-adapter-layer: Talabat adapters.
 // WARNING 12: compile-time pin on @@unique key shape via Prisma type extraction.
 
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "../../../../generated/prisma";
 
 // Pinned per backend/prisma/schema.prisma:1385
 //   @@unique([tenantId, driverId, shiftDate])
