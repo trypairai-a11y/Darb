@@ -148,8 +148,8 @@ Plans:
   3. For metrics where both mobile-GPS data and scraped data exist (e.g., online hours, location), the system reads from mobile-GPS by default and falls back to scraped data only when mobile is unavailable.
 **Plans**: 6 plans
 Plans:
-- [ ] 06-00-PLAN.md — Wave 0: 13 RED test files + 4 XLSX fixture builders + lint negative fixture + lint:tenant scope extension to services/ingest/
-- [ ] 06-01-PLAN.md — Wave 1: Core scaffolding (types/composite/registry/audit/normalize/index/xlsxRouteFactory) + OrderSource.MOBILE_GPS schema edit + migration
+- [x] 06-00-PLAN.md — Wave 0: 13 RED test files + 4 XLSX fixture builders + lint negative fixture + lint:tenant scope extension to services/ingest/
+- [x] 06-01-PLAN.md — Wave 1: Core scaffolding (types/composite/registry/audit/normalize/index/xlsxRouteFactory) + OrderSource.MOBILE_GPS schema edit + migration
 - [ ] 06-02a-PLAN.md — Wave 2a (parallel with 02b): Keeta×4 + Americana×3 adapter files + registry update (consumes 02b's barrels)
 - [ ] 06-02b-PLAN.md — Wave 2b (parallel with 02a): Talabat×6 + Deliveroo×6 adapter files
 - [ ] 06-03-PLAN.md — Wave 3: POST /api/talabat/import + POST /api/deliveroo/import via makeXlsxImportRoute factory

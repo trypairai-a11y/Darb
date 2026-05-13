@@ -84,7 +84,7 @@ The Darb v2 pivot is the FIRST milestone in `.planning/`. All 42 requirements be
 
 ### Data ingest
 
-- [ ] **REQ-ingest-adapter-layer**: Treat scrapers of Keeta/Talabat partner portals as a swappable adapter layer. Scrapers can be replaced without affecting the rest of the system. Wherever an own-app data source exists (mobile GPS, courier check-ins) it is preferred over scraped data. XLSX-import remains a permanent fallback for any platform that breaks scraping. The Keeta `POST /import` route is the canonical pattern.
+- [x] **REQ-ingest-adapter-layer**: Treat scrapers of Keeta/Talabat partner portals as a swappable adapter layer. Scrapers can be replaced without affecting the rest of the system. Wherever an own-app data source exists (mobile GPS, courier check-ins) it is preferred over scraped data. XLSX-import remains a permanent fallback for any platform that breaks scraping. The Keeta `POST /import` route is the canonical pattern.
 - [ ] **REQ-ingest-partner-api-conversations**: Begin formal partner-API conversations with Talabat and Keeta in Q3, once 5+ paying fleets exist.
 
 ### Realtime infrastructure
@@ -152,7 +152,7 @@ Phase mappings for v1 requirements. Each REQ maps to exactly one phase. Status s
 | REQ-mobile-always-on-gps | Phase 5 | Pending |
 | REQ-mobile-active-platform-detection | Phase 5 | Pending |
 | REQ-mobile-delivery-photo-capture | Phase 5 | Pending |
-| REQ-ingest-adapter-layer | Phase 6 | Pending |
+| REQ-ingest-adapter-layer | Phase 6 | Complete |
 | REQ-floor-live-map | Phase 7 | Pending |
 | REQ-finance-cash-workbench | Phase 8 | Pending |
 | REQ-finance-payroll | Phase 8 | Pending |
