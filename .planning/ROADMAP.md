@@ -131,9 +131,9 @@ Plans:
   4. A courier can capture a delivery photo from inside the Darb app and the photo is associated with the correct order.
 **Plans**: 5 plans
 Plans:
-- [ ] 05-00-PLAN.md — Wave 0: jest-expo bootstrap + RED test scaffolding (10 mobile tests + 5 backend tests) + lint:tenant scope extension to Phase 5 backend files
-- [ ] 05-01-PLAN.md — Wave 1: Mobile foundation — expo-sqlite outbox replaces AsyncStorage (Pitfall 1); iOS activityType + Android 14 FOREGROUND_SERVICE_LOCATION (Pitfalls 2/3); expo-battery telemetry; platformGuess hint module; locationService rewrite
-- [ ] 05-02-PLAN.md — Wave 2: Backend additions — activePlatformAttribution service (tiered evidence chain over OrderEvent → Shift → Driver default → mobile hint); R2 presigned URL service; agentRateLimit middleware; agent.ts extended with idempotency + upload-url + delivery-photo routes
+- [x] 05-00-PLAN.md — Wave 0: jest-expo bootstrap + RED test scaffolding (10 mobile tests + 5 backend tests) + lint:tenant scope extension to Phase 5 backend files
+- [x] 05-01-PLAN.md — Wave 1: Mobile foundation — expo-sqlite outbox replaces AsyncStorage (Pitfall 1); iOS activityType + Android 14 FOREGROUND_SERVICE_LOCATION (Pitfalls 2/3); expo-battery telemetry; platformGuess hint module; locationService rewrite
+- [x] 05-02-PLAN.md — Wave 2: Backend additions — activePlatformAttribution service (tiered evidence chain over OrderEvent → Shift → Driver default → mobile hint); R2 presigned URL service; agentRateLimit middleware; agent.ts extended with idempotency + upload-url + delivery-photo routes
 - [ ] 05-03-PLAN.md — Wave 3: Mobile UX — photoService capture pipeline (compress → presigned PUT → metadata POST); PermissionRationale two-stage modal; BatteryStatusBadge; dashboard Start Shift wired to rationale; orders Mark Delivered button; tab focus → setLastTab
 - [ ] 05-04-PLAN.md — Wave 4: [BLOCKING] EAS native rebuild (iOS + Android) + R2 bucket creation + Vercel prod env vars + 4-hour battery test (target ≤6%/hr) + 1km walking smoke + delivery-photo round-trip + VERIFICATION.md
 **UI hint**: yes

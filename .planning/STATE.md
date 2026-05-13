@@ -4,14 +4,14 @@ milestone: v1.0
 milestone_name: milestone
 status: planning
 stopped_at: "Phase 2 complete + deployed + finalize sweep done (Sierra palette test cleanup resolved; 36/36 frontend tests + 188/188 backend tests green; both deploys healthy). Next action: `/gsd-plan-phase 3` (Driver File) when ready."
-last_updated: "2026-05-13T04:30:02.381Z"
+last_updated: "2026-05-13T04:34:00.336Z"
 last_activity: "2026-05-09 — Phase 2 (Decisions Surface + Propose-and-Confirm + Design Partner #1) completed and verified. 6 plans, 6 sequential waves, 188/188 backend tests green, 6/6 Phase 2 frontend tests green, 4-column additive migration applied. Owner now lands on `/decisions` after sign-in. Monitor agent + 3 propose tools + tiered cron live. Admin onboarding wizard + billing dashboard + DarbsReadReport shipped."
 progress:
   total_phases: 12
   completed_phases: 3
   total_plans: 43
-  completed_plans: 23
-  percent: 53
+  completed_plans: 24
+  percent: 56
 ---
 
 # Project State
@@ -31,7 +31,7 @@ Plan: 0 of TBD in current phase
 Status: Ready to plan Phase 3
 Last activity: 2026-05-09 — Phase 2 (Decisions Surface + Propose-and-Confirm + Design Partner #1) completed and verified. 6 plans, 6 sequential waves, 188/188 backend tests green, 6/6 Phase 2 frontend tests green, 4-column additive migration applied. Owner now lands on `/decisions` after sign-in. Monitor agent + 3 propose tools + tiered cron live. Admin onboarding wizard + billing dashboard + DarbsReadReport shipped.
 
-Progress: [█████░░░░░] 53%
+Progress: [██████░░░░] 56%
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Progress: [█████░░░░░] 53%
 
 | Phase 06 P01 | 8min | 3 tasks | 13 files |
 | Phase 06 P02a | 9m 12s | - tasks | - files |
+| Phase 05 P02 | 12min | 3 tasks | 12 files | Backend GPS ingest + R2 presigned URLs + activePlatformAttribution; 19 Wave 0 RED → GREEN |
 
 ## Accumulated Context
 
@@ -66,6 +67,10 @@ Progress: [█████░░░░░] 53%
 
 - [Phase ?]: Phase 6 Wave 1: shipped IngestAdapter contract + CompositeAdapter + getAdapter (empty composites) + writeIngestRun + makeXlsxImportRoute + OrderSource.MOBILE_GPS. Wave 2 plans fill registry tiers without touching the contract.
 - [Phase ?]: Phase 6 Wave 2a: per-platform IngestAdapter directories shipped for KEETA (Mobile/Scraper/Xlsx) + AMERICANA (Email/Xlsx); registry wires both tier arrays with TALABAT/DELIVEROO branches reserved for 02b (alphabetical case ordering for parallel-wave merge safety)
+- [Phase 05]: Wave 2 backend GPS ingest landed. Tier-3 driver lookup in activePlatformAttribution uses findFirst({id, tenantId}) — strictly stronger than findUnique with post-fetch check; DB layer enforces tenant boundary and lint:tenant is satisfied.
+- [Phase 05]: Wave 2 CourierOnlineSession uses findFirst-then-update-or-create (NOT prisma.upsert) — schema has no @@unique on the model. A future Wave 4 plan can add @@unique([tenantId, driverId, isOnline]) and migrate to upsert if orphan-session race is observed in production.
+- [Phase 05]: Wave 2 /api/agent/location idempotency window is an in-process Map with 5-min TTL. Vercel functions are single-instance per cold-start; mobile outbox reentrancy latch covers same-device concurrency. Migration to Redis SET NX EX 300 deferred until we cross-warm function instances.
+- [Phase 05]: Wave 2 chose NOT to add backend/src/routes/agent.ts to lint:tenant scope — 5 pre-existing violations in /selfie /commands /register would break CI. Deferred to a future refactor plan (recommended Phase 5 Wave 5 follow-up). See .planning/phases/05-mobile-gps-beacon/deferred-items.md.
 
 ### Pending Todos
 
@@ -91,9 +96,11 @@ Progress: [█████░░░░░] 53%
 | Phase 2 Suspend/Penalty live wiring | Visible-with-disabled-Approve in v1; Phase 8 wires those tools live | Deferred to Phase 8 | Phase 2 plan-checker (2026-05-09) |
 | Phase 2 design-partner-1 dry-run | 8-step manual onboarding via wizard with seed fixture | User post-deploy | Phase 2 Wave 5 (2026-05-09) |
 | Frontend Sierra palette tests | ~~16 pre-existing test failures referencing legacy palette~~ | ✓ Resolved 2026-05-10 | Phase 2 finalize sweep |
+| Phase 5 agent.ts lint:tenant | 5 pre-existing violations (/selfie /commands /register /resolveDriverFromDeviceId) — `/commands` is a potential real cross-tenant hole | Open — recommended Phase 5 Wave 5 follow-up | Phase 5 Wave 2 (2026-05-13) |
+| Phase 5 R2 production env | R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET must be set in Vercel before Wave 4 deploys the photo flow | Open (user gate) | Phase 5 Wave 2 (2026-05-13) |
 
 ## Session Continuity
 
-Last session: 2026-05-13T04:29:49.405Z
+Last session: 2026-05-13T04:33:20.305Z
 Stopped at: Phase 2 complete + deployed + finalize sweep done (Sierra palette test cleanup resolved; 36/36 frontend tests + 188/188 backend tests green; both deploys healthy). Next action: `/gsd-plan-phase 3` (Driver File) when ready.
 Resume file: None
