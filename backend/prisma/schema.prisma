@@ -49,6 +49,14 @@ enum VehicleType {
   CAR
 }
 
+// Phase 9 Wave 0 — bilingual outbound language preference.
+// AUTO = honour Tenant.defaultLanguage; EN/AR = explicit override per Driver.
+enum Language {
+  EN
+  AR
+  AUTO
+}
+
 enum VehicleStatus {
   ACTIVE
   MAINTENANCE
@@ -344,18 +352,27 @@ enum KpiUnit {
 
 // 1. Tenant
 model Tenant {
-  id               String           @id @default(uuid())
-  name             String
-  subscriptionPlan SubscriptionPlan @default(FREE)
+  id                        String           @id @default(uuid())
+  name                      String
+  subscriptionPlan          SubscriptionPlan @default(FREE)
   // Phase 2 Wave 1 — additive design-partner / billing fields. Wave 5 runs the
   // migration. designPartner=true unlocks the per-tenant override; trialEndsAt
   // is the 14-day onboarding grace cutoff (NULL = not on trial).
-  designPartner     Boolean         @default(false)
-  monthlyOverrideKd Decimal?        @db.Decimal(10, 3)
-  trialEndsAt       DateTime?
-  settings         Json?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  designPartner             Boolean          @default(false)
+  monthlyOverrideKd         Decimal?         @db.Decimal(10, 3)
+  trialEndsAt               DateTime?
+  // Phase 9 Wave 0 — additive bilingual outbound + channel-config fields.
+  // Migration runs in Wave 3 alongside Unifonic adapter ship. designPartner-1
+  // tenants get outboundChannels seeded {inApp:true, whatsapp:false, sms:false}
+  // until WABA verification and Unifonic NOC clear (founder-gated).
+  defaultLanguage           Language         @default(AR)
+  outboundChannels          Json             @default("{\"inApp\":true,\"whatsapp\":false,\"sms\":false}")
+  whatsappBusinessAccountId String?
+  whatsappPhoneNumberId     String?
+  outboundDailyKdLimit      Decimal?         @db.Decimal(10, 3)
+  settings                  Json?
+  createdAt                 DateTime         @default(now())
+  updatedAt                 DateTime         @updatedAt
 
   companies                 Company[]
   users                     User[]
@@ -503,6 +520,11 @@ model Driver {
   hireDate           DateTime
   photoUrl           String?
   supervisorId       String?
+  // Phase 9 Wave 0 — bilingual outbound preferences + push token.
+  preferredLanguage  Language     @default(AUTO)
+  outboundOptIn      Boolean      @default(true)
+  smsOptOut          Boolean      @default(false)
+  expoPushToken      String? // ExponentPushToken[...] — rotated per Pitfall 4
   monthlySalary      Float?
   monthlyOffDaysUsed Int          @default(0)
   offDaysResetMonth  String? // format: "YYYY-MM", reset tracker
@@ -2281,14 +2303,14 @@ model AgentAction {
   // `source` defaults to "decisions" so all existing /decisions writers continue
   // to write rows tagged "decisions" with zero code change; Wave 2's chat route
   // is the first writer of `source: "chat"` (+ chatThreadId + chatMessageId).
-  source         String  @default("decisions") // "decisions" | "chat" | "briefing" | "auto"
-  chatThreadId   String?
-  chatMessageId  String?
+  source                      String    @default("decisions") // "decisions" | "chat" | "briefing" | "auto"
+  chatThreadId                String?
+  chatMessageId               String?
   createdAt                   DateTime  @default(now())
 
-  tenant   Tenant       @relation(fields: [tenantId], references: [id])
-  approver User         @relation("AgentActionApprover", fields: [approverId], references: [id])
-  agentRun AgentRunLog? @relation(fields: [agentRunId], references: [id], onDelete: SetNull)
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  approver     User          @relation("AgentActionApprover", fields: [approverId], references: [id])
+  agentRun     AgentRunLog?  @relation(fields: [agentRunId], references: [id], onDelete: SetNull)
   chatMessages ChatMessage[] @relation("ChatMessageProposal")
 
   @@index([tenantId, createdAt])
@@ -2322,18 +2344,18 @@ model AgentMemory {
 // viewType: "table" | "chart" | "kpi_strip" | "map" | "comparison".
 
 model PinnedView {
-  id           String   @id @default(cuid())
-  tenantId     String
-  userId       String
-  title        String
-  description  String?  @db.Text
-  viewType     String
-  spec         Json
-  sortOrder    Int      @default(0)
-  pinnedAt     DateTime @default(now())
-  lastViewedAt DateTime @default(now())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id               String   @id @default(cuid())
+  tenantId         String
+  userId           String
+  title            String
+  description      String?  @db.Text
+  viewType         String
+  spec             Json
+  sortOrder        Int      @default(0)
+  pinnedAt         DateTime @default(now())
+  lastViewedAt     DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
   // Phase 4 Wave 1 — refresh behaviour + chat-origin link.
   // refreshFrequency: "on_open" (re-fetch on open), "live" (poll), "static" (snapshot).
   // UI-SPEC §3.2.7 — default is "on_open".

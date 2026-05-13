@@ -129,6 +129,11 @@ exports.Prisma.TenantScalarFieldEnum = {
   designPartner: 'designPartner',
   monthlyOverrideKd: 'monthlyOverrideKd',
   trialEndsAt: 'trialEndsAt',
+  defaultLanguage: 'defaultLanguage',
+  outboundChannels: 'outboundChannels',
+  whatsappBusinessAccountId: 'whatsappBusinessAccountId',
+  whatsappPhoneNumberId: 'whatsappPhoneNumberId',
+  outboundDailyKdLimit: 'outboundDailyKdLimit',
   settings: 'settings',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -177,6 +182,10 @@ exports.Prisma.DriverScalarFieldEnum = {
   hireDate: 'hireDate',
   photoUrl: 'photoUrl',
   supervisorId: 'supervisorId',
+  preferredLanguage: 'preferredLanguage',
+  outboundOptIn: 'outboundOptIn',
+  smsOptOut: 'smsOptOut',
+  expoPushToken: 'expoPushToken',
   monthlySalary: 'monthlySalary',
   monthlyOffDaysUsed: 'monthlyOffDaysUsed',
   offDaysResetMonth: 'offDaysResetMonth',
@@ -1422,12 +1431,12 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
-exports.Prisma.NullableJsonNullValueInput = {
-  DbNull: Prisma.DbNull,
+exports.Prisma.JsonNullValueInput = {
   JsonNull: Prisma.JsonNull
 };
 
-exports.Prisma.JsonNullValueInput = {
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull
 };
 
@@ -1449,7 +1458,9 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.TenantOrderByRelevanceFieldEnum = {
   id: 'id',
-  name: 'name'
+  name: 'name',
+  whatsappBusinessAccountId: 'whatsappBusinessAccountId',
+  whatsappPhoneNumberId: 'whatsappPhoneNumberId'
 };
 
 exports.Prisma.CompanyOrderByRelevanceFieldEnum = {
@@ -1480,6 +1491,7 @@ exports.Prisma.DriverOrderByRelevanceFieldEnum = {
   batchNumber: 'batchNumber',
   photoUrl: 'photoUrl',
   supervisorId: 'supervisorId',
+  expoPushToken: 'expoPushToken',
   offDaysResetMonth: 'offDaysResetMonth',
   performanceTier: 'performanceTier',
   healthCertStatus: 'healthCertStatus',
@@ -2209,6 +2221,12 @@ exports.SubscriptionPlan = exports.$Enums.SubscriptionPlan = {
   FREE: 'FREE',
   PRO: 'PRO',
   ENTERPRISE: 'ENTERPRISE'
+};
+
+exports.Language = exports.$Enums.Language = {
+  EN: 'EN',
+  AR: 'AR',
+  AUTO: 'AUTO'
 };
 
 exports.Platform = exports.$Enums.Platform = {

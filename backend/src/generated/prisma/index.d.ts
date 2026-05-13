@@ -427,6 +427,15 @@ export namespace $Enums {
 export type SubscriptionPlan = (typeof SubscriptionPlan)[keyof typeof SubscriptionPlan]
 
 
+export const Language: {
+  EN: 'EN',
+  AR: 'AR',
+  AUTO: 'AUTO'
+};
+
+export type Language = (typeof Language)[keyof typeof Language]
+
+
 export const Platform: {
   KEETA: 'KEETA',
   TALABAT: 'TALABAT',
@@ -903,6 +912,10 @@ export type WithdrawalStatus = (typeof WithdrawalStatus)[keyof typeof Withdrawal
 export type SubscriptionPlan = $Enums.SubscriptionPlan
 
 export const SubscriptionPlan: typeof $Enums.SubscriptionPlan
+
+export type Language = $Enums.Language
+
+export const Language: typeof $Enums.Language
 
 export type Platform = $Enums.Platform
 
@@ -10196,10 +10209,12 @@ export namespace Prisma {
 
   export type TenantAvgAggregateOutputType = {
     monthlyOverrideKd: Decimal | null
+    outboundDailyKdLimit: Decimal | null
   }
 
   export type TenantSumAggregateOutputType = {
     monthlyOverrideKd: Decimal | null
+    outboundDailyKdLimit: Decimal | null
   }
 
   export type TenantMinAggregateOutputType = {
@@ -10209,6 +10224,10 @@ export namespace Prisma {
     designPartner: boolean | null
     monthlyOverrideKd: Decimal | null
     trialEndsAt: Date | null
+    defaultLanguage: $Enums.Language | null
+    whatsappBusinessAccountId: string | null
+    whatsappPhoneNumberId: string | null
+    outboundDailyKdLimit: Decimal | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -10220,6 +10239,10 @@ export namespace Prisma {
     designPartner: boolean | null
     monthlyOverrideKd: Decimal | null
     trialEndsAt: Date | null
+    defaultLanguage: $Enums.Language | null
+    whatsappBusinessAccountId: string | null
+    whatsappPhoneNumberId: string | null
+    outboundDailyKdLimit: Decimal | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -10231,6 +10254,11 @@ export namespace Prisma {
     designPartner: number
     monthlyOverrideKd: number
     trialEndsAt: number
+    defaultLanguage: number
+    outboundChannels: number
+    whatsappBusinessAccountId: number
+    whatsappPhoneNumberId: number
+    outboundDailyKdLimit: number
     settings: number
     createdAt: number
     updatedAt: number
@@ -10240,10 +10268,12 @@ export namespace Prisma {
 
   export type TenantAvgAggregateInputType = {
     monthlyOverrideKd?: true
+    outboundDailyKdLimit?: true
   }
 
   export type TenantSumAggregateInputType = {
     monthlyOverrideKd?: true
+    outboundDailyKdLimit?: true
   }
 
   export type TenantMinAggregateInputType = {
@@ -10253,6 +10283,10 @@ export namespace Prisma {
     designPartner?: true
     monthlyOverrideKd?: true
     trialEndsAt?: true
+    defaultLanguage?: true
+    whatsappBusinessAccountId?: true
+    whatsappPhoneNumberId?: true
+    outboundDailyKdLimit?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -10264,6 +10298,10 @@ export namespace Prisma {
     designPartner?: true
     monthlyOverrideKd?: true
     trialEndsAt?: true
+    defaultLanguage?: true
+    whatsappBusinessAccountId?: true
+    whatsappPhoneNumberId?: true
+    outboundDailyKdLimit?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -10275,6 +10313,11 @@ export namespace Prisma {
     designPartner?: true
     monthlyOverrideKd?: true
     trialEndsAt?: true
+    defaultLanguage?: true
+    outboundChannels?: true
+    whatsappBusinessAccountId?: true
+    whatsappPhoneNumberId?: true
+    outboundDailyKdLimit?: true
     settings?: true
     createdAt?: true
     updatedAt?: true
@@ -10374,6 +10417,11 @@ export namespace Prisma {
     designPartner: boolean
     monthlyOverrideKd: Decimal | null
     trialEndsAt: Date | null
+    defaultLanguage: $Enums.Language
+    outboundChannels: JsonValue
+    whatsappBusinessAccountId: string | null
+    whatsappPhoneNumberId: string | null
+    outboundDailyKdLimit: Decimal | null
     settings: JsonValue | null
     createdAt: Date
     updatedAt: Date
@@ -10405,6 +10453,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: boolean
     trialEndsAt?: boolean
+    defaultLanguage?: boolean
+    outboundChannels?: boolean
+    whatsappBusinessAccountId?: boolean
+    whatsappPhoneNumberId?: boolean
+    outboundDailyKdLimit?: boolean
     settings?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -10486,6 +10539,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: boolean
     trialEndsAt?: boolean
+    defaultLanguage?: boolean
+    outboundChannels?: boolean
+    whatsappBusinessAccountId?: boolean
+    whatsappPhoneNumberId?: boolean
+    outboundDailyKdLimit?: boolean
     settings?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -10498,6 +10556,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: boolean
     trialEndsAt?: boolean
+    defaultLanguage?: boolean
+    outboundChannels?: boolean
+    whatsappBusinessAccountId?: boolean
+    whatsappPhoneNumberId?: boolean
+    outboundDailyKdLimit?: boolean
     settings?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -10655,6 +10718,11 @@ export namespace Prisma {
       designPartner: boolean
       monthlyOverrideKd: Prisma.Decimal | null
       trialEndsAt: Date | null
+      defaultLanguage: $Enums.Language
+      outboundChannels: Prisma.JsonValue
+      whatsappBusinessAccountId: string | null
+      whatsappPhoneNumberId: string | null
+      outboundDailyKdLimit: Prisma.Decimal | null
       settings: Prisma.JsonValue | null
       createdAt: Date
       updatedAt: Date
@@ -11125,6 +11193,11 @@ export namespace Prisma {
     readonly designPartner: FieldRef<"Tenant", 'Boolean'>
     readonly monthlyOverrideKd: FieldRef<"Tenant", 'Decimal'>
     readonly trialEndsAt: FieldRef<"Tenant", 'DateTime'>
+    readonly defaultLanguage: FieldRef<"Tenant", 'Language'>
+    readonly outboundChannels: FieldRef<"Tenant", 'Json'>
+    readonly whatsappBusinessAccountId: FieldRef<"Tenant", 'String'>
+    readonly whatsappPhoneNumberId: FieldRef<"Tenant", 'String'>
+    readonly outboundDailyKdLimit: FieldRef<"Tenant", 'Decimal'>
     readonly settings: FieldRef<"Tenant", 'Json'>
     readonly createdAt: FieldRef<"Tenant", 'DateTime'>
     readonly updatedAt: FieldRef<"Tenant", 'DateTime'>
@@ -15293,6 +15366,10 @@ export namespace Prisma {
     hireDate: Date | null
     photoUrl: string | null
     supervisorId: string | null
+    preferredLanguage: $Enums.Language | null
+    outboundOptIn: boolean | null
+    smsOptOut: boolean | null
+    expoPushToken: string | null
     monthlySalary: number | null
     monthlyOffDaysUsed: number | null
     offDaysResetMonth: string | null
@@ -15332,6 +15409,10 @@ export namespace Prisma {
     hireDate: Date | null
     photoUrl: string | null
     supervisorId: string | null
+    preferredLanguage: $Enums.Language | null
+    outboundOptIn: boolean | null
+    smsOptOut: boolean | null
+    expoPushToken: string | null
     monthlySalary: number | null
     monthlyOffDaysUsed: number | null
     offDaysResetMonth: string | null
@@ -15371,6 +15452,10 @@ export namespace Prisma {
     hireDate: number
     photoUrl: number
     supervisorId: number
+    preferredLanguage: number
+    outboundOptIn: number
+    smsOptOut: number
+    expoPushToken: number
     monthlySalary: number
     monthlyOffDaysUsed: number
     offDaysResetMonth: number
@@ -15422,6 +15507,10 @@ export namespace Prisma {
     hireDate?: true
     photoUrl?: true
     supervisorId?: true
+    preferredLanguage?: true
+    outboundOptIn?: true
+    smsOptOut?: true
+    expoPushToken?: true
     monthlySalary?: true
     monthlyOffDaysUsed?: true
     offDaysResetMonth?: true
@@ -15461,6 +15550,10 @@ export namespace Prisma {
     hireDate?: true
     photoUrl?: true
     supervisorId?: true
+    preferredLanguage?: true
+    outboundOptIn?: true
+    smsOptOut?: true
+    expoPushToken?: true
     monthlySalary?: true
     monthlyOffDaysUsed?: true
     offDaysResetMonth?: true
@@ -15500,6 +15593,10 @@ export namespace Prisma {
     hireDate?: true
     photoUrl?: true
     supervisorId?: true
+    preferredLanguage?: true
+    outboundOptIn?: true
+    smsOptOut?: true
+    expoPushToken?: true
     monthlySalary?: true
     monthlyOffDaysUsed?: true
     offDaysResetMonth?: true
@@ -15626,6 +15723,10 @@ export namespace Prisma {
     hireDate: Date
     photoUrl: string | null
     supervisorId: string | null
+    preferredLanguage: $Enums.Language
+    outboundOptIn: boolean
+    smsOptOut: boolean
+    expoPushToken: string | null
     monthlySalary: number | null
     monthlyOffDaysUsed: number
     offDaysResetMonth: string | null
@@ -15684,6 +15785,10 @@ export namespace Prisma {
     hireDate?: boolean
     photoUrl?: boolean
     supervisorId?: boolean
+    preferredLanguage?: boolean
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: boolean
     monthlySalary?: boolean
     monthlyOffDaysUsed?: boolean
     offDaysResetMonth?: boolean
@@ -15764,6 +15869,10 @@ export namespace Prisma {
     hireDate?: boolean
     photoUrl?: boolean
     supervisorId?: boolean
+    preferredLanguage?: boolean
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: boolean
     monthlySalary?: boolean
     monthlyOffDaysUsed?: boolean
     offDaysResetMonth?: boolean
@@ -15806,6 +15915,10 @@ export namespace Prisma {
     hireDate?: boolean
     photoUrl?: boolean
     supervisorId?: boolean
+    preferredLanguage?: boolean
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: boolean
     monthlySalary?: boolean
     monthlyOffDaysUsed?: boolean
     offDaysResetMonth?: boolean
@@ -15938,6 +16051,10 @@ export namespace Prisma {
       hireDate: Date
       photoUrl: string | null
       supervisorId: string | null
+      preferredLanguage: $Enums.Language
+      outboundOptIn: boolean
+      smsOptOut: boolean
+      expoPushToken: string | null
       monthlySalary: number | null
       monthlyOffDaysUsed: number
       offDaysResetMonth: string | null
@@ -16407,6 +16524,10 @@ export namespace Prisma {
     readonly hireDate: FieldRef<"Driver", 'DateTime'>
     readonly photoUrl: FieldRef<"Driver", 'String'>
     readonly supervisorId: FieldRef<"Driver", 'String'>
+    readonly preferredLanguage: FieldRef<"Driver", 'Language'>
+    readonly outboundOptIn: FieldRef<"Driver", 'Boolean'>
+    readonly smsOptOut: FieldRef<"Driver", 'Boolean'>
+    readonly expoPushToken: FieldRef<"Driver", 'String'>
     readonly monthlySalary: FieldRef<"Driver", 'Float'>
     readonly monthlyOffDaysUsed: FieldRef<"Driver", 'Int'>
     readonly offDaysResetMonth: FieldRef<"Driver", 'String'>
@@ -99629,6 +99750,11 @@ export namespace Prisma {
     designPartner: 'designPartner',
     monthlyOverrideKd: 'monthlyOverrideKd',
     trialEndsAt: 'trialEndsAt',
+    defaultLanguage: 'defaultLanguage',
+    outboundChannels: 'outboundChannels',
+    whatsappBusinessAccountId: 'whatsappBusinessAccountId',
+    whatsappPhoneNumberId: 'whatsappPhoneNumberId',
+    outboundDailyKdLimit: 'outboundDailyKdLimit',
     settings: 'settings',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -99686,6 +99812,10 @@ export namespace Prisma {
     hireDate: 'hireDate',
     photoUrl: 'photoUrl',
     supervisorId: 'supervisorId',
+    preferredLanguage: 'preferredLanguage',
+    outboundOptIn: 'outboundOptIn',
+    smsOptOut: 'smsOptOut',
+    expoPushToken: 'expoPushToken',
     monthlySalary: 'monthlySalary',
     monthlyOffDaysUsed: 'monthlyOffDaysUsed',
     offDaysResetMonth: 'offDaysResetMonth',
@@ -101165,19 +101295,19 @@ export namespace Prisma {
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull
+  };
+
+  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
   export const NullableJsonNullValueInput: {
     DbNull: typeof DbNull,
     JsonNull: typeof JsonNull
   };
 
   export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
-
-
-  export const JsonNullValueInput: {
-    JsonNull: typeof JsonNull
-  };
-
-  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
   export const QueryMode: {
@@ -101207,7 +101337,9 @@ export namespace Prisma {
 
   export const TenantOrderByRelevanceFieldEnum: {
     id: 'id',
-    name: 'name'
+    name: 'name',
+    whatsappBusinessAccountId: 'whatsappBusinessAccountId',
+    whatsappPhoneNumberId: 'whatsappPhoneNumberId'
   };
 
   export type TenantOrderByRelevanceFieldEnum = (typeof TenantOrderByRelevanceFieldEnum)[keyof typeof TenantOrderByRelevanceFieldEnum]
@@ -101247,6 +101379,7 @@ export namespace Prisma {
     batchNumber: 'batchNumber',
     photoUrl: 'photoUrl',
     supervisorId: 'supervisorId',
+    expoPushToken: 'expoPushToken',
     offDaysResetMonth: 'offDaysResetMonth',
     performanceTier: 'performanceTier',
     healthCertStatus: 'healthCertStatus',
@@ -102273,6 +102406,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Language'
+   */
+  export type EnumLanguageFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Language'>
+    
+
+
+  /**
+   * Reference to a field of type 'Language[]'
+   */
+  export type ListEnumLanguageFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Language[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Json'
    */
   export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
@@ -102922,6 +103069,11 @@ export namespace Prisma {
     designPartner?: BoolFilter<"Tenant"> | boolean
     monthlyOverrideKd?: DecimalNullableFilter<"Tenant"> | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: DateTimeNullableFilter<"Tenant"> | Date | string | null
+    defaultLanguage?: EnumLanguageFilter<"Tenant"> | $Enums.Language
+    outboundChannels?: JsonFilter<"Tenant">
+    whatsappBusinessAccountId?: StringNullableFilter<"Tenant"> | string | null
+    whatsappPhoneNumberId?: StringNullableFilter<"Tenant"> | string | null
+    outboundDailyKdLimit?: DecimalNullableFilter<"Tenant"> | Decimal | DecimalJsLike | number | string | null
     settings?: JsonNullableFilter<"Tenant">
     createdAt?: DateTimeFilter<"Tenant"> | Date | string
     updatedAt?: DateTimeFilter<"Tenant"> | Date | string
@@ -103002,6 +103154,11 @@ export namespace Prisma {
     designPartner?: SortOrder
     monthlyOverrideKd?: SortOrderInput | SortOrder
     trialEndsAt?: SortOrderInput | SortOrder
+    defaultLanguage?: SortOrder
+    outboundChannels?: SortOrder
+    whatsappBusinessAccountId?: SortOrderInput | SortOrder
+    whatsappPhoneNumberId?: SortOrderInput | SortOrder
+    outboundDailyKdLimit?: SortOrderInput | SortOrder
     settings?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -103086,6 +103243,11 @@ export namespace Prisma {
     designPartner?: BoolFilter<"Tenant"> | boolean
     monthlyOverrideKd?: DecimalNullableFilter<"Tenant"> | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: DateTimeNullableFilter<"Tenant"> | Date | string | null
+    defaultLanguage?: EnumLanguageFilter<"Tenant"> | $Enums.Language
+    outboundChannels?: JsonFilter<"Tenant">
+    whatsappBusinessAccountId?: StringNullableFilter<"Tenant"> | string | null
+    whatsappPhoneNumberId?: StringNullableFilter<"Tenant"> | string | null
+    outboundDailyKdLimit?: DecimalNullableFilter<"Tenant"> | Decimal | DecimalJsLike | number | string | null
     settings?: JsonNullableFilter<"Tenant">
     createdAt?: DateTimeFilter<"Tenant"> | Date | string
     updatedAt?: DateTimeFilter<"Tenant"> | Date | string
@@ -103166,6 +103328,11 @@ export namespace Prisma {
     designPartner?: SortOrder
     monthlyOverrideKd?: SortOrderInput | SortOrder
     trialEndsAt?: SortOrderInput | SortOrder
+    defaultLanguage?: SortOrder
+    outboundChannels?: SortOrder
+    whatsappBusinessAccountId?: SortOrderInput | SortOrder
+    whatsappPhoneNumberId?: SortOrderInput | SortOrder
+    outboundDailyKdLimit?: SortOrderInput | SortOrder
     settings?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -103186,6 +103353,11 @@ export namespace Prisma {
     designPartner?: BoolWithAggregatesFilter<"Tenant"> | boolean
     monthlyOverrideKd?: DecimalNullableWithAggregatesFilter<"Tenant"> | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: DateTimeNullableWithAggregatesFilter<"Tenant"> | Date | string | null
+    defaultLanguage?: EnumLanguageWithAggregatesFilter<"Tenant"> | $Enums.Language
+    outboundChannels?: JsonWithAggregatesFilter<"Tenant">
+    whatsappBusinessAccountId?: StringNullableWithAggregatesFilter<"Tenant"> | string | null
+    whatsappPhoneNumberId?: StringNullableWithAggregatesFilter<"Tenant"> | string | null
+    outboundDailyKdLimit?: DecimalNullableWithAggregatesFilter<"Tenant"> | Decimal | DecimalJsLike | number | string | null
     settings?: JsonNullableWithAggregatesFilter<"Tenant">
     createdAt?: DateTimeWithAggregatesFilter<"Tenant"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Tenant"> | Date | string
@@ -103430,6 +103602,10 @@ export namespace Prisma {
     hireDate?: DateTimeFilter<"Driver"> | Date | string
     photoUrl?: StringNullableFilter<"Driver"> | string | null
     supervisorId?: StringNullableFilter<"Driver"> | string | null
+    preferredLanguage?: EnumLanguageFilter<"Driver"> | $Enums.Language
+    outboundOptIn?: BoolFilter<"Driver"> | boolean
+    smsOptOut?: BoolFilter<"Driver"> | boolean
+    expoPushToken?: StringNullableFilter<"Driver"> | string | null
     monthlySalary?: FloatNullableFilter<"Driver"> | number | null
     monthlyOffDaysUsed?: IntFilter<"Driver"> | number
     offDaysResetMonth?: StringNullableFilter<"Driver"> | string | null
@@ -103509,6 +103685,10 @@ export namespace Prisma {
     hireDate?: SortOrder
     photoUrl?: SortOrderInput | SortOrder
     supervisorId?: SortOrderInput | SortOrder
+    preferredLanguage?: SortOrder
+    outboundOptIn?: SortOrder
+    smsOptOut?: SortOrder
+    expoPushToken?: SortOrderInput | SortOrder
     monthlySalary?: SortOrderInput | SortOrder
     monthlyOffDaysUsed?: SortOrder
     offDaysResetMonth?: SortOrderInput | SortOrder
@@ -103592,6 +103772,10 @@ export namespace Prisma {
     hireDate?: DateTimeFilter<"Driver"> | Date | string
     photoUrl?: StringNullableFilter<"Driver"> | string | null
     supervisorId?: StringNullableFilter<"Driver"> | string | null
+    preferredLanguage?: EnumLanguageFilter<"Driver"> | $Enums.Language
+    outboundOptIn?: BoolFilter<"Driver"> | boolean
+    smsOptOut?: BoolFilter<"Driver"> | boolean
+    expoPushToken?: StringNullableFilter<"Driver"> | string | null
     monthlySalary?: FloatNullableFilter<"Driver"> | number | null
     monthlyOffDaysUsed?: IntFilter<"Driver"> | number
     offDaysResetMonth?: StringNullableFilter<"Driver"> | string | null
@@ -103671,6 +103855,10 @@ export namespace Prisma {
     hireDate?: SortOrder
     photoUrl?: SortOrderInput | SortOrder
     supervisorId?: SortOrderInput | SortOrder
+    preferredLanguage?: SortOrder
+    outboundOptIn?: SortOrder
+    smsOptOut?: SortOrder
+    expoPushToken?: SortOrderInput | SortOrder
     monthlySalary?: SortOrderInput | SortOrder
     monthlyOffDaysUsed?: SortOrder
     offDaysResetMonth?: SortOrderInput | SortOrder
@@ -103718,6 +103906,10 @@ export namespace Prisma {
     hireDate?: DateTimeWithAggregatesFilter<"Driver"> | Date | string
     photoUrl?: StringNullableWithAggregatesFilter<"Driver"> | string | null
     supervisorId?: StringNullableWithAggregatesFilter<"Driver"> | string | null
+    preferredLanguage?: EnumLanguageWithAggregatesFilter<"Driver"> | $Enums.Language
+    outboundOptIn?: BoolWithAggregatesFilter<"Driver"> | boolean
+    smsOptOut?: BoolWithAggregatesFilter<"Driver"> | boolean
+    expoPushToken?: StringNullableWithAggregatesFilter<"Driver"> | string | null
     monthlySalary?: FloatNullableWithAggregatesFilter<"Driver"> | number | null
     monthlyOffDaysUsed?: IntWithAggregatesFilter<"Driver"> | number
     offDaysResetMonth?: StringNullableWithAggregatesFilter<"Driver"> | string | null
@@ -111534,6 +111726,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -111614,6 +111811,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -111694,6 +111896,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -111774,6 +111981,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -111854,6 +112066,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -111866,6 +112083,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -111878,6 +112100,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -112151,6 +112378,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -112230,6 +112461,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -112303,6 +112538,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -112382,6 +112621,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -112458,6 +112701,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -112494,6 +112741,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -112533,6 +112784,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -121129,6 +121384,51 @@ export namespace Prisma {
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
+
+  export type EnumLanguageFilter<$PrismaModel = never> = {
+    equals?: $Enums.Language | EnumLanguageFieldRefInput<$PrismaModel>
+    in?: $Enums.Language[] | ListEnumLanguageFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Language[] | ListEnumLanguageFieldRefInput<$PrismaModel>
+    not?: NestedEnumLanguageFilter<$PrismaModel> | $Enums.Language
+  }
+  export type JsonFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type StringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    search?: string
+    mode?: QueryMode
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
   export type JsonNullableFilter<$PrismaModel = never> = 
     | PatchUndefined<
         Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
@@ -121856,6 +122156,11 @@ export namespace Prisma {
     designPartner?: SortOrder
     monthlyOverrideKd?: SortOrder
     trialEndsAt?: SortOrder
+    defaultLanguage?: SortOrder
+    outboundChannels?: SortOrder
+    whatsappBusinessAccountId?: SortOrder
+    whatsappPhoneNumberId?: SortOrder
+    outboundDailyKdLimit?: SortOrder
     settings?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -121863,6 +122168,7 @@ export namespace Prisma {
 
   export type TenantAvgOrderByAggregateInput = {
     monthlyOverrideKd?: SortOrder
+    outboundDailyKdLimit?: SortOrder
   }
 
   export type TenantMaxOrderByAggregateInput = {
@@ -121872,6 +122178,10 @@ export namespace Prisma {
     designPartner?: SortOrder
     monthlyOverrideKd?: SortOrder
     trialEndsAt?: SortOrder
+    defaultLanguage?: SortOrder
+    whatsappBusinessAccountId?: SortOrder
+    whatsappPhoneNumberId?: SortOrder
+    outboundDailyKdLimit?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -121883,12 +122193,17 @@ export namespace Prisma {
     designPartner?: SortOrder
     monthlyOverrideKd?: SortOrder
     trialEndsAt?: SortOrder
+    defaultLanguage?: SortOrder
+    whatsappBusinessAccountId?: SortOrder
+    whatsappPhoneNumberId?: SortOrder
+    outboundDailyKdLimit?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type TenantSumOrderByAggregateInput = {
     monthlyOverrideKd?: SortOrder
+    outboundDailyKdLimit?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -121956,6 +122271,60 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type EnumLanguageWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Language | EnumLanguageFieldRefInput<$PrismaModel>
+    in?: $Enums.Language[] | ListEnumLanguageFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Language[] | ListEnumLanguageFieldRefInput<$PrismaModel>
+    not?: NestedEnumLanguageWithAggregatesFilter<$PrismaModel> | $Enums.Language
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLanguageFilter<$PrismaModel>
+    _max?: NestedEnumLanguageFilter<$PrismaModel>
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
+  }
+
+  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    search?: string
+    mode?: QueryMode
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
   }
   export type JsonNullableWithAggregatesFilter<$PrismaModel = never> = 
     | PatchUndefined<
@@ -122093,22 +122462,6 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
-  export type StringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    search?: string
-    mode?: QueryMode
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
   export type EnumUserRoleFilter<$PrismaModel = never> = {
     equals?: $Enums.UserRole | EnumUserRoleFieldRefInput<$PrismaModel>
     in?: $Enums.UserRole[] | ListEnumUserRoleFieldRefInput<$PrismaModel>
@@ -122178,25 +122531,6 @@ export namespace Prisma {
     lastLoginAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-  }
-
-  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    search?: string
-    mode?: QueryMode
-    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type EnumUserRoleWithAggregatesFilter<$PrismaModel = never> = {
@@ -122326,6 +122660,10 @@ export namespace Prisma {
     hireDate?: SortOrder
     photoUrl?: SortOrder
     supervisorId?: SortOrder
+    preferredLanguage?: SortOrder
+    outboundOptIn?: SortOrder
+    smsOptOut?: SortOrder
+    expoPushToken?: SortOrder
     monthlySalary?: SortOrder
     monthlyOffDaysUsed?: SortOrder
     offDaysResetMonth?: SortOrder
@@ -122370,6 +122708,10 @@ export namespace Prisma {
     hireDate?: SortOrder
     photoUrl?: SortOrder
     supervisorId?: SortOrder
+    preferredLanguage?: SortOrder
+    outboundOptIn?: SortOrder
+    smsOptOut?: SortOrder
+    expoPushToken?: SortOrder
     monthlySalary?: SortOrder
     monthlyOffDaysUsed?: SortOrder
     offDaysResetMonth?: SortOrder
@@ -122409,6 +122751,10 @@ export namespace Prisma {
     hireDate?: SortOrder
     photoUrl?: SortOrder
     supervisorId?: SortOrder
+    preferredLanguage?: SortOrder
+    outboundOptIn?: SortOrder
+    smsOptOut?: SortOrder
+    expoPushToken?: SortOrder
     monthlySalary?: SortOrder
     monthlyOffDaysUsed?: SortOrder
     offDaysResetMonth?: SortOrder
@@ -123346,28 +123692,6 @@ export namespace Prisma {
     _min?: NestedEnumCashTransactionTypeFilter<$PrismaModel>
     _max?: NestedEnumCashTransactionTypeFilter<$PrismaModel>
   }
-  export type JsonFilter<$PrismaModel = never> = 
-    | PatchUndefined<
-        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
 
   export type EnumLedgerStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.LedgerStatus | EnumLedgerStatusFieldRefInput<$PrismaModel>
@@ -123464,31 +123788,6 @@ export namespace Prisma {
     incentives?: SortOrder
     adjustments?: SortOrder
     closingBalance?: SortOrder
-  }
-  export type JsonWithAggregatesFilter<$PrismaModel = never> = 
-    | PatchUndefined<
-        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedJsonFilter<$PrismaModel>
-    _max?: NestedJsonFilter<$PrismaModel>
   }
 
   export type EnumLedgerStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -129228,6 +129527,14 @@ export namespace Prisma {
     set?: Date | string | null
   }
 
+  export type EnumLanguageFieldUpdateOperationsInput = {
+    set?: $Enums.Language
+  }
+
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
+  }
+
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
   }
@@ -131508,10 +131815,6 @@ export namespace Prisma {
     connectOrCreate?: ScheduledBriefingCreateOrConnectWithoutCreatorInput | ScheduledBriefingCreateOrConnectWithoutCreatorInput[]
     createMany?: ScheduledBriefingCreateManyCreatorInputEnvelope
     connect?: ScheduledBriefingWhereUniqueInput | ScheduledBriefingWhereUniqueInput[]
-  }
-
-  export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null
   }
 
   export type EnumUserRoleFieldUpdateOperationsInput = {
@@ -137617,6 +137920,28 @@ export namespace Prisma {
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
+  export type NestedEnumLanguageFilter<$PrismaModel = never> = {
+    equals?: $Enums.Language | EnumLanguageFieldRefInput<$PrismaModel>
+    in?: $Enums.Language[] | ListEnumLanguageFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Language[] | ListEnumLanguageFieldRefInput<$PrismaModel>
+    not?: NestedEnumLanguageFilter<$PrismaModel> | $Enums.Language
+  }
+
+  export type NestedStringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    search?: string
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -137715,6 +138040,56 @@ export namespace Prisma {
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
+
+  export type NestedEnumLanguageWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Language | EnumLanguageFieldRefInput<$PrismaModel>
+    in?: $Enums.Language[] | ListEnumLanguageFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Language[] | ListEnumLanguageFieldRefInput<$PrismaModel>
+    not?: NestedEnumLanguageWithAggregatesFilter<$PrismaModel> | $Enums.Language
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLanguageFilter<$PrismaModel>
+    _max?: NestedEnumLanguageFilter<$PrismaModel>
+  }
+  export type NestedJsonFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    search?: string
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
   export type NestedJsonNullableFilter<$PrismaModel = never> = 
     | PatchUndefined<
         Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
@@ -137796,44 +138171,11 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
-  export type NestedStringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    search?: string
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
   export type NestedEnumUserRoleFilter<$PrismaModel = never> = {
     equals?: $Enums.UserRole | EnumUserRoleFieldRefInput<$PrismaModel>
     in?: $Enums.UserRole[] | ListEnumUserRoleFieldRefInput<$PrismaModel>
     notIn?: $Enums.UserRole[] | ListEnumUserRoleFieldRefInput<$PrismaModel>
     not?: NestedEnumUserRoleFilter<$PrismaModel> | $Enums.UserRole
-  }
-
-  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    search?: string
-    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type NestedEnumUserRoleWithAggregatesFilter<$PrismaModel = never> = {
@@ -138138,28 +138480,6 @@ export namespace Prisma {
     in?: $Enums.LedgerStatus[] | ListEnumLedgerStatusFieldRefInput<$PrismaModel>
     notIn?: $Enums.LedgerStatus[] | ListEnumLedgerStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumLedgerStatusFilter<$PrismaModel> | $Enums.LedgerStatus
-  }
-  export type NestedJsonFilter<$PrismaModel = never> = 
-    | PatchUndefined<
-        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
-        Required<NestedJsonFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
-
-  export type NestedJsonFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
   export type NestedEnumLedgerStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -138798,6 +139118,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -138875,6 +139199,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -141802,6 +142130,10 @@ export namespace Prisma {
     hireDate?: DateTimeFilter<"Driver"> | Date | string
     photoUrl?: StringNullableFilter<"Driver"> | string | null
     supervisorId?: StringNullableFilter<"Driver"> | string | null
+    preferredLanguage?: EnumLanguageFilter<"Driver"> | $Enums.Language
+    outboundOptIn?: BoolFilter<"Driver"> | boolean
+    smsOptOut?: BoolFilter<"Driver"> | boolean
+    expoPushToken?: StringNullableFilter<"Driver"> | string | null
     monthlySalary?: FloatNullableFilter<"Driver"> | number | null
     monthlyOffDaysUsed?: IntFilter<"Driver"> | number
     offDaysResetMonth?: StringNullableFilter<"Driver"> | string | null
@@ -144150,6 +144482,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -144229,6 +144566,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -144319,6 +144661,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -144396,6 +144742,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -144642,6 +144992,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -144721,6 +145076,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -144864,6 +145224,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -144943,6 +145308,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -145033,6 +145403,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -145110,6 +145484,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -145724,6 +146102,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -145803,6 +146186,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -146104,6 +146492,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -146183,6 +146576,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -148018,6 +148416,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -148097,6 +148500,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -149038,6 +149446,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -149117,6 +149530,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -149207,6 +149625,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -149285,6 +149707,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -149367,6 +149793,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -149446,6 +149877,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -149542,6 +149978,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -149620,6 +150060,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -149692,6 +150136,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -149770,6 +150218,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -149858,6 +150310,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -149936,6 +150392,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -150002,6 +150462,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -150081,6 +150546,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -150209,6 +150679,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -150288,6 +150763,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -150406,6 +150886,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -150485,6 +150970,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -150608,6 +151098,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -150686,6 +151180,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -150984,6 +151482,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -151063,6 +151566,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -151198,6 +151706,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -151276,6 +151788,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -151422,6 +151938,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -151501,6 +152022,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -151591,6 +152117,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -151669,6 +152199,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -151921,6 +152455,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -152000,6 +152539,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -152096,6 +152640,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -152174,6 +152722,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -152288,6 +152840,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -152367,6 +152924,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -152457,6 +153019,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -152535,6 +153101,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -152682,6 +153252,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -152761,6 +153336,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -152857,6 +153437,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -152935,6 +153519,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -153072,6 +153660,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -153151,6 +153744,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -153241,6 +153839,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -153319,6 +153921,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -153466,6 +154072,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -153545,6 +154156,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -153641,6 +154257,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -153719,6 +154339,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -153856,6 +154480,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -153935,6 +154564,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -154025,6 +154659,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -154103,6 +154741,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -154185,6 +154827,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -154264,6 +154911,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -154360,6 +155012,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -154438,6 +155094,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -154504,6 +155164,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -154583,6 +155248,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -154673,6 +155343,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -154751,6 +155425,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -154833,6 +155511,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -154912,6 +155595,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -155008,6 +155696,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -155086,6 +155778,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -155152,6 +155848,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -155231,6 +155932,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -155321,6 +156027,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -155399,6 +156109,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -155481,6 +156195,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -155560,6 +156279,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -155656,6 +156380,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -155734,6 +156462,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -155800,6 +156532,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -155879,6 +156616,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -156028,6 +156770,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -156106,6 +156852,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -156188,6 +156938,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -156267,6 +157022,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -156428,6 +157188,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -156506,6 +157270,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -156572,6 +157340,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -156651,6 +157424,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -156800,6 +157578,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -156878,6 +157660,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -157019,6 +157805,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -157098,6 +157889,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -157259,6 +158055,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -157337,6 +158137,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -157474,6 +158278,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -157552,6 +158360,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -157790,6 +158602,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -157868,6 +158684,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -158014,6 +158834,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -158093,6 +158918,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -158183,6 +159013,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -158261,6 +159095,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -158392,6 +159230,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -158471,6 +159314,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -158567,6 +159415,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -158645,6 +159497,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -158821,6 +159677,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -158899,6 +159759,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -159042,6 +159906,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -159120,6 +159988,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -159241,6 +160113,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -159319,6 +160195,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -159462,6 +160342,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -159540,6 +160424,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -159661,6 +160549,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -159739,6 +160631,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -159882,6 +160778,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -159960,6 +160860,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -160258,6 +161162,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -160337,6 +161246,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -160427,6 +161341,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -160505,6 +161423,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -160587,6 +161509,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -160666,6 +161593,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -160762,6 +161694,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -160840,6 +161776,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -160906,6 +161846,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -160985,6 +161930,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -161075,6 +162025,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -161153,6 +162107,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -161355,6 +162313,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -161434,6 +162397,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -161530,6 +162498,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -161608,6 +162580,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -161806,6 +162782,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -161885,6 +162866,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -161980,6 +162966,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -162059,6 +163050,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -162138,6 +163134,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -162217,6 +163218,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -162312,6 +163318,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -162391,6 +163402,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -162470,6 +163486,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -162549,6 +163570,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -162639,6 +163665,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -162717,6 +163747,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -162949,6 +163983,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -163027,6 +164065,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -163168,6 +164210,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -163247,6 +164294,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -163343,6 +164395,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -163421,6 +164477,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -163677,6 +164737,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -163755,6 +164819,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -163886,6 +164954,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -163965,6 +165038,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -164055,6 +165133,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -164133,6 +165215,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -164276,6 +165362,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -164355,6 +165446,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -164451,6 +165547,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -164529,6 +165629,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -164662,6 +165766,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -164741,6 +165850,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -164831,6 +165945,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -164909,6 +166027,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -165136,6 +166258,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -165215,6 +166342,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -165311,6 +166443,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -165389,6 +166525,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -165558,6 +166698,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -165637,6 +166782,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -165727,6 +166877,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -165805,6 +166959,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -165954,6 +167112,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -166033,6 +167196,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -166129,6 +167297,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -166207,6 +167379,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -166352,6 +167528,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -166430,6 +167610,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -166585,6 +167769,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -166663,6 +167851,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -166802,6 +167994,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -166881,6 +168078,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -166971,6 +168173,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -167049,6 +168255,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -167131,6 +168341,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -167210,6 +168425,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -167306,6 +168526,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -167384,6 +168608,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -167450,6 +168678,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -167529,6 +168762,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -167624,6 +168862,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -167703,6 +168946,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -167782,6 +169030,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -167861,6 +169114,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -167951,6 +169209,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -168029,6 +169291,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -168111,6 +169377,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -168190,6 +169461,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -168286,6 +169562,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -168364,6 +169644,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -168430,6 +169714,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -168509,6 +169798,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -168599,6 +169893,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -168677,6 +169975,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -168759,6 +170061,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -168838,6 +170145,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -168934,6 +170246,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -169012,6 +170328,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -169078,6 +170398,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -169157,6 +170482,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -169252,6 +170582,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -169331,6 +170666,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -169410,6 +170750,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -169489,6 +170834,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -169584,6 +170934,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -169663,6 +171018,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -169742,6 +171102,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -169821,6 +171186,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -169911,6 +171281,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -169989,6 +171363,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -170149,6 +171527,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -170228,6 +171611,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -170324,6 +171712,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -170402,6 +171794,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -170558,6 +171954,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -170637,6 +172038,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -170866,6 +172272,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -170945,6 +172356,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -171072,6 +172488,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -171151,6 +172572,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -171363,6 +172789,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -171442,6 +172873,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -171590,6 +173026,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -171669,6 +173110,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -171800,6 +173246,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -171879,6 +173330,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -171974,6 +173430,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -172053,6 +173514,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -172279,6 +173745,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -172358,6 +173829,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -172586,6 +174062,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -172665,6 +174146,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -172755,6 +174241,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -172833,6 +174323,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -172962,6 +174456,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -173041,6 +174540,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -173137,6 +174641,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -173215,6 +174723,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -173334,6 +174846,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -173413,6 +174930,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -173508,6 +175030,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -173587,6 +175114,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -173666,6 +175198,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -173745,6 +175282,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -173876,6 +175418,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -173955,6 +175502,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -174050,6 +175602,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -174129,6 +175686,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -174219,6 +175781,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -174297,6 +175863,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -174414,6 +175984,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -174493,6 +176068,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -174589,6 +176169,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -174667,6 +176251,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -174774,6 +176362,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -174853,6 +176446,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -175009,6 +176607,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -175088,6 +176691,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -175234,6 +176842,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -175313,6 +176926,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -175408,6 +177026,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -175487,6 +177110,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -175566,6 +177194,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -175645,6 +177278,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -175740,6 +177378,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -175819,6 +177462,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -175898,6 +177546,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -175977,6 +177630,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -176067,6 +177725,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -176145,6 +177807,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -176227,6 +177893,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -176306,6 +177977,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -176402,6 +178078,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -176480,6 +178160,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -176546,6 +178230,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -176625,6 +178314,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -176715,6 +178409,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -176793,6 +178491,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -176942,6 +178644,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -177021,6 +178728,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -177117,6 +178829,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -177195,6 +178911,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -177293,6 +179013,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -177372,6 +179097,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -177462,6 +179192,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -177540,6 +179274,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -177671,6 +179409,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -177750,6 +179493,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -177846,6 +179594,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -177924,6 +179676,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -178006,6 +179762,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -178085,6 +179846,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -178229,6 +179995,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -178308,6 +180079,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -178442,6 +180218,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -178521,6 +180302,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -178616,6 +180402,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -178695,6 +180486,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -178774,6 +180570,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -178853,6 +180654,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -178943,6 +180749,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -179021,6 +180831,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -179103,6 +180917,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -179182,6 +181001,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -179278,6 +181102,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -179356,6 +181184,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -179422,6 +181254,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -179501,6 +181338,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -179596,6 +181438,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -179675,6 +181522,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -179754,6 +181606,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -179833,6 +181690,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -179928,6 +181790,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -180007,6 +181874,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -180086,6 +181958,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -180165,6 +182042,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -180255,6 +182137,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -180333,6 +182219,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -180415,6 +182305,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -180494,6 +182389,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -180590,6 +182490,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -180668,6 +182572,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -180734,6 +182642,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -180813,6 +182726,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -180908,6 +182826,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -180987,6 +182910,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -181066,6 +182994,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -181145,6 +183078,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -181240,6 +183178,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -181319,6 +183262,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -181398,6 +183346,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -181477,6 +183430,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -181690,6 +183648,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -181769,6 +183732,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -181973,6 +183941,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -182052,6 +184025,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -182268,6 +184246,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -182347,6 +184330,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -182702,6 +184690,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -182781,6 +184774,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -182910,6 +184908,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -182988,6 +184990,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -183070,6 +185076,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -183149,6 +185160,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -183290,6 +185306,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -183368,6 +185388,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -183434,6 +185458,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -183513,6 +185542,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -183712,6 +185746,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -183791,6 +185830,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -183964,6 +186008,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -184043,6 +186092,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -184179,6 +186233,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -184258,6 +186317,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -184384,6 +186448,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -184463,6 +186532,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -184599,6 +186673,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -184678,6 +186757,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -184804,6 +186888,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -184883,6 +186972,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -185152,6 +187246,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -185231,6 +187330,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -185489,6 +187593,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -185568,6 +187677,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -185710,6 +187824,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -185789,6 +187908,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -185921,6 +188045,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -186000,6 +188129,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -186247,6 +188381,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -186326,6 +188465,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -186541,6 +188685,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -186620,6 +188769,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -186762,6 +188916,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -186841,6 +189000,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -186973,6 +189137,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -187052,6 +189221,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -187208,6 +189382,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -187287,6 +189466,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -187433,6 +189617,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -187512,6 +189701,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -187602,6 +189796,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -187680,6 +189878,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -187762,6 +189964,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -187841,6 +190048,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -187937,6 +190149,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -188015,6 +190231,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -188081,6 +190301,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -188160,6 +190385,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -188316,6 +190546,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -188395,6 +190630,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -188541,6 +190781,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -188620,6 +190865,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -188859,6 +191109,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -188938,6 +191193,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -189145,6 +191405,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -189224,6 +191489,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -189411,6 +191681,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -189490,6 +191765,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -189673,6 +191953,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -189752,6 +192037,11 @@ export namespace Prisma {
     designPartner?: boolean
     monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -189946,6 +192236,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -190025,6 +192320,11 @@ export namespace Prisma {
     designPartner?: BoolFieldUpdateOperationsInput | boolean
     monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     settings?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -190220,6 +192520,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -191380,6 +193684,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -191457,6 +193765,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -191532,6 +193844,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -194685,6 +197001,10 @@ export namespace Prisma {
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -194780,6 +197100,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -194857,6 +197181,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -194932,6 +197260,10 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -195157,6 +197489,10 @@ export namespace Prisma {
     status?: $Enums.DriverStatus
     hireDate: Date | string
     photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
     monthlySalary?: number | null
     monthlyOffDaysUsed?: number
     offDaysResetMonth?: string | null
@@ -195393,6 +197729,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -195470,6 +197810,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
@@ -195545,6 +197889,10 @@ export namespace Prisma {
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
     monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
     monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
     offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
