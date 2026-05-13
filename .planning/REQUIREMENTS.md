@@ -153,7 +153,7 @@ Phase mappings for v1 requirements. Each REQ maps to exactly one phase. Status s
 | REQ-mobile-active-platform-detection | Phase 5 | Pending |
 | REQ-mobile-delivery-photo-capture | Phase 5 | Pending |
 | REQ-ingest-adapter-layer | Phase 6 | Complete |
-| REQ-floor-live-map | Phase 7 | Pending |
+| REQ-floor-live-map | Phase 7 | In Progress (Wave 0 RED tests landed; Waves 1-4 turn them GREEN) |
 | REQ-finance-cash-workbench | Phase 8 | Pending |
 | REQ-finance-payroll | Phase 8 | Pending |
 | REQ-finance-invoices | Phase 8 | Pending |

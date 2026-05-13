@@ -167,7 +167,7 @@ Plans:
   5. Map state updates in real time via WebSocket; existing SSE notifications continue to work in parallel.
 **Plans**: 5 plans
 Plans:
-- [ ] 07-00-PLAN.md — Wave 0: RED tests (10 backend + 8 frontend) + shared fixtures
+- [x] 07-00-PLAN.md — Wave 0: RED tests (10 backend + 8 frontend) + shared fixtures
 - [ ] 07-01-PLAN.md — Wave 1: Backend wire-in (DarbEventType extension, publishEvent in POST /api/agent/location, liveFleetStatus.orderRejectionCount, orderRejectionToday tool, /api/floor router with /snapshot + /counters + /ping)
 - [ ] 07-02-PLAN.md — Wave 2: Frontend foundation (pin react-leaflet@4.2.1 + react-leaflet-cluster@2.1.0, types/floor.ts, LiveFloorMap, CourierMarker, useFloorRealtime hook)
 - [ ] 07-03-PLAN.md — Wave 3: UI composition (/floor route, LiveFloorPage, FloorPillCounters, FloorFilters, CourierDetailPanel, PingButton, FloorListOverlay)
@@ -221,7 +221,13 @@ Plans:
   3. The agent's per-tenant `AgentMemory` accumulates owner preferences, courier history notes, and decision patterns; querying the agent ("what does the owner usually do with 3-strike absentees?") returns a memory-grounded answer.
   4. Anomaly detection from `aiAnomalyService` feeds Decisions as the primary signal source — at least 70% of inbox cards trace to an anomaly the service flagged.
   5. Formal partner-API conversations with Keeta and Talabat are initiated (gated by 5+ paying fleets and the legal posture confirmed by founder per PRD section 13 question 6).
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [ ] 11-00-PLAN.md — Wave 0: Additive Tenant migration (5 cols) + 9 RED test scaffolds + lint:tenant glob extension
+- [ ] 11-01-PLAN.md — Wave 1: Scheduled briefings (4 narrator prompts + cache-control 1h + email fan-out + 429 retry + briefingProvisionService + onboarding hook)
+- [ ] 11-02-PLAN.md — Wave 2: Trust graduation gate inserted at registry.ts:148 + memoryCompactor + memoryPruneWorker (03:00 cron) + /admin/trust route + system:auto-approve user
+- [ ] 11-03-PLAN.md — Wave 3: Partner-API framework — KeetaPartnerApiAdapter (live + 30d backfill) + Talabat/Deliveroo NotAvailable stubs + 06:00 cron + /admin/partnerApi routes
+- [ ] 11-04-PLAN.md — Wave 4: DI-01-01 closeout (184 lint:tenant violations triaged across 35 files) + DI-01-02 closeout (surgical CREATE TABLE IF NOT EXISTS prepends on 2 baseline migrations) + Phase 11 migration applied + VERIFICATION.md
 
 ### Phase 12: Owner-Authored Standing Rules + Forecasting
 **Goal**: Q4 milestone — ship the v3 autonomy primitive: owner-authored standing rules ("auto-warn 3-strike absentees"). The owner authors a rule once; the agent runs it forever; the owner gets a weekly digest of what the agent did. Add the two forecasting read tools (`forecastDemand`, `forecastSupplyGap`). Exit at 10 paying fleets, KSA market validation begun.
