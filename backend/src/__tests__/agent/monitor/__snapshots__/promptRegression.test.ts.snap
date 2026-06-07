@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`REQ-agent-action-drafting: gold-set prompt regression eval 06 — dismissed 2 days ago (suppression) → 0 proposals: 06 — dismissed 2 days ago (suppression) → 0 proposals 1`] = `
+{
+  "fixture": "06 — dismissed 2 days ago (suppression) → 0 proposals",
+  "proposals": [],
+}
+`;
+
+exports[`REQ-agent-action-drafting: gold-set prompt regression eval 07 — empty fleet → 0 proposals: 07 — empty fleet → 0 proposals 1`] = `
+{
+  "fixture": "07 — empty fleet → 0 proposals",
+  "proposals": [],
+}
+`;
