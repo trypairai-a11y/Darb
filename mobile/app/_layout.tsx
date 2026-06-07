@@ -38,6 +38,7 @@ export default function RootLayout() {
       <Stack.Screen name="ticket-detail" />
       <Stack.Screen name="submit-ticket" />
       <Stack.Screen name="profile" />
+      <Stack.Screen name="notifications" />
       <Stack.Screen name="(tabs)" />
     </Stack>
   );

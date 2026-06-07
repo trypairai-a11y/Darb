@@ -54,6 +54,11 @@ export type RecruitmentPipeline = $Result.DefaultSelection<Prisma.$RecruitmentPi
  */
 export type Vehicle = $Result.DefaultSelection<Prisma.$VehiclePayload>
 /**
+ * Model VehicleDriverAssignment
+ * 
+ */
+export type VehicleDriverAssignment = $Result.DefaultSelection<Prisma.$VehicleDriverAssignmentPayload>
+/**
  * Model Shift
  * 
  */
@@ -223,6 +228,12 @@ export type AmericanaContract = $Result.DefaultSelection<Prisma.$AmericanaContra
  * 
  */
 export type AmericanaChainRate = $Result.DefaultSelection<Prisma.$AmericanaChainRatePayload>
+/**
+ * Model DriverBatchHistory
+ * Weekly batch assignment changes per driver. Appended whenever a driver's
+ * batchNumber is updated, so the driver file can show the full batch timeline.
+ */
+export type DriverBatchHistory = $Result.DefaultSelection<Prisma.$DriverBatchHistoryPayload>
 /**
  * Model AmericanaStoreAssignment
  * 
@@ -505,6 +516,16 @@ export const InventoryItemType: {
 };
 
 export type InventoryItemType = (typeof InventoryItemType)[keyof typeof InventoryItemType]
+
+
+export const EquipmentCondition: {
+  OK: 'OK',
+  DAMAGED: 'DAMAGED',
+  CHANGED: 'CHANGED',
+  CHANGE_REQUESTED: 'CHANGE_REQUESTED'
+};
+
+export type EquipmentCondition = (typeof EquipmentCondition)[keyof typeof EquipmentCondition]
 
 
 export const RecruitmentStage: {
@@ -941,6 +962,10 @@ export type InventoryItemType = $Enums.InventoryItemType
 
 export const InventoryItemType: typeof $Enums.InventoryItemType
 
+export type EquipmentCondition = $Enums.EquipmentCondition
+
+export const EquipmentCondition: typeof $Enums.EquipmentCondition
+
 export type RecruitmentStage = $Enums.RecruitmentStage
 
 export const RecruitmentStage: typeof $Enums.RecruitmentStage
@@ -1293,6 +1318,16 @@ export class PrismaClient<
   get vehicle(): Prisma.VehicleDelegate<ExtArgs>;
 
   /**
+   * `prisma.vehicleDriverAssignment`: Exposes CRUD operations for the **VehicleDriverAssignment** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more VehicleDriverAssignments
+    * const vehicleDriverAssignments = await prisma.vehicleDriverAssignment.findMany()
+    * ```
+    */
+  get vehicleDriverAssignment(): Prisma.VehicleDriverAssignmentDelegate<ExtArgs>;
+
+  /**
    * `prisma.shift`: Exposes CRUD operations for the **Shift** model.
     * Example usage:
     * ```ts
@@ -1631,6 +1666,16 @@ export class PrismaClient<
     * ```
     */
   get americanaChainRate(): Prisma.AmericanaChainRateDelegate<ExtArgs>;
+
+  /**
+   * `prisma.driverBatchHistory`: Exposes CRUD operations for the **DriverBatchHistory** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more DriverBatchHistories
+    * const driverBatchHistories = await prisma.driverBatchHistory.findMany()
+    * ```
+    */
+  get driverBatchHistory(): Prisma.DriverBatchHistoryDelegate<ExtArgs>;
 
   /**
    * `prisma.americanaStoreAssignment`: Exposes CRUD operations for the **AmericanaStoreAssignment** model.
@@ -2460,6 +2505,7 @@ export namespace Prisma {
     DriverInventory: 'DriverInventory',
     RecruitmentPipeline: 'RecruitmentPipeline',
     Vehicle: 'Vehicle',
+    VehicleDriverAssignment: 'VehicleDriverAssignment',
     Shift: 'Shift',
     AttendanceRecord: 'AttendanceRecord',
     OrderLog: 'OrderLog',
@@ -2494,6 +2540,7 @@ export namespace Prisma {
     AmericanaStore: 'AmericanaStore',
     AmericanaContract: 'AmericanaContract',
     AmericanaChainRate: 'AmericanaChainRate',
+    DriverBatchHistory: 'DriverBatchHistory',
     AmericanaStoreAssignment: 'AmericanaStoreAssignment',
     AmericanaDailyIngestion: 'AmericanaDailyIngestion',
     KpiDefinition: 'KpiDefinition',
@@ -2547,7 +2594,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "tenant" | "company" | "user" | "driver" | "driverRestriction" | "driverInventory" | "recruitmentPipeline" | "vehicle" | "shift" | "attendanceRecord" | "orderLog" | "cashRecord" | "cashTransaction" | "pendingDuesLedger" | "vehicleInspection" | "maintenanceRecord" | "device" | "sim" | "capturedOrder" | "locationLog" | "appUsageLog" | "deviceCommand" | "aiScore" | "alert" | "aiDigest" | "auditLog" | "ticket" | "leaveRequest" | "talabatSession" | "talabatViolationEvent" | "talabatDelivery" | "keetaDailyMetrics" | "ingestRun" | "deliverooDailyMetrics" | "talabatDailyMetrics" | "platformSettings" | "platformInventory" | "americanaDailyOrders" | "americanaChain" | "americanaStore" | "americanaContract" | "americanaChainRate" | "americanaStoreAssignment" | "americanaDailyIngestion" | "kpiDefinition" | "kpiRecord" | "notification" | "notificationDelivery" | "notificationRule" | "courierOnlineSession" | "violation" | "penalty" | "appeal" | "orderEvent" | "aiInsight" | "demandHeatmap" | "deliveryArea" | "courierAttendanceSlot" | "keetaAvailableShiftSlot" | "shiftComplianceConfig" | "partner" | "partnerBankAccount" | "incentiveTargetRound" | "incentiveGoal" | "incentiveTier" | "courierIncentivePayout" | "billing" | "taxInvoice" | "paymentWithdrawal" | "agentRunLog" | "agentToolCall" | "pendingAgentAction" | "agentAction" | "agentMemory" | "pinnedView" | "performanceSnapshot" | "metricEvent" | "chatThread" | "chatMessage" | "scheduledBriefing"
+      modelProps: "tenant" | "company" | "user" | "driver" | "driverRestriction" | "driverInventory" | "recruitmentPipeline" | "vehicle" | "vehicleDriverAssignment" | "shift" | "attendanceRecord" | "orderLog" | "cashRecord" | "cashTransaction" | "pendingDuesLedger" | "vehicleInspection" | "maintenanceRecord" | "device" | "sim" | "capturedOrder" | "locationLog" | "appUsageLog" | "deviceCommand" | "aiScore" | "alert" | "aiDigest" | "auditLog" | "ticket" | "leaveRequest" | "talabatSession" | "talabatViolationEvent" | "talabatDelivery" | "keetaDailyMetrics" | "ingestRun" | "deliverooDailyMetrics" | "talabatDailyMetrics" | "platformSettings" | "platformInventory" | "americanaDailyOrders" | "americanaChain" | "americanaStore" | "americanaContract" | "americanaChainRate" | "driverBatchHistory" | "americanaStoreAssignment" | "americanaDailyIngestion" | "kpiDefinition" | "kpiRecord" | "notification" | "notificationDelivery" | "notificationRule" | "courierOnlineSession" | "violation" | "penalty" | "appeal" | "orderEvent" | "aiInsight" | "demandHeatmap" | "deliveryArea" | "courierAttendanceSlot" | "keetaAvailableShiftSlot" | "shiftComplianceConfig" | "partner" | "partnerBankAccount" | "incentiveTargetRound" | "incentiveGoal" | "incentiveTier" | "courierIncentivePayout" | "billing" | "taxInvoice" | "paymentWithdrawal" | "agentRunLog" | "agentToolCall" | "pendingAgentAction" | "agentAction" | "agentMemory" | "pinnedView" | "performanceSnapshot" | "metricEvent" | "chatThread" | "chatMessage" | "scheduledBriefing"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3108,6 +3155,76 @@ export namespace Prisma {
           count: {
             args: Prisma.VehicleCountArgs<ExtArgs>
             result: $Utils.Optional<VehicleCountAggregateOutputType> | number
+          }
+        }
+      }
+      VehicleDriverAssignment: {
+        payload: Prisma.$VehicleDriverAssignmentPayload<ExtArgs>
+        fields: Prisma.VehicleDriverAssignmentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.VehicleDriverAssignmentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VehicleDriverAssignmentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.VehicleDriverAssignmentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VehicleDriverAssignmentPayload>
+          }
+          findFirst: {
+            args: Prisma.VehicleDriverAssignmentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VehicleDriverAssignmentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.VehicleDriverAssignmentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VehicleDriverAssignmentPayload>
+          }
+          findMany: {
+            args: Prisma.VehicleDriverAssignmentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VehicleDriverAssignmentPayload>[]
+          }
+          create: {
+            args: Prisma.VehicleDriverAssignmentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VehicleDriverAssignmentPayload>
+          }
+          createMany: {
+            args: Prisma.VehicleDriverAssignmentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.VehicleDriverAssignmentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VehicleDriverAssignmentPayload>[]
+          }
+          delete: {
+            args: Prisma.VehicleDriverAssignmentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VehicleDriverAssignmentPayload>
+          }
+          update: {
+            args: Prisma.VehicleDriverAssignmentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VehicleDriverAssignmentPayload>
+          }
+          deleteMany: {
+            args: Prisma.VehicleDriverAssignmentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.VehicleDriverAssignmentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.VehicleDriverAssignmentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VehicleDriverAssignmentPayload>
+          }
+          aggregate: {
+            args: Prisma.VehicleDriverAssignmentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateVehicleDriverAssignment>
+          }
+          groupBy: {
+            args: Prisma.VehicleDriverAssignmentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<VehicleDriverAssignmentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.VehicleDriverAssignmentCountArgs<ExtArgs>
+            result: $Utils.Optional<VehicleDriverAssignmentCountAggregateOutputType> | number
           }
         }
       }
@@ -5488,6 +5605,76 @@ export namespace Prisma {
           count: {
             args: Prisma.AmericanaChainRateCountArgs<ExtArgs>
             result: $Utils.Optional<AmericanaChainRateCountAggregateOutputType> | number
+          }
+        }
+      }
+      DriverBatchHistory: {
+        payload: Prisma.$DriverBatchHistoryPayload<ExtArgs>
+        fields: Prisma.DriverBatchHistoryFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DriverBatchHistoryFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverBatchHistoryPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DriverBatchHistoryFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverBatchHistoryPayload>
+          }
+          findFirst: {
+            args: Prisma.DriverBatchHistoryFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverBatchHistoryPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DriverBatchHistoryFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverBatchHistoryPayload>
+          }
+          findMany: {
+            args: Prisma.DriverBatchHistoryFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverBatchHistoryPayload>[]
+          }
+          create: {
+            args: Prisma.DriverBatchHistoryCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverBatchHistoryPayload>
+          }
+          createMany: {
+            args: Prisma.DriverBatchHistoryCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DriverBatchHistoryCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverBatchHistoryPayload>[]
+          }
+          delete: {
+            args: Prisma.DriverBatchHistoryDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverBatchHistoryPayload>
+          }
+          update: {
+            args: Prisma.DriverBatchHistoryUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverBatchHistoryPayload>
+          }
+          deleteMany: {
+            args: Prisma.DriverBatchHistoryDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DriverBatchHistoryUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.DriverBatchHistoryUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverBatchHistoryPayload>
+          }
+          aggregate: {
+            args: Prisma.DriverBatchHistoryAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDriverBatchHistory>
+          }
+          groupBy: {
+            args: Prisma.DriverBatchHistoryGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DriverBatchHistoryGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DriverBatchHistoryCountArgs<ExtArgs>
+            result: $Utils.Optional<DriverBatchHistoryCountAggregateOutputType> | number
           }
         }
       }
@@ -8315,6 +8502,7 @@ export namespace Prisma {
     companies: number
     users: number
     drivers: number
+    driverBatchHistory: number
     shifts: number
     attendanceRecords: number
     orderLogs: number
@@ -8346,6 +8534,7 @@ export namespace Prisma {
     notificationDeliveries: number
     driverRestrictions: number
     courierOnlineSessions: number
+    vehicleDriverAssignments: number
     violations: number
     penalties: number
     appeals: number
@@ -8385,6 +8574,7 @@ export namespace Prisma {
     companies?: boolean | TenantCountOutputTypeCountCompaniesArgs
     users?: boolean | TenantCountOutputTypeCountUsersArgs
     drivers?: boolean | TenantCountOutputTypeCountDriversArgs
+    driverBatchHistory?: boolean | TenantCountOutputTypeCountDriverBatchHistoryArgs
     shifts?: boolean | TenantCountOutputTypeCountShiftsArgs
     attendanceRecords?: boolean | TenantCountOutputTypeCountAttendanceRecordsArgs
     orderLogs?: boolean | TenantCountOutputTypeCountOrderLogsArgs
@@ -8416,6 +8606,7 @@ export namespace Prisma {
     notificationDeliveries?: boolean | TenantCountOutputTypeCountNotificationDeliveriesArgs
     driverRestrictions?: boolean | TenantCountOutputTypeCountDriverRestrictionsArgs
     courierOnlineSessions?: boolean | TenantCountOutputTypeCountCourierOnlineSessionsArgs
+    vehicleDriverAssignments?: boolean | TenantCountOutputTypeCountVehicleDriverAssignmentsArgs
     violations?: boolean | TenantCountOutputTypeCountViolationsArgs
     penalties?: boolean | TenantCountOutputTypeCountPenaltiesArgs
     appeals?: boolean | TenantCountOutputTypeCountAppealsArgs
@@ -8481,6 +8672,13 @@ export namespace Prisma {
    */
   export type TenantCountOutputTypeCountDriversArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DriverWhereInput
+  }
+
+  /**
+   * TenantCountOutputType without action
+   */
+  export type TenantCountOutputTypeCountDriverBatchHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DriverBatchHistoryWhereInput
   }
 
   /**
@@ -8698,6 +8896,13 @@ export namespace Prisma {
    */
   export type TenantCountOutputTypeCountCourierOnlineSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CourierOnlineSessionWhereInput
+  }
+
+  /**
+   * TenantCountOutputType without action
+   */
+  export type TenantCountOutputTypeCountVehicleDriverAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VehicleDriverAssignmentWhereInput
   }
 
   /**
@@ -9148,6 +9353,7 @@ export namespace Prisma {
     capturedOrders: number
     locationLogs: number
     appUsageLogs: number
+    vehicleAssignments: number
     leaveRequests: number
     restrictions: number
     tickets: number
@@ -9169,6 +9375,7 @@ export namespace Prisma {
     americanaStoreAssignments: number
     sims: number
     performanceSnapshots: number
+    batchHistory: number
   }
 
   export type DriverCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9186,6 +9393,7 @@ export namespace Prisma {
     capturedOrders?: boolean | DriverCountOutputTypeCountCapturedOrdersArgs
     locationLogs?: boolean | DriverCountOutputTypeCountLocationLogsArgs
     appUsageLogs?: boolean | DriverCountOutputTypeCountAppUsageLogsArgs
+    vehicleAssignments?: boolean | DriverCountOutputTypeCountVehicleAssignmentsArgs
     leaveRequests?: boolean | DriverCountOutputTypeCountLeaveRequestsArgs
     restrictions?: boolean | DriverCountOutputTypeCountRestrictionsArgs
     tickets?: boolean | DriverCountOutputTypeCountTicketsArgs
@@ -9207,6 +9415,7 @@ export namespace Prisma {
     americanaStoreAssignments?: boolean | DriverCountOutputTypeCountAmericanaStoreAssignmentsArgs
     sims?: boolean | DriverCountOutputTypeCountSimsArgs
     performanceSnapshots?: boolean | DriverCountOutputTypeCountPerformanceSnapshotsArgs
+    batchHistory?: boolean | DriverCountOutputTypeCountBatchHistoryArgs
   }
 
   // Custom InputTypes
@@ -9316,6 +9525,13 @@ export namespace Prisma {
    */
   export type DriverCountOutputTypeCountAppUsageLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AppUsageLogWhereInput
+  }
+
+  /**
+   * DriverCountOutputType without action
+   */
+  export type DriverCountOutputTypeCountVehicleAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VehicleDriverAssignmentWhereInput
   }
 
   /**
@@ -9465,6 +9681,13 @@ export namespace Prisma {
     where?: PerformanceSnapshotWhereInput
   }
 
+  /**
+   * DriverCountOutputType without action
+   */
+  export type DriverCountOutputTypeCountBatchHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DriverBatchHistoryWhereInput
+  }
+
 
   /**
    * Count Type VehicleCountOutputType
@@ -9476,6 +9699,7 @@ export namespace Prisma {
     spareMaintenance: number
     alerts: number
     tickets: number
+    driverAssignments: number
   }
 
   export type VehicleCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9484,6 +9708,7 @@ export namespace Prisma {
     spareMaintenance?: boolean | VehicleCountOutputTypeCountSpareMaintenanceArgs
     alerts?: boolean | VehicleCountOutputTypeCountAlertsArgs
     tickets?: boolean | VehicleCountOutputTypeCountTicketsArgs
+    driverAssignments?: boolean | VehicleCountOutputTypeCountDriverAssignmentsArgs
   }
 
   // Custom InputTypes
@@ -9530,6 +9755,13 @@ export namespace Prisma {
    */
   export type VehicleCountOutputTypeCountTicketsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TicketWhereInput
+  }
+
+  /**
+   * VehicleCountOutputType without action
+   */
+  export type VehicleCountOutputTypeCountDriverAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VehicleDriverAssignmentWhereInput
   }
 
 
@@ -10464,6 +10696,7 @@ export namespace Prisma {
     companies?: boolean | Tenant$companiesArgs<ExtArgs>
     users?: boolean | Tenant$usersArgs<ExtArgs>
     drivers?: boolean | Tenant$driversArgs<ExtArgs>
+    driverBatchHistory?: boolean | Tenant$driverBatchHistoryArgs<ExtArgs>
     shifts?: boolean | Tenant$shiftsArgs<ExtArgs>
     attendanceRecords?: boolean | Tenant$attendanceRecordsArgs<ExtArgs>
     orderLogs?: boolean | Tenant$orderLogsArgs<ExtArgs>
@@ -10495,6 +10728,7 @@ export namespace Prisma {
     notificationDeliveries?: boolean | Tenant$notificationDeliveriesArgs<ExtArgs>
     driverRestrictions?: boolean | Tenant$driverRestrictionsArgs<ExtArgs>
     courierOnlineSessions?: boolean | Tenant$courierOnlineSessionsArgs<ExtArgs>
+    vehicleDriverAssignments?: boolean | Tenant$vehicleDriverAssignmentsArgs<ExtArgs>
     violations?: boolean | Tenant$violationsArgs<ExtArgs>
     penalties?: boolean | Tenant$penaltiesArgs<ExtArgs>
     appeals?: boolean | Tenant$appealsArgs<ExtArgs>
@@ -10570,6 +10804,7 @@ export namespace Prisma {
     companies?: boolean | Tenant$companiesArgs<ExtArgs>
     users?: boolean | Tenant$usersArgs<ExtArgs>
     drivers?: boolean | Tenant$driversArgs<ExtArgs>
+    driverBatchHistory?: boolean | Tenant$driverBatchHistoryArgs<ExtArgs>
     shifts?: boolean | Tenant$shiftsArgs<ExtArgs>
     attendanceRecords?: boolean | Tenant$attendanceRecordsArgs<ExtArgs>
     orderLogs?: boolean | Tenant$orderLogsArgs<ExtArgs>
@@ -10601,6 +10836,7 @@ export namespace Prisma {
     notificationDeliveries?: boolean | Tenant$notificationDeliveriesArgs<ExtArgs>
     driverRestrictions?: boolean | Tenant$driverRestrictionsArgs<ExtArgs>
     courierOnlineSessions?: boolean | Tenant$courierOnlineSessionsArgs<ExtArgs>
+    vehicleDriverAssignments?: boolean | Tenant$vehicleDriverAssignmentsArgs<ExtArgs>
     violations?: boolean | Tenant$violationsArgs<ExtArgs>
     penalties?: boolean | Tenant$penaltiesArgs<ExtArgs>
     appeals?: boolean | Tenant$appealsArgs<ExtArgs>
@@ -10645,6 +10881,7 @@ export namespace Prisma {
       companies: Prisma.$CompanyPayload<ExtArgs>[]
       users: Prisma.$UserPayload<ExtArgs>[]
       drivers: Prisma.$DriverPayload<ExtArgs>[]
+      driverBatchHistory: Prisma.$DriverBatchHistoryPayload<ExtArgs>[]
       shifts: Prisma.$ShiftPayload<ExtArgs>[]
       attendanceRecords: Prisma.$AttendanceRecordPayload<ExtArgs>[]
       orderLogs: Prisma.$OrderLogPayload<ExtArgs>[]
@@ -10676,6 +10913,7 @@ export namespace Prisma {
       notificationDeliveries: Prisma.$NotificationDeliveryPayload<ExtArgs>[]
       driverRestrictions: Prisma.$DriverRestrictionPayload<ExtArgs>[]
       courierOnlineSessions: Prisma.$CourierOnlineSessionPayload<ExtArgs>[]
+      vehicleDriverAssignments: Prisma.$VehicleDriverAssignmentPayload<ExtArgs>[]
       violations: Prisma.$ViolationPayload<ExtArgs>[]
       penalties: Prisma.$PenaltyPayload<ExtArgs>[]
       appeals: Prisma.$AppealPayload<ExtArgs>[]
@@ -11093,6 +11331,7 @@ export namespace Prisma {
     companies<T extends Tenant$companiesArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$companiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CompanyPayload<ExtArgs>, T, "findMany"> | Null>
     users<T extends Tenant$usersArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
     drivers<T extends Tenant$driversArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$driversArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DriverPayload<ExtArgs>, T, "findMany"> | Null>
+    driverBatchHistory<T extends Tenant$driverBatchHistoryArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$driverBatchHistoryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DriverBatchHistoryPayload<ExtArgs>, T, "findMany"> | Null>
     shifts<T extends Tenant$shiftsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$shiftsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ShiftPayload<ExtArgs>, T, "findMany"> | Null>
     attendanceRecords<T extends Tenant$attendanceRecordsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$attendanceRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AttendanceRecordPayload<ExtArgs>, T, "findMany"> | Null>
     orderLogs<T extends Tenant$orderLogsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$orderLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderLogPayload<ExtArgs>, T, "findMany"> | Null>
@@ -11124,6 +11363,7 @@ export namespace Prisma {
     notificationDeliveries<T extends Tenant$notificationDeliveriesArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$notificationDeliveriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationDeliveryPayload<ExtArgs>, T, "findMany"> | Null>
     driverRestrictions<T extends Tenant$driverRestrictionsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$driverRestrictionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DriverRestrictionPayload<ExtArgs>, T, "findMany"> | Null>
     courierOnlineSessions<T extends Tenant$courierOnlineSessionsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$courierOnlineSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CourierOnlineSessionPayload<ExtArgs>, T, "findMany"> | Null>
+    vehicleDriverAssignments<T extends Tenant$vehicleDriverAssignmentsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$vehicleDriverAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VehicleDriverAssignmentPayload<ExtArgs>, T, "findMany"> | Null>
     violations<T extends Tenant$violationsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$violationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ViolationPayload<ExtArgs>, T, "findMany"> | Null>
     penalties<T extends Tenant$penaltiesArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$penaltiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PenaltyPayload<ExtArgs>, T, "findMany"> | Null>
     appeals<T extends Tenant$appealsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$appealsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppealPayload<ExtArgs>, T, "findMany"> | Null>
@@ -11572,6 +11812,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: DriverScalarFieldEnum | DriverScalarFieldEnum[]
+  }
+
+  /**
+   * Tenant.driverBatchHistory
+   */
+  export type Tenant$driverBatchHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverBatchHistory
+     */
+    select?: DriverBatchHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DriverBatchHistoryInclude<ExtArgs> | null
+    where?: DriverBatchHistoryWhereInput
+    orderBy?: DriverBatchHistoryOrderByWithRelationInput | DriverBatchHistoryOrderByWithRelationInput[]
+    cursor?: DriverBatchHistoryWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DriverBatchHistoryScalarFieldEnum | DriverBatchHistoryScalarFieldEnum[]
   }
 
   /**
@@ -12192,6 +12452,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: CourierOnlineSessionScalarFieldEnum | CourierOnlineSessionScalarFieldEnum[]
+  }
+
+  /**
+   * Tenant.vehicleDriverAssignments
+   */
+  export type Tenant$vehicleDriverAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VehicleDriverAssignment
+     */
+    select?: VehicleDriverAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VehicleDriverAssignmentInclude<ExtArgs> | null
+    where?: VehicleDriverAssignmentWhereInput
+    orderBy?: VehicleDriverAssignmentOrderByWithRelationInput | VehicleDriverAssignmentOrderByWithRelationInput[]
+    cursor?: VehicleDriverAssignmentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: VehicleDriverAssignmentScalarFieldEnum | VehicleDriverAssignmentScalarFieldEnum[]
   }
 
   /**
@@ -15829,6 +16109,7 @@ export namespace Prisma {
     appUsageLogs?: boolean | Driver$appUsageLogsArgs<ExtArgs>
     device?: boolean | Driver$deviceArgs<ExtArgs>
     assignedVehicle?: boolean | Driver$assignedVehicleArgs<ExtArgs>
+    vehicleAssignments?: boolean | Driver$vehicleAssignmentsArgs<ExtArgs>
     leaveRequests?: boolean | Driver$leaveRequestsArgs<ExtArgs>
     restrictions?: boolean | Driver$restrictionsArgs<ExtArgs>
     tickets?: boolean | Driver$ticketsArgs<ExtArgs>
@@ -15850,6 +16131,7 @@ export namespace Prisma {
     americanaStoreAssignments?: boolean | Driver$americanaStoreAssignmentsArgs<ExtArgs>
     sims?: boolean | Driver$simsArgs<ExtArgs>
     performanceSnapshots?: boolean | Driver$performanceSnapshotsArgs<ExtArgs>
+    batchHistory?: boolean | Driver$batchHistoryArgs<ExtArgs>
     _count?: boolean | DriverCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["driver"]>
 
@@ -15962,6 +16244,7 @@ export namespace Prisma {
     appUsageLogs?: boolean | Driver$appUsageLogsArgs<ExtArgs>
     device?: boolean | Driver$deviceArgs<ExtArgs>
     assignedVehicle?: boolean | Driver$assignedVehicleArgs<ExtArgs>
+    vehicleAssignments?: boolean | Driver$vehicleAssignmentsArgs<ExtArgs>
     leaveRequests?: boolean | Driver$leaveRequestsArgs<ExtArgs>
     restrictions?: boolean | Driver$restrictionsArgs<ExtArgs>
     tickets?: boolean | Driver$ticketsArgs<ExtArgs>
@@ -15983,6 +16266,7 @@ export namespace Prisma {
     americanaStoreAssignments?: boolean | Driver$americanaStoreAssignmentsArgs<ExtArgs>
     sims?: boolean | Driver$simsArgs<ExtArgs>
     performanceSnapshots?: boolean | Driver$performanceSnapshotsArgs<ExtArgs>
+    batchHistory?: boolean | Driver$batchHistoryArgs<ExtArgs>
     _count?: boolean | DriverCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type DriverIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -16013,6 +16297,7 @@ export namespace Prisma {
       appUsageLogs: Prisma.$AppUsageLogPayload<ExtArgs>[]
       device: Prisma.$DevicePayload<ExtArgs> | null
       assignedVehicle: Prisma.$VehiclePayload<ExtArgs> | null
+      vehicleAssignments: Prisma.$VehicleDriverAssignmentPayload<ExtArgs>[]
       leaveRequests: Prisma.$LeaveRequestPayload<ExtArgs>[]
       restrictions: Prisma.$DriverRestrictionPayload<ExtArgs>[]
       tickets: Prisma.$TicketPayload<ExtArgs>[]
@@ -16034,6 +16319,7 @@ export namespace Prisma {
       americanaStoreAssignments: Prisma.$AmericanaStoreAssignmentPayload<ExtArgs>[]
       sims: Prisma.$SimPayload<ExtArgs>[]
       performanceSnapshots: Prisma.$PerformanceSnapshotPayload<ExtArgs>[]
+      batchHistory: Prisma.$DriverBatchHistoryPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -16459,6 +16745,7 @@ export namespace Prisma {
     appUsageLogs<T extends Driver$appUsageLogsArgs<ExtArgs> = {}>(args?: Subset<T, Driver$appUsageLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppUsageLogPayload<ExtArgs>, T, "findMany"> | Null>
     device<T extends Driver$deviceArgs<ExtArgs> = {}>(args?: Subset<T, Driver$deviceArgs<ExtArgs>>): Prisma__DeviceClient<$Result.GetResult<Prisma.$DevicePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     assignedVehicle<T extends Driver$assignedVehicleArgs<ExtArgs> = {}>(args?: Subset<T, Driver$assignedVehicleArgs<ExtArgs>>): Prisma__VehicleClient<$Result.GetResult<Prisma.$VehiclePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    vehicleAssignments<T extends Driver$vehicleAssignmentsArgs<ExtArgs> = {}>(args?: Subset<T, Driver$vehicleAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VehicleDriverAssignmentPayload<ExtArgs>, T, "findMany"> | Null>
     leaveRequests<T extends Driver$leaveRequestsArgs<ExtArgs> = {}>(args?: Subset<T, Driver$leaveRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeaveRequestPayload<ExtArgs>, T, "findMany"> | Null>
     restrictions<T extends Driver$restrictionsArgs<ExtArgs> = {}>(args?: Subset<T, Driver$restrictionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DriverRestrictionPayload<ExtArgs>, T, "findMany"> | Null>
     tickets<T extends Driver$ticketsArgs<ExtArgs> = {}>(args?: Subset<T, Driver$ticketsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany"> | Null>
@@ -16480,6 +16767,7 @@ export namespace Prisma {
     americanaStoreAssignments<T extends Driver$americanaStoreAssignmentsArgs<ExtArgs> = {}>(args?: Subset<T, Driver$americanaStoreAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AmericanaStoreAssignmentPayload<ExtArgs>, T, "findMany"> | Null>
     sims<T extends Driver$simsArgs<ExtArgs> = {}>(args?: Subset<T, Driver$simsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SimPayload<ExtArgs>, T, "findMany"> | Null>
     performanceSnapshots<T extends Driver$performanceSnapshotsArgs<ExtArgs> = {}>(args?: Subset<T, Driver$performanceSnapshotsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PerformanceSnapshotPayload<ExtArgs>, T, "findMany"> | Null>
+    batchHistory<T extends Driver$batchHistoryArgs<ExtArgs> = {}>(args?: Subset<T, Driver$batchHistoryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DriverBatchHistoryPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -17192,6 +17480,26 @@ export namespace Prisma {
   }
 
   /**
+   * Driver.vehicleAssignments
+   */
+  export type Driver$vehicleAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VehicleDriverAssignment
+     */
+    select?: VehicleDriverAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VehicleDriverAssignmentInclude<ExtArgs> | null
+    where?: VehicleDriverAssignmentWhereInput
+    orderBy?: VehicleDriverAssignmentOrderByWithRelationInput | VehicleDriverAssignmentOrderByWithRelationInput[]
+    cursor?: VehicleDriverAssignmentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: VehicleDriverAssignmentScalarFieldEnum | VehicleDriverAssignmentScalarFieldEnum[]
+  }
+
+  /**
    * Driver.leaveRequests
    */
   export type Driver$leaveRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -17609,6 +17917,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: PerformanceSnapshotScalarFieldEnum | PerformanceSnapshotScalarFieldEnum[]
+  }
+
+  /**
+   * Driver.batchHistory
+   */
+  export type Driver$batchHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverBatchHistory
+     */
+    select?: DriverBatchHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DriverBatchHistoryInclude<ExtArgs> | null
+    where?: DriverBatchHistoryWhereInput
+    orderBy?: DriverBatchHistoryOrderByWithRelationInput | DriverBatchHistoryOrderByWithRelationInput[]
+    cursor?: DriverBatchHistoryWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DriverBatchHistoryScalarFieldEnum | DriverBatchHistoryScalarFieldEnum[]
   }
 
   /**
@@ -18653,6 +18981,9 @@ export namespace Prisma {
     quantity: number | null
     issuedDate: Date | null
     returnedDate: Date | null
+    condition: $Enums.EquipmentCondition | null
+    conditionNote: string | null
+    conditionReportedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -18665,6 +18996,9 @@ export namespace Prisma {
     quantity: number | null
     issuedDate: Date | null
     returnedDate: Date | null
+    condition: $Enums.EquipmentCondition | null
+    conditionNote: string | null
+    conditionReportedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -18677,6 +19011,9 @@ export namespace Prisma {
     quantity: number
     issuedDate: number
     returnedDate: number
+    condition: number
+    conditionNote: number
+    conditionReportedAt: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -18699,6 +19036,9 @@ export namespace Prisma {
     quantity?: true
     issuedDate?: true
     returnedDate?: true
+    condition?: true
+    conditionNote?: true
+    conditionReportedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -18711,6 +19051,9 @@ export namespace Prisma {
     quantity?: true
     issuedDate?: true
     returnedDate?: true
+    condition?: true
+    conditionNote?: true
+    conditionReportedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -18723,6 +19066,9 @@ export namespace Prisma {
     quantity?: true
     issuedDate?: true
     returnedDate?: true
+    condition?: true
+    conditionNote?: true
+    conditionReportedAt?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -18822,6 +19168,9 @@ export namespace Prisma {
     quantity: number
     issuedDate: Date | null
     returnedDate: Date | null
+    condition: $Enums.EquipmentCondition
+    conditionNote: string | null
+    conditionReportedAt: Date | null
     createdAt: Date
     updatedAt: Date
     _count: DriverInventoryCountAggregateOutputType | null
@@ -18853,6 +19202,9 @@ export namespace Prisma {
     quantity?: boolean
     issuedDate?: boolean
     returnedDate?: boolean
+    condition?: boolean
+    conditionNote?: boolean
+    conditionReportedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     driver?: boolean | DriverDefaultArgs<ExtArgs>
@@ -18866,6 +19218,9 @@ export namespace Prisma {
     quantity?: boolean
     issuedDate?: boolean
     returnedDate?: boolean
+    condition?: boolean
+    conditionNote?: boolean
+    conditionReportedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     driver?: boolean | DriverDefaultArgs<ExtArgs>
@@ -18879,6 +19234,9 @@ export namespace Prisma {
     quantity?: boolean
     issuedDate?: boolean
     returnedDate?: boolean
+    condition?: boolean
+    conditionNote?: boolean
+    conditionReportedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -18903,6 +19261,9 @@ export namespace Prisma {
       quantity: number
       issuedDate: Date | null
       returnedDate: Date | null
+      condition: $Enums.EquipmentCondition
+      conditionNote: string | null
+      conditionReportedAt: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["driverInventory"]>
@@ -19306,6 +19667,9 @@ export namespace Prisma {
     readonly quantity: FieldRef<"DriverInventory", 'Int'>
     readonly issuedDate: FieldRef<"DriverInventory", 'DateTime'>
     readonly returnedDate: FieldRef<"DriverInventory", 'DateTime'>
+    readonly condition: FieldRef<"DriverInventory", 'EquipmentCondition'>
+    readonly conditionNote: FieldRef<"DriverInventory", 'String'>
+    readonly conditionReportedAt: FieldRef<"DriverInventory", 'DateTime'>
     readonly createdAt: FieldRef<"DriverInventory", 'DateTime'>
     readonly updatedAt: FieldRef<"DriverInventory", 'DateTime'>
   }
@@ -20996,6 +21360,7 @@ export namespace Prisma {
     spareMaintenance?: boolean | Vehicle$spareMaintenanceArgs<ExtArgs>
     alerts?: boolean | Vehicle$alertsArgs<ExtArgs>
     tickets?: boolean | Vehicle$ticketsArgs<ExtArgs>
+    driverAssignments?: boolean | Vehicle$driverAssignmentsArgs<ExtArgs>
     _count?: boolean | VehicleCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["vehicle"]>
 
@@ -21057,6 +21422,7 @@ export namespace Prisma {
     spareMaintenance?: boolean | Vehicle$spareMaintenanceArgs<ExtArgs>
     alerts?: boolean | Vehicle$alertsArgs<ExtArgs>
     tickets?: boolean | Vehicle$ticketsArgs<ExtArgs>
+    driverAssignments?: boolean | Vehicle$driverAssignmentsArgs<ExtArgs>
     _count?: boolean | VehicleCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type VehicleIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -21076,6 +21442,7 @@ export namespace Prisma {
       spareMaintenance: Prisma.$MaintenanceRecordPayload<ExtArgs>[]
       alerts: Prisma.$AlertPayload<ExtArgs>[]
       tickets: Prisma.$TicketPayload<ExtArgs>[]
+      driverAssignments: Prisma.$VehicleDriverAssignmentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -21470,6 +21837,7 @@ export namespace Prisma {
     spareMaintenance<T extends Vehicle$spareMaintenanceArgs<ExtArgs> = {}>(args?: Subset<T, Vehicle$spareMaintenanceArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MaintenanceRecordPayload<ExtArgs>, T, "findMany"> | Null>
     alerts<T extends Vehicle$alertsArgs<ExtArgs> = {}>(args?: Subset<T, Vehicle$alertsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AlertPayload<ExtArgs>, T, "findMany"> | Null>
     tickets<T extends Vehicle$ticketsArgs<ExtArgs> = {}>(args?: Subset<T, Vehicle$ticketsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany"> | Null>
+    driverAssignments<T extends Vehicle$driverAssignmentsArgs<ExtArgs> = {}>(args?: Subset<T, Vehicle$driverAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VehicleDriverAssignmentPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -21952,6 +22320,26 @@ export namespace Prisma {
   }
 
   /**
+   * Vehicle.driverAssignments
+   */
+  export type Vehicle$driverAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VehicleDriverAssignment
+     */
+    select?: VehicleDriverAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VehicleDriverAssignmentInclude<ExtArgs> | null
+    where?: VehicleDriverAssignmentWhereInput
+    orderBy?: VehicleDriverAssignmentOrderByWithRelationInput | VehicleDriverAssignmentOrderByWithRelationInput[]
+    cursor?: VehicleDriverAssignmentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: VehicleDriverAssignmentScalarFieldEnum | VehicleDriverAssignmentScalarFieldEnum[]
+  }
+
+  /**
    * Vehicle without action
    */
   export type VehicleDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -21963,6 +22351,999 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: VehicleInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model VehicleDriverAssignment
+   */
+
+  export type AggregateVehicleDriverAssignment = {
+    _count: VehicleDriverAssignmentCountAggregateOutputType | null
+    _min: VehicleDriverAssignmentMinAggregateOutputType | null
+    _max: VehicleDriverAssignmentMaxAggregateOutputType | null
+  }
+
+  export type VehicleDriverAssignmentMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    vehicleId: string | null
+    driverId: string | null
+    assignedAt: Date | null
+    unassignedAt: Date | null
+    active: boolean | null
+    note: string | null
+    createdAt: Date | null
+  }
+
+  export type VehicleDriverAssignmentMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    vehicleId: string | null
+    driverId: string | null
+    assignedAt: Date | null
+    unassignedAt: Date | null
+    active: boolean | null
+    note: string | null
+    createdAt: Date | null
+  }
+
+  export type VehicleDriverAssignmentCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    vehicleId: number
+    driverId: number
+    assignedAt: number
+    unassignedAt: number
+    active: number
+    note: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type VehicleDriverAssignmentMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    vehicleId?: true
+    driverId?: true
+    assignedAt?: true
+    unassignedAt?: true
+    active?: true
+    note?: true
+    createdAt?: true
+  }
+
+  export type VehicleDriverAssignmentMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    vehicleId?: true
+    driverId?: true
+    assignedAt?: true
+    unassignedAt?: true
+    active?: true
+    note?: true
+    createdAt?: true
+  }
+
+  export type VehicleDriverAssignmentCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    vehicleId?: true
+    driverId?: true
+    assignedAt?: true
+    unassignedAt?: true
+    active?: true
+    note?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type VehicleDriverAssignmentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which VehicleDriverAssignment to aggregate.
+     */
+    where?: VehicleDriverAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VehicleDriverAssignments to fetch.
+     */
+    orderBy?: VehicleDriverAssignmentOrderByWithRelationInput | VehicleDriverAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: VehicleDriverAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VehicleDriverAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VehicleDriverAssignments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned VehicleDriverAssignments
+    **/
+    _count?: true | VehicleDriverAssignmentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: VehicleDriverAssignmentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: VehicleDriverAssignmentMaxAggregateInputType
+  }
+
+  export type GetVehicleDriverAssignmentAggregateType<T extends VehicleDriverAssignmentAggregateArgs> = {
+        [P in keyof T & keyof AggregateVehicleDriverAssignment]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateVehicleDriverAssignment[P]>
+      : GetScalarType<T[P], AggregateVehicleDriverAssignment[P]>
+  }
+
+
+
+
+  export type VehicleDriverAssignmentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VehicleDriverAssignmentWhereInput
+    orderBy?: VehicleDriverAssignmentOrderByWithAggregationInput | VehicleDriverAssignmentOrderByWithAggregationInput[]
+    by: VehicleDriverAssignmentScalarFieldEnum[] | VehicleDriverAssignmentScalarFieldEnum
+    having?: VehicleDriverAssignmentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: VehicleDriverAssignmentCountAggregateInputType | true
+    _min?: VehicleDriverAssignmentMinAggregateInputType
+    _max?: VehicleDriverAssignmentMaxAggregateInputType
+  }
+
+  export type VehicleDriverAssignmentGroupByOutputType = {
+    id: string
+    tenantId: string
+    vehicleId: string
+    driverId: string
+    assignedAt: Date
+    unassignedAt: Date | null
+    active: boolean
+    note: string | null
+    createdAt: Date
+    _count: VehicleDriverAssignmentCountAggregateOutputType | null
+    _min: VehicleDriverAssignmentMinAggregateOutputType | null
+    _max: VehicleDriverAssignmentMaxAggregateOutputType | null
+  }
+
+  type GetVehicleDriverAssignmentGroupByPayload<T extends VehicleDriverAssignmentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<VehicleDriverAssignmentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof VehicleDriverAssignmentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], VehicleDriverAssignmentGroupByOutputType[P]>
+            : GetScalarType<T[P], VehicleDriverAssignmentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type VehicleDriverAssignmentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    vehicleId?: boolean
+    driverId?: boolean
+    assignedAt?: boolean
+    unassignedAt?: boolean
+    active?: boolean
+    note?: boolean
+    createdAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    vehicle?: boolean | VehicleDefaultArgs<ExtArgs>
+    driver?: boolean | DriverDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["vehicleDriverAssignment"]>
+
+  export type VehicleDriverAssignmentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    vehicleId?: boolean
+    driverId?: boolean
+    assignedAt?: boolean
+    unassignedAt?: boolean
+    active?: boolean
+    note?: boolean
+    createdAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    vehicle?: boolean | VehicleDefaultArgs<ExtArgs>
+    driver?: boolean | DriverDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["vehicleDriverAssignment"]>
+
+  export type VehicleDriverAssignmentSelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    vehicleId?: boolean
+    driverId?: boolean
+    assignedAt?: boolean
+    unassignedAt?: boolean
+    active?: boolean
+    note?: boolean
+    createdAt?: boolean
+  }
+
+  export type VehicleDriverAssignmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    vehicle?: boolean | VehicleDefaultArgs<ExtArgs>
+    driver?: boolean | DriverDefaultArgs<ExtArgs>
+  }
+  export type VehicleDriverAssignmentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    vehicle?: boolean | VehicleDefaultArgs<ExtArgs>
+    driver?: boolean | DriverDefaultArgs<ExtArgs>
+  }
+
+  export type $VehicleDriverAssignmentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "VehicleDriverAssignment"
+    objects: {
+      tenant: Prisma.$TenantPayload<ExtArgs>
+      vehicle: Prisma.$VehiclePayload<ExtArgs>
+      driver: Prisma.$DriverPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      vehicleId: string
+      driverId: string
+      assignedAt: Date
+      unassignedAt: Date | null
+      active: boolean
+      note: string | null
+      createdAt: Date
+    }, ExtArgs["result"]["vehicleDriverAssignment"]>
+    composites: {}
+  }
+
+  type VehicleDriverAssignmentGetPayload<S extends boolean | null | undefined | VehicleDriverAssignmentDefaultArgs> = $Result.GetResult<Prisma.$VehicleDriverAssignmentPayload, S>
+
+  type VehicleDriverAssignmentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<VehicleDriverAssignmentFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: VehicleDriverAssignmentCountAggregateInputType | true
+    }
+
+  export interface VehicleDriverAssignmentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['VehicleDriverAssignment'], meta: { name: 'VehicleDriverAssignment' } }
+    /**
+     * Find zero or one VehicleDriverAssignment that matches the filter.
+     * @param {VehicleDriverAssignmentFindUniqueArgs} args - Arguments to find a VehicleDriverAssignment
+     * @example
+     * // Get one VehicleDriverAssignment
+     * const vehicleDriverAssignment = await prisma.vehicleDriverAssignment.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends VehicleDriverAssignmentFindUniqueArgs>(args: SelectSubset<T, VehicleDriverAssignmentFindUniqueArgs<ExtArgs>>): Prisma__VehicleDriverAssignmentClient<$Result.GetResult<Prisma.$VehicleDriverAssignmentPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one VehicleDriverAssignment that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {VehicleDriverAssignmentFindUniqueOrThrowArgs} args - Arguments to find a VehicleDriverAssignment
+     * @example
+     * // Get one VehicleDriverAssignment
+     * const vehicleDriverAssignment = await prisma.vehicleDriverAssignment.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends VehicleDriverAssignmentFindUniqueOrThrowArgs>(args: SelectSubset<T, VehicleDriverAssignmentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__VehicleDriverAssignmentClient<$Result.GetResult<Prisma.$VehicleDriverAssignmentPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first VehicleDriverAssignment that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VehicleDriverAssignmentFindFirstArgs} args - Arguments to find a VehicleDriverAssignment
+     * @example
+     * // Get one VehicleDriverAssignment
+     * const vehicleDriverAssignment = await prisma.vehicleDriverAssignment.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends VehicleDriverAssignmentFindFirstArgs>(args?: SelectSubset<T, VehicleDriverAssignmentFindFirstArgs<ExtArgs>>): Prisma__VehicleDriverAssignmentClient<$Result.GetResult<Prisma.$VehicleDriverAssignmentPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first VehicleDriverAssignment that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VehicleDriverAssignmentFindFirstOrThrowArgs} args - Arguments to find a VehicleDriverAssignment
+     * @example
+     * // Get one VehicleDriverAssignment
+     * const vehicleDriverAssignment = await prisma.vehicleDriverAssignment.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends VehicleDriverAssignmentFindFirstOrThrowArgs>(args?: SelectSubset<T, VehicleDriverAssignmentFindFirstOrThrowArgs<ExtArgs>>): Prisma__VehicleDriverAssignmentClient<$Result.GetResult<Prisma.$VehicleDriverAssignmentPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more VehicleDriverAssignments that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VehicleDriverAssignmentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all VehicleDriverAssignments
+     * const vehicleDriverAssignments = await prisma.vehicleDriverAssignment.findMany()
+     * 
+     * // Get first 10 VehicleDriverAssignments
+     * const vehicleDriverAssignments = await prisma.vehicleDriverAssignment.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const vehicleDriverAssignmentWithIdOnly = await prisma.vehicleDriverAssignment.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends VehicleDriverAssignmentFindManyArgs>(args?: SelectSubset<T, VehicleDriverAssignmentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VehicleDriverAssignmentPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a VehicleDriverAssignment.
+     * @param {VehicleDriverAssignmentCreateArgs} args - Arguments to create a VehicleDriverAssignment.
+     * @example
+     * // Create one VehicleDriverAssignment
+     * const VehicleDriverAssignment = await prisma.vehicleDriverAssignment.create({
+     *   data: {
+     *     // ... data to create a VehicleDriverAssignment
+     *   }
+     * })
+     * 
+     */
+    create<T extends VehicleDriverAssignmentCreateArgs>(args: SelectSubset<T, VehicleDriverAssignmentCreateArgs<ExtArgs>>): Prisma__VehicleDriverAssignmentClient<$Result.GetResult<Prisma.$VehicleDriverAssignmentPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many VehicleDriverAssignments.
+     * @param {VehicleDriverAssignmentCreateManyArgs} args - Arguments to create many VehicleDriverAssignments.
+     * @example
+     * // Create many VehicleDriverAssignments
+     * const vehicleDriverAssignment = await prisma.vehicleDriverAssignment.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends VehicleDriverAssignmentCreateManyArgs>(args?: SelectSubset<T, VehicleDriverAssignmentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many VehicleDriverAssignments and returns the data saved in the database.
+     * @param {VehicleDriverAssignmentCreateManyAndReturnArgs} args - Arguments to create many VehicleDriverAssignments.
+     * @example
+     * // Create many VehicleDriverAssignments
+     * const vehicleDriverAssignment = await prisma.vehicleDriverAssignment.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many VehicleDriverAssignments and only return the `id`
+     * const vehicleDriverAssignmentWithIdOnly = await prisma.vehicleDriverAssignment.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends VehicleDriverAssignmentCreateManyAndReturnArgs>(args?: SelectSubset<T, VehicleDriverAssignmentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VehicleDriverAssignmentPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a VehicleDriverAssignment.
+     * @param {VehicleDriverAssignmentDeleteArgs} args - Arguments to delete one VehicleDriverAssignment.
+     * @example
+     * // Delete one VehicleDriverAssignment
+     * const VehicleDriverAssignment = await prisma.vehicleDriverAssignment.delete({
+     *   where: {
+     *     // ... filter to delete one VehicleDriverAssignment
+     *   }
+     * })
+     * 
+     */
+    delete<T extends VehicleDriverAssignmentDeleteArgs>(args: SelectSubset<T, VehicleDriverAssignmentDeleteArgs<ExtArgs>>): Prisma__VehicleDriverAssignmentClient<$Result.GetResult<Prisma.$VehicleDriverAssignmentPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one VehicleDriverAssignment.
+     * @param {VehicleDriverAssignmentUpdateArgs} args - Arguments to update one VehicleDriverAssignment.
+     * @example
+     * // Update one VehicleDriverAssignment
+     * const vehicleDriverAssignment = await prisma.vehicleDriverAssignment.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends VehicleDriverAssignmentUpdateArgs>(args: SelectSubset<T, VehicleDriverAssignmentUpdateArgs<ExtArgs>>): Prisma__VehicleDriverAssignmentClient<$Result.GetResult<Prisma.$VehicleDriverAssignmentPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more VehicleDriverAssignments.
+     * @param {VehicleDriverAssignmentDeleteManyArgs} args - Arguments to filter VehicleDriverAssignments to delete.
+     * @example
+     * // Delete a few VehicleDriverAssignments
+     * const { count } = await prisma.vehicleDriverAssignment.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends VehicleDriverAssignmentDeleteManyArgs>(args?: SelectSubset<T, VehicleDriverAssignmentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more VehicleDriverAssignments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VehicleDriverAssignmentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many VehicleDriverAssignments
+     * const vehicleDriverAssignment = await prisma.vehicleDriverAssignment.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends VehicleDriverAssignmentUpdateManyArgs>(args: SelectSubset<T, VehicleDriverAssignmentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one VehicleDriverAssignment.
+     * @param {VehicleDriverAssignmentUpsertArgs} args - Arguments to update or create a VehicleDriverAssignment.
+     * @example
+     * // Update or create a VehicleDriverAssignment
+     * const vehicleDriverAssignment = await prisma.vehicleDriverAssignment.upsert({
+     *   create: {
+     *     // ... data to create a VehicleDriverAssignment
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the VehicleDriverAssignment we want to update
+     *   }
+     * })
+     */
+    upsert<T extends VehicleDriverAssignmentUpsertArgs>(args: SelectSubset<T, VehicleDriverAssignmentUpsertArgs<ExtArgs>>): Prisma__VehicleDriverAssignmentClient<$Result.GetResult<Prisma.$VehicleDriverAssignmentPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of VehicleDriverAssignments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VehicleDriverAssignmentCountArgs} args - Arguments to filter VehicleDriverAssignments to count.
+     * @example
+     * // Count the number of VehicleDriverAssignments
+     * const count = await prisma.vehicleDriverAssignment.count({
+     *   where: {
+     *     // ... the filter for the VehicleDriverAssignments we want to count
+     *   }
+     * })
+    **/
+    count<T extends VehicleDriverAssignmentCountArgs>(
+      args?: Subset<T, VehicleDriverAssignmentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], VehicleDriverAssignmentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a VehicleDriverAssignment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VehicleDriverAssignmentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends VehicleDriverAssignmentAggregateArgs>(args: Subset<T, VehicleDriverAssignmentAggregateArgs>): Prisma.PrismaPromise<GetVehicleDriverAssignmentAggregateType<T>>
+
+    /**
+     * Group by VehicleDriverAssignment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VehicleDriverAssignmentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends VehicleDriverAssignmentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: VehicleDriverAssignmentGroupByArgs['orderBy'] }
+        : { orderBy?: VehicleDriverAssignmentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, VehicleDriverAssignmentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetVehicleDriverAssignmentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the VehicleDriverAssignment model
+   */
+  readonly fields: VehicleDriverAssignmentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for VehicleDriverAssignment.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__VehicleDriverAssignmentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    vehicle<T extends VehicleDefaultArgs<ExtArgs> = {}>(args?: Subset<T, VehicleDefaultArgs<ExtArgs>>): Prisma__VehicleClient<$Result.GetResult<Prisma.$VehiclePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    driver<T extends DriverDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DriverDefaultArgs<ExtArgs>>): Prisma__DriverClient<$Result.GetResult<Prisma.$DriverPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the VehicleDriverAssignment model
+   */ 
+  interface VehicleDriverAssignmentFieldRefs {
+    readonly id: FieldRef<"VehicleDriverAssignment", 'String'>
+    readonly tenantId: FieldRef<"VehicleDriverAssignment", 'String'>
+    readonly vehicleId: FieldRef<"VehicleDriverAssignment", 'String'>
+    readonly driverId: FieldRef<"VehicleDriverAssignment", 'String'>
+    readonly assignedAt: FieldRef<"VehicleDriverAssignment", 'DateTime'>
+    readonly unassignedAt: FieldRef<"VehicleDriverAssignment", 'DateTime'>
+    readonly active: FieldRef<"VehicleDriverAssignment", 'Boolean'>
+    readonly note: FieldRef<"VehicleDriverAssignment", 'String'>
+    readonly createdAt: FieldRef<"VehicleDriverAssignment", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * VehicleDriverAssignment findUnique
+   */
+  export type VehicleDriverAssignmentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VehicleDriverAssignment
+     */
+    select?: VehicleDriverAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VehicleDriverAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which VehicleDriverAssignment to fetch.
+     */
+    where: VehicleDriverAssignmentWhereUniqueInput
+  }
+
+  /**
+   * VehicleDriverAssignment findUniqueOrThrow
+   */
+  export type VehicleDriverAssignmentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VehicleDriverAssignment
+     */
+    select?: VehicleDriverAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VehicleDriverAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which VehicleDriverAssignment to fetch.
+     */
+    where: VehicleDriverAssignmentWhereUniqueInput
+  }
+
+  /**
+   * VehicleDriverAssignment findFirst
+   */
+  export type VehicleDriverAssignmentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VehicleDriverAssignment
+     */
+    select?: VehicleDriverAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VehicleDriverAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which VehicleDriverAssignment to fetch.
+     */
+    where?: VehicleDriverAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VehicleDriverAssignments to fetch.
+     */
+    orderBy?: VehicleDriverAssignmentOrderByWithRelationInput | VehicleDriverAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for VehicleDriverAssignments.
+     */
+    cursor?: VehicleDriverAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VehicleDriverAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VehicleDriverAssignments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VehicleDriverAssignments.
+     */
+    distinct?: VehicleDriverAssignmentScalarFieldEnum | VehicleDriverAssignmentScalarFieldEnum[]
+  }
+
+  /**
+   * VehicleDriverAssignment findFirstOrThrow
+   */
+  export type VehicleDriverAssignmentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VehicleDriverAssignment
+     */
+    select?: VehicleDriverAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VehicleDriverAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which VehicleDriverAssignment to fetch.
+     */
+    where?: VehicleDriverAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VehicleDriverAssignments to fetch.
+     */
+    orderBy?: VehicleDriverAssignmentOrderByWithRelationInput | VehicleDriverAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for VehicleDriverAssignments.
+     */
+    cursor?: VehicleDriverAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VehicleDriverAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VehicleDriverAssignments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VehicleDriverAssignments.
+     */
+    distinct?: VehicleDriverAssignmentScalarFieldEnum | VehicleDriverAssignmentScalarFieldEnum[]
+  }
+
+  /**
+   * VehicleDriverAssignment findMany
+   */
+  export type VehicleDriverAssignmentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VehicleDriverAssignment
+     */
+    select?: VehicleDriverAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VehicleDriverAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which VehicleDriverAssignments to fetch.
+     */
+    where?: VehicleDriverAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VehicleDriverAssignments to fetch.
+     */
+    orderBy?: VehicleDriverAssignmentOrderByWithRelationInput | VehicleDriverAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing VehicleDriverAssignments.
+     */
+    cursor?: VehicleDriverAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VehicleDriverAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VehicleDriverAssignments.
+     */
+    skip?: number
+    distinct?: VehicleDriverAssignmentScalarFieldEnum | VehicleDriverAssignmentScalarFieldEnum[]
+  }
+
+  /**
+   * VehicleDriverAssignment create
+   */
+  export type VehicleDriverAssignmentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VehicleDriverAssignment
+     */
+    select?: VehicleDriverAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VehicleDriverAssignmentInclude<ExtArgs> | null
+    /**
+     * The data needed to create a VehicleDriverAssignment.
+     */
+    data: XOR<VehicleDriverAssignmentCreateInput, VehicleDriverAssignmentUncheckedCreateInput>
+  }
+
+  /**
+   * VehicleDriverAssignment createMany
+   */
+  export type VehicleDriverAssignmentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many VehicleDriverAssignments.
+     */
+    data: VehicleDriverAssignmentCreateManyInput | VehicleDriverAssignmentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * VehicleDriverAssignment createManyAndReturn
+   */
+  export type VehicleDriverAssignmentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VehicleDriverAssignment
+     */
+    select?: VehicleDriverAssignmentSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many VehicleDriverAssignments.
+     */
+    data: VehicleDriverAssignmentCreateManyInput | VehicleDriverAssignmentCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VehicleDriverAssignmentIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * VehicleDriverAssignment update
+   */
+  export type VehicleDriverAssignmentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VehicleDriverAssignment
+     */
+    select?: VehicleDriverAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VehicleDriverAssignmentInclude<ExtArgs> | null
+    /**
+     * The data needed to update a VehicleDriverAssignment.
+     */
+    data: XOR<VehicleDriverAssignmentUpdateInput, VehicleDriverAssignmentUncheckedUpdateInput>
+    /**
+     * Choose, which VehicleDriverAssignment to update.
+     */
+    where: VehicleDriverAssignmentWhereUniqueInput
+  }
+
+  /**
+   * VehicleDriverAssignment updateMany
+   */
+  export type VehicleDriverAssignmentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update VehicleDriverAssignments.
+     */
+    data: XOR<VehicleDriverAssignmentUpdateManyMutationInput, VehicleDriverAssignmentUncheckedUpdateManyInput>
+    /**
+     * Filter which VehicleDriverAssignments to update
+     */
+    where?: VehicleDriverAssignmentWhereInput
+  }
+
+  /**
+   * VehicleDriverAssignment upsert
+   */
+  export type VehicleDriverAssignmentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VehicleDriverAssignment
+     */
+    select?: VehicleDriverAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VehicleDriverAssignmentInclude<ExtArgs> | null
+    /**
+     * The filter to search for the VehicleDriverAssignment to update in case it exists.
+     */
+    where: VehicleDriverAssignmentWhereUniqueInput
+    /**
+     * In case the VehicleDriverAssignment found by the `where` argument doesn't exist, create a new VehicleDriverAssignment with this data.
+     */
+    create: XOR<VehicleDriverAssignmentCreateInput, VehicleDriverAssignmentUncheckedCreateInput>
+    /**
+     * In case the VehicleDriverAssignment was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<VehicleDriverAssignmentUpdateInput, VehicleDriverAssignmentUncheckedUpdateInput>
+  }
+
+  /**
+   * VehicleDriverAssignment delete
+   */
+  export type VehicleDriverAssignmentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VehicleDriverAssignment
+     */
+    select?: VehicleDriverAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VehicleDriverAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter which VehicleDriverAssignment to delete.
+     */
+    where: VehicleDriverAssignmentWhereUniqueInput
+  }
+
+  /**
+   * VehicleDriverAssignment deleteMany
+   */
+  export type VehicleDriverAssignmentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which VehicleDriverAssignments to delete
+     */
+    where?: VehicleDriverAssignmentWhereInput
+  }
+
+  /**
+   * VehicleDriverAssignment without action
+   */
+  export type VehicleDriverAssignmentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VehicleDriverAssignment
+     */
+    select?: VehicleDriverAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VehicleDriverAssignmentInclude<ExtArgs> | null
   }
 
 
@@ -59323,6 +60704,969 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: AmericanaChainRateInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model DriverBatchHistory
+   */
+
+  export type AggregateDriverBatchHistory = {
+    _count: DriverBatchHistoryCountAggregateOutputType | null
+    _min: DriverBatchHistoryMinAggregateOutputType | null
+    _max: DriverBatchHistoryMaxAggregateOutputType | null
+  }
+
+  export type DriverBatchHistoryMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    driverId: string | null
+    batchNumber: string | null
+    changedAt: Date | null
+    changedBy: string | null
+    note: string | null
+  }
+
+  export type DriverBatchHistoryMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    driverId: string | null
+    batchNumber: string | null
+    changedAt: Date | null
+    changedBy: string | null
+    note: string | null
+  }
+
+  export type DriverBatchHistoryCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    driverId: number
+    batchNumber: number
+    changedAt: number
+    changedBy: number
+    note: number
+    _all: number
+  }
+
+
+  export type DriverBatchHistoryMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    driverId?: true
+    batchNumber?: true
+    changedAt?: true
+    changedBy?: true
+    note?: true
+  }
+
+  export type DriverBatchHistoryMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    driverId?: true
+    batchNumber?: true
+    changedAt?: true
+    changedBy?: true
+    note?: true
+  }
+
+  export type DriverBatchHistoryCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    driverId?: true
+    batchNumber?: true
+    changedAt?: true
+    changedBy?: true
+    note?: true
+    _all?: true
+  }
+
+  export type DriverBatchHistoryAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DriverBatchHistory to aggregate.
+     */
+    where?: DriverBatchHistoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DriverBatchHistories to fetch.
+     */
+    orderBy?: DriverBatchHistoryOrderByWithRelationInput | DriverBatchHistoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DriverBatchHistoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DriverBatchHistories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DriverBatchHistories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned DriverBatchHistories
+    **/
+    _count?: true | DriverBatchHistoryCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DriverBatchHistoryMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DriverBatchHistoryMaxAggregateInputType
+  }
+
+  export type GetDriverBatchHistoryAggregateType<T extends DriverBatchHistoryAggregateArgs> = {
+        [P in keyof T & keyof AggregateDriverBatchHistory]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDriverBatchHistory[P]>
+      : GetScalarType<T[P], AggregateDriverBatchHistory[P]>
+  }
+
+
+
+
+  export type DriverBatchHistoryGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DriverBatchHistoryWhereInput
+    orderBy?: DriverBatchHistoryOrderByWithAggregationInput | DriverBatchHistoryOrderByWithAggregationInput[]
+    by: DriverBatchHistoryScalarFieldEnum[] | DriverBatchHistoryScalarFieldEnum
+    having?: DriverBatchHistoryScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DriverBatchHistoryCountAggregateInputType | true
+    _min?: DriverBatchHistoryMinAggregateInputType
+    _max?: DriverBatchHistoryMaxAggregateInputType
+  }
+
+  export type DriverBatchHistoryGroupByOutputType = {
+    id: string
+    tenantId: string
+    driverId: string
+    batchNumber: string | null
+    changedAt: Date
+    changedBy: string | null
+    note: string | null
+    _count: DriverBatchHistoryCountAggregateOutputType | null
+    _min: DriverBatchHistoryMinAggregateOutputType | null
+    _max: DriverBatchHistoryMaxAggregateOutputType | null
+  }
+
+  type GetDriverBatchHistoryGroupByPayload<T extends DriverBatchHistoryGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DriverBatchHistoryGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DriverBatchHistoryGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DriverBatchHistoryGroupByOutputType[P]>
+            : GetScalarType<T[P], DriverBatchHistoryGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DriverBatchHistorySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    driverId?: boolean
+    batchNumber?: boolean
+    changedAt?: boolean
+    changedBy?: boolean
+    note?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    driver?: boolean | DriverDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["driverBatchHistory"]>
+
+  export type DriverBatchHistorySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    driverId?: boolean
+    batchNumber?: boolean
+    changedAt?: boolean
+    changedBy?: boolean
+    note?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    driver?: boolean | DriverDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["driverBatchHistory"]>
+
+  export type DriverBatchHistorySelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    driverId?: boolean
+    batchNumber?: boolean
+    changedAt?: boolean
+    changedBy?: boolean
+    note?: boolean
+  }
+
+  export type DriverBatchHistoryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    driver?: boolean | DriverDefaultArgs<ExtArgs>
+  }
+  export type DriverBatchHistoryIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    driver?: boolean | DriverDefaultArgs<ExtArgs>
+  }
+
+  export type $DriverBatchHistoryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "DriverBatchHistory"
+    objects: {
+      tenant: Prisma.$TenantPayload<ExtArgs>
+      driver: Prisma.$DriverPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      driverId: string
+      batchNumber: string | null
+      changedAt: Date
+      changedBy: string | null
+      note: string | null
+    }, ExtArgs["result"]["driverBatchHistory"]>
+    composites: {}
+  }
+
+  type DriverBatchHistoryGetPayload<S extends boolean | null | undefined | DriverBatchHistoryDefaultArgs> = $Result.GetResult<Prisma.$DriverBatchHistoryPayload, S>
+
+  type DriverBatchHistoryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<DriverBatchHistoryFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: DriverBatchHistoryCountAggregateInputType | true
+    }
+
+  export interface DriverBatchHistoryDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['DriverBatchHistory'], meta: { name: 'DriverBatchHistory' } }
+    /**
+     * Find zero or one DriverBatchHistory that matches the filter.
+     * @param {DriverBatchHistoryFindUniqueArgs} args - Arguments to find a DriverBatchHistory
+     * @example
+     * // Get one DriverBatchHistory
+     * const driverBatchHistory = await prisma.driverBatchHistory.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DriverBatchHistoryFindUniqueArgs>(args: SelectSubset<T, DriverBatchHistoryFindUniqueArgs<ExtArgs>>): Prisma__DriverBatchHistoryClient<$Result.GetResult<Prisma.$DriverBatchHistoryPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one DriverBatchHistory that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {DriverBatchHistoryFindUniqueOrThrowArgs} args - Arguments to find a DriverBatchHistory
+     * @example
+     * // Get one DriverBatchHistory
+     * const driverBatchHistory = await prisma.driverBatchHistory.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DriverBatchHistoryFindUniqueOrThrowArgs>(args: SelectSubset<T, DriverBatchHistoryFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DriverBatchHistoryClient<$Result.GetResult<Prisma.$DriverBatchHistoryPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first DriverBatchHistory that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DriverBatchHistoryFindFirstArgs} args - Arguments to find a DriverBatchHistory
+     * @example
+     * // Get one DriverBatchHistory
+     * const driverBatchHistory = await prisma.driverBatchHistory.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DriverBatchHistoryFindFirstArgs>(args?: SelectSubset<T, DriverBatchHistoryFindFirstArgs<ExtArgs>>): Prisma__DriverBatchHistoryClient<$Result.GetResult<Prisma.$DriverBatchHistoryPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first DriverBatchHistory that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DriverBatchHistoryFindFirstOrThrowArgs} args - Arguments to find a DriverBatchHistory
+     * @example
+     * // Get one DriverBatchHistory
+     * const driverBatchHistory = await prisma.driverBatchHistory.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DriverBatchHistoryFindFirstOrThrowArgs>(args?: SelectSubset<T, DriverBatchHistoryFindFirstOrThrowArgs<ExtArgs>>): Prisma__DriverBatchHistoryClient<$Result.GetResult<Prisma.$DriverBatchHistoryPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more DriverBatchHistories that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DriverBatchHistoryFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all DriverBatchHistories
+     * const driverBatchHistories = await prisma.driverBatchHistory.findMany()
+     * 
+     * // Get first 10 DriverBatchHistories
+     * const driverBatchHistories = await prisma.driverBatchHistory.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const driverBatchHistoryWithIdOnly = await prisma.driverBatchHistory.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends DriverBatchHistoryFindManyArgs>(args?: SelectSubset<T, DriverBatchHistoryFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DriverBatchHistoryPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a DriverBatchHistory.
+     * @param {DriverBatchHistoryCreateArgs} args - Arguments to create a DriverBatchHistory.
+     * @example
+     * // Create one DriverBatchHistory
+     * const DriverBatchHistory = await prisma.driverBatchHistory.create({
+     *   data: {
+     *     // ... data to create a DriverBatchHistory
+     *   }
+     * })
+     * 
+     */
+    create<T extends DriverBatchHistoryCreateArgs>(args: SelectSubset<T, DriverBatchHistoryCreateArgs<ExtArgs>>): Prisma__DriverBatchHistoryClient<$Result.GetResult<Prisma.$DriverBatchHistoryPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many DriverBatchHistories.
+     * @param {DriverBatchHistoryCreateManyArgs} args - Arguments to create many DriverBatchHistories.
+     * @example
+     * // Create many DriverBatchHistories
+     * const driverBatchHistory = await prisma.driverBatchHistory.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DriverBatchHistoryCreateManyArgs>(args?: SelectSubset<T, DriverBatchHistoryCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many DriverBatchHistories and returns the data saved in the database.
+     * @param {DriverBatchHistoryCreateManyAndReturnArgs} args - Arguments to create many DriverBatchHistories.
+     * @example
+     * // Create many DriverBatchHistories
+     * const driverBatchHistory = await prisma.driverBatchHistory.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many DriverBatchHistories and only return the `id`
+     * const driverBatchHistoryWithIdOnly = await prisma.driverBatchHistory.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DriverBatchHistoryCreateManyAndReturnArgs>(args?: SelectSubset<T, DriverBatchHistoryCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DriverBatchHistoryPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a DriverBatchHistory.
+     * @param {DriverBatchHistoryDeleteArgs} args - Arguments to delete one DriverBatchHistory.
+     * @example
+     * // Delete one DriverBatchHistory
+     * const DriverBatchHistory = await prisma.driverBatchHistory.delete({
+     *   where: {
+     *     // ... filter to delete one DriverBatchHistory
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DriverBatchHistoryDeleteArgs>(args: SelectSubset<T, DriverBatchHistoryDeleteArgs<ExtArgs>>): Prisma__DriverBatchHistoryClient<$Result.GetResult<Prisma.$DriverBatchHistoryPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one DriverBatchHistory.
+     * @param {DriverBatchHistoryUpdateArgs} args - Arguments to update one DriverBatchHistory.
+     * @example
+     * // Update one DriverBatchHistory
+     * const driverBatchHistory = await prisma.driverBatchHistory.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DriverBatchHistoryUpdateArgs>(args: SelectSubset<T, DriverBatchHistoryUpdateArgs<ExtArgs>>): Prisma__DriverBatchHistoryClient<$Result.GetResult<Prisma.$DriverBatchHistoryPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more DriverBatchHistories.
+     * @param {DriverBatchHistoryDeleteManyArgs} args - Arguments to filter DriverBatchHistories to delete.
+     * @example
+     * // Delete a few DriverBatchHistories
+     * const { count } = await prisma.driverBatchHistory.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DriverBatchHistoryDeleteManyArgs>(args?: SelectSubset<T, DriverBatchHistoryDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DriverBatchHistories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DriverBatchHistoryUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many DriverBatchHistories
+     * const driverBatchHistory = await prisma.driverBatchHistory.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DriverBatchHistoryUpdateManyArgs>(args: SelectSubset<T, DriverBatchHistoryUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one DriverBatchHistory.
+     * @param {DriverBatchHistoryUpsertArgs} args - Arguments to update or create a DriverBatchHistory.
+     * @example
+     * // Update or create a DriverBatchHistory
+     * const driverBatchHistory = await prisma.driverBatchHistory.upsert({
+     *   create: {
+     *     // ... data to create a DriverBatchHistory
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the DriverBatchHistory we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DriverBatchHistoryUpsertArgs>(args: SelectSubset<T, DriverBatchHistoryUpsertArgs<ExtArgs>>): Prisma__DriverBatchHistoryClient<$Result.GetResult<Prisma.$DriverBatchHistoryPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of DriverBatchHistories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DriverBatchHistoryCountArgs} args - Arguments to filter DriverBatchHistories to count.
+     * @example
+     * // Count the number of DriverBatchHistories
+     * const count = await prisma.driverBatchHistory.count({
+     *   where: {
+     *     // ... the filter for the DriverBatchHistories we want to count
+     *   }
+     * })
+    **/
+    count<T extends DriverBatchHistoryCountArgs>(
+      args?: Subset<T, DriverBatchHistoryCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DriverBatchHistoryCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a DriverBatchHistory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DriverBatchHistoryAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DriverBatchHistoryAggregateArgs>(args: Subset<T, DriverBatchHistoryAggregateArgs>): Prisma.PrismaPromise<GetDriverBatchHistoryAggregateType<T>>
+
+    /**
+     * Group by DriverBatchHistory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DriverBatchHistoryGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DriverBatchHistoryGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DriverBatchHistoryGroupByArgs['orderBy'] }
+        : { orderBy?: DriverBatchHistoryGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DriverBatchHistoryGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDriverBatchHistoryGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the DriverBatchHistory model
+   */
+  readonly fields: DriverBatchHistoryFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for DriverBatchHistory.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DriverBatchHistoryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    driver<T extends DriverDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DriverDefaultArgs<ExtArgs>>): Prisma__DriverClient<$Result.GetResult<Prisma.$DriverPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the DriverBatchHistory model
+   */ 
+  interface DriverBatchHistoryFieldRefs {
+    readonly id: FieldRef<"DriverBatchHistory", 'String'>
+    readonly tenantId: FieldRef<"DriverBatchHistory", 'String'>
+    readonly driverId: FieldRef<"DriverBatchHistory", 'String'>
+    readonly batchNumber: FieldRef<"DriverBatchHistory", 'String'>
+    readonly changedAt: FieldRef<"DriverBatchHistory", 'DateTime'>
+    readonly changedBy: FieldRef<"DriverBatchHistory", 'String'>
+    readonly note: FieldRef<"DriverBatchHistory", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * DriverBatchHistory findUnique
+   */
+  export type DriverBatchHistoryFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverBatchHistory
+     */
+    select?: DriverBatchHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DriverBatchHistoryInclude<ExtArgs> | null
+    /**
+     * Filter, which DriverBatchHistory to fetch.
+     */
+    where: DriverBatchHistoryWhereUniqueInput
+  }
+
+  /**
+   * DriverBatchHistory findUniqueOrThrow
+   */
+  export type DriverBatchHistoryFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverBatchHistory
+     */
+    select?: DriverBatchHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DriverBatchHistoryInclude<ExtArgs> | null
+    /**
+     * Filter, which DriverBatchHistory to fetch.
+     */
+    where: DriverBatchHistoryWhereUniqueInput
+  }
+
+  /**
+   * DriverBatchHistory findFirst
+   */
+  export type DriverBatchHistoryFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverBatchHistory
+     */
+    select?: DriverBatchHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DriverBatchHistoryInclude<ExtArgs> | null
+    /**
+     * Filter, which DriverBatchHistory to fetch.
+     */
+    where?: DriverBatchHistoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DriverBatchHistories to fetch.
+     */
+    orderBy?: DriverBatchHistoryOrderByWithRelationInput | DriverBatchHistoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DriverBatchHistories.
+     */
+    cursor?: DriverBatchHistoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DriverBatchHistories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DriverBatchHistories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DriverBatchHistories.
+     */
+    distinct?: DriverBatchHistoryScalarFieldEnum | DriverBatchHistoryScalarFieldEnum[]
+  }
+
+  /**
+   * DriverBatchHistory findFirstOrThrow
+   */
+  export type DriverBatchHistoryFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverBatchHistory
+     */
+    select?: DriverBatchHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DriverBatchHistoryInclude<ExtArgs> | null
+    /**
+     * Filter, which DriverBatchHistory to fetch.
+     */
+    where?: DriverBatchHistoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DriverBatchHistories to fetch.
+     */
+    orderBy?: DriverBatchHistoryOrderByWithRelationInput | DriverBatchHistoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DriverBatchHistories.
+     */
+    cursor?: DriverBatchHistoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DriverBatchHistories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DriverBatchHistories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DriverBatchHistories.
+     */
+    distinct?: DriverBatchHistoryScalarFieldEnum | DriverBatchHistoryScalarFieldEnum[]
+  }
+
+  /**
+   * DriverBatchHistory findMany
+   */
+  export type DriverBatchHistoryFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverBatchHistory
+     */
+    select?: DriverBatchHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DriverBatchHistoryInclude<ExtArgs> | null
+    /**
+     * Filter, which DriverBatchHistories to fetch.
+     */
+    where?: DriverBatchHistoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DriverBatchHistories to fetch.
+     */
+    orderBy?: DriverBatchHistoryOrderByWithRelationInput | DriverBatchHistoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing DriverBatchHistories.
+     */
+    cursor?: DriverBatchHistoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DriverBatchHistories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DriverBatchHistories.
+     */
+    skip?: number
+    distinct?: DriverBatchHistoryScalarFieldEnum | DriverBatchHistoryScalarFieldEnum[]
+  }
+
+  /**
+   * DriverBatchHistory create
+   */
+  export type DriverBatchHistoryCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverBatchHistory
+     */
+    select?: DriverBatchHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DriverBatchHistoryInclude<ExtArgs> | null
+    /**
+     * The data needed to create a DriverBatchHistory.
+     */
+    data: XOR<DriverBatchHistoryCreateInput, DriverBatchHistoryUncheckedCreateInput>
+  }
+
+  /**
+   * DriverBatchHistory createMany
+   */
+  export type DriverBatchHistoryCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many DriverBatchHistories.
+     */
+    data: DriverBatchHistoryCreateManyInput | DriverBatchHistoryCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DriverBatchHistory createManyAndReturn
+   */
+  export type DriverBatchHistoryCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverBatchHistory
+     */
+    select?: DriverBatchHistorySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many DriverBatchHistories.
+     */
+    data: DriverBatchHistoryCreateManyInput | DriverBatchHistoryCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DriverBatchHistoryIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * DriverBatchHistory update
+   */
+  export type DriverBatchHistoryUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverBatchHistory
+     */
+    select?: DriverBatchHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DriverBatchHistoryInclude<ExtArgs> | null
+    /**
+     * The data needed to update a DriverBatchHistory.
+     */
+    data: XOR<DriverBatchHistoryUpdateInput, DriverBatchHistoryUncheckedUpdateInput>
+    /**
+     * Choose, which DriverBatchHistory to update.
+     */
+    where: DriverBatchHistoryWhereUniqueInput
+  }
+
+  /**
+   * DriverBatchHistory updateMany
+   */
+  export type DriverBatchHistoryUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update DriverBatchHistories.
+     */
+    data: XOR<DriverBatchHistoryUpdateManyMutationInput, DriverBatchHistoryUncheckedUpdateManyInput>
+    /**
+     * Filter which DriverBatchHistories to update
+     */
+    where?: DriverBatchHistoryWhereInput
+  }
+
+  /**
+   * DriverBatchHistory upsert
+   */
+  export type DriverBatchHistoryUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverBatchHistory
+     */
+    select?: DriverBatchHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DriverBatchHistoryInclude<ExtArgs> | null
+    /**
+     * The filter to search for the DriverBatchHistory to update in case it exists.
+     */
+    where: DriverBatchHistoryWhereUniqueInput
+    /**
+     * In case the DriverBatchHistory found by the `where` argument doesn't exist, create a new DriverBatchHistory with this data.
+     */
+    create: XOR<DriverBatchHistoryCreateInput, DriverBatchHistoryUncheckedCreateInput>
+    /**
+     * In case the DriverBatchHistory was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DriverBatchHistoryUpdateInput, DriverBatchHistoryUncheckedUpdateInput>
+  }
+
+  /**
+   * DriverBatchHistory delete
+   */
+  export type DriverBatchHistoryDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverBatchHistory
+     */
+    select?: DriverBatchHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DriverBatchHistoryInclude<ExtArgs> | null
+    /**
+     * Filter which DriverBatchHistory to delete.
+     */
+    where: DriverBatchHistoryWhereUniqueInput
+  }
+
+  /**
+   * DriverBatchHistory deleteMany
+   */
+  export type DriverBatchHistoryDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DriverBatchHistories to delete
+     */
+    where?: DriverBatchHistoryWhereInput
+  }
+
+  /**
+   * DriverBatchHistory without action
+   */
+  export type DriverBatchHistoryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverBatchHistory
+     */
+    select?: DriverBatchHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DriverBatchHistoryInclude<ExtArgs> | null
   }
 
 
@@ -99866,6 +102210,9 @@ export namespace Prisma {
     quantity: 'quantity',
     issuedDate: 'issuedDate',
     returnedDate: 'returnedDate',
+    condition: 'condition',
+    conditionNote: 'conditionNote',
+    conditionReportedAt: 'conditionReportedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -99914,6 +102261,21 @@ export namespace Prisma {
   };
 
   export type VehicleScalarFieldEnum = (typeof VehicleScalarFieldEnum)[keyof typeof VehicleScalarFieldEnum]
+
+
+  export const VehicleDriverAssignmentScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    vehicleId: 'vehicleId',
+    driverId: 'driverId',
+    assignedAt: 'assignedAt',
+    unassignedAt: 'unassignedAt',
+    active: 'active',
+    note: 'note',
+    createdAt: 'createdAt'
+  };
+
+  export type VehicleDriverAssignmentScalarFieldEnum = (typeof VehicleDriverAssignmentScalarFieldEnum)[keyof typeof VehicleDriverAssignmentScalarFieldEnum]
 
 
   export const ShiftScalarFieldEnum: {
@@ -100598,6 +102960,19 @@ export namespace Prisma {
   };
 
   export type AmericanaChainRateScalarFieldEnum = (typeof AmericanaChainRateScalarFieldEnum)[keyof typeof AmericanaChainRateScalarFieldEnum]
+
+
+  export const DriverBatchHistoryScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    driverId: 'driverId',
+    batchNumber: 'batchNumber',
+    changedAt: 'changedAt',
+    changedBy: 'changedBy',
+    note: 'note'
+  };
+
+  export type DriverBatchHistoryScalarFieldEnum = (typeof DriverBatchHistoryScalarFieldEnum)[keyof typeof DriverBatchHistoryScalarFieldEnum]
 
 
   export const AmericanaStoreAssignmentScalarFieldEnum: {
@@ -101406,7 +103781,8 @@ export namespace Prisma {
 
   export const DriverInventoryOrderByRelevanceFieldEnum: {
     id: 'id',
-    driverId: 'driverId'
+    driverId: 'driverId',
+    conditionNote: 'conditionNote'
   };
 
   export type DriverInventoryOrderByRelevanceFieldEnum = (typeof DriverInventoryOrderByRelevanceFieldEnum)[keyof typeof DriverInventoryOrderByRelevanceFieldEnum]
@@ -101441,6 +103817,17 @@ export namespace Prisma {
   };
 
   export type VehicleOrderByRelevanceFieldEnum = (typeof VehicleOrderByRelevanceFieldEnum)[keyof typeof VehicleOrderByRelevanceFieldEnum]
+
+
+  export const VehicleDriverAssignmentOrderByRelevanceFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    vehicleId: 'vehicleId',
+    driverId: 'driverId',
+    note: 'note'
+  };
+
+  export type VehicleDriverAssignmentOrderByRelevanceFieldEnum = (typeof VehicleDriverAssignmentOrderByRelevanceFieldEnum)[keyof typeof VehicleDriverAssignmentOrderByRelevanceFieldEnum]
 
 
   export const ShiftOrderByRelevanceFieldEnum: {
@@ -101850,6 +104237,18 @@ export namespace Prisma {
   };
 
   export type AmericanaChainRateOrderByRelevanceFieldEnum = (typeof AmericanaChainRateOrderByRelevanceFieldEnum)[keyof typeof AmericanaChainRateOrderByRelevanceFieldEnum]
+
+
+  export const DriverBatchHistoryOrderByRelevanceFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    driverId: 'driverId',
+    batchNumber: 'batchNumber',
+    changedBy: 'changedBy',
+    note: 'note'
+  };
+
+  export type DriverBatchHistoryOrderByRelevanceFieldEnum = (typeof DriverBatchHistoryOrderByRelevanceFieldEnum)[keyof typeof DriverBatchHistoryOrderByRelevanceFieldEnum]
 
 
   export const AmericanaStoreAssignmentOrderByRelevanceFieldEnum: {
@@ -102539,6 +104938,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'EquipmentCondition'
+   */
+  export type EnumEquipmentConditionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EquipmentCondition'>
+    
+
+
+  /**
+   * Reference to a field of type 'EquipmentCondition[]'
+   */
+  export type ListEnumEquipmentConditionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EquipmentCondition[]'>
+    
+
+
+  /**
    * Reference to a field of type 'RecruitmentStage'
    */
   export type EnumRecruitmentStageFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecruitmentStage'>
@@ -103080,6 +105493,7 @@ export namespace Prisma {
     companies?: CompanyListRelationFilter
     users?: UserListRelationFilter
     drivers?: DriverListRelationFilter
+    driverBatchHistory?: DriverBatchHistoryListRelationFilter
     shifts?: ShiftListRelationFilter
     attendanceRecords?: AttendanceRecordListRelationFilter
     orderLogs?: OrderLogListRelationFilter
@@ -103111,6 +105525,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryListRelationFilter
     driverRestrictions?: DriverRestrictionListRelationFilter
     courierOnlineSessions?: CourierOnlineSessionListRelationFilter
+    vehicleDriverAssignments?: VehicleDriverAssignmentListRelationFilter
     violations?: ViolationListRelationFilter
     penalties?: PenaltyListRelationFilter
     appeals?: AppealListRelationFilter
@@ -103165,6 +105580,7 @@ export namespace Prisma {
     companies?: CompanyOrderByRelationAggregateInput
     users?: UserOrderByRelationAggregateInput
     drivers?: DriverOrderByRelationAggregateInput
+    driverBatchHistory?: DriverBatchHistoryOrderByRelationAggregateInput
     shifts?: ShiftOrderByRelationAggregateInput
     attendanceRecords?: AttendanceRecordOrderByRelationAggregateInput
     orderLogs?: OrderLogOrderByRelationAggregateInput
@@ -103196,6 +105612,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryOrderByRelationAggregateInput
     driverRestrictions?: DriverRestrictionOrderByRelationAggregateInput
     courierOnlineSessions?: CourierOnlineSessionOrderByRelationAggregateInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentOrderByRelationAggregateInput
     violations?: ViolationOrderByRelationAggregateInput
     penalties?: PenaltyOrderByRelationAggregateInput
     appeals?: AppealOrderByRelationAggregateInput
@@ -103254,6 +105671,7 @@ export namespace Prisma {
     companies?: CompanyListRelationFilter
     users?: UserListRelationFilter
     drivers?: DriverListRelationFilter
+    driverBatchHistory?: DriverBatchHistoryListRelationFilter
     shifts?: ShiftListRelationFilter
     attendanceRecords?: AttendanceRecordListRelationFilter
     orderLogs?: OrderLogListRelationFilter
@@ -103285,6 +105703,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryListRelationFilter
     driverRestrictions?: DriverRestrictionListRelationFilter
     courierOnlineSessions?: CourierOnlineSessionListRelationFilter
+    vehicleDriverAssignments?: VehicleDriverAssignmentListRelationFilter
     violations?: ViolationListRelationFilter
     penalties?: PenaltyListRelationFilter
     appeals?: AppealListRelationFilter
@@ -103646,6 +106065,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogListRelationFilter
     device?: XOR<DeviceNullableRelationFilter, DeviceWhereInput> | null
     assignedVehicle?: XOR<VehicleNullableRelationFilter, VehicleWhereInput> | null
+    vehicleAssignments?: VehicleDriverAssignmentListRelationFilter
     leaveRequests?: LeaveRequestListRelationFilter
     restrictions?: DriverRestrictionListRelationFilter
     tickets?: TicketListRelationFilter
@@ -103667,6 +106087,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentListRelationFilter
     sims?: SimListRelationFilter
     performanceSnapshots?: PerformanceSnapshotListRelationFilter
+    batchHistory?: DriverBatchHistoryListRelationFilter
   }
 
   export type DriverOrderByWithRelationInput = {
@@ -103729,6 +106150,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogOrderByRelationAggregateInput
     device?: DeviceOrderByWithRelationInput
     assignedVehicle?: VehicleOrderByWithRelationInput
+    vehicleAssignments?: VehicleDriverAssignmentOrderByRelationAggregateInput
     leaveRequests?: LeaveRequestOrderByRelationAggregateInput
     restrictions?: DriverRestrictionOrderByRelationAggregateInput
     tickets?: TicketOrderByRelationAggregateInput
@@ -103750,6 +106172,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentOrderByRelationAggregateInput
     sims?: SimOrderByRelationAggregateInput
     performanceSnapshots?: PerformanceSnapshotOrderByRelationAggregateInput
+    batchHistory?: DriverBatchHistoryOrderByRelationAggregateInput
     _relevance?: DriverOrderByRelevanceInput
   }
 
@@ -103816,6 +106239,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogListRelationFilter
     device?: XOR<DeviceNullableRelationFilter, DeviceWhereInput> | null
     assignedVehicle?: XOR<VehicleNullableRelationFilter, VehicleWhereInput> | null
+    vehicleAssignments?: VehicleDriverAssignmentListRelationFilter
     leaveRequests?: LeaveRequestListRelationFilter
     restrictions?: DriverRestrictionListRelationFilter
     tickets?: TicketListRelationFilter
@@ -103837,6 +106261,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentListRelationFilter
     sims?: SimListRelationFilter
     performanceSnapshots?: PerformanceSnapshotListRelationFilter
+    batchHistory?: DriverBatchHistoryListRelationFilter
   }, "id">
 
   export type DriverOrderByWithAggregationInput = {
@@ -104028,6 +106453,9 @@ export namespace Prisma {
     quantity?: IntFilter<"DriverInventory"> | number
     issuedDate?: DateTimeNullableFilter<"DriverInventory"> | Date | string | null
     returnedDate?: DateTimeNullableFilter<"DriverInventory"> | Date | string | null
+    condition?: EnumEquipmentConditionFilter<"DriverInventory"> | $Enums.EquipmentCondition
+    conditionNote?: StringNullableFilter<"DriverInventory"> | string | null
+    conditionReportedAt?: DateTimeNullableFilter<"DriverInventory"> | Date | string | null
     createdAt?: DateTimeFilter<"DriverInventory"> | Date | string
     updatedAt?: DateTimeFilter<"DriverInventory"> | Date | string
     driver?: XOR<DriverRelationFilter, DriverWhereInput>
@@ -104041,6 +106469,9 @@ export namespace Prisma {
     quantity?: SortOrder
     issuedDate?: SortOrderInput | SortOrder
     returnedDate?: SortOrderInput | SortOrder
+    condition?: SortOrder
+    conditionNote?: SortOrderInput | SortOrder
+    conditionReportedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     driver?: DriverOrderByWithRelationInput
@@ -104058,6 +106489,9 @@ export namespace Prisma {
     quantity?: IntFilter<"DriverInventory"> | number
     issuedDate?: DateTimeNullableFilter<"DriverInventory"> | Date | string | null
     returnedDate?: DateTimeNullableFilter<"DriverInventory"> | Date | string | null
+    condition?: EnumEquipmentConditionFilter<"DriverInventory"> | $Enums.EquipmentCondition
+    conditionNote?: StringNullableFilter<"DriverInventory"> | string | null
+    conditionReportedAt?: DateTimeNullableFilter<"DriverInventory"> | Date | string | null
     createdAt?: DateTimeFilter<"DriverInventory"> | Date | string
     updatedAt?: DateTimeFilter<"DriverInventory"> | Date | string
     driver?: XOR<DriverRelationFilter, DriverWhereInput>
@@ -104071,6 +106505,9 @@ export namespace Prisma {
     quantity?: SortOrder
     issuedDate?: SortOrderInput | SortOrder
     returnedDate?: SortOrderInput | SortOrder
+    condition?: SortOrder
+    conditionNote?: SortOrderInput | SortOrder
+    conditionReportedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: DriverInventoryCountOrderByAggregateInput
@@ -104091,6 +106528,9 @@ export namespace Prisma {
     quantity?: IntWithAggregatesFilter<"DriverInventory"> | number
     issuedDate?: DateTimeNullableWithAggregatesFilter<"DriverInventory"> | Date | string | null
     returnedDate?: DateTimeNullableWithAggregatesFilter<"DriverInventory"> | Date | string | null
+    condition?: EnumEquipmentConditionWithAggregatesFilter<"DriverInventory"> | $Enums.EquipmentCondition
+    conditionNote?: StringNullableWithAggregatesFilter<"DriverInventory"> | string | null
+    conditionReportedAt?: DateTimeNullableWithAggregatesFilter<"DriverInventory"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"DriverInventory"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"DriverInventory"> | Date | string
   }
@@ -104216,6 +106656,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordListRelationFilter
     alerts?: AlertListRelationFilter
     tickets?: TicketListRelationFilter
+    driverAssignments?: VehicleDriverAssignmentListRelationFilter
   }
 
   export type VehicleOrderByWithRelationInput = {
@@ -104247,6 +106688,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordOrderByRelationAggregateInput
     alerts?: AlertOrderByRelationAggregateInput
     tickets?: TicketOrderByRelationAggregateInput
+    driverAssignments?: VehicleDriverAssignmentOrderByRelationAggregateInput
     _relevance?: VehicleOrderByRelevanceInput
   }
 
@@ -104282,6 +106724,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordListRelationFilter
     alerts?: AlertListRelationFilter
     tickets?: TicketListRelationFilter
+    driverAssignments?: VehicleDriverAssignmentListRelationFilter
   }, "id" | "plateNumber" | "assignedDriverId">
 
   export type VehicleOrderByWithAggregationInput = {
@@ -104336,6 +106779,89 @@ export namespace Prisma {
     registrationExpiry?: DateTimeWithAggregatesFilter<"Vehicle"> | Date | string
     createdAt?: DateTimeWithAggregatesFilter<"Vehicle"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Vehicle"> | Date | string
+  }
+
+  export type VehicleDriverAssignmentWhereInput = {
+    AND?: VehicleDriverAssignmentWhereInput | VehicleDriverAssignmentWhereInput[]
+    OR?: VehicleDriverAssignmentWhereInput[]
+    NOT?: VehicleDriverAssignmentWhereInput | VehicleDriverAssignmentWhereInput[]
+    id?: StringFilter<"VehicleDriverAssignment"> | string
+    tenantId?: StringFilter<"VehicleDriverAssignment"> | string
+    vehicleId?: StringFilter<"VehicleDriverAssignment"> | string
+    driverId?: StringFilter<"VehicleDriverAssignment"> | string
+    assignedAt?: DateTimeFilter<"VehicleDriverAssignment"> | Date | string
+    unassignedAt?: DateTimeNullableFilter<"VehicleDriverAssignment"> | Date | string | null
+    active?: BoolFilter<"VehicleDriverAssignment"> | boolean
+    note?: StringNullableFilter<"VehicleDriverAssignment"> | string | null
+    createdAt?: DateTimeFilter<"VehicleDriverAssignment"> | Date | string
+    tenant?: XOR<TenantRelationFilter, TenantWhereInput>
+    vehicle?: XOR<VehicleRelationFilter, VehicleWhereInput>
+    driver?: XOR<DriverRelationFilter, DriverWhereInput>
+  }
+
+  export type VehicleDriverAssignmentOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vehicleId?: SortOrder
+    driverId?: SortOrder
+    assignedAt?: SortOrder
+    unassignedAt?: SortOrderInput | SortOrder
+    active?: SortOrder
+    note?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    tenant?: TenantOrderByWithRelationInput
+    vehicle?: VehicleOrderByWithRelationInput
+    driver?: DriverOrderByWithRelationInput
+    _relevance?: VehicleDriverAssignmentOrderByRelevanceInput
+  }
+
+  export type VehicleDriverAssignmentWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    vehicleId_driverId?: VehicleDriverAssignmentVehicleIdDriverIdCompoundUniqueInput
+    AND?: VehicleDriverAssignmentWhereInput | VehicleDriverAssignmentWhereInput[]
+    OR?: VehicleDriverAssignmentWhereInput[]
+    NOT?: VehicleDriverAssignmentWhereInput | VehicleDriverAssignmentWhereInput[]
+    tenantId?: StringFilter<"VehicleDriverAssignment"> | string
+    vehicleId?: StringFilter<"VehicleDriverAssignment"> | string
+    driverId?: StringFilter<"VehicleDriverAssignment"> | string
+    assignedAt?: DateTimeFilter<"VehicleDriverAssignment"> | Date | string
+    unassignedAt?: DateTimeNullableFilter<"VehicleDriverAssignment"> | Date | string | null
+    active?: BoolFilter<"VehicleDriverAssignment"> | boolean
+    note?: StringNullableFilter<"VehicleDriverAssignment"> | string | null
+    createdAt?: DateTimeFilter<"VehicleDriverAssignment"> | Date | string
+    tenant?: XOR<TenantRelationFilter, TenantWhereInput>
+    vehicle?: XOR<VehicleRelationFilter, VehicleWhereInput>
+    driver?: XOR<DriverRelationFilter, DriverWhereInput>
+  }, "id" | "vehicleId_driverId">
+
+  export type VehicleDriverAssignmentOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vehicleId?: SortOrder
+    driverId?: SortOrder
+    assignedAt?: SortOrder
+    unassignedAt?: SortOrderInput | SortOrder
+    active?: SortOrder
+    note?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: VehicleDriverAssignmentCountOrderByAggregateInput
+    _max?: VehicleDriverAssignmentMaxOrderByAggregateInput
+    _min?: VehicleDriverAssignmentMinOrderByAggregateInput
+  }
+
+  export type VehicleDriverAssignmentScalarWhereWithAggregatesInput = {
+    AND?: VehicleDriverAssignmentScalarWhereWithAggregatesInput | VehicleDriverAssignmentScalarWhereWithAggregatesInput[]
+    OR?: VehicleDriverAssignmentScalarWhereWithAggregatesInput[]
+    NOT?: VehicleDriverAssignmentScalarWhereWithAggregatesInput | VehicleDriverAssignmentScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"VehicleDriverAssignment"> | string
+    tenantId?: StringWithAggregatesFilter<"VehicleDriverAssignment"> | string
+    vehicleId?: StringWithAggregatesFilter<"VehicleDriverAssignment"> | string
+    driverId?: StringWithAggregatesFilter<"VehicleDriverAssignment"> | string
+    assignedAt?: DateTimeWithAggregatesFilter<"VehicleDriverAssignment"> | Date | string
+    unassignedAt?: DateTimeNullableWithAggregatesFilter<"VehicleDriverAssignment"> | Date | string | null
+    active?: BoolWithAggregatesFilter<"VehicleDriverAssignment"> | boolean
+    note?: StringNullableWithAggregatesFilter<"VehicleDriverAssignment"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"VehicleDriverAssignment"> | Date | string
   }
 
   export type ShiftWhereInput = {
@@ -108034,6 +110560,75 @@ export namespace Prisma {
     createdBy?: StringWithAggregatesFilter<"AmericanaChainRate"> | string
     createdAt?: DateTimeWithAggregatesFilter<"AmericanaChainRate"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"AmericanaChainRate"> | Date | string
+  }
+
+  export type DriverBatchHistoryWhereInput = {
+    AND?: DriverBatchHistoryWhereInput | DriverBatchHistoryWhereInput[]
+    OR?: DriverBatchHistoryWhereInput[]
+    NOT?: DriverBatchHistoryWhereInput | DriverBatchHistoryWhereInput[]
+    id?: StringFilter<"DriverBatchHistory"> | string
+    tenantId?: StringFilter<"DriverBatchHistory"> | string
+    driverId?: StringFilter<"DriverBatchHistory"> | string
+    batchNumber?: StringNullableFilter<"DriverBatchHistory"> | string | null
+    changedAt?: DateTimeFilter<"DriverBatchHistory"> | Date | string
+    changedBy?: StringNullableFilter<"DriverBatchHistory"> | string | null
+    note?: StringNullableFilter<"DriverBatchHistory"> | string | null
+    tenant?: XOR<TenantRelationFilter, TenantWhereInput>
+    driver?: XOR<DriverRelationFilter, DriverWhereInput>
+  }
+
+  export type DriverBatchHistoryOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    driverId?: SortOrder
+    batchNumber?: SortOrderInput | SortOrder
+    changedAt?: SortOrder
+    changedBy?: SortOrderInput | SortOrder
+    note?: SortOrderInput | SortOrder
+    tenant?: TenantOrderByWithRelationInput
+    driver?: DriverOrderByWithRelationInput
+    _relevance?: DriverBatchHistoryOrderByRelevanceInput
+  }
+
+  export type DriverBatchHistoryWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: DriverBatchHistoryWhereInput | DriverBatchHistoryWhereInput[]
+    OR?: DriverBatchHistoryWhereInput[]
+    NOT?: DriverBatchHistoryWhereInput | DriverBatchHistoryWhereInput[]
+    tenantId?: StringFilter<"DriverBatchHistory"> | string
+    driverId?: StringFilter<"DriverBatchHistory"> | string
+    batchNumber?: StringNullableFilter<"DriverBatchHistory"> | string | null
+    changedAt?: DateTimeFilter<"DriverBatchHistory"> | Date | string
+    changedBy?: StringNullableFilter<"DriverBatchHistory"> | string | null
+    note?: StringNullableFilter<"DriverBatchHistory"> | string | null
+    tenant?: XOR<TenantRelationFilter, TenantWhereInput>
+    driver?: XOR<DriverRelationFilter, DriverWhereInput>
+  }, "id">
+
+  export type DriverBatchHistoryOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    driverId?: SortOrder
+    batchNumber?: SortOrderInput | SortOrder
+    changedAt?: SortOrder
+    changedBy?: SortOrderInput | SortOrder
+    note?: SortOrderInput | SortOrder
+    _count?: DriverBatchHistoryCountOrderByAggregateInput
+    _max?: DriverBatchHistoryMaxOrderByAggregateInput
+    _min?: DriverBatchHistoryMinOrderByAggregateInput
+  }
+
+  export type DriverBatchHistoryScalarWhereWithAggregatesInput = {
+    AND?: DriverBatchHistoryScalarWhereWithAggregatesInput | DriverBatchHistoryScalarWhereWithAggregatesInput[]
+    OR?: DriverBatchHistoryScalarWhereWithAggregatesInput[]
+    NOT?: DriverBatchHistoryScalarWhereWithAggregatesInput | DriverBatchHistoryScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"DriverBatchHistory"> | string
+    tenantId?: StringWithAggregatesFilter<"DriverBatchHistory"> | string
+    driverId?: StringWithAggregatesFilter<"DriverBatchHistory"> | string
+    batchNumber?: StringNullableWithAggregatesFilter<"DriverBatchHistory"> | string | null
+    changedAt?: DateTimeWithAggregatesFilter<"DriverBatchHistory"> | Date | string
+    changedBy?: StringNullableWithAggregatesFilter<"DriverBatchHistory"> | string | null
+    note?: StringNullableWithAggregatesFilter<"DriverBatchHistory"> | string | null
   }
 
   export type AmericanaStoreAssignmentWhereInput = {
@@ -111737,6 +114332,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -111768,6 +114364,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -111822,6 +114419,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -111853,6 +114451,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -111907,6 +114506,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -111938,6 +114538,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -111992,6 +114593,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -112023,6 +114625,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -112422,6 +115025,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -112443,6 +115047,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateInput = {
@@ -112502,6 +115107,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -112523,6 +115129,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUpdateInput = {
@@ -112582,6 +115189,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -112603,6 +115211,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateInput = {
@@ -112662,6 +115271,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -112683,6 +115293,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverCreateManyInput = {
@@ -112907,6 +115518,9 @@ export namespace Prisma {
     quantity?: number
     issuedDate?: Date | string | null
     returnedDate?: Date | string | null
+    condition?: $Enums.EquipmentCondition
+    conditionNote?: string | null
+    conditionReportedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     driver: DriverCreateNestedOneWithoutInventoryInput
@@ -112920,6 +115534,9 @@ export namespace Prisma {
     quantity?: number
     issuedDate?: Date | string | null
     returnedDate?: Date | string | null
+    condition?: $Enums.EquipmentCondition
+    conditionNote?: string | null
+    conditionReportedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -112931,6 +115548,9 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     issuedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     returnedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    condition?: EnumEquipmentConditionFieldUpdateOperationsInput | $Enums.EquipmentCondition
+    conditionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    conditionReportedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     driver?: DriverUpdateOneRequiredWithoutInventoryNestedInput
@@ -112944,6 +115564,9 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     issuedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     returnedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    condition?: EnumEquipmentConditionFieldUpdateOperationsInput | $Enums.EquipmentCondition
+    conditionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    conditionReportedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -112956,6 +115579,9 @@ export namespace Prisma {
     quantity?: number
     issuedDate?: Date | string | null
     returnedDate?: Date | string | null
+    condition?: $Enums.EquipmentCondition
+    conditionNote?: string | null
+    conditionReportedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -112967,6 +115593,9 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     issuedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     returnedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    condition?: EnumEquipmentConditionFieldUpdateOperationsInput | $Enums.EquipmentCondition
+    conditionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    conditionReportedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -112979,6 +115608,9 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     issuedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     returnedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    condition?: EnumEquipmentConditionFieldUpdateOperationsInput | $Enums.EquipmentCondition
+    conditionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    conditionReportedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -113105,6 +115737,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordCreateNestedManyWithoutSpareVehicleInput
     alerts?: AlertCreateNestedManyWithoutVehicleInput
     tickets?: TicketCreateNestedManyWithoutVehicleInput
+    driverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutVehicleInput
   }
 
   export type VehicleUncheckedCreateInput = {
@@ -113133,6 +115766,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordUncheckedCreateNestedManyWithoutSpareVehicleInput
     alerts?: AlertUncheckedCreateNestedManyWithoutVehicleInput
     tickets?: TicketUncheckedCreateNestedManyWithoutVehicleInput
+    driverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutVehicleInput
   }
 
   export type VehicleUpdateInput = {
@@ -113161,6 +115795,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordUpdateManyWithoutSpareVehicleNestedInput
     alerts?: AlertUpdateManyWithoutVehicleNestedInput
     tickets?: TicketUpdateManyWithoutVehicleNestedInput
+    driverAssignments?: VehicleDriverAssignmentUpdateManyWithoutVehicleNestedInput
   }
 
   export type VehicleUncheckedUpdateInput = {
@@ -113189,6 +115824,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordUncheckedUpdateManyWithoutSpareVehicleNestedInput
     alerts?: AlertUncheckedUpdateManyWithoutVehicleNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutVehicleNestedInput
+    driverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutVehicleNestedInput
   }
 
   export type VehicleCreateManyInput = {
@@ -113255,6 +115891,87 @@ export namespace Prisma {
     registrationExpiry?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VehicleDriverAssignmentCreateInput = {
+    id?: string
+    assignedAt?: Date | string
+    unassignedAt?: Date | string | null
+    active?: boolean
+    note?: string | null
+    createdAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutVehicleDriverAssignmentsInput
+    vehicle: VehicleCreateNestedOneWithoutDriverAssignmentsInput
+    driver: DriverCreateNestedOneWithoutVehicleAssignmentsInput
+  }
+
+  export type VehicleDriverAssignmentUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    vehicleId: string
+    driverId: string
+    assignedAt?: Date | string
+    unassignedAt?: Date | string | null
+    active?: boolean
+    note?: string | null
+    createdAt?: Date | string
+  }
+
+  export type VehicleDriverAssignmentUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    unassignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutVehicleDriverAssignmentsNestedInput
+    vehicle?: VehicleUpdateOneRequiredWithoutDriverAssignmentsNestedInput
+    driver?: DriverUpdateOneRequiredWithoutVehicleAssignmentsNestedInput
+  }
+
+  export type VehicleDriverAssignmentUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vehicleId?: StringFieldUpdateOperationsInput | string
+    driverId?: StringFieldUpdateOperationsInput | string
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    unassignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VehicleDriverAssignmentCreateManyInput = {
+    id?: string
+    tenantId: string
+    vehicleId: string
+    driverId: string
+    assignedAt?: Date | string
+    unassignedAt?: Date | string | null
+    active?: boolean
+    note?: string | null
+    createdAt?: Date | string
+  }
+
+  export type VehicleDriverAssignmentUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    unassignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VehicleDriverAssignmentUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vehicleId?: StringFieldUpdateOperationsInput | string
+    driverId?: StringFieldUpdateOperationsInput | string
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    unassignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ShiftCreateInput = {
@@ -117313,6 +120030,74 @@ export namespace Prisma {
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DriverBatchHistoryCreateInput = {
+    id?: string
+    batchNumber?: string | null
+    changedAt?: Date | string
+    changedBy?: string | null
+    note?: string | null
+    tenant: TenantCreateNestedOneWithoutDriverBatchHistoryInput
+    driver: DriverCreateNestedOneWithoutBatchHistoryInput
+  }
+
+  export type DriverBatchHistoryUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    driverId: string
+    batchNumber?: string | null
+    changedAt?: Date | string
+    changedBy?: string | null
+    note?: string | null
+  }
+
+  export type DriverBatchHistoryUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    changedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    tenant?: TenantUpdateOneRequiredWithoutDriverBatchHistoryNestedInput
+    driver?: DriverUpdateOneRequiredWithoutBatchHistoryNestedInput
+  }
+
+  export type DriverBatchHistoryUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    driverId?: StringFieldUpdateOperationsInput | string
+    batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    changedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type DriverBatchHistoryCreateManyInput = {
+    id?: string
+    tenantId: string
+    driverId: string
+    batchNumber?: string | null
+    changedAt?: Date | string
+    changedBy?: string | null
+    note?: string | null
+  }
+
+  export type DriverBatchHistoryUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    changedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type DriverBatchHistoryUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    driverId?: StringFieldUpdateOperationsInput | string
+    batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    changedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type AmericanaStoreAssignmentCreateInput = {
@@ -121481,6 +124266,12 @@ export namespace Prisma {
     none?: DriverWhereInput
   }
 
+  export type DriverBatchHistoryListRelationFilter = {
+    every?: DriverBatchHistoryWhereInput
+    some?: DriverBatchHistoryWhereInput
+    none?: DriverBatchHistoryWhereInput
+  }
+
   export type ShiftListRelationFilter = {
     every?: ShiftWhereInput
     some?: ShiftWhereInput
@@ -121665,6 +124456,12 @@ export namespace Prisma {
     every?: CourierOnlineSessionWhereInput
     some?: CourierOnlineSessionWhereInput
     none?: CourierOnlineSessionWhereInput
+  }
+
+  export type VehicleDriverAssignmentListRelationFilter = {
+    every?: VehicleDriverAssignmentWhereInput
+    some?: VehicleDriverAssignmentWhereInput
+    none?: VehicleDriverAssignmentWhereInput
   }
 
   export type ViolationListRelationFilter = {
@@ -121887,6 +124684,10 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type DriverBatchHistoryOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type ShiftOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -122008,6 +124809,10 @@ export namespace Prisma {
   }
 
   export type CourierOnlineSessionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type VehicleDriverAssignmentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -122893,6 +125698,13 @@ export namespace Prisma {
     not?: NestedEnumInventoryItemTypeFilter<$PrismaModel> | $Enums.InventoryItemType
   }
 
+  export type EnumEquipmentConditionFilter<$PrismaModel = never> = {
+    equals?: $Enums.EquipmentCondition | EnumEquipmentConditionFieldRefInput<$PrismaModel>
+    in?: $Enums.EquipmentCondition[] | ListEnumEquipmentConditionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EquipmentCondition[] | ListEnumEquipmentConditionFieldRefInput<$PrismaModel>
+    not?: NestedEnumEquipmentConditionFilter<$PrismaModel> | $Enums.EquipmentCondition
+  }
+
   export type DriverInventoryOrderByRelevanceInput = {
     fields: DriverInventoryOrderByRelevanceFieldEnum | DriverInventoryOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -122907,6 +125719,9 @@ export namespace Prisma {
     quantity?: SortOrder
     issuedDate?: SortOrder
     returnedDate?: SortOrder
+    condition?: SortOrder
+    conditionNote?: SortOrder
+    conditionReportedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -122923,6 +125738,9 @@ export namespace Prisma {
     quantity?: SortOrder
     issuedDate?: SortOrder
     returnedDate?: SortOrder
+    condition?: SortOrder
+    conditionNote?: SortOrder
+    conditionReportedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -122935,6 +125753,9 @@ export namespace Prisma {
     quantity?: SortOrder
     issuedDate?: SortOrder
     returnedDate?: SortOrder
+    condition?: SortOrder
+    conditionNote?: SortOrder
+    conditionReportedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -122951,6 +125772,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumInventoryItemTypeFilter<$PrismaModel>
     _max?: NestedEnumInventoryItemTypeFilter<$PrismaModel>
+  }
+
+  export type EnumEquipmentConditionWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.EquipmentCondition | EnumEquipmentConditionFieldRefInput<$PrismaModel>
+    in?: $Enums.EquipmentCondition[] | ListEnumEquipmentConditionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EquipmentCondition[] | ListEnumEquipmentConditionFieldRefInput<$PrismaModel>
+    not?: NestedEnumEquipmentConditionWithAggregatesFilter<$PrismaModel> | $Enums.EquipmentCondition
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumEquipmentConditionFilter<$PrismaModel>
+    _max?: NestedEnumEquipmentConditionFilter<$PrismaModel>
   }
 
   export type EnumRecruitmentStageFilter<$PrismaModel = never> = {
@@ -123128,6 +125959,58 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumVehicleStatusFilter<$PrismaModel>
     _max?: NestedEnumVehicleStatusFilter<$PrismaModel>
+  }
+
+  export type VehicleRelationFilter = {
+    is?: VehicleWhereInput
+    isNot?: VehicleWhereInput
+  }
+
+  export type VehicleDriverAssignmentOrderByRelevanceInput = {
+    fields: VehicleDriverAssignmentOrderByRelevanceFieldEnum | VehicleDriverAssignmentOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type VehicleDriverAssignmentVehicleIdDriverIdCompoundUniqueInput = {
+    vehicleId: string
+    driverId: string
+  }
+
+  export type VehicleDriverAssignmentCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vehicleId?: SortOrder
+    driverId?: SortOrder
+    assignedAt?: SortOrder
+    unassignedAt?: SortOrder
+    active?: SortOrder
+    note?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type VehicleDriverAssignmentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vehicleId?: SortOrder
+    driverId?: SortOrder
+    assignedAt?: SortOrder
+    unassignedAt?: SortOrder
+    active?: SortOrder
+    note?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type VehicleDriverAssignmentMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vehicleId?: SortOrder
+    driverId?: SortOrder
+    assignedAt?: SortOrder
+    unassignedAt?: SortOrder
+    active?: SortOrder
+    note?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type IntNullableFilter<$PrismaModel = never> = {
@@ -123805,11 +126688,6 @@ export namespace Prisma {
     in?: $Enums.InspectionStatus[] | ListEnumInspectionStatusFieldRefInput<$PrismaModel>
     notIn?: $Enums.InspectionStatus[] | ListEnumInspectionStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumInspectionStatusFilter<$PrismaModel> | $Enums.InspectionStatus
-  }
-
-  export type VehicleRelationFilter = {
-    is?: VehicleWhereInput
-    isNot?: VehicleWhereInput
   }
 
   export type VehicleInspectionOrderByRelevanceInput = {
@@ -125975,6 +128853,42 @@ export namespace Prisma {
 
   export type AmericanaChainRateSumOrderByAggregateInput = {
     ratePerOrder?: SortOrder
+  }
+
+  export type DriverBatchHistoryOrderByRelevanceInput = {
+    fields: DriverBatchHistoryOrderByRelevanceFieldEnum | DriverBatchHistoryOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type DriverBatchHistoryCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    driverId?: SortOrder
+    batchNumber?: SortOrder
+    changedAt?: SortOrder
+    changedBy?: SortOrder
+    note?: SortOrder
+  }
+
+  export type DriverBatchHistoryMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    driverId?: SortOrder
+    batchNumber?: SortOrder
+    changedAt?: SortOrder
+    changedBy?: SortOrder
+    note?: SortOrder
+  }
+
+  export type DriverBatchHistoryMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    driverId?: SortOrder
+    batchNumber?: SortOrder
+    changedAt?: SortOrder
+    changedBy?: SortOrder
+    note?: SortOrder
   }
 
   export type AmericanaStoreRelationFilter = {
@@ -128574,6 +131488,13 @@ export namespace Prisma {
     connect?: DriverWhereUniqueInput | DriverWhereUniqueInput[]
   }
 
+  export type DriverBatchHistoryCreateNestedManyWithoutTenantInput = {
+    create?: XOR<DriverBatchHistoryCreateWithoutTenantInput, DriverBatchHistoryUncheckedCreateWithoutTenantInput> | DriverBatchHistoryCreateWithoutTenantInput[] | DriverBatchHistoryUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: DriverBatchHistoryCreateOrConnectWithoutTenantInput | DriverBatchHistoryCreateOrConnectWithoutTenantInput[]
+    createMany?: DriverBatchHistoryCreateManyTenantInputEnvelope
+    connect?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+  }
+
   export type ShiftCreateNestedManyWithoutTenantInput = {
     create?: XOR<ShiftCreateWithoutTenantInput, ShiftUncheckedCreateWithoutTenantInput> | ShiftCreateWithoutTenantInput[] | ShiftUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: ShiftCreateOrConnectWithoutTenantInput | ShiftCreateOrConnectWithoutTenantInput[]
@@ -128789,6 +131710,13 @@ export namespace Prisma {
     connectOrCreate?: CourierOnlineSessionCreateOrConnectWithoutTenantInput | CourierOnlineSessionCreateOrConnectWithoutTenantInput[]
     createMany?: CourierOnlineSessionCreateManyTenantInputEnvelope
     connect?: CourierOnlineSessionWhereUniqueInput | CourierOnlineSessionWhereUniqueInput[]
+  }
+
+  export type VehicleDriverAssignmentCreateNestedManyWithoutTenantInput = {
+    create?: XOR<VehicleDriverAssignmentCreateWithoutTenantInput, VehicleDriverAssignmentUncheckedCreateWithoutTenantInput> | VehicleDriverAssignmentCreateWithoutTenantInput[] | VehicleDriverAssignmentUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: VehicleDriverAssignmentCreateOrConnectWithoutTenantInput | VehicleDriverAssignmentCreateOrConnectWithoutTenantInput[]
+    createMany?: VehicleDriverAssignmentCreateManyTenantInputEnvelope
+    connect?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
   }
 
   export type ViolationCreateNestedManyWithoutTenantInput = {
@@ -129049,6 +131977,13 @@ export namespace Prisma {
     connect?: DriverWhereUniqueInput | DriverWhereUniqueInput[]
   }
 
+  export type DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput = {
+    create?: XOR<DriverBatchHistoryCreateWithoutTenantInput, DriverBatchHistoryUncheckedCreateWithoutTenantInput> | DriverBatchHistoryCreateWithoutTenantInput[] | DriverBatchHistoryUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: DriverBatchHistoryCreateOrConnectWithoutTenantInput | DriverBatchHistoryCreateOrConnectWithoutTenantInput[]
+    createMany?: DriverBatchHistoryCreateManyTenantInputEnvelope
+    connect?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+  }
+
   export type ShiftUncheckedCreateNestedManyWithoutTenantInput = {
     create?: XOR<ShiftCreateWithoutTenantInput, ShiftUncheckedCreateWithoutTenantInput> | ShiftCreateWithoutTenantInput[] | ShiftUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: ShiftCreateOrConnectWithoutTenantInput | ShiftCreateOrConnectWithoutTenantInput[]
@@ -129264,6 +132199,13 @@ export namespace Prisma {
     connectOrCreate?: CourierOnlineSessionCreateOrConnectWithoutTenantInput | CourierOnlineSessionCreateOrConnectWithoutTenantInput[]
     createMany?: CourierOnlineSessionCreateManyTenantInputEnvelope
     connect?: CourierOnlineSessionWhereUniqueInput | CourierOnlineSessionWhereUniqueInput[]
+  }
+
+  export type VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput = {
+    create?: XOR<VehicleDriverAssignmentCreateWithoutTenantInput, VehicleDriverAssignmentUncheckedCreateWithoutTenantInput> | VehicleDriverAssignmentCreateWithoutTenantInput[] | VehicleDriverAssignmentUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: VehicleDriverAssignmentCreateOrConnectWithoutTenantInput | VehicleDriverAssignmentCreateOrConnectWithoutTenantInput[]
+    createMany?: VehicleDriverAssignmentCreateManyTenantInputEnvelope
+    connect?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
   }
 
   export type ViolationUncheckedCreateNestedManyWithoutTenantInput = {
@@ -129579,6 +132521,20 @@ export namespace Prisma {
     update?: DriverUpdateWithWhereUniqueWithoutTenantInput | DriverUpdateWithWhereUniqueWithoutTenantInput[]
     updateMany?: DriverUpdateManyWithWhereWithoutTenantInput | DriverUpdateManyWithWhereWithoutTenantInput[]
     deleteMany?: DriverScalarWhereInput | DriverScalarWhereInput[]
+  }
+
+  export type DriverBatchHistoryUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<DriverBatchHistoryCreateWithoutTenantInput, DriverBatchHistoryUncheckedCreateWithoutTenantInput> | DriverBatchHistoryCreateWithoutTenantInput[] | DriverBatchHistoryUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: DriverBatchHistoryCreateOrConnectWithoutTenantInput | DriverBatchHistoryCreateOrConnectWithoutTenantInput[]
+    upsert?: DriverBatchHistoryUpsertWithWhereUniqueWithoutTenantInput | DriverBatchHistoryUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: DriverBatchHistoryCreateManyTenantInputEnvelope
+    set?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+    disconnect?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+    delete?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+    connect?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+    update?: DriverBatchHistoryUpdateWithWhereUniqueWithoutTenantInput | DriverBatchHistoryUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: DriverBatchHistoryUpdateManyWithWhereWithoutTenantInput | DriverBatchHistoryUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: DriverBatchHistoryScalarWhereInput | DriverBatchHistoryScalarWhereInput[]
   }
 
   export type ShiftUpdateManyWithoutTenantNestedInput = {
@@ -130013,6 +132969,20 @@ export namespace Prisma {
     update?: CourierOnlineSessionUpdateWithWhereUniqueWithoutTenantInput | CourierOnlineSessionUpdateWithWhereUniqueWithoutTenantInput[]
     updateMany?: CourierOnlineSessionUpdateManyWithWhereWithoutTenantInput | CourierOnlineSessionUpdateManyWithWhereWithoutTenantInput[]
     deleteMany?: CourierOnlineSessionScalarWhereInput | CourierOnlineSessionScalarWhereInput[]
+  }
+
+  export type VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<VehicleDriverAssignmentCreateWithoutTenantInput, VehicleDriverAssignmentUncheckedCreateWithoutTenantInput> | VehicleDriverAssignmentCreateWithoutTenantInput[] | VehicleDriverAssignmentUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: VehicleDriverAssignmentCreateOrConnectWithoutTenantInput | VehicleDriverAssignmentCreateOrConnectWithoutTenantInput[]
+    upsert?: VehicleDriverAssignmentUpsertWithWhereUniqueWithoutTenantInput | VehicleDriverAssignmentUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: VehicleDriverAssignmentCreateManyTenantInputEnvelope
+    set?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    disconnect?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    delete?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    connect?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    update?: VehicleDriverAssignmentUpdateWithWhereUniqueWithoutTenantInput | VehicleDriverAssignmentUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: VehicleDriverAssignmentUpdateManyWithWhereWithoutTenantInput | VehicleDriverAssignmentUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: VehicleDriverAssignmentScalarWhereInput | VehicleDriverAssignmentScalarWhereInput[]
   }
 
   export type ViolationUpdateManyWithoutTenantNestedInput = {
@@ -130529,6 +133499,20 @@ export namespace Prisma {
     deleteMany?: DriverScalarWhereInput | DriverScalarWhereInput[]
   }
 
+  export type DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<DriverBatchHistoryCreateWithoutTenantInput, DriverBatchHistoryUncheckedCreateWithoutTenantInput> | DriverBatchHistoryCreateWithoutTenantInput[] | DriverBatchHistoryUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: DriverBatchHistoryCreateOrConnectWithoutTenantInput | DriverBatchHistoryCreateOrConnectWithoutTenantInput[]
+    upsert?: DriverBatchHistoryUpsertWithWhereUniqueWithoutTenantInput | DriverBatchHistoryUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: DriverBatchHistoryCreateManyTenantInputEnvelope
+    set?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+    disconnect?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+    delete?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+    connect?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+    update?: DriverBatchHistoryUpdateWithWhereUniqueWithoutTenantInput | DriverBatchHistoryUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: DriverBatchHistoryUpdateManyWithWhereWithoutTenantInput | DriverBatchHistoryUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: DriverBatchHistoryScalarWhereInput | DriverBatchHistoryScalarWhereInput[]
+  }
+
   export type ShiftUncheckedUpdateManyWithoutTenantNestedInput = {
     create?: XOR<ShiftCreateWithoutTenantInput, ShiftUncheckedCreateWithoutTenantInput> | ShiftCreateWithoutTenantInput[] | ShiftUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: ShiftCreateOrConnectWithoutTenantInput | ShiftCreateOrConnectWithoutTenantInput[]
@@ -130961,6 +133945,20 @@ export namespace Prisma {
     update?: CourierOnlineSessionUpdateWithWhereUniqueWithoutTenantInput | CourierOnlineSessionUpdateWithWhereUniqueWithoutTenantInput[]
     updateMany?: CourierOnlineSessionUpdateManyWithWhereWithoutTenantInput | CourierOnlineSessionUpdateManyWithWhereWithoutTenantInput[]
     deleteMany?: CourierOnlineSessionScalarWhereInput | CourierOnlineSessionScalarWhereInput[]
+  }
+
+  export type VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<VehicleDriverAssignmentCreateWithoutTenantInput, VehicleDriverAssignmentUncheckedCreateWithoutTenantInput> | VehicleDriverAssignmentCreateWithoutTenantInput[] | VehicleDriverAssignmentUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: VehicleDriverAssignmentCreateOrConnectWithoutTenantInput | VehicleDriverAssignmentCreateOrConnectWithoutTenantInput[]
+    upsert?: VehicleDriverAssignmentUpsertWithWhereUniqueWithoutTenantInput | VehicleDriverAssignmentUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: VehicleDriverAssignmentCreateManyTenantInputEnvelope
+    set?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    disconnect?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    delete?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    connect?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    update?: VehicleDriverAssignmentUpdateWithWhereUniqueWithoutTenantInput | VehicleDriverAssignmentUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: VehicleDriverAssignmentUpdateManyWithWhereWithoutTenantInput | VehicleDriverAssignmentUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: VehicleDriverAssignmentScalarWhereInput | VehicleDriverAssignmentScalarWhereInput[]
   }
 
   export type ViolationUncheckedUpdateManyWithoutTenantNestedInput = {
@@ -132321,6 +135319,13 @@ export namespace Prisma {
     connect?: VehicleWhereUniqueInput
   }
 
+  export type VehicleDriverAssignmentCreateNestedManyWithoutDriverInput = {
+    create?: XOR<VehicleDriverAssignmentCreateWithoutDriverInput, VehicleDriverAssignmentUncheckedCreateWithoutDriverInput> | VehicleDriverAssignmentCreateWithoutDriverInput[] | VehicleDriverAssignmentUncheckedCreateWithoutDriverInput[]
+    connectOrCreate?: VehicleDriverAssignmentCreateOrConnectWithoutDriverInput | VehicleDriverAssignmentCreateOrConnectWithoutDriverInput[]
+    createMany?: VehicleDriverAssignmentCreateManyDriverInputEnvelope
+    connect?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+  }
+
   export type LeaveRequestCreateNestedManyWithoutDriverInput = {
     create?: XOR<LeaveRequestCreateWithoutDriverInput, LeaveRequestUncheckedCreateWithoutDriverInput> | LeaveRequestCreateWithoutDriverInput[] | LeaveRequestUncheckedCreateWithoutDriverInput[]
     connectOrCreate?: LeaveRequestCreateOrConnectWithoutDriverInput | LeaveRequestCreateOrConnectWithoutDriverInput[]
@@ -132468,6 +135473,13 @@ export namespace Prisma {
     connect?: PerformanceSnapshotWhereUniqueInput | PerformanceSnapshotWhereUniqueInput[]
   }
 
+  export type DriverBatchHistoryCreateNestedManyWithoutDriverInput = {
+    create?: XOR<DriverBatchHistoryCreateWithoutDriverInput, DriverBatchHistoryUncheckedCreateWithoutDriverInput> | DriverBatchHistoryCreateWithoutDriverInput[] | DriverBatchHistoryUncheckedCreateWithoutDriverInput[]
+    connectOrCreate?: DriverBatchHistoryCreateOrConnectWithoutDriverInput | DriverBatchHistoryCreateOrConnectWithoutDriverInput[]
+    createMany?: DriverBatchHistoryCreateManyDriverInputEnvelope
+    connect?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+  }
+
   export type DriverInventoryUncheckedCreateNestedManyWithoutDriverInput = {
     create?: XOR<DriverInventoryCreateWithoutDriverInput, DriverInventoryUncheckedCreateWithoutDriverInput> | DriverInventoryCreateWithoutDriverInput[] | DriverInventoryUncheckedCreateWithoutDriverInput[]
     connectOrCreate?: DriverInventoryCreateOrConnectWithoutDriverInput | DriverInventoryCreateOrConnectWithoutDriverInput[]
@@ -132576,6 +135588,13 @@ export namespace Prisma {
     create?: XOR<VehicleCreateWithoutAssignedDriverInput, VehicleUncheckedCreateWithoutAssignedDriverInput>
     connectOrCreate?: VehicleCreateOrConnectWithoutAssignedDriverInput
     connect?: VehicleWhereUniqueInput
+  }
+
+  export type VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput = {
+    create?: XOR<VehicleDriverAssignmentCreateWithoutDriverInput, VehicleDriverAssignmentUncheckedCreateWithoutDriverInput> | VehicleDriverAssignmentCreateWithoutDriverInput[] | VehicleDriverAssignmentUncheckedCreateWithoutDriverInput[]
+    connectOrCreate?: VehicleDriverAssignmentCreateOrConnectWithoutDriverInput | VehicleDriverAssignmentCreateOrConnectWithoutDriverInput[]
+    createMany?: VehicleDriverAssignmentCreateManyDriverInputEnvelope
+    connect?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
   }
 
   export type LeaveRequestUncheckedCreateNestedManyWithoutDriverInput = {
@@ -132723,6 +135742,13 @@ export namespace Prisma {
     connectOrCreate?: PerformanceSnapshotCreateOrConnectWithoutDriverInput | PerformanceSnapshotCreateOrConnectWithoutDriverInput[]
     createMany?: PerformanceSnapshotCreateManyDriverInputEnvelope
     connect?: PerformanceSnapshotWhereUniqueInput | PerformanceSnapshotWhereUniqueInput[]
+  }
+
+  export type DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput = {
+    create?: XOR<DriverBatchHistoryCreateWithoutDriverInput, DriverBatchHistoryUncheckedCreateWithoutDriverInput> | DriverBatchHistoryCreateWithoutDriverInput[] | DriverBatchHistoryUncheckedCreateWithoutDriverInput[]
+    connectOrCreate?: DriverBatchHistoryCreateOrConnectWithoutDriverInput | DriverBatchHistoryCreateOrConnectWithoutDriverInput[]
+    createMany?: DriverBatchHistoryCreateManyDriverInputEnvelope
+    connect?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
   }
 
   export type EnumVehicleTypeFieldUpdateOperationsInput = {
@@ -132981,6 +136007,20 @@ export namespace Prisma {
     delete?: VehicleWhereInput | boolean
     connect?: VehicleWhereUniqueInput
     update?: XOR<XOR<VehicleUpdateToOneWithWhereWithoutAssignedDriverInput, VehicleUpdateWithoutAssignedDriverInput>, VehicleUncheckedUpdateWithoutAssignedDriverInput>
+  }
+
+  export type VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput = {
+    create?: XOR<VehicleDriverAssignmentCreateWithoutDriverInput, VehicleDriverAssignmentUncheckedCreateWithoutDriverInput> | VehicleDriverAssignmentCreateWithoutDriverInput[] | VehicleDriverAssignmentUncheckedCreateWithoutDriverInput[]
+    connectOrCreate?: VehicleDriverAssignmentCreateOrConnectWithoutDriverInput | VehicleDriverAssignmentCreateOrConnectWithoutDriverInput[]
+    upsert?: VehicleDriverAssignmentUpsertWithWhereUniqueWithoutDriverInput | VehicleDriverAssignmentUpsertWithWhereUniqueWithoutDriverInput[]
+    createMany?: VehicleDriverAssignmentCreateManyDriverInputEnvelope
+    set?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    disconnect?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    delete?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    connect?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    update?: VehicleDriverAssignmentUpdateWithWhereUniqueWithoutDriverInput | VehicleDriverAssignmentUpdateWithWhereUniqueWithoutDriverInput[]
+    updateMany?: VehicleDriverAssignmentUpdateManyWithWhereWithoutDriverInput | VehicleDriverAssignmentUpdateManyWithWhereWithoutDriverInput[]
+    deleteMany?: VehicleDriverAssignmentScalarWhereInput | VehicleDriverAssignmentScalarWhereInput[]
   }
 
   export type LeaveRequestUpdateManyWithoutDriverNestedInput = {
@@ -133277,6 +136317,20 @@ export namespace Prisma {
     deleteMany?: PerformanceSnapshotScalarWhereInput | PerformanceSnapshotScalarWhereInput[]
   }
 
+  export type DriverBatchHistoryUpdateManyWithoutDriverNestedInput = {
+    create?: XOR<DriverBatchHistoryCreateWithoutDriverInput, DriverBatchHistoryUncheckedCreateWithoutDriverInput> | DriverBatchHistoryCreateWithoutDriverInput[] | DriverBatchHistoryUncheckedCreateWithoutDriverInput[]
+    connectOrCreate?: DriverBatchHistoryCreateOrConnectWithoutDriverInput | DriverBatchHistoryCreateOrConnectWithoutDriverInput[]
+    upsert?: DriverBatchHistoryUpsertWithWhereUniqueWithoutDriverInput | DriverBatchHistoryUpsertWithWhereUniqueWithoutDriverInput[]
+    createMany?: DriverBatchHistoryCreateManyDriverInputEnvelope
+    set?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+    disconnect?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+    delete?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+    connect?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+    update?: DriverBatchHistoryUpdateWithWhereUniqueWithoutDriverInput | DriverBatchHistoryUpdateWithWhereUniqueWithoutDriverInput[]
+    updateMany?: DriverBatchHistoryUpdateManyWithWhereWithoutDriverInput | DriverBatchHistoryUpdateManyWithWhereWithoutDriverInput[]
+    deleteMany?: DriverBatchHistoryScalarWhereInput | DriverBatchHistoryScalarWhereInput[]
+  }
+
   export type DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput = {
     create?: XOR<DriverInventoryCreateWithoutDriverInput, DriverInventoryUncheckedCreateWithoutDriverInput> | DriverInventoryCreateWithoutDriverInput[] | DriverInventoryUncheckedCreateWithoutDriverInput[]
     connectOrCreate?: DriverInventoryCreateOrConnectWithoutDriverInput | DriverInventoryCreateOrConnectWithoutDriverInput[]
@@ -133491,6 +136545,20 @@ export namespace Prisma {
     delete?: VehicleWhereInput | boolean
     connect?: VehicleWhereUniqueInput
     update?: XOR<XOR<VehicleUpdateToOneWithWhereWithoutAssignedDriverInput, VehicleUpdateWithoutAssignedDriverInput>, VehicleUncheckedUpdateWithoutAssignedDriverInput>
+  }
+
+  export type VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput = {
+    create?: XOR<VehicleDriverAssignmentCreateWithoutDriverInput, VehicleDriverAssignmentUncheckedCreateWithoutDriverInput> | VehicleDriverAssignmentCreateWithoutDriverInput[] | VehicleDriverAssignmentUncheckedCreateWithoutDriverInput[]
+    connectOrCreate?: VehicleDriverAssignmentCreateOrConnectWithoutDriverInput | VehicleDriverAssignmentCreateOrConnectWithoutDriverInput[]
+    upsert?: VehicleDriverAssignmentUpsertWithWhereUniqueWithoutDriverInput | VehicleDriverAssignmentUpsertWithWhereUniqueWithoutDriverInput[]
+    createMany?: VehicleDriverAssignmentCreateManyDriverInputEnvelope
+    set?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    disconnect?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    delete?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    connect?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    update?: VehicleDriverAssignmentUpdateWithWhereUniqueWithoutDriverInput | VehicleDriverAssignmentUpdateWithWhereUniqueWithoutDriverInput[]
+    updateMany?: VehicleDriverAssignmentUpdateManyWithWhereWithoutDriverInput | VehicleDriverAssignmentUpdateManyWithWhereWithoutDriverInput[]
+    deleteMany?: VehicleDriverAssignmentScalarWhereInput | VehicleDriverAssignmentScalarWhereInput[]
   }
 
   export type LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput = {
@@ -133787,6 +136855,20 @@ export namespace Prisma {
     deleteMany?: PerformanceSnapshotScalarWhereInput | PerformanceSnapshotScalarWhereInput[]
   }
 
+  export type DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput = {
+    create?: XOR<DriverBatchHistoryCreateWithoutDriverInput, DriverBatchHistoryUncheckedCreateWithoutDriverInput> | DriverBatchHistoryCreateWithoutDriverInput[] | DriverBatchHistoryUncheckedCreateWithoutDriverInput[]
+    connectOrCreate?: DriverBatchHistoryCreateOrConnectWithoutDriverInput | DriverBatchHistoryCreateOrConnectWithoutDriverInput[]
+    upsert?: DriverBatchHistoryUpsertWithWhereUniqueWithoutDriverInput | DriverBatchHistoryUpsertWithWhereUniqueWithoutDriverInput[]
+    createMany?: DriverBatchHistoryCreateManyDriverInputEnvelope
+    set?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+    disconnect?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+    delete?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+    connect?: DriverBatchHistoryWhereUniqueInput | DriverBatchHistoryWhereUniqueInput[]
+    update?: DriverBatchHistoryUpdateWithWhereUniqueWithoutDriverInput | DriverBatchHistoryUpdateWithWhereUniqueWithoutDriverInput[]
+    updateMany?: DriverBatchHistoryUpdateManyWithWhereWithoutDriverInput | DriverBatchHistoryUpdateManyWithWhereWithoutDriverInput[]
+    deleteMany?: DriverBatchHistoryScalarWhereInput | DriverBatchHistoryScalarWhereInput[]
+  }
+
   export type TenantCreateNestedOneWithoutDriverRestrictionsInput = {
     create?: XOR<TenantCreateWithoutDriverRestrictionsInput, TenantUncheckedCreateWithoutDriverRestrictionsInput>
     connectOrCreate?: TenantCreateOrConnectWithoutDriverRestrictionsInput
@@ -133827,6 +136909,10 @@ export namespace Prisma {
 
   export type EnumInventoryItemTypeFieldUpdateOperationsInput = {
     set?: $Enums.InventoryItemType
+  }
+
+  export type EnumEquipmentConditionFieldUpdateOperationsInput = {
+    set?: $Enums.EquipmentCondition
   }
 
   export type DriverUpdateOneRequiredWithoutInventoryNestedInput = {
@@ -133924,6 +137010,13 @@ export namespace Prisma {
     connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
   }
 
+  export type VehicleDriverAssignmentCreateNestedManyWithoutVehicleInput = {
+    create?: XOR<VehicleDriverAssignmentCreateWithoutVehicleInput, VehicleDriverAssignmentUncheckedCreateWithoutVehicleInput> | VehicleDriverAssignmentCreateWithoutVehicleInput[] | VehicleDriverAssignmentUncheckedCreateWithoutVehicleInput[]
+    connectOrCreate?: VehicleDriverAssignmentCreateOrConnectWithoutVehicleInput | VehicleDriverAssignmentCreateOrConnectWithoutVehicleInput[]
+    createMany?: VehicleDriverAssignmentCreateManyVehicleInputEnvelope
+    connect?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+  }
+
   export type VehicleInspectionUncheckedCreateNestedManyWithoutVehicleInput = {
     create?: XOR<VehicleInspectionCreateWithoutVehicleInput, VehicleInspectionUncheckedCreateWithoutVehicleInput> | VehicleInspectionCreateWithoutVehicleInput[] | VehicleInspectionUncheckedCreateWithoutVehicleInput[]
     connectOrCreate?: VehicleInspectionCreateOrConnectWithoutVehicleInput | VehicleInspectionCreateOrConnectWithoutVehicleInput[]
@@ -133957,6 +137050,13 @@ export namespace Prisma {
     connectOrCreate?: TicketCreateOrConnectWithoutVehicleInput | TicketCreateOrConnectWithoutVehicleInput[]
     createMany?: TicketCreateManyVehicleInputEnvelope
     connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+  }
+
+  export type VehicleDriverAssignmentUncheckedCreateNestedManyWithoutVehicleInput = {
+    create?: XOR<VehicleDriverAssignmentCreateWithoutVehicleInput, VehicleDriverAssignmentUncheckedCreateWithoutVehicleInput> | VehicleDriverAssignmentCreateWithoutVehicleInput[] | VehicleDriverAssignmentUncheckedCreateWithoutVehicleInput[]
+    connectOrCreate?: VehicleDriverAssignmentCreateOrConnectWithoutVehicleInput | VehicleDriverAssignmentCreateOrConnectWithoutVehicleInput[]
+    createMany?: VehicleDriverAssignmentCreateManyVehicleInputEnvelope
+    connect?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
   }
 
   export type EnumVehicleStatusFieldUpdateOperationsInput = {
@@ -134059,6 +137159,20 @@ export namespace Prisma {
     deleteMany?: TicketScalarWhereInput | TicketScalarWhereInput[]
   }
 
+  export type VehicleDriverAssignmentUpdateManyWithoutVehicleNestedInput = {
+    create?: XOR<VehicleDriverAssignmentCreateWithoutVehicleInput, VehicleDriverAssignmentUncheckedCreateWithoutVehicleInput> | VehicleDriverAssignmentCreateWithoutVehicleInput[] | VehicleDriverAssignmentUncheckedCreateWithoutVehicleInput[]
+    connectOrCreate?: VehicleDriverAssignmentCreateOrConnectWithoutVehicleInput | VehicleDriverAssignmentCreateOrConnectWithoutVehicleInput[]
+    upsert?: VehicleDriverAssignmentUpsertWithWhereUniqueWithoutVehicleInput | VehicleDriverAssignmentUpsertWithWhereUniqueWithoutVehicleInput[]
+    createMany?: VehicleDriverAssignmentCreateManyVehicleInputEnvelope
+    set?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    disconnect?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    delete?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    connect?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    update?: VehicleDriverAssignmentUpdateWithWhereUniqueWithoutVehicleInput | VehicleDriverAssignmentUpdateWithWhereUniqueWithoutVehicleInput[]
+    updateMany?: VehicleDriverAssignmentUpdateManyWithWhereWithoutVehicleInput | VehicleDriverAssignmentUpdateManyWithWhereWithoutVehicleInput[]
+    deleteMany?: VehicleDriverAssignmentScalarWhereInput | VehicleDriverAssignmentScalarWhereInput[]
+  }
+
   export type VehicleInspectionUncheckedUpdateManyWithoutVehicleNestedInput = {
     create?: XOR<VehicleInspectionCreateWithoutVehicleInput, VehicleInspectionUncheckedCreateWithoutVehicleInput> | VehicleInspectionCreateWithoutVehicleInput[] | VehicleInspectionUncheckedCreateWithoutVehicleInput[]
     connectOrCreate?: VehicleInspectionCreateOrConnectWithoutVehicleInput | VehicleInspectionCreateOrConnectWithoutVehicleInput[]
@@ -134127,6 +137241,62 @@ export namespace Prisma {
     update?: TicketUpdateWithWhereUniqueWithoutVehicleInput | TicketUpdateWithWhereUniqueWithoutVehicleInput[]
     updateMany?: TicketUpdateManyWithWhereWithoutVehicleInput | TicketUpdateManyWithWhereWithoutVehicleInput[]
     deleteMany?: TicketScalarWhereInput | TicketScalarWhereInput[]
+  }
+
+  export type VehicleDriverAssignmentUncheckedUpdateManyWithoutVehicleNestedInput = {
+    create?: XOR<VehicleDriverAssignmentCreateWithoutVehicleInput, VehicleDriverAssignmentUncheckedCreateWithoutVehicleInput> | VehicleDriverAssignmentCreateWithoutVehicleInput[] | VehicleDriverAssignmentUncheckedCreateWithoutVehicleInput[]
+    connectOrCreate?: VehicleDriverAssignmentCreateOrConnectWithoutVehicleInput | VehicleDriverAssignmentCreateOrConnectWithoutVehicleInput[]
+    upsert?: VehicleDriverAssignmentUpsertWithWhereUniqueWithoutVehicleInput | VehicleDriverAssignmentUpsertWithWhereUniqueWithoutVehicleInput[]
+    createMany?: VehicleDriverAssignmentCreateManyVehicleInputEnvelope
+    set?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    disconnect?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    delete?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    connect?: VehicleDriverAssignmentWhereUniqueInput | VehicleDriverAssignmentWhereUniqueInput[]
+    update?: VehicleDriverAssignmentUpdateWithWhereUniqueWithoutVehicleInput | VehicleDriverAssignmentUpdateWithWhereUniqueWithoutVehicleInput[]
+    updateMany?: VehicleDriverAssignmentUpdateManyWithWhereWithoutVehicleInput | VehicleDriverAssignmentUpdateManyWithWhereWithoutVehicleInput[]
+    deleteMany?: VehicleDriverAssignmentScalarWhereInput | VehicleDriverAssignmentScalarWhereInput[]
+  }
+
+  export type TenantCreateNestedOneWithoutVehicleDriverAssignmentsInput = {
+    create?: XOR<TenantCreateWithoutVehicleDriverAssignmentsInput, TenantUncheckedCreateWithoutVehicleDriverAssignmentsInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutVehicleDriverAssignmentsInput
+    connect?: TenantWhereUniqueInput
+  }
+
+  export type VehicleCreateNestedOneWithoutDriverAssignmentsInput = {
+    create?: XOR<VehicleCreateWithoutDriverAssignmentsInput, VehicleUncheckedCreateWithoutDriverAssignmentsInput>
+    connectOrCreate?: VehicleCreateOrConnectWithoutDriverAssignmentsInput
+    connect?: VehicleWhereUniqueInput
+  }
+
+  export type DriverCreateNestedOneWithoutVehicleAssignmentsInput = {
+    create?: XOR<DriverCreateWithoutVehicleAssignmentsInput, DriverUncheckedCreateWithoutVehicleAssignmentsInput>
+    connectOrCreate?: DriverCreateOrConnectWithoutVehicleAssignmentsInput
+    connect?: DriverWhereUniqueInput
+  }
+
+  export type TenantUpdateOneRequiredWithoutVehicleDriverAssignmentsNestedInput = {
+    create?: XOR<TenantCreateWithoutVehicleDriverAssignmentsInput, TenantUncheckedCreateWithoutVehicleDriverAssignmentsInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutVehicleDriverAssignmentsInput
+    upsert?: TenantUpsertWithoutVehicleDriverAssignmentsInput
+    connect?: TenantWhereUniqueInput
+    update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutVehicleDriverAssignmentsInput, TenantUpdateWithoutVehicleDriverAssignmentsInput>, TenantUncheckedUpdateWithoutVehicleDriverAssignmentsInput>
+  }
+
+  export type VehicleUpdateOneRequiredWithoutDriverAssignmentsNestedInput = {
+    create?: XOR<VehicleCreateWithoutDriverAssignmentsInput, VehicleUncheckedCreateWithoutDriverAssignmentsInput>
+    connectOrCreate?: VehicleCreateOrConnectWithoutDriverAssignmentsInput
+    upsert?: VehicleUpsertWithoutDriverAssignmentsInput
+    connect?: VehicleWhereUniqueInput
+    update?: XOR<XOR<VehicleUpdateToOneWithWhereWithoutDriverAssignmentsInput, VehicleUpdateWithoutDriverAssignmentsInput>, VehicleUncheckedUpdateWithoutDriverAssignmentsInput>
+  }
+
+  export type DriverUpdateOneRequiredWithoutVehicleAssignmentsNestedInput = {
+    create?: XOR<DriverCreateWithoutVehicleAssignmentsInput, DriverUncheckedCreateWithoutVehicleAssignmentsInput>
+    connectOrCreate?: DriverCreateOrConnectWithoutVehicleAssignmentsInput
+    upsert?: DriverUpsertWithoutVehicleAssignmentsInput
+    connect?: DriverWhereUniqueInput
+    update?: XOR<XOR<DriverUpdateToOneWithWhereWithoutVehicleAssignmentsInput, DriverUpdateWithoutVehicleAssignmentsInput>, DriverUncheckedUpdateWithoutVehicleAssignmentsInput>
   }
 
   export type TenantCreateNestedOneWithoutShiftsInput = {
@@ -136087,6 +139257,34 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutCreatedAmericanaRatesInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedAmericanaRatesInput, UserUpdateWithoutCreatedAmericanaRatesInput>, UserUncheckedUpdateWithoutCreatedAmericanaRatesInput>
+  }
+
+  export type TenantCreateNestedOneWithoutDriverBatchHistoryInput = {
+    create?: XOR<TenantCreateWithoutDriverBatchHistoryInput, TenantUncheckedCreateWithoutDriverBatchHistoryInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutDriverBatchHistoryInput
+    connect?: TenantWhereUniqueInput
+  }
+
+  export type DriverCreateNestedOneWithoutBatchHistoryInput = {
+    create?: XOR<DriverCreateWithoutBatchHistoryInput, DriverUncheckedCreateWithoutBatchHistoryInput>
+    connectOrCreate?: DriverCreateOrConnectWithoutBatchHistoryInput
+    connect?: DriverWhereUniqueInput
+  }
+
+  export type TenantUpdateOneRequiredWithoutDriverBatchHistoryNestedInput = {
+    create?: XOR<TenantCreateWithoutDriverBatchHistoryInput, TenantUncheckedCreateWithoutDriverBatchHistoryInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutDriverBatchHistoryInput
+    upsert?: TenantUpsertWithoutDriverBatchHistoryInput
+    connect?: TenantWhereUniqueInput
+    update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutDriverBatchHistoryInput, TenantUpdateWithoutDriverBatchHistoryInput>, TenantUncheckedUpdateWithoutDriverBatchHistoryInput>
+  }
+
+  export type DriverUpdateOneRequiredWithoutBatchHistoryNestedInput = {
+    create?: XOR<DriverCreateWithoutBatchHistoryInput, DriverUncheckedCreateWithoutBatchHistoryInput>
+    connectOrCreate?: DriverCreateOrConnectWithoutBatchHistoryInput
+    upsert?: DriverUpsertWithoutBatchHistoryInput
+    connect?: DriverWhereUniqueInput
+    update?: XOR<XOR<DriverUpdateToOneWithWhereWithoutBatchHistoryInput, DriverUpdateWithoutBatchHistoryInput>, DriverUncheckedUpdateWithoutBatchHistoryInput>
   }
 
   export type TenantCreateNestedOneWithoutAmericanaStoreAssignmentsInput = {
@@ -138273,6 +141471,13 @@ export namespace Prisma {
     not?: NestedEnumInventoryItemTypeFilter<$PrismaModel> | $Enums.InventoryItemType
   }
 
+  export type NestedEnumEquipmentConditionFilter<$PrismaModel = never> = {
+    equals?: $Enums.EquipmentCondition | EnumEquipmentConditionFieldRefInput<$PrismaModel>
+    in?: $Enums.EquipmentCondition[] | ListEnumEquipmentConditionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EquipmentCondition[] | ListEnumEquipmentConditionFieldRefInput<$PrismaModel>
+    not?: NestedEnumEquipmentConditionFilter<$PrismaModel> | $Enums.EquipmentCondition
+  }
+
   export type NestedEnumInventoryItemTypeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.InventoryItemType | EnumInventoryItemTypeFieldRefInput<$PrismaModel>
     in?: $Enums.InventoryItemType[] | ListEnumInventoryItemTypeFieldRefInput<$PrismaModel>
@@ -138281,6 +141486,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumInventoryItemTypeFilter<$PrismaModel>
     _max?: NestedEnumInventoryItemTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumEquipmentConditionWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.EquipmentCondition | EnumEquipmentConditionFieldRefInput<$PrismaModel>
+    in?: $Enums.EquipmentCondition[] | ListEnumEquipmentConditionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EquipmentCondition[] | ListEnumEquipmentConditionFieldRefInput<$PrismaModel>
+    not?: NestedEnumEquipmentConditionWithAggregatesFilter<$PrismaModel> | $Enums.EquipmentCondition
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumEquipmentConditionFilter<$PrismaModel>
+    _max?: NestedEnumEquipmentConditionFilter<$PrismaModel>
   }
 
   export type NestedEnumRecruitmentStageFilter<$PrismaModel = never> = {
@@ -139161,6 +142376,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -139182,6 +142398,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutTenantInput = {
@@ -139240,6 +142457,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -139261,6 +142479,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutTenantInput = {
@@ -139270,6 +142489,34 @@ export namespace Prisma {
 
   export type DriverCreateManyTenantInputEnvelope = {
     data: DriverCreateManyTenantInput | DriverCreateManyTenantInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type DriverBatchHistoryCreateWithoutTenantInput = {
+    id?: string
+    batchNumber?: string | null
+    changedAt?: Date | string
+    changedBy?: string | null
+    note?: string | null
+    driver: DriverCreateNestedOneWithoutBatchHistoryInput
+  }
+
+  export type DriverBatchHistoryUncheckedCreateWithoutTenantInput = {
+    id?: string
+    driverId: string
+    batchNumber?: string | null
+    changedAt?: Date | string
+    changedBy?: string | null
+    note?: string | null
+  }
+
+  export type DriverBatchHistoryCreateOrConnectWithoutTenantInput = {
+    where: DriverBatchHistoryWhereUniqueInput
+    create: XOR<DriverBatchHistoryCreateWithoutTenantInput, DriverBatchHistoryUncheckedCreateWithoutTenantInput>
+  }
+
+  export type DriverBatchHistoryCreateManyTenantInputEnvelope = {
+    data: DriverBatchHistoryCreateManyTenantInput | DriverBatchHistoryCreateManyTenantInput[]
     skipDuplicates?: boolean
   }
 
@@ -139944,6 +143191,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordCreateNestedManyWithoutSpareVehicleInput
     alerts?: AlertCreateNestedManyWithoutVehicleInput
     tickets?: TicketCreateNestedManyWithoutVehicleInput
+    driverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutVehicleInput
   }
 
   export type VehicleUncheckedCreateWithoutTenantInput = {
@@ -139971,6 +143219,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordUncheckedCreateNestedManyWithoutSpareVehicleInput
     alerts?: AlertUncheckedCreateNestedManyWithoutVehicleInput
     tickets?: TicketUncheckedCreateNestedManyWithoutVehicleInput
+    driverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutVehicleInput
   }
 
   export type VehicleCreateOrConnectWithoutTenantInput = {
@@ -140656,6 +143905,38 @@ export namespace Prisma {
 
   export type CourierOnlineSessionCreateManyTenantInputEnvelope = {
     data: CourierOnlineSessionCreateManyTenantInput | CourierOnlineSessionCreateManyTenantInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type VehicleDriverAssignmentCreateWithoutTenantInput = {
+    id?: string
+    assignedAt?: Date | string
+    unassignedAt?: Date | string | null
+    active?: boolean
+    note?: string | null
+    createdAt?: Date | string
+    vehicle: VehicleCreateNestedOneWithoutDriverAssignmentsInput
+    driver: DriverCreateNestedOneWithoutVehicleAssignmentsInput
+  }
+
+  export type VehicleDriverAssignmentUncheckedCreateWithoutTenantInput = {
+    id?: string
+    vehicleId: string
+    driverId: string
+    assignedAt?: Date | string
+    unassignedAt?: Date | string | null
+    active?: boolean
+    note?: string | null
+    createdAt?: Date | string
+  }
+
+  export type VehicleDriverAssignmentCreateOrConnectWithoutTenantInput = {
+    where: VehicleDriverAssignmentWhereUniqueInput
+    create: XOR<VehicleDriverAssignmentCreateWithoutTenantInput, VehicleDriverAssignmentUncheckedCreateWithoutTenantInput>
+  }
+
+  export type VehicleDriverAssignmentCreateManyTenantInputEnvelope = {
+    data: VehicleDriverAssignmentCreateManyTenantInput | VehicleDriverAssignmentCreateManyTenantInput[]
     skipDuplicates?: boolean
   }
 
@@ -142157,6 +145438,35 @@ export namespace Prisma {
     civilIdStatus?: StringNullableFilter<"Driver"> | string | null
   }
 
+  export type DriverBatchHistoryUpsertWithWhereUniqueWithoutTenantInput = {
+    where: DriverBatchHistoryWhereUniqueInput
+    update: XOR<DriverBatchHistoryUpdateWithoutTenantInput, DriverBatchHistoryUncheckedUpdateWithoutTenantInput>
+    create: XOR<DriverBatchHistoryCreateWithoutTenantInput, DriverBatchHistoryUncheckedCreateWithoutTenantInput>
+  }
+
+  export type DriverBatchHistoryUpdateWithWhereUniqueWithoutTenantInput = {
+    where: DriverBatchHistoryWhereUniqueInput
+    data: XOR<DriverBatchHistoryUpdateWithoutTenantInput, DriverBatchHistoryUncheckedUpdateWithoutTenantInput>
+  }
+
+  export type DriverBatchHistoryUpdateManyWithWhereWithoutTenantInput = {
+    where: DriverBatchHistoryScalarWhereInput
+    data: XOR<DriverBatchHistoryUpdateManyMutationInput, DriverBatchHistoryUncheckedUpdateManyWithoutTenantInput>
+  }
+
+  export type DriverBatchHistoryScalarWhereInput = {
+    AND?: DriverBatchHistoryScalarWhereInput | DriverBatchHistoryScalarWhereInput[]
+    OR?: DriverBatchHistoryScalarWhereInput[]
+    NOT?: DriverBatchHistoryScalarWhereInput | DriverBatchHistoryScalarWhereInput[]
+    id?: StringFilter<"DriverBatchHistory"> | string
+    tenantId?: StringFilter<"DriverBatchHistory"> | string
+    driverId?: StringFilter<"DriverBatchHistory"> | string
+    batchNumber?: StringNullableFilter<"DriverBatchHistory"> | string | null
+    changedAt?: DateTimeFilter<"DriverBatchHistory"> | Date | string
+    changedBy?: StringNullableFilter<"DriverBatchHistory"> | string | null
+    note?: StringNullableFilter<"DriverBatchHistory"> | string | null
+  }
+
   export type ShiftUpsertWithWhereUniqueWithoutTenantInput = {
     where: ShiftWhereUniqueInput
     update: XOR<ShiftUpdateWithoutTenantInput, ShiftUncheckedUpdateWithoutTenantInput>
@@ -143302,6 +146612,37 @@ export namespace Prisma {
     area?: StringNullableFilter<"CourierOnlineSession"> | string | null
     createdAt?: DateTimeFilter<"CourierOnlineSession"> | Date | string
     updatedAt?: DateTimeFilter<"CourierOnlineSession"> | Date | string
+  }
+
+  export type VehicleDriverAssignmentUpsertWithWhereUniqueWithoutTenantInput = {
+    where: VehicleDriverAssignmentWhereUniqueInput
+    update: XOR<VehicleDriverAssignmentUpdateWithoutTenantInput, VehicleDriverAssignmentUncheckedUpdateWithoutTenantInput>
+    create: XOR<VehicleDriverAssignmentCreateWithoutTenantInput, VehicleDriverAssignmentUncheckedCreateWithoutTenantInput>
+  }
+
+  export type VehicleDriverAssignmentUpdateWithWhereUniqueWithoutTenantInput = {
+    where: VehicleDriverAssignmentWhereUniqueInput
+    data: XOR<VehicleDriverAssignmentUpdateWithoutTenantInput, VehicleDriverAssignmentUncheckedUpdateWithoutTenantInput>
+  }
+
+  export type VehicleDriverAssignmentUpdateManyWithWhereWithoutTenantInput = {
+    where: VehicleDriverAssignmentScalarWhereInput
+    data: XOR<VehicleDriverAssignmentUpdateManyMutationInput, VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantInput>
+  }
+
+  export type VehicleDriverAssignmentScalarWhereInput = {
+    AND?: VehicleDriverAssignmentScalarWhereInput | VehicleDriverAssignmentScalarWhereInput[]
+    OR?: VehicleDriverAssignmentScalarWhereInput[]
+    NOT?: VehicleDriverAssignmentScalarWhereInput | VehicleDriverAssignmentScalarWhereInput[]
+    id?: StringFilter<"VehicleDriverAssignment"> | string
+    tenantId?: StringFilter<"VehicleDriverAssignment"> | string
+    vehicleId?: StringFilter<"VehicleDriverAssignment"> | string
+    driverId?: StringFilter<"VehicleDriverAssignment"> | string
+    assignedAt?: DateTimeFilter<"VehicleDriverAssignment"> | Date | string
+    unassignedAt?: DateTimeNullableFilter<"VehicleDriverAssignment"> | Date | string | null
+    active?: BoolFilter<"VehicleDriverAssignment"> | boolean
+    note?: StringNullableFilter<"VehicleDriverAssignment"> | string | null
+    createdAt?: DateTimeFilter<"VehicleDriverAssignment"> | Date | string
   }
 
   export type ViolationUpsertWithWhereUniqueWithoutTenantInput = {
@@ -144492,6 +147833,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -144523,6 +147865,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -144576,6 +147919,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -144607,6 +147951,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -144704,6 +148049,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -144725,6 +148071,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutCompanyInput = {
@@ -144783,6 +148130,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -144804,6 +148152,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutCompanyInput = {
@@ -144841,6 +148190,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordCreateNestedManyWithoutSpareVehicleInput
     alerts?: AlertCreateNestedManyWithoutVehicleInput
     tickets?: TicketCreateNestedManyWithoutVehicleInput
+    driverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutVehicleInput
   }
 
   export type VehicleUncheckedCreateWithoutCompanyInput = {
@@ -144868,6 +148218,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordUncheckedCreateNestedManyWithoutSpareVehicleInput
     alerts?: AlertUncheckedCreateNestedManyWithoutVehicleInput
     tickets?: TicketUncheckedCreateNestedManyWithoutVehicleInput
+    driverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutVehicleInput
   }
 
   export type VehicleCreateOrConnectWithoutCompanyInput = {
@@ -145002,6 +148353,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -145033,6 +148385,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -145086,6 +148439,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -145117,6 +148471,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -145234,6 +148589,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     companies?: CompanyCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -145265,6 +148621,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -145318,6 +148675,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -145349,6 +148707,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -145446,6 +148805,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -145467,6 +148827,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutSupervisorInput = {
@@ -145525,6 +148886,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -145546,6 +148908,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutSupervisorInput = {
@@ -146112,6 +149475,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -146143,6 +149507,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -146196,6 +149561,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -146227,6 +149593,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -146502,6 +149869,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -146533,6 +149901,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -146586,6 +149955,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -146617,6 +149987,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -146759,6 +150130,9 @@ export namespace Prisma {
     quantity?: number
     issuedDate?: Date | string | null
     returnedDate?: Date | string | null
+    condition?: $Enums.EquipmentCondition
+    conditionNote?: string | null
+    conditionReportedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -146770,6 +150144,9 @@ export namespace Prisma {
     quantity?: number
     issuedDate?: Date | string | null
     returnedDate?: Date | string | null
+    condition?: $Enums.EquipmentCondition
+    conditionNote?: string | null
+    conditionReportedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -147396,6 +150773,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordCreateNestedManyWithoutSpareVehicleInput
     alerts?: AlertCreateNestedManyWithoutVehicleInput
     tickets?: TicketCreateNestedManyWithoutVehicleInput
+    driverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutVehicleInput
   }
 
   export type VehicleUncheckedCreateWithoutAssignedDriverInput = {
@@ -147423,11 +150801,44 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordUncheckedCreateNestedManyWithoutSpareVehicleInput
     alerts?: AlertUncheckedCreateNestedManyWithoutVehicleInput
     tickets?: TicketUncheckedCreateNestedManyWithoutVehicleInput
+    driverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutVehicleInput
   }
 
   export type VehicleCreateOrConnectWithoutAssignedDriverInput = {
     where: VehicleWhereUniqueInput
     create: XOR<VehicleCreateWithoutAssignedDriverInput, VehicleUncheckedCreateWithoutAssignedDriverInput>
+  }
+
+  export type VehicleDriverAssignmentCreateWithoutDriverInput = {
+    id?: string
+    assignedAt?: Date | string
+    unassignedAt?: Date | string | null
+    active?: boolean
+    note?: string | null
+    createdAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutVehicleDriverAssignmentsInput
+    vehicle: VehicleCreateNestedOneWithoutDriverAssignmentsInput
+  }
+
+  export type VehicleDriverAssignmentUncheckedCreateWithoutDriverInput = {
+    id?: string
+    tenantId: string
+    vehicleId: string
+    assignedAt?: Date | string
+    unassignedAt?: Date | string | null
+    active?: boolean
+    note?: string | null
+    createdAt?: Date | string
+  }
+
+  export type VehicleDriverAssignmentCreateOrConnectWithoutDriverInput = {
+    where: VehicleDriverAssignmentWhereUniqueInput
+    create: XOR<VehicleDriverAssignmentCreateWithoutDriverInput, VehicleDriverAssignmentUncheckedCreateWithoutDriverInput>
+  }
+
+  export type VehicleDriverAssignmentCreateManyDriverInputEnvelope = {
+    data: VehicleDriverAssignmentCreateManyDriverInput | VehicleDriverAssignmentCreateManyDriverInput[]
+    skipDuplicates?: boolean
   }
 
   export type LeaveRequestCreateWithoutDriverInput = {
@@ -148398,6 +151809,34 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type DriverBatchHistoryCreateWithoutDriverInput = {
+    id?: string
+    batchNumber?: string | null
+    changedAt?: Date | string
+    changedBy?: string | null
+    note?: string | null
+    tenant: TenantCreateNestedOneWithoutDriverBatchHistoryInput
+  }
+
+  export type DriverBatchHistoryUncheckedCreateWithoutDriverInput = {
+    id?: string
+    tenantId: string
+    batchNumber?: string | null
+    changedAt?: Date | string
+    changedBy?: string | null
+    note?: string | null
+  }
+
+  export type DriverBatchHistoryCreateOrConnectWithoutDriverInput = {
+    where: DriverBatchHistoryWhereUniqueInput
+    create: XOR<DriverBatchHistoryCreateWithoutDriverInput, DriverBatchHistoryUncheckedCreateWithoutDriverInput>
+  }
+
+  export type DriverBatchHistoryCreateManyDriverInputEnvelope = {
+    data: DriverBatchHistoryCreateManyDriverInput | DriverBatchHistoryCreateManyDriverInput[]
+    skipDuplicates?: boolean
+  }
+
   export type TenantUpsertWithoutDriversInput = {
     update: XOR<TenantUpdateWithoutDriversInput, TenantUncheckedUpdateWithoutDriversInput>
     create: XOR<TenantCreateWithoutDriversInput, TenantUncheckedCreateWithoutDriversInput>
@@ -148426,6 +151865,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -148457,6 +151897,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -148510,6 +151951,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -148541,6 +151983,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -148710,6 +152153,9 @@ export namespace Prisma {
     quantity?: IntFilter<"DriverInventory"> | number
     issuedDate?: DateTimeNullableFilter<"DriverInventory"> | Date | string | null
     returnedDate?: DateTimeNullableFilter<"DriverInventory"> | Date | string | null
+    condition?: EnumEquipmentConditionFilter<"DriverInventory"> | $Enums.EquipmentCondition
+    conditionNote?: StringNullableFilter<"DriverInventory"> | string | null
+    conditionReportedAt?: DateTimeNullableFilter<"DriverInventory"> | Date | string | null
     createdAt?: DateTimeFilter<"DriverInventory"> | Date | string
     updatedAt?: DateTimeFilter<"DriverInventory"> | Date | string
   }
@@ -149053,6 +152499,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordUpdateManyWithoutSpareVehicleNestedInput
     alerts?: AlertUpdateManyWithoutVehicleNestedInput
     tickets?: TicketUpdateManyWithoutVehicleNestedInput
+    driverAssignments?: VehicleDriverAssignmentUpdateManyWithoutVehicleNestedInput
   }
 
   export type VehicleUncheckedUpdateWithoutAssignedDriverInput = {
@@ -149080,6 +152527,23 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordUncheckedUpdateManyWithoutSpareVehicleNestedInput
     alerts?: AlertUncheckedUpdateManyWithoutVehicleNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutVehicleNestedInput
+    driverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutVehicleNestedInput
+  }
+
+  export type VehicleDriverAssignmentUpsertWithWhereUniqueWithoutDriverInput = {
+    where: VehicleDriverAssignmentWhereUniqueInput
+    update: XOR<VehicleDriverAssignmentUpdateWithoutDriverInput, VehicleDriverAssignmentUncheckedUpdateWithoutDriverInput>
+    create: XOR<VehicleDriverAssignmentCreateWithoutDriverInput, VehicleDriverAssignmentUncheckedCreateWithoutDriverInput>
+  }
+
+  export type VehicleDriverAssignmentUpdateWithWhereUniqueWithoutDriverInput = {
+    where: VehicleDriverAssignmentWhereUniqueInput
+    data: XOR<VehicleDriverAssignmentUpdateWithoutDriverInput, VehicleDriverAssignmentUncheckedUpdateWithoutDriverInput>
+  }
+
+  export type VehicleDriverAssignmentUpdateManyWithWhereWithoutDriverInput = {
+    where: VehicleDriverAssignmentScalarWhereInput
+    data: XOR<VehicleDriverAssignmentUpdateManyMutationInput, VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverInput>
   }
 
   export type LeaveRequestUpsertWithWhereUniqueWithoutDriverInput = {
@@ -149439,6 +152903,22 @@ export namespace Prisma {
     data: XOR<PerformanceSnapshotUpdateManyMutationInput, PerformanceSnapshotUncheckedUpdateManyWithoutDriverInput>
   }
 
+  export type DriverBatchHistoryUpsertWithWhereUniqueWithoutDriverInput = {
+    where: DriverBatchHistoryWhereUniqueInput
+    update: XOR<DriverBatchHistoryUpdateWithoutDriverInput, DriverBatchHistoryUncheckedUpdateWithoutDriverInput>
+    create: XOR<DriverBatchHistoryCreateWithoutDriverInput, DriverBatchHistoryUncheckedCreateWithoutDriverInput>
+  }
+
+  export type DriverBatchHistoryUpdateWithWhereUniqueWithoutDriverInput = {
+    where: DriverBatchHistoryWhereUniqueInput
+    data: XOR<DriverBatchHistoryUpdateWithoutDriverInput, DriverBatchHistoryUncheckedUpdateWithoutDriverInput>
+  }
+
+  export type DriverBatchHistoryUpdateManyWithWhereWithoutDriverInput = {
+    where: DriverBatchHistoryScalarWhereInput
+    data: XOR<DriverBatchHistoryUpdateManyMutationInput, DriverBatchHistoryUncheckedUpdateManyWithoutDriverInput>
+  }
+
   export type TenantCreateWithoutDriverRestrictionsInput = {
     id?: string
     name: string
@@ -149457,6 +152937,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -149487,6 +152968,7 @@ export namespace Prisma {
     notificationRules?: NotificationRuleCreateNestedManyWithoutTenantInput
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -149541,6 +153023,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -149571,6 +153054,7 @@ export namespace Prisma {
     notificationRules?: NotificationRuleUncheckedCreateNestedManyWithoutTenantInput
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -149669,6 +153153,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
     submittedTickets?: TicketCreateNestedManyWithoutSubmitterDriverInput
@@ -149689,6 +153174,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutRestrictionsInput = {
@@ -149748,6 +153234,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
     submittedTickets?: TicketUncheckedCreateNestedManyWithoutSubmitterDriverInput
@@ -149768,6 +153255,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutRestrictionsInput = {
@@ -149804,6 +153292,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -149834,6 +153323,7 @@ export namespace Prisma {
     notificationRules?: NotificationRuleUpdateManyWithoutTenantNestedInput
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -149888,6 +153378,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -149918,6 +153409,7 @@ export namespace Prisma {
     notificationRules?: NotificationRuleUncheckedUpdateManyWithoutTenantNestedInput
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -150022,6 +153514,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
     submittedTickets?: TicketUpdateManyWithoutSubmitterDriverNestedInput
@@ -150042,6 +153535,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutRestrictionsInput = {
@@ -150101,6 +153595,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
     submittedTickets?: TicketUncheckedUpdateManyWithoutSubmitterDriverNestedInput
@@ -150121,6 +153616,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverCreateWithoutInventoryInput = {
@@ -150179,6 +153675,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -150200,6 +153697,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutInventoryInput = {
@@ -150258,6 +153756,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -150279,6 +153778,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutInventoryInput = {
@@ -150353,6 +153853,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -150374,6 +153875,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutInventoryInput = {
@@ -150432,6 +153934,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -150453,6 +153956,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutRecruitmentPipelineInput = {
@@ -150473,6 +153977,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -150503,6 +154008,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -150557,6 +154063,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -150587,6 +154094,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -150690,6 +154198,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -150720,6 +154229,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -150774,6 +154284,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -150804,6 +154315,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -150897,6 +154409,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -150927,6 +154440,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -150981,6 +154495,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -151011,6 +154526,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -151141,6 +154657,7 @@ export namespace Prisma {
     locationLogs?: LocationLogCreateNestedManyWithoutDriverInput
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -151162,6 +154679,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutAssignedVehicleInput = {
@@ -151220,6 +154738,7 @@ export namespace Prisma {
     locationLogs?: LocationLogUncheckedCreateNestedManyWithoutDriverInput
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -151241,6 +154760,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutAssignedVehicleInput = {
@@ -151464,6 +154984,38 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type VehicleDriverAssignmentCreateWithoutVehicleInput = {
+    id?: string
+    assignedAt?: Date | string
+    unassignedAt?: Date | string | null
+    active?: boolean
+    note?: string | null
+    createdAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutVehicleDriverAssignmentsInput
+    driver: DriverCreateNestedOneWithoutVehicleAssignmentsInput
+  }
+
+  export type VehicleDriverAssignmentUncheckedCreateWithoutVehicleInput = {
+    id?: string
+    tenantId: string
+    driverId: string
+    assignedAt?: Date | string
+    unassignedAt?: Date | string | null
+    active?: boolean
+    note?: string | null
+    createdAt?: Date | string
+  }
+
+  export type VehicleDriverAssignmentCreateOrConnectWithoutVehicleInput = {
+    where: VehicleDriverAssignmentWhereUniqueInput
+    create: XOR<VehicleDriverAssignmentCreateWithoutVehicleInput, VehicleDriverAssignmentUncheckedCreateWithoutVehicleInput>
+  }
+
+  export type VehicleDriverAssignmentCreateManyVehicleInputEnvelope = {
+    data: VehicleDriverAssignmentCreateManyVehicleInput | VehicleDriverAssignmentCreateManyVehicleInput[]
+    skipDuplicates?: boolean
+  }
+
   export type TenantUpsertWithoutVehiclesInput = {
     update: XOR<TenantUpdateWithoutVehiclesInput, TenantUncheckedUpdateWithoutVehiclesInput>
     create: XOR<TenantCreateWithoutVehiclesInput, TenantUncheckedCreateWithoutVehiclesInput>
@@ -151493,6 +155045,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -151523,6 +155076,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -151577,6 +155131,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -151607,6 +155162,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -151749,6 +155305,7 @@ export namespace Prisma {
     locationLogs?: LocationLogUpdateManyWithoutDriverNestedInput
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -151770,6 +155327,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutAssignedVehicleInput = {
@@ -151828,6 +155386,7 @@ export namespace Prisma {
     locationLogs?: LocationLogUncheckedUpdateManyWithoutDriverNestedInput
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -151849,6 +155408,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type VehicleInspectionUpsertWithWhereUniqueWithoutVehicleInput = {
@@ -151931,7 +155491,23 @@ export namespace Prisma {
     data: XOR<TicketUpdateManyMutationInput, TicketUncheckedUpdateManyWithoutVehicleInput>
   }
 
-  export type TenantCreateWithoutShiftsInput = {
+  export type VehicleDriverAssignmentUpsertWithWhereUniqueWithoutVehicleInput = {
+    where: VehicleDriverAssignmentWhereUniqueInput
+    update: XOR<VehicleDriverAssignmentUpdateWithoutVehicleInput, VehicleDriverAssignmentUncheckedUpdateWithoutVehicleInput>
+    create: XOR<VehicleDriverAssignmentCreateWithoutVehicleInput, VehicleDriverAssignmentUncheckedCreateWithoutVehicleInput>
+  }
+
+  export type VehicleDriverAssignmentUpdateWithWhereUniqueWithoutVehicleInput = {
+    where: VehicleDriverAssignmentWhereUniqueInput
+    data: XOR<VehicleDriverAssignmentUpdateWithoutVehicleInput, VehicleDriverAssignmentUncheckedUpdateWithoutVehicleInput>
+  }
+
+  export type VehicleDriverAssignmentUpdateManyWithWhereWithoutVehicleInput = {
+    where: VehicleDriverAssignmentScalarWhereInput
+    data: XOR<VehicleDriverAssignmentUpdateManyMutationInput, VehicleDriverAssignmentUncheckedUpdateManyWithoutVehicleInput>
+  }
+
+  export type TenantCreateWithoutVehicleDriverAssignmentsInput = {
     id?: string
     name: string
     subscriptionPlan?: $Enums.SubscriptionPlan
@@ -151949,6 +155525,8 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
+    shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
     cashRecords?: CashRecordCreateNestedManyWithoutTenantInput
@@ -152015,7 +155593,7 @@ export namespace Prisma {
     sims?: SimCreateNestedManyWithoutTenantInput
   }
 
-  export type TenantUncheckedCreateWithoutShiftsInput = {
+  export type TenantUncheckedCreateWithoutVehicleDriverAssignmentsInput = {
     id?: string
     name: string
     subscriptionPlan?: $Enums.SubscriptionPlan
@@ -152033,6 +155611,8 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
+    shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
     cashRecords?: CashRecordUncheckedCreateNestedManyWithoutTenantInput
@@ -152063,6 +155643,834 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
+    penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
+    appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
+    orderEvents?: OrderEventUncheckedCreateNestedManyWithoutTenantInput
+    aiInsights?: AiInsightUncheckedCreateNestedManyWithoutTenantInput
+    demandHeatmaps?: DemandHeatmapUncheckedCreateNestedManyWithoutTenantInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedCreateNestedManyWithoutTenantInput
+    shiftComplianceConfig?: ShiftComplianceConfigUncheckedCreateNestedOneWithoutTenantInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUncheckedCreateNestedManyWithoutTenantInput
+    deliveryAreas?: DeliveryAreaUncheckedCreateNestedManyWithoutTenantInput
+    partners?: PartnerUncheckedCreateNestedManyWithoutTenantInput
+    incentiveTargetRounds?: IncentiveTargetRoundUncheckedCreateNestedManyWithoutTenantInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedCreateNestedManyWithoutTenantInput
+    billings?: BillingUncheckedCreateNestedManyWithoutTenantInput
+    taxInvoices?: TaxInvoiceUncheckedCreateNestedManyWithoutTenantInput
+    paymentWithdrawals?: PaymentWithdrawalUncheckedCreateNestedManyWithoutTenantInput
+    agentRunLogs?: AgentRunLogUncheckedCreateNestedManyWithoutTenantInput
+    pendingAgentActions?: PendingAgentActionUncheckedCreateNestedManyWithoutTenantInput
+    agentActions?: AgentActionUncheckedCreateNestedManyWithoutTenantInput
+    agentMemories?: AgentMemoryUncheckedCreateNestedManyWithoutTenantInput
+    pinnedViews?: PinnedViewUncheckedCreateNestedManyWithoutTenantInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutTenantInput
+    metricEvents?: MetricEventUncheckedCreateNestedManyWithoutTenantInput
+    chatThreads?: ChatThreadUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    scheduledBriefings?: ScheduledBriefingUncheckedCreateNestedManyWithoutTenantInput
+    ingestRuns?: IngestRunUncheckedCreateNestedManyWithoutTenantInput
+    americanaChains?: AmericanaChainUncheckedCreateNestedManyWithoutTenantInput
+    americanaStores?: AmericanaStoreUncheckedCreateNestedManyWithoutTenantInput
+    americanaContracts?: AmericanaContractUncheckedCreateNestedManyWithoutTenantInput
+    americanaChainRates?: AmericanaChainRateUncheckedCreateNestedManyWithoutTenantInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
+    sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantCreateOrConnectWithoutVehicleDriverAssignmentsInput = {
+    where: TenantWhereUniqueInput
+    create: XOR<TenantCreateWithoutVehicleDriverAssignmentsInput, TenantUncheckedCreateWithoutVehicleDriverAssignmentsInput>
+  }
+
+  export type VehicleCreateWithoutDriverAssignmentsInput = {
+    id?: string
+    plateNumber: string
+    vehicleType: $Enums.VehicleType
+    make: string
+    model: string
+    year: number
+    color?: string | null
+    chassisNumber?: string | null
+    mileage?: number
+    fuelType?: string
+    ownerCompany?: string | null
+    driverIqama?: string | null
+    status?: $Enums.VehicleStatus
+    insuranceExpiry: Date | string
+    registrationExpiry: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutVehiclesInput
+    company: CompanyCreateNestedOneWithoutVehiclesInput
+    assignedDriver?: DriverCreateNestedOneWithoutAssignedVehicleInput
+    inspections?: VehicleInspectionCreateNestedManyWithoutVehicleInput
+    maintenanceRecords?: MaintenanceRecordCreateNestedManyWithoutVehicleInput
+    spareMaintenance?: MaintenanceRecordCreateNestedManyWithoutSpareVehicleInput
+    alerts?: AlertCreateNestedManyWithoutVehicleInput
+    tickets?: TicketCreateNestedManyWithoutVehicleInput
+  }
+
+  export type VehicleUncheckedCreateWithoutDriverAssignmentsInput = {
+    id?: string
+    tenantId: string
+    companyId: string
+    plateNumber: string
+    vehicleType: $Enums.VehicleType
+    make: string
+    model: string
+    year: number
+    color?: string | null
+    chassisNumber?: string | null
+    mileage?: number
+    fuelType?: string
+    ownerCompany?: string | null
+    driverIqama?: string | null
+    status?: $Enums.VehicleStatus
+    assignedDriverId?: string | null
+    insuranceExpiry: Date | string
+    registrationExpiry: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    inspections?: VehicleInspectionUncheckedCreateNestedManyWithoutVehicleInput
+    maintenanceRecords?: MaintenanceRecordUncheckedCreateNestedManyWithoutVehicleInput
+    spareMaintenance?: MaintenanceRecordUncheckedCreateNestedManyWithoutSpareVehicleInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutVehicleInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutVehicleInput
+  }
+
+  export type VehicleCreateOrConnectWithoutDriverAssignmentsInput = {
+    where: VehicleWhereUniqueInput
+    create: XOR<VehicleCreateWithoutDriverAssignmentsInput, VehicleUncheckedCreateWithoutDriverAssignmentsInput>
+  }
+
+  export type DriverCreateWithoutVehicleAssignmentsInput = {
+    id?: string
+    name: string
+    phone: string
+    platform: $Enums.Platform
+    platformDriverId?: string | null
+    utr?: string | null
+    vehicleType: $Enums.VehicleType
+    zone?: string | null
+    batchNumber?: string | null
+    status?: $Enums.DriverStatus
+    hireDate: Date | string
+    photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
+    monthlySalary?: number | null
+    monthlyOffDaysUsed?: number
+    offDaysResetMonth?: string | null
+    performanceTier?: string | null
+    tierComputedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    healthCertExpiry?: Date | string | null
+    healthCertStatus?: string | null
+    workPermitExpiry?: Date | string | null
+    workPermitStatus?: string | null
+    foodHandlingCertExpiry?: Date | string | null
+    foodHandlingCertStatus?: string | null
+    vehicleRegExpiry?: Date | string | null
+    vehicleRegStatus?: string | null
+    vehicleInsuranceExpiry?: Date | string | null
+    vehicleInsuranceStatus?: string | null
+    drivingLicenseExpiry?: Date | string | null
+    drivingLicenseStatus?: string | null
+    civilIdExpiry?: Date | string | null
+    civilIdStatus?: string | null
+    tenant: TenantCreateNestedOneWithoutDriversInput
+    company: CompanyCreateNestedOneWithoutDriversInput
+    supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
+    inventory?: DriverInventoryCreateNestedManyWithoutDriverInput
+    shifts?: ShiftCreateNestedManyWithoutDriverInput
+    attendanceRecords?: AttendanceRecordCreateNestedManyWithoutDriverInput
+    orderLogs?: OrderLogCreateNestedManyWithoutDriverInput
+    cashRecords?: CashRecordCreateNestedManyWithoutDriverInput
+    cashTransactions?: CashTransactionCreateNestedManyWithoutDriverInput
+    pendingDuesLedgers?: PendingDuesLedgerCreateNestedManyWithoutDriverInput
+    vehicleInspections?: VehicleInspectionCreateNestedManyWithoutDriverInput
+    maintenanceRecords?: MaintenanceRecordCreateNestedManyWithoutDriverInput
+    aiScores?: AiScoreCreateNestedManyWithoutDriverInput
+    alerts?: AlertCreateNestedManyWithoutDriverInput
+    capturedOrders?: CapturedOrderCreateNestedManyWithoutDriverInput
+    locationLogs?: LocationLogCreateNestedManyWithoutDriverInput
+    appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
+    device?: DeviceCreateNestedOneWithoutDriverInput
+    assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
+    restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
+    tickets?: TicketCreateNestedManyWithoutDriverInput
+    submittedTickets?: TicketCreateNestedManyWithoutSubmitterDriverInput
+    talabatSessions?: TalabatSessionCreateNestedManyWithoutDriverInput
+    talabatViolationEvents?: TalabatViolationEventCreateNestedManyWithoutDriverInput
+    talabatDailyMetrics?: TalabatDailyMetricsCreateNestedManyWithoutDriverInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsCreateNestedManyWithoutDriverInput
+    keetaDailyMetrics?: KeetaDailyMetricsCreateNestedManyWithoutDriverInput
+    americanaDailyOrders?: AmericanaDailyOrdersCreateNestedManyWithoutDriverInput
+    talabatDeliveries?: TalabatDeliveryCreateNestedManyWithoutDriverInput
+    kpiRecords?: KpiRecordCreateNestedManyWithoutDriverInput
+    courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutDriverInput
+    violations?: ViolationCreateNestedManyWithoutDriverInput
+    penalties?: PenaltyCreateNestedManyWithoutDriverInput
+    aiInsights?: AiInsightCreateNestedManyWithoutDriverInput
+    courierAttendanceSlots?: CourierAttendanceSlotCreateNestedManyWithoutDriverInput
+    courierIncentivePayouts?: CourierIncentivePayoutCreateNestedManyWithoutDriverInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
+    sims?: SimCreateNestedManyWithoutDriverInput
+    performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
+  }
+
+  export type DriverUncheckedCreateWithoutVehicleAssignmentsInput = {
+    id?: string
+    tenantId: string
+    companyId: string
+    name: string
+    phone: string
+    platform: $Enums.Platform
+    platformDriverId?: string | null
+    utr?: string | null
+    vehicleType: $Enums.VehicleType
+    zone?: string | null
+    batchNumber?: string | null
+    status?: $Enums.DriverStatus
+    hireDate: Date | string
+    photoUrl?: string | null
+    supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
+    monthlySalary?: number | null
+    monthlyOffDaysUsed?: number
+    offDaysResetMonth?: string | null
+    performanceTier?: string | null
+    tierComputedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    healthCertExpiry?: Date | string | null
+    healthCertStatus?: string | null
+    workPermitExpiry?: Date | string | null
+    workPermitStatus?: string | null
+    foodHandlingCertExpiry?: Date | string | null
+    foodHandlingCertStatus?: string | null
+    vehicleRegExpiry?: Date | string | null
+    vehicleRegStatus?: string | null
+    vehicleInsuranceExpiry?: Date | string | null
+    vehicleInsuranceStatus?: string | null
+    drivingLicenseExpiry?: Date | string | null
+    drivingLicenseStatus?: string | null
+    civilIdExpiry?: Date | string | null
+    civilIdStatus?: string | null
+    inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
+    shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
+    attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutDriverInput
+    orderLogs?: OrderLogUncheckedCreateNestedManyWithoutDriverInput
+    cashRecords?: CashRecordUncheckedCreateNestedManyWithoutDriverInput
+    cashTransactions?: CashTransactionUncheckedCreateNestedManyWithoutDriverInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedCreateNestedManyWithoutDriverInput
+    vehicleInspections?: VehicleInspectionUncheckedCreateNestedManyWithoutDriverInput
+    maintenanceRecords?: MaintenanceRecordUncheckedCreateNestedManyWithoutDriverInput
+    aiScores?: AiScoreUncheckedCreateNestedManyWithoutDriverInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutDriverInput
+    capturedOrders?: CapturedOrderUncheckedCreateNestedManyWithoutDriverInput
+    locationLogs?: LocationLogUncheckedCreateNestedManyWithoutDriverInput
+    appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
+    device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
+    assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
+    restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
+    submittedTickets?: TicketUncheckedCreateNestedManyWithoutSubmitterDriverInput
+    talabatSessions?: TalabatSessionUncheckedCreateNestedManyWithoutDriverInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedCreateNestedManyWithoutDriverInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedCreateNestedManyWithoutDriverInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedCreateNestedManyWithoutDriverInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedCreateNestedManyWithoutDriverInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedCreateNestedManyWithoutDriverInput
+    talabatDeliveries?: TalabatDeliveryUncheckedCreateNestedManyWithoutDriverInput
+    kpiRecords?: KpiRecordUncheckedCreateNestedManyWithoutDriverInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutDriverInput
+    violations?: ViolationUncheckedCreateNestedManyWithoutDriverInput
+    penalties?: PenaltyUncheckedCreateNestedManyWithoutDriverInput
+    aiInsights?: AiInsightUncheckedCreateNestedManyWithoutDriverInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedCreateNestedManyWithoutDriverInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedCreateNestedManyWithoutDriverInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
+    sims?: SimUncheckedCreateNestedManyWithoutDriverInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
+  }
+
+  export type DriverCreateOrConnectWithoutVehicleAssignmentsInput = {
+    where: DriverWhereUniqueInput
+    create: XOR<DriverCreateWithoutVehicleAssignmentsInput, DriverUncheckedCreateWithoutVehicleAssignmentsInput>
+  }
+
+  export type TenantUpsertWithoutVehicleDriverAssignmentsInput = {
+    update: XOR<TenantUpdateWithoutVehicleDriverAssignmentsInput, TenantUncheckedUpdateWithoutVehicleDriverAssignmentsInput>
+    create: XOR<TenantCreateWithoutVehicleDriverAssignmentsInput, TenantUncheckedCreateWithoutVehicleDriverAssignmentsInput>
+    where?: TenantWhereInput
+  }
+
+  export type TenantUpdateToOneWithWhereWithoutVehicleDriverAssignmentsInput = {
+    where?: TenantWhereInput
+    data: XOR<TenantUpdateWithoutVehicleDriverAssignmentsInput, TenantUncheckedUpdateWithoutVehicleDriverAssignmentsInput>
+  }
+
+  export type TenantUpdateWithoutVehicleDriverAssignmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    subscriptionPlan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+    designPartner?: BoolFieldUpdateOperationsInput | boolean
+    monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    companies?: CompanyUpdateManyWithoutTenantNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
+    shifts?: ShiftUpdateManyWithoutTenantNestedInput
+    attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
+    orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
+    cashRecords?: CashRecordUpdateManyWithoutTenantNestedInput
+    cashTransactions?: CashTransactionUpdateManyWithoutTenantNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUpdateManyWithoutTenantNestedInput
+    vehicleInspections?: VehicleInspectionUpdateManyWithoutTenantNestedInput
+    maintenanceRecords?: MaintenanceRecordUpdateManyWithoutTenantNestedInput
+    aiScores?: AiScoreUpdateManyWithoutTenantNestedInput
+    alerts?: AlertUpdateManyWithoutTenantNestedInput
+    aiDigests?: AiDigestUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutTenantNestedInput
+    tickets?: TicketUpdateManyWithoutTenantNestedInput
+    leaveRequests?: LeaveRequestUpdateManyWithoutTenantNestedInput
+    recruitmentPipeline?: RecruitmentPipelineUpdateManyWithoutTenantNestedInput
+    vehicles?: VehicleUpdateManyWithoutTenantNestedInput
+    talabatSessions?: TalabatSessionUpdateManyWithoutTenantNestedInput
+    talabatViolationEvents?: TalabatViolationEventUpdateManyWithoutTenantNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUpdateManyWithoutTenantNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUpdateManyWithoutTenantNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUpdateManyWithoutTenantNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUpdateManyWithoutTenantNestedInput
+    kpiDefinitions?: KpiDefinitionUpdateManyWithoutTenantNestedInput
+    kpiRecords?: KpiRecordUpdateManyWithoutTenantNestedInput
+    platformSettings?: PlatformSettingsUpdateManyWithoutTenantNestedInput
+    platformInventory?: PlatformInventoryUpdateManyWithoutTenantNestedInput
+    notifications?: NotificationUpdateManyWithoutTenantNestedInput
+    notificationRules?: NotificationRuleUpdateManyWithoutTenantNestedInput
+    notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
+    driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    violations?: ViolationUpdateManyWithoutTenantNestedInput
+    penalties?: PenaltyUpdateManyWithoutTenantNestedInput
+    appeals?: AppealUpdateManyWithoutTenantNestedInput
+    orderEvents?: OrderEventUpdateManyWithoutTenantNestedInput
+    aiInsights?: AiInsightUpdateManyWithoutTenantNestedInput
+    demandHeatmaps?: DemandHeatmapUpdateManyWithoutTenantNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUpdateManyWithoutTenantNestedInput
+    shiftComplianceConfig?: ShiftComplianceConfigUpdateOneWithoutTenantNestedInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUpdateManyWithoutTenantNestedInput
+    deliveryAreas?: DeliveryAreaUpdateManyWithoutTenantNestedInput
+    partners?: PartnerUpdateManyWithoutTenantNestedInput
+    incentiveTargetRounds?: IncentiveTargetRoundUpdateManyWithoutTenantNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUpdateManyWithoutTenantNestedInput
+    billings?: BillingUpdateManyWithoutTenantNestedInput
+    taxInvoices?: TaxInvoiceUpdateManyWithoutTenantNestedInput
+    paymentWithdrawals?: PaymentWithdrawalUpdateManyWithoutTenantNestedInput
+    agentRunLogs?: AgentRunLogUpdateManyWithoutTenantNestedInput
+    pendingAgentActions?: PendingAgentActionUpdateManyWithoutTenantNestedInput
+    agentActions?: AgentActionUpdateManyWithoutTenantNestedInput
+    agentMemories?: AgentMemoryUpdateManyWithoutTenantNestedInput
+    pinnedViews?: PinnedViewUpdateManyWithoutTenantNestedInput
+    performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutTenantNestedInput
+    metricEvents?: MetricEventUpdateManyWithoutTenantNestedInput
+    chatThreads?: ChatThreadUpdateManyWithoutTenantNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutTenantNestedInput
+    scheduledBriefings?: ScheduledBriefingUpdateManyWithoutTenantNestedInput
+    ingestRuns?: IngestRunUpdateManyWithoutTenantNestedInput
+    americanaChains?: AmericanaChainUpdateManyWithoutTenantNestedInput
+    americanaStores?: AmericanaStoreUpdateManyWithoutTenantNestedInput
+    americanaContracts?: AmericanaContractUpdateManyWithoutTenantNestedInput
+    americanaChainRates?: AmericanaChainRateUpdateManyWithoutTenantNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
+    sims?: SimUpdateManyWithoutTenantNestedInput
+  }
+
+  export type TenantUncheckedUpdateWithoutVehicleDriverAssignmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    subscriptionPlan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+    designPartner?: BoolFieldUpdateOperationsInput | boolean
+    monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
+    shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
+    attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
+    orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
+    cashRecords?: CashRecordUncheckedUpdateManyWithoutTenantNestedInput
+    cashTransactions?: CashTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleInspections?: VehicleInspectionUncheckedUpdateManyWithoutTenantNestedInput
+    maintenanceRecords?: MaintenanceRecordUncheckedUpdateManyWithoutTenantNestedInput
+    aiScores?: AiScoreUncheckedUpdateManyWithoutTenantNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutTenantNestedInput
+    aiDigests?: AiDigestUncheckedUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutTenantNestedInput
+    leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutTenantNestedInput
+    recruitmentPipeline?: RecruitmentPipelineUncheckedUpdateManyWithoutTenantNestedInput
+    vehicles?: VehicleUncheckedUpdateManyWithoutTenantNestedInput
+    talabatSessions?: TalabatSessionUncheckedUpdateManyWithoutTenantNestedInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedUpdateManyWithoutTenantNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedUpdateManyWithoutTenantNestedInput
+    kpiDefinitions?: KpiDefinitionUncheckedUpdateManyWithoutTenantNestedInput
+    kpiRecords?: KpiRecordUncheckedUpdateManyWithoutTenantNestedInput
+    platformSettings?: PlatformSettingsUncheckedUpdateManyWithoutTenantNestedInput
+    platformInventory?: PlatformInventoryUncheckedUpdateManyWithoutTenantNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutTenantNestedInput
+    notificationRules?: NotificationRuleUncheckedUpdateManyWithoutTenantNestedInput
+    notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
+    driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
+    penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
+    appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
+    orderEvents?: OrderEventUncheckedUpdateManyWithoutTenantNestedInput
+    aiInsights?: AiInsightUncheckedUpdateManyWithoutTenantNestedInput
+    demandHeatmaps?: DemandHeatmapUncheckedUpdateManyWithoutTenantNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedUpdateManyWithoutTenantNestedInput
+    shiftComplianceConfig?: ShiftComplianceConfigUncheckedUpdateOneWithoutTenantNestedInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryAreas?: DeliveryAreaUncheckedUpdateManyWithoutTenantNestedInput
+    partners?: PartnerUncheckedUpdateManyWithoutTenantNestedInput
+    incentiveTargetRounds?: IncentiveTargetRoundUncheckedUpdateManyWithoutTenantNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedUpdateManyWithoutTenantNestedInput
+    billings?: BillingUncheckedUpdateManyWithoutTenantNestedInput
+    taxInvoices?: TaxInvoiceUncheckedUpdateManyWithoutTenantNestedInput
+    paymentWithdrawals?: PaymentWithdrawalUncheckedUpdateManyWithoutTenantNestedInput
+    agentRunLogs?: AgentRunLogUncheckedUpdateManyWithoutTenantNestedInput
+    pendingAgentActions?: PendingAgentActionUncheckedUpdateManyWithoutTenantNestedInput
+    agentActions?: AgentActionUncheckedUpdateManyWithoutTenantNestedInput
+    agentMemories?: AgentMemoryUncheckedUpdateManyWithoutTenantNestedInput
+    pinnedViews?: PinnedViewUncheckedUpdateManyWithoutTenantNestedInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutTenantNestedInput
+    metricEvents?: MetricEventUncheckedUpdateManyWithoutTenantNestedInput
+    chatThreads?: ChatThreadUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    scheduledBriefings?: ScheduledBriefingUncheckedUpdateManyWithoutTenantNestedInput
+    ingestRuns?: IngestRunUncheckedUpdateManyWithoutTenantNestedInput
+    americanaChains?: AmericanaChainUncheckedUpdateManyWithoutTenantNestedInput
+    americanaStores?: AmericanaStoreUncheckedUpdateManyWithoutTenantNestedInput
+    americanaContracts?: AmericanaContractUncheckedUpdateManyWithoutTenantNestedInput
+    americanaChainRates?: AmericanaChainRateUncheckedUpdateManyWithoutTenantNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
+    sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+  }
+
+  export type VehicleUpsertWithoutDriverAssignmentsInput = {
+    update: XOR<VehicleUpdateWithoutDriverAssignmentsInput, VehicleUncheckedUpdateWithoutDriverAssignmentsInput>
+    create: XOR<VehicleCreateWithoutDriverAssignmentsInput, VehicleUncheckedCreateWithoutDriverAssignmentsInput>
+    where?: VehicleWhereInput
+  }
+
+  export type VehicleUpdateToOneWithWhereWithoutDriverAssignmentsInput = {
+    where?: VehicleWhereInput
+    data: XOR<VehicleUpdateWithoutDriverAssignmentsInput, VehicleUncheckedUpdateWithoutDriverAssignmentsInput>
+  }
+
+  export type VehicleUpdateWithoutDriverAssignmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    plateNumber?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    make?: StringFieldUpdateOperationsInput | string
+    model?: StringFieldUpdateOperationsInput | string
+    year?: IntFieldUpdateOperationsInput | number
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    chassisNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    mileage?: IntFieldUpdateOperationsInput | number
+    fuelType?: StringFieldUpdateOperationsInput | string
+    ownerCompany?: NullableStringFieldUpdateOperationsInput | string | null
+    driverIqama?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumVehicleStatusFieldUpdateOperationsInput | $Enums.VehicleStatus
+    insuranceExpiry?: DateTimeFieldUpdateOperationsInput | Date | string
+    registrationExpiry?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutVehiclesNestedInput
+    company?: CompanyUpdateOneRequiredWithoutVehiclesNestedInput
+    assignedDriver?: DriverUpdateOneWithoutAssignedVehicleNestedInput
+    inspections?: VehicleInspectionUpdateManyWithoutVehicleNestedInput
+    maintenanceRecords?: MaintenanceRecordUpdateManyWithoutVehicleNestedInput
+    spareMaintenance?: MaintenanceRecordUpdateManyWithoutSpareVehicleNestedInput
+    alerts?: AlertUpdateManyWithoutVehicleNestedInput
+    tickets?: TicketUpdateManyWithoutVehicleNestedInput
+  }
+
+  export type VehicleUncheckedUpdateWithoutDriverAssignmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    companyId?: StringFieldUpdateOperationsInput | string
+    plateNumber?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    make?: StringFieldUpdateOperationsInput | string
+    model?: StringFieldUpdateOperationsInput | string
+    year?: IntFieldUpdateOperationsInput | number
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    chassisNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    mileage?: IntFieldUpdateOperationsInput | number
+    fuelType?: StringFieldUpdateOperationsInput | string
+    ownerCompany?: NullableStringFieldUpdateOperationsInput | string | null
+    driverIqama?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumVehicleStatusFieldUpdateOperationsInput | $Enums.VehicleStatus
+    assignedDriverId?: NullableStringFieldUpdateOperationsInput | string | null
+    insuranceExpiry?: DateTimeFieldUpdateOperationsInput | Date | string
+    registrationExpiry?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    inspections?: VehicleInspectionUncheckedUpdateManyWithoutVehicleNestedInput
+    maintenanceRecords?: MaintenanceRecordUncheckedUpdateManyWithoutVehicleNestedInput
+    spareMaintenance?: MaintenanceRecordUncheckedUpdateManyWithoutSpareVehicleNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutVehicleNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutVehicleNestedInput
+  }
+
+  export type DriverUpsertWithoutVehicleAssignmentsInput = {
+    update: XOR<DriverUpdateWithoutVehicleAssignmentsInput, DriverUncheckedUpdateWithoutVehicleAssignmentsInput>
+    create: XOR<DriverCreateWithoutVehicleAssignmentsInput, DriverUncheckedCreateWithoutVehicleAssignmentsInput>
+    where?: DriverWhereInput
+  }
+
+  export type DriverUpdateToOneWithWhereWithoutVehicleAssignmentsInput = {
+    where?: DriverWhereInput
+    data: XOR<DriverUpdateWithoutVehicleAssignmentsInput, DriverUncheckedUpdateWithoutVehicleAssignmentsInput>
+  }
+
+  export type DriverUpdateWithoutVehicleAssignmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
+    platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
+    utr?: NullableStringFieldUpdateOperationsInput | string | null
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    zone?: NullableStringFieldUpdateOperationsInput | string | null
+    batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
+    monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
+    offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    performanceTier?: NullableStringFieldUpdateOperationsInput | string | null
+    tierComputedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    healthCertExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    healthCertStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    workPermitExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workPermitStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    foodHandlingCertExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    foodHandlingCertStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    vehicleRegExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    vehicleRegStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    vehicleInsuranceExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    vehicleInsuranceStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    drivingLicenseExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    drivingLicenseStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    civilIdExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    civilIdStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
+    company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
+    supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
+    inventory?: DriverInventoryUpdateManyWithoutDriverNestedInput
+    shifts?: ShiftUpdateManyWithoutDriverNestedInput
+    attendanceRecords?: AttendanceRecordUpdateManyWithoutDriverNestedInput
+    orderLogs?: OrderLogUpdateManyWithoutDriverNestedInput
+    cashRecords?: CashRecordUpdateManyWithoutDriverNestedInput
+    cashTransactions?: CashTransactionUpdateManyWithoutDriverNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUpdateManyWithoutDriverNestedInput
+    vehicleInspections?: VehicleInspectionUpdateManyWithoutDriverNestedInput
+    maintenanceRecords?: MaintenanceRecordUpdateManyWithoutDriverNestedInput
+    aiScores?: AiScoreUpdateManyWithoutDriverNestedInput
+    alerts?: AlertUpdateManyWithoutDriverNestedInput
+    capturedOrders?: CapturedOrderUpdateManyWithoutDriverNestedInput
+    locationLogs?: LocationLogUpdateManyWithoutDriverNestedInput
+    appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
+    device?: DeviceUpdateOneWithoutDriverNestedInput
+    assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
+    restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
+    tickets?: TicketUpdateManyWithoutDriverNestedInput
+    submittedTickets?: TicketUpdateManyWithoutSubmitterDriverNestedInput
+    talabatSessions?: TalabatSessionUpdateManyWithoutDriverNestedInput
+    talabatViolationEvents?: TalabatViolationEventUpdateManyWithoutDriverNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUpdateManyWithoutDriverNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUpdateManyWithoutDriverNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUpdateManyWithoutDriverNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUpdateManyWithoutDriverNestedInput
+    talabatDeliveries?: TalabatDeliveryUpdateManyWithoutDriverNestedInput
+    kpiRecords?: KpiRecordUpdateManyWithoutDriverNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutDriverNestedInput
+    violations?: ViolationUpdateManyWithoutDriverNestedInput
+    penalties?: PenaltyUpdateManyWithoutDriverNestedInput
+    aiInsights?: AiInsightUpdateManyWithoutDriverNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUpdateManyWithoutDriverNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUpdateManyWithoutDriverNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
+    sims?: SimUpdateManyWithoutDriverNestedInput
+    performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
+  }
+
+  export type DriverUncheckedUpdateWithoutVehicleAssignmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    companyId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
+    platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
+    utr?: NullableStringFieldUpdateOperationsInput | string | null
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    zone?: NullableStringFieldUpdateOperationsInput | string | null
+    batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
+    monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
+    offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    performanceTier?: NullableStringFieldUpdateOperationsInput | string | null
+    tierComputedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    healthCertExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    healthCertStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    workPermitExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workPermitStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    foodHandlingCertExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    foodHandlingCertStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    vehicleRegExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    vehicleRegStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    vehicleInsuranceExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    vehicleInsuranceStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    drivingLicenseExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    drivingLicenseStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    civilIdExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    civilIdStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
+    shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
+    attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutDriverNestedInput
+    orderLogs?: OrderLogUncheckedUpdateManyWithoutDriverNestedInput
+    cashRecords?: CashRecordUncheckedUpdateManyWithoutDriverNestedInput
+    cashTransactions?: CashTransactionUncheckedUpdateManyWithoutDriverNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedUpdateManyWithoutDriverNestedInput
+    vehicleInspections?: VehicleInspectionUncheckedUpdateManyWithoutDriverNestedInput
+    maintenanceRecords?: MaintenanceRecordUncheckedUpdateManyWithoutDriverNestedInput
+    aiScores?: AiScoreUncheckedUpdateManyWithoutDriverNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutDriverNestedInput
+    capturedOrders?: CapturedOrderUncheckedUpdateManyWithoutDriverNestedInput
+    locationLogs?: LocationLogUncheckedUpdateManyWithoutDriverNestedInput
+    appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
+    device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
+    assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
+    restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
+    submittedTickets?: TicketUncheckedUpdateManyWithoutSubmitterDriverNestedInput
+    talabatSessions?: TalabatSessionUncheckedUpdateManyWithoutDriverNestedInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedUpdateManyWithoutDriverNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedUpdateManyWithoutDriverNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedUpdateManyWithoutDriverNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedUpdateManyWithoutDriverNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedUpdateManyWithoutDriverNestedInput
+    talabatDeliveries?: TalabatDeliveryUncheckedUpdateManyWithoutDriverNestedInput
+    kpiRecords?: KpiRecordUncheckedUpdateManyWithoutDriverNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutDriverNestedInput
+    violations?: ViolationUncheckedUpdateManyWithoutDriverNestedInput
+    penalties?: PenaltyUncheckedUpdateManyWithoutDriverNestedInput
+    aiInsights?: AiInsightUncheckedUpdateManyWithoutDriverNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedUpdateManyWithoutDriverNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedUpdateManyWithoutDriverNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
+    sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
+  }
+
+  export type TenantCreateWithoutShiftsInput = {
+    id?: string
+    name: string
+    subscriptionPlan?: $Enums.SubscriptionPlan
+    designPartner?: boolean
+    monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    companies?: CompanyCreateNestedManyWithoutTenantInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
+    attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
+    orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
+    cashRecords?: CashRecordCreateNestedManyWithoutTenantInput
+    cashTransactions?: CashTransactionCreateNestedManyWithoutTenantInput
+    pendingDuesLedgers?: PendingDuesLedgerCreateNestedManyWithoutTenantInput
+    vehicleInspections?: VehicleInspectionCreateNestedManyWithoutTenantInput
+    maintenanceRecords?: MaintenanceRecordCreateNestedManyWithoutTenantInput
+    aiScores?: AiScoreCreateNestedManyWithoutTenantInput
+    alerts?: AlertCreateNestedManyWithoutTenantInput
+    aiDigests?: AiDigestCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogCreateNestedManyWithoutTenantInput
+    tickets?: TicketCreateNestedManyWithoutTenantInput
+    leaveRequests?: LeaveRequestCreateNestedManyWithoutTenantInput
+    recruitmentPipeline?: RecruitmentPipelineCreateNestedManyWithoutTenantInput
+    vehicles?: VehicleCreateNestedManyWithoutTenantInput
+    talabatSessions?: TalabatSessionCreateNestedManyWithoutTenantInput
+    talabatViolationEvents?: TalabatViolationEventCreateNestedManyWithoutTenantInput
+    talabatDailyMetrics?: TalabatDailyMetricsCreateNestedManyWithoutTenantInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsCreateNestedManyWithoutTenantInput
+    keetaDailyMetrics?: KeetaDailyMetricsCreateNestedManyWithoutTenantInput
+    americanaDailyOrders?: AmericanaDailyOrdersCreateNestedManyWithoutTenantInput
+    kpiDefinitions?: KpiDefinitionCreateNestedManyWithoutTenantInput
+    kpiRecords?: KpiRecordCreateNestedManyWithoutTenantInput
+    platformSettings?: PlatformSettingsCreateNestedManyWithoutTenantInput
+    platformInventory?: PlatformInventoryCreateNestedManyWithoutTenantInput
+    notifications?: NotificationCreateNestedManyWithoutTenantInput
+    notificationRules?: NotificationRuleCreateNestedManyWithoutTenantInput
+    notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
+    driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
+    courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
+    violations?: ViolationCreateNestedManyWithoutTenantInput
+    penalties?: PenaltyCreateNestedManyWithoutTenantInput
+    appeals?: AppealCreateNestedManyWithoutTenantInput
+    orderEvents?: OrderEventCreateNestedManyWithoutTenantInput
+    aiInsights?: AiInsightCreateNestedManyWithoutTenantInput
+    demandHeatmaps?: DemandHeatmapCreateNestedManyWithoutTenantInput
+    courierAttendanceSlots?: CourierAttendanceSlotCreateNestedManyWithoutTenantInput
+    shiftComplianceConfig?: ShiftComplianceConfigCreateNestedOneWithoutTenantInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotCreateNestedManyWithoutTenantInput
+    deliveryAreas?: DeliveryAreaCreateNestedManyWithoutTenantInput
+    partners?: PartnerCreateNestedManyWithoutTenantInput
+    incentiveTargetRounds?: IncentiveTargetRoundCreateNestedManyWithoutTenantInput
+    courierIncentivePayouts?: CourierIncentivePayoutCreateNestedManyWithoutTenantInput
+    billings?: BillingCreateNestedManyWithoutTenantInput
+    taxInvoices?: TaxInvoiceCreateNestedManyWithoutTenantInput
+    paymentWithdrawals?: PaymentWithdrawalCreateNestedManyWithoutTenantInput
+    agentRunLogs?: AgentRunLogCreateNestedManyWithoutTenantInput
+    pendingAgentActions?: PendingAgentActionCreateNestedManyWithoutTenantInput
+    agentActions?: AgentActionCreateNestedManyWithoutTenantInput
+    agentMemories?: AgentMemoryCreateNestedManyWithoutTenantInput
+    pinnedViews?: PinnedViewCreateNestedManyWithoutTenantInput
+    performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutTenantInput
+    metricEvents?: MetricEventCreateNestedManyWithoutTenantInput
+    chatThreads?: ChatThreadCreateNestedManyWithoutTenantInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutTenantInput
+    scheduledBriefings?: ScheduledBriefingCreateNestedManyWithoutTenantInput
+    ingestRuns?: IngestRunCreateNestedManyWithoutTenantInput
+    americanaChains?: AmericanaChainCreateNestedManyWithoutTenantInput
+    americanaStores?: AmericanaStoreCreateNestedManyWithoutTenantInput
+    americanaContracts?: AmericanaContractCreateNestedManyWithoutTenantInput
+    americanaChainRates?: AmericanaChainRateCreateNestedManyWithoutTenantInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
+    americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
+    sims?: SimCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantUncheckedCreateWithoutShiftsInput = {
+    id?: string
+    name: string
+    subscriptionPlan?: $Enums.SubscriptionPlan
+    designPartner?: boolean
+    monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
+    attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
+    orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
+    cashRecords?: CashRecordUncheckedCreateNestedManyWithoutTenantInput
+    cashTransactions?: CashTransactionUncheckedCreateNestedManyWithoutTenantInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedCreateNestedManyWithoutTenantInput
+    vehicleInspections?: VehicleInspectionUncheckedCreateNestedManyWithoutTenantInput
+    maintenanceRecords?: MaintenanceRecordUncheckedCreateNestedManyWithoutTenantInput
+    aiScores?: AiScoreUncheckedCreateNestedManyWithoutTenantInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutTenantInput
+    aiDigests?: AiDigestUncheckedCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutTenantInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutTenantInput
+    leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutTenantInput
+    recruitmentPipeline?: RecruitmentPipelineUncheckedCreateNestedManyWithoutTenantInput
+    vehicles?: VehicleUncheckedCreateNestedManyWithoutTenantInput
+    talabatSessions?: TalabatSessionUncheckedCreateNestedManyWithoutTenantInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedCreateNestedManyWithoutTenantInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedCreateNestedManyWithoutTenantInput
+    kpiDefinitions?: KpiDefinitionUncheckedCreateNestedManyWithoutTenantInput
+    kpiRecords?: KpiRecordUncheckedCreateNestedManyWithoutTenantInput
+    platformSettings?: PlatformSettingsUncheckedCreateNestedManyWithoutTenantInput
+    platformInventory?: PlatformInventoryUncheckedCreateNestedManyWithoutTenantInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutTenantInput
+    notificationRules?: NotificationRuleUncheckedCreateNestedManyWithoutTenantInput
+    notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
+    driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -152160,6 +156568,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -152181,6 +156590,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutShiftsInput = {
@@ -152239,6 +156649,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -152260,6 +156671,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutShiftsInput = {
@@ -152466,6 +156878,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
     cashRecords?: CashRecordUpdateManyWithoutTenantNestedInput
@@ -152496,6 +156909,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -152550,6 +156964,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
     cashRecords?: CashRecordUncheckedUpdateManyWithoutTenantNestedInput
@@ -152580,6 +156995,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -152683,6 +157099,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -152704,6 +157121,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutShiftsInput = {
@@ -152762,6 +157180,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -152783,6 +157202,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type AttendanceRecordUpsertWithWhereUniqueWithoutShiftInput = {
@@ -152851,6 +157271,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
     cashRecords?: CashRecordCreateNestedManyWithoutTenantInput
@@ -152881,6 +157302,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -152935,6 +157357,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
     cashRecords?: CashRecordUncheckedCreateNestedManyWithoutTenantInput
@@ -152965,6 +157388,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -153062,6 +157486,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -153083,6 +157508,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutAttendanceRecordsInput = {
@@ -153141,6 +157567,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -153162,6 +157589,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutAttendanceRecordsInput = {
@@ -153263,6 +157691,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
     cashRecords?: CashRecordUpdateManyWithoutTenantNestedInput
@@ -153293,6 +157722,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -153347,6 +157777,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
     cashRecords?: CashRecordUncheckedUpdateManyWithoutTenantNestedInput
@@ -153377,6 +157808,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -153480,6 +157912,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -153501,6 +157934,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutAttendanceRecordsInput = {
@@ -153559,6 +157993,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -153580,6 +158015,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type ShiftUpsertWithoutAttendanceRecordsInput = {
@@ -153671,6 +158107,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     cashRecords?: CashRecordCreateNestedManyWithoutTenantInput
@@ -153701,6 +158138,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -153755,6 +158193,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     cashRecords?: CashRecordUncheckedCreateNestedManyWithoutTenantInput
@@ -153785,6 +158224,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -153882,6 +158322,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -153903,6 +158344,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutOrderLogsInput = {
@@ -153961,6 +158403,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -153982,6 +158425,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutOrderLogsInput = {
@@ -154083,6 +158527,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     cashRecords?: CashRecordUpdateManyWithoutTenantNestedInput
@@ -154113,6 +158558,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -154167,6 +158613,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     cashRecords?: CashRecordUncheckedUpdateManyWithoutTenantNestedInput
@@ -154197,6 +158644,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -154300,6 +158748,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -154321,6 +158770,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutOrderLogsInput = {
@@ -154379,6 +158829,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -154400,6 +158851,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type ShiftUpsertWithoutOrderLogsInput = {
@@ -154491,6 +158943,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -154521,6 +158974,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -154575,6 +159029,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -154605,6 +159060,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -154702,6 +159158,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -154723,6 +159180,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutCashRecordsInput = {
@@ -154781,6 +159239,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -154802,6 +159261,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutCashRecordsInput = {
@@ -154838,6 +159298,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -154868,6 +159329,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -154922,6 +159384,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -154952,6 +159415,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -155055,6 +159519,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -155076,6 +159541,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutCashRecordsInput = {
@@ -155134,6 +159600,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -155155,6 +159622,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutCashTransactionsInput = {
@@ -155175,6 +159643,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -155205,6 +159674,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -155259,6 +159729,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -155289,6 +159760,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -155386,6 +159858,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -155407,6 +159880,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutCashTransactionsInput = {
@@ -155465,6 +159939,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -155486,6 +159961,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutCashTransactionsInput = {
@@ -155522,6 +159998,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -155552,6 +160029,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -155606,6 +160084,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -155636,6 +160115,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -155739,6 +160219,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -155760,6 +160241,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutCashTransactionsInput = {
@@ -155818,6 +160300,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -155839,6 +160322,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutPendingDuesLedgersInput = {
@@ -155859,6 +160343,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -155889,6 +160374,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -155943,6 +160429,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -155973,6 +160460,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -156070,6 +160558,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -156091,6 +160580,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutPendingDuesLedgersInput = {
@@ -156149,6 +160639,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -156170,6 +160661,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutPendingDuesLedgersInput = {
@@ -156206,6 +160698,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -156236,6 +160729,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -156290,6 +160784,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -156320,6 +160815,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -156423,6 +160919,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -156444,6 +160941,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutPendingDuesLedgersInput = {
@@ -156502,6 +161000,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -156523,6 +161022,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutVehicleInspectionsInput = {
@@ -156543,6 +161043,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -156573,6 +161074,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -156627,6 +161129,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -156657,6 +161160,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -156723,6 +161227,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordCreateNestedManyWithoutSpareVehicleInput
     alerts?: AlertCreateNestedManyWithoutVehicleInput
     tickets?: TicketCreateNestedManyWithoutVehicleInput
+    driverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutVehicleInput
   }
 
   export type VehicleUncheckedCreateWithoutInspectionsInput = {
@@ -156750,6 +161255,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordUncheckedCreateNestedManyWithoutSpareVehicleInput
     alerts?: AlertUncheckedCreateNestedManyWithoutVehicleInput
     tickets?: TicketUncheckedCreateNestedManyWithoutVehicleInput
+    driverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutVehicleInput
   }
 
   export type VehicleCreateOrConnectWithoutInspectionsInput = {
@@ -156813,6 +161319,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -156834,6 +161341,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutVehicleInspectionsInput = {
@@ -156892,6 +161400,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -156913,6 +161422,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutVehicleInspectionsInput = {
@@ -156949,6 +161459,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -156979,6 +161490,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -157033,6 +161545,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -157063,6 +161576,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -157135,6 +161649,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordUpdateManyWithoutSpareVehicleNestedInput
     alerts?: AlertUpdateManyWithoutVehicleNestedInput
     tickets?: TicketUpdateManyWithoutVehicleNestedInput
+    driverAssignments?: VehicleDriverAssignmentUpdateManyWithoutVehicleNestedInput
   }
 
   export type VehicleUncheckedUpdateWithoutInspectionsInput = {
@@ -157162,6 +161677,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordUncheckedUpdateManyWithoutSpareVehicleNestedInput
     alerts?: AlertUncheckedUpdateManyWithoutVehicleNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutVehicleNestedInput
+    driverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutVehicleNestedInput
   }
 
   export type DriverUpsertWithoutVehicleInspectionsInput = {
@@ -157231,6 +161747,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -157252,6 +161769,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutVehicleInspectionsInput = {
@@ -157310,6 +161828,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -157331,6 +161850,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutMaintenanceRecordsInput = {
@@ -157351,6 +161871,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -157381,6 +161902,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -157435,6 +161957,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -157465,6 +161988,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -157531,6 +162055,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordCreateNestedManyWithoutSpareVehicleInput
     alerts?: AlertCreateNestedManyWithoutVehicleInput
     tickets?: TicketCreateNestedManyWithoutVehicleInput
+    driverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutVehicleInput
   }
 
   export type VehicleUncheckedCreateWithoutMaintenanceRecordsInput = {
@@ -157558,6 +162083,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordUncheckedCreateNestedManyWithoutSpareVehicleInput
     alerts?: AlertUncheckedCreateNestedManyWithoutVehicleInput
     tickets?: TicketUncheckedCreateNestedManyWithoutVehicleInput
+    driverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutVehicleInput
   }
 
   export type VehicleCreateOrConnectWithoutMaintenanceRecordsInput = {
@@ -157621,6 +162147,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -157642,6 +162169,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutMaintenanceRecordsInput = {
@@ -157700,6 +162228,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -157721,6 +162250,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutMaintenanceRecordsInput = {
@@ -157753,6 +162283,7 @@ export namespace Prisma {
     maintenanceRecords?: MaintenanceRecordCreateNestedManyWithoutVehicleInput
     alerts?: AlertCreateNestedManyWithoutVehicleInput
     tickets?: TicketCreateNestedManyWithoutVehicleInput
+    driverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutVehicleInput
   }
 
   export type VehicleUncheckedCreateWithoutSpareMaintenanceInput = {
@@ -157780,6 +162311,7 @@ export namespace Prisma {
     maintenanceRecords?: MaintenanceRecordUncheckedCreateNestedManyWithoutVehicleInput
     alerts?: AlertUncheckedCreateNestedManyWithoutVehicleInput
     tickets?: TicketUncheckedCreateNestedManyWithoutVehicleInput
+    driverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutVehicleInput
   }
 
   export type VehicleCreateOrConnectWithoutSpareMaintenanceInput = {
@@ -157816,6 +162348,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -157846,6 +162379,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -157900,6 +162434,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -157930,6 +162465,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -158002,6 +162538,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordUpdateManyWithoutSpareVehicleNestedInput
     alerts?: AlertUpdateManyWithoutVehicleNestedInput
     tickets?: TicketUpdateManyWithoutVehicleNestedInput
+    driverAssignments?: VehicleDriverAssignmentUpdateManyWithoutVehicleNestedInput
   }
 
   export type VehicleUncheckedUpdateWithoutMaintenanceRecordsInput = {
@@ -158029,6 +162566,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordUncheckedUpdateManyWithoutSpareVehicleNestedInput
     alerts?: AlertUncheckedUpdateManyWithoutVehicleNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutVehicleNestedInput
+    driverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutVehicleNestedInput
   }
 
   export type DriverUpsertWithoutMaintenanceRecordsInput = {
@@ -158098,6 +162636,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -158119,6 +162658,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutMaintenanceRecordsInput = {
@@ -158177,6 +162717,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -158198,6 +162739,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type VehicleUpsertWithoutSpareMaintenanceInput = {
@@ -158236,6 +162778,7 @@ export namespace Prisma {
     maintenanceRecords?: MaintenanceRecordUpdateManyWithoutVehicleNestedInput
     alerts?: AlertUpdateManyWithoutVehicleNestedInput
     tickets?: TicketUpdateManyWithoutVehicleNestedInput
+    driverAssignments?: VehicleDriverAssignmentUpdateManyWithoutVehicleNestedInput
   }
 
   export type VehicleUncheckedUpdateWithoutSpareMaintenanceInput = {
@@ -158263,6 +162806,7 @@ export namespace Prisma {
     maintenanceRecords?: MaintenanceRecordUncheckedUpdateManyWithoutVehicleNestedInput
     alerts?: AlertUncheckedUpdateManyWithoutVehicleNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutVehicleNestedInput
+    driverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutVehicleNestedInput
   }
 
   export type DriverCreateWithoutDeviceInput = {
@@ -158321,6 +162865,7 @@ export namespace Prisma {
     locationLogs?: LocationLogCreateNestedManyWithoutDriverInput
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -158342,6 +162887,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutDeviceInput = {
@@ -158400,6 +162946,7 @@ export namespace Prisma {
     locationLogs?: LocationLogUncheckedCreateNestedManyWithoutDriverInput
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -158421,6 +162968,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutDeviceInput = {
@@ -158645,6 +163193,7 @@ export namespace Prisma {
     locationLogs?: LocationLogUpdateManyWithoutDriverNestedInput
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -158666,6 +163215,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutDeviceInput = {
@@ -158724,6 +163274,7 @@ export namespace Prisma {
     locationLogs?: LocationLogUncheckedUpdateManyWithoutDriverNestedInput
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -158745,6 +163296,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type CapturedOrderUpsertWithWhereUniqueWithoutDeviceInput = {
@@ -158845,6 +163397,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -158876,6 +163429,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -158929,6 +163483,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -158960,6 +163515,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -159057,6 +163613,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -159077,6 +163634,7 @@ export namespace Prisma {
     courierIncentivePayouts?: CourierIncentivePayoutCreateNestedManyWithoutDriverInput
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutSimsInput = {
@@ -159136,6 +163694,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -159156,6 +163715,7 @@ export namespace Prisma {
     courierIncentivePayouts?: CourierIncentivePayoutUncheckedCreateNestedManyWithoutDriverInput
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutSimsInput = {
@@ -159241,6 +163801,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -159272,6 +163833,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -159325,6 +163887,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -159356,6 +163919,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -159459,6 +164023,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -159479,6 +164044,7 @@ export namespace Prisma {
     courierIncentivePayouts?: CourierIncentivePayoutUpdateManyWithoutDriverNestedInput
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutSimsInput = {
@@ -159538,6 +164104,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -159558,6 +164125,7 @@ export namespace Prisma {
     courierIncentivePayouts?: CourierIncentivePayoutUncheckedUpdateManyWithoutDriverNestedInput
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DeviceUpsertWithoutSimsInput = {
@@ -159720,6 +164288,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -159741,6 +164310,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutCapturedOrdersInput = {
@@ -159799,6 +164369,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -159820,6 +164391,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutCapturedOrdersInput = {
@@ -159949,6 +164521,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -159970,6 +164543,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutCapturedOrdersInput = {
@@ -160028,6 +164602,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -160049,6 +164624,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DeviceCreateWithoutLocationLogsInput = {
@@ -160156,6 +164732,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -160177,6 +164754,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutLocationLogsInput = {
@@ -160235,6 +164813,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -160256,6 +164835,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutLocationLogsInput = {
@@ -160385,6 +164965,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -160406,6 +164987,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutLocationLogsInput = {
@@ -160464,6 +165046,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -160485,6 +165068,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DeviceCreateWithoutAppUsageLogsInput = {
@@ -160592,6 +165176,7 @@ export namespace Prisma {
     locationLogs?: LocationLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -160613,6 +165198,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutAppUsageLogsInput = {
@@ -160671,6 +165257,7 @@ export namespace Prisma {
     locationLogs?: LocationLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -160692,6 +165279,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutAppUsageLogsInput = {
@@ -160821,6 +165409,7 @@ export namespace Prisma {
     locationLogs?: LocationLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -160842,6 +165431,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutAppUsageLogsInput = {
@@ -160900,6 +165490,7 @@ export namespace Prisma {
     locationLogs?: LocationLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -160921,6 +165512,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DeviceCreateWithoutCommandsInput = {
@@ -161173,6 +165765,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -161203,6 +165796,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -161257,6 +165851,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -161287,6 +165882,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -161384,6 +165980,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -161405,6 +166002,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutAiScoresInput = {
@@ -161463,6 +166061,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -161484,6 +166083,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutAiScoresInput = {
@@ -161520,6 +166120,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -161550,6 +166151,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -161604,6 +166206,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -161634,6 +166237,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -161737,6 +166341,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -161758,6 +166363,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutAiScoresInput = {
@@ -161816,6 +166422,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -161837,6 +166444,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutAlertsInput = {
@@ -161857,6 +166465,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -161887,6 +166496,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -161941,6 +166551,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -161971,6 +166582,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -162068,6 +166680,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -162089,6 +166702,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutAlertsInput = {
@@ -162147,6 +166761,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -162168,6 +166783,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutAlertsInput = {
@@ -162200,6 +166816,7 @@ export namespace Prisma {
     maintenanceRecords?: MaintenanceRecordCreateNestedManyWithoutVehicleInput
     spareMaintenance?: MaintenanceRecordCreateNestedManyWithoutSpareVehicleInput
     tickets?: TicketCreateNestedManyWithoutVehicleInput
+    driverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutVehicleInput
   }
 
   export type VehicleUncheckedCreateWithoutAlertsInput = {
@@ -162227,6 +166844,7 @@ export namespace Prisma {
     maintenanceRecords?: MaintenanceRecordUncheckedCreateNestedManyWithoutVehicleInput
     spareMaintenance?: MaintenanceRecordUncheckedCreateNestedManyWithoutSpareVehicleInput
     tickets?: TicketUncheckedCreateNestedManyWithoutVehicleInput
+    driverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutVehicleInput
   }
 
   export type VehicleCreateOrConnectWithoutAlertsInput = {
@@ -162324,6 +166942,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -162354,6 +166973,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -162408,6 +167028,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -162438,6 +167059,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -162541,6 +167163,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -162562,6 +167185,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutAlertsInput = {
@@ -162620,6 +167244,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -162641,6 +167266,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type VehicleUpsertWithoutAlertsInput = {
@@ -162679,6 +167305,7 @@ export namespace Prisma {
     maintenanceRecords?: MaintenanceRecordUpdateManyWithoutVehicleNestedInput
     spareMaintenance?: MaintenanceRecordUpdateManyWithoutSpareVehicleNestedInput
     tickets?: TicketUpdateManyWithoutVehicleNestedInput
+    driverAssignments?: VehicleDriverAssignmentUpdateManyWithoutVehicleNestedInput
   }
 
   export type VehicleUncheckedUpdateWithoutAlertsInput = {
@@ -162706,6 +167333,7 @@ export namespace Prisma {
     maintenanceRecords?: MaintenanceRecordUncheckedUpdateManyWithoutVehicleNestedInput
     spareMaintenance?: MaintenanceRecordUncheckedUpdateManyWithoutSpareVehicleNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutVehicleNestedInput
+    driverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutVehicleNestedInput
   }
 
   export type UserUpsertWithoutAcknowledgedAlertsInput = {
@@ -162793,6 +167421,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -162823,6 +167452,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -162877,6 +167507,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -162907,6 +167538,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -162977,6 +167609,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -163007,6 +167640,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -163061,6 +167695,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -163091,6 +167726,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -163145,6 +167781,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -163175,6 +167812,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -163229,6 +167867,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -163259,6 +167898,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -163329,6 +167969,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -163359,6 +168000,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -163413,6 +168055,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -163443,6 +168086,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -163497,6 +168141,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -163527,6 +168172,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -163581,6 +168227,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -163611,6 +168258,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -163709,6 +168357,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -163729,6 +168378,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutSubmittedTicketsInput = {
@@ -163788,6 +168438,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -163808,6 +168459,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutSubmittedTicketsInput = {
@@ -164027,6 +168679,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     submittedTickets?: TicketCreateNestedManyWithoutSubmitterDriverInput
@@ -164047,6 +168700,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutTicketsInput = {
@@ -164106,6 +168760,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     submittedTickets?: TicketUncheckedCreateNestedManyWithoutSubmitterDriverInput
@@ -164126,6 +168781,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutTicketsInput = {
@@ -164158,6 +168814,7 @@ export namespace Prisma {
     maintenanceRecords?: MaintenanceRecordCreateNestedManyWithoutVehicleInput
     spareMaintenance?: MaintenanceRecordCreateNestedManyWithoutSpareVehicleInput
     alerts?: AlertCreateNestedManyWithoutVehicleInput
+    driverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutVehicleInput
   }
 
   export type VehicleUncheckedCreateWithoutTicketsInput = {
@@ -164185,6 +168842,7 @@ export namespace Prisma {
     maintenanceRecords?: MaintenanceRecordUncheckedCreateNestedManyWithoutVehicleInput
     spareMaintenance?: MaintenanceRecordUncheckedCreateNestedManyWithoutSpareVehicleInput
     alerts?: AlertUncheckedCreateNestedManyWithoutVehicleInput
+    driverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutVehicleInput
   }
 
   export type VehicleCreateOrConnectWithoutTicketsInput = {
@@ -164221,6 +168879,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -164251,6 +168910,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -164305,6 +168965,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -164335,6 +168996,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -164439,6 +169101,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -164459,6 +169122,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutSubmittedTicketsInput = {
@@ -164518,6 +169182,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -164538,6 +169203,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type UserUpsertWithoutSubmittedTicketsInput = {
@@ -164781,6 +169447,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     submittedTickets?: TicketUpdateManyWithoutSubmitterDriverNestedInput
@@ -164801,6 +169468,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutTicketsInput = {
@@ -164860,6 +169528,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     submittedTickets?: TicketUncheckedUpdateManyWithoutSubmitterDriverNestedInput
@@ -164880,6 +169549,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type VehicleUpsertWithoutTicketsInput = {
@@ -164918,6 +169588,7 @@ export namespace Prisma {
     maintenanceRecords?: MaintenanceRecordUpdateManyWithoutVehicleNestedInput
     spareMaintenance?: MaintenanceRecordUpdateManyWithoutSpareVehicleNestedInput
     alerts?: AlertUpdateManyWithoutVehicleNestedInput
+    driverAssignments?: VehicleDriverAssignmentUpdateManyWithoutVehicleNestedInput
   }
 
   export type VehicleUncheckedUpdateWithoutTicketsInput = {
@@ -164945,6 +169616,7 @@ export namespace Prisma {
     maintenanceRecords?: MaintenanceRecordUncheckedUpdateManyWithoutVehicleNestedInput
     spareMaintenance?: MaintenanceRecordUncheckedUpdateManyWithoutSpareVehicleNestedInput
     alerts?: AlertUncheckedUpdateManyWithoutVehicleNestedInput
+    driverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutVehicleNestedInput
   }
 
   export type TenantCreateWithoutLeaveRequestsInput = {
@@ -164965,6 +169637,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -164995,6 +169668,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -165049,6 +169723,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -165079,6 +169754,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -165177,6 +169853,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
     submittedTickets?: TicketCreateNestedManyWithoutSubmitterDriverInput
@@ -165197,6 +169874,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutLeaveRequestsInput = {
@@ -165256,6 +169934,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
     submittedTickets?: TicketUncheckedCreateNestedManyWithoutSubmitterDriverInput
@@ -165276,6 +169955,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutLeaveRequestsInput = {
@@ -165373,6 +170053,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -165403,6 +170084,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -165457,6 +170139,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -165487,6 +170170,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -165591,6 +170275,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
     submittedTickets?: TicketUpdateManyWithoutSubmitterDriverNestedInput
@@ -165611,6 +170296,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutLeaveRequestsInput = {
@@ -165670,6 +170356,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
     submittedTickets?: TicketUncheckedUpdateManyWithoutSubmitterDriverNestedInput
@@ -165690,6 +170377,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type UserUpsertWithoutReviewedLeavesInput = {
@@ -165777,6 +170465,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -165807,6 +170496,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -165861,6 +170551,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -165891,6 +170582,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -165989,6 +170681,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -166009,6 +170702,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutTalabatSessionsInput = {
@@ -166068,6 +170762,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -166088,6 +170783,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutTalabatSessionsInput = {
@@ -166269,6 +170965,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -166299,6 +170996,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -166353,6 +171051,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -166383,6 +171082,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -166487,6 +171187,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -166507,6 +171208,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutTalabatSessionsInput = {
@@ -166566,6 +171268,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -166586,6 +171289,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type ShiftUpsertWithoutTalabatSessionsInput = {
@@ -166709,6 +171413,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -166739,6 +171444,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -166793,6 +171499,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -166823,6 +171530,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -166921,6 +171629,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -166941,6 +171650,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutTalabatViolationEventsInput = {
@@ -167000,6 +171710,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -167020,6 +171731,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutTalabatViolationEventsInput = {
@@ -167123,6 +171835,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -167153,6 +171866,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -167207,6 +171921,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -167237,6 +171952,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -167341,6 +172057,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -167361,6 +172078,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutTalabatViolationEventsInput = {
@@ -167420,6 +172138,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -167440,6 +172159,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TalabatSessionUpsertWithoutViolationEventsInput = {
@@ -167572,6 +172292,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -167592,6 +172313,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutTalabatDeliveriesInput = {
@@ -167651,6 +172373,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -167671,6 +172394,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutTalabatDeliveriesInput = {
@@ -167813,6 +172537,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -167833,6 +172558,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutTalabatDeliveriesInput = {
@@ -167892,6 +172618,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -167912,6 +172639,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TalabatSessionUpsertWithoutDeliveryItemsInput = {
@@ -168005,6 +172733,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -168035,6 +172764,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -168089,6 +172819,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -168119,6 +172850,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -168217,6 +172949,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -168237,6 +172970,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutKeetaDailyMetricsInput = {
@@ -168296,6 +173030,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -168316,6 +173051,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutKeetaDailyMetricsInput = {
@@ -168352,6 +173088,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -168382,6 +173119,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -168436,6 +173174,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -168466,6 +173205,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -168570,6 +173310,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -168590,6 +173331,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutKeetaDailyMetricsInput = {
@@ -168649,6 +173391,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -168669,6 +173412,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutIngestRunsInput = {
@@ -168689,6 +173433,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -168720,6 +173465,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -168773,6 +173519,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -168804,6 +173551,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -168873,6 +173621,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -168904,6 +173653,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -168957,6 +173707,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -168988,6 +173739,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -169041,6 +173793,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -169071,6 +173824,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -169125,6 +173879,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -169155,6 +173910,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -169253,6 +174009,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -169273,6 +174030,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutDeliverooDailyMetricsInput = {
@@ -169332,6 +174090,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -169352,6 +174111,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutDeliverooDailyMetricsInput = {
@@ -169388,6 +174148,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -169418,6 +174179,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -169472,6 +174234,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -169502,6 +174265,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -169606,6 +174370,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -169626,6 +174391,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutDeliverooDailyMetricsInput = {
@@ -169685,6 +174451,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -169705,6 +174472,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutTalabatDailyMetricsInput = {
@@ -169725,6 +174493,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -169755,6 +174524,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -169809,6 +174579,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -169839,6 +174610,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -169937,6 +174709,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -169957,6 +174730,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutTalabatDailyMetricsInput = {
@@ -170016,6 +174790,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -170036,6 +174811,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutTalabatDailyMetricsInput = {
@@ -170072,6 +174848,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -170102,6 +174879,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -170156,6 +174934,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -170186,6 +174965,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -170290,6 +175070,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -170310,6 +175091,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutTalabatDailyMetricsInput = {
@@ -170369,6 +175151,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -170389,6 +175172,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutPlatformSettingsInput = {
@@ -170409,6 +175193,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -170439,6 +175224,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -170493,6 +175279,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -170523,6 +175310,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -170593,6 +175381,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -170623,6 +175412,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -170677,6 +175467,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -170707,6 +175498,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -170761,6 +175553,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -170791,6 +175584,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -170845,6 +175639,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -170875,6 +175670,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -170945,6 +175741,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -170975,6 +175772,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -171029,6 +175827,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -171059,6 +175858,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -171113,6 +175913,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -171143,6 +175944,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -171197,6 +175999,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -171227,6 +176030,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -171325,6 +176129,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -171345,6 +176150,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutAmericanaDailyOrdersInput = {
@@ -171404,6 +176210,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -171424,6 +176231,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutAmericanaDailyOrdersInput = {
@@ -171538,6 +176346,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -171568,6 +176377,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -171622,6 +176432,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -171652,6 +176463,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -171756,6 +176568,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -171776,6 +176589,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutAmericanaDailyOrdersInput = {
@@ -171835,6 +176649,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -171855,6 +176670,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type AmericanaChainUpsertWithoutDailyOrdersInput = {
@@ -171965,6 +176781,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -171996,6 +176813,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -172049,6 +176867,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -172080,6 +176899,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -172283,6 +177103,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -172314,6 +177135,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -172367,6 +177189,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -172398,6 +177221,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -172499,6 +177323,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -172530,6 +177355,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -172583,6 +177409,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -172614,6 +177441,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -172800,6 +177628,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -172831,6 +177660,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -172884,6 +177714,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -172915,6 +177746,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -173037,6 +177869,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -173068,6 +177901,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -173121,6 +177955,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -173152,6 +177987,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -173257,6 +178093,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -173288,6 +178125,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -173341,6 +178179,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -173372,6 +178211,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -173441,6 +178281,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -173472,6 +178313,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -173525,6 +178367,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -173556,6 +178399,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -173756,6 +178600,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -173787,6 +178632,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -173840,6 +178686,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -173871,6 +178718,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -174055,7 +178903,7 @@ export namespace Prisma {
     scheduledBriefings?: ScheduledBriefingUncheckedUpdateManyWithoutCreatorNestedInput
   }
 
-  export type TenantCreateWithoutAmericanaStoreAssignmentsInput = {
+  export type TenantCreateWithoutDriverBatchHistoryInput = {
     id?: string
     name: string
     subscriptionPlan?: $Enums.SubscriptionPlan
@@ -174104,6 +178952,708 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
+    violations?: ViolationCreateNestedManyWithoutTenantInput
+    penalties?: PenaltyCreateNestedManyWithoutTenantInput
+    appeals?: AppealCreateNestedManyWithoutTenantInput
+    orderEvents?: OrderEventCreateNestedManyWithoutTenantInput
+    aiInsights?: AiInsightCreateNestedManyWithoutTenantInput
+    demandHeatmaps?: DemandHeatmapCreateNestedManyWithoutTenantInput
+    courierAttendanceSlots?: CourierAttendanceSlotCreateNestedManyWithoutTenantInput
+    shiftComplianceConfig?: ShiftComplianceConfigCreateNestedOneWithoutTenantInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotCreateNestedManyWithoutTenantInput
+    deliveryAreas?: DeliveryAreaCreateNestedManyWithoutTenantInput
+    partners?: PartnerCreateNestedManyWithoutTenantInput
+    incentiveTargetRounds?: IncentiveTargetRoundCreateNestedManyWithoutTenantInput
+    courierIncentivePayouts?: CourierIncentivePayoutCreateNestedManyWithoutTenantInput
+    billings?: BillingCreateNestedManyWithoutTenantInput
+    taxInvoices?: TaxInvoiceCreateNestedManyWithoutTenantInput
+    paymentWithdrawals?: PaymentWithdrawalCreateNestedManyWithoutTenantInput
+    agentRunLogs?: AgentRunLogCreateNestedManyWithoutTenantInput
+    pendingAgentActions?: PendingAgentActionCreateNestedManyWithoutTenantInput
+    agentActions?: AgentActionCreateNestedManyWithoutTenantInput
+    agentMemories?: AgentMemoryCreateNestedManyWithoutTenantInput
+    pinnedViews?: PinnedViewCreateNestedManyWithoutTenantInput
+    performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutTenantInput
+    metricEvents?: MetricEventCreateNestedManyWithoutTenantInput
+    chatThreads?: ChatThreadCreateNestedManyWithoutTenantInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutTenantInput
+    scheduledBriefings?: ScheduledBriefingCreateNestedManyWithoutTenantInput
+    ingestRuns?: IngestRunCreateNestedManyWithoutTenantInput
+    americanaChains?: AmericanaChainCreateNestedManyWithoutTenantInput
+    americanaStores?: AmericanaStoreCreateNestedManyWithoutTenantInput
+    americanaContracts?: AmericanaContractCreateNestedManyWithoutTenantInput
+    americanaChainRates?: AmericanaChainRateCreateNestedManyWithoutTenantInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
+    americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
+    sims?: SimCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantUncheckedCreateWithoutDriverBatchHistoryInput = {
+    id?: string
+    name: string
+    subscriptionPlan?: $Enums.SubscriptionPlan
+    designPartner?: boolean
+    monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
+    attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
+    orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
+    cashRecords?: CashRecordUncheckedCreateNestedManyWithoutTenantInput
+    cashTransactions?: CashTransactionUncheckedCreateNestedManyWithoutTenantInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedCreateNestedManyWithoutTenantInput
+    vehicleInspections?: VehicleInspectionUncheckedCreateNestedManyWithoutTenantInput
+    maintenanceRecords?: MaintenanceRecordUncheckedCreateNestedManyWithoutTenantInput
+    aiScores?: AiScoreUncheckedCreateNestedManyWithoutTenantInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutTenantInput
+    aiDigests?: AiDigestUncheckedCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutTenantInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutTenantInput
+    leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutTenantInput
+    recruitmentPipeline?: RecruitmentPipelineUncheckedCreateNestedManyWithoutTenantInput
+    vehicles?: VehicleUncheckedCreateNestedManyWithoutTenantInput
+    talabatSessions?: TalabatSessionUncheckedCreateNestedManyWithoutTenantInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedCreateNestedManyWithoutTenantInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedCreateNestedManyWithoutTenantInput
+    kpiDefinitions?: KpiDefinitionUncheckedCreateNestedManyWithoutTenantInput
+    kpiRecords?: KpiRecordUncheckedCreateNestedManyWithoutTenantInput
+    platformSettings?: PlatformSettingsUncheckedCreateNestedManyWithoutTenantInput
+    platformInventory?: PlatformInventoryUncheckedCreateNestedManyWithoutTenantInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutTenantInput
+    notificationRules?: NotificationRuleUncheckedCreateNestedManyWithoutTenantInput
+    notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
+    driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
+    violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
+    penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
+    appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
+    orderEvents?: OrderEventUncheckedCreateNestedManyWithoutTenantInput
+    aiInsights?: AiInsightUncheckedCreateNestedManyWithoutTenantInput
+    demandHeatmaps?: DemandHeatmapUncheckedCreateNestedManyWithoutTenantInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedCreateNestedManyWithoutTenantInput
+    shiftComplianceConfig?: ShiftComplianceConfigUncheckedCreateNestedOneWithoutTenantInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUncheckedCreateNestedManyWithoutTenantInput
+    deliveryAreas?: DeliveryAreaUncheckedCreateNestedManyWithoutTenantInput
+    partners?: PartnerUncheckedCreateNestedManyWithoutTenantInput
+    incentiveTargetRounds?: IncentiveTargetRoundUncheckedCreateNestedManyWithoutTenantInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedCreateNestedManyWithoutTenantInput
+    billings?: BillingUncheckedCreateNestedManyWithoutTenantInput
+    taxInvoices?: TaxInvoiceUncheckedCreateNestedManyWithoutTenantInput
+    paymentWithdrawals?: PaymentWithdrawalUncheckedCreateNestedManyWithoutTenantInput
+    agentRunLogs?: AgentRunLogUncheckedCreateNestedManyWithoutTenantInput
+    pendingAgentActions?: PendingAgentActionUncheckedCreateNestedManyWithoutTenantInput
+    agentActions?: AgentActionUncheckedCreateNestedManyWithoutTenantInput
+    agentMemories?: AgentMemoryUncheckedCreateNestedManyWithoutTenantInput
+    pinnedViews?: PinnedViewUncheckedCreateNestedManyWithoutTenantInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutTenantInput
+    metricEvents?: MetricEventUncheckedCreateNestedManyWithoutTenantInput
+    chatThreads?: ChatThreadUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    scheduledBriefings?: ScheduledBriefingUncheckedCreateNestedManyWithoutTenantInput
+    ingestRuns?: IngestRunUncheckedCreateNestedManyWithoutTenantInput
+    americanaChains?: AmericanaChainUncheckedCreateNestedManyWithoutTenantInput
+    americanaStores?: AmericanaStoreUncheckedCreateNestedManyWithoutTenantInput
+    americanaContracts?: AmericanaContractUncheckedCreateNestedManyWithoutTenantInput
+    americanaChainRates?: AmericanaChainRateUncheckedCreateNestedManyWithoutTenantInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
+    sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantCreateOrConnectWithoutDriverBatchHistoryInput = {
+    where: TenantWhereUniqueInput
+    create: XOR<TenantCreateWithoutDriverBatchHistoryInput, TenantUncheckedCreateWithoutDriverBatchHistoryInput>
+  }
+
+  export type DriverCreateWithoutBatchHistoryInput = {
+    id?: string
+    name: string
+    phone: string
+    platform: $Enums.Platform
+    platformDriverId?: string | null
+    utr?: string | null
+    vehicleType: $Enums.VehicleType
+    zone?: string | null
+    batchNumber?: string | null
+    status?: $Enums.DriverStatus
+    hireDate: Date | string
+    photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
+    monthlySalary?: number | null
+    monthlyOffDaysUsed?: number
+    offDaysResetMonth?: string | null
+    performanceTier?: string | null
+    tierComputedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    healthCertExpiry?: Date | string | null
+    healthCertStatus?: string | null
+    workPermitExpiry?: Date | string | null
+    workPermitStatus?: string | null
+    foodHandlingCertExpiry?: Date | string | null
+    foodHandlingCertStatus?: string | null
+    vehicleRegExpiry?: Date | string | null
+    vehicleRegStatus?: string | null
+    vehicleInsuranceExpiry?: Date | string | null
+    vehicleInsuranceStatus?: string | null
+    drivingLicenseExpiry?: Date | string | null
+    drivingLicenseStatus?: string | null
+    civilIdExpiry?: Date | string | null
+    civilIdStatus?: string | null
+    tenant: TenantCreateNestedOneWithoutDriversInput
+    company: CompanyCreateNestedOneWithoutDriversInput
+    supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
+    inventory?: DriverInventoryCreateNestedManyWithoutDriverInput
+    shifts?: ShiftCreateNestedManyWithoutDriverInput
+    attendanceRecords?: AttendanceRecordCreateNestedManyWithoutDriverInput
+    orderLogs?: OrderLogCreateNestedManyWithoutDriverInput
+    cashRecords?: CashRecordCreateNestedManyWithoutDriverInput
+    cashTransactions?: CashTransactionCreateNestedManyWithoutDriverInput
+    pendingDuesLedgers?: PendingDuesLedgerCreateNestedManyWithoutDriverInput
+    vehicleInspections?: VehicleInspectionCreateNestedManyWithoutDriverInput
+    maintenanceRecords?: MaintenanceRecordCreateNestedManyWithoutDriverInput
+    aiScores?: AiScoreCreateNestedManyWithoutDriverInput
+    alerts?: AlertCreateNestedManyWithoutDriverInput
+    capturedOrders?: CapturedOrderCreateNestedManyWithoutDriverInput
+    locationLogs?: LocationLogCreateNestedManyWithoutDriverInput
+    appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
+    device?: DeviceCreateNestedOneWithoutDriverInput
+    assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
+    leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
+    restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
+    tickets?: TicketCreateNestedManyWithoutDriverInput
+    submittedTickets?: TicketCreateNestedManyWithoutSubmitterDriverInput
+    talabatSessions?: TalabatSessionCreateNestedManyWithoutDriverInput
+    talabatViolationEvents?: TalabatViolationEventCreateNestedManyWithoutDriverInput
+    talabatDailyMetrics?: TalabatDailyMetricsCreateNestedManyWithoutDriverInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsCreateNestedManyWithoutDriverInput
+    keetaDailyMetrics?: KeetaDailyMetricsCreateNestedManyWithoutDriverInput
+    americanaDailyOrders?: AmericanaDailyOrdersCreateNestedManyWithoutDriverInput
+    talabatDeliveries?: TalabatDeliveryCreateNestedManyWithoutDriverInput
+    kpiRecords?: KpiRecordCreateNestedManyWithoutDriverInput
+    courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutDriverInput
+    violations?: ViolationCreateNestedManyWithoutDriverInput
+    penalties?: PenaltyCreateNestedManyWithoutDriverInput
+    aiInsights?: AiInsightCreateNestedManyWithoutDriverInput
+    courierAttendanceSlots?: CourierAttendanceSlotCreateNestedManyWithoutDriverInput
+    courierIncentivePayouts?: CourierIncentivePayoutCreateNestedManyWithoutDriverInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
+    sims?: SimCreateNestedManyWithoutDriverInput
+    performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+  }
+
+  export type DriverUncheckedCreateWithoutBatchHistoryInput = {
+    id?: string
+    tenantId: string
+    companyId: string
+    name: string
+    phone: string
+    platform: $Enums.Platform
+    platformDriverId?: string | null
+    utr?: string | null
+    vehicleType: $Enums.VehicleType
+    zone?: string | null
+    batchNumber?: string | null
+    status?: $Enums.DriverStatus
+    hireDate: Date | string
+    photoUrl?: string | null
+    supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
+    monthlySalary?: number | null
+    monthlyOffDaysUsed?: number
+    offDaysResetMonth?: string | null
+    performanceTier?: string | null
+    tierComputedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    healthCertExpiry?: Date | string | null
+    healthCertStatus?: string | null
+    workPermitExpiry?: Date | string | null
+    workPermitStatus?: string | null
+    foodHandlingCertExpiry?: Date | string | null
+    foodHandlingCertStatus?: string | null
+    vehicleRegExpiry?: Date | string | null
+    vehicleRegStatus?: string | null
+    vehicleInsuranceExpiry?: Date | string | null
+    vehicleInsuranceStatus?: string | null
+    drivingLicenseExpiry?: Date | string | null
+    drivingLicenseStatus?: string | null
+    civilIdExpiry?: Date | string | null
+    civilIdStatus?: string | null
+    inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
+    shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
+    attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutDriverInput
+    orderLogs?: OrderLogUncheckedCreateNestedManyWithoutDriverInput
+    cashRecords?: CashRecordUncheckedCreateNestedManyWithoutDriverInput
+    cashTransactions?: CashTransactionUncheckedCreateNestedManyWithoutDriverInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedCreateNestedManyWithoutDriverInput
+    vehicleInspections?: VehicleInspectionUncheckedCreateNestedManyWithoutDriverInput
+    maintenanceRecords?: MaintenanceRecordUncheckedCreateNestedManyWithoutDriverInput
+    aiScores?: AiScoreUncheckedCreateNestedManyWithoutDriverInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutDriverInput
+    capturedOrders?: CapturedOrderUncheckedCreateNestedManyWithoutDriverInput
+    locationLogs?: LocationLogUncheckedCreateNestedManyWithoutDriverInput
+    appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
+    device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
+    assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
+    leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
+    restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
+    submittedTickets?: TicketUncheckedCreateNestedManyWithoutSubmitterDriverInput
+    talabatSessions?: TalabatSessionUncheckedCreateNestedManyWithoutDriverInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedCreateNestedManyWithoutDriverInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedCreateNestedManyWithoutDriverInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedCreateNestedManyWithoutDriverInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedCreateNestedManyWithoutDriverInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedCreateNestedManyWithoutDriverInput
+    talabatDeliveries?: TalabatDeliveryUncheckedCreateNestedManyWithoutDriverInput
+    kpiRecords?: KpiRecordUncheckedCreateNestedManyWithoutDriverInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutDriverInput
+    violations?: ViolationUncheckedCreateNestedManyWithoutDriverInput
+    penalties?: PenaltyUncheckedCreateNestedManyWithoutDriverInput
+    aiInsights?: AiInsightUncheckedCreateNestedManyWithoutDriverInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedCreateNestedManyWithoutDriverInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedCreateNestedManyWithoutDriverInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
+    sims?: SimUncheckedCreateNestedManyWithoutDriverInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+  }
+
+  export type DriverCreateOrConnectWithoutBatchHistoryInput = {
+    where: DriverWhereUniqueInput
+    create: XOR<DriverCreateWithoutBatchHistoryInput, DriverUncheckedCreateWithoutBatchHistoryInput>
+  }
+
+  export type TenantUpsertWithoutDriverBatchHistoryInput = {
+    update: XOR<TenantUpdateWithoutDriverBatchHistoryInput, TenantUncheckedUpdateWithoutDriverBatchHistoryInput>
+    create: XOR<TenantCreateWithoutDriverBatchHistoryInput, TenantUncheckedCreateWithoutDriverBatchHistoryInput>
+    where?: TenantWhereInput
+  }
+
+  export type TenantUpdateToOneWithWhereWithoutDriverBatchHistoryInput = {
+    where?: TenantWhereInput
+    data: XOR<TenantUpdateWithoutDriverBatchHistoryInput, TenantUncheckedUpdateWithoutDriverBatchHistoryInput>
+  }
+
+  export type TenantUpdateWithoutDriverBatchHistoryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    subscriptionPlan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+    designPartner?: BoolFieldUpdateOperationsInput | boolean
+    monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    companies?: CompanyUpdateManyWithoutTenantNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    drivers?: DriverUpdateManyWithoutTenantNestedInput
+    shifts?: ShiftUpdateManyWithoutTenantNestedInput
+    attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
+    orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
+    cashRecords?: CashRecordUpdateManyWithoutTenantNestedInput
+    cashTransactions?: CashTransactionUpdateManyWithoutTenantNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUpdateManyWithoutTenantNestedInput
+    vehicleInspections?: VehicleInspectionUpdateManyWithoutTenantNestedInput
+    maintenanceRecords?: MaintenanceRecordUpdateManyWithoutTenantNestedInput
+    aiScores?: AiScoreUpdateManyWithoutTenantNestedInput
+    alerts?: AlertUpdateManyWithoutTenantNestedInput
+    aiDigests?: AiDigestUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutTenantNestedInput
+    tickets?: TicketUpdateManyWithoutTenantNestedInput
+    leaveRequests?: LeaveRequestUpdateManyWithoutTenantNestedInput
+    recruitmentPipeline?: RecruitmentPipelineUpdateManyWithoutTenantNestedInput
+    vehicles?: VehicleUpdateManyWithoutTenantNestedInput
+    talabatSessions?: TalabatSessionUpdateManyWithoutTenantNestedInput
+    talabatViolationEvents?: TalabatViolationEventUpdateManyWithoutTenantNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUpdateManyWithoutTenantNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUpdateManyWithoutTenantNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUpdateManyWithoutTenantNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUpdateManyWithoutTenantNestedInput
+    kpiDefinitions?: KpiDefinitionUpdateManyWithoutTenantNestedInput
+    kpiRecords?: KpiRecordUpdateManyWithoutTenantNestedInput
+    platformSettings?: PlatformSettingsUpdateManyWithoutTenantNestedInput
+    platformInventory?: PlatformInventoryUpdateManyWithoutTenantNestedInput
+    notifications?: NotificationUpdateManyWithoutTenantNestedInput
+    notificationRules?: NotificationRuleUpdateManyWithoutTenantNestedInput
+    notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
+    driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
+    violations?: ViolationUpdateManyWithoutTenantNestedInput
+    penalties?: PenaltyUpdateManyWithoutTenantNestedInput
+    appeals?: AppealUpdateManyWithoutTenantNestedInput
+    orderEvents?: OrderEventUpdateManyWithoutTenantNestedInput
+    aiInsights?: AiInsightUpdateManyWithoutTenantNestedInput
+    demandHeatmaps?: DemandHeatmapUpdateManyWithoutTenantNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUpdateManyWithoutTenantNestedInput
+    shiftComplianceConfig?: ShiftComplianceConfigUpdateOneWithoutTenantNestedInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUpdateManyWithoutTenantNestedInput
+    deliveryAreas?: DeliveryAreaUpdateManyWithoutTenantNestedInput
+    partners?: PartnerUpdateManyWithoutTenantNestedInput
+    incentiveTargetRounds?: IncentiveTargetRoundUpdateManyWithoutTenantNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUpdateManyWithoutTenantNestedInput
+    billings?: BillingUpdateManyWithoutTenantNestedInput
+    taxInvoices?: TaxInvoiceUpdateManyWithoutTenantNestedInput
+    paymentWithdrawals?: PaymentWithdrawalUpdateManyWithoutTenantNestedInput
+    agentRunLogs?: AgentRunLogUpdateManyWithoutTenantNestedInput
+    pendingAgentActions?: PendingAgentActionUpdateManyWithoutTenantNestedInput
+    agentActions?: AgentActionUpdateManyWithoutTenantNestedInput
+    agentMemories?: AgentMemoryUpdateManyWithoutTenantNestedInput
+    pinnedViews?: PinnedViewUpdateManyWithoutTenantNestedInput
+    performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutTenantNestedInput
+    metricEvents?: MetricEventUpdateManyWithoutTenantNestedInput
+    chatThreads?: ChatThreadUpdateManyWithoutTenantNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutTenantNestedInput
+    scheduledBriefings?: ScheduledBriefingUpdateManyWithoutTenantNestedInput
+    ingestRuns?: IngestRunUpdateManyWithoutTenantNestedInput
+    americanaChains?: AmericanaChainUpdateManyWithoutTenantNestedInput
+    americanaStores?: AmericanaStoreUpdateManyWithoutTenantNestedInput
+    americanaContracts?: AmericanaContractUpdateManyWithoutTenantNestedInput
+    americanaChainRates?: AmericanaChainRateUpdateManyWithoutTenantNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
+    sims?: SimUpdateManyWithoutTenantNestedInput
+  }
+
+  export type TenantUncheckedUpdateWithoutDriverBatchHistoryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    subscriptionPlan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+    designPartner?: BoolFieldUpdateOperationsInput | boolean
+    monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
+    attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
+    orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
+    cashRecords?: CashRecordUncheckedUpdateManyWithoutTenantNestedInput
+    cashTransactions?: CashTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleInspections?: VehicleInspectionUncheckedUpdateManyWithoutTenantNestedInput
+    maintenanceRecords?: MaintenanceRecordUncheckedUpdateManyWithoutTenantNestedInput
+    aiScores?: AiScoreUncheckedUpdateManyWithoutTenantNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutTenantNestedInput
+    aiDigests?: AiDigestUncheckedUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutTenantNestedInput
+    leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutTenantNestedInput
+    recruitmentPipeline?: RecruitmentPipelineUncheckedUpdateManyWithoutTenantNestedInput
+    vehicles?: VehicleUncheckedUpdateManyWithoutTenantNestedInput
+    talabatSessions?: TalabatSessionUncheckedUpdateManyWithoutTenantNestedInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedUpdateManyWithoutTenantNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedUpdateManyWithoutTenantNestedInput
+    kpiDefinitions?: KpiDefinitionUncheckedUpdateManyWithoutTenantNestedInput
+    kpiRecords?: KpiRecordUncheckedUpdateManyWithoutTenantNestedInput
+    platformSettings?: PlatformSettingsUncheckedUpdateManyWithoutTenantNestedInput
+    platformInventory?: PlatformInventoryUncheckedUpdateManyWithoutTenantNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutTenantNestedInput
+    notificationRules?: NotificationRuleUncheckedUpdateManyWithoutTenantNestedInput
+    notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
+    driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
+    violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
+    penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
+    appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
+    orderEvents?: OrderEventUncheckedUpdateManyWithoutTenantNestedInput
+    aiInsights?: AiInsightUncheckedUpdateManyWithoutTenantNestedInput
+    demandHeatmaps?: DemandHeatmapUncheckedUpdateManyWithoutTenantNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedUpdateManyWithoutTenantNestedInput
+    shiftComplianceConfig?: ShiftComplianceConfigUncheckedUpdateOneWithoutTenantNestedInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryAreas?: DeliveryAreaUncheckedUpdateManyWithoutTenantNestedInput
+    partners?: PartnerUncheckedUpdateManyWithoutTenantNestedInput
+    incentiveTargetRounds?: IncentiveTargetRoundUncheckedUpdateManyWithoutTenantNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedUpdateManyWithoutTenantNestedInput
+    billings?: BillingUncheckedUpdateManyWithoutTenantNestedInput
+    taxInvoices?: TaxInvoiceUncheckedUpdateManyWithoutTenantNestedInput
+    paymentWithdrawals?: PaymentWithdrawalUncheckedUpdateManyWithoutTenantNestedInput
+    agentRunLogs?: AgentRunLogUncheckedUpdateManyWithoutTenantNestedInput
+    pendingAgentActions?: PendingAgentActionUncheckedUpdateManyWithoutTenantNestedInput
+    agentActions?: AgentActionUncheckedUpdateManyWithoutTenantNestedInput
+    agentMemories?: AgentMemoryUncheckedUpdateManyWithoutTenantNestedInput
+    pinnedViews?: PinnedViewUncheckedUpdateManyWithoutTenantNestedInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutTenantNestedInput
+    metricEvents?: MetricEventUncheckedUpdateManyWithoutTenantNestedInput
+    chatThreads?: ChatThreadUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    scheduledBriefings?: ScheduledBriefingUncheckedUpdateManyWithoutTenantNestedInput
+    ingestRuns?: IngestRunUncheckedUpdateManyWithoutTenantNestedInput
+    americanaChains?: AmericanaChainUncheckedUpdateManyWithoutTenantNestedInput
+    americanaStores?: AmericanaStoreUncheckedUpdateManyWithoutTenantNestedInput
+    americanaContracts?: AmericanaContractUncheckedUpdateManyWithoutTenantNestedInput
+    americanaChainRates?: AmericanaChainRateUncheckedUpdateManyWithoutTenantNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
+    sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+  }
+
+  export type DriverUpsertWithoutBatchHistoryInput = {
+    update: XOR<DriverUpdateWithoutBatchHistoryInput, DriverUncheckedUpdateWithoutBatchHistoryInput>
+    create: XOR<DriverCreateWithoutBatchHistoryInput, DriverUncheckedCreateWithoutBatchHistoryInput>
+    where?: DriverWhereInput
+  }
+
+  export type DriverUpdateToOneWithWhereWithoutBatchHistoryInput = {
+    where?: DriverWhereInput
+    data: XOR<DriverUpdateWithoutBatchHistoryInput, DriverUncheckedUpdateWithoutBatchHistoryInput>
+  }
+
+  export type DriverUpdateWithoutBatchHistoryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
+    platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
+    utr?: NullableStringFieldUpdateOperationsInput | string | null
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    zone?: NullableStringFieldUpdateOperationsInput | string | null
+    batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
+    monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
+    offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    performanceTier?: NullableStringFieldUpdateOperationsInput | string | null
+    tierComputedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    healthCertExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    healthCertStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    workPermitExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workPermitStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    foodHandlingCertExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    foodHandlingCertStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    vehicleRegExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    vehicleRegStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    vehicleInsuranceExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    vehicleInsuranceStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    drivingLicenseExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    drivingLicenseStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    civilIdExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    civilIdStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
+    company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
+    supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
+    inventory?: DriverInventoryUpdateManyWithoutDriverNestedInput
+    shifts?: ShiftUpdateManyWithoutDriverNestedInput
+    attendanceRecords?: AttendanceRecordUpdateManyWithoutDriverNestedInput
+    orderLogs?: OrderLogUpdateManyWithoutDriverNestedInput
+    cashRecords?: CashRecordUpdateManyWithoutDriverNestedInput
+    cashTransactions?: CashTransactionUpdateManyWithoutDriverNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUpdateManyWithoutDriverNestedInput
+    vehicleInspections?: VehicleInspectionUpdateManyWithoutDriverNestedInput
+    maintenanceRecords?: MaintenanceRecordUpdateManyWithoutDriverNestedInput
+    aiScores?: AiScoreUpdateManyWithoutDriverNestedInput
+    alerts?: AlertUpdateManyWithoutDriverNestedInput
+    capturedOrders?: CapturedOrderUpdateManyWithoutDriverNestedInput
+    locationLogs?: LocationLogUpdateManyWithoutDriverNestedInput
+    appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
+    device?: DeviceUpdateOneWithoutDriverNestedInput
+    assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
+    leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
+    restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
+    tickets?: TicketUpdateManyWithoutDriverNestedInput
+    submittedTickets?: TicketUpdateManyWithoutSubmitterDriverNestedInput
+    talabatSessions?: TalabatSessionUpdateManyWithoutDriverNestedInput
+    talabatViolationEvents?: TalabatViolationEventUpdateManyWithoutDriverNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUpdateManyWithoutDriverNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUpdateManyWithoutDriverNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUpdateManyWithoutDriverNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUpdateManyWithoutDriverNestedInput
+    talabatDeliveries?: TalabatDeliveryUpdateManyWithoutDriverNestedInput
+    kpiRecords?: KpiRecordUpdateManyWithoutDriverNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutDriverNestedInput
+    violations?: ViolationUpdateManyWithoutDriverNestedInput
+    penalties?: PenaltyUpdateManyWithoutDriverNestedInput
+    aiInsights?: AiInsightUpdateManyWithoutDriverNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUpdateManyWithoutDriverNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUpdateManyWithoutDriverNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
+    sims?: SimUpdateManyWithoutDriverNestedInput
+    performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+  }
+
+  export type DriverUncheckedUpdateWithoutBatchHistoryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    companyId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
+    platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
+    utr?: NullableStringFieldUpdateOperationsInput | string | null
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    zone?: NullableStringFieldUpdateOperationsInput | string | null
+    batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
+    monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
+    offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    performanceTier?: NullableStringFieldUpdateOperationsInput | string | null
+    tierComputedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    healthCertExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    healthCertStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    workPermitExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workPermitStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    foodHandlingCertExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    foodHandlingCertStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    vehicleRegExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    vehicleRegStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    vehicleInsuranceExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    vehicleInsuranceStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    drivingLicenseExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    drivingLicenseStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    civilIdExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    civilIdStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
+    shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
+    attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutDriverNestedInput
+    orderLogs?: OrderLogUncheckedUpdateManyWithoutDriverNestedInput
+    cashRecords?: CashRecordUncheckedUpdateManyWithoutDriverNestedInput
+    cashTransactions?: CashTransactionUncheckedUpdateManyWithoutDriverNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedUpdateManyWithoutDriverNestedInput
+    vehicleInspections?: VehicleInspectionUncheckedUpdateManyWithoutDriverNestedInput
+    maintenanceRecords?: MaintenanceRecordUncheckedUpdateManyWithoutDriverNestedInput
+    aiScores?: AiScoreUncheckedUpdateManyWithoutDriverNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutDriverNestedInput
+    capturedOrders?: CapturedOrderUncheckedUpdateManyWithoutDriverNestedInput
+    locationLogs?: LocationLogUncheckedUpdateManyWithoutDriverNestedInput
+    appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
+    device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
+    assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
+    leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
+    restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
+    submittedTickets?: TicketUncheckedUpdateManyWithoutSubmitterDriverNestedInput
+    talabatSessions?: TalabatSessionUncheckedUpdateManyWithoutDriverNestedInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedUpdateManyWithoutDriverNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedUpdateManyWithoutDriverNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedUpdateManyWithoutDriverNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedUpdateManyWithoutDriverNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedUpdateManyWithoutDriverNestedInput
+    talabatDeliveries?: TalabatDeliveryUncheckedUpdateManyWithoutDriverNestedInput
+    kpiRecords?: KpiRecordUncheckedUpdateManyWithoutDriverNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutDriverNestedInput
+    violations?: ViolationUncheckedUpdateManyWithoutDriverNestedInput
+    penalties?: PenaltyUncheckedUpdateManyWithoutDriverNestedInput
+    aiInsights?: AiInsightUncheckedUpdateManyWithoutDriverNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedUpdateManyWithoutDriverNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedUpdateManyWithoutDriverNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
+    sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+  }
+
+  export type TenantCreateWithoutAmericanaStoreAssignmentsInput = {
+    id?: string
+    name: string
+    subscriptionPlan?: $Enums.SubscriptionPlan
+    designPartner?: boolean
+    monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    companies?: CompanyCreateNestedManyWithoutTenantInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
+    shifts?: ShiftCreateNestedManyWithoutTenantInput
+    attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
+    orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
+    cashRecords?: CashRecordCreateNestedManyWithoutTenantInput
+    cashTransactions?: CashTransactionCreateNestedManyWithoutTenantInput
+    pendingDuesLedgers?: PendingDuesLedgerCreateNestedManyWithoutTenantInput
+    vehicleInspections?: VehicleInspectionCreateNestedManyWithoutTenantInput
+    maintenanceRecords?: MaintenanceRecordCreateNestedManyWithoutTenantInput
+    aiScores?: AiScoreCreateNestedManyWithoutTenantInput
+    alerts?: AlertCreateNestedManyWithoutTenantInput
+    aiDigests?: AiDigestCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogCreateNestedManyWithoutTenantInput
+    tickets?: TicketCreateNestedManyWithoutTenantInput
+    leaveRequests?: LeaveRequestCreateNestedManyWithoutTenantInput
+    recruitmentPipeline?: RecruitmentPipelineCreateNestedManyWithoutTenantInput
+    vehicles?: VehicleCreateNestedManyWithoutTenantInput
+    talabatSessions?: TalabatSessionCreateNestedManyWithoutTenantInput
+    talabatViolationEvents?: TalabatViolationEventCreateNestedManyWithoutTenantInput
+    talabatDailyMetrics?: TalabatDailyMetricsCreateNestedManyWithoutTenantInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsCreateNestedManyWithoutTenantInput
+    keetaDailyMetrics?: KeetaDailyMetricsCreateNestedManyWithoutTenantInput
+    americanaDailyOrders?: AmericanaDailyOrdersCreateNestedManyWithoutTenantInput
+    kpiDefinitions?: KpiDefinitionCreateNestedManyWithoutTenantInput
+    kpiRecords?: KpiRecordCreateNestedManyWithoutTenantInput
+    platformSettings?: PlatformSettingsCreateNestedManyWithoutTenantInput
+    platformInventory?: PlatformInventoryCreateNestedManyWithoutTenantInput
+    notifications?: NotificationCreateNestedManyWithoutTenantInput
+    notificationRules?: NotificationRuleCreateNestedManyWithoutTenantInput
+    notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
+    driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
+    courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -174157,6 +179707,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -174188,6 +179739,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -174285,6 +179837,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -174305,6 +179858,7 @@ export namespace Prisma {
     courierIncentivePayouts?: CourierIncentivePayoutCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutAmericanaStoreAssignmentsInput = {
@@ -174364,6 +179918,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -174384,6 +179939,7 @@ export namespace Prisma {
     courierIncentivePayouts?: CourierIncentivePayoutUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutAmericanaStoreAssignmentsInput = {
@@ -174467,6 +180023,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -174498,6 +180055,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -174551,6 +180109,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -174582,6 +180141,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -174685,6 +180245,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -174705,6 +180266,7 @@ export namespace Prisma {
     courierIncentivePayouts?: CourierIncentivePayoutUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutAmericanaStoreAssignmentsInput = {
@@ -174764,6 +180326,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -174784,6 +180347,7 @@ export namespace Prisma {
     courierIncentivePayouts?: CourierIncentivePayoutUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type AmericanaStoreUpsertWithoutAssignmentsInput = {
@@ -174857,6 +180421,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -174888,6 +180453,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -174941,6 +180507,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -174972,6 +180539,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -175041,6 +180609,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -175072,6 +180641,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -175125,6 +180695,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -175156,6 +180727,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -175209,6 +180781,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -175239,6 +180812,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -175293,6 +180867,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -175323,6 +180898,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -175429,6 +181005,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -175459,6 +181036,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -175513,6 +181091,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -175543,6 +181122,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -175613,6 +181193,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -175643,6 +181224,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -175697,6 +181279,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -175727,6 +181310,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -175825,6 +181409,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -175845,6 +181430,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutKpiRecordsInput = {
@@ -175904,6 +181490,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -175924,6 +181511,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutKpiRecordsInput = {
@@ -175995,6 +181583,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -176025,6 +181614,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -176079,6 +181669,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -176109,6 +181700,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -176213,6 +181805,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -176233,6 +181826,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutKpiRecordsInput = {
@@ -176292,6 +181886,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -176312,6 +181907,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type KpiDefinitionUpsertWithoutRecordsInput = {
@@ -176373,6 +181969,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -176403,6 +182000,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -176457,6 +182055,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -176487,6 +182086,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -176618,6 +182218,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -176648,6 +182249,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -176702,6 +182304,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -176732,6 +182335,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -176853,6 +182457,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -176883,6 +182488,7 @@ export namespace Prisma {
     notificationRules?: NotificationRuleCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -176937,6 +182543,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -176967,6 +182574,7 @@ export namespace Prisma {
     notificationRules?: NotificationRuleUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -177037,6 +182645,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -177067,6 +182676,7 @@ export namespace Prisma {
     notificationRules?: NotificationRuleUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -177121,6 +182731,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -177151,6 +182762,7 @@ export namespace Prisma {
     notificationRules?: NotificationRuleUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -177205,6 +182817,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -177235,6 +182848,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -177289,6 +182903,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -177319,6 +182934,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -177389,6 +183005,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -177419,6 +183036,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -177473,6 +183091,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -177503,6 +183122,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -177557,6 +183177,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -177587,6 +183208,7 @@ export namespace Prisma {
     notificationRules?: NotificationRuleCreateNestedManyWithoutTenantInput
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -177641,6 +183263,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -177671,6 +183294,7 @@ export namespace Prisma {
     notificationRules?: NotificationRuleUncheckedCreateNestedManyWithoutTenantInput
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -177769,6 +183393,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -177789,6 +183414,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutCourierOnlineSessionsInput = {
@@ -177848,6 +183474,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -177868,6 +183495,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutCourierOnlineSessionsInput = {
@@ -177904,6 +183532,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -177934,6 +183563,7 @@ export namespace Prisma {
     notificationRules?: NotificationRuleUpdateManyWithoutTenantNestedInput
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -177988,6 +183618,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -178018,6 +183649,7 @@ export namespace Prisma {
     notificationRules?: NotificationRuleUncheckedUpdateManyWithoutTenantNestedInput
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -178122,6 +183754,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -178142,6 +183775,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutCourierOnlineSessionsInput = {
@@ -178201,6 +183835,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -178221,6 +183856,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutViolationsInput = {
@@ -178241,6 +183877,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -178272,6 +183909,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
     orderEvents?: OrderEventCreateNestedManyWithoutTenantInput
@@ -178325,6 +183963,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -178356,6 +183995,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
     orderEvents?: OrderEventUncheckedCreateNestedManyWithoutTenantInput
@@ -178453,6 +184093,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -178473,6 +184114,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutViolationsInput = {
@@ -178532,6 +184174,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -178552,6 +184195,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutViolationsInput = {
@@ -178655,6 +184299,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -178686,6 +184331,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
     orderEvents?: OrderEventUpdateManyWithoutTenantNestedInput
@@ -178739,6 +184385,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -178770,6 +184417,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
     orderEvents?: OrderEventUncheckedUpdateManyWithoutTenantNestedInput
@@ -178873,6 +184521,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -178893,6 +184542,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutViolationsInput = {
@@ -178952,6 +184602,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -178972,6 +184623,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type PenaltyUpsertWithWhereUniqueWithoutViolationsInput = {
@@ -179024,6 +184676,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -179055,6 +184708,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
     orderEvents?: OrderEventCreateNestedManyWithoutTenantInput
@@ -179108,6 +184762,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -179139,6 +184794,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
     orderEvents?: OrderEventUncheckedCreateNestedManyWithoutTenantInput
@@ -179236,6 +184892,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -179256,6 +184913,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutPenaltiesInput = {
@@ -179315,6 +184973,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -179335,6 +184994,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutPenaltiesInput = {
@@ -179420,6 +185080,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -179451,6 +185112,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
     orderEvents?: OrderEventUpdateManyWithoutTenantNestedInput
@@ -179504,6 +185166,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -179535,6 +185198,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
     orderEvents?: OrderEventUncheckedUpdateManyWithoutTenantNestedInput
@@ -179638,6 +185302,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -179658,6 +185323,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutPenaltiesInput = {
@@ -179717,6 +185383,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -179737,6 +185404,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type ViolationUpsertWithWhereUniqueWithoutPenaltiesInput = {
@@ -179773,6 +185441,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -179804,6 +185473,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     orderEvents?: OrderEventCreateNestedManyWithoutTenantInput
@@ -179857,6 +185527,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -179888,6 +185559,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     orderEvents?: OrderEventUncheckedCreateNestedManyWithoutTenantInput
@@ -180006,6 +185678,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -180037,6 +185710,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     orderEvents?: OrderEventUpdateManyWithoutTenantNestedInput
@@ -180090,6 +185764,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -180121,6 +185796,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     orderEvents?: OrderEventUncheckedUpdateManyWithoutTenantNestedInput
@@ -180229,6 +185905,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -180260,6 +185937,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -180313,6 +185991,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -180344,6 +186023,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -180413,6 +186093,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -180444,6 +186125,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -180497,6 +186179,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -180528,6 +186211,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -180581,6 +186265,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -180612,6 +186297,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -180665,6 +186351,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -180696,6 +186383,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -180793,6 +186481,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -180813,6 +186502,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutAiInsightsInput = {
@@ -180872,6 +186562,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -180892,6 +186583,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutAiInsightsInput = {
@@ -180928,6 +186620,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -180959,6 +186652,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -181012,6 +186706,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -181043,6 +186738,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -181146,6 +186842,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -181166,6 +186863,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutAiInsightsInput = {
@@ -181225,6 +186923,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -181245,6 +186944,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutDemandHeatmapsInput = {
@@ -181265,6 +186965,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -181296,6 +186997,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -181349,6 +187051,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -181380,6 +187083,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -181449,6 +187153,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -181480,6 +187185,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -181533,6 +187239,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -181564,6 +187271,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -181617,6 +187325,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -181648,6 +187357,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -181701,6 +187411,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -181732,6 +187443,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -181801,6 +187513,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -181832,6 +187545,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -181885,6 +187599,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -181916,6 +187631,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -181969,6 +187685,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -182000,6 +187717,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -182053,6 +187771,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -182084,6 +187803,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -182181,6 +187901,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -182201,6 +187922,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutCourierAttendanceSlotsInput = {
@@ -182260,6 +187982,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -182280,6 +188003,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutCourierAttendanceSlotsInput = {
@@ -182316,6 +188040,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -182347,6 +188072,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -182400,6 +188126,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -182431,6 +188158,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -182534,6 +188262,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -182554,6 +188283,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutCourierAttendanceSlotsInput = {
@@ -182613,6 +188343,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -182633,6 +188364,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutKeetaAvailableSlotsInput = {
@@ -182653,6 +188385,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -182684,6 +188417,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -182737,6 +188471,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -182768,6 +188503,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -182837,6 +188573,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -182868,6 +188605,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -182921,6 +188659,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -182952,6 +188691,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -183005,6 +188745,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -183036,6 +188777,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -183089,6 +188831,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -183120,6 +188863,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -183189,6 +188933,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -183220,6 +188965,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -183273,6 +189019,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -183304,6 +189051,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -183357,6 +189105,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -183388,6 +189137,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -183441,6 +189191,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -183472,6 +189223,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -183659,6 +189411,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -183690,6 +189443,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -183743,6 +189497,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -183774,6 +189529,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -183952,6 +189708,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -183983,6 +189740,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -184036,6 +189794,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -184067,6 +189826,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -184257,6 +190017,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -184288,6 +190049,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -184341,6 +190103,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -184372,6 +190135,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -184701,6 +190465,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -184732,6 +190497,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -184785,6 +190551,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -184816,6 +190583,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -184952,6 +190720,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -184972,6 +190741,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutCourierIncentivePayoutsInput = {
@@ -185031,6 +190801,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -185051,6 +190822,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
     performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutCourierIncentivePayoutsInput = {
@@ -185087,6 +190859,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -185118,6 +190891,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -185171,6 +190945,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -185202,6 +190977,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -185350,6 +191126,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -185370,6 +191147,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutCourierIncentivePayoutsInput = {
@@ -185429,6 +191207,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -185449,6 +191228,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutBillingsInput = {
@@ -185469,6 +191249,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -185500,6 +191281,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -185553,6 +191335,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -185584,6 +191367,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -185757,6 +191541,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -185788,6 +191573,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -185841,6 +191627,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -185872,6 +191659,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -186019,6 +191807,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -186050,6 +191839,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -186103,6 +191893,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -186134,6 +191925,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -186244,6 +192036,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -186275,6 +192068,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -186328,6 +192122,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -186359,6 +192154,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -186459,6 +192255,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -186490,6 +192287,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -186543,6 +192341,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -186574,6 +192373,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -186684,6 +192484,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -186715,6 +192516,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -186768,6 +192570,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -186799,6 +192602,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -186899,6 +192703,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -186930,6 +192735,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -186983,6 +192789,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -187014,6 +192821,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -187257,6 +193065,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -187288,6 +193097,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -187341,6 +193151,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -187372,6 +193183,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -187604,6 +193416,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -187635,6 +193448,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -187688,6 +193502,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -187719,6 +193534,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -187835,6 +193651,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -187866,6 +193683,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -187919,6 +193737,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -187950,6 +193769,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -188056,6 +193876,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -188087,6 +193908,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -188140,6 +193962,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -188171,6 +193994,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -188392,6 +194216,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -188423,6 +194248,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -188476,6 +194302,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -188507,6 +194334,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -188696,6 +194524,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -188727,6 +194556,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -188780,6 +194610,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -188811,6 +194642,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -188927,6 +194759,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -188958,6 +194791,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -189011,6 +194845,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -189042,6 +194877,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -189148,6 +194984,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -189179,6 +195016,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -189232,6 +195070,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -189263,6 +195102,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -189393,6 +195233,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -189424,6 +195265,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -189477,6 +195319,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -189508,6 +195351,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -189628,6 +195472,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -189659,6 +195504,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -189712,6 +195558,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -189743,6 +195590,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -189840,6 +195688,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
     device?: DeviceCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
     tickets?: TicketCreateNestedManyWithoutDriverInput
@@ -189860,6 +195709,7 @@ export namespace Prisma {
     courierIncentivePayouts?: CourierIncentivePayoutCreateNestedManyWithoutDriverInput
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
     sims?: SimCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutPerformanceSnapshotsInput = {
@@ -189919,6 +195769,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
     device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
     assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
     restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
     tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
@@ -189939,6 +195790,7 @@ export namespace Prisma {
     courierIncentivePayouts?: CourierIncentivePayoutUncheckedCreateNestedManyWithoutDriverInput
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
     sims?: SimUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutPerformanceSnapshotsInput = {
@@ -189975,6 +195827,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -190006,6 +195859,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -190059,6 +195913,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -190090,6 +195945,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -190193,6 +196049,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -190213,6 +196070,7 @@ export namespace Prisma {
     courierIncentivePayouts?: CourierIncentivePayoutUpdateManyWithoutDriverNestedInput
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutPerformanceSnapshotsInput = {
@@ -190272,6 +196130,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -190292,6 +196151,7 @@ export namespace Prisma {
     courierIncentivePayouts?: CourierIncentivePayoutUncheckedUpdateManyWithoutDriverNestedInput
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutMetricEventsInput = {
@@ -190312,6 +196172,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -190343,6 +196204,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -190396,6 +196258,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -190427,6 +196290,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -190557,6 +196421,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -190588,6 +196453,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -190641,6 +196507,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -190672,6 +196539,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -190792,6 +196660,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -190823,6 +196692,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -190876,6 +196746,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -190907,6 +196778,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -191120,6 +196992,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -191151,6 +197024,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -191204,6 +197078,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -191235,6 +197110,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -191416,6 +197292,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -191447,6 +197324,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -191500,6 +197378,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -191531,6 +197410,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -191692,6 +197572,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -191723,6 +197604,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -191776,6 +197658,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -191807,6 +197690,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -191964,6 +197848,7 @@ export namespace Prisma {
     companies?: CompanyCreateNestedManyWithoutTenantInput
     users?: UserCreateNestedManyWithoutTenantInput
     drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
     shifts?: ShiftCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
@@ -191995,6 +197880,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
     violations?: ViolationCreateNestedManyWithoutTenantInput
     penalties?: PenaltyCreateNestedManyWithoutTenantInput
     appeals?: AppealCreateNestedManyWithoutTenantInput
@@ -192048,6 +197934,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
     drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
     orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
@@ -192079,6 +197966,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
     driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
     violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
     penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
     appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
@@ -192247,6 +198135,7 @@ export namespace Prisma {
     companies?: CompanyUpdateManyWithoutTenantNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
     drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
@@ -192278,6 +198167,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
     violations?: ViolationUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUpdateManyWithoutTenantNestedInput
     appeals?: AppealUpdateManyWithoutTenantNestedInput
@@ -192331,6 +198221,7 @@ export namespace Prisma {
     companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
     drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
     orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
@@ -192362,6 +198253,7 @@ export namespace Prisma {
     notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
     driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
     courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
     penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
     appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
@@ -192545,6 +198437,15 @@ export namespace Prisma {
     drivingLicenseStatus?: string | null
     civilIdExpiry?: Date | string | null
     civilIdStatus?: string | null
+  }
+
+  export type DriverBatchHistoryCreateManyTenantInput = {
+    id?: string
+    driverId: string
+    batchNumber?: string | null
+    changedAt?: Date | string
+    changedBy?: string | null
+    note?: string | null
   }
 
   export type ShiftCreateManyTenantInput = {
@@ -193072,6 +198973,17 @@ export namespace Prisma {
     area?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type VehicleDriverAssignmentCreateManyTenantInput = {
+    id?: string
+    vehicleId: string
+    driverId: string
+    assignedAt?: Date | string
+    unassignedAt?: Date | string | null
+    active?: boolean
+    note?: string | null
+    createdAt?: Date | string
   }
 
   export type ViolationCreateManyTenantInput = {
@@ -193727,6 +199639,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -193748,6 +199661,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutTenantInput = {
@@ -193806,6 +199720,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -193827,6 +199742,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateManyWithoutTenantInput = {
@@ -193869,6 +199785,33 @@ export namespace Prisma {
     drivingLicenseStatus?: NullableStringFieldUpdateOperationsInput | string | null
     civilIdExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     civilIdStatus?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type DriverBatchHistoryUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    changedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    driver?: DriverUpdateOneRequiredWithoutBatchHistoryNestedInput
+  }
+
+  export type DriverBatchHistoryUncheckedUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    driverId?: StringFieldUpdateOperationsInput | string
+    batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    changedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type DriverBatchHistoryUncheckedUpdateManyWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    driverId?: StringFieldUpdateOperationsInput | string
+    batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    changedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ShiftUpdateWithoutTenantInput = {
@@ -194637,6 +200580,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordUpdateManyWithoutSpareVehicleNestedInput
     alerts?: AlertUpdateManyWithoutVehicleNestedInput
     tickets?: TicketUpdateManyWithoutVehicleNestedInput
+    driverAssignments?: VehicleDriverAssignmentUpdateManyWithoutVehicleNestedInput
   }
 
   export type VehicleUncheckedUpdateWithoutTenantInput = {
@@ -194664,6 +200608,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordUncheckedUpdateManyWithoutSpareVehicleNestedInput
     alerts?: AlertUncheckedUpdateManyWithoutVehicleNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutVehicleNestedInput
+    driverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutVehicleNestedInput
   }
 
   export type VehicleUncheckedUpdateManyWithoutTenantInput = {
@@ -195472,6 +201417,39 @@ export namespace Prisma {
     area?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VehicleDriverAssignmentUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    unassignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    vehicle?: VehicleUpdateOneRequiredWithoutDriverAssignmentsNestedInput
+    driver?: DriverUpdateOneRequiredWithoutVehicleAssignmentsNestedInput
+  }
+
+  export type VehicleDriverAssignmentUncheckedUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    vehicleId?: StringFieldUpdateOperationsInput | string
+    driverId?: StringFieldUpdateOperationsInput | string
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    unassignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    vehicleId?: StringFieldUpdateOperationsInput | string
+    driverId?: StringFieldUpdateOperationsInput | string
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    unassignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ViolationUpdateWithoutTenantInput = {
@@ -197143,6 +203121,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -197164,6 +203143,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutCompanyInput = {
@@ -197222,6 +203202,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -197243,6 +203224,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateManyWithoutCompanyInput = {
@@ -197312,6 +203294,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordUpdateManyWithoutSpareVehicleNestedInput
     alerts?: AlertUpdateManyWithoutVehicleNestedInput
     tickets?: TicketUpdateManyWithoutVehicleNestedInput
+    driverAssignments?: VehicleDriverAssignmentUpdateManyWithoutVehicleNestedInput
   }
 
   export type VehicleUncheckedUpdateWithoutCompanyInput = {
@@ -197339,6 +203322,7 @@ export namespace Prisma {
     spareMaintenance?: MaintenanceRecordUncheckedUpdateManyWithoutSpareVehicleNestedInput
     alerts?: AlertUncheckedUpdateManyWithoutVehicleNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutVehicleNestedInput
+    driverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutVehicleNestedInput
   }
 
   export type VehicleUncheckedUpdateManyWithoutCompanyInput = {
@@ -197772,6 +203756,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
     device?: DeviceUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
     tickets?: TicketUpdateManyWithoutDriverNestedInput
@@ -197793,6 +203778,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
     sims?: SimUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutSupervisorInput = {
@@ -197851,6 +203837,7 @@ export namespace Prisma {
     appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
     device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
     assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
     restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
@@ -197872,6 +203859,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
     sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
     performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateManyWithoutSupervisorInput = {
@@ -198529,6 +204517,9 @@ export namespace Prisma {
     quantity?: number
     issuedDate?: Date | string | null
     returnedDate?: Date | string | null
+    condition?: $Enums.EquipmentCondition
+    conditionNote?: string | null
+    conditionReportedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -198732,6 +204723,17 @@ export namespace Prisma {
     eventType: string
     durationSeconds?: number | null
     capturedAt: Date | string
+  }
+
+  export type VehicleDriverAssignmentCreateManyDriverInput = {
+    id?: string
+    tenantId: string
+    vehicleId: string
+    assignedAt?: Date | string
+    unassignedAt?: Date | string | null
+    active?: boolean
+    note?: string | null
+    createdAt?: Date | string
   }
 
   export type LeaveRequestCreateManyDriverInput = {
@@ -199108,6 +205110,15 @@ export namespace Prisma {
     computedAt?: Date | string
   }
 
+  export type DriverBatchHistoryCreateManyDriverInput = {
+    id?: string
+    tenantId: string
+    batchNumber?: string | null
+    changedAt?: Date | string
+    changedBy?: string | null
+    note?: string | null
+  }
+
   export type DriverInventoryUpdateWithoutDriverInput = {
     id?: StringFieldUpdateOperationsInput | string
     itemType?: EnumInventoryItemTypeFieldUpdateOperationsInput | $Enums.InventoryItemType
@@ -199115,6 +205126,9 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     issuedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     returnedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    condition?: EnumEquipmentConditionFieldUpdateOperationsInput | $Enums.EquipmentCondition
+    conditionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    conditionReportedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -199126,6 +205140,9 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     issuedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     returnedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    condition?: EnumEquipmentConditionFieldUpdateOperationsInput | $Enums.EquipmentCondition
+    conditionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    conditionReportedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -199137,6 +205154,9 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     issuedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     returnedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    condition?: EnumEquipmentConditionFieldUpdateOperationsInput | $Enums.EquipmentCondition
+    conditionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    conditionReportedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -199748,6 +205768,39 @@ export namespace Prisma {
     eventType?: StringFieldUpdateOperationsInput | string
     durationSeconds?: NullableIntFieldUpdateOperationsInput | number | null
     capturedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VehicleDriverAssignmentUpdateWithoutDriverInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    unassignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutVehicleDriverAssignmentsNestedInput
+    vehicle?: VehicleUpdateOneRequiredWithoutDriverAssignmentsNestedInput
+  }
+
+  export type VehicleDriverAssignmentUncheckedUpdateWithoutDriverInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vehicleId?: StringFieldUpdateOperationsInput | string
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    unassignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vehicleId?: StringFieldUpdateOperationsInput | string
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    unassignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LeaveRequestUpdateWithoutDriverInput = {
@@ -200882,6 +206935,33 @@ export namespace Prisma {
     computedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type DriverBatchHistoryUpdateWithoutDriverInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    changedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    tenant?: TenantUpdateOneRequiredWithoutDriverBatchHistoryNestedInput
+  }
+
+  export type DriverBatchHistoryUncheckedUpdateWithoutDriverInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    changedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type DriverBatchHistoryUncheckedUpdateManyWithoutDriverInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    changedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
   export type VehicleInspectionCreateManyVehicleInput = {
     id?: string
     tenantId: string
@@ -200963,6 +207043,17 @@ export namespace Prisma {
     driverId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type VehicleDriverAssignmentCreateManyVehicleInput = {
+    id?: string
+    tenantId: string
+    driverId: string
+    assignedAt?: Date | string
+    unassignedAt?: Date | string | null
+    active?: boolean
+    note?: string | null
+    createdAt?: Date | string
   }
 
   export type VehicleInspectionUpdateWithoutVehicleInput = {
@@ -201212,6 +207303,39 @@ export namespace Prisma {
     driverId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VehicleDriverAssignmentUpdateWithoutVehicleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    unassignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutVehicleDriverAssignmentsNestedInput
+    driver?: DriverUpdateOneRequiredWithoutVehicleAssignmentsNestedInput
+  }
+
+  export type VehicleDriverAssignmentUncheckedUpdateWithoutVehicleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    driverId?: StringFieldUpdateOperationsInput | string
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    unassignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VehicleDriverAssignmentUncheckedUpdateManyWithoutVehicleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    driverId?: StringFieldUpdateOperationsInput | string
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    unassignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AttendanceRecordCreateManyShiftInput = {
@@ -203332,6 +209456,10 @@ export namespace Prisma {
      */
     export type VehicleArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = VehicleDefaultArgs<ExtArgs>
     /**
+     * @deprecated Use VehicleDriverAssignmentDefaultArgs instead
+     */
+    export type VehicleDriverAssignmentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = VehicleDriverAssignmentDefaultArgs<ExtArgs>
+    /**
      * @deprecated Use ShiftDefaultArgs instead
      */
     export type ShiftArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ShiftDefaultArgs<ExtArgs>
@@ -203467,6 +209595,10 @@ export namespace Prisma {
      * @deprecated Use AmericanaChainRateDefaultArgs instead
      */
     export type AmericanaChainRateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = AmericanaChainRateDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use DriverBatchHistoryDefaultArgs instead
+     */
+    export type DriverBatchHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DriverBatchHistoryDefaultArgs<ExtArgs>
     /**
      * @deprecated Use AmericanaStoreAssignmentDefaultArgs instead
      */

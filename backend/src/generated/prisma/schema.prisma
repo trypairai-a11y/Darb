@@ -230,6 +230,14 @@ enum InventoryItemType {
   PETROL_CARD
 }
 
+// Condition a driver can self-report for a piece of issued equipment.
+enum EquipmentCondition {
+  OK
+  DAMAGED
+  CHANGED
+  CHANGE_REQUESTED
+}
+
 enum TicketCategory {
   VEHICLE_REPAIR
   EQUIPMENT_REQUEST
@@ -377,6 +385,7 @@ model Tenant {
   companies                 Company[]
   users                     User[]
   drivers                   Driver[]
+  driverBatchHistory        DriverBatchHistory[]
   shifts                    Shift[]
   attendanceRecords         AttendanceRecord[]
   orderLogs                 OrderLog[]
@@ -408,6 +417,7 @@ model Tenant {
   notificationDeliveries    NotificationDelivery[]
   driverRestrictions        DriverRestriction[]
   courierOnlineSessions     CourierOnlineSession[]
+  vehicleDriverAssignments  VehicleDriverAssignment[]
   violations                Violation[]
   penalties                 Penalty[]
   appeals                   Appeal[]
@@ -569,6 +579,7 @@ model Driver {
   appUsageLogs              AppUsageLog[]
   device                    Device?
   assignedVehicle           Vehicle?                   @relation("AssignedDriver")
+  vehicleAssignments        VehicleDriverAssignment[]
   leaveRequests             LeaveRequest[]
   restrictions              DriverRestriction[]
   tickets                   Ticket[]                   @relation("TicketDriver")
@@ -590,6 +601,7 @@ model Driver {
   americanaStoreAssignments AmericanaStoreAssignment[]
   sims                      Sim[]
   performanceSnapshots      PerformanceSnapshot[]
+  batchHistory              DriverBatchHistory[]
 
   @@index([tenantId])
   @@index([companyId])
@@ -622,15 +634,19 @@ model DriverRestriction {
 
 // 6. DriverInventory
 model DriverInventory {
-  id           String            @id @default(uuid())
-  driverId     String
-  itemType     InventoryItemType
-  issued       Boolean           @default(false)
-  quantity     Int               @default(0)
-  issuedDate   DateTime?
-  returnedDate DateTime?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id                  String             @id @default(uuid())
+  driverId            String
+  itemType            InventoryItemType
+  issued              Boolean            @default(false)
+  quantity            Int                @default(0)
+  issuedDate          DateTime?
+  returnedDate        DateTime?
+  // Driver-reported condition (set from the mobile agent app).
+  condition           EquipmentCondition @default(OK)
+  conditionNote       String?
+  conditionReportedAt DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
 
   driver Driver @relation(fields: [driverId], references: [id])
 
@@ -685,13 +701,36 @@ model Vehicle {
   assignedDriver Driver? @relation("AssignedDriver", fields: [assignedDriverId], references: [id])
 
   inspections        VehicleInspection[]
-  maintenanceRecords MaintenanceRecord[] @relation("VehicleMaintenance")
-  spareMaintenance   MaintenanceRecord[] @relation("SpareVehicle")
+  maintenanceRecords MaintenanceRecord[]       @relation("VehicleMaintenance")
+  spareMaintenance   MaintenanceRecord[]       @relation("SpareVehicle")
   alerts             Alert[]
   tickets            Ticket[]
+  driverAssignments  VehicleDriverAssignment[]
 
   @@index([tenantId])
   @@index([companyId])
+}
+
+// Many-to-many: a vehicle can be shared across multiple drivers.
+model VehicleDriverAssignment {
+  id           String    @id @default(uuid())
+  tenantId     String
+  vehicleId    String
+  driverId     String
+  assignedAt   DateTime  @default(now())
+  unassignedAt DateTime?
+  active       Boolean   @default(true)
+  note         String?
+  createdAt    DateTime  @default(now())
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id])
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  driver  Driver  @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@unique([vehicleId, driverId])
+  @@index([tenantId])
+  @@index([vehicleId, active])
+  @@index([driverId, active])
 }
 
 // 8. Shift
@@ -1578,6 +1617,24 @@ model AmericanaChainRate {
 
   @@index([tenantId, chainId, vehicleType, effectiveFrom])
   @@index([createdBy])
+}
+
+/// Weekly batch assignment changes per driver. Appended whenever a driver's
+/// batchNumber is updated, so the driver file can show the full batch timeline.
+model DriverBatchHistory {
+  id          String   @id @default(uuid())
+  tenantId    String
+  driverId    String
+  batchNumber String?
+  changedAt   DateTime @default(now())
+  changedBy   String? // userId who made the change
+  note        String?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  driver Driver @relation(fields: [driverId], references: [id])
+
+  @@index([tenantId])
+  @@index([driverId, changedAt])
 }
 
 model AmericanaStoreAssignment {

@@ -230,6 +230,14 @@ enum InventoryItemType {
   PETROL_CARD
 }
 
+// Condition a driver can self-report for a piece of issued equipment.
+enum EquipmentCondition {
+  OK
+  DAMAGED
+  CHANGED
+  CHANGE_REQUESTED
+}
+
 enum TicketCategory {
   VEHICLE_REPAIR
   EQUIPMENT_REQUEST
@@ -633,6 +641,10 @@ model DriverInventory {
   quantity     Int               @default(0)
   issuedDate   DateTime?
   returnedDate DateTime?
+  // Driver-reported condition (set from the mobile agent app).
+  condition           EquipmentCondition @default(OK)
+  conditionNote       String?
+  conditionReportedAt DateTime?
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
 

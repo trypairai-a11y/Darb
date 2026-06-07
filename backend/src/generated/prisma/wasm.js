@@ -230,6 +230,9 @@ exports.Prisma.DriverInventoryScalarFieldEnum = {
   quantity: 'quantity',
   issuedDate: 'issuedDate',
   returnedDate: 'returnedDate',
+  condition: 'condition',
+  conditionNote: 'conditionNote',
+  conditionReportedAt: 'conditionReportedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -269,6 +272,18 @@ exports.Prisma.VehicleScalarFieldEnum = {
   registrationExpiry: 'registrationExpiry',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.VehicleDriverAssignmentScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  vehicleId: 'vehicleId',
+  driverId: 'driverId',
+  assignedAt: 'assignedAt',
+  unassignedAt: 'unassignedAt',
+  active: 'active',
+  note: 'note',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.ShiftScalarFieldEnum = {
@@ -851,6 +866,16 @@ exports.Prisma.AmericanaChainRateScalarFieldEnum = {
   createdBy: 'createdBy',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DriverBatchHistoryScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  driverId: 'driverId',
+  batchNumber: 'batchNumber',
+  changedAt: 'changedAt',
+  changedBy: 'changedBy',
+  note: 'note'
 };
 
 exports.Prisma.AmericanaStoreAssignmentScalarFieldEnum = {
@@ -1512,7 +1537,8 @@ exports.Prisma.DriverRestrictionOrderByRelevanceFieldEnum = {
 
 exports.Prisma.DriverInventoryOrderByRelevanceFieldEnum = {
   id: 'id',
-  driverId: 'driverId'
+  driverId: 'driverId',
+  conditionNote: 'conditionNote'
 };
 
 exports.Prisma.RecruitmentPipelineOrderByRelevanceFieldEnum = {
@@ -1538,6 +1564,14 @@ exports.Prisma.VehicleOrderByRelevanceFieldEnum = {
   ownerCompany: 'ownerCompany',
   driverIqama: 'driverIqama',
   assignedDriverId: 'assignedDriverId'
+};
+
+exports.Prisma.VehicleDriverAssignmentOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  vehicleId: 'vehicleId',
+  driverId: 'driverId',
+  note: 'note'
 };
 
 exports.Prisma.ShiftOrderByRelevanceFieldEnum = {
@@ -1845,6 +1879,15 @@ exports.Prisma.AmericanaChainRateOrderByRelevanceFieldEnum = {
   vehicleType: 'vehicleType',
   contractId: 'contractId',
   createdBy: 'createdBy'
+};
+
+exports.Prisma.DriverBatchHistoryOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  driverId: 'driverId',
+  batchNumber: 'batchNumber',
+  changedBy: 'changedBy',
+  note: 'note'
 };
 
 exports.Prisma.AmericanaStoreAssignmentOrderByRelevanceFieldEnum = {
@@ -2282,6 +2325,13 @@ exports.InventoryItemType = exports.$Enums.InventoryItemType = {
   PETROL_CARD: 'PETROL_CARD'
 };
 
+exports.EquipmentCondition = exports.$Enums.EquipmentCondition = {
+  OK: 'OK',
+  DAMAGED: 'DAMAGED',
+  CHANGED: 'CHANGED',
+  CHANGE_REQUESTED: 'CHANGE_REQUESTED'
+};
+
 exports.RecruitmentStage = exports.$Enums.RecruitmentStage = {
   AGENCY_REFERRAL: 'AGENCY_REFERRAL',
   CV_DOCS: 'CV_DOCS',
@@ -2581,6 +2631,7 @@ exports.Prisma.ModelName = {
   DriverInventory: 'DriverInventory',
   RecruitmentPipeline: 'RecruitmentPipeline',
   Vehicle: 'Vehicle',
+  VehicleDriverAssignment: 'VehicleDriverAssignment',
   Shift: 'Shift',
   AttendanceRecord: 'AttendanceRecord',
   OrderLog: 'OrderLog',
@@ -2615,6 +2666,7 @@ exports.Prisma.ModelName = {
   AmericanaStore: 'AmericanaStore',
   AmericanaContract: 'AmericanaContract',
   AmericanaChainRate: 'AmericanaChainRate',
+  DriverBatchHistory: 'DriverBatchHistory',
   AmericanaStoreAssignment: 'AmericanaStoreAssignment',
   AmericanaDailyIngestion: 'AmericanaDailyIngestion',
   KpiDefinition: 'KpiDefinition',
