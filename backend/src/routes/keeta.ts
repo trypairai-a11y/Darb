@@ -222,9 +222,21 @@ router.post("/metrics", async (req: Request, res: Response) => {
 // PUT /metrics/:id - Update
 router.put("/metrics/:id", async (req: Request, res: Response) => {
   try {
+    const allowed = [
+      "date", "courierPlatformId", "supervisorName", "vehicleType",
+      "onShift", "validDay", "onlineTime", "validOnlineTime", "peakOnlineMinutes",
+      "acceptedTasks", "restaurantArrivals", "deliveredTasks", "largeOrdersCompleted",
+      "cancelledTasks", "rejectedTasks", "rejectedByCourier", "rejectedAuto",
+      "cancellationRate", "completionRate", "onTimeRate", "largeOrderOnTimeRate",
+      "avgDeliveryMinutes", "over55minProportion", "overdueOrders", "severelyOverdue", "source",
+    ] as const;
+    const data: Record<string, unknown> = {};
+    for (const k of allowed) {
+      if (k in (req.body ?? {})) data[k] = (req.body as any)[k];
+    }
     const result = await prisma.keetaDailyMetrics.updateMany({
       where: { id: req.params.id, tenantId: req.user!.tenantId },
-      data: req.body,
+      data,
     });
     if (result.count === 0) { res.status(404).json({ error: "Metrics record not found" }); return; }
     const updated = await prisma.keetaDailyMetrics.findUnique({ where: { id: req.params.id } });

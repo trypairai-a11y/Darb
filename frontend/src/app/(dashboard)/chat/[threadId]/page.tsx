@@ -12,7 +12,7 @@ export default function ChatThreadPage() {
   const initialPrompt = search?.get("q") ?? undefined;
 
   return (
-    <div className="flex min-h-screen bg-bg">
+    <div className="flex h-[calc(100vh-8rem)] min-h-[680px] overflow-hidden rounded-[18px] border border-black/[0.06] bg-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.06)] backdrop-blur-xl">
       <ChatThreadSidebar activeThreadId={threadId} />
       <ChatThreadPane threadId={threadId} initialPrompt={initialPrompt} />
     </div>

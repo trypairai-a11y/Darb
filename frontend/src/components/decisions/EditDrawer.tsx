@@ -235,7 +235,7 @@ export default function EditDrawer({
               : "bg-sand-300 cursor-not-allowed",
           )}
         >
-          {submitting ? "Saving…" : "Save & Approve"}
+          {submitting ? "Saving" : "Save & Approve"}
         </button>
       </div>
     </SlidePanel>

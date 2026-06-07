@@ -2,22 +2,27 @@
 import { useState } from "react";
 import { useApiGet } from "@/hooks/useApi";
 import api from "@/lib/api";
-import { Plus, Edit2, Check, X } from "lucide-react";
+import { Plus, Edit2, Check, X, Car, Bike } from "lucide-react";
 
 interface Store {
   id: string;
   chainId: string;
   name: string;
   area: string | null;
-  costCenter: string | null;
   managerName: string | null;
   managerPhone: string | null;
   backupContactName: string | null;
   backupContactPhone: string | null;
   notes: string | null;
   active: boolean;
+  carDailyTarget: number | null;
+  bikeDailyTarget: number | null;
+  carMonthlyTarget: number | null;
+  bikeMonthlyTarget: number | null;
   chain?: { name: string; id: string };
 }
+
+const numOrNull = (v: any) => (v === "" || v == null ? null : Number(v));
 
 export default function AmericanaStoresPage() {
   const { data: stores, loading, refetch } = useApiGet<Store[]>("/api/americana/stores");
@@ -27,34 +32,84 @@ export default function AmericanaStoresPage() {
   const [creating, setCreating] = useState(false);
 
   const save = async (id: string | null) => {
-    if (id) await api.put(`/api/americana/stores/${id}`, draft);
-    else await api.post("/api/americana/stores", draft);
+    const payload = {
+      ...draft,
+      carDailyTarget: numOrNull(draft.carDailyTarget),
+      bikeDailyTarget: numOrNull(draft.bikeDailyTarget),
+      carMonthlyTarget: numOrNull(draft.carMonthlyTarget),
+      bikeMonthlyTarget: numOrNull(draft.bikeMonthlyTarget),
+    };
+    if (id) await api.put(`/api/americana/stores/${id}`, payload);
+    else await api.post("/api/americana/stores", payload);
     setEditing(null); setCreating(false); setDraft({});
     refetch();
   };
 
+  const TargetEditor = ({
+    icon, dailyKey, monthlyKey, source,
+  }: {
+    icon: React.ReactNode;
+    dailyKey: "carDailyTarget" | "bikeDailyTarget";
+    monthlyKey: "carMonthlyTarget" | "bikeMonthlyTarget";
+    source: Partial<Store>;
+  }) => (
+    <div className="flex items-center gap-1.5">
+      <span className="text-secondary">{icon}</span>
+      <input
+        type="number"
+        value={(draft[dailyKey] ?? source[dailyKey] ?? "") as any}
+        onChange={(e) => setDraft({ ...draft, [dailyKey]: e.target.value as any })}
+        className="w-14 px-1.5 py-1 border border-gray-200 rounded-md text-xs"
+        placeholder="day"
+      />
+      <span className="text-secondary text-xs">/</span>
+      <input
+        type="number"
+        value={(draft[monthlyKey] ?? source[monthlyKey] ?? "") as any}
+        onChange={(e) => setDraft({ ...draft, [monthlyKey]: e.target.value as any })}
+        className="w-16 px-1.5 py-1 border border-gray-200 rounded-md text-xs"
+        placeholder="mo"
+      />
+    </div>
+  );
+
+  const TargetDisplay = ({ icon, daily, monthly }: { icon: React.ReactNode; daily: number | null; monthly: number | null }) => (
+    <div className="flex items-center gap-1.5 text-xs">
+      <span className="text-secondary">{icon}</span>
+      <span className="font-mono">
+        {daily ?? "—"}
+        <span className="text-secondary mx-1">/</span>
+        {monthly ?? "—"}
+      </span>
+    </div>
+  );
+
   return (
-    <div className="space-y-6 max-w-[1200px]">
+    <div className="space-y-6 w-full max-w-none">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Americana stores</h1>
+        <div>
+          <h1 className="text-xl font-semibold">Americana branches</h1>
+          <p className="text-xs text-secondary mt-1">Targets shown as <span className="font-mono">daily / monthly</span> orders per driver, by vehicle.</p>
+        </div>
         <button
           onClick={() => { setCreating(true); setDraft({ active: true }); }}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white text-sm rounded-lg hover:bg-primary-hover"
         >
-          <Plus size={14} /> Add store
+          <Plus size={14} /> Add branch
         </button>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
-        <table className="w-full text-sm min-w-[900px]">
+        <table className="w-full text-sm min-w-[1100px]">
           <thead className="bg-gray-50 text-xs uppercase text-secondary">
             <tr>
-              <th className="text-left p-3">Store</th>
+              <th className="text-left p-3">Branch</th>
               <th className="text-left p-3">Chain</th>
               <th className="text-left p-3">Area</th>
               <th className="text-left p-3">Manager</th>
               <th className="text-left p-3">Manager phone</th>
-              <th className="text-left p-3">CC</th>
+              <th className="text-left p-3">Car target</th>
+              <th className="text-left p-3">Bike target</th>
               <th className="text-left p-3">Active</th>
               <th className="text-right p-3 w-28">Actions</th>
             </tr>
@@ -86,8 +141,10 @@ export default function AmericanaStoresPage() {
                     className="w-full px-2 py-1 border border-gray-200 rounded-md text-sm" />
                 </td>
                 <td className="p-3">
-                  <input value={draft.costCenter ?? ""} onChange={(e) => setDraft({ ...draft, costCenter: e.target.value })}
-                    className="w-full px-2 py-1 border border-gray-200 rounded-md text-sm" />
+                  <TargetEditor icon={<Car size={14} />} dailyKey="carDailyTarget" monthlyKey="carMonthlyTarget" source={{}} />
+                </td>
+                <td className="p-3">
+                  <TargetEditor icon={<Bike size={14} />} dailyKey="bikeDailyTarget" monthlyKey="bikeMonthlyTarget" source={{}} />
                 </td>
                 <td className="p-3">
                   <input type="checkbox" checked={!!draft.active} onChange={(e) => setDraft({ ...draft, active: e.target.checked })} />
@@ -99,9 +156,9 @@ export default function AmericanaStoresPage() {
               </tr>
             )}
             {loading ? (
-              <tr><td colSpan={8} className="p-6 text-center text-secondary">Loading…</td></tr>
+              <tr><td colSpan={9} className="p-6 text-center text-secondary">Loading…</td></tr>
             ) : (stores ?? []).length === 0 && !creating ? (
-              <tr><td colSpan={8} className="p-6 text-center text-secondary">No stores yet.</td></tr>
+              <tr><td colSpan={9} className="p-6 text-center text-secondary">No branches yet.</td></tr>
             ) : (stores ?? []).map((s) => {
               const isEditing = editing === s.id;
               return (
@@ -131,7 +188,20 @@ export default function AmericanaStoresPage() {
                         className="w-full px-2 py-1 border border-gray-200 rounded-md text-sm" />
                     ) : s.managerPhone ?? "—"}
                   </td>
-                  <td className="p-3 text-secondary font-mono">{s.costCenter ?? "—"}</td>
+                  <td className="p-3">
+                    {isEditing ? (
+                      <TargetEditor icon={<Car size={14} />} dailyKey="carDailyTarget" monthlyKey="carMonthlyTarget" source={s} />
+                    ) : (
+                      <TargetDisplay icon={<Car size={14} />} daily={s.carDailyTarget} monthly={s.carMonthlyTarget} />
+                    )}
+                  </td>
+                  <td className="p-3">
+                    {isEditing ? (
+                      <TargetEditor icon={<Bike size={14} />} dailyKey="bikeDailyTarget" monthlyKey="bikeMonthlyTarget" source={s} />
+                    ) : (
+                      <TargetDisplay icon={<Bike size={14} />} daily={s.bikeDailyTarget} monthly={s.bikeMonthlyTarget} />
+                    )}
+                  </td>
                   <td className="p-3">
                     <span className={s.active ? "text-green-600" : "text-gray-400"}>{s.active ? "Yes" : "No"}</span>
                   </td>

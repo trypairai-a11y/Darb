@@ -20,7 +20,7 @@
  */
 
 import { Router, type Request, type Response } from "express";
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import RedisStore, { type RedisReply } from "rate-limit-redis";
 import { prisma } from "../config";
 import redis from "../config/redis";
@@ -54,7 +54,7 @@ const chatLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: (req: Request) => {
     const userId = (req.user as { userId?: string } | undefined)?.userId;
-    return userId ? `u:${userId}` : `ip:${req.ip ?? "unknown"}`;
+    return userId ? `u:${userId}` : `ip:${ipKeyGenerator(req.ip ?? "")}`;
   },
   store: makeChatStore(),
 });

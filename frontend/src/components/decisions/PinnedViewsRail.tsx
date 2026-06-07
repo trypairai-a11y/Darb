@@ -83,14 +83,14 @@ export function PinnedViewsRail({
 
   return (
     <section
-      className="mb-6 rounded-2xl ring-1 ring-sand-200 bg-card p-4"
+      className="rounded-[18px] border border-black/[0.06] bg-white/75 p-3 shadow-soft backdrop-blur-xl dark:bg-card/80"
       data-testid="pinned-views-rail"
     >
-      <header className="flex items-center justify-between mb-3">
+      <header className="mb-2 flex items-center justify-between">
         <button
           type="button"
           onClick={toggle}
-          className="inline-flex items-center gap-1 text-sm font-medium text-sand-900"
+          className="inline-flex h-9 items-center gap-1 rounded-pill px-2 text-sm font-medium text-sand-900 hover:bg-sand-100"
         >
           {collapsed ? (
             <ChevronRight className="h-4 w-4" />
@@ -101,7 +101,7 @@ export function PinnedViewsRail({
         </button>
       </header>
       {!collapsed && (
-        <div className="flex gap-3 overflow-x-auto pb-2">
+        <div className="flex gap-3 overflow-x-auto pb-1">
           {visible.map((v) => (
             <PinnedViewTile key={v.id} pin={v} onUnpinClick={handleUnpinClick} />
           ))}

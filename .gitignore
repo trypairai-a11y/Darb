@@ -68,3 +68,12 @@ licenses/
 *.log
 .playwright-mcp/
 .vercel
+
+# Local dev artifacts (checkpoint 2026-06-07) — screenshots, audio, scratch, demo seeders
+/*.png
+/*.mp3
+/tmp/
+backend/uploads/
+backend/.vercel-backend-env
+backend/seed-prod.sh
+backend/prisma/seed-*.ts

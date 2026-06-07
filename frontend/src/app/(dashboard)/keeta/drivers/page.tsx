@@ -88,7 +88,7 @@ export default function KeetaDriversPage() {
   ];
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="space-y-6 w-full max-w-none">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="w-3 h-3 rounded-full bg-keeta" />

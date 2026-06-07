@@ -115,7 +115,7 @@ export default function DeliverooVehiclesPage() {
   ];
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="space-y-6 w-full max-w-none">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

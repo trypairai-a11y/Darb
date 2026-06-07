@@ -229,7 +229,7 @@ export class AiInsightsEngine {
       if (lowRevDrivers.length > 0) {
         // Fetch driver names
         const driverNames = await prisma.driver.findMany({
-          where: { id: { in: lowRevDrivers.map((d) => d.driverId) } },
+          where: { tenantId, id: { in: lowRevDrivers.map((d) => d.driverId) } },
           select: { id: true, name: true },
         });
         const nameMap = new Map(driverNames.map((d) => [d.id, d.name]));
@@ -437,7 +437,7 @@ export class AiInsightsEngine {
       reassignCandidates.sort((a, b) => b.improvement - a.improvement);
       const top = reassignCandidates[0];
       const names = await prisma.driver.findMany({
-        where: { id: { in: reassignCandidates.slice(0, 5).map((c) => c.driverId) } },
+        where: { tenantId, id: { in: reassignCandidates.slice(0, 5).map((c) => c.driverId) } },
         select: { id: true, name: true },
       });
       const nameMap = new Map(names.map((d) => [d.id, d.name]));
@@ -584,7 +584,7 @@ export class AiInsightsEngine {
     if (declining.length > 0) {
       declining.sort((a, b) => b.decline - a.decline);
       const names = await prisma.driver.findMany({
-        where: { id: { in: declining.slice(0, 5).map((d) => d.driverId) } },
+        where: { tenantId, id: { in: declining.slice(0, 5).map((d) => d.driverId) } },
         select: { id: true, name: true },
       });
       const nameMap = new Map(names.map((d) => [d.id, d.name]));

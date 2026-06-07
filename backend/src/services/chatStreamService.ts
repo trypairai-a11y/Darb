@@ -30,6 +30,7 @@ import { runAgent } from "../agent";
 import * as chatHistoryService from "./chatHistoryService";
 import redis from "../config/redis";
 import { logger } from "../config/logger";
+import { AGENT_MODEL } from "../agent/config";
 
 const HEARTBEAT_MS_DEFAULT = 15_000;
 const LOCK_TTL_MS_DEFAULT = 60_000;
@@ -173,13 +174,15 @@ export async function streamChatToClient(opts: {
   let lock: ThreadLock | null = null;
 
   try {
-    // 1. Persist user message; ensure thread exists.
+    // 1. Ensure thread exists, then capture prior turns before writing this
+    // user message. runAgent receives the current message separately.
     thread = await chatHistoryService.upsertThread({
       tenantId,
       userId,
       threadId: opts.threadId,
       firstMessage: userMessage,
     });
+    const history = await chatHistoryService.recentTurns(thread.id, tenantId, 20);
     await chatHistoryService.appendMessage({
       threadId: thread.id,
       tenantId,
@@ -224,7 +227,6 @@ export async function streamChatToClient(opts: {
     }, 1000);
 
     // 5. Run the chat agent with streaming hooks.
-    const history = await chatHistoryService.recentTurns(thread.id, tenantId, 20);
     const collectedViews: unknown[] = [];
     let textBuffer = "";
     let firstPendingActionId: string | undefined;
@@ -253,22 +255,20 @@ export async function streamChatToClient(opts: {
       },
     });
 
-    // 6. Persist the final assistant row (separate from the placeholder).
+    // 6. Replace the assistant placeholder with the final assistant state.
     if (result.status === "cancelled") {
-      send("cancelled", { msgId: placeholderId });
-      await chatHistoryService.appendMessage({
-        threadId: thread.id,
+      await chatHistoryService.updateMessage({
+        id: placeholderId,
         tenantId,
-        role: "assistant",
         content: textBuffer,
         views: collectedViews as Record<string, unknown>[],
         state: "cancelled",
       });
+      send("cancelled", { msgId: placeholderId });
     } else if (result.status === "completed") {
-      const final = await chatHistoryService.appendMessage({
-        threadId: thread.id,
+      await chatHistoryService.updateMessage({
+        id: placeholderId,
         tenantId,
-        role: "assistant",
         content: result.text ?? textBuffer,
         views: (result.views ?? collectedViews) as Record<string, unknown>[],
         toolCalls: [],
@@ -277,48 +277,49 @@ export async function streamChatToClient(opts: {
         promptTokens: 0,
         completionTokens: 0,
         latencyMs: 0,
-        modelName: "claude-sonnet-4-6",
+        modelName: AGENT_MODEL,
       });
       send("complete", {
         msgId: placeholderId,
-        finalMessageId: final.id,
+        finalMessageId: placeholderId,
         runId: result.runId,
         meta: {
           promptTokens: 0,
           completionTokens: 0,
           latencyMs: 0,
-          modelName: "claude-sonnet-4-6",
+          modelName: AGENT_MODEL,
         },
       });
     } else if (result.status === "disabled") {
-      // Agent disabled (no ANTHROPIC_API_KEY) — surface as a completable empty
+      // Agent disabled (no ANTHROPIC_API_KEY) — persist a visible assistant
       // turn so the UI doesn't hang waiting for a complete event.
+      await chatHistoryService.updateMessage({
+        id: placeholderId,
+        tenantId,
+        content:
+          "Anthropic is not connected yet. Add ANTHROPIC_API_KEY to backend/.env, restart the backend, then ask again.",
+        state: "complete",
+        modelName: AGENT_MODEL,
+      });
       send("complete", {
         msgId: placeholderId,
         finalMessageId: placeholderId,
         runId: result.runId,
         meta: { disabled: true },
       });
-      await chatHistoryService.appendMessage({
-        threadId: thread.id,
-        tenantId,
-        role: "assistant",
-        content: result.text ?? "Agent runtime disabled.",
-        state: "complete",
-      });
     } else {
       // failed
+      await chatHistoryService.updateMessage({
+        id: placeholderId,
+        tenantId,
+        content: textBuffer,
+        state: "error",
+        errorMessage: result.error ?? "Agent failed",
+        modelName: AGENT_MODEL,
+      });
       send("error", {
         msgId: placeholderId,
         error: result.error ?? "Agent failed",
-      });
-      await chatHistoryService.appendMessage({
-        threadId: thread.id,
-        tenantId,
-        role: "assistant",
-        content: textBuffer,
-        state: "error",
-        errorMessage: result.error,
       });
     }
 

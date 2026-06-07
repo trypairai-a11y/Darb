@@ -8,8 +8,8 @@ import { useRouter } from "next/navigation";
  * Per UI-SPEC §2.2 + orchestrator decision: post-auth landing depends on the
  * authenticated User's role.
  *   ADMIN / OPS_MANAGER / VIEWER → /decisions    (Phase 2 wedge surface)
- *   SUPERVISOR                   → /v2/triage    (unchanged from Phase 1)
- *   ACCOUNTANT                   → /v2/money     (unchanged; ships /finance/cash in Phase 8)
+ *   SUPERVISOR                   → /v2/dispatch  (Floor watchtower)
+ *   ACCOUNTANT                   → /v2/money     (Finance lens until /finance/cash ships)
  *
  * SUPER_ADMIN is a separate flag (User.isSuperAdmin), not a UserRole — the
  * standard role-landing applies, with /admin/* surfaces gated by the
@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 const ROLE_LANDING: Record<string, string> = {
   ADMIN: "/decisions",
   OPS_MANAGER: "/decisions",
-  SUPERVISOR: "/v2/triage",
+  SUPERVISOR: "/v2/dispatch",
   ACCOUNTANT: "/v2/money",
   VIEWER: "/decisions",
 };
@@ -73,7 +73,7 @@ export default function LoginPage() {
               The operating<br/>system for<br/>delivery fleets.
             </h1>
             <p className="text-white/75 text-lg leading-relaxed max-w-md">
-              Unified command across Keeta, Talabat, Deliveroo and Americana — with real-time monitoring, automated violations and AI-driven ops.
+              An AI ops chief for Keeta, Talabat, Deliveroo and Americana fleets — proposals, live floor signals, and finance clarity in one place.
             </p>
 
             <div className="mt-10 flex items-center gap-6">
@@ -110,7 +110,7 @@ export default function LoginPage() {
 
           <div className="mb-8">
             <h2 className="font-display text-display-sm text-sand-900 mb-2">Welcome back</h2>
-            <p className="text-sm text-sand-700">Sign in to your operations dashboard.</p>
+            <p className="text-sm text-sand-700">Sign in to your AI ops chief.</p>
           </div>
 
           <div className="inline-flex p-1 rounded-pill bg-sand-200 mb-6">

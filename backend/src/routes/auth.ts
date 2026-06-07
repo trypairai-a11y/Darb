@@ -1,8 +1,24 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, CookieOptions } from "express";
 import { AuthService } from "../services/authService";
 import { authMiddleware } from "../middleware/auth";
 
 const router = Router();
+
+// Frontend and backend live on different *.vercel.app subdomains in production,
+// so the refresh cookie must be SameSite=None; Secure for the browser to send
+// it on cross-site XHR. In dev (http://localhost) we keep Lax + non-secure.
+// Check VERCEL_ENV in addition to NODE_ENV — NODE_ENV isn't always "production"
+// on Vercel's @vercel/node runtime, but VERCEL_ENV is reliable.
+const isProd =
+  process.env.NODE_ENV === "production" ||
+  process.env.VERCEL_ENV === "production" ||
+  process.env.VERCEL_ENV === "preview";
+const refreshCookieOptions: CookieOptions = {
+  httpOnly: true,
+  secure: isProd,
+  sameSite: isProd ? "none" : "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
 
 /**
  * @swagger
@@ -79,12 +95,7 @@ router.post("/login", async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     const result = await AuthService.login(email, password);
-    res.cookie("refreshToken", result.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("refreshToken", result.refreshToken, refreshCookieOptions);
     res.json({ accessToken: result.accessToken, user: result.user });
   } catch (err: any) {
     res.status(401).json({ error: err.message });
@@ -105,12 +116,7 @@ router.post("/verify-otp", async (req: Request, res: Response) => {
   try {
     const { phone, code } = req.body;
     const result = await AuthService.verifyOtp(phone, code);
-    res.cookie("refreshToken", result.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("refreshToken", result.refreshToken, refreshCookieOptions);
     res.json({ accessToken: result.accessToken, user: result.user });
   } catch (err: any) {
     res.status(401).json({ error: err.message });
@@ -131,12 +137,7 @@ router.post("/verify-otp", async (req: Request, res: Response) => {
 router.post("/demo", async (_req: Request, res: Response) => {
   try {
     const result = await AuthService.demoLogin();
-    res.cookie("refreshToken", result.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("refreshToken", result.refreshToken, refreshCookieOptions);
     res.json({ accessToken: result.accessToken, user: result.user });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -185,7 +186,12 @@ router.post("/refresh", async (req: Request, res: Response) => {
  *         description: Logged out
  */
 router.post("/logout", (_req: Request, res: Response) => {
-  res.clearCookie("refreshToken");
+  // Match the cookie's original attributes so the browser actually clears it.
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+  });
   res.json({ message: "Logged out" });
 });
 

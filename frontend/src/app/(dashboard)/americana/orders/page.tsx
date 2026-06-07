@@ -1,73 +1,112 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useApiGet } from "@/hooks/useApi";
 import api from "@/lib/api";
 import DataTable from "@/components/shared/DataTable";
 import FilterBar from "@/components/shared/FilterBar";
 import StatCard from "@/components/shared/StatCard";
+import PlatformPerformanceTab from "@/components/platform/PlatformPerformanceTab";
 import { cn } from "@/lib/cn";
 import {
   Upload,
   ShoppingBag,
-  CreditCard,
-  Banknote,
-  TrendingUp,
-  Info,
   CheckCircle2,
+  Trophy,
 } from "lucide-react";
 import { useI18n } from "@/i18n/I18nProvider";
 import { DirectionalIcon } from "@/i18n/directionalIcon";
 import { formatCurrency, formatTime, formatDateTime } from "@/i18n/format";
 
-type PaymentTab = "ALL" | "COD" | "CCOD" | "PAID";
+type PageTab = "orders" | "performance";
 
-const STORES = [
-  "KFC Audiliya",
-  "KFC Salwa",
-  "KFC Salmiya",
-  "KFC Jabriya",
-  "KFC Rumaithiya",
-  "Pizza Hut Hawally",
-  "Pizza Hut Salmiya",
-  "Hardees Fahaheel",
+const AMERICANA_AREAS = [
+  "Audiliya", "Hawally", "Salmiya", "Jabriya", "Salwa", "Rumaithiya", "Fahaheel", "Mahboula",
 ];
 
-const PAYMENT_TAB_STYLES: Record<PaymentTab, string> = {
-  ALL: "bg-gray-100 text-gray-700",
-  COD: "bg-green-50 text-green-700",
-  CCOD: "bg-blue-50 text-blue-700",
-  PAID: "bg-purple-50 text-purple-700",
+// Each entry maps a normalized chain label (used in the leaderboard) to the case-insensitive
+// prefix variants that may appear in OrderLog.restaurantName (e.g. "Hardee's Hawally", "Hardees Salwa").
+const RESTAURANT_PREFIXES: { label: string; matches: string[] }[] = [
+  { label: "KFC", matches: ["kfc"] },
+  { label: "Hardees", matches: ["hardee's", "hardees"] },
+  { label: "Pizza Hut", matches: ["pizza hut"] },
+  { label: "TGI Fridays", matches: ["tgi fridays", "tgi friday"] },
+];
+
+const detectRestaurant = (storeName: string): string | null => {
+  if (!storeName) return null;
+  const lower = storeName.toLowerCase();
+  return RESTAURANT_PREFIXES.find((c) => c.matches.some((m) => lower.startsWith(m)))?.label ?? null;
 };
 
-const PAYMENT_STATUS_STYLES: Record<string, string> = {
-  COD: "bg-green-50 text-green-700",
-  CCOD: "bg-blue-50 text-blue-700",
-  PAID: "bg-purple-50 text-purple-700",
-  PENDING: "bg-yellow-50 text-yellow-700",
-  CANCELLED: "bg-red-50 text-red-600",
+const detectArea = (storeName: string): string => {
+  if (!storeName) return "Unknown";
+  const lower = storeName.toLowerCase();
+  for (const { matches } of RESTAURANT_PREFIXES) {
+    const hit = matches.find((m) => lower.startsWith(m));
+    if (hit) {
+      return storeName.slice(hit.length).trim() || "Unknown";
+    }
+  }
+  return storeName.split(" ").slice(1).join(" ") || storeName;
 };
 
 export default function AmericanaOrdersPage() {
   const { t, locale } = useI18n();
-  const [paymentTab, setPaymentTab] = useState<PaymentTab>("ALL");
+  const [pageTab, setPageTab] = useState<PageTab>("orders");
   const [filters, setFilters] = useState<Record<string, string>>({
     date: new Date().toLocaleDateString("en-CA"),
   });
+  const [perfFilters, setPerfFilters] = useState<Record<string, string>>({});
   const [selected, setSelected] = useState<any>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
   const [importSuccess, setImportSuccess] = useState(false);
+  // Track whether the user has manually changed the date so we don't override their pick
+  // when the latest-date lookup resolves.
+  const userPickedDateRef = useRef(false);
+
+  // On mount, fall back to the most recent ingested day for Americana when today has no data
+  // (the deployed seed often lags the real "today"). Once the user touches the date picker we stop overriding.
+  const { data: latestDateData } = useApiGet<{ date: string | null }>("/api/orders/latest-date?platform=AMERICANA");
+  useEffect(() => {
+    if (userPickedDateRef.current) return;
+    const latest = latestDateData?.date;
+    if (!latest) return;
+    if (latest !== filters.date) {
+      setFilters((prev) => ({ ...prev, date: latest }));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [latestDateData?.date]);
 
   const params = new URLSearchParams({ platform: "AMERICANA", limit: "200" });
   if (filters.date) { params.set("dateFrom", filters.date); params.set("dateTo", filters.date); }
-  if (filters.store) params.set("store", filters.store);
+  if (filters.area) params.set("zone", filters.area);
   if (filters.search) params.set("search", filters.search);
-  if (paymentTab !== "ALL") params.set("paymentType", paymentTab);
 
   const { data: ordersData, loading } = useApiGet<any>(`/api/orders?${params}`);
   const { data: summary } = useApiGet<any>(`/api/orders/summary?platform=AMERICANA&date=${filters.date}`);
 
-  const orders: any[] = ordersData?.data || [];
+  const allOrders: any[] = ordersData?.data || [];
+  const orders = allOrders.filter((o) => detectRestaurant(o.storeName || "") !== null);
+
+  const restaurantLeaderboard = (() => {
+    const counts: Record<string, number> = {};
+    for (const o of orders) {
+      const r = detectRestaurant(o.storeName || "");
+      if (!r) continue;
+      counts[r] = (counts[r] || 0) + 1;
+    }
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  })();
+
+  const branchLeaderboard = (() => {
+    const counts: Record<string, number> = {};
+    for (const o of orders) {
+      const area = detectArea(o.storeName || "");
+      counts[area] = (counts[area] || 0) + 1;
+    }
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  })();
 
   const statusLabel = (s: string): string => {
     switch (s) {
@@ -97,6 +136,7 @@ export default function AmericanaOrdersPage() {
   };
 
   const prevDay = () => {
+    userPickedDateRef.current = true;
     const d = new Date(filters.date);
     d.setDate(d.getDate() - 1);
     setFilters((prev) => ({ ...prev, date: d.toISOString().split("T")[0] }));
@@ -104,6 +144,7 @@ export default function AmericanaOrdersPage() {
   };
 
   const nextDay = () => {
+    userPickedDateRef.current = true;
     const d = new Date(filters.date);
     d.setDate(d.getDate() + 1);
     setFilters((prev) => ({ ...prev, date: d.toISOString().split("T")[0] }));
@@ -121,8 +162,7 @@ export default function AmericanaOrdersPage() {
       label: t("americana.amountCol"),
       render: (v: number) => <span className="text-sm font-semibold">{v != null ? formatCurrency(v, locale) : "-"}</span>,
     },
-    { key: "posNumber", label: t("americana.posCol"), render: (v: string) => <span className="font-mono text-xs text-secondary">{v || "-"}</span> },
-    { key: "storeName", label: t("americana.storeCol"), render: (v: string) => <span className="text-sm text-secondary">{v || "-"}</span> },
+    { key: "storeName", label: t("americana.branchCol"), render: (v: string) => <span className="text-sm text-secondary">{v || "-"}</span> },
     { key: "driverName", label: t("americana.driverCol"), render: (v: string) => <span className="text-sm">{v || "-"}</span> },
     {
       key: "timestamp",
@@ -133,15 +173,6 @@ export default function AmericanaOrdersPage() {
         ) : (
           <span className="text-secondary text-sm">-</span>
         ),
-    },
-    {
-      key: "paymentType",
-      label: t("americana.paymentCol"),
-      render: (v: string) => (
-        <span className={cn("px-2 py-0.5 rounded-md text-xs font-medium", PAYMENT_STATUS_STYLES[v] || "bg-gray-100 text-gray-600")}>
-          {v || "-"}
-        </span>
-      ),
     },
     {
       key: "status",
@@ -160,13 +191,12 @@ export default function AmericanaOrdersPage() {
   ];
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="space-y-6 w-full max-w-none">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="w-3 h-3 rounded-full bg-americana" />
           <h1 className="text-xl font-semibold">{t("americana.ordersTitle")}</h1>
-          <span className="text-sm text-secondary">{t("americana.alHazmExpress")}</span>
         </div>
         <div className="flex items-center gap-3">
           <input ref={fileRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleImport} />
@@ -185,6 +215,32 @@ export default function AmericanaOrdersPage() {
         </div>
       </div>
 
+      {/* Tab Bar */}
+      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">
+        {(["orders", "performance"] as PageTab[]).map((tabKey) => (
+          <button
+            key={tabKey}
+            onClick={() => setPageTab(tabKey)}
+            className={cn(
+              "px-4 py-2 text-sm font-medium rounded-lg transition-colors",
+              pageTab === tabKey ? "bg-white text-foreground shadow-sm" : "text-secondary hover:text-foreground"
+            )}
+          >
+            {tabKey === "orders" ? t("ordersPage.list") : t("ordersPage.performance")}
+          </button>
+        ))}
+      </div>
+
+      {pageTab === "performance" ? (
+        <PlatformPerformanceTab
+          platform="AMERICANA"
+          zones={AMERICANA_AREAS}
+          filters={perfFilters}
+          setFilters={setPerfFilters}
+        />
+      ) : (
+        <>
+
       {/* Import Success */}
       {importSuccess && (
         <div className="bg-green-50 border border-green-200 rounded-2xl px-4 py-3 flex items-center gap-3">
@@ -193,33 +249,9 @@ export default function AmericanaOrdersPage() {
         </div>
       )}
 
-      {/* Cash Note Banner */}
-      <div className="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 flex items-start gap-3">
-        <Info size={16} className="text-gray-500 mt-0.5 shrink-0" />
-        <p className="text-sm text-gray-600">
-          <span className="font-semibold text-gray-700">{t("americana.cashNoteTitle")}</span>{" "}
-          {t("americana.cashNoteBody")}
-        </p>
-      </div>
-
       {/* Stat Cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <StatCard title={t("americana.totalOrders")} value={summary?.totalOrders ?? orders.length} icon={ShoppingBag} />
-        <StatCard
-          title={t("americana.totalAmount")}
-          value={summary?.totalAmount != null ? formatCurrency(summary.totalAmount, locale) : "-"}
-          icon={TrendingUp}
-        />
-        <StatCard
-          title={t("americana.codOrders")}
-          value={summary?.codCount ?? orders.filter((o: any) => o.paymentType === "COD").length}
-          icon={Banknote}
-        />
-        <StatCard
-          title={t("americana.cardCcod")}
-          value={summary?.ccodCount ?? orders.filter((o: any) => o.paymentType === "CCOD" || o.paymentType === "PAID").length}
-          icon={CreditCard}
-        />
       </div>
 
       {/* Date Navigator */}
@@ -231,7 +263,11 @@ export default function AmericanaOrdersPage() {
           <input
             type="date"
             value={filters.date}
-            onChange={(e) => { setFilters((prev) => ({ ...prev, date: e.target.value })); setImportSuccess(false); }}
+            onChange={(e) => {
+              userPickedDateRef.current = true;
+              setFilters((prev) => ({ ...prev, date: e.target.value }));
+              setImportSuccess(false);
+            }}
             className="text-sm font-medium border-0 focus:outline-none bg-transparent"
           />
           <button onClick={nextDay} className="p-1 hover:bg-gray-50 rounded-lg transition-colors" aria-label={t("actions.next")}>
@@ -242,35 +278,17 @@ export default function AmericanaOrdersPage() {
         <FilterBar
           filters={[
             { key: "search", type: "search", label: t("common.search"), placeholder: t("americana.searchPlaceholder") },
-            { key: "store", type: "select", label: t("americana.allStores"), options: STORES.map((s) => ({ value: s, label: s })) },
+            { key: "area", type: "select", label: t("americana.allBranches"), options: AMERICANA_AREAS.map((a) => ({ value: a, label: a })) },
           ]}
           values={filters}
           onChange={(k, v) => {
-            if (k === "date") setImportSuccess(false);
+            if (k === "date") {
+              userPickedDateRef.current = true;
+              setImportSuccess(false);
+            }
             setFilters((prev) => ({ ...prev, [k]: v }));
           }}
         />
-      </div>
-
-      {/* Payment Tabs */}
-      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">
-        {(["ALL", "COD", "CCOD", "PAID"] as PaymentTab[]).map((tabKey) => (
-          <button
-            key={tabKey}
-            onClick={() => setPaymentTab(tabKey)}
-            className={cn(
-              "px-4 py-2 text-sm font-medium rounded-lg transition-colors",
-              paymentTab === tabKey ? "bg-white text-foreground shadow-sm" : "text-secondary hover:text-foreground"
-            )}
-          >
-            {tabKey === "ALL" ? t("labels.all") : tabKey}
-            {tabKey !== "ALL" && summary?.[`${tabKey.toLowerCase()}Count`] != null && (
-              <span className={cn("ms-1.5 px-1.5 py-0.5 rounded text-[10px] font-semibold", PAYMENT_TAB_STYLES[tabKey])}>
-                {summary[`${tabKey.toLowerCase()}Count`]}
-              </span>
-            )}
-          </button>
-        ))}
       </div>
 
       {/* Orders Table */}
@@ -280,6 +298,79 @@ export default function AmericanaOrdersPage() {
         onRowClick={setSelected}
         emptyMessage={loading ? t("common.loading") : t("americana.noOrdersFound")}
       />
+
+      {/* Leaderboards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white rounded-2xl shadow-sm p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Trophy size={16} className="text-amber-500" />
+            <h3 className="text-sm font-semibold">{t("americana.restaurantsLeaderboard")}</h3>
+          </div>
+          {restaurantLeaderboard.length === 0 ? (
+            <p className="text-sm text-secondary">{t("americana.noOrdersFound")}</p>
+          ) : (
+            <ul className="space-y-2">
+              {restaurantLeaderboard.map(([restaurant, count], idx) => (
+                <li
+                  key={restaurant}
+                  className={cn(
+                    "flex items-center justify-between rounded-xl px-3 py-2",
+                    idx === 0 ? "bg-amber-50" : "bg-gray-50"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        "w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold",
+                        idx === 0 ? "bg-amber-200 text-amber-800" : "bg-gray-200 text-gray-700"
+                      )}
+                    >
+                      {idx + 1}
+                    </span>
+                    <span className="text-sm font-medium">{restaurant}</span>
+                  </div>
+                  <span className="text-sm font-semibold">{count}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Trophy size={16} className="text-amber-500" />
+            <h3 className="text-sm font-semibold">{t("americana.branchesLeaderboard")}</h3>
+          </div>
+          {branchLeaderboard.length === 0 ? (
+            <p className="text-sm text-secondary">{t("americana.noOrdersFound")}</p>
+          ) : (
+            <ul className="space-y-2">
+              {branchLeaderboard.map(([branch, count], idx) => (
+                <li
+                  key={branch}
+                  className={cn(
+                    "flex items-center justify-between rounded-xl px-3 py-2",
+                    idx === 0 ? "bg-amber-50" : "bg-gray-50"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        "w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold",
+                        idx === 0 ? "bg-amber-200 text-amber-800" : "bg-gray-200 text-gray-700"
+                      )}
+                    >
+                      {idx + 1}
+                    </span>
+                    <span className="text-sm font-medium">{branch}</span>
+                  </div>
+                  <span className="text-sm font-semibold">{count}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
 
       {/* Daily Comparison */}
       <div className="bg-white rounded-2xl shadow-sm p-6">
@@ -299,6 +390,9 @@ export default function AmericanaOrdersPage() {
         </div>
       </div>
 
+        </>
+      )}
+
       {/* Order Detail Slide Panel */}
       {selected && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
@@ -306,7 +400,7 @@ export default function AmericanaOrdersPage() {
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h2 className="text-base font-semibold">{selected.orderId}</h2>
-                <p className="text-xs text-secondary mt-0.5">Americana / {t("americana.alHazmExpress")}</p>
+                <p className="text-xs text-secondary mt-0.5">Americana</p>
               </div>
               <button onClick={() => setSelected(null)} className="p-1.5 hover:bg-gray-50 rounded-lg" aria-label={t("common.close")}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -318,10 +412,8 @@ export default function AmericanaOrdersPage() {
               {[
                 [t("americana.orderIdCol"), selected.orderId],
                 [t("labels.total"), selected.amount != null ? formatCurrency(selected.amount, locale) : "-"],
-                [t("americana.posNumber"), selected.posNumber],
-                [t("americana.storeCol"), selected.storeName],
+                [t("americana.branchCol"), selected.storeName],
                 [t("americana.driverCol"), selected.driverName],
-                [t("americana.paymentType"), selected.paymentType],
                 [t("table.status"), statusLabel(selected.status)],
                 [t("americana.timestamp"), selected.timestamp ? formatDateTime(selected.timestamp, locale) : "-"],
               ].map(([label, val]) => (

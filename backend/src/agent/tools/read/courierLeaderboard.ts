@@ -63,38 +63,70 @@ export const courierLeaderboard = defineTool({
     type Row = {
       driverId: string;
       driverName: string;
+      platform?: string;
       metric: string;
       value: number;
       rank: number;
+      dateFrom?: string;
+      dateTo?: string;
+      usedFallbackWindow?: boolean;
     };
 
     if (metric === "completedOrders" || metric === "totalRevenue") {
-      const rows = await prisma.orderLog.groupBy({
-        by: ["driverId"],
-        where: {
-          tenantId: ctx.tenantId,
-          date: { gte: dateFrom, lte: dateTo },
-          ...(input.platform ? { platform: input.platform } : {}),
-        },
-        _sum: { orderCount: true, totalAmount: true },
-      });
-      const driverIds = rows.map((r) => r.driverId);
-      const drivers = await prisma.driver.findMany({
-        where: { tenantId: ctx.tenantId, id: { in: driverIds } },
-        select: { id: true, name: true },
-      });
-      const nameById = new Map(drivers.map((d) => [d.id, d.name]));
-      const valueOf = (r: (typeof rows)[number]) =>
+      const loadRows = (from: Date, to: Date) =>
+        prisma.orderLog.groupBy({
+          by: ["driverId"],
+          where: {
+            tenantId: ctx.tenantId,
+            date: { gte: from, lte: to },
+            ...(input.platform ? { platform: input.platform } : {}),
+          },
+          _sum: { orderCount: true, totalAmount: true },
+        });
+      const valueOf = (r: Awaited<ReturnType<typeof loadRows>>[number]) =>
         metric === "completedOrders"
           ? Number(r._sum.orderCount ?? 0)
           : Number(r._sum.totalAmount ?? 0);
+
+      let effectiveFrom = dateFrom;
+      let effectiveTo = dateTo;
+      let usedFallbackWindow = false;
+      let rows = await loadRows(effectiveFrom, effectiveTo);
+      if (rows.every((r) => valueOf(r) <= 0)) {
+        const latest = await prisma.orderLog.findFirst({
+          where: {
+            tenantId: ctx.tenantId,
+            ...(input.platform ? { platform: input.platform } : {}),
+          },
+          orderBy: { date: "desc" },
+          select: { date: true },
+        });
+        if (latest?.date) {
+          effectiveTo = latest.date;
+          effectiveFrom = new Date(effectiveTo.getTime() - 7 * 86_400_000);
+          rows = await loadRows(effectiveFrom, effectiveTo);
+          usedFallbackWindow = true;
+        }
+      }
+
+      const driverIds = rows.map((r) => r.driverId);
+      const drivers = await prisma.driver.findMany({
+        where: { tenantId: ctx.tenantId, id: { in: driverIds } },
+        select: { id: true, name: true, platform: true },
+      });
+      const driverById = new Map(drivers.map((d) => [d.id, d]));
       const sorted = rows
         .map((r) => ({
           driverId: r.driverId,
-          driverName: nameById.get(r.driverId) ?? "(unknown)",
+          driverName: driverById.get(r.driverId)?.name ?? "(unknown)",
+          platform: driverById.get(r.driverId)?.platform,
           metric,
           value: valueOf(r),
+          dateFrom: effectiveFrom.toISOString().slice(0, 10),
+          dateTo: effectiveTo.toISOString().slice(0, 10),
+          usedFallbackWindow,
         }))
+        .filter((r) => r.value > 0)
         .sort((a, b) => (order === "desc" ? b.value - a.value : a.value - b.value))
         .slice(0, limit)
         .map((r, i): Row => ({ ...r, rank: i + 1 }));

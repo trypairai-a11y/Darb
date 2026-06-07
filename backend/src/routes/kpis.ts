@@ -3,9 +3,10 @@ import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
 import { getPagination, paginatedResponse } from "../utils/pagination";
-import { cacheGet, cacheSet } from "../utils/cache";
+import { cacheGet, cacheSet, cacheInvalidate } from "../utils/cache";
 import { validateBody, createKpiRecordSchema } from "../utils/validate";
 import { rbac } from "../middleware/rbac";
+import { computeKpisForDate, computeKpisForRange } from "../services/kpiComputeService";
 
 const router = Router();
 router.use(authMiddleware, tenantScope);
@@ -49,9 +50,14 @@ router.post("/definitions", rbac(...DEF_ADMINS), async (req: Request, res: Respo
 // PUT /definitions/:id - Update a KPI definition
 router.put("/definitions/:id", rbac(...DEF_ADMINS), async (req: Request, res: Response) => {
   try {
+    const allowed = ["name", "description", "category", "unit", "platform", "target", "isActive", "sortOrder"] as const;
+    const data: Record<string, unknown> = {};
+    for (const k of allowed) {
+      if (k in (req.body ?? {})) data[k] = (req.body as any)[k];
+    }
     const result = await prisma.kpiDefinition.updateMany({
       where: { id: req.params.id, tenantId: req.user!.tenantId },
-      data: req.body,
+      data,
     });
     if (result.count === 0) { res.status(404).json({ error: "KPI definition not found" }); return; }
     const updated = await prisma.kpiDefinition.findUnique({ where: { id: req.params.id } });
@@ -260,14 +266,24 @@ router.post("/records", validateBody(createKpiRecordSchema), async (req: Request
 router.get("/summary", async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
-    const { platform, dateFrom, dateTo } = req.query;
+    const { platform, dateFrom, dateTo, companyId } = req.query;
 
     const startDate = dateFrom ? new Date(dateFrom as string) : new Date();
     startDate.setHours(0, 0, 0, 0);
     const endDate = dateTo ? new Date(dateTo as string) : new Date();
     endDate.setHours(23, 59, 59, 999);
 
-    const cacheKey = `kpi_summary:${tenantId}:${platform || ""}:${startDate.toISOString()}:${endDate.toISOString()}`;
+    // Lazy-compute: if no KpiRecord rows for this date range, run compute now
+    const existing = await prisma.kpiRecord.findFirst({
+      where: { tenantId, date: { gte: startDate, lte: endDate } },
+      select: { id: true },
+    });
+    if (!existing) {
+      await computeKpisForRange(tenantId, startDate, endDate, platform as string | undefined);
+      await cacheInvalidate(`kpi_summary:${tenantId}:*`);
+    }
+
+    const cacheKey = `kpi_summary:${tenantId}:${platform || ""}:${companyId || ""}:${startDate.toISOString()}:${endDate.toISOString()}`;
     const cached = await cacheGet(cacheKey);
     if (cached) { res.json(cached); return; }
 
@@ -286,6 +302,9 @@ router.get("/summary", async (req: Request, res: Response) => {
     if (platform) {
       recordWhere.kpiDefinition = { OR: [{ platform: platform }, { platform: null }] };
     }
+    if (companyId) {
+      recordWhere.driver = { companyId: companyId as string };
+    }
 
     const records = await prisma.kpiRecord.findMany({
       where: recordWhere,
@@ -302,6 +321,7 @@ router.get("/summary", async (req: Request, res: Response) => {
         date: { gte: startDate, lte: endDate },
         status: { in: ["COMPLETED", "IN_PROGRESS"] },
         ...(platform ? { platform: platform as any } : {}),
+        ...(companyId ? { driver: { companyId: companyId as string } } : {}),
       },
       _count: { id: true },
     });
@@ -370,16 +390,27 @@ router.get("/drivers", async (req: Request, res: Response) => {
   try {
     const { skip, limit, page } = getPagination(req);
     const tenantId = req.user!.tenantId;
-    const { platform, dateFrom, dateTo, search } = req.query;
+    const { platform, dateFrom, dateTo, search, companyId } = req.query;
 
     const startDate = dateFrom ? new Date(dateFrom as string) : new Date();
     startDate.setHours(0, 0, 0, 0);
     const endDate = dateTo ? new Date(dateTo as string) : new Date();
     endDate.setHours(23, 59, 59, 999);
 
+    // Lazy-compute: if no KpiRecord rows for this date range, run compute now
+    const existing = await prisma.kpiRecord.findFirst({
+      where: { tenantId, date: { gte: startDate, lte: endDate } },
+      select: { id: true },
+    });
+    if (!existing) {
+      await computeKpisForRange(tenantId, startDate, endDate, platform as string | undefined);
+      await cacheInvalidate(`kpi_summary:${tenantId}:*`);
+    }
+
     // Get drivers
     const driverWhere: any = { tenantId, status: "ACTIVE" };
     if (platform) driverWhere.platform = platform;
+    if (companyId) driverWhere.companyId = companyId as string;
     if (search) {
       driverWhere.OR = [
         { name: { contains: search as string, mode: "insensitive" } },
@@ -463,150 +494,10 @@ router.post("/compute", async (req: Request, res: Response) => {
     const { date: dateStr, platform: platformFilter } = req.body;
     const date = dateStr ? new Date(dateStr) : new Date();
     date.setHours(0, 0, 0, 0);
-    const dateEnd = new Date(date);
-    dateEnd.setHours(23, 59, 59, 999);
 
-    // Get definitions
-    const defWhere: any = { tenantId, isActive: true };
-    if (platformFilter) {
-      defWhere.OR = [{ platform: platformFilter }, { platform: null }];
-    }
-    const definitions = await prisma.kpiDefinition.findMany({ where: defWhere });
-
-    // Get all active drivers
-    const driverWhere: any = { tenantId, status: "ACTIVE" };
-    if (platformFilter) driverWhere.platform = platformFilter;
-    const drivers = await prisma.driver.findMany({
-      where: driverWhere,
-      select: { id: true, platform: true },
-    });
-
-    // Fetch data for computing
-    const driverIds = drivers.map((d) => d.id);
-    const [attendanceRecords, orderLogs, shifts, talabatSessions, keetaMetrics] = await Promise.all([
-      prisma.attendanceRecord.findMany({ where: { tenantId, driverId: { in: driverIds }, date: { gte: date, lte: dateEnd } } }),
-      prisma.orderLog.findMany({ where: { tenantId, driverId: { in: driverIds }, date: { gte: date, lte: dateEnd } } }),
-      prisma.shift.findMany({ where: { tenantId, driverId: { in: driverIds }, date: { gte: date, lte: dateEnd } } }),
-      prisma.talabatSession.findMany({ where: { tenantId, driverId: { in: driverIds }, date: { gte: date, lte: dateEnd } } }),
-      prisma.keetaDailyMetrics.findMany({ where: { tenantId, driverId: { in: driverIds }, date: { gte: date, lte: dateEnd } } }),
-    ]);
-
-    let computed = 0;
-
-    for (const driver of drivers) {
-      for (const def of definitions) {
-        // Skip platform-specific KPIs for wrong platform
-        if (def.platform && def.platform !== driver.platform) continue;
-
-        let value: number | null = null;
-        const target = def.target ? Number(def.target) : null;
-
-        switch (def.name) {
-          case "On-Time Attendance": {
-            const att = attendanceRecords.filter((a) => a.driverId === driver.id);
-            if (att.length > 0) {
-              const onTime = att.filter((a) => a.status === "PRESENT").length;
-              value = Math.round((onTime / att.length) * 100 * 100) / 100;
-            }
-            break;
-          }
-          case "Daily Orders": {
-            const orders = orderLogs.filter((o) => o.driverId === driver.id);
-            value = orders.reduce((sum, o) => sum + o.orderCount, 0);
-            break;
-          }
-          case "Delivery Efficiency": {
-            const driverShifts = shifts.filter((s) => s.driverId === driver.id && s.actualStart && s.actualEnd);
-            const driverOrders = orderLogs.filter((o) => o.driverId === driver.id);
-            const totalOrders = driverOrders.reduce((sum, o) => sum + o.orderCount, 0);
-            if (driverShifts.length > 0 && totalOrders > 0) {
-              const totalMinutes = driverShifts.reduce((sum, s) => {
-                return sum + (new Date(s.actualEnd!).getTime() - new Date(s.actualStart!).getTime()) / 60000;
-              }, 0);
-              value = Math.round((totalMinutes / totalOrders) * 100) / 100;
-            }
-            break;
-          }
-          case "GPS Violation": {
-            const sessions = talabatSessions.filter((s) => s.driverId === driver.id && s.gpsViolation != null);
-            if (sessions.length > 0) {
-              value = Math.round((sessions.reduce((sum, s) => sum + (s.gpsViolation || 0), 0) / sessions.length) * 100) / 100;
-            }
-            break;
-          }
-          case "Face Verification Rate": {
-            const sessions = talabatSessions.filter((s) => s.driverId === driver.id);
-            if (sessions.length > 0) {
-              const verified = sessions.filter((s) => s.faceVerified).length;
-              value = Math.round((verified / sessions.length) * 100 * 100) / 100;
-            }
-            break;
-          }
-          case "Completion Rate": {
-            const km = keetaMetrics.find((m) => m.driverId === driver.id);
-            if (km && km.completionRate != null) {
-              value = Math.round(Number(km.completionRate) * 100 * 100) / 100;
-            }
-            break;
-          }
-          case "On-Time Delivery Rate": {
-            const km = keetaMetrics.find((m) => m.driverId === driver.id);
-            if (km && km.onTimeRate != null) {
-              value = Math.round(Number(km.onTimeRate) * 100 * 100) / 100;
-            }
-            break;
-          }
-          case "Online Hours": {
-            const km = keetaMetrics.find((m) => m.driverId === driver.id);
-            if (km) {
-              value = Math.round((km.onlineTime / 60) * 100) / 100;
-            }
-            break;
-          }
-          case "Rejection Rate": {
-            const km = keetaMetrics.find((m) => m.driverId === driver.id);
-            if (km && km.acceptedTasks > 0) {
-              value = Math.round((km.rejectedTasks / (km.acceptedTasks + km.rejectedTasks)) * 100 * 100) / 100;
-            }
-            break;
-          }
-          case "Cash Collection Rate": {
-            const sessions = talabatSessions.filter((s) => s.driverId === driver.id);
-            // Simplified: assume 100% if they have sessions (real logic would compare cash records)
-            if (sessions.length > 0) {
-              value = 100;
-            }
-            break;
-          }
-          default:
-            continue; // Skip unknown KPI names
-        }
-
-        if (value === null) continue;
-
-        const score = target && target > 0
-          ? Math.round((def.name === "Delivery Efficiency" || def.name === "Rejection Rate"
-            ? (target / Math.max(value, 0.01)) * 100 // Lower is better
-            : (value / target) * 100) * 100) / 100
-          : null;
-
-        await prisma.kpiRecord.upsert({
-          where: {
-            tenantId_driverId_kpiDefinitionId_date: {
-              tenantId,
-              driverId: driver.id,
-              kpiDefinitionId: def.id,
-              date,
-            },
-          },
-          create: { tenantId, driverId: driver.id, kpiDefinitionId: def.id, date, value, target, score, source: "COMPUTED" },
-          update: { value, target, score, source: "COMPUTED" },
-        });
-        computed++;
-      }
-    }
-
-    res.json({ computed, drivers: drivers.length, definitions: definitions.length });
+    const result = await computeKpisForDate(tenantId, date, platformFilter);
+    await cacheInvalidate(`kpi_summary:${tenantId}:*`);
+    res.json(result);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

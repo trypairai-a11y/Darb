@@ -273,7 +273,9 @@ export async function buildHeadcountGap(tenantId: string, month: Date): Promise<
     const key = s.id;
     const ordersAgg = storeOrders.get(key) ?? { orders: 0, vt: "CAR" as const };
     const vt = ordersAgg.vt;
-    const target = vt === "BIKE" ? targets.bike : targets.car;
+    const storeTarget = vt === "BIKE" ? s.bikeDailyTarget : s.carDailyTarget;
+    const fallback = vt === "BIKE" ? targets.bike : targets.car;
+    const target = storeTarget != null && storeTarget > 0 ? storeTarget : fallback;
     const needed = Math.round((ordersAgg.orders / 30) / Math.max(1, target));
     const current = assignmentCount.get(s.id) ?? 0;
     const gap = needed - current;

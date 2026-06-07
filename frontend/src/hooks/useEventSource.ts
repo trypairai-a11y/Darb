@@ -51,8 +51,7 @@ export function useEventSource(options: UseEventSourceOptions = {}) {
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
     if (!token) return;
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-    const url = `${baseUrl}/api/events?token=${encodeURIComponent(token)}`;
+    const url = `/api/events?token=${encodeURIComponent(token)}`;
 
     const es = new EventSource(url);
     esRef.current = es;

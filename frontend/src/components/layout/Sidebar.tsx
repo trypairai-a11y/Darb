@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
@@ -9,19 +8,13 @@ import { useRole } from "@/hooks/useRole";
 import { useI18n } from "@/i18n/I18nProvider";
 import LanguageSwitcher from "./LanguageSwitcher";
 import {
-  LayoutDashboard, Ticket, Users, Settings,
-  ChevronDown, PanelLeftClose, PanelLeft,
-  ClipboardList, DollarSign, Briefcase,
-  ShieldAlert, BarChart3, Target, Gauge, Building2, Lightbulb,
-  Activity, AlertTriangle, Ban, Calendar, Trophy, Wallet, PieChart, Compass, Sparkles,
+  Users, Settings,
+  ChevronDown, PanelLeftClose,
+  Briefcase,
+  ShieldAlert, Sparkles, MessageSquare, Map, SlidersHorizontal,
 } from "lucide-react";
 import { DirectionalIcon } from "@/i18n/directionalIcon";
 
-// Platform names stay as brand strings; sub-page labels translate via i18n keys.
-// R11 · Simplified per PRD:
-//   - Talabat drops Phones, Vehicles, Available-shifts, Sessions (now under Driver 360 / Shifts).
-//   - Keeta drops Phones, Vehicles, Penalties, Copilot, Courier-details, Shift-monitor, Available-shifts.
-//   - Deliveroo drops Phones, Vehicles (now under Driver 360 / Assets) and the Schedule redirector page (folded into Attendance).
 const PLATFORMS = [
   {
     name: "Talabat",
@@ -29,15 +22,9 @@ const PLATFORMS = [
     color: "text-talabat",
     bg: "bg-talabat/10",
     subPages: [
-      { i18n: "nav.overview", path: "/talabat/overview", icon: Gauge },
       { i18n: "nav.drivers", path: "/talabat/drivers", icon: Users },
-      { i18n: "nav.attendanceShifts", path: "/talabat/attendance", icon: Calendar },
       { i18n: "nav.orders", path: "/talabat/orders", icon: Briefcase },
-      { i18n: "nav.cash", path: "/talabat/cash", icon: DollarSign },
       { i18n: "nav.violations", path: "/talabat/violations", icon: ShieldAlert },
-      { i18n: "nav.performance", path: "/talabat/performance", icon: BarChart3 },
-      { i18n: "nav.ingestReview", path: "/talabat/ingest-review", icon: ClipboardList },
-      { i18n: "nav.settings", path: "/talabat/settings", icon: Settings },
     ],
   },
   {
@@ -46,17 +33,9 @@ const PLATFORMS = [
     color: "text-keeta",
     bg: "bg-keeta/10",
     subPages: [
-      { i18n: "nav.overview", path: "/keeta/overview", icon: Gauge },
-      { i18n: "nav.monitor", path: "/keeta/monitor", icon: Activity },
       { i18n: "nav.drivers", path: "/keeta/drivers", icon: Users },
-      { i18n: "nav.attendanceShifts", path: "/keeta/attendance", icon: Calendar },
       { i18n: "nav.orders", path: "/keeta/orders", icon: Briefcase },
-      { i18n: "nav.financial", path: "/keeta/financial/billings", icon: Wallet },
-      { i18n: "nav.violations", path: "/keeta/violations", icon: AlertTriangle },
-      { i18n: "nav.performance", path: "/keeta/performance", icon: BarChart3 },
-      { i18n: "nav.operationCentre", path: "/keeta/operation-centre", icon: Compass },
-      { i18n: "nav.reports", path: "/keeta/reports", icon: PieChart },
-      { i18n: "nav.settings", path: "/keeta/settings", icon: Settings },
+      { i18n: "nav.violations", path: "/keeta/violations", icon: ShieldAlert },
     ],
   },
   {
@@ -65,14 +44,9 @@ const PLATFORMS = [
     color: "text-deliveroo",
     bg: "bg-deliveroo/10",
     subPages: [
-      { i18n: "nav.overview", path: "/deliveroo/overview", icon: Gauge },
       { i18n: "nav.drivers", path: "/deliveroo/drivers", icon: Users },
-      { i18n: "nav.attendanceShifts", path: "/deliveroo/attendance", icon: Calendar },
       { i18n: "nav.orders", path: "/deliveroo/orders", icon: Briefcase },
-      { i18n: "nav.cash", path: "/deliveroo/cash", icon: Wallet },
       { i18n: "nav.violations", path: "/deliveroo/violations", icon: ShieldAlert },
-      { i18n: "nav.ingestReview", path: "/deliveroo/ingest-review", icon: ClipboardList },
-      { i18n: "nav.settings", path: "/deliveroo/settings", icon: Settings },
     ],
   },
   {
@@ -81,24 +55,17 @@ const PLATFORMS = [
     color: "text-americana",
     bg: "bg-americana/10",
     subPages: [
-      { i18n: "nav.overview", path: "/americana/overview", icon: Gauge },
       { i18n: "nav.drivers", path: "/americana/drivers", icon: Users },
       { i18n: "nav.orders", path: "/americana/orders", icon: Briefcase },
       { i18n: "nav.violations", path: "/americana/violations", icon: ShieldAlert },
-      { i18n: "nav.settings", path: "/americana/settings", icon: Settings },
     ],
   },
 ] as const;
 
 const GLOBAL_NAV = [
-  { i18n: "nav.overview", path: "/overview", icon: LayoutDashboard },
-  { i18n: "nav.darbAi", path: "/copilot", icon: Sparkles },
-  { i18n: "nav.kpis", path: "/kpis", icon: Target },
-  { i18n: "nav.analytics", path: "/analytics", icon: BarChart3 },
-  { i18n: "nav.insights", path: "/insights", icon: Lightbulb },
-  { i18n: "nav.tickets", path: "/tickets", icon: Ticket },
-  { i18n: "nav.recruitment", path: "/recruitment", icon: Users },
-  { i18n: "nav.supervisors", path: "/supervisors", icon: Users },
+  { i18n: "nav.decisions", path: "/decisions", icon: Sparkles },
+  { i18n: "nav.chat", path: "/chat", icon: MessageSquare },
+  { i18n: "nav.floor", path: "/v2/dispatch", icon: Map },
 ] as const;
 
 export default function Sidebar() {
@@ -153,26 +120,30 @@ export default function Sidebar() {
           </div>
         )}
         {GLOBAL_NAV.map((item) => (
-          <Link
-            key={item.path}
-            href={item.path}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2 rounded-pill text-sm font-medium transition-all duration-250 ease-sierra-out mb-0.5",
-              isActive(item.path)
-                ? "bg-primary text-white shadow-soft"
-                : "text-white/70 hover:bg-white/5 hover:text-white"
-            )}
-          >
-            <item.icon size={18} />
-            {!collapsed && <span>{t(item.i18n)}</span>}
-          </Link>
+            <Link
+              key={item.path}
+              href={item.path}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-pill text-sm font-medium transition-all duration-250 ease-sierra-out mb-0.5",
+                isActive(item.path)
+                  ? "bg-primary text-white shadow-soft"
+                  : "text-white/70 hover:bg-white/5 hover:text-white"
+              )}
+            >
+              <item.icon size={18} />
+              {!collapsed && (
+                <>
+                  <span className="flex-1">{t(item.i18n)}</span>
+                </>
+              )}
+            </Link>
         ))}
 
         {/* Platforms */}
         <div className={cn("mt-6", !collapsed && "px-3 mb-2")}>
           {!collapsed && (
             <div className="text-[11px] font-medium text-white/40 uppercase tracking-[0.18em] mb-2">
-              {t("common.platforms")}
+              {t("nav.operations")}
             </div>
           )}
         </div>
@@ -202,9 +173,7 @@ export default function Sidebar() {
             </button>
             {!collapsed && expanded[platform.key] && (
               <div className="ms-5 mt-0.5 space-y-0.5 animate-fade-in">
-                {platform.subPages
-                  .filter((sub) => sub.i18n !== "nav.settings" || canManageSettings)
-                  .map((sub) => (
+                {platform.subPages.map((sub) => (
                     <Link
                       key={sub.path}
                       href={sub.path}
@@ -218,7 +187,7 @@ export default function Sidebar() {
                       <sub.icon size={14} aria-hidden="true" />
                       <span>{t(sub.i18n)}</span>
                     </Link>
-                  ))}
+                ))}
               </div>
             )}
           </div>
@@ -243,6 +212,18 @@ export default function Sidebar() {
             >
               <Settings size={18} aria-hidden="true" />
               {!collapsed && <span>{t("nav.settings")}</span>}
+            </Link>
+            <Link
+              href="/assets"
+              className={cn(
+                "mt-0.5 flex items-center gap-3 px-3 py-2 rounded-pill text-sm font-medium transition-all duration-250 ease-sierra-out",
+                isActive("/assets")
+                  ? "bg-primary text-white shadow-soft"
+                  : "text-white/70 hover:bg-white/5 hover:text-white"
+              )}
+            >
+              <SlidersHorizontal size={18} aria-hidden="true" />
+              {!collapsed && <span>{t("nav.assets")}</span>}
             </Link>
           </div>
         )}

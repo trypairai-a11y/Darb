@@ -2,6 +2,10 @@ import { Router, Request, Response } from "express";
 import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
+import { rbac } from "../middleware/rbac";
+
+const MUTATORS = ["ADMIN", "OPS_MANAGER"];
+const DESTRUCTIVE = ["ADMIN"];
 
 const router = Router();
 router.use(authMiddleware, tenantScope);
@@ -44,7 +48,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 });
 
 // POST /api/americana/chains
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", rbac(...MUTATORS), async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
     const { name, slug, logoUrl, active } = req.body;
@@ -65,12 +69,18 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 // PUT /api/americana/chains/:id
-router.put("/:id", async (req: Request, res: Response) => {
+router.put("/:id", rbac(...MUTATORS), async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
+    const { name, slug, logoUrl, active } = req.body ?? {};
+    const data: Record<string, unknown> = {};
+    if (name !== undefined) data.name = name;
+    if (slug !== undefined) data.slug = slug;
+    if (logoUrl !== undefined) data.logoUrl = logoUrl;
+    if (active !== undefined) data.active = active;
     const result = await prisma.americanaChain.updateMany({
       where: { id: req.params.id, tenantId },
-      data: req.body,
+      data,
     });
     if (result.count === 0) { res.status(404).json({ error: "Chain not found" }); return; }
     const updated = await prisma.americanaChain.findUnique({ where: { id: req.params.id } });
@@ -81,7 +91,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 });
 
 // DELETE /api/americana/chains/:id (soft delete)
-router.delete("/:id", async (req: Request, res: Response) => {
+router.delete("/:id", rbac(...DESTRUCTIVE), async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
     const result = await prisma.americanaChain.updateMany({

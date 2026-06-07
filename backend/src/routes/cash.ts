@@ -541,9 +541,14 @@ router.post("/", rbac(...MUTATORS), validateBody(createCashRecordSchema.passthro
  */
 router.put("/:id", rbac(...MUTATORS), async (req: Request, res: Response) => {
   try {
+    const allowed = ["date", "salesAmount", "collectionAmount", "depositMethod", "depositReceiptUrl", "pendingDues", "status", "notes"] as const;
+    const data: Record<string, unknown> = {};
+    for (const k of allowed) {
+      if (k in (req.body ?? {})) data[k] = (req.body as any)[k];
+    }
     const record = await prisma.cashRecord.updateMany({
       where: { id: req.params.id, tenantId: req.user!.tenantId },
-      data: req.body,
+      data,
     });
     if (record.count === 0) { res.status(404).json({ error: "Cash record not found" }); return; }
     const updated = await prisma.cashRecord.findUnique({ where: { id: req.params.id } });
@@ -702,9 +707,14 @@ router.put("/ledger/:id", async (req: Request, res: Response) => {
     });
     if (!ledger) { res.status(404).json({ error: "Ledger not found" }); return; }
 
+    const allowed = ["openingBalance", "totalSales", "totalCollection", "cashDeposits", "bankTransfers", "incentives", "adjustments", "closingBalance", "dailySales", "dailyCollections", "status"] as const;
+    const data: Record<string, unknown> = {};
+    for (const k of allowed) {
+      if (k in (req.body ?? {})) data[k] = (req.body as any)[k];
+    }
     const updated = await prisma.pendingDuesLedger.update({
       where: { id: req.params.id },
-      data: req.body,
+      data,
     });
     res.json(updated);
   } catch (err: any) {

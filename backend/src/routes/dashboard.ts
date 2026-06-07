@@ -18,6 +18,7 @@ router.get("/live-map", async (req: Request, res: Response) => {
 
     const devices = await prisma.device.findMany({
       where: {
+        tenantId,
         isOnline: true,
         lastLatitude: { not: null },
         lastLongitude: { not: null },

@@ -143,7 +143,7 @@ Return only the JSON object matching the detected platform.`;
 export class AiOcrService {
   /**
    * Process a delivery-app screenshot and extract structured data using
-   * Claude Vision (claude-sonnet-4-20250514).
+   * Claude Vision (claude-sonnet-4-6).
    *
    * @param imageBuffer - Raw image bytes (PNG / JPEG)
    * @param platform    - One of KEETA | TALABAT | DELIVEROO | AMERICANA
@@ -168,7 +168,7 @@ export class AiOcrService {
 
     try {
       const response = await client.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-6",
         max_tokens: 2048,
         system: SYSTEM_PROMPT,
         messages: [
@@ -233,7 +233,7 @@ export class AiOcrService {
 
     try {
       const response = await client.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-6",
         max_tokens: 1024,
         system: systemPrompt,
         messages: [
@@ -292,7 +292,7 @@ export class AiOcrService {
 
     try {
       const response = await client.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-6",
         max_tokens: 1024,
         system: systemPrompt,
         messages: [

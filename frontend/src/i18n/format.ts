@@ -69,6 +69,28 @@ export function formatCurrency(
   return locale === "ar" ? `${num} ${symbol}` : `${symbol} ${num}`;
 }
 
+// Compact currency: KD 950, KD 1.2k, KD 125k, KD 1.2M — never truncates with ellipsis
+export function formatCurrencyCompact(
+  value: number | null | undefined,
+  locale: Locale = "en",
+): string {
+  if (value == null || Number.isNaN(value)) return "";
+  const symbol = locale === "ar" ? "د.ك" : "KD";
+  const abs = Math.abs(value);
+  const sign = value < 0 ? "-" : "";
+  let num: string;
+  if (abs >= 1_000_000) {
+    num = `${sign}${(abs / 1_000_000).toFixed(abs >= 10_000_000 ? 0 : 1)}M`;
+  } else if (abs >= 1_000) {
+    num = `${sign}${(abs / 1_000).toFixed(abs >= 10_000 ? 0 : 1)}k`;
+  } else {
+    num = `${sign}${abs.toFixed(0)}`;
+  }
+  // Strip trailing ".0" e.g. "1.0k" → "1k"
+  num = num.replace(/\.0([kM])$/, "$1");
+  return locale === "ar" ? `${num} ${symbol}` : `${symbol} ${num}`;
+}
+
 export function formatPercent(
   value: number | null | undefined,
   locale: Locale = "en",

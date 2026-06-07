@@ -26,11 +26,11 @@ export default function StatCard({ title, value, icon: Icon, trend, highlight, c
         <div className="min-w-0 flex-1">
           <p className="text-[11px] uppercase tracking-[0.14em] font-medium text-sand-600 mb-3 truncate">{title}</p>
           <p className={cn(
-            "font-display leading-none tracking-tight whitespace-nowrap overflow-hidden text-ellipsis",
+            "font-display leading-none tracking-tight whitespace-nowrap",
             // Step down with the length of the value so it always fits the card width
-            typeof value === "string" && value.length > 12 ? "text-xl" :
-            typeof value === "string" && value.length > 9 ? "text-2xl" :
-            typeof value === "string" && value.length > 6 ? "text-3xl" :
+            typeof value === "string" && value.length > 12 ? "text-lg" :
+            typeof value === "string" && value.length > 9 ? "text-xl" :
+            typeof value === "string" && value.length > 6 ? "text-2xl" :
             "text-4xl",
             highlight ? "text-red-600" : "text-sand-900 dark:text-foreground"
           )}>

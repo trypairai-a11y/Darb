@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import api, { setAccessToken } from "@/lib/api";
+import { usePathname } from "next/navigation";
 
 interface User {
   id: string;
@@ -42,10 +43,16 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const pathname = usePathname();
 
   useEffect(() => {
+    const publicRoutes = ["/", "/login"];
+    if (publicRoutes.includes(pathname)) {
+      setLoading(false);
+      return;
+    }
     checkAuth();
-  }, []);
+  }, [pathname]);
 
   async function checkAuth() {
     try {

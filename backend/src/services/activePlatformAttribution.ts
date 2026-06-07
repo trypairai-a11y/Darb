@@ -33,7 +33,7 @@
  *              a tenantA caller.
  */
 import { prisma } from "../config";
-import type { Platform } from "@prisma/client";
+import type { Platform } from "../generated/prisma";
 
 export interface ActivePlatformResult {
   platform: Platform | null;

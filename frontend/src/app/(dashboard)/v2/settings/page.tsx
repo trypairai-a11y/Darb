@@ -2,7 +2,7 @@
 
 export default function SettingsV2Page() {
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="w-full max-w-none space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
         <p className="mt-1 text-sm text-secondary">Agent runtime, thresholds, and tenant config.</p>

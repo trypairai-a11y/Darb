@@ -11,6 +11,7 @@ router.get("/summary", async (req: Request, res: Response) => {
   try {
     const { platform, companyId } = req.query;
     const where: any = {
+      tenantId: req.user!.tenantId,
       driver: { tenantId: req.user!.tenantId },
     };
     if (platform) where.driver.platform = platform as string;
@@ -34,6 +35,7 @@ router.get("/", async (req: Request, res: Response) => {
     const { skip, limit, page } = getPagination(req);
     const { status, search, platform, companyId } = req.query;
     const where: any = {
+      tenantId: req.user!.tenantId,
       driver: { tenantId: req.user!.tenantId },
     };
     if (platform) where.driver.platform = platform as string;
@@ -117,6 +119,7 @@ router.get("/map", async (req: Request, res: Response) => {
   try {
     const devices = await prisma.device.findMany({
       where: {
+        tenantId: req.user!.tenantId,
         isOnline: true,
         lastLatitude: { not: null },
         lastLongitude: { not: null },

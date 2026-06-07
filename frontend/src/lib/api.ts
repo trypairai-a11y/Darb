@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "",
+  baseURL: "",
   withCredentials: true,
 });
 
@@ -45,7 +45,7 @@ api.interceptors.response.use(
         accessToken = null;
         if (typeof window !== "undefined") {
           const path = window.location.pathname;
-          const publicRoutes = ["/", "/login", "/marketing"];
+          const publicRoutes = ["/", "/login"];
           const isPublic = publicRoutes.some((r) => path === r || (r !== "/" && path.startsWith(`${r}/`)));
           if (!isPublic) {
             window.location.href = "/login";

@@ -120,8 +120,6 @@ export const MOCK_ORDERS = [
 export const MOCK_MONEY = {
   cashPending: { records: 87, totalKd: 2340.5 },
   cashReconciled: { records: 412, totalKd: 18905.0 },
-  flaggedDiscrepancies: 2,
-  pendingIncentivePayouts: 5,
 };
 
 export const MOCK_INTEL = {

@@ -176,7 +176,7 @@ export default function DecisionsAuditPage() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-2 sm:px-6 py-6">
+    <div className="w-full max-w-none px-2 sm:px-6 py-6">
       <h1 className="font-display text-display-sm text-sand-900">
         Audit · What Darb did
       </h1>

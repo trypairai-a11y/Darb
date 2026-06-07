@@ -8,6 +8,10 @@ import { logger } from "../config/logger";
 import { publishEvent, type DarbEvent, type DarbEventType } from "../services/eventBus";
 import { toolRegistry, type ToolContext } from "./registry";
 
+function detectUserLanguage(text?: string): "Arabic" | "English" {
+  return /[\u0600-\u06FF]/.test(text ?? "") ? "Arabic" : "English";
+}
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export type AgentId = "triage" | "reconciliation" | "narrator" | "chat" | "monitor" | "score-explainer";
@@ -171,14 +175,38 @@ export async function runAgent(
   }
 
   const systemPrompt = loadPrompt(agent.promptFile);
+  const now = new Date();
+  const kuwaitDate = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kuwait",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+  const kuwaitTime = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kuwait",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(now);
+  const userLanguage = detectUserLanguage(input.userMessage);
+  const runtimeContext = [
+    "Runtime context:",
+    `Current date in Kuwait: ${kuwaitDate}.`,
+    `Current time in Kuwait: ${kuwaitTime}.`,
+    "For words like today, yesterday, this week, and this month, use this Kuwait date.",
+    `Detected user message language: ${userLanguage}.`,
+    "Reply in the detected user message language unless the user explicitly asks for another language.",
+    `Trigger: ${input.triggerEvent}.`,
+    `Payload: ${JSON.stringify(input.payload ?? {})}.`,
+  ].join("\n");
   const tools = toolRegistry.getAnthropicSchema(agent.id, agent.actorRole);
 
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
 
   // Build initial messages: history + user message + trigger payload
   const initialUserContent = input.userMessage
-    ? input.userMessage
-    : `Trigger: ${input.triggerEvent}\nPayload: ${JSON.stringify(input.payload ?? {}, null, 2)}\n\nFollow your instructions.`;
+    ? `${runtimeContext}\n\nUser message: ${input.userMessage}`
+    : `${runtimeContext}\n\nFollow your instructions.`;
 
   const messages: Anthropic.MessageParam[] = [
     ...(input.history ?? []).map((h) => ({
@@ -212,7 +240,7 @@ export async function runAgent(
         const streamCtl = client.messages.stream({
           model: agent.model,
           max_tokens: agent.maxTokens,
-          system: systemPrompt,
+          system: `${systemPrompt}\n\n${runtimeContext}`,
           tools,
           messages,
         });
@@ -224,7 +252,7 @@ export async function runAgent(
         response = await client.messages.create({
           model: agent.model,
           max_tokens: agent.maxTokens,
-          system: systemPrompt,
+          system: `${systemPrompt}\n\n${runtimeContext}`,
           tools,
           messages,
         });

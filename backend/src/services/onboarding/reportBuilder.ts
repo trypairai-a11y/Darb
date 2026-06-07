@@ -142,12 +142,15 @@ function decimalToNumber(v: unknown): number {
  * and the top-line numbers.
  */
 async function loadTenantContext(tenantId: string, windowDays: number) {
+  // NB: select only fields that exist on the schema. Tests inject a
+  // synthetic `fleetSize` for convenience but production reads
+  // courierCount instead — see `loadTenantContext` return value below.
   const tenant = await (prisma as unknown as {
     tenant: {
       findFirst: (args: unknown) => Promise<{
         id: string;
         name?: string;
-        fleetSize?: number;
+        fleetSize?: number; // synthesised in tests; absent in prod schema
         designPartner?: boolean;
         monthlyOverrideKd?: unknown;
         settings?: { contactEmail?: string } | null;
@@ -158,7 +161,6 @@ async function loadTenantContext(tenantId: string, windowDays: number) {
     select: {
       id: true,
       name: true,
-      fleetSize: true,
       designPartner: true,
       monthlyOverrideKd: true,
       settings: true,

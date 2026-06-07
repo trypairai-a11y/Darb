@@ -4,7 +4,6 @@ interface AmericanaRow {
   empId: string;
   driverName: string;
   chain: string;
-  costCenter: string;
   storeName: string;
   company: string;
   position: string;
@@ -84,7 +83,7 @@ export function parseAmericanaXlsx(buffer: Buffer): AmericanaRow[] {
     // 1: Chain
     // 2: Emp ID
     // 3: Driver name
-    // 4: CC (cost center)
+    // 4: (legacy CC column — ignored)
     // 5: Store Name
     // 6: Company
     // 7: Position
@@ -95,7 +94,6 @@ export function parseAmericanaXlsx(buffer: Buffer): AmericanaRow[] {
     if (!empId && !driverName) continue;
 
     const chain = row[1] != null ? String(row[1]).trim() : "";
-    const costCenter = row[4] != null ? String(row[4]).trim() : "";
     const storeName = row[5] != null ? String(row[5]).trim() : "";
     const company = row[6] != null ? String(row[6]).trim() : "";
     const position = row[7] != null ? String(row[7]).trim() : "";
@@ -125,7 +123,6 @@ export function parseAmericanaXlsx(buffer: Buffer): AmericanaRow[] {
       empId,
       driverName,
       chain,
-      costCenter,
       storeName,
       company,
       position,

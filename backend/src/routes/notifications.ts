@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../config";
+import { logger } from "../config/logger";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
 
@@ -31,7 +32,7 @@ router.use(authMiddleware, tenantScope);
  */
 router.get("/", async (req: Request, res: Response) => {
   try {
-    const userId = (req.user as any).id;
+    const userId = req.user!.userId;
     const tenantId = req.user!.tenantId;
     const { unreadOnly, limit = "50", offset = "0" } = req.query;
 
@@ -67,7 +68,7 @@ router.get("/", async (req: Request, res: Response) => {
  */
 router.get("/counts", async (req: Request, res: Response) => {
   try {
-    const baseWhere = { tenantId: req.user!.tenantId, userId: (req.user as any).id, read: false };
+    const baseWhere = { tenantId: req.user!.tenantId, userId: req.user!.userId, read: false };
     const [total, important, opsTodo, benefits, other] = await Promise.all([
       prisma.notification.count({ where: baseWhere }),
       prisma.notification.count({ where: { ...baseWhere, category: "IMPORTANT" } }),
@@ -96,7 +97,7 @@ router.get("/unread-count", async (req: Request, res: Response) => {
     const count = await prisma.notification.count({
       where: {
         tenantId: req.user!.tenantId,
-        userId: (req.user as any).id,
+        userId: req.user!.userId,
         read: false,
       },
     });
@@ -129,7 +130,7 @@ router.put("/:id/read", async (req: Request, res: Response) => {
       where: {
         id: req.params.id,
         tenantId: req.user!.tenantId,
-        userId: (req.user as any).id,
+        userId: req.user!.userId,
       },
       data: { read: true, readAt: new Date() },
     });
@@ -158,7 +159,7 @@ router.put("/read-all", async (req: Request, res: Response) => {
     const result = await prisma.notification.updateMany({
       where: {
         tenantId: req.user!.tenantId,
-        userId: (req.user as any).id,
+        userId: req.user!.userId,
         read: false,
       },
       data: { read: true, readAt: new Date() },
@@ -203,7 +204,7 @@ router.get("/rules", async (req: Request, res: Response) => {
  *         description: SSE event stream (Content-Type text/event-stream)
  */
 router.get("/stream", (req: Request, res: Response) => {
-  const userId = (req.user as any).id;
+  const userId = req.user!.userId;
   const tenantId = req.user!.tenantId;
 
   res.setHeader("Content-Type", "text/event-stream");
@@ -218,7 +219,7 @@ router.get("/stream", (req: Request, res: Response) => {
     where: { tenantId, userId, read: false },
   }).then((count) => {
     res.write(`data: ${JSON.stringify({ type: "unread_count", count })}\n\n`);
-  }).catch(() => {});
+  }).catch((err) => { logger.warn({ err }, "notifications SSE initial unread_count failed"); });
 
   // Poll for new notifications every 10 seconds (much less expensive than client polling)
   const interval = setInterval(async () => {

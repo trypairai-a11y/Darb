@@ -8,7 +8,7 @@ export default function IntelligencePage() {
   useEffect(() => { setTimeout(() => setLoading(false), 300); }, []);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="w-full max-w-none space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Intelligence</h1>
         <p className="mt-1 text-sm text-secondary">Trends, KPIs, and analytics. Deep reports buried — ask Darb (⌘K) if you need a specific number.</p>

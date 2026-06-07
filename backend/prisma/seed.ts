@@ -1,4 +1,4 @@
-import { PrismaClient, Platform, UserRole, DriverStatus, VehicleType, VehicleStatus, ShiftStatus, AttendanceStatus, OrderSource, CashStatus, DepositMethod, DeviceStatus, AlertSeverity, AlertStatus, ScoreTrend, TicketCategory, TicketPriority, TicketStatus, SubmitterType, LeaveType, LeaveStatus, RecruitmentStage, LedgerStatus, InspectionStatus, MaintenanceCategory, MaintenanceStatus, TalabatSessionStatus, ViolationEventType } from "../src/generated/prisma";
+import { PrismaClient, Platform, UserRole, DriverStatus, VehicleType, VehicleStatus, ShiftStatus, AttendanceStatus, OrderSource, CashStatus, DepositMethod, DeviceStatus, AlertSeverity, AlertStatus, ScoreTrend, TicketCategory, TicketPriority, TicketStatus, SubmitterType, LeaveType, LeaveStatus, RecruitmentStage, LedgerStatus, InspectionStatus, MaintenanceCategory, MaintenanceStatus, TalabatSessionStatus, ViolationEventType, SimStatus, DeviceCommandType } from "../src/generated/prisma";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient({
@@ -50,7 +50,31 @@ async function main() {
   // Clean existing data
   // Clean existing data - safe to skip on fresh DB
   try {
-    await prisma.$executeRawUnsafe(`TRUNCATE TABLE "TalabatDelivery", "AmericanaDailyOrders", "KeetaDailyMetrics", "TalabatViolationEvent", "TalabatSession", "AuditLog", "AiDigest", "Alert", "AiScore", "DeviceCommand", "AppUsageLog", "LocationLog", "CapturedOrder", "Device", "VehicleInspection", "MaintenanceRecord", "PendingDuesLedger", "CashRecord", "CashTransaction", "OrderLog", "AttendanceRecord", "Shift", "DriverInventory", "LeaveRequest", "Ticket", "RecruitmentPipeline", "KpiRecord", "KpiDefinition", "PlatformSettings", "PlatformInventory", "Notification", "NotificationRule", "Vehicle", "Driver", "User", "Company", "Tenant" CASCADE`);
+    await prisma.$executeRawUnsafe(`TRUNCATE TABLE
+      "AgentToolCall", "PendingAgentAction", "AgentRunLog",
+      "PaymentWithdrawal", "TaxInvoice", "Billing",
+      "CourierIncentivePayout", "IncentiveTier", "IncentiveGoal", "IncentiveTargetRound",
+      "PartnerBankAccount", "Partner",
+      "AmericanaDailyIngestion", "AmericanaChainRate", "AmericanaContract",
+      "AmericanaStoreAssignment", "AmericanaStore", "AmericanaChain",
+      "Appeal", "Penalty", "Violation",
+      "OrderEvent", "CourierOnlineSession", "CourierAttendanceSlot", "KeetaAvailableShiftSlot",
+      "DeliveryArea", "ShiftComplianceConfig", "DemandHeatmap", "AiInsight",
+      "DriverRestriction",
+      "TalabatDelivery", "AmericanaDailyOrders", "KeetaDailyMetrics", "TalabatDailyMetrics", "DeliverooDailyMetrics",
+      "TalabatViolationEvent", "TalabatSession",
+      "AuditLog", "AiDigest", "Alert", "AiScore",
+      "DeviceCommand", "AppUsageLog", "LocationLog", "CapturedOrder",
+      "Sim", "Device",
+      "VehicleInspection", "MaintenanceRecord",
+      "PendingDuesLedger", "CashRecord", "CashTransaction", "OrderLog",
+      "AttendanceRecord", "Shift", "DriverInventory",
+      "LeaveRequest", "Ticket", "RecruitmentPipeline",
+      "KpiRecord", "KpiDefinition", "PlatformSettings", "PlatformInventory",
+      "NotificationDelivery", "Notification", "NotificationRule",
+      "IngestRun",
+      "Vehicle", "Driver", "User", "Company", "Tenant"
+      CASCADE`);
   } catch (e: any) { console.log("Truncate issue:", e.message?.slice(0, 200)); }
 
   // 1. Tenant
@@ -687,13 +711,41 @@ async function main() {
         data: { tenantId: tid, driverId: driver.id, shiftId: shift.id, date, status: "PRESENT", source: "system" },
       });
 
-      await prisma.orderLog.create({
-        data: {
-          tenantId: tid, driverId: driver.id, shiftId: shift.id, date,
-          platform: "AMERICANA", orderCount: rand(15, 35),
-          totalAmount: decimal(50, 120), source: "MANUAL",
-        },
-      });
+      const americanaRestaurants = [
+        "KFC Hawally", "KFC Salmiya", "KFC Avenues", "KFC Jabriya", "KFC Fahaheel",
+        "Hardee's Hawally", "Hardee's Salmiya", "Hardee's Salwa", "Hardee's Mahboula",
+        "Hardee's Rumaithiya", "Hardee's Audiliya",
+        "Pizza Hut Hawally", "Pizza Hut Jabriya", "Pizza Hut Mahboula",
+        "TGI Fridays Avenues", "TGI Fridays Marina",
+      ];
+      const driverRestaurant = (driver as any).zone && /KFC|Hardee|Pizza|TGI/i.test((driver as any).zone)
+        ? (driver as any).zone
+        : pick(americanaRestaurants);
+      const orderRowCount = rand(8, 18);
+      for (let oi = 0; oi < orderRowCount; oi++) {
+        const orderNumber = `KUW_${rand(100000, 999999)}`;
+        const totalAmount = decimal(2.5, 14, 2);
+        const isCash = Math.random() < 0.45;
+        const tipAmt = Math.random() < 0.3 ? decimal(0.05, 0.5, 2) : 0;
+        const arrival = new Date(date);
+        arrival.setHours(rand(10, 21), rand(0, 59), rand(0, 59), 0);
+        const status = pick(["DELIVERED", "DELIVERED", "DELIVERED", "DELIVERED", "CANCELLED"]);
+        await prisma.orderLog.create({
+          data: {
+            tenantId: tid, driverId: driver.id, shiftId: shift.id, date,
+            platform: "AMERICANA", orderCount: 1,
+            restaurantName: driverRestaurant,
+            orderNumber,
+            totalAmount,
+            cashCollected: isCash ? totalAmount : 0,
+            tips: tipAmt,
+            arrivalTime: arrival,
+            paymentSource: isCash ? "CASH" : "CARD",
+            source: pick(["EXCEL_IMPORT", "MANUAL"] as const),
+            rawData: { orderId: orderNumber, amount: totalAmount, storeName: driverRestaurant, status },
+          },
+        });
+      }
     }
   }
 
@@ -982,36 +1034,8 @@ async function main() {
   }
   console.log("Created Keeta daily metrics (30 days x 35 drivers)");
 
-  // 14c. AmericanaDailyOrders - current month for each Americana driver
-  const amStores = ["KFC Audiliya", "KFC Salwa", "Hardees Salmiya"];
-  for (const driver of americanaDrivers) {
-    const dailyOrders: Record<string, number> = {};
-    let total = 0;
-    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-    for (let d = 1; d <= Math.min(today.getDate(), daysInMonth); d++) {
-      const key = String(d).padStart(2, "0");
-      const isOff = Math.random() < 0.14;
-      const orders = isOff ? 0 : rand(12, 35);
-      dailyOrders[key] = orders;
-      total += orders;
-    }
-    await prisma.americanaDailyOrders.create({
-      data: {
-        tenantId: tid, driverId: driver.id,
-        month: new Date(today.getFullYear(), today.getMonth(), 1),
-        chain: "12",
-        empId: driver.platformDriverId,
-        storeName: driver.zone || pick(amStores),
-        costCenter: String(rand(12700, 12800)),
-        company: "Al Hazm Express",
-        position: driver.vehicleType === "CAR" ? "Car" : "Bike",
-        dailyOrders,
-        totalOrders: total,
-        source: "EXCEL_IMPORT",
-      },
-    });
-  }
-  console.log("Created Americana daily orders");
+  // 14c. AmericanaDailyOrders is seeded inside seedEmptyTabs() once chains/
+  // stores/assignments exist, so storeId/chainId can be linked properly.
 
   // 15. Driver Inventory - equip every driver with realistic items
   const inventoryItems: { type: any; hasQty: boolean }[] = [
@@ -1234,6 +1258,10 @@ async function main() {
     { eventType: "cash_overdue", role: UserRole.OPS_MANAGER },
     { eventType: "shift_not_booked", role: UserRole.ADMIN },
     { eventType: "shift_not_booked", role: UserRole.OPS_MANAGER },
+    // Driver-submitted tickets → SUPERVISOR + OPS_MANAGER + ADMIN
+    { eventType: "TICKET_SUBMITTED", role: UserRole.SUPERVISOR },
+    { eventType: "TICKET_SUBMITTED", role: UserRole.OPS_MANAGER },
+    { eventType: "TICKET_SUBMITTED", role: UserRole.ADMIN },
   ];
 
   for (const rule of notificationRules) {
@@ -1595,6 +1623,9 @@ async function main() {
     "LATE_PICKUP", "ORDER_REJECTION_TIMEOUT", "DROP_OFF_IN_ADVANCE",
     "ORDER_SLIGHTLY_LATE", "ORDER_VERY_LATE", "INVALID_DELIVERY_PHOTO", "GPS_NOT_UPLOADING",
   ] as const;
+  const americanaViolationTypes = [
+    "AMERICANA_LATE_ARRIVAL", "AMERICANA_NO_SHOW", "AMERICANA_EARLY_DEPARTURE_QUIT",
+  ] as const;
   const violationStatuses = ["ESTABLISHED", "UNDER_REVIEW", "OVERTURNED", "EXPIRED"] as const;
   const appealStatuses = ["NOT_RAISED", "PENDING", "APPROVED", "REJECTED"] as const;
   const penaltyTypes = ["ONLINE_TRAINING", "VIOLATION_RECORD", "ACCOUNT_SUSPENSION", "WARNING"];
@@ -1618,7 +1649,8 @@ async function main() {
     const driver = pick(violationDrivers);
     const daysAgo = rand(0, 25);
     const vTime = new Date(Date.now() - daysAgo * 86400000 - rand(0, 43200000));
-    const vType = pick([...violationTypes]);
+    const isAmericana = driver.platform === "AMERICANA";
+    const vType = pick(isAmericana ? [...americanaViolationTypes] : [...violationTypes]);
     const vStatus = i < 35 ? "ESTABLISHED" : pick([...violationStatuses]);
     const aStatus = vStatus === "OVERTURNED" ? "APPROVED" : (i % 5 === 0 ? pick([...appealStatuses]) : "NOT_RAISED");
 
@@ -1635,9 +1667,15 @@ async function main() {
           ? `GPS location not updated for ${rand(15, 60)} minutes`
           : vType === "LATE_PICKUP"
           ? `Courier arrived ${rand(15, 45)} minutes after accepting order`
+          : vType === "AMERICANA_LATE_ARRIVAL"
+          ? `Driver logged in ${rand(2, 35)} minutes after scheduled shift start`
+          : vType === "AMERICANA_NO_SHOW"
+          ? `Driver did not log in for the scheduled shift`
+          : vType === "AMERICANA_EARLY_DEPARTURE_QUIT"
+          ? `Driver logged out ${rand(10, 90)} minutes before scheduled shift end`
           : `Violation detected at ${vTime.toLocaleTimeString()}`,
         metadata: { detectedBy: "system", threshold: vType === "DROP_OFF_IN_ADVANCE" ? 500 : 15 },
-        taskId: `KT-${rand(100000, 999999)}`,
+        taskId: isAmericana ? null : `KT-${rand(100000, 999999)}`,
       },
     });
     vCount++;
@@ -1785,7 +1823,12 @@ async function main() {
   }
   console.log(`Created ${notifData.length * (1 + users.length)} bilingual notifications`);
 
+  // ─── ADDITIONAL: fill empty-tab models ─────────────────────────────────
+  await seedEmptyTabs(tenant.id, allDrivers, keetaDrivers, talabatDrivers, deliverooDrivers, americanaDrivers, today);
+
   await seedKeetaParity(tenant.id);
+
+  await seedRemainingModels(tenant.id, allDrivers, users, today);
 
   console.log("\nSeed complete!");
   console.log("Login: osama@fleet.kw / demo123");
@@ -2026,6 +2069,730 @@ async function seedKeetaParity(tenantId: string) {
   }
 
   console.log(`Seeded Keeta parity: ${KUWAIT_AREAS.length} areas, ${PERIODS.length} rounds, ${PERIODS.length - 1} withdrawals`);
+}
+
+// ─── Fill models that no other seed block touches (so every UI tab has data) ──
+async function seedEmptyTabs(
+  tenantId: string,
+  allDrivers: any[],
+  keetaDrivers: any[],
+  talabatDrivers: any[],
+  deliverooDrivers: any[],
+  americanaDrivers: any[],
+  today: Date,
+) {
+  // 1. DriverRestriction — driver detail badges
+  await prisma.driverRestriction.deleteMany({ where: { tenantId } });
+  const restrictionReasons = [
+    "Civil ID expired",
+    "Driving licence expired",
+    "Pending compliance training",
+    "Suspended for repeat violations",
+    "Awaiting medical clearance",
+  ];
+  for (let i = 0; i < 6; i++) {
+    const driver = pick(allDrivers);
+    const start = new Date(today); start.setDate(start.getDate() - rand(2, 14));
+    const isPermanent = i === 0;
+    const end = isPermanent ? null : new Date(today.getTime() + rand(2, 10) * 86400000);
+    await prisma.driverRestriction.create({
+      data: {
+        tenantId, driverId: driver.id,
+        type: isPermanent ? "PERMANENT" : "TEMPORARY",
+        startDate: start, endDate: end,
+        reason: pick(restrictionReasons),
+      },
+    });
+  }
+  console.log("Created 6 driver restrictions");
+
+  // 2. AiInsight — /insights page + copilot context cards
+  await prisma.aiInsight.deleteMany({ where: { tenantId } });
+  const insightTemplates = [
+    { category: "REVENUE", subcategory: "growth", context: "dashboard", severity: "OPPORTUNITY", title: "Talabat orders up 12% week-over-week", description: "Wahoo batch 2 added 340 orders vs prior week. Consider extending evening shifts.", actionLabel: "Open Talabat overview", actionHref: "/talabat/overview" },
+    { category: "WORKFORCE", subcategory: "shift_gap", context: "dashboard", severity: "WARNING", title: "Keeta Salmiya zone undermanned 18:00-22:00", description: "Average 2 couriers vs target of 5 for the dinner peak last 7 days.", actionLabel: "Open available shifts", actionHref: "/keeta/available-shifts" },
+    { category: "FINANCIAL", subcategory: "cash_priority", context: "dashboard", severity: "CRITICAL", title: "5 drivers exceed cash policy threshold", description: "Total overdue exposure: KD 2,143. Oldest debt 47 days.", actionLabel: "Review cash", actionHref: "/talabat/cash" },
+    { category: "COMPLIANCE", subcategory: "violation_pattern", context: "dashboard", severity: "WARNING", title: "Repeat late-pickup pattern on 3 Keeta couriers", description: "Each averaged 4+ late pickups this month. Coaching recommended.", actionLabel: "Open violations", actionHref: "/keeta/violations" },
+    { category: "EFFICIENCY", subcategory: "idle_positioning", context: "keeta/monitor", severity: "INFO", title: "Hawally couriers idle 38% of online time", description: "Avg idle window 22 min between orders. Review zone allocation.", actionLabel: "Open monitor", actionHref: "/keeta/monitor" },
+    { category: "COACHING", subcategory: "kpi_drop", context: "dashboard", severity: "WARNING", title: "Driver Mohammed K. KPI dropped 14 points", description: "Acceptance rate fell from 92% to 78% in last 7 days.", actionLabel: "Open driver", actionHref: "/keeta/drivers" },
+    { category: "REVENUE", subcategory: "platform_mix", context: "dashboard", severity: "OPPORTUNITY", title: "Americana adding 42% MoM", description: "TGI Fridays Avenues added 280 orders this month.", actionLabel: "Open Americana", actionHref: "/americana/overview" },
+    { category: "WORKFORCE", subcategory: "attendance", context: "dashboard", severity: "INFO", title: "Attendance compliance 96.4% this month", description: "Above target of 95%. Two repeat-late drivers flagged for coaching.", actionLabel: "Open attendance", actionHref: "/attendance" },
+    { category: "FINANCIAL", subcategory: "billing", context: "dashboard", severity: "INFO", title: "April Keeta billing approved", description: "KD 18,420 invoice approved. Withdrawal scheduled 2026-05-03.", actionLabel: "Open billing", actionHref: "/keeta/financial/billings" },
+    { category: "EFFICIENCY", subcategory: "demand_forecast", context: "dashboard", severity: "OPPORTUNITY", title: "Friday lunch peak forecast +18%", description: "Historical pattern + holiday calendar. Open extra slots in Salmiya & Hawally.", actionLabel: "Open shifts", actionHref: "/keeta/available-shifts" },
+    { category: "COMPLIANCE", subcategory: "doc_expiry", context: "dashboard", severity: "WARNING", title: "8 driver documents expiring within 14 days", description: "5 civil IDs, 2 licences, 1 vehicle insurance.", actionLabel: "Open drivers", actionHref: "/keeta/drivers" },
+    { category: "COACHING", subcategory: "top_performer", context: "dashboard", severity: "OPPORTUNITY", title: "Top 5 Talabat couriers averaged 38 orders/day", description: "Use as benchmark for batch 3 onboarding programme.", actionLabel: "Open KPIs", actionHref: "/kpis" },
+  ];
+  for (let i = 0; i < insightTemplates.length; i++) {
+    const t = insightTemplates[i];
+    const expires = new Date(today); expires.setDate(expires.getDate() + 14);
+    await prisma.aiInsight.create({
+      data: {
+        tenantId,
+        category: t.category, subcategory: t.subcategory, context: t.context,
+        severity: t.severity, title: t.title, description: t.description,
+        actionLabel: t.actionLabel, actionHref: t.actionHref,
+        score: 100 - i * 4, expiresAt: expires,
+        batchId: `seed-${today.toISOString().slice(0, 10)}`,
+        platform: t.actionHref?.includes("talabat") ? "TALABAT"
+          : t.actionHref?.includes("keeta") ? "KEETA"
+          : t.actionHref?.includes("deliveroo") ? "DELIVEROO"
+          : t.actionHref?.includes("americana") ? "AMERICANA" : null,
+      },
+    });
+  }
+  console.log(`Created ${insightTemplates.length} AI insights`);
+
+  // 3. KeetaAvailableShiftSlot — /keeta/available-shifts
+  await prisma.keetaAvailableShiftSlot.deleteMany({ where: { tenantId } });
+  const areas = ["Hawally", "Avenues", "Salmiya", "Jabriya", "Salwa"];
+  const timeBands = [
+    { slotStart: "08:00", slotEnd: "12:00" },
+    { slotStart: "12:00", slotEnd: "16:00" },
+    { slotStart: "16:00", slotEnd: "20:00" },
+    { slotStart: "20:00", slotEnd: "00:00" },
+  ];
+  for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+    const date = new Date(today); date.setDate(date.getDate() + dayOffset); date.setHours(0, 0, 0, 0);
+    for (const area of areas) {
+      for (const band of timeBands) {
+        const vt = Math.random() < 0.7 ? "MOTORCYCLE" : "CAR";
+        const capacity = rand(4, 12);
+        await prisma.keetaAvailableShiftSlot.create({
+          data: {
+            tenantId, platform: "KEETA", date, area,
+            slotStart: band.slotStart, slotEnd: band.slotEnd,
+            capacity, claimed: Math.min(capacity, rand(0, capacity)),
+            vehicleType: vt, source: "MANUAL",
+            branchName: `Keeta ${area}`,
+          },
+        });
+      }
+    }
+  }
+  console.log(`Created ${7 * areas.length * timeBands.length} Keeta available-shift slots`);
+
+  // 4. Americana chains, stores & store assignments
+  await prisma.americanaStoreAssignment.deleteMany({ where: { tenantId } });
+  await prisma.americanaStore.deleteMany({ where: { tenantId } });
+  await prisma.americanaChain.deleteMany({ where: { tenantId } });
+  const chainSeeds = [
+    { name: "KFC", slug: "kfc" },
+    { name: "Pizza Hut", slug: "pizza-hut" },
+    { name: "Hardees", slug: "hardees" },
+    { name: "TGI Fridays", slug: "tgi-fridays" },
+  ];
+  const chains: any[] = [];
+  for (const c of chainSeeds) {
+    chains.push(await prisma.americanaChain.create({ data: { tenantId, ...c, active: true } }));
+  }
+  const storeSeeds = [
+    { chain: "kfc", name: "KFC Avenues", area: "Avenues" },
+    { chain: "kfc", name: "KFC Salmiya", area: "Salmiya" },
+    { chain: "pizza-hut", name: "Pizza Hut Hawally", area: "Hawally" },
+    { chain: "pizza-hut", name: "Pizza Hut Jabriya", area: "Jabriya" },
+    { chain: "hardees", name: "Hardees Salwa", area: "Salwa" },
+    { chain: "hardees", name: "Hardees Mishref", area: "Mishref" },
+    { chain: "tgi-fridays", name: "TGI Fridays Avenues", area: "Avenues" },
+    { chain: "tgi-fridays", name: "TGI Fridays Marina", area: "Salmiya" },
+  ];
+  const stores: any[] = [];
+  for (const s of storeSeeds) {
+    const chain = chains.find(c => c.slug === s.chain)!;
+    stores.push(await prisma.americanaStore.create({
+      data: {
+        tenantId, chainId: chain.id, name: s.name, area: s.area,
+        managerName: pick(["Hassan A.", "Khaled M.", "Yousef R.", "Salem F."]),
+        managerPhone: `+965${rand(50000000, 99999999)}`,
+        active: true,
+        carDailyTarget: rand(20, 35), bikeDailyTarget: rand(15, 28),
+        carMonthlyTarget: rand(550, 900), bikeMonthlyTarget: rand(400, 750),
+      },
+    }));
+  }
+  // Assign each Americana driver to a store across last 3 months.
+  // Bias toward multi-driver branches: every store gets ≥2 drivers, a couple get 3-4.
+  // This is what makes Branch Performance show comparison rows.
+  const driverStoreMap = new Map<string, any>(); // driverId -> store (sticky for the month)
+  {
+    const shuffled = [...americanaDrivers].sort(() => Math.random() - 0.5);
+    let di = 0;
+    // Pass 1: give every store 2 drivers
+    for (const s of stores) {
+      for (let n = 0; n < 2 && di < shuffled.length; n++, di++) {
+        driverStoreMap.set(shuffled[di].id, s);
+      }
+    }
+    // Pass 2: spread remaining drivers, weighted so first 2 stores get extras (3-4 driver branches)
+    const extraStores = stores.slice(0, 2);
+    while (di < shuffled.length) {
+      const s = di % 3 === 0 ? pick(extraStores) : stores[di % stores.length];
+      driverStoreMap.set(shuffled[di].id, s);
+      di++;
+    }
+  }
+  for (let monthBack = 0; monthBack < 3; monthBack++) {
+    const monthStart = new Date(today.getFullYear(), today.getMonth() - monthBack, 1);
+    const assignmentStart = new Date(monthStart);
+    for (const d of americanaDrivers) {
+      const store = driverStoreMap.get(d.id) || stores[0];
+      await prisma.americanaStoreAssignment.create({
+        data: {
+          tenantId, driverId: d.id, storeId: store.id,
+          month: monthStart, startDate: assignmentStart,
+          vehicleType: d.vehicleType === "CAR" ? "CAR" : "BIKE",
+          createdBy: "seed",
+        },
+      });
+    }
+  }
+  console.log(`Created ${chains.length} chains, ${stores.length} stores, ${americanaDrivers.length * 3} store assignments (3 months)`);
+
+  // 4b. AmericanaChainRate — per-chain CAR/BIKE rates so revenue & accounting render
+  const seedUser = await prisma.user.findFirst({ where: { tenantId, role: "ADMIN" } });
+  if (seedUser) {
+    const rateEffectiveFrom = new Date(today.getFullYear(), today.getMonth() - 6, 1);
+    const ratesByChain: Record<string, { car: number; bike: number }> = {
+      "kfc":         { car: 0.450, bike: 0.350 },
+      "pizza-hut":   { car: 0.500, bike: 0.380 },
+      "hardees":     { car: 0.420, bike: 0.330 },
+      "tgi-fridays": { car: 0.600, bike: 0.450 },
+    };
+    for (const chain of chains) {
+      const rates = ratesByChain[chain.slug] ?? { car: 0.450, bike: 0.350 };
+      for (const vt of ["CAR", "BIKE"] as const) {
+        await prisma.americanaChainRate.create({
+          data: {
+            tenantId, chainId: chain.id, vehicleType: vt,
+            ratePerOrder: vt === "CAR" ? rates.car : rates.bike,
+            effectiveFrom: rateEffectiveFrom,
+            createdBy: seedUser.id,
+          },
+        });
+      }
+    }
+    console.log(`Created ${chains.length * 2} Americana chain rates`);
+  }
+
+  // 4c. AmericanaDailyOrders — 3 months per driver, linked to assigned store
+  // (storeId is required for Branch Performance to render comparisons.)
+  // Per-branch variation: 1-2 of each branch's drivers fall under 80% of avg.
+  await prisma.americanaDailyOrders.deleteMany({ where: { tenantId } });
+  const driversByStore = new Map<string, any[]>();
+  for (const d of americanaDrivers) {
+    const s = driverStoreMap.get(d.id);
+    if (!s) continue;
+    if (!driversByStore.has(s.id)) driversByStore.set(s.id, []);
+    driversByStore.get(s.id)!.push(d);
+  }
+  let amDailyCount = 0;
+  for (let monthBack = 0; monthBack < 3; monthBack++) {
+    const monthStart = new Date(today.getFullYear(), today.getMonth() - monthBack, 1);
+    const daysInMonth = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0).getDate();
+    const lastDay = monthBack === 0 ? Math.min(today.getDate(), daysInMonth) : daysInMonth;
+    for (const [storeId, branchDrivers] of driversByStore.entries()) {
+      const store = stores.find(s => s.id === storeId)!;
+      const chain = chains.find(c => c.id === store.chainId)!;
+      // For multi-driver branches, mark first 1-2 as underperformers (~50-65% of branch avg).
+      const underIdx = new Set<number>();
+      if (branchDrivers.length >= 2) {
+        underIdx.add(0);
+        if (branchDrivers.length >= 4) underIdx.add(1);
+      }
+      for (let i = 0; i < branchDrivers.length; i++) {
+        const driver = branchDrivers[i];
+        const isUnder = underIdx.has(i);
+        const isCar = driver.vehicleType === "CAR";
+        // Daily band: car drivers do more orders; underperformers do fewer.
+        const dailyBand = isUnder
+          ? (isCar ? [6, 14] : [4, 10])
+          : (isCar ? [18, 32] : [14, 26]);
+        const dailyOrders: Record<string, number> = {};
+        let total = 0;
+        for (let d = 1; d <= lastDay; d++) {
+          const key = String(d).padStart(2, "0");
+          const isOff = Math.random() < 0.14;
+          const orders = isOff ? 0 : rand(dailyBand[0], dailyBand[1]);
+          dailyOrders[key] = orders;
+          total += orders;
+        }
+        await prisma.americanaDailyOrders.create({
+          data: {
+            tenantId, driverId: driver.id, month: monthStart,
+            chainId: chain.id, chain: chain.name,
+            storeId: store.id, storeName: store.name,
+            empId: driver.platformDriverId,
+            company: "Al Hazm Express",
+            position: isCar ? "Car" : "Bike",
+            dailyOrders,
+            totalOrders: total,
+            source: "EXCEL_IMPORT",
+          },
+        });
+        amDailyCount++;
+      }
+    }
+  }
+  console.log(`Created ${amDailyCount} AmericanaDailyOrders rows (3 months)`);
+
+  // 4d. Violation rows for AMERICANA platform — populates /americana/violations
+  await prisma.violation.deleteMany({ where: { tenantId, platform: "AMERICANA" } });
+  const amViolationTypes = ["AMERICANA_LATE_ARRIVAL", "AMERICANA_NO_SHOW", "AMERICANA_EARLY_DEPARTURE_QUIT"] as const;
+  const amViolationStatuses = ["ESTABLISHED", "ESTABLISHED", "ESTABLISHED", "UNDER_REVIEW", "UNDER_REVIEW", "OVERTURNED"] as const;
+  const amAppealStatuses = ["NOT_RAISED", "NOT_RAISED", "NOT_RAISED", "PENDING", "PENDING", "PENDING", "APPROVED", "REJECTED"] as const;
+  let amVioCount = 0;
+  for (const driver of americanaDrivers) {
+    if (Math.random() > 0.4) continue; // ~40% of drivers have violations
+    const numViolations = rand(1, 4);
+    for (let i = 0; i < numViolations; i++) {
+      const daysBack = rand(0, 29);
+      const violationTime = new Date(today);
+      violationTime.setDate(violationTime.getDate() - daysBack);
+      violationTime.setHours(rand(8, 22), rand(0, 59), 0, 0);
+      const vt = pick(amViolationTypes as unknown as string[]);
+      const status = pick(amViolationStatuses as unknown as string[]);
+      const appeal = pick(amAppealStatuses as unknown as string[]);
+      const lateMin = vt === "AMERICANA_LATE_ARRIVAL" ? rand(2, 45) : null;
+      const details =
+        vt === "AMERICANA_LATE_ARRIVAL" ? `Driver clocked in ${lateMin} minutes late.`
+        : vt === "AMERICANA_NO_SHOW" ? "Driver did not check in for scheduled shift."
+        : "Driver left the shift before scheduled end time.";
+      const taskId = `KUW_${rand(100000, 999999)}`;
+      await prisma.violation.create({
+        data: {
+          tenantId, driverId: driver.id, platform: "AMERICANA",
+          violationType: vt as any,
+          violationStatus: status as any,
+          appealStatus: appeal as any,
+          violationTime,
+          details,
+          metadata: { lateMinutes: lateMin, taskId },
+          taskId,
+        },
+      });
+      amVioCount++;
+    }
+  }
+  console.log(`Created ${amVioCount} Americana violations`);
+
+  // 5. TalabatDailyMetrics — 30 days × Talabat drivers
+  await prisma.talabatDailyMetrics.deleteMany({ where: { tenantId } });
+  for (const d of talabatDrivers) {
+    for (let dayOffset = 0; dayOffset < 30; dayOffset++) {
+      const shiftDate = new Date(today); shiftDate.setDate(shiftDate.getDate() - dayOffset); shiftDate.setHours(0, 0, 0, 0);
+      const orders = rand(20, 45);
+      const hours = decimal(8, 11.5, 1);
+      await prisma.talabatDailyMetrics.create({
+        data: {
+          tenantId, driverId: d.id, shiftDate,
+          utr: parseFloat((orders / hours).toFixed(2)),
+          ordersCompleted: orders, onlineHours: hours,
+          earnings: parseFloat((orders * decimal(0.45, 0.85, 2)).toFixed(2)),
+          source: "PORTAL_API", status: "APPROVED",
+        },
+      });
+    }
+  }
+  console.log(`Created ${talabatDrivers.length * 30} Talabat daily metric rows`);
+
+  // 6. DeliverooDailyMetrics — 30 days × Deliveroo drivers
+  await prisma.deliverooDailyMetrics.deleteMany({ where: { tenantId } });
+  for (const d of deliverooDrivers) {
+    for (let dayOffset = 0; dayOffset < 30; dayOffset++) {
+      const shiftDate = new Date(today); shiftDate.setDate(shiftDate.getDate() - dayOffset); shiftDate.setHours(0, 0, 0, 0);
+      const deliveries = rand(15, 35);
+      const buckets = Array.from({ length: 9 }, () => rand(0, 6));
+      const total = buckets.reduce((s, n) => s + n, 0);
+      const scaled = total > 0 ? buckets.map(b => Math.round(b * deliveries / total)) : buckets;
+      await prisma.deliverooDailyMetrics.create({
+        data: {
+          tenantId, driverId: d.id, shiftDate,
+          codCollectedKwd: decimal(20, 95, 3),
+          tipsKwd: decimal(0, 12, 3),
+          deliveriesCount: deliveries,
+          unassignedCount: rand(0, 3),
+          hourlyBuckets: scaled,
+          source: "OCR_MOBILE", status: "APPROVED",
+        },
+      });
+    }
+  }
+  console.log(`Created ${deliverooDrivers.length * 30} Deliveroo daily metric rows`);
+
+  // 7. DemandHeatmap — keeta monitor
+  await prisma.demandHeatmap.deleteMany({ where: { tenantId } });
+  const heatmapZones = ["Hawally", "Salmiya", "Jabriya", "Salwa", "Avenues"];
+  const heatmapPlatforms = ["KEETA", "TALABAT"];
+  for (const platform of heatmapPlatforms) {
+    for (const zone of heatmapZones) {
+      for (let dow = 0; dow < 7; dow++) {
+        for (let hour = 8; hour < 24; hour++) {
+          const peak = (hour >= 12 && hour <= 14) || (hour >= 18 && hour <= 22);
+          await prisma.demandHeatmap.create({
+            data: {
+              tenantId, platform, zone, dayOfWeek: dow, hourSlot: hour,
+              avgOrders: peak ? decimal(8, 18, 1) : decimal(2, 6, 1),
+              topRestaurants: [
+                { name: `${zone} Top 1`, avgOrders: peak ? 12 : 3, lat: 29.3, lng: 47.9 },
+                { name: `${zone} Top 2`, avgOrders: peak ? 9 : 2, lat: 29.31, lng: 47.91 },
+              ],
+              confidence: 0.7 + Math.random() * 0.25,
+            },
+          });
+        }
+      }
+    }
+  }
+  console.log(`Created ${heatmapPlatforms.length * heatmapZones.length * 7 * 16} demand heatmap cells`);
+}
+// ─── Fill the remaining "rarely-seeded" models so every UI tab has data ───────
+async function seedRemainingModels(tenantId: string, allDrivers: any[], users: any[], today: Date) {
+  // ─── Sim cards (one active SIM per driver/device pair) ───
+  const devices = await prisma.device.findMany({ where: { tenantId }, take: 200 });
+  const deviceByDriver: Record<string, any> = {};
+  for (const d of devices) deviceByDriver[d.driverId] = d;
+  const carriers = ["Zain", "Ooredoo", "STC"];
+  let simCount = 0;
+  for (const driver of allDrivers) {
+    const device = deviceByDriver[driver.id];
+    const phoneSuffix = `${rand(50000000, 99999999)}`;
+    try {
+      await prisma.sim.create({
+        data: {
+          tenantId,
+          phoneNumber: `+965${phoneSuffix}`,
+          carrier: pick(carriers),
+          status: Math.random() < 0.92 ? "ACTIVE" : Math.random() < 0.5 ? "INACTIVE" : "SUSPENDED",
+          driverId: driver.id,
+          deviceId: device?.id ?? null,
+          notes: Math.random() < 0.2 ? pick(["Plan: 25GB", "Plan: 10GB", "Family bundle"]) : null,
+        },
+      });
+      simCount++;
+    } catch { /* duplicate phone */ }
+  }
+  console.log(`Created ${simCount} SIM cards`);
+
+  // ─── CapturedOrders (mobile OCR captures from notification text) ───
+  let capturedCount = 0;
+  for (const driver of allDrivers.slice(0, 30)) {
+    const device = deviceByDriver[driver.id];
+    if (!device) continue;
+    const samples = driver.platform === "TALABAT"
+      ? [
+          { text: `Talabat\nOrder #${rand(3500000000, 3599999999)} – New order from Al Baik\nKD ${decimal(1.5, 4.5)} – Hawally`, parsed: { restaurant: "Al Baik", area: "Hawally" } },
+          { text: `Talabat\nNew delivery #${rand(3500000000, 3599999999)} – KFC Salmiya\nCash KD ${decimal(0.5, 5)}`, parsed: { restaurant: "KFC Salmiya", paymentSource: "CASH" } },
+        ]
+      : driver.platform === "DELIVEROO"
+      ? [{ text: `Deliveroo\nOrder #${rand(1000, 9999)} delivered\nTip: £${decimal(0, 1.5, 2)}`, parsed: { tip: 0.5 } }]
+      : driver.platform === "KEETA"
+      ? [{ text: `Keeta\nNew order assigned\nID KT-${rand(100000, 999999)}`, parsed: { taskId: `KT-${rand(100000, 999999)}` } }]
+      : [{ text: `Americana\nKFC Audiliya order delivered`, parsed: { store: "KFC Audiliya" } }];
+    for (let i = 0; i < 2; i++) {
+      const s = samples[i % samples.length];
+      await prisma.capturedOrder.create({
+        data: {
+          deviceId: device.id, driverId: driver.id, platform: driver.platform,
+          notificationText: s.text,
+          parsedData: s.parsed,
+          capturedAt: new Date(Date.now() - rand(0, 24) * 3600000),
+        },
+      });
+      capturedCount++;
+    }
+  }
+  console.log(`Created ${capturedCount} captured orders`);
+
+  // ─── AppUsageLogs (foreground/background usage by app) ───
+  let usageCount = 0;
+  const appPackages = ["com.talabat.driver", "com.deliveroo.rider", "com.keeta.courier", "com.americana.driver", "com.whatsapp", "com.google.android.apps.maps"];
+  for (const driver of allDrivers.slice(0, 30)) {
+    const device = deviceByDriver[driver.id];
+    if (!device) continue;
+    for (let i = 0; i < 5; i++) {
+      await prisma.appUsageLog.create({
+        data: {
+          deviceId: device.id, driverId: driver.id,
+          appPackage: pick(appPackages),
+          eventType: pick(["FOREGROUND", "BACKGROUND", "OPEN", "CLOSE"]),
+          durationSeconds: rand(20, 1800),
+          capturedAt: new Date(Date.now() - rand(0, 48) * 3600000),
+        },
+      });
+      usageCount++;
+    }
+  }
+  console.log(`Created ${usageCount} app usage logs`);
+
+  // ─── DeviceCommands (remote device control history) ───
+  let commandCount = 0;
+  const adminUser = users[0];
+  const cmds: DeviceCommandType[] = ["LOCK", "SEND_MESSAGE", "UPDATE_AGENT", "ENABLE_KIOSK", "DISABLE_KIOSK", "INSTALL_APP"];
+  for (const device of devices.slice(0, 20)) {
+    for (let i = 0; i < 2; i++) {
+      const cmd = pick(cmds);
+      const status = pick(["PENDING", "SENT", "ACKNOWLEDGED", "ACKNOWLEDGED", "FAILED"]);
+      await prisma.deviceCommand.create({
+        data: {
+          deviceId: device.id, command: cmd,
+          payload: cmd === "SEND_MESSAGE" ? { message: "Please call dispatcher" } : cmd === "INSTALL_APP" ? { apk: "darb-agent-1.0.1.apk" } : {},
+          status: status as any,
+          issuedById: adminUser.id,
+          issuedAt: new Date(Date.now() - rand(0, 14) * 86400000),
+          acknowledgedAt: status === "ACKNOWLEDGED" ? new Date(Date.now() - rand(0, 6) * 3600000) : null,
+        },
+      });
+      commandCount++;
+    }
+  }
+  console.log(`Created ${commandCount} device commands`);
+
+  // ─── AuditLog (admin/ops activity history) ───
+  const auditActions = [
+    { action: "USER_LOGIN", entityType: "User" },
+    { action: "DRIVER_CREATED", entityType: "Driver" },
+    { action: "DRIVER_UPDATED", entityType: "Driver" },
+    { action: "VEHICLE_ASSIGNED", entityType: "Vehicle" },
+    { action: "VIOLATION_OVERTURNED", entityType: "Violation" },
+    { action: "APPEAL_APPROVED", entityType: "Appeal" },
+    { action: "PLATFORM_SETTINGS_UPDATED", entityType: "PlatformSettings" },
+    { action: "CASH_RECONCILED", entityType: "CashRecord" },
+    { action: "TICKET_RESOLVED", entityType: "Ticket" },
+    { action: "BILLING_APPROVED", entityType: "Billing" },
+    { action: "WITHDRAWAL_INITIATED", entityType: "PaymentWithdrawal" },
+    { action: "AGENT_ACTION_APPROVED", entityType: "PendingAgentAction" },
+  ];
+  for (let i = 0; i < 80; i++) {
+    const a = pick(auditActions);
+    const u = pick(users);
+    await prisma.auditLog.create({
+      data: {
+        tenantId,
+        userId: u.id,
+        action: a.action,
+        entityType: a.entityType,
+        entityId: pick(allDrivers).id,
+        changes: { before: { status: "ACTIVE" }, after: { status: "INACTIVE" } },
+        ipAddress: `192.168.${rand(0, 255)}.${rand(1, 254)}`,
+        createdAt: new Date(Date.now() - rand(0, 30) * 86400000 - rand(0, 86400000)),
+      },
+    });
+  }
+  console.log("Created 80 audit log entries");
+
+  // ─── IngestRun (XLSX/CSV/portal import history per platform) ───
+  const ingestSources = ["PORTAL_SCRAPER", "MANUAL_UPLOAD", "OCR_MOBILE", "OCR_WEB"];
+  const ingestStatuses = ["SUCCESS", "SUCCESS", "SUCCESS", "PARTIAL", "FAILED"];
+  for (const platform of ["TALABAT", "KEETA", "DELIVEROO", "AMERICANA"] as Platform[]) {
+    for (let i = 0; i < 12; i++) {
+      const startedAt = new Date(Date.now() - i * 86400000 - rand(0, 6) * 3600000);
+      const status = pick(ingestStatuses);
+      const rowsIn = rand(50, 400);
+      const rowsOk = status === "SUCCESS" ? rowsIn : status === "PARTIAL" ? rowsIn - rand(2, 30) : 0;
+      await prisma.ingestRun.create({
+        data: {
+          tenantId, platform,
+          source: pick(ingestSources),
+          status,
+          startedAt,
+          finishedAt: new Date(startedAt.getTime() + rand(20, 240) * 1000),
+          rowsIn, rowsOk,
+          errorLog: status === "FAILED" ? "Connection timeout to platform portal after 30s" : status === "PARTIAL" ? "12 rows skipped: missing driver mapping" : null,
+        },
+      });
+    }
+  }
+  console.log("Created 48 ingest runs (12 per platform)");
+
+  // ─── AmericanaContract + AmericanaChainRate ───
+  const chains = await prisma.americanaChain.findMany({ where: { tenantId } });
+  const contractRefs = ["AMR-2024-001", "AMR-2025-001", "AMR-2026-001"];
+  const contracts: any[] = [];
+  for (let i = 0; i < contractRefs.length; i++) {
+    const signedYear = 2024 + i;
+    const c = await prisma.americanaContract.create({
+      data: {
+        tenantId,
+        contractRef: contractRefs[i],
+        signedDate: new Date(signedYear, 0, rand(5, 25)),
+        effectiveFrom: new Date(signedYear, 0, 1),
+        effectiveTo: i < contractRefs.length - 1 ? new Date(signedYear, 11, 31) : null,
+        originalFileUrl: `/uploads/contracts/${contractRefs[i]}.pdf`,
+        ocrStatus: "DONE",
+        ocrExtractedAt: new Date(signedYear, 0, rand(5, 28)),
+        ocrConfidence: decimal(0.85, 0.99, 3),
+        ocrDraftRates: { extractedRates: chains.map(ch => ({ chain: ch.name, car: decimal(0.6, 1.2, 3), bike: decimal(0.4, 0.9, 3) })) },
+        notes: i === 0 ? "Original master agreement" : i === 1 ? "Annual renewal with updated bike rates" : "Active contract — current year",
+      },
+    });
+    contracts.push(c);
+  }
+  for (const chain of chains) {
+    for (let i = 0; i < contracts.length; i++) {
+      const contract = contracts[i];
+      for (const vt of ["CAR", "BIKE"]) {
+        await prisma.americanaChainRate.create({
+          data: {
+            tenantId,
+            chainId: chain.id,
+            vehicleType: vt,
+            ratePerOrder: vt === "CAR" ? decimal(0.7, 1.2, 3) : decimal(0.4, 0.9, 3),
+            effectiveFrom: contract.effectiveFrom,
+            effectiveTo: contract.effectiveTo,
+            contractId: contract.id,
+            createdBy: adminUser.id,
+          },
+        });
+      }
+    }
+  }
+  console.log(`Created ${contracts.length} Americana contracts and ${chains.length * contracts.length * 2} chain rates`);
+
+  // ─── AmericanaDailyIngestion (recent imports awaiting review or approved) ───
+  for (let i = 0; i < 14; i++) {
+    const ingestDate = new Date(today); ingestDate.setDate(ingestDate.getDate() - i);
+    const status = i === 0 ? "PENDING_REVIEW" : i === 1 ? "PENDING_REVIEW" : Math.random() < 0.05 ? "REJECTED" : "APPROVED";
+    const rowCount = rand(8, 30);
+    await prisma.americanaDailyIngestion.create({
+      data: {
+        tenantId,
+        source: i % 3 === 0 ? "MANUAL_UPLOAD" : "EMAIL",
+        emailMessageId: i % 3 === 0 ? null : `<americana-${ingestDate.toISOString().slice(0, 10)}@operations.americana.kw>`,
+        rawFileUrl: `/uploads/americana/daily-${ingestDate.toISOString().slice(0, 10)}.xlsx`,
+        capturedAt: new Date(ingestDate.getTime() + 8 * 3600000),
+        ingestDate,
+        status,
+        parsedRows: Array.from({ length: rowCount }, (_, j) => ({
+          empId: `${60000 + j}`, name: SOUTH_ASIAN_NAMES[j % SOUTH_ASIAN_NAMES.length],
+          store: pick(["KFC Audiliya", "KFC Salwa", "Hardees Salmiya"]),
+          orders: rand(15, 35),
+        })),
+        rowCount,
+        errorLog: status === "REJECTED" ? "Driver IDs not matched: 60012, 60019" : null,
+        approvedBy: status === "APPROVED" ? adminUser.id : null,
+        approvedAt: status === "APPROVED" ? new Date(ingestDate.getTime() + 9 * 3600000) : null,
+        rejectedReason: status === "REJECTED" ? "Mismatched driver IDs — please re-upload" : null,
+      },
+    });
+  }
+  console.log("Created 14 Americana daily ingestion records");
+
+  // ─── AgentRunLog + AgentToolCall + PendingAgentAction ───
+  const agentIds = ["triage", "reconciliation", "narrator", "chat"];
+  const triggers = ["violation", "appeal_submitted", "cash_overdue", "cron:15m", "user_message"];
+  const models = ["claude-opus-4-7", "claude-sonnet-4-6", "claude-haiku-4-5-20251001"];
+  const runs: any[] = [];
+  for (let i = 0; i < 25; i++) {
+    const startedAt = new Date(Date.now() - rand(0, 7) * 86400000 - rand(0, 86400000));
+    const finished = i > 1;
+    const status = !finished ? "running" : Math.random() < 0.85 ? "completed" : "failed";
+    const proposed = rand(1, 6);
+    const approved = status === "completed" ? rand(0, proposed) : 0;
+    const run = await prisma.agentRunLog.create({
+      data: {
+        tenantId,
+        agentId: pick(agentIds),
+        triggerEvent: pick(triggers),
+        model: pick(models),
+        promptTokens: rand(800, 6000),
+        completionTokens: rand(150, 1500),
+        startedAt,
+        finishedAt: finished ? new Date(startedAt.getTime() + rand(2, 90) * 1000) : null,
+        status,
+        error: status === "failed" ? "Tool call timeout: exceeded 60s budget" : null,
+        actionsProposed: proposed,
+        actionsApproved: approved,
+        actionsRejected: status === "completed" ? Math.max(0, proposed - approved - rand(0, 2)) : 0,
+        feedback: status === "completed" ? { rating: rand(3, 5), notes: pick(["clear summary", "missed one driver", "good catch"]) } : null,
+      },
+    });
+    runs.push(run);
+  }
+  let toolCallCount = 0;
+  const toolNames = ["queryViolations", "updateAppealStatus", "fetchKpiSnapshot", "sendNotification", "openTicket", "summarizeShifts"];
+  for (const run of runs) {
+    const n = rand(1, 4);
+    for (let i = 0; i < n; i++) {
+      await prisma.agentToolCall.create({
+        data: {
+          runId: run.id,
+          toolName: pick(toolNames),
+          input: { tenantId, range: "last_24h", limit: 50 },
+          output: run.status === "completed" ? { rows: rand(0, 25), summary: "ok" } : null,
+          error: run.status === "failed" && i === n - 1 ? "Timeout" : null,
+          durationMs: rand(80, 8000),
+          approvedBy: Math.random() < 0.3 ? adminUser.id : null,
+          executedAt: run.startedAt,
+        },
+      });
+      toolCallCount++;
+    }
+  }
+  let pendingCount = 0;
+  for (const run of runs.slice(0, 10)) {
+    if (run.status !== "completed") continue;
+    await prisma.pendingAgentAction.create({
+      data: {
+        tenantId,
+        runId: run.id,
+        agentId: run.agentId,
+        toolName: pick(toolNames),
+        input: { violationId: pick(allDrivers).id, suggestedAction: "OVERTURN" },
+        recommendation: pick(["approve", "approve", "reject", "escalate"]),
+        confidence: decimal(0.55, 0.97, 2),
+        reasoning: pick([
+          "Driver has clean history for last 90 days; appeal evidence (GPS log) supports claim.",
+          "Repeat offender — 3 similar violations in 30 days; recommend rejection.",
+          "Edge case requires supervisor judgement on intent.",
+        ]),
+        priorityScore: decimal(0.2, 0.95, 2),
+        subjectType: pick(["appeal", "violation", "cash_record"]),
+        subjectId: pick(allDrivers).id,
+        resolvedAt: Math.random() < 0.4 ? new Date(Date.now() - rand(0, 24) * 3600000) : null,
+        resolution: Math.random() < 0.4 ? pick(["approved", "rejected"]) : null,
+        overrideReason: Math.random() < 0.15 ? "Operator disagreed with model confidence" : null,
+        resolvedBy: Math.random() < 0.4 ? adminUser.id : null,
+      },
+    });
+    pendingCount++;
+  }
+  console.log(`Created ${runs.length} agent runs, ${toolCallCount} tool calls, ${pendingCount} pending actions`);
+
+  // ─── NotificationDelivery (audit of outbound channel sends) ───
+  const channels = ["WHATSAPP", "EMAIL", "SMS"] as const;
+  const providers = { WHATSAPP: "twilio", EMAIL: "sendgrid", SMS: "twilio" };
+  let deliveryCount = 0;
+  for (let i = 0; i < 60; i++) {
+    const channel = pick([...channels]);
+    const status = i < 50 ? "SENT" : i < 55 ? "FAILED" : i < 58 ? "QUEUED" : "DEAD";
+    const driver = pick(allDrivers);
+    const createdAt = new Date(Date.now() - rand(0, 30) * 3600000);
+    await prisma.notificationDelivery.create({
+      data: {
+        tenantId,
+        channel,
+        recipient: channel === "EMAIL" ? `${driver.name.toLowerCase().replace(/\s+/g, ".")}@drivers.kw` : driver.phone,
+        subject: channel === "EMAIL" ? "Cash deposit reminder" : null,
+        body: pick([
+          "Reminder: please deposit pending cash by end of shift.",
+          "Your shift starts in 30 minutes — please clock in on time.",
+          "Violation appeal received — review pending.",
+          "Document expiring this week — please renew Civil ID.",
+        ]),
+        provider: (providers as any)[channel],
+        status: status as any,
+        idempotencyKey: `notif-${i}-${createdAt.getTime()}`,
+        error: status === "FAILED" || status === "DEAD" ? "Provider returned 403 Forbidden" : null,
+        attempts: status === "QUEUED" ? 0 : status === "DEAD" ? 5 : status === "FAILED" ? 2 : 1,
+        lastAttemptAt: status === "QUEUED" ? null : createdAt,
+        sentAt: status === "SENT" ? new Date(createdAt.getTime() + 1500) : null,
+        sourceType: pick(["cash_overdue", "shift_reminder", "appeal_received", "doc_expiring"]),
+        sourceId: driver.id,
+        createdAt,
+      },
+    });
+    deliveryCount++;
+  }
+  console.log(`Created ${deliveryCount} notification delivery records`);
 }
 
 main()

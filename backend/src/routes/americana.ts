@@ -12,7 +12,10 @@ import {
   buildChainMix,
   buildHeadcountGap,
 } from "../services/americanaRevenueService";
-import { computeAmericanaLeaderboard } from "../services/americanaPerformanceService";
+import {
+  computeAmericanaLeaderboard,
+  computeAmericanaBranchPerformance,
+} from "../services/americanaPerformanceService";
 
 const router = Router();
 router.use(authMiddleware, tenantScope);
@@ -125,9 +128,12 @@ router.get("/orders/:id", async (req: Request, res: Response) => {
 // POST /orders - Create
 router.post("/orders", async (req: Request, res: Response) => {
   try {
-    const record = await prisma.americanaDailyOrders.create({
-      data: { ...req.body, tenantId: req.user!.tenantId },
-    });
+    const allowed = ["driverId", "month", "chain", "chainId", "empId", "storeName", "storeId", "company", "position", "dailyOrders", "totalOrders", "source"] as const;
+    const data: Record<string, unknown> = { tenantId: req.user!.tenantId };
+    for (const k of allowed) {
+      if (k in (req.body ?? {})) data[k] = (req.body as any)[k];
+    }
+    const record = await prisma.americanaDailyOrders.create({ data: data as any });
     res.status(201).json(record);
   } catch (err: any) {
     res.status(400).json({ error: err.message });
@@ -137,9 +143,14 @@ router.post("/orders", async (req: Request, res: Response) => {
 // PUT /orders/:id - Update
 router.put("/orders/:id", async (req: Request, res: Response) => {
   try {
+    const allowed = ["chain", "chainId", "empId", "storeName", "storeId", "company", "position", "dailyOrders", "totalOrders", "source"] as const;
+    const data: Record<string, unknown> = {};
+    for (const k of allowed) {
+      if (k in (req.body ?? {})) data[k] = (req.body as any)[k];
+    }
     const record = await prisma.americanaDailyOrders.updateMany({
       where: { id: req.params.id, tenantId: req.user!.tenantId },
-      data: req.body,
+      data,
     });
     if (record.count === 0) { res.status(404).json({ error: "Order record not found" }); return; }
     const updated = await prisma.americanaDailyOrders.findUnique({ where: { id: req.params.id } });
@@ -242,7 +253,6 @@ router.post("/import", upload.single("file"), async (req: Request, res: Response
             chain: row.chain,
             empId: row.empId,
             storeName: row.storeName,
-            costCenter: row.costCenter,
             company: row.company,
             position: row.position,
             dailyOrders: row.dailyOrders,
@@ -253,7 +263,6 @@ router.post("/import", upload.single("file"), async (req: Request, res: Response
             chain: row.chain,
             empId: row.empId,
             storeName: row.storeName,
-            costCenter: row.costCenter,
             company: row.company,
             position: row.position,
             dailyOrders: row.dailyOrders,
@@ -311,6 +320,29 @@ router.get("/performance", async (req: Request, res: Response) => {
     const [y, m] = monthStr.split("-").map((v) => parseInt(v, 10));
     const entries = await computeAmericanaLeaderboard(tenantId, new Date(y, m - 1, 1));
     res.json({ month: monthStr, entries });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /branch-performance?month=YYYY-MM&threshold=0.8
+// Per-branch averages with under-threshold drivers flagged.
+router.get("/branch-performance", async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const monthStr = (req.query.month as string) || new Date().toISOString().slice(0, 7);
+    const [y, m] = monthStr.split("-").map((v) => parseInt(v, 10));
+    const rawThreshold = parseFloat(String(req.query.threshold ?? "0.8"));
+    const thresholdPct =
+      Number.isFinite(rawThreshold) && rawThreshold > 0 && rawThreshold <= 2
+        ? rawThreshold
+        : 0.8;
+    const result = await computeAmericanaBranchPerformance(
+      tenantId,
+      new Date(y, m - 1, 1),
+      { thresholdPct },
+    );
+    res.json({ month: monthStr, threshold: thresholdPct, ...result });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

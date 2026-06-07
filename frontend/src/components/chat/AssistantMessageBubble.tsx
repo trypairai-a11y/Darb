@@ -31,6 +31,23 @@ function formatTime(iso: string): string {
   }
 }
 
+function cleanAssistantText(value: string): string {
+  return value
+    .replace(/\r\n/g, "\n")
+    .replace(/\s+[—–]\s+/g, ": ")
+    .replace(/[—–]/g, "-")
+    .replace(/(^|\s)\*\*([^*\n]+)\*\*/g, "$1$2")
+    .replace(/(^|\s)__([^_\n]+)__/g, "$1$2")
+    .replace(/\*\*/g, "")
+    .replace(/__/g, "")
+    .replace(/^\s*[-*]\s+/gm, "")
+    .replace(/\*/g, "")
+    .replace(/^\s*>\s+/gm, "")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 export function AssistantMessageBubble({
   message,
   streaming,
@@ -41,7 +58,8 @@ export function AssistantMessageBubble({
   threadId,
   onFollowUp,
 }: AssistantMessageBubbleProps) {
-  const content = streamingText !== undefined ? streamingText : message.content;
+  const rawContent = streamingText !== undefined ? streamingText : message.content;
+  const content = cleanAssistantText(rawContent);
   const views = [...(message.views ?? []), ...(streamingViews ?? [])];
   const toolCalls = [...(message.toolCalls ?? []), ...(streamingToolCalls ?? [])];
   const proposalId = message.proposalId ?? streamingProposalId;

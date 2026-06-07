@@ -33,7 +33,6 @@ router.get("/:platform", async (req: Request, res: Response) => {
         bookingRules: getDefaultBookingRules(platform),
         documentRules: getDefaultDocumentRules(),
         notificationConfig: getDefaultNotificationConfig(),
-        supervisorTargets: getDefaultSupervisorTargets(),
       });
       return;
     }
@@ -50,7 +49,6 @@ router.get("/:platform", async (req: Request, res: Response) => {
       bookingRules: settings.bookingRules || getDefaultBookingRules(platform),
       documentRules: settings.documentRules || getDefaultDocumentRules(),
       notificationConfig: settings.notificationConfig || getDefaultNotificationConfig(),
-      supervisorTargets: settings.supervisorTargets || getDefaultSupervisorTargets(),
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -62,17 +60,31 @@ router.put("/:platform", rbac(...ADMINS), async (req: Request, res: Response) =>
   try {
     const tenantId = req.user!.tenantId;
     const platform = req.params.platform.toUpperCase();
-    const { targets, kpis, shiftRules, zones, violationRules, cashRules, bookingRules, documentRules, notificationConfig, supervisorTargets } = req.body;
+    const { targets, kpis, shiftRules, zones, violationRules, cashRules, bookingRules, documentRules, notificationConfig } = req.body;
 
     const settings = await prisma.platformSettings.upsert({
       where: { tenantId_platform: { tenantId, platform: platform as any } },
-      create: { tenantId, platform: platform as any, targets: targets || getDefaultTargets(platform), kpis, shiftRules, zones, violationRules, cashRules, bookingRules, documentRules, notificationConfig, supervisorTargets },
-      update: { targets, kpis, shiftRules, zones, violationRules, cashRules, bookingRules, documentRules, notificationConfig, supervisorTargets },
+      create: { tenantId, platform: platform as any, targets: targets || getDefaultTargets(platform), kpis, shiftRules, zones, violationRules, cashRules, bookingRules, documentRules, notificationConfig },
+      update: { targets, kpis, shiftRules, zones, violationRules, cashRules, bookingRules, documentRules, notificationConfig },
     });
 
     res.json(settings);
   } catch (err: any) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+// GET /api/platform-settings/inventory/all — all platforms in one call
+router.get("/inventory/all", async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const inventory = await prisma.platformInventory.findMany({
+      where: { tenantId },
+      orderBy: [{ platform: "asc" }, { itemType: "asc" }],
+    });
+    res.json({ data: inventory });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -337,55 +349,6 @@ function getDefaultDocumentRules() {
     notifyDriverBeforeExpiry: true,
     notifySupervisorBeforeExpiry: true,
     blockShiftBookingOnExpiry: true,
-  };
-}
-
-function getDefaultSupervisorTargets() {
-  return {
-    enabled: true,
-    metric: "darbGradeAvg", // "darbGradeAvg" | "attendanceRate"
-    minDriversRequired: 3,
-    // Per job-grade bonus tiers — each grade has its own thresholds and bonus amounts
-    grades: [
-      {
-        label: "Team Leader",
-        tiers: [
-          { label: "Bronze", minScore: 60, bonusKD: 25 },
-          { label: "Silver", minScore: 75, bonusKD: 50 },
-          { label: "Gold",   minScore: 90, bonusKD: 100 },
-        ],
-      },
-      {
-        label: "Supervisor",
-        tiers: [
-          { label: "Bronze", minScore: 60, bonusKD: 50 },
-          { label: "Silver", minScore: 75, bonusKD: 100 },
-          { label: "Gold",   minScore: 90, bonusKD: 200 },
-        ],
-      },
-      {
-        label: "Senior Supervisor",
-        tiers: [
-          { label: "Bronze", minScore: 60, bonusKD: 100 },
-          { label: "Silver", minScore: 75, bonusKD: 200 },
-          { label: "Gold",   minScore: 90, bonusKD: 350 },
-        ],
-      },
-      {
-        label: "Area Manager",
-        tiers: [
-          { label: "Bronze", minScore: 60, bonusKD: 150 },
-          { label: "Silver", minScore: 75, bonusKD: 300 },
-          { label: "Gold",   minScore: 90, bonusKD: 500 },
-        ],
-      },
-    ],
-    // Score added to raw team score before tier matching — levels playing field for larger teams
-    sizeAdjustments: [
-      { label: "Small",  minDrivers: 3,  maxDrivers: 7,   scoreAdjustment: 0  },
-      { label: "Medium", minDrivers: 8,  maxDrivers: 15,  scoreAdjustment: 5  },
-      { label: "Large",  minDrivers: 16, maxDrivers: 999, scoreAdjustment: 10 },
-    ],
   };
 }
 

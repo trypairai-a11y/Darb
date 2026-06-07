@@ -1,4 +1,6 @@
 import type { Config } from "tailwindcss";
+// @ts-expect-error - tailwindcss-rtl has no bundled types
+import rtl from "tailwindcss-rtl";
 
 const config: Config = {
   darkMode: "class",
@@ -62,8 +64,33 @@ const config: Config = {
         americana: "#0066FF",
       },
       fontFamily: {
-        sans: ['"SF Pro Display"', "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "system-ui", "sans-serif"],
-        display: ['"SF Pro Display"', "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "system-ui", "sans-serif"],
+        sans: [
+          '"SF Pro Display"',
+          "-apple-system",
+          "BlinkMacSystemFont",
+          '"Segoe UI"',
+          '"IBM Plex Sans Arabic"',
+          '"Noto Sans Arabic"',
+          "system-ui",
+          "sans-serif",
+        ],
+        display: [
+          '"SF Pro Display"',
+          "-apple-system",
+          "BlinkMacSystemFont",
+          '"Segoe UI"',
+          '"IBM Plex Sans Arabic"',
+          '"Noto Sans Arabic"',
+          "system-ui",
+          "sans-serif",
+        ],
+        arabic: [
+          '"IBM Plex Sans Arabic"',
+          '"Noto Sans Arabic"',
+          '"Cairo"',
+          "system-ui",
+          "sans-serif",
+        ],
       },
       fontSize: {
         "display-2xl": ["80px", { lineHeight: "84px", letterSpacing: "-0.03em", fontWeight: "400" }],
@@ -118,6 +145,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [rtl],
 };
 export default config;

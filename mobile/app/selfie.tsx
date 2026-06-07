@@ -27,19 +27,19 @@ export default function SelfieScreen() {
     if (!cameraRef.current || capturing) return;
     setCapturing(true);
     try {
-      const photo = await cameraRef.current.takePictureAsync({ base64: true, quality: 0.5 });
-      if (!photo?.base64) throw new Error("Failed to capture photo");
+      const photo = await cameraRef.current.takePictureAsync({ quality: 0.75, base64: false });
+      if (!photo?.uri) throw new Error("Failed to capture photo");
 
       const loc = await getCurrentLocation();
       await uploadSelfie({
         type: type as "clock_in" | "clock_out",
-        imageBase64: photo.base64,
+        imageUri: photo.uri,
         latitude: loc?.coords.latitude || 0,
         longitude: loc?.coords.longitude || 0,
       });
 
       Alert.alert("Success", type === "clock_in" ? "Clocked in" : "Clocked out");
-      router.back();
+      router.replace("/(tabs)/dashboard");
     } catch (err: any) {
       Alert.alert("Error", err.message || "Failed to upload selfie");
     }
@@ -84,6 +84,6 @@ const styles = StyleSheet.create({
   },
   center: { flex: 1, justifyContent: "center", alignItems: "center", padding: 32 },
   title: { fontSize: 18, fontWeight: "600", marginBottom: 16 },
-  button: { backgroundColor: "#007AFF", borderRadius: 12, padding: 16, paddingHorizontal: 32 },
+  button: { backgroundColor: "#007A3D", borderRadius: 12, padding: 16, paddingHorizontal: 32 },
   buttonText: { color: "#fff", fontWeight: "600" },
 });

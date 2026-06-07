@@ -371,7 +371,7 @@ export default function DeliverooShiftsPage() {
   const { data: summary } = useApiGet<any>("/api/shifts/summary?platform=DELIVEROO");
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="space-y-6 w-full max-w-none">
       {/* Header */}
       <div className="flex items-center gap-3">
         <span className="w-3 h-3 rounded-full bg-teal-500" />

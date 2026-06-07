@@ -189,6 +189,7 @@ router.get("/alerts", async (req: Request, res: Response) => {
     // 2. GPS stale: online drivers with lastSeen > 10 min ago
     const gpsStale = await prisma.device.findMany({
       where: {
+        tenantId,
         driver: { tenantId, platform: "KEETA", status: "ACTIVE" },
         isOnline: true,
         lastSeen: { lt: tenMinAgo },

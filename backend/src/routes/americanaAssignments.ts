@@ -2,7 +2,10 @@ import { Router, Request, Response } from "express";
 import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
+import { rbac } from "../middleware/rbac";
 import { parseLocalDate } from "../utils/date";
+
+const MUTATORS = ["ADMIN", "OPS_MANAGER"];
 
 const router = Router();
 router.use(authMiddleware, tenantScope);
@@ -53,7 +56,7 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 // POST /api/americana/assignments
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", rbac(...MUTATORS), async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
     const {
@@ -124,7 +127,7 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 // PUT /api/americana/assignments/:id
-router.put("/:id", async (req: Request, res: Response) => {
+router.put("/:id", rbac(...MUTATORS), async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
     const { endDate, reasonForChange } = req.body;
@@ -145,7 +148,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 // POST /api/americana/assignments/backfill-from-daily-orders
 // One-time: infer assignments from existing AmericanaDailyOrders rows.
-router.post("/backfill-from-daily-orders", async (req: Request, res: Response) => {
+router.post("/backfill-from-daily-orders", rbac("ADMIN"), async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
     const rows = await prisma.americanaDailyOrders.findMany({

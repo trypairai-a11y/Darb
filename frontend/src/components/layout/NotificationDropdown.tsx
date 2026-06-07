@@ -19,7 +19,7 @@ export default function NotificationDropdown() {
     }
   }, []);
 
-  const sseUrl = `${process.env.NEXT_PUBLIC_API_URL || ""}/api/notifications/stream`;
+  const sseUrl = `/api/notifications/stream`;
   useSSE({ url: sseUrl, onMessage: handleSSEMessage, enabled: true });
 
   /* ---- Initial unread count fetch ---- */

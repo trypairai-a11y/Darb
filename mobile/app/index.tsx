@@ -1,20 +1,15 @@
 import { useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
-import * as SecureStore from "expo-secure-store";
 
 export default function SplashScreen() {
   const router = useRouter();
 
+  // Demo build: the whole app runs on mock data, so skip enrollment and go
+  // straight to the dashboard. (To restore live enrollment, route to
+  // "/enrollment" when no agent_token is stored.)
   useEffect(() => {
-    (async () => {
-      const token = await SecureStore.getItemAsync("agent_token");
-      if (token) {
-        router.replace("/(tabs)/dashboard");
-      } else {
-        router.replace("/enrollment");
-      }
-    })();
+    router.replace("/(tabs)/dashboard");
   }, []);
 
   return (

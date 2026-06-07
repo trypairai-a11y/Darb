@@ -96,7 +96,7 @@ export default function AnalyticsPage() {
   const bestViolation = bestInColumn(comparisonData, "violationRate");
 
   return (
-    <div className="space-y-8 max-w-7xl">
+    <div className="space-y-8 w-full max-w-none">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Fleet Analytics</h1>

@@ -67,6 +67,11 @@ export const prisma = {
     findFirst: jest.fn(),
     findMany: jest.fn(),
     aggregate: jest.fn(),
+    groupBy: jest.fn().mockResolvedValue([]),
+  },
+  driverBatchHistory: {
+    findMany: jest.fn().mockResolvedValue([]),
+    create: jest.fn(),
   },
   pendingDuesLedger: {
     findMany: jest.fn(),
@@ -132,6 +137,35 @@ export const prisma = {
     findFirst: jest.fn(),
     update: jest.fn(),
   },
+  // Phase 9 Wave 0 — bilingual outbound + agent inbox tests reach for
+  // notification.{findMany,findFirst,findUnique,create,update,updateMany,count}.
+  // Surfacing them here keeps the inboxRoutes + draftCourierMessage.bilingual
+  // RED tests aligned with the Phase 2 monitor inline-mock convention. The
+  // shape mirrors Notification model writes done elsewhere in the codebase.
+  notification: {
+    findMany: jest.fn(),
+    findFirst: jest.fn(),
+    findUnique: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    updateMany: jest.fn(),
+    count: jest.fn(),
+  },
+  // Phase 9 Wave 0 — outboundResolver tests check NotificationDelivery for the
+  // daily KD-cost circuit breaker. Shape mirrors existing NotificationDelivery
+  // writes from notificationWorker.ts.
+  notificationDelivery: {
+    create: jest.fn(),
+    findMany: jest.fn(),
+    count: jest.fn(),
+    aggregate: jest.fn(),
+  },
+  // Phase 9 Wave 0 — tenant.findUnique used by outboundResolver to read
+  // outboundChannels JSON + whatsappPhoneNumberId + outboundDailyKdLimit.
+  tenant: {
+    findUnique: jest.fn(),
+    findFirst: jest.fn(),
+  },
   // Phase 6 Wave 1 — ingest audit trail (writeIngestRun). Wave 0 audit.test.ts
   // and compositeFetchCash.test.ts both reach for prisma.ingestRun.create
   // (the latter via the inline jest.mock factory; the former via the
@@ -170,6 +204,7 @@ const envBase: Record<string, unknown> = {
   JWT_SECRET: "test",
   JWT_REFRESH_SECRET: "test",
   REDIS_URL: "",
+  ANTHROPIC_MODEL: "claude-sonnet-4-6",
 };
 export const env = new Proxy(envBase, {
   get(target, prop: string) {

@@ -146,7 +146,7 @@ export default function DismissConfirm({
               rows={3}
               maxLength={280}
               className="w-full px-3 py-2 rounded-xl border border-sand-300 bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
-              placeholder="A short note for the audit log…"
+              placeholder="A short note for the audit log"
               autoFocus
             />
             <p className="mt-1 text-[11px] text-sand-500 text-end">
@@ -175,7 +175,7 @@ export default function DismissConfirm({
                 : "bg-sand-300 cursor-not-allowed",
             )}
           >
-            {submitting ? "Dismissing…" : "Dismiss"}
+            {submitting ? "Dismissing" : "Dismiss"}
           </button>
         </div>
       </div>

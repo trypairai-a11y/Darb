@@ -19,12 +19,16 @@ declare global {
 
 export function authMiddleware(req: Request, res: Response, next: NextFunction): void {
   const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith("Bearer ")) {
+  const queryToken = typeof req.query.token === "string" ? req.query.token : undefined;
+  const token = authHeader?.startsWith("Bearer ")
+    ? authHeader.split(" ")[1]
+    : queryToken;
+
+  if (!token) {
     res.status(401).json({ error: "No token provided" });
     return;
   }
 
-  const token = authHeader.split(" ")[1];
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
     req.user = decoded;

@@ -1,13 +1,20 @@
 import { Tabs } from "expo-router";
-import { Home, ClipboardList, Clock, User } from "lucide-react-native";
+import { Home, Trophy, Ticket } from "lucide-react-native";
 
 export default function TabLayout() {
   return (
     <Tabs screenOptions={{
       headerShown: false,
-      tabBarStyle: { backgroundColor: "#1A1A2E", borderTopColor: "#2A2A4E" },
-      tabBarActiveTintColor: "#F97316",
-      tabBarInactiveTintColor: "#6B7280",
+      tabBarStyle: {
+        backgroundColor: "#fff",
+        borderTopColor: "#e5e5ea",
+        height: 84,
+        paddingTop: 8,
+        paddingBottom: 24,
+      },
+      tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
+      tabBarActiveTintColor: "#007A3D",
+      tabBarInactiveTintColor: "#8e8e93",
     }}>
       <Tabs.Screen
         name="dashboard"
@@ -17,24 +24,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="orders"
+        name="points"
         options={{
-          title: "Orders",
-          tabBarIcon: ({ color, size }) => <ClipboardList size={size} color={color} />,
+          title: "Score",
+          tabBarIcon: ({ color, size }) => <Trophy size={size} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="shifts"
+        name="tickets"
         options={{
-          title: "Shifts",
-          tabBarIcon: ({ color, size }) => <Clock size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
+          title: "Tickets",
+          tabBarIcon: ({ color, size }) => <Ticket size={size} color={color} />,
         }}
       />
     </Tabs>

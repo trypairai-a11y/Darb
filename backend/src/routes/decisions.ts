@@ -95,12 +95,20 @@ function whereForTag(tag: DecisionTag): Record<string, unknown> | null {
         OR: [
           {
             toolName: "draftCourierMessage",
-            NOT: {
-              input: {
-                path: ["intent"],
-                in: ["CASH_REMINDER", "PROMOTE_TOP_PERFORMER"],
+            NOT: [
+              {
+                input: {
+                  path: ["intent"],
+                  equals: "CASH_REMINDER",
+                },
               },
-            },
+              {
+                input: {
+                  path: ["intent"],
+                  equals: "PROMOTE_TOP_PERFORMER",
+                },
+              },
+            ],
           },
           { toolName: "proposeCoachingMessage" },
         ],

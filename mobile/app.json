@@ -50,7 +50,8 @@
       "expo-notifications",
       "expo-secure-store",
       "expo-router",
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true

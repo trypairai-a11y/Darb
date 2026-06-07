@@ -253,7 +253,6 @@ function DriverHeader({ driver, driverSummary, platformKey, platformLabel, theme
   if (driver.employeeId) details.push({ label: "Employee ID", value: <span className="font-mono">{driver.employeeId}</span> });
   if (driver.chain) details.push({ label: "Chain", value: driver.chain });
   if (driver.storeName) details.push({ label: "Store", value: driver.storeName });
-  if (driver.costCenter) details.push({ label: "Cost Center", value: <span className="font-mono">{driver.costCenter}</span> });
   if (driver.company?.name) details.push({ label: "Company", value: driver.company.name });
   if (driverSummary?.totalDeliveries != null) details.push({ label: "Total Orders", value: driverSummary.totalDeliveries.toLocaleString() });
   if (driverSummary?.totalSessions != null) details.push({ label: "Total Shifts", value: driverSummary.totalSessions.toLocaleString() });

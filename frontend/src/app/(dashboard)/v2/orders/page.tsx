@@ -29,7 +29,7 @@ export default function OrdersPage() {
   }));
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="w-full max-w-none">
       <ShortlistView
         title="Orders"
         subtitle="Orders that broke their ETA or need a look. Full order stream under Browse."

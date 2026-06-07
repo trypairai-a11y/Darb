@@ -78,7 +78,7 @@ export function ChatThreadSidebar({ activeThreadId }: ChatThreadSidebarProps) {
   };
 
   return (
-    <aside className="hidden h-screen w-[280px] shrink-0 flex-col border-r border-sand-200 bg-bg xl:flex">
+    <aside className="hidden h-full w-[280px] shrink-0 flex-col border-r border-sand-200 bg-white/70 xl:flex">
       <div className="flex items-center gap-2 border-b border-sand-200 px-3 py-3">
         <button
           type="button"

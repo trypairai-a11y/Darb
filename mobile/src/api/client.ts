@@ -1,6 +1,6 @@
 import * as SecureStore from "expo-secure-store";
 
-export const BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3001";
+export const BASE_URL = process.env.EXPO_PUBLIC_API_URL || "https://backend-snowy-ten-52.vercel.app";
 
 async function getToken(): Promise<string | null> {
   return SecureStore.getItemAsync("agent_token");
@@ -59,7 +59,16 @@ export async function register(enrollmentCode: string, deviceInfo: {
   await SecureStore.setItemAsync("agent_token", data.token);
   await SecureStore.setItemAsync("device_id", data.deviceId);
   if (data.driverId) await SecureStore.setItemAsync("driver_id", data.driverId);
+  if (data.driver?.platform) await SecureStore.setItemAsync("driver_platform", data.driver.platform);
   return data;
+}
+
+export async function registerPushToken(expoPushToken: string): Promise<{ ok: true }> {
+  const deviceId = await getDeviceId();
+  return agentFetch<{ ok: true }>("/api/agent/push-token", {
+    method: "POST",
+    body: JSON.stringify({ deviceId, expoPushToken }),
+  });
 }
 
 export interface DarbPointsResponse {
@@ -82,9 +91,7 @@ export interface DarbPointsResponse {
 }
 
 export async function fetchMyDarbPoints(): Promise<DarbPointsResponse> {
-  const driverId = await SecureStore.getItemAsync("driver_id");
-  if (!driverId) throw new Error("Driver not enrolled");
-  return agentFetch<DarbPointsResponse>(`/api/darb-points/driver/${driverId}`);
+  return agentFetch<DarbPointsResponse>("/api/agent/points");
 }
 
 export async function heartbeat(payload: {
@@ -102,14 +109,22 @@ export async function heartbeat(payload: {
 
 export async function uploadSelfie(payload: {
   type: "clock_in" | "clock_out";
-  imageBase64: string;
+  imageUri: string;
   latitude: number;
   longitude: number;
 }) {
-  return agentFetch("/api/agent/selfie", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+  const deviceId = await getDeviceId();
+  const formData = new FormData();
+  formData.append("deviceId", deviceId);
+  formData.append("action", payload.type === "clock_in" ? "ACTION_CLOCK_IN" : "ACTION_CLOCK_OUT");
+  formData.append("latitude", String(payload.latitude));
+  formData.append("longitude", String(payload.longitude));
+  formData.append("selfie", {
+    uri: payload.imageUri,
+    name: `${payload.type}.jpg`,
+    type: "image/jpeg",
+  } as any);
+  return agentFetchMultipart("/api/agent/selfie", formData);
 }
 
 /**
@@ -247,4 +262,96 @@ export async function listMyTickets(): Promise<TicketRecord[]> {
 export async function getMyTicket(id: string): Promise<TicketRecord> {
   const deviceId = await getDeviceId();
   return agentFetch<TicketRecord>(`/api/agent/tickets/${id}?deviceId=${encodeURIComponent(deviceId)}`);
+}
+
+// ─── Orders (last 7 days, up to 30) ───
+export interface OrderRecord {
+  id: string;
+  platform: string;
+  status: string;
+  merchantName: string;
+  deliveryAddress: string;
+  amount: number;
+  cashCollected: number;
+  orderCount: number;
+  orderNumber: string | null;
+  createdAt: string;
+}
+
+export async function fetchMyOrders(): Promise<OrderRecord[]> {
+  const res = await agentFetch<{ data: OrderRecord[] }>("/api/agent/orders");
+  return res.data ?? [];
+}
+
+// ─── Shifts (next ±2 weeks, up to 40) ───
+export interface ShiftRecord {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  area: string | null;
+  status: string;
+  actualStart: string | null;
+  actualEnd: string | null;
+  platform: string;
+}
+
+export async function fetchMyShifts(): Promise<ShiftRecord[]> {
+  const res = await agentFetch<{ data: ShiftRecord[] }>("/api/agent/shifts");
+  return res.data ?? [];
+}
+
+// ─── Equipment (issued kit the driver can report on) ───
+export type EquipmentCondition = "OK" | "DAMAGED" | "CHANGED" | "CHANGE_REQUESTED";
+export type ReportableCondition = "DAMAGED" | "CHANGED" | "CHANGE_REQUESTED";
+
+export interface EquipmentItem {
+  id: string;
+  itemType: string;
+  label: string;
+  quantity: number;
+  issued: boolean;
+  issuedDate: string | null;
+  condition: EquipmentCondition;
+  conditionNote: string | null;
+  conditionReportedAt: string | null;
+}
+
+export async function fetchMyEquipment(): Promise<EquipmentItem[]> {
+  const deviceId = await getDeviceId();
+  const res = await agentFetch<{ data: EquipmentItem[] }>(
+    `/api/agent/equipment?deviceId=${encodeURIComponent(deviceId)}`
+  );
+  return res.data ?? [];
+}
+
+export async function reportEquipmentCondition(
+  id: string,
+  condition: ReportableCondition,
+  note?: string
+): Promise<EquipmentItem> {
+  const deviceId = await getDeviceId();
+  return agentFetch<EquipmentItem>(`/api/agent/equipment/${id}/condition`, {
+    method: "POST",
+    body: JSON.stringify({ deviceId, condition, note }),
+  });
+}
+
+// ─── Identity helpers (for components that need the resolved driver id) ───
+export async function getStoredDriverId(): Promise<string | null> {
+  return SecureStore.getItemAsync("driver_id");
+}
+
+/**
+ * Sign the device out. There is no server-side revoke endpoint for agent device
+ * tokens, so this clears all locally-held enrollment material. Callers should
+ * stop the GPS beacon and route back to /enrollment afterwards.
+ */
+export async function unenroll(): Promise<void> {
+  await Promise.all([
+    SecureStore.deleteItemAsync("agent_token"),
+    SecureStore.deleteItemAsync("device_id"),
+    SecureStore.deleteItemAsync("driver_id"),
+    SecureStore.deleteItemAsync("driver_platform"),
+  ]);
 }

@@ -93,26 +93,7 @@ import {
   Car,
 } from "lucide-react";
 
-type Tab = "targets" | "inventory" | "kpis" | "zones" | "violations" | "cash" | "booking" | "documents" | "notifications" | "supervisor";
-
-function getDefaultSupervisorConfig() {
-  return {
-    enabled: true,
-    metric: "darbGradeAvg",
-    minDriversRequired: 3,
-    grades: [
-      { label: "Team Leader",      tiers: [{ label: "Bronze", minScore: 60, bonusKD: 25  }, { label: "Silver", minScore: 75, bonusKD: 50  }, { label: "Gold", minScore: 90, bonusKD: 100 }] },
-      { label: "Supervisor",       tiers: [{ label: "Bronze", minScore: 60, bonusKD: 50  }, { label: "Silver", minScore: 75, bonusKD: 100 }, { label: "Gold", minScore: 90, bonusKD: 200 }] },
-      { label: "Senior Supervisor",tiers: [{ label: "Bronze", minScore: 60, bonusKD: 100 }, { label: "Silver", minScore: 75, bonusKD: 200 }, { label: "Gold", minScore: 90, bonusKD: 350 }] },
-      { label: "Area Manager",     tiers: [{ label: "Bronze", minScore: 60, bonusKD: 150 }, { label: "Silver", minScore: 75, bonusKD: 300 }, { label: "Gold", minScore: 90, bonusKD: 500 }] },
-    ],
-    sizeAdjustments: [
-      { label: "Small",  minDrivers: 3,  maxDrivers: 7,   scoreAdjustment: 0  },
-      { label: "Medium", minDrivers: 8,  maxDrivers: 15,  scoreAdjustment: 5  },
-      { label: "Large",  minDrivers: 16, maxDrivers: 999, scoreAdjustment: 10 },
-    ],
-  };
-}
+type Tab = "targets" | "inventory" | "kpis" | "zones" | "violations" | "cash" | "booking" | "documents" | "notifications";
 
 interface Props {
   platform: string;
@@ -152,7 +133,6 @@ export default function PlatformSettingsPage({ platform, platformLabel, platform
   const [bookingRules, setBookingRules] = useState<any>(null);
   const [documentRules, setDocumentRules] = useState<any>(null);
   const [notificationConfig, setNotificationConfig] = useState<any>(null);
-  const [supervisorTargets, setSupervisorTargets] = useState<any>(null);
 
   // Inventory state
   const [inventoryItems, setInventoryItems] = useState<any[]>([]);
@@ -192,14 +172,6 @@ export default function PlatformSettingsPage({ platform, platformLabel, platform
       setBookingRules(settings.bookingRules);
       setDocumentRules(settings.documentRules);
       setNotificationConfig(settings.notificationConfig);
-      const defSup = getDefaultSupervisorConfig();
-      const rawSup = settings.supervisorTargets || defSup;
-      setSupervisorTargets({
-        ...defSup,
-        ...rawSup,
-        grades: rawSup.grades?.length ? rawSup.grades : defSup.grades,
-        sizeAdjustments: rawSup.sizeAdjustments?.length ? rawSup.sizeAdjustments : defSup.sizeAdjustments,
-      });
     }
   }, [settings]);
 
@@ -218,7 +190,7 @@ export default function PlatformSettingsPage({ platform, platformLabel, platform
   async function handleSaveSettings() {
     setSaving(true);
     try {
-      await api.put(`/api/platform-settings/${platform}`, { targets, kpis, shiftRules, zones, violationRules, cashRules, bookingRules, documentRules, notificationConfig, supervisorTargets });
+      await api.put(`/api/platform-settings/${platform}`, { targets, kpis, shiftRules, zones, violationRules, cashRules, bookingRules, documentRules, notificationConfig });
       showSaveStatus("success");
       refetch();
     } catch (err: any) {
@@ -271,7 +243,6 @@ export default function PlatformSettingsPage({ platform, platformLabel, platform
     { key: "cash", label: "Cash", icon: Banknote },
     { key: "booking", label: "Booking", icon: CalendarClock },
     { key: "notifications", label: "Notifications", icon: Bell },
-    { key: "supervisor", label: "Supervisor", icon: Users },
     { key: "zones", label: "Zones", icon: MapPin },
     { key: "inventory", label: "Inventory", icon: Package },
   ];
@@ -1288,307 +1259,6 @@ export default function PlatformSettingsPage({ platform, platformLabel, platform
         </div>
       )}
 
-      {/* ── Supervisor Bonus Targets Tab ── */}
-      {tab === "supervisor" && supervisorTargets && !isLoading && (
-        <div className="space-y-6">
-          {/* Enable / Metric */}
-          <div className="bg-white rounded-2xl shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="p-2 rounded-xl bg-amber-50 text-amber-600">
-                <Users size={18} />
-              </div>
-              <div>
-                <h2 className="text-base font-semibold">Supervisor Bonus Targets</h2>
-                <p className="text-xs text-secondary">Configure bonus tiers awarded to supervisors based on their team&apos;s performance</p>
-              </div>
-              <div className="ml-auto">
-                <button
-                  onClick={() => setSupervisorTargets({ ...supervisorTargets, enabled: !supervisorTargets.enabled })}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-colors",
-                    supervisorTargets.enabled ? "border-green-200 bg-green-50 text-green-700" : "border-gray-200 bg-gray-50 text-gray-500"
-                  )}
-                >
-                  <div className={cn("w-8 h-5 rounded-full relative transition-colors", supervisorTargets.enabled ? "bg-green-500" : "bg-gray-300")}>
-                    <div className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all", supervisorTargets.enabled ? "left-3.5" : "left-0.5")} />
-                  </div>
-                  {supervisorTargets.enabled ? "Enabled" : "Disabled"}
-                </button>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-5">
-              <div>
-                <label className="block text-xs font-medium text-secondary mb-1.5">Performance Metric</label>
-                <select
-                  value={supervisorTargets.metric}
-                  onChange={(e) => setSupervisorTargets({ ...supervisorTargets, metric: e.target.value })}
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-shadow"
-                >
-                  <option value="darbGradeAvg">Darb Grade Avg</option>
-                  <option value="attendanceRate">Attendance Rate</option>
-                </select>
-                <p className="text-[11px] text-secondary mt-1">The metric used to calculate each supervisor&apos;s team score</p>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-secondary mb-1.5">Minimum Drivers Required</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={supervisorTargets.minDriversRequired}
-                  onChange={(e) => setSupervisorTargets({ ...supervisorTargets, minDriversRequired: Number(e.target.value) })}
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-shadow"
-                />
-                <p className="text-[11px] text-secondary mt-1">Supervisor must manage at least this many active drivers to qualify</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Per-Grade Bonus Tiers */}
-          <div className="bg-white rounded-2xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-orange-50 text-orange-600">
-                  <Target size={18} />
-                </div>
-                <div>
-                  <h2 className="text-base font-semibold">Per-Grade Bonus Tiers</h2>
-                  <p className="text-xs text-secondary">Each supervisor grade has its own bonus tiers — higher grades earn larger bonuses</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setSupervisorTargets({
-                  ...supervisorTargets,
-                  grades: [...(supervisorTargets.grades || []), { label: "New Grade", tiers: [] }],
-                })}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
-              >
-                <Plus size={14} />
-                Add Grade
-              </button>
-            </div>
-
-            {(supervisorTargets.grades?.length > 0) ? (
-              <div className="space-y-5">
-                {supervisorTargets.grades.map((grade: any, gIdx: number) => {
-                  const gradeColorMap: Record<string, string> = {
-                    "Team Leader": "bg-sky-50 text-sky-700",
-                    "Supervisor": "bg-violet-50 text-violet-700",
-                    "Senior Supervisor": "bg-indigo-50 text-indigo-700",
-                    "Area Manager": "bg-rose-50 text-rose-700",
-                  };
-                  const gradePill = gradeColorMap[grade.label] || "bg-gray-100 text-gray-600";
-                  return (
-                    <div key={gIdx} className="border border-gray-100 rounded-xl overflow-hidden">
-                      {/* Grade header */}
-                      <div className="flex items-center justify-between px-4 py-3 bg-gray-50/80 border-b border-gray-100">
-                        <div className="flex items-center gap-3">
-                          <span className={cn("px-2.5 py-1 rounded-lg text-xs font-semibold", gradePill)}>
-                            {grade.label}
-                          </span>
-                          <input
-                            value={grade.label}
-                            onChange={(e) => {
-                              const updatedGrades = [...supervisorTargets.grades];
-                              updatedGrades[gIdx] = { ...grade, label: e.target.value };
-                              setSupervisorTargets({ ...supervisorTargets, grades: updatedGrades });
-                            }}
-                            className="px-2 py-1 rounded-lg border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 w-44"
-                          />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => {
-                              const updatedGrades = [...supervisorTargets.grades];
-                              updatedGrades[gIdx] = { ...grade, tiers: [...(grade.tiers || []), { label: "New Tier", minScore: 0, bonusKD: 0 }] };
-                              setSupervisorTargets({ ...supervisorTargets, grades: updatedGrades });
-                            }}
-                            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-gray-200 hover:bg-white transition-colors"
-                          >
-                            <Plus size={12} /> Add Tier
-                          </button>
-                          <button
-                            onClick={() => setSupervisorTargets({
-                              ...supervisorTargets,
-                              grades: supervisorTargets.grades.filter((_: any, i: number) => i !== gIdx),
-                            })}
-                            className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-                          >
-                            <X size={14} />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Tiers table */}
-                      {grade.tiers?.length > 0 ? (
-                        <table className="w-full">
-                          <thead>
-                            <tr className="border-b border-gray-100">
-                              <th className="text-left text-xs font-medium text-secondary px-4 py-2.5">Label</th>
-                              <th className="text-left text-xs font-medium text-secondary px-4 py-2.5">Min Score (%)</th>
-                              <th className="text-left text-xs font-medium text-secondary px-4 py-2.5">Bonus (KD)</th>
-                              <th className="px-4 py-2.5 w-10" />
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {grade.tiers.map((tier: any, tIdx: number) => (
-                              <tr key={tIdx} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/30 transition-colors">
-                                <td className="px-4 py-2.5">
-                                  <input
-                                    value={tier.label}
-                                    onChange={(e) => {
-                                      const updatedGrades = [...supervisorTargets.grades];
-                                      const updatedTiers = [...grade.tiers];
-                                      updatedTiers[tIdx] = { ...tier, label: e.target.value };
-                                      updatedGrades[gIdx] = { ...grade, tiers: updatedTiers };
-                                      setSupervisorTargets({ ...supervisorTargets, grades: updatedGrades });
-                                    }}
-                                    className="w-full px-3 py-1.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-shadow"
-                                  />
-                                </td>
-                                <td className="px-4 py-2.5">
-                                  <div className="relative w-32">
-                                    <input
-                                      type="number" min={0} max={100}
-                                      value={tier.minScore}
-                                      onChange={(e) => {
-                                        const updatedGrades = [...supervisorTargets.grades];
-                                        const updatedTiers = [...grade.tiers];
-                                        updatedTiers[tIdx] = { ...tier, minScore: Number(e.target.value) };
-                                        updatedGrades[gIdx] = { ...grade, tiers: updatedTiers };
-                                        setSupervisorTargets({ ...supervisorTargets, grades: updatedGrades });
-                                      }}
-                                      className="w-full px-3 py-1.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-shadow pr-7"
-                                    />
-                                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-secondary">%</span>
-                                  </div>
-                                </td>
-                                <td className="px-4 py-2.5">
-                                  <div className="relative w-32">
-                                    <input
-                                      type="number" min={0}
-                                      value={tier.bonusKD}
-                                      onChange={(e) => {
-                                        const updatedGrades = [...supervisorTargets.grades];
-                                        const updatedTiers = [...grade.tiers];
-                                        updatedTiers[tIdx] = { ...tier, bonusKD: Number(e.target.value) };
-                                        updatedGrades[gIdx] = { ...grade, tiers: updatedTiers };
-                                        setSupervisorTargets({ ...supervisorTargets, grades: updatedGrades });
-                                      }}
-                                      className="w-full px-3 py-1.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-shadow pr-9"
-                                    />
-                                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-secondary">KD</span>
-                                  </div>
-                                </td>
-                                <td className="px-4 py-2.5">
-                                  <button
-                                    onClick={() => {
-                                      const updatedGrades = [...supervisorTargets.grades];
-                                      updatedGrades[gIdx] = { ...grade, tiers: grade.tiers.filter((_: any, i: number) => i !== tIdx) };
-                                      setSupervisorTargets({ ...supervisorTargets, grades: updatedGrades });
-                                    }}
-                                    className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-                                  >
-                                    <X size={14} />
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      ) : (
-                        <div className="px-4 py-4 text-center text-xs text-secondary bg-white">
-                          No tiers — click &quot;Add Tier&quot; to configure bonuses for this grade
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-10 bg-gray-50/50 rounded-xl">
-                <Target size={32} className="mx-auto text-gray-200 mb-3" />
-                <p className="text-sm text-secondary">No grades configured</p>
-                <p className="text-xs text-secondary mt-1">Click &quot;Add Grade&quot; to create per-grade bonus tiers</p>
-              </div>
-            )}
-          </div>
-
-          {/* Team Size Adjustments */}
-          <div className="bg-white rounded-2xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600">
-                  <Users size={18} />
-                </div>
-                <div>
-                  <h2 className="text-base font-semibold">Team Size Adjustments</h2>
-                  <p className="text-xs text-secondary">Add score points to supervisors managing larger teams — levels the playing field</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setSupervisorTargets({
-                  ...supervisorTargets,
-                  sizeAdjustments: [...(supervisorTargets.sizeAdjustments || []), { label: "New Bracket", minDrivers: 0, maxDrivers: 999, scoreAdjustment: 0 }],
-                })}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
-              >
-                <Plus size={14} /> Add Bracket
-              </button>
-            </div>
-            <div className="overflow-hidden rounded-xl border border-gray-100">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gray-50/80 border-b border-gray-100">
-                    <th className="text-left text-xs font-medium text-secondary px-4 py-3">Label</th>
-                    <th className="text-left text-xs font-medium text-secondary px-4 py-3">Min Drivers</th>
-                    <th className="text-left text-xs font-medium text-secondary px-4 py-3">Max Drivers</th>
-                    <th className="text-left text-xs font-medium text-secondary px-4 py-3">Score Bonus</th>
-                    <th className="px-4 py-3 w-10" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {(supervisorTargets.sizeAdjustments || []).map((bracket: any, idx: number) => (
-                    <tr key={idx} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/30 transition-colors">
-                      <td className="px-4 py-3">
-                        <input value={bracket.label}
-                          onChange={(e) => { const u = [...supervisorTargets.sizeAdjustments]; u[idx] = { ...bracket, label: e.target.value }; setSupervisorTargets({ ...supervisorTargets, sizeAdjustments: u }); }}
-                          className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                      </td>
-                      <td className="px-4 py-3">
-                        <input type="number" min={0} value={bracket.minDrivers}
-                          onChange={(e) => { const u = [...supervisorTargets.sizeAdjustments]; u[idx] = { ...bracket, minDrivers: Number(e.target.value) }; setSupervisorTargets({ ...supervisorTargets, sizeAdjustments: u }); }}
-                          className="w-24 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                      </td>
-                      <td className="px-4 py-3">
-                        <input type="number" min={0} value={bracket.maxDrivers}
-                          onChange={(e) => { const u = [...supervisorTargets.sizeAdjustments]; u[idx] = { ...bracket, maxDrivers: Number(e.target.value) }; setSupervisorTargets({ ...supervisorTargets, sizeAdjustments: u }); }}
-                          className="w-24 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="relative w-28">
-                          <input type="number" min={0} max={20} value={bracket.scoreAdjustment}
-                            onChange={(e) => { const u = [...supervisorTargets.sizeAdjustments]; u[idx] = { ...bracket, scoreAdjustment: Number(e.target.value) }; setSupervisorTargets({ ...supervisorTargets, sizeAdjustments: u }); }}
-                            className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 pr-8" />
-                          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-secondary">pts</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <button onClick={() => setSupervisorTargets({ ...supervisorTargets, sizeAdjustments: supervisorTargets.sizeAdjustments.filter((_: any, i: number) => i !== idx) })}
-                          className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors">
-                          <X size={14} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="text-[11px] text-secondary mt-3">
-              Points are added to the raw team score before tier matching. Example: a supervisor with 18 drivers scoring 80% gets +10 pts → 90% = Gold tier.
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Add Inventory Modal */}
       {showAddInventory && (

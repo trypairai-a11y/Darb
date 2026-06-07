@@ -84,12 +84,29 @@ import "./agent"; // registers agents as a side-effect
 import { startAgentScheduler } from "./agent/scheduler";
 
 const app = express();
+// The API sits behind Next.js middleware locally and Vercel proxies in deploys.
+// Trust the first proxy so rate limiting reads X-Forwarded-For correctly.
+app.set("trust proxy", 1);
+
+function redactUrlCredentials(rawUrl?: string) {
+  if (!rawUrl) return rawUrl;
+  const [pathname, query] = rawUrl.split("?", 2);
+  if (!query) return rawUrl;
+
+  const params = new URLSearchParams(query);
+  for (const key of ["token", "accessToken", "refreshToken"]) {
+    if (params.has(key)) params.set(key, "[Redacted]");
+  }
+  return `${pathname}?${params.toString()}`;
+}
 
 const staticAllowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:3003",
   "http://localhost:3006",
+  "http://localhost:4555",
+  "http://localhost:4556",
   process.env.FRONTEND_URL,
 ].filter(Boolean) as string[];
 
@@ -118,7 +135,7 @@ app.use(
     logger,
     customProps: (req) => ({ requestId: (req as any).id }),
     serializers: {
-      req: (req) => ({ method: req.method, url: req.url, id: req.id }),
+      req: (req) => ({ method: req.method, url: redactUrlCredentials(req.url), id: req.id }),
       res: (res) => ({ statusCode: res.statusCode }),
     },
     // Quiet health checks — they're polled every few seconds

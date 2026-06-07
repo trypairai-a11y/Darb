@@ -217,7 +217,7 @@ export default function NotificationPanel({
     [onUnreadCountChange, fetchCounts]
   );
 
-  const sseUrl = `${process.env.NEXT_PUBLIC_API_URL || ""}/api/notifications/stream`;
+  const sseUrl = `/api/notifications/stream`;
   useSSE({ url: sseUrl, onMessage: handleSSEMessage, enabled: visible });
 
   /* ---- initial load & category change ---- */

@@ -5,7 +5,6 @@ export interface AmericanaDailyRow {
   empId: string;
   driverName: string;
   chain: string;
-  costCenter: string;
   storeName: string;
   company: string;
   position: string;
@@ -20,7 +19,7 @@ export interface AmericanaDailyRow {
 /**
  * Daily feed parser. Americana HQ emails a daily XLSX with one row per
  * (driver × store) for a single calendar day. Columns observed in the sample
- * feed: Chain, Emp ID, Driver, CC, Store, Company, Position, Date (YYYY-MM-DD
+ * feed: Chain, Emp ID, Driver, Store, Company, Position, Date (YYYY-MM-DD
  * or D-MMM), Orders, Attendance, Check-in. The parser is tolerant of missing
  * columns — attendance / check-in fall back to null.
  *
@@ -65,7 +64,6 @@ export function parseAmericanaDailyXlsx(buffer: Buffer): { rows: AmericanaDailyR
           empId: row.empId,
           driverName: row.driverName,
           chain: row.chain,
-          costCenter: row.costCenter,
           storeName: row.storeName,
           company: row.company,
           position: row.position,
@@ -84,7 +82,6 @@ export function parseAmericanaDailyXlsx(buffer: Buffer): { rows: AmericanaDailyR
   const idxChain = colOf("chain");
   const idxEmpId = colOf("emp id", "empid", "employee id");
   const idxName = colOf("driver name", "driver", "name");
-  const idxCC = colOf("cc", "cost center", "cost centre");
   const idxStore = colOf("store name", "store");
   const idxCompany = colOf("company");
   const idxPosition = colOf("position", "vehicle", "vehicle type");
@@ -122,7 +119,6 @@ export function parseAmericanaDailyXlsx(buffer: Buffer): { rows: AmericanaDailyR
       empId,
       driverName,
       chain: idxChain >= 0 ? String(row[idxChain] ?? "").trim() : "",
-      costCenter: idxCC >= 0 ? String(row[idxCC] ?? "").trim() : "",
       storeName: idxStore >= 0 ? String(row[idxStore] ?? "").trim() : "",
       company: idxCompany >= 0 ? String(row[idxCompany] ?? "").trim() : "",
       position: idxPosition >= 0 ? String(row[idxPosition] ?? "").trim() : "",

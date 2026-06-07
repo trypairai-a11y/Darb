@@ -56,7 +56,7 @@ export default function AttendancePage() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="space-y-6 w-full max-w-none">
       <h1 className="text-xl font-semibold">{t("table.attendance")}</h1>
 
       {/* AI Insights */}

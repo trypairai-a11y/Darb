@@ -1,11 +1,10 @@
 "use client";
 import React, { useRef, useState, useMemo } from "react";
-import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { useApiGet } from "@/hooks/useApi";
 import FilterBar from "@/components/shared/FilterBar";
-import SlidePanel from "@/components/shared/SlidePanel";
 import StatCard from "@/components/shared/StatCard";
-import { type TimelineStep } from "@/components/shared/OrderTimeline";
+import PlatformPerformanceTab from "@/components/platform/PlatformPerformanceTab";
 import { cn } from "@/lib/cn";
 import { cleanDriverName } from "@/lib/formatters";
 import api from "@/lib/api";
@@ -18,7 +17,6 @@ import {
   Route,
   CreditCard,
   Info,
-  Loader2,
   Download,
   MapPin,
   ArrowUp,
@@ -28,12 +26,7 @@ import {
 } from "lucide-react";
 import { useI18n } from "@/i18n/I18nProvider";
 import { DirectionalIcon } from "@/i18n/directionalIcon";
-import { formatDate, formatNumber } from "@/i18n/format";
-
-const OrderTimeline = dynamic(() => import("@/components/shared/OrderTimeline"), {
-  ssr: false,
-  loading: () => <div className="animate-pulse h-32 bg-gray-100 rounded-xl" />,
-});
+import { formatNumber } from "@/i18n/format";
 
 const ZONES = [
   "Hawally", "Salmiya", "Ardiya", "Jahra", "Khiran",
@@ -121,53 +114,11 @@ function Pagination({
   );
 }
 
-function OrderFlowSection({ orderId }: { orderId: string | undefined }) {
-  const { t } = useI18n();
-  const { data, loading, error } = useApiGet<{ orderId: string; steps: TimelineStep[]; totalEvents: number }>(
-    orderId ? `/api/order-flow/orders/${orderId}/flow` : null
-  );
-  if (!orderId) return null;
-  if (loading) {
-    return (
-      <div className="pt-2">
-        <h3 className="text-xs font-medium text-secondary uppercase mb-3">{t("keetaPage.orderFlow")}</h3>
-        <div className="flex flex-col items-center justify-center py-10 gap-2">
-          <Loader2 size={20} className="animate-spin text-keeta" />
-          <p className="text-xs text-secondary">{t("keetaPage.loadingTimeline")}</p>
-        </div>
-      </div>
-    );
-  }
-  if (error) {
-    return (
-      <div className="pt-2">
-        <h3 className="text-xs font-medium text-secondary uppercase mb-3">{t("keetaPage.orderFlow")}</h3>
-        <div className="text-center py-8 text-sm text-secondary">{t("keetaPage.unableLoadFlow")}</div>
-      </div>
-    );
-  }
-  const steps = data?.steps || [];
-  if (steps.length === 0) {
-    return (
-      <div className="pt-2">
-        <h3 className="text-xs font-medium text-secondary uppercase mb-3">{t("keetaPage.orderFlow")}</h3>
-        <div className="text-center py-8 text-sm text-secondary">{t("keetaPage.noFlowData")}</div>
-      </div>
-    );
-  }
-  return (
-    <div className="pt-2">
-      <h3 className="text-xs font-medium text-secondary uppercase mb-3">{t("keetaPage.orderFlow")}</h3>
-      <OrderTimeline steps={steps} />
-    </div>
-  );
-}
-
 export default function KeetaOrdersPage() {
   const { t, locale } = useI18n();
+  const router = useRouter();
   const [pageTab, setPageTab] = useState<PageTab>("orders");
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [selected, setSelected] = useState<any>(null);
   const [xlsxFile, setXlsxFile] = useState<File | null>(null);
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [sortField, setSortField] = useState<SortField>("date");
@@ -398,7 +349,7 @@ export default function KeetaOrdersPage() {
                         <tr
                           key={order.id}
                           className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors cursor-pointer"
-                          onClick={() => setSelected(order)}
+                          onClick={() => router.push(`/keeta/orders/${order.id}`)}
                         >
                           <td className="px-5 py-3 text-sm text-secondary whitespace-nowrap">
                             {order.date ? new Date(order.date).toLocaleDateString([], { month: "short", day: "numeric" }) : "\u2014"}
@@ -461,22 +412,6 @@ export default function KeetaOrdersPage() {
 
       {pageTab === "performance" && (
         <div className="space-y-6">
-          <div className="flex gap-3 items-center">
-            <input
-              type="date"
-              value={filters.dateFrom || ""}
-              onChange={(e) => setFilters((prev) => ({ ...prev, dateFrom: e.target.value }))}
-              className="px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-keeta/30"
-            />
-            <span className="text-sm text-secondary">{t("keetaPage.toConnector")}</span>
-            <input
-              type="date"
-              value={filters.dateTo || ""}
-              onChange={(e) => setFilters((prev) => ({ ...prev, dateTo: e.target.value }))}
-              className="px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-keeta/30"
-            />
-          </div>
-
           <div className="grid grid-cols-4 gap-4">
             <StatCard title={t("keetaPage.totalOrdersCard")} value={totalOrders} icon={Package} />
             <StatCard title={t("keetaPage.activeDriversCard")} value={activeDrivers} icon={TrendingUp} />
@@ -484,71 +419,14 @@ export default function KeetaOrdersPage() {
             <StatCard title={t("keetaPage.totalDistance")} value={`${formatNumber(Number(totalDistance), locale, { maximumFractionDigits: 0 })} km`} icon={Route} />
           </div>
 
-          {zones.length > 0 && (
-            <div className="bg-white rounded-2xl p-5 shadow-sm">
-              <h3 className="text-xs font-semibold text-secondary uppercase tracking-wide mb-4">
-                {t("keetaPage.zoneBreakdown")}
-              </h3>
-              <div className="space-y-2">
-                {zones.map((z: any) => {
-                  const max = Math.max(...zones.map((x: any) => x.deliveries), 1);
-                  return (
-                    <div key={z.zone} className="flex items-center gap-3">
-                      <span className="text-sm font-medium w-32 truncate">{z.zone}</span>
-                      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-keeta rounded-full"
-                          style={{ width: `${(z.deliveries / max) * 100}%` }}
-                        />
-                      </div>
-                      <span className="text-xs font-mono text-secondary w-16 text-end">{z.deliveries} {t("keetaPage.ordersSuffix")}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          <PlatformPerformanceTab
+            platform="KEETA"
+            zones={ZONES}
+            filters={filters}
+            setFilters={setFilters}
+          />
         </div>
       )}
-
-      {/* Detail Panel */}
-      <SlidePanel
-        open={!!selected}
-        onClose={() => setSelected(null)}
-        title={selected ? cleanDriverName(selected.driver?.name || selected.driverName) || t("keetaPage.orderDetail") : t("keetaPage.orderDetail")}
-        subtitle={`Keeta / ${t("keetaPage.sidra")}`}
-      >
-        {selected && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                [t("table.date"), selected.date ? formatDate(selected.date, locale) : "-"],
-                [t("keetaPage.orderNumCol"), selected.orderNumber || selected.id?.slice(0, 8) || "-"],
-                [t("table.driver"), cleanDriverName(selected.driver?.name || selected.driverName) || "-"],
-                [t("table.zone"), selected.driver?.zone || selected.zone || "-"],
-                [t("keetaPage.orderCount"), selected.orderCount ?? selected.orders ?? "-"],
-                [t("keetaPage.distanceCol"), selected.distanceKm != null ? `${Number(selected.distanceKm).toFixed(1)} km` : "-"],
-                [t("keetaPage.avgOnTimeRate"), selected.onTimeRate != null ? `${selected.onTimeRate}%` : "-"],
-                [t("keetaPage.source"), selected.source || "-"],
-                [t("table.platform"), "KEETA"],
-                [t("keetaPage.paymentCol"), selected.paymentSource || t("keetaPage.digitalCashless")],
-              ].map(([label, val]) => (
-                <div key={label} className="bg-gray-50 rounded-xl p-3">
-                  <p className="text-[10px] text-secondary uppercase font-medium">{label}</p>
-                  <p className="text-sm font-medium mt-0.5">{val}</p>
-                </div>
-              ))}
-            </div>
-            {selected.notes && (
-              <div className="bg-yellow-50 rounded-xl p-3">
-                <p className="text-[10px] text-secondary uppercase font-medium mb-1">{t("keetaPage.notesLabel")}</p>
-                <p className="text-sm">{selected.notes}</p>
-              </div>
-            )}
-            <OrderFlowSection orderId={selected.id} />
-          </div>
-        )}
-      </SlidePanel>
     </div>
   );
 }

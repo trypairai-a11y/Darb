@@ -2,13 +2,22 @@ import { Router, Request, Response } from "express";
 import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
+import { rbac } from "../middleware/rbac";
 import { getPagination, paginatedResponse } from "../utils/pagination";
 import { parseLocalDate, parseLocalDateEnd } from "../utils/date";
 import { createViolationNotifications, getViolationSeverity } from "../services/notificationService";
 import { ViolationType, ViolationStatus, AppealStatus } from "../generated/prisma";
 
+const DESTRUCTIVE = ["ADMIN", "OPS_MANAGER"];
+
 const router = Router();
 router.use(authMiddleware, tenantScope);
+
+const AMERICANA_VIOLATION_TYPES = [
+  "AMERICANA_LATE_ARRIVAL",
+  "AMERICANA_NO_SHOW",
+  "AMERICANA_EARLY_DEPARTURE_QUIT",
+] as const;
 
 /**
  * @swagger
@@ -64,6 +73,13 @@ router.get("/", async (req: Request, res: Response) => {
     if (appealStatus) where.appealStatus = appealStatus as string;
     if (driverId) where.driverId = driverId as string;
     if (platform) where.platform = platform as string;
+    if (platform === "AMERICANA") {
+      where.violationType = violationType
+        ? (AMERICANA_VIOLATION_TYPES.includes(violationType as any)
+            ? (violationType as string)
+            : "__NONE__")
+        : { in: AMERICANA_VIOLATION_TYPES as unknown as string[] };
+    }
     if (search) where.driver = { name: { contains: search as string, mode: "insensitive" } };
     if (dateFrom || dateTo) {
       where.violationTime = {};
@@ -110,6 +126,9 @@ router.get("/summary", async (req: Request, res: Response) => {
     const { platform } = req.query;
     const summaryWhere: any = { tenantId };
     if (platform) summaryWhere.platform = platform as string;
+    if (platform === "AMERICANA") {
+      summaryWhere.violationType = { in: AMERICANA_VIOLATION_TYPES as unknown as string[] };
+    }
 
     const [byType, byStatus, pendingAppeals, total] = await Promise.all([
       prisma.violation.groupBy({
@@ -203,6 +222,13 @@ router.post("/", async (req: Request, res: Response) => {
     const tenantId = req.user!.tenantId;
     const { driverId, platform, violationType, violationTime, details, metadata, taskId } = req.body;
 
+    if (platform === "AMERICANA" && !AMERICANA_VIOLATION_TYPES.includes(violationType)) {
+      res.status(400).json({
+        error: `Americana violations must be one of: ${AMERICANA_VIOLATION_TYPES.join(", ")}`,
+      });
+      return;
+    }
+
     const violation = await prisma.violation.create({
       data: {
         tenantId,
@@ -275,6 +301,35 @@ router.put("/:id", async (req: Request, res: Response) => {
       include: { driver: { select: { id: true, name: true } } },
     });
     res.json(updated);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+/**
+ * DELETE /api/violations/:id
+ * Hard delete. Restricted to ADMIN/OPS_MANAGER. Cascades through Penalty/Appeal
+ * via foreign-key cleanup performed in a transaction so a failure leaves no
+ * orphans.
+ */
+router.delete("/:id", rbac(...DESTRUCTIVE), async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const violation = await prisma.violation.findFirst({
+      where: { id: req.params.id, tenantId },
+      select: { id: true },
+    });
+    if (!violation) { res.status(404).json({ error: "Violation not found" }); return; }
+
+    await prisma.$transaction([
+      prisma.appeal.deleteMany({ where: { violationId: violation.id } }),
+      prisma.violation.update({
+        where: { id: violation.id },
+        data: { penalties: { set: [] } },
+      }),
+      prisma.violation.delete({ where: { id: violation.id } }),
+    ]);
+    res.json({ ok: true });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }

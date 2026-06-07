@@ -3,16 +3,11 @@ import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
 import { getPagination, paginatedResponse } from "../utils/pagination";
+import { nextTicketNumber } from "../utils/ticketNumber";
+import { ticketSlaDeadline } from "../utils/ticketSla";
 
 const router = Router();
 router.use(authMiddleware, tenantScope);
-
-const SLA_HOURS: Record<string, number> = {
-  URGENT: 4,
-  HIGH: 12,
-  MEDIUM: 48,
-  LOW: 168,
-};
 
 router.get("/", async (req: Request, res: Response) => {
   try {
@@ -39,6 +34,8 @@ router.get("/", async (req: Request, res: Response) => {
           driver: { select: { id: true, name: true } },
           assignedTo: { select: { id: true, name: true } },
           company: { select: { id: true, name: true } },
+          submitterDriver: { select: { id: true, name: true } },
+          submitterUser: { select: { id: true, name: true } },
         },
       }),
       prisma.ticket.count({ where }),
@@ -72,17 +69,8 @@ router.get("/:id", async (req: Request, res: Response) => {
 router.post("/", async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
-    const lastTicket = await prisma.ticket.findFirst({
-      where: { tenantId },
-      orderBy: { ticketNumber: "desc" },
-    });
-    const nextNum = lastTicket
-      ? parseInt(lastTicket.ticketNumber.replace("TK-", "")) + 1
-      : 1;
-    const ticketNumber = `TK-${String(nextNum).padStart(4, "0")}`;
-
-    const slaHours = SLA_HOURS[req.body.priority || "MEDIUM"];
-    const slaDeadline = new Date(Date.now() + slaHours * 60 * 60 * 1000);
+    const ticketNumber = await nextTicketNumber(tenantId);
+    const slaDeadline = ticketSlaDeadline(req.body.priority);
 
     const ticket = await prisma.ticket.create({
       data: {
@@ -100,9 +88,18 @@ router.post("/", async (req: Request, res: Response) => {
 
 router.put("/:id", async (req: Request, res: Response) => {
   try {
+    const allowed = [
+      "category", "priority", "title", "description",
+      "assignedToId", "status", "photos", "resolution", "resolvedAt",
+      "slaDeadline", "platform", "companyId", "driverId", "vehicleId",
+    ] as const;
+    const data: Record<string, unknown> = {};
+    for (const k of allowed) {
+      if (k in (req.body ?? {})) data[k] = (req.body as any)[k];
+    }
     const ticket = await prisma.ticket.updateMany({
       where: { id: req.params.id, tenantId: req.user!.tenantId },
-      data: req.body,
+      data,
     });
     if (ticket.count === 0) { res.status(404).json({ error: "Ticket not found" }); return; }
     const updated = await prisma.ticket.findUnique({ where: { id: req.params.id } });

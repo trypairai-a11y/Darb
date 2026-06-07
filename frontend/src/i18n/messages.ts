@@ -43,6 +43,12 @@ export interface Messages {
     evening: string;
   };
   nav: {
+    decisions: string;
+    chat: string;
+    floor: string;
+    operations: string;
+    finance: string;
+    hr: string;
     overview: string;
     companies: string;
     kpis: string;
@@ -51,8 +57,7 @@ export interface Messages {
     liveMap: string;
     darbAi: string;
     tickets: string;
-    recruitment: string;
-    supervisors: string;
+    assets: string;
     settings: string;
     drivers: string;
     shifts: string;
@@ -73,8 +78,8 @@ export interface Messages {
     payments: string;
     reports: string;
     attendanceShifts: string;
-    ingestReview: string;
     financial: string;
+    branchPerformance: string;
   };
   status: {
     active: string;
@@ -602,19 +607,25 @@ export interface Messages {
     codOrders: string;
     cardCcod: string;
     searchPlaceholder: string;
-    allStores: string;
+    allBranches: string;
     noOrdersFound: string;
     dailyComparison: string;
     yesterday: string;
     sevenDayAvg: string;
+    restaurantsLeaderboard: string;
+    branchesLeaderboard: string;
+    shiftsTitle: string;
+    noShiftsFound: string;
+    scheduledStart: string;
+    scheduledEnd: string;
+    actualStart: string;
+    actualEnd: string;
     orderIdCol: string;
     amountCol: string;
-    posCol: string;
-    storeCol: string;
+    branchCol: string;
     driverCol: string;
     timeCol: string;
     paymentCol: string;
-    posNumber: string;
     paymentType: string;
     timestamp: string;
     driversTitle: string;
@@ -622,11 +633,9 @@ export interface Messages {
     carDrivers: string;
     bikeDrivers: string;
     empId: string;
-    chain: string;
-    cc: string;
-    costCenter: string;
+    restaurant: string;
     position: string;
-    allChains: string;
+    allRestaurants: string;
     allPositions: string;
     searchNameEmp: string;
     noDriversFound: string;
@@ -635,7 +644,6 @@ export interface Messages {
     makeModel: string;
     color: string;
     year: string;
-    chainPrefix: string;
     companyPhoneDetail: string;
     personalPhoneDetail: string;
     hireDate: string;
@@ -645,12 +653,6 @@ export interface Messages {
     secChainsBlurb: string;
     secStores: string;
     secStoresBlurb: string;
-    secContracts: string;
-    secContractsBlurb: string;
-    secChainRates: string;
-    secChainRatesBlurb: string;
-    secIngest: string;
-    secIngestBlurb: string;
     secTargets: string;
     secTargetsBlurb: string;
   };
@@ -696,9 +698,6 @@ export interface Messages {
     batchShort: string;
     utilizationTimeRate: string;
     sessShort: string;
-    ingestUploadTitle: string;
-    ingestUploadIntro: string;
-    ingestUploadIntroLink: string;
     selectDriver: string;
     shiftDate: string;
     screenshot: string;
@@ -834,6 +833,10 @@ export interface Messages {
     face: string;
     facePass: string;
     faceFail: string;
+    faceSuccess: string;
+    faceMismatch: string;
+    faceFailed: string;
+    deposits: string;
     shift: string;
     valid: string;
     invalid: string;
@@ -1041,29 +1044,6 @@ export interface Messages {
     medium: string;
     low: string;
   };
-  recruitment: {
-    pipeline: string;
-    addCandidate: string;
-    candidateName: string;
-    namePlaceholder: string;
-    phonePlaceholder: string;
-    stageAgencyReferral: string;
-    stageCvDocs: string;
-    stageInterview: string;
-    stageVisaProcessing: string;
-    stageFlight: string;
-    stageArrival: string;
-    stageMedicalExam: string;
-    stageBankCard: string;
-    stageCivilId: string;
-    stageResidency: string;
-    stageLicenseTest: string;
-    stagePlatformTraining: string;
-    stageRoadSafety: string;
-    stageFoodHandling: string;
-    stageCompanySops: string;
-    stageCompleted: string;
-  };
   insights: {
     title: string;
     focus: string;
@@ -1093,6 +1073,7 @@ export interface Messages {
     createTicket: string;
     assignedTo: string;
     created: string;
+    changeStatus: string;
     statusOpen: string;
     statusAssigned: string;
     statusInProgress: string;
@@ -1105,8 +1086,16 @@ export interface Messages {
     catVehicleRepair: string;
     catEquipmentRequest: string;
     catLeaveRequest: string;
+    catSalaryIssue: string;
+    catTransferRequest: string;
     catComplaint: string;
+    catAccidentReport: string;
     catOther: string;
+    photos: string;
+    submittedBy: string;
+    resolutionNote: string;
+    resolutionPlaceholder: string;
+    confirmResolve: string;
   };
   companies: {
     totalCompanies: string;
@@ -1250,6 +1239,12 @@ export const en: Messages = {
     evening: "Good evening",
   },
   nav: {
+    decisions: "Decisions",
+    chat: "Chat",
+    floor: "Floor",
+    operations: "Operations",
+    finance: "Finance",
+    hr: "HR",
     overview: "Overview",
     companies: "Companies",
     kpis: "KPIs",
@@ -1258,8 +1253,7 @@ export const en: Messages = {
     liveMap: "Live Map",
     darbAi: "Darb AI",
     tickets: "Tickets",
-    recruitment: "Recruitment",
-    supervisors: "Supervisors",
+    assets: "Assets",
     settings: "Settings",
     drivers: "Drivers",
     shifts: "Shifts",
@@ -1280,8 +1274,8 @@ export const en: Messages = {
     payments: "Payments",
     reports: "Reports",
     attendanceShifts: "Attendance & Shifts",
-    ingestReview: "Ingest review",
     financial: "Financial",
+    branchPerformance: "Branch Performance",
   },
   status: {
     active: "Active",
@@ -1777,10 +1771,10 @@ export const en: Messages = {
     overviewTitle: "Americana — Overview",
     exportForAccounting: "Export for accounting",
     missingRateWarning: "Some stores have orders but no applicable chain rate.",
-    revenueMtd: "Revenue MTD",
-    ordersMtd: "Orders MTD",
+    revenueMtd: "Revenue (month)",
+    ordersMtd: "Orders (month)",
     activeDrivers: "Active drivers",
-    storesNeedingDrivers: "Stores needing drivers",
+    storesNeedingDrivers: "Branches needing drivers",
     settingsLink: "Settings",
     chainRates: "Chain rates",
     chainRatesTitle: "Chain rates",
@@ -1809,19 +1803,25 @@ export const en: Messages = {
     codOrders: "COD Orders",
     cardCcod: "Card / CCOD",
     searchPlaceholder: "Search KUW_ order ID…",
-    allStores: "All Stores",
+    allBranches: "All Branches",
     noOrdersFound: "No orders found. Import an Americana XLSX or adjust filters.",
     dailyComparison: "Daily Comparison",
     yesterday: "Yesterday",
     sevenDayAvg: "7-Day Avg",
+    restaurantsLeaderboard: "Restaurants Leaderboard",
+    branchesLeaderboard: "Branches Leaderboard",
+    shiftsTitle: "Americana — Shifts",
+    noShiftsFound: "No shifts found for this date.",
+    scheduledStart: "Scheduled Start",
+    scheduledEnd: "Scheduled End",
+    actualStart: "Actual Start",
+    actualEnd: "Actual End",
     orderIdCol: "Order ID",
     amountCol: "Amount (KD)",
-    posCol: "POS",
-    storeCol: "Store",
+    branchCol: "Branch",
     driverCol: "Driver",
     timeCol: "Time",
     paymentCol: "Payment",
-    posNumber: "POS Number",
     paymentType: "Payment Type",
     timestamp: "Timestamp",
     driversTitle: "Americana — Drivers",
@@ -1829,11 +1829,9 @@ export const en: Messages = {
     carDrivers: "Car Drivers",
     bikeDrivers: "Bike Drivers",
     empId: "Emp ID",
-    chain: "Chain",
-    cc: "CC",
-    costCenter: "Cost Center (CC)",
+    restaurant: "Restaurant",
     position: "Position",
-    allChains: "All Chains",
+    allRestaurants: "All Restaurants",
     allPositions: "All Positions",
     searchNameEmp: "Search name or Emp ID…",
     noDriversFound: "No Americana drivers found",
@@ -1842,22 +1840,15 @@ export const en: Messages = {
     makeModel: "Make / Model",
     color: "Color",
     year: "Year",
-    chainPrefix: "Chain",
     companyPhoneDetail: "Company Phone",
     personalPhoneDetail: "Personal Phone",
     hireDate: "Hire Date",
     settingsTitle: "Americana — Settings",
-    settingsIntro: "Americana is a B2B corporate contract fleet. Configure the chains you serve, the stores you staff, the contracts you operate under, and the rates you invoice at.",
+    settingsIntro: "Americana is a B2B corporate contract fleet. Configure the chains you serve, the branches you staff, and the targets you operate against.",
     secChains: "Chains",
     secChainsBlurb: "KFC, Pizza Hut, Hardees and so on.",
-    secStores: "Stores",
+    secStores: "Branches",
     secStoresBlurb: "Branches with manager contact info and area.",
-    secContracts: "Contracts",
-    secContractsBlurb: "Upload signed contract PDFs for OCR rate extraction.",
-    secChainRates: "Chain rates",
-    secChainRatesBlurb: "Per-chain × vehicle-type rate table.",
-    secIngest: "Daily ingest",
-    secIngestBlurb: "IMAP inbox config, manual upload, ingestion history.",
     secTargets: "Targets & tier weights",
     secTargetsBlurb: "Monthly-order targets, tier thresholds and weights.",
   },
@@ -1883,7 +1874,7 @@ export const en: Messages = {
     deliveriesPerHour: "Deliveries per Hour",
     cashPerHour: "Cash Collected per Hour",
     activeSessionsPerHour: "Active Sessions per Hour",
-    topRestaurants: "Top Restaurants",
+    topRestaurants: "Top Branches",
     morning: "Morning",
     afternoon: "Afternoon",
     evening: "Evening",
@@ -1903,9 +1894,6 @@ export const en: Messages = {
     batchShort: "Batch",
     utilizationTimeRate: "Utilization Time Rate",
     sessShort: "sess",
-    ingestUploadTitle: "Upload Talabat shift screenshot",
-    ingestUploadIntro: "Use this while mobile OCR is rolling out. High-confidence extractions post directly; others queue in",
-    ingestUploadIntroLink: "Ingest review",
     selectDriver: "Select driver…",
     shiftDate: "Shift date",
     screenshot: "Screenshot",
@@ -2041,6 +2029,10 @@ export const en: Messages = {
     face: "Face",
     facePass: "Pass",
     faceFail: "Fail",
+    faceSuccess: "Success",
+    faceMismatch: "Mismatch",
+    faceFailed: "Failed",
+    deposits: "Deposits",
     shift: "Shift",
     valid: "Valid",
     invalid: "Invalid",
@@ -2248,29 +2240,6 @@ export const en: Messages = {
     medium: "Medium",
     low: "Low",
   },
-  recruitment: {
-    pipeline: "Recruitment Pipeline",
-    addCandidate: "Add Candidate",
-    candidateName: "Candidate name",
-    namePlaceholder: "Candidate name",
-    phonePlaceholder: "+965 XXXX XXXX",
-    stageAgencyReferral: "Agency Referral",
-    stageCvDocs: "CV / Docs",
-    stageInterview: "Interview",
-    stageVisaProcessing: "Visa Processing",
-    stageFlight: "Flight",
-    stageArrival: "Arrival",
-    stageMedicalExam: "Medical Exam",
-    stageBankCard: "Bank Card",
-    stageCivilId: "Civil ID",
-    stageResidency: "Residency",
-    stageLicenseTest: "License Test",
-    stagePlatformTraining: "Platform Training",
-    stageRoadSafety: "Road Safety",
-    stageFoodHandling: "Food Handling",
-    stageCompanySops: "Company SOPs",
-    stageCompleted: "Completed",
-  },
   insights: {
     title: "Insights",
     focus: "What to focus on today — in plain English.",
@@ -2282,7 +2251,7 @@ export const en: Messages = {
   tickets: {
     title: "Tickets",
     newTicket: "New Ticket",
-    openTickets: "Open Tickets",
+    openTickets: "Submitted Tickets",
     overdue: "Overdue",
     avgResolution: "Avg Resolution",
     resolvedThisWeek: "Resolved This Week",
@@ -2300,7 +2269,8 @@ export const en: Messages = {
     createTicket: "Create Ticket",
     assignedTo: "Assigned to",
     created: "Created",
-    statusOpen: "Open",
+    changeStatus: "Change status",
+    statusOpen: "Submitted",
     statusAssigned: "Assigned",
     statusInProgress: "In Progress",
     statusResolved: "Resolved",
@@ -2312,8 +2282,16 @@ export const en: Messages = {
     catVehicleRepair: "Vehicle Repair",
     catEquipmentRequest: "Equipment Request",
     catLeaveRequest: "Leave Request",
+    catSalaryIssue: "Salary Issue",
+    catTransferRequest: "Transfer Request",
     catComplaint: "Complaint",
+    catAccidentReport: "Accident Report",
     catOther: "Other",
+    photos: "Photos",
+    submittedBy: "Submitted by",
+    resolutionNote: "Resolution",
+    resolutionPlaceholder: "What was done? The driver will see this note.",
+    confirmResolve: "Resolve",
   },
   companies: {
     totalCompanies: "Total Companies",
@@ -2457,6 +2435,12 @@ export const ar: Messages = {
     evening: "مساء الخير",
   },
   nav: {
+    decisions: "القرارات",
+    chat: "المحادثة",
+    floor: "الميدان",
+    operations: "العمليات",
+    finance: "المالية",
+    hr: "الموارد البشرية",
     overview: "نظرة عامة",
     companies: "الشركات",
     kpis: "مؤشرات الأداء",
@@ -2465,8 +2449,7 @@ export const ar: Messages = {
     liveMap: "الخريطة المباشرة",
     darbAi: "درب الذكي",
     tickets: "التذاكر",
-    recruitment: "التوظيف",
-    supervisors: "المشرفون",
+    assets: "الأصول",
     settings: "الإعدادات",
     drivers: "السائقون",
     shifts: "المناوبات",
@@ -2487,8 +2470,8 @@ export const ar: Messages = {
     payments: "المدفوعات",
     reports: "التقارير",
     attendanceShifts: "الحضور والمناوبات",
-    ingestReview: "مراجعة الإدخال",
     financial: "المالية",
+    branchPerformance: "أداء الفروع",
   },
   status: {
     active: "نشط",
@@ -2883,7 +2866,7 @@ export const ar: Messages = {
     utrLabel: "UTR (توصيلات / ساعة اتصال)",
     dod: "يوميّاً",
     viewAllText: "عرض الكل",
-    attendanceTitle: "ديليفيرو — الحضور",
+    attendanceTitle: "ديليفيرو إكويبمنت — الحضور",
     alHazm: "الحزم",
     operatingModel: "نموذج التشغيل:",
     freelance: "مستقل",
@@ -2914,7 +2897,7 @@ export const ar: Messages = {
     modelHeader: "النموذج",
     verified: "مُتحقَّق",
     failed: "فشل",
-    shiftsTitle: "ديليفيرو — المناوبات",
+    shiftsTitle: "ديليفيرو إكويبمنت — المناوبات",
     activeShifts: "المناوبات النشطة",
     freelanceOnline: "المستقلون المتصلون",
     below12hToday: "أقل من 12 ساعة اليوم",
@@ -2937,7 +2920,7 @@ export const ar: Messages = {
     timeCheck: "فحص الوقت",
     pass: "ناجح",
     fail: "فشل",
-    driversTitle: "ديليفيرو — السائقون",
+    driversTitle: "ديليفيرو إكويبمنت — السائقون",
     noteLabel: "ملاحظة:",
     noteBody: "لا يحتوي ديليفيرو على تحقق وجه أصلي. يضيف دَرب هذه القدرة عبر وكيل أندرويد — انظر عمود \"تحقق الوجه (دَرب)\".",
     riderId: "معرّف السائق",
@@ -2947,7 +2930,7 @@ export const ar: Messages = {
     coreFleetStat: "الأسطول الأساسي",
     searchRiderId: "ابحث بالاسم أو معرّف السائق…",
     allModels: "جميع النماذج",
-    noDriversFound: "لا يوجد سائقون لديليفيرو",
+    noDriversFound: "لا يوجد سائقون لديليفيرو إكويبمنت",
     unverified: "غير مُتحقَّق",
     darbFaceVerification: "تحقق الوجه بدَرب",
     selfieMatchedLastClockin: "تم التقاط الصورة ومطابقتها في آخر تسجيل دخول",
@@ -2984,8 +2967,8 @@ export const ar: Messages = {
     overviewTitle: "أمريكانا — نظرة عامة",
     exportForAccounting: "تصدير للمحاسبة",
     missingRateWarning: "بعض الفروع لديها طلبات ولكن لا يوجد معدّل سلسلة مطبّق.",
-    revenueMtd: "الإيرادات منذ بداية الشهر",
-    ordersMtd: "الطلبات منذ بداية الشهر",
+    revenueMtd: "إيرادات الشهر",
+    ordersMtd: "طلبات الشهر",
     activeDrivers: "السائقون النشطون",
     storesNeedingDrivers: "فروع تحتاج سائقين",
     settingsLink: "الإعدادات",
@@ -3016,19 +2999,25 @@ export const ar: Messages = {
     codOrders: "طلبات الدفع عند الاستلام",
     cardCcod: "بطاقة / CCOD",
     searchPlaceholder: "ابحث عن معرّف طلب KUW_…",
-    allStores: "جميع الفروع",
+    allBranches: "جميع الفروع",
     noOrdersFound: "لا توجد طلبات. استورد ملف XLSX أو عدّل الفلاتر.",
     dailyComparison: "مقارنة يومية",
     yesterday: "أمس",
     sevenDayAvg: "متوسط 7 أيام",
+    restaurantsLeaderboard: "ترتيب المطاعم",
+    branchesLeaderboard: "ترتيب الفروع",
+    shiftsTitle: "أمريكانا — المناوبات",
+    noShiftsFound: "لا توجد مناوبات لهذا التاريخ.",
+    scheduledStart: "بداية مجدولة",
+    scheduledEnd: "نهاية مجدولة",
+    actualStart: "بداية فعلية",
+    actualEnd: "نهاية فعلية",
     orderIdCol: "معرّف الطلب",
     amountCol: "المبلغ (د.ك)",
-    posCol: "POS",
-    storeCol: "الفرع",
+    branchCol: "الفرع",
     driverCol: "السائق",
     timeCol: "الوقت",
     paymentCol: "الدفع",
-    posNumber: "رقم POS",
     paymentType: "نوع الدفع",
     timestamp: "الوقت",
     driversTitle: "أمريكانا — السائقون",
@@ -3036,11 +3025,9 @@ export const ar: Messages = {
     carDrivers: "سائقو السيارات",
     bikeDrivers: "سائقو الدراجات",
     empId: "رقم الموظف",
-    chain: "السلسلة",
-    cc: "CC",
-    costCenter: "مركز التكلفة (CC)",
+    restaurant: "المطعم",
     position: "الوظيفة",
-    allChains: "جميع السلاسل",
+    allRestaurants: "جميع المطاعم",
     allPositions: "جميع الوظائف",
     searchNameEmp: "ابحث بالاسم أو رقم الموظف…",
     noDriversFound: "لا يوجد سائقون لأمريكانا",
@@ -3049,22 +3036,15 @@ export const ar: Messages = {
     makeModel: "الصانع / الطراز",
     color: "اللون",
     year: "السنة",
-    chainPrefix: "سلسلة",
     companyPhoneDetail: "هاتف الشركة",
     personalPhoneDetail: "الهاتف الشخصي",
     hireDate: "تاريخ التعيين",
     settingsTitle: "أمريكانا — الإعدادات",
-    settingsIntro: "أمريكانا أسطول عقود مؤسسية B2B. اضبط السلاسل التي تخدمها، والفروع التي تشغّلها، والعقود التي تعمل بموجبها، والمعدلات التي تُصدر بها الفواتير.",
+    settingsIntro: "أمريكانا أسطول عقود مؤسسية B2B. اضبط السلاسل التي تخدمها، والفروع التي تشغّلها، والأهداف التي تعمل عليها.",
     secChains: "السلاسل",
     secChainsBlurb: "KFC، بيتزا هت، هارديز وغيرها.",
     secStores: "الفروع",
     secStoresBlurb: "الفروع مع بيانات اتصال المدير والمنطقة.",
-    secContracts: "العقود",
-    secContractsBlurb: "ارفع ملفات PDF لعقود موقّعة لاستخراج المعدلات بالـOCR.",
-    secChainRates: "معدلات السلاسل",
-    secChainRatesBlurb: "جدول المعدلات لكل سلسلة × نوع مركبة.",
-    secIngest: "الإدخال اليومي",
-    secIngestBlurb: "إعدادات صندوق IMAP، الرفع اليدوي، وسجل الإدخال.",
     secTargets: "الأهداف وأوزان الفئات",
     secTargetsBlurb: "أهداف الطلبات الشهرية، عتبات وأوزان الفئات.",
   },
@@ -3090,7 +3070,7 @@ export const ar: Messages = {
     deliveriesPerHour: "التوصيلات لكل ساعة",
     cashPerHour: "النقد المُحصَّل لكل ساعة",
     activeSessionsPerHour: "الجلسات النشطة لكل ساعة",
-    topRestaurants: "أعلى المطاعم",
+    topRestaurants: "أفضل الفروع",
     morning: "صباحاً",
     afternoon: "ظهراً",
     evening: "مساءً",
@@ -3110,9 +3090,6 @@ export const ar: Messages = {
     batchShort: "دفعة",
     utilizationTimeRate: "معدّل زمن الاستخدام",
     sessShort: "جلسة",
-    ingestUploadTitle: "رفع لقطة شاشة لمناوبة طلبات",
-    ingestUploadIntro: "استخدم هذا أثناء طرح OCR للهاتف. الاستخراجات عالية الثقة تُسجَّل مباشرة؛ أما الباقي فيُحال إلى",
-    ingestUploadIntroLink: "مراجعة الإدخال",
     selectDriver: "اختر سائقاً…",
     shiftDate: "تاريخ المناوبة",
     screenshot: "لقطة الشاشة",
@@ -3248,6 +3225,10 @@ export const ar: Messages = {
     face: "الوجه",
     facePass: "ناجح",
     faceFail: "فاشل",
+    faceSuccess: "ناجح",
+    faceMismatch: "عدم تطابق",
+    faceFailed: "فشل",
+    deposits: "الإيداعات",
     shift: "المناوبة",
     valid: "صالحة",
     invalid: "غير صالحة",
@@ -3455,29 +3436,6 @@ export const ar: Messages = {
     medium: "متوسط",
     low: "منخفض",
   },
-  recruitment: {
-    pipeline: "خط التوظيف",
-    addCandidate: "إضافة مرشّح",
-    candidateName: "اسم المرشّح",
-    namePlaceholder: "اسم المرشّح",
-    phonePlaceholder: "+965 XXXX XXXX",
-    stageAgencyReferral: "إحالة من وكالة",
-    stageCvDocs: "السيرة الذاتية / الوثائق",
-    stageInterview: "المقابلة",
-    stageVisaProcessing: "معالجة التأشيرة",
-    stageFlight: "الطيران",
-    stageArrival: "الوصول",
-    stageMedicalExam: "الفحص الطبي",
-    stageBankCard: "البطاقة البنكية",
-    stageCivilId: "البطاقة المدنية",
-    stageResidency: "الإقامة",
-    stageLicenseTest: "اختبار الرخصة",
-    stagePlatformTraining: "تدريب المنصة",
-    stageRoadSafety: "السلامة المرورية",
-    stageFoodHandling: "مناولة الأغذية",
-    stageCompanySops: "إجراءات الشركة",
-    stageCompleted: "مكتمل",
-  },
   insights: {
     title: "الرؤى",
     focus: "ما الذي يجب التركيز عليه اليوم — بلغة واضحة.",
@@ -3489,7 +3447,7 @@ export const ar: Messages = {
   tickets: {
     title: "التذاكر",
     newTicket: "تذكرة جديدة",
-    openTickets: "التذاكر المفتوحة",
+    openTickets: "التذاكر المُقدَّمة",
     overdue: "متأخرة",
     avgResolution: "متوسط الحل",
     resolvedThisWeek: "حُلّت هذا الأسبوع",
@@ -3507,7 +3465,8 @@ export const ar: Messages = {
     createTicket: "إنشاء تذكرة",
     assignedTo: "مُعيَّنة إلى",
     created: "أُنشئت",
-    statusOpen: "مفتوحة",
+    changeStatus: "تغيير الحالة",
+    statusOpen: "مُقدَّمة",
     statusAssigned: "مُعيَّنة",
     statusInProgress: "قيد التنفيذ",
     statusResolved: "محلولة",
@@ -3519,8 +3478,16 @@ export const ar: Messages = {
     catVehicleRepair: "إصلاح مركبة",
     catEquipmentRequest: "طلب معدات",
     catLeaveRequest: "طلب إجازة",
+    catSalaryIssue: "مشكلة راتب",
+    catTransferRequest: "طلب نقل",
     catComplaint: "شكوى",
+    catAccidentReport: "بلاغ حادث",
     catOther: "أخرى",
+    photos: "الصور",
+    submittedBy: "أرسلت بواسطة",
+    resolutionNote: "الحل",
+    resolutionPlaceholder: "ما الذي تم؟ سيرى السائق هذه الملاحظة.",
+    confirmResolve: "حل التذكرة",
   },
   companies: {
     totalCompanies: "إجمالي الشركات",

@@ -2,6 +2,10 @@ import { Router, Request, Response } from "express";
 import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
+import { rbac } from "../middleware/rbac";
+
+const MUTATORS = ["ADMIN", "OPS_MANAGER"];
+const DESTRUCTIVE = ["ADMIN"];
 
 const router = Router();
 router.use(authMiddleware, tenantScope);
@@ -52,21 +56,26 @@ router.get("/:id", async (req: Request, res: Response) => {
 });
 
 // POST /api/americana/stores
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", rbac(...MUTATORS), async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
     const {
-      chainId, name, area, costCenter,
+      chainId, name, area,
       managerName, managerPhone,
       backupContactName, backupContactPhone, notes, active,
+      carDailyTarget, bikeDailyTarget, carMonthlyTarget, bikeMonthlyTarget,
     } = req.body;
     if (!chainId || !name) { res.status(400).json({ error: "chainId and name required" }); return; }
     const store = await prisma.americanaStore.create({
       data: {
-        tenantId, chainId, name, area, costCenter,
+        tenantId, chainId, name, area,
         managerName, managerPhone,
         backupContactName, backupContactPhone, notes,
         active: active ?? true,
+        carDailyTarget: carDailyTarget != null ? Number(carDailyTarget) : null,
+        bikeDailyTarget: bikeDailyTarget != null ? Number(bikeDailyTarget) : null,
+        carMonthlyTarget: carMonthlyTarget != null ? Number(carMonthlyTarget) : null,
+        bikeMonthlyTarget: bikeMonthlyTarget != null ? Number(bikeMonthlyTarget) : null,
       },
     });
     res.status(201).json(store);
@@ -76,12 +85,29 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 // PUT /api/americana/stores/:id
-router.put("/:id", async (req: Request, res: Response) => {
+router.put("/:id", rbac(...MUTATORS), async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
+    const allowed = [
+      "chainId", "name", "area",
+      "managerName", "managerPhone",
+      "backupContactName", "backupContactPhone", "notes", "active",
+      "carDailyTarget", "bikeDailyTarget", "carMonthlyTarget", "bikeMonthlyTarget",
+    ] as const;
+    const data: Record<string, any> = {};
+    for (const k of allowed) {
+      if (k in req.body) {
+        const v = (req.body as any)[k];
+        if (k === "carDailyTarget" || k === "bikeDailyTarget" || k === "carMonthlyTarget" || k === "bikeMonthlyTarget") {
+          data[k] = v == null || v === "" ? null : Number(v);
+        } else {
+          data[k] = v;
+        }
+      }
+    }
     const result = await prisma.americanaStore.updateMany({
       where: { id: req.params.id, tenantId },
-      data: req.body,
+      data,
     });
     if (result.count === 0) { res.status(404).json({ error: "Store not found" }); return; }
     const updated = await prisma.americanaStore.findUnique({ where: { id: req.params.id } });
@@ -92,7 +118,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 });
 
 // DELETE /api/americana/stores/:id (soft delete)
-router.delete("/:id", async (req: Request, res: Response) => {
+router.delete("/:id", rbac(...DESTRUCTIVE), async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
     const result = await prisma.americanaStore.updateMany({

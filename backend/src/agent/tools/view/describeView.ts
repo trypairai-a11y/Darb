@@ -267,7 +267,10 @@ export const describeViewTool = defineTool({
   sideEffect: "read",
   requiredRole: ["ADMIN", "OPS_MANAGER", "SUPERVISOR", "ACCOUNTANT", "VIEWER"],
   requiresApproval: false,
-  allowedAgents: ["chat"],
+  // Temporarily kept registered but not exposed to Claude. Newer Anthropic
+  // schema validation rejects this broad visualization envelope; chat should
+  // still work with text + read/action tools while the view schema is tightened.
+  allowedAgents: [],
   async execute(_ctx, input) {
     // Pure passthrough — the runtime captures `output.view` and pushes it
     // down the SSE stream as a view_block event, and also returns the

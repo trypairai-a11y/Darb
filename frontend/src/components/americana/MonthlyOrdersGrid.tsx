@@ -54,7 +54,7 @@ export default function MonthlyOrdersGrid({ rows, loading }: Props) {
               <div>
                 <p className="text-sm font-semibold">{r.month}</p>
                 <p className="text-xs text-secondary">
-                  {r.chainName ? `${r.chainName} · ${r.storeName ?? ""}` : "Store unknown"}
+                  {r.chainName ? `${r.chainName} · ${r.storeName ?? ""}` : "Branch unknown"}
                   {r.position ? ` · ${r.position}` : ""}
                 </p>
               </div>

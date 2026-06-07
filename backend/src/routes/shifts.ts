@@ -524,9 +524,20 @@ router.post("/", rbac(...MUTATORS), validateBody(createShiftSchema.passthrough()
 
 router.put("/:id", rbac(...MUTATORS), async (req: Request, res: Response) => {
   try {
+    const allowed = [
+      "date", "platform", "zone", "scheduledStart", "scheduledEnd",
+      "actualStart", "actualEnd", "platformClockIn", "platformClockOut",
+      "varianceMinutes", "status", "isValid",
+      "plannedHoursMinutes", "actualHoursMinutes",
+      "selfieUrl", "selfieLocation", "clockInMethod",
+    ] as const;
+    const data: Record<string, unknown> = {};
+    for (const k of allowed) {
+      if (k in (req.body ?? {})) data[k] = (req.body as any)[k];
+    }
     const shift = await prisma.shift.updateMany({
       where: { id: req.params.id, tenantId: req.user!.tenantId },
-      data: req.body,
+      data,
     });
     if (shift.count === 0) { res.status(404).json({ error: "Shift not found" }); return; }
     const updated = await prisma.shift.findUnique({ where: { id: req.params.id } });

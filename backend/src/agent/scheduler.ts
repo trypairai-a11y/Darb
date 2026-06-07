@@ -158,6 +158,10 @@ const intervals: NodeJS.Timeout[] = [];
 
 export async function startAgentScheduler() {
   if (running) return;
+  if (env.DISABLE_AGENT_SCHEDULER) {
+    logger.warn("agentScheduler: disabled by DISABLE_AGENT_SCHEDULER");
+    return;
+  }
   if (!env.ANTHROPIC_API_KEY) {
     logger.warn("agentScheduler: ANTHROPIC_API_KEY not set, skipping start");
     return;

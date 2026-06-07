@@ -120,6 +120,7 @@ async function runPassForTenant(tenantId: string): Promise<void> {
 
   const staleDevices = await prisma.device.findMany({
     where: {
+      tenantId,
       driver: { tenantId, status: "ACTIVE" },
       isOnline: true,
       lastSeen: { lt: new Date(now - tier1Ms) },

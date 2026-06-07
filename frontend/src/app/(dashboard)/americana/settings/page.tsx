@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Building2, Store, FileText, Coins, Inbox, Target } from "lucide-react";
+import { Building2, Store, Target } from "lucide-react";
 import { useI18n } from "@/i18n/I18nProvider";
 
 export default function AmericanaSettingsPage() {
@@ -8,13 +8,10 @@ export default function AmericanaSettingsPage() {
   const SECTIONS = [
     { href: "/americana/settings/chains", label: t("americana.secChains"), blurb: t("americana.secChainsBlurb"), icon: Building2 },
     { href: "/americana/settings/stores", label: t("americana.secStores"), blurb: t("americana.secStoresBlurb"), icon: Store },
-    { href: "/americana/settings/contracts", label: t("americana.secContracts"), blurb: t("americana.secContractsBlurb"), icon: FileText },
-    { href: "/americana/settings/chain-rates", label: t("americana.secChainRates"), blurb: t("americana.secChainRatesBlurb"), icon: Coins },
-    { href: "/americana/settings/ingest", label: t("americana.secIngest"), blurb: t("americana.secIngestBlurb"), icon: Inbox },
     { href: "/americana/settings/targets", label: t("americana.secTargets"), blurb: t("americana.secTargetsBlurb"), icon: Target },
   ];
   return (
-    <div className="space-y-6 max-w-[1100px]">
+    <div className="space-y-6 w-full max-w-none">
       <div className="flex items-center gap-3">
         <span className="w-3 h-3 rounded-full bg-americana" />
         <h1 className="text-xl font-semibold">{t("americana.settingsTitle")}</h1>

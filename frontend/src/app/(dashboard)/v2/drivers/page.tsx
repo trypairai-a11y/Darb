@@ -38,7 +38,7 @@ export default function DriversPage() {
   }));
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="w-full max-w-none">
       <ShortlistView
         title="Drivers"
         subtitle="Drivers the agents are watching. Full roster available under Browse."

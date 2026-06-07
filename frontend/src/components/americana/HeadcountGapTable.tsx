@@ -61,7 +61,7 @@ export default function HeadcountGapTable({ rows }: Props) {
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-xs text-secondary uppercase">
             <tr>
-              <th className="text-left p-3 cursor-pointer" onClick={() => toggle("storeName")}>Store <Icon k="storeName" /></th>
+              <th className="text-left p-3 cursor-pointer" onClick={() => toggle("storeName")}>Branch <Icon k="storeName" /></th>
               <th className="text-left p-3">Chain</th>
               <th className="text-left p-3">Area</th>
               <th className="text-left p-3">Vehicle</th>
@@ -74,7 +74,7 @@ export default function HeadcountGapTable({ rows }: Props) {
           </thead>
           <tbody>
             {sorted.length === 0 ? (
-              <tr><td colSpan={9} className="p-6 text-center text-secondary">No active stores yet.</td></tr>
+              <tr><td colSpan={9} className="p-6 text-center text-secondary">No active branches yet.</td></tr>
             ) : sorted.map((r) => (
               <tr key={r.storeId ?? r.storeName} className="border-b border-gray-50 hover:bg-gray-50">
                 <td className="p-3 font-medium">{r.storeName}</td>

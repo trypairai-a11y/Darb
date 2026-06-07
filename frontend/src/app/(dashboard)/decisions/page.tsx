@@ -1,12 +1,10 @@
 "use client";
 // Phase 2 Wave 3 — Owner inbox page (REQ-decisions-proposal-inbox).
-// Single-column 760px-max layout. 30 second poll on /api/decisions, optimistic
-// approve/dismiss/edit with 5s undo, FilterChipStrip in URL search params,
-// keyboard help (?), Cmd+K Ask Darb (already mounted globally).
+// Single full-width inbox. 30 second poll on /api/decisions, optimistic
+// approve/dismiss/edit with 5s undo and keyboard help (?).
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import {
   approveDecision,
   dismissDecision,
@@ -15,10 +13,8 @@ import {
   type ListDecisionsParams,
 } from "@/lib/decisionsApi";
 import DecisionsList from "@/components/decisions/DecisionsList";
-import FilterChipStrip from "@/components/decisions/FilterChipStrip";
 import EditDrawer from "@/components/decisions/EditDrawer";
 import KeyboardShortcutsHelp from "@/components/decisions/KeyboardShortcutsHelp";
-import { PinnedViewsRailContainer } from "@/components/decisions/PinnedViewsRail";
 import ErrorState from "@/components/shared/ErrorState";
 import { useToast } from "@/components/shared/Toast";
 import type { DecisionCardData } from "@/types/decisions";
@@ -39,25 +35,12 @@ const FILTER_KEYS = [
 
 type FilterKey = (typeof FILTER_KEYS)[number];
 
-const FILTER_LABEL: Record<FilterKey, string> = {
-  all: "All",
-  "high-conf": "High-conf",
-  "this-week": "This week",
-  penalty: "Penalty",
-  cash: "Cash",
-  warn: "Warn",
-  suspend: "Suspend",
-  promote: "Promote",
-};
-
 export default function DecisionsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const toastApi = useToast();
 
   const filterParam = (searchParams?.get("filter") as FilterKey) ?? "all";
-  const sortParam =
-    (searchParams?.get("sort") as ListDecisionsParams["sort"]) ?? "priority";
   const activeFilter: FilterKey = FILTER_KEYS.includes(filterParam)
     ? filterParam
     : "all";
@@ -78,7 +61,7 @@ export default function DecisionsPage() {
       const params: ListDecisionsParams = {
         status: "pending",
         filter: activeFilter,
-        sort: sortParam,
+        sort: "priority",
         limit: 25,
       };
       const data = await listDecisions(params);
@@ -92,7 +75,7 @@ export default function DecisionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, sortParam]);
+  }, [activeFilter]);
 
   useEffect(() => {
     setLoading(true);
@@ -263,7 +246,6 @@ export default function DecisionsPage() {
     }
   }
 
-  // ---- Filter chip change ----
   function handleFilterChange(next: string) {
     const params = new URLSearchParams(searchParams?.toString() ?? "");
     if (next === "all") {
@@ -275,103 +257,51 @@ export default function DecisionsPage() {
     router.replace(qs ? `?${qs}` : "?");
   }
 
-  function handleSortChange(next: string) {
-    const params = new URLSearchParams(searchParams?.toString() ?? "");
-    if (next === "priority") {
-      params.delete("sort");
-    } else {
-      params.set("sort", next);
-    }
-    const qs = params.toString();
-    router.replace(qs ? `?${qs}` : "?");
-  }
-
-  // ---- Filter chips with counts ----
-  const chips = FILTER_KEYS.map((key) => ({
-    key,
-    label: FILTER_LABEL[key],
-    count: counts[key] ?? counts[key === "all" ? "pending" : key],
-  }));
-
   const pendingCount = counts.pending ?? cards.filter((c) => c.state === "pending").length;
 
   return (
-    <div className="mx-auto max-w-[760px] px-2 sm:px-6 py-6">
-      <div className="flex items-baseline justify-between gap-4 mb-1">
-        <h1 className="font-display text-display-sm text-sand-900">
-          Decisions
-        </h1>
-        <Link
-          href="/decisions/audit"
-          className="text-sm text-primary hover:underline"
-        >
-          What did Darb do this week? →
-        </Link>
-      </div>
-      <p className="text-sm text-sand-600 tabular-nums">
-        {pendingCount} pending
-      </p>
+    <div className="w-full max-w-none">
+      <section
+        aria-labelledby="decisions-heading"
+        className="overflow-hidden rounded-[18px] border border-black/[0.06] bg-white/85 shadow-[0_4px_24px_rgba(0,0,0,0.06)] backdrop-blur-xl dark:bg-card/85"
+      >
+        <div className="border-b border-sand-200/80 p-5 lg:p-6">
+          <div>
+            <h1
+              id="decisions-heading"
+              className="font-display text-[40px] leading-[44px] text-sand-900 dark:text-foreground"
+            >
+              Decisions
+            </h1>
+            <p className="mt-2 text-[15px] tabular-nums text-sand-600">
+              {pendingCount} pending
+            </p>
+          </div>
+        </div>
 
-      {/* Phase 4 Wave 4 — PinnedViewsRail sits between the title row and the
-          filter strip. It self-hides when the user has no pins. */}
-      <div className="mt-5">
-        <PinnedViewsRailContainer />
-      </div>
-
-      <div className="mt-5 mb-5">
-        <FilterChipStrip
-          chips={chips}
-          active={activeFilter}
-          onChange={handleFilterChange}
-        />
-      </div>
-
-      <div className="flex justify-end mb-4">
-        <label className="inline-flex items-center gap-2 text-xs text-sand-600">
-          Sort
-          <select
-            value={sortParam}
-            onChange={(e) => handleSortChange(e.target.value)}
-            className="appearance-none ps-3 pe-6 py-1.5 rounded-pill border border-sand-300 bg-card text-xs font-medium text-sand-900 focus:outline-none focus:ring-2 focus:ring-primary/40"
-          >
-            <option value="priority">Priority</option>
-            <option value="newest">Newest</option>
-            <option value="confidence">Confidence</option>
-          </select>
-        </label>
-      </div>
-
-      {error ? (
-        <ErrorState
-          error={error}
-          onRetry={() => {
-            setLoading(true);
-            fetchCards();
-          }}
-        />
-      ) : (
-        <DecisionsList
-          cards={cards}
-          loading={loading}
-          onApprove={handleApprove}
-          onDismiss={handleDismiss}
-          onEdit={handleEdit}
-          onUndo={handleUndo}
-          filter={activeFilter}
-          onClearFilter={() => handleFilterChange("all")}
-          onOpenAskDarb={() => {
-            // AskDarbPalette is mounted globally and bound to ⌘K. Trigger
-            // the same shortcut programmatically.
-            window.dispatchEvent(
-              new KeyboardEvent("keydown", {
-                key: "k",
-                metaKey: true,
-                bubbles: true,
-              }),
-            );
-          }}
-        />
-      )}
+        <div className="p-3 sm:p-4 lg:p-5">
+          {error ? (
+            <ErrorState
+              error={error}
+              onRetry={() => {
+                setLoading(true);
+                fetchCards();
+              }}
+            />
+          ) : (
+            <DecisionsList
+              cards={cards}
+              loading={loading}
+              onApprove={handleApprove}
+              onDismiss={handleDismiss}
+              onEdit={handleEdit}
+              onUndo={handleUndo}
+              filter={activeFilter}
+              onClearFilter={() => handleFilterChange("all")}
+            />
+          )}
+        </div>
+      </section>
 
       <EditDrawer
         card={editingCard}

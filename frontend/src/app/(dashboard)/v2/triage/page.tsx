@@ -70,7 +70,7 @@ export default function TriagePage() {
   }));
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="w-full max-w-none">
       <ShortlistView
         title="Triage"
         subtitle="Decisions agents have staged for you, ranked by priority. Approve or reject in one click."

@@ -89,12 +89,12 @@ export default function OrderPerformanceTab({ filters, setFilters }: OrderPerfor
         ))}
       </div>
 
-      {/* Top Restaurants */}
+      {/* Top Branches */}
       <div className="bg-white rounded-2xl p-5 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Store size={14} className="text-orange-400" />
-            <h3 className="text-xs font-semibold text-secondary uppercase tracking-wide">Top Restaurants</h3>
+            <h3 className="text-xs font-semibold text-secondary uppercase tracking-wide">Top Branches</h3>
           </div>
           <select
             value={restaurantZone}
@@ -127,6 +127,15 @@ export default function OrderPerformanceTab({ filters, setFilters }: OrderPerfor
                     >
                       <span className="text-[10px] font-semibold text-white font-mono">{r.orders}</span>
                     </div>
+                  </div>
+                  <div className="w-16 text-right flex-shrink-0">
+                    <p className="text-xs font-mono text-secondary">
+                      <span className="font-semibold text-primary">{r.orders}</span>
+                      <span className="text-secondary"> ord</span>
+                    </p>
+                    <p className="text-[10px] font-mono text-secondary">
+                      <span className="font-semibold">{r.drivers ?? 0}</span> drv
+                    </p>
                   </div>
                   <div className="w-24 text-right flex-shrink-0">
                     <p className="text-xs font-mono text-orange-600">{r.cashKd.toFixed(3)} KD</p>

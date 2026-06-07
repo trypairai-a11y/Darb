@@ -1,11 +1,14 @@
 "use client";
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { useApiGet } from "@/hooks/useApi";
 import FilterBar from "@/components/shared/FilterBar";
 import SlidePanel from "@/components/shared/SlidePanel";
 import StatCard from "@/components/shared/StatCard";
 import { cn } from "@/lib/cn";
 import { cleanDriverName } from "@/lib/formatters";
+
+interface Company { id: string; name: string }
 import {
   Target,
   Users,
@@ -136,22 +139,41 @@ export default function KpisPage() {
   const [dateTo, setDateTo] = useState(localToday());
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [selected, setSelected] = useState<any>(null);
+  const [companyId, setCompanyId] = useState<string>("ALL");
 
-  const platformFilter = filters.platform || "";
   const searchFilter = filters.search || "";
 
   const summaryParams = new URLSearchParams({ dateFrom, dateTo });
-  if (platformFilter) summaryParams.set("platform", platformFilter);
+  if (companyId !== "ALL") summaryParams.set("companyId", companyId);
 
   const driverParams = new URLSearchParams({ dateFrom, dateTo, limit: "100" });
-  if (platformFilter) driverParams.set("platform", platformFilter);
   if (searchFilter) driverParams.set("search", searchFilter);
+  if (companyId !== "ALL") driverParams.set("companyId", companyId);
+
+  const { data: companiesData } = useApiGet<{ data: Company[] } | Company[]>("/api/companies");
+  const companies: Company[] = Array.isArray(companiesData)
+    ? companiesData
+    : (companiesData as any)?.data ?? [];
 
   const { data: summary } = useApiGet<any>(`/api/kpi/summary?${summaryParams}`);
   const { data: driversData, loading } = useApiGet<any>(`/api/kpi/drivers?${driverParams}`);
-  const drivers: any[] = driversData?.data || [];
+  const drivers: any[] = (driversData?.data || []).filter(
+    (d: any) => d.overallScore != null && d.overallScore < 100,
+  );
 
-  const kpis: any[] = summary?.kpis || [];
+  const HIDDEN_KPI_NAMES = new Set([
+    "Violations Open",
+    "Talabat Online Hours",
+    "Keeta Online Hours",
+    "Deliveroo Cash Collected",
+    "Americana Orders",
+  ]);
+  const isCashKpi = (name: string) => /cash/i.test(name);
+  const capScore = (k: any) => (isCashKpi(k.name) ? Math.min(80, k.avgScore ?? 0) : k.avgScore);
+  const kpis: any[] = (summary?.kpis || [])
+    .filter((k: any) => !HIDDEN_KPI_NAMES.has(k.name))
+    .filter((k: any) => !k.platform)
+    .map((k: any) => ({ ...k, avgScore: capScore(k) }));
 
   const prevDay = () => {
     const d = new Date(dateFrom);
@@ -170,7 +192,7 @@ export default function KpisPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="space-y-6 w-full max-w-none">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -182,6 +204,18 @@ export default function KpisPage() {
             <p className="text-sm text-secondary">{t("kpi.trackPerformance")}</p>
           </div>
         </div>
+      </div>
+
+      {/* Company filter chips */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        <FilterChip active={companyId === "ALL"} onClick={() => setCompanyId("ALL")}>
+          All Companies
+        </FilterChip>
+        {companies.map((c) => (
+          <FilterChip key={c.id} active={companyId === c.id} onClick={() => setCompanyId(c.id)}>
+            {c.name}
+          </FilterChip>
+        ))}
       </div>
 
       {/* Summary Cards */}
@@ -211,7 +245,7 @@ export default function KpisPage() {
 
       {/* KPI Category Cards */}
       {kpis.length > 0 && (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {kpis.map((kpi: any) => {
             const Icon = CATEGORY_ICONS[kpi.category] || Target;
             return (
@@ -226,7 +260,6 @@ export default function KpisPage() {
                     </div>
                     <div>
                       <p className="text-sm font-medium">{kpi.name}</p>
-                      <PlatformDot platform={kpi.platform} />
                     </div>
                   </div>
                   <CategoryBadge category={kpi.category} />
@@ -279,18 +312,6 @@ export default function KpisPage() {
         <FilterBar
           filters={[
             {
-              key: "platform",
-              type: "select",
-              label: t("table.platform"),
-              options: [
-                { value: "", label: t("kpi.allPlatforms") },
-                { value: "TALABAT", label: "Talabat" },
-                { value: "KEETA", label: "Keeta" },
-                { value: "DELIVEROO", label: "Deliveroo" },
-                { value: "AMERICANA", label: "Americana" },
-              ],
-            },
-            {
               key: "search",
               type: "search",
               label: t("common.search"),
@@ -310,9 +331,7 @@ export default function KpisPage() {
               <tr className="border-b border-gray-50">
                 <th className="text-start text-xs font-medium text-secondary px-5 py-3">{t("table.driver")}</th>
                 <th className="text-start text-xs font-medium text-secondary px-5 py-3">{t("table.platform")}</th>
-                <th className="text-start text-xs font-medium text-secondary px-5 py-3">{t("table.zone")}</th>
                 <th className="text-start text-xs font-medium text-secondary px-5 py-3">{t("kpi.overallScore")}</th>
-                <th className="text-end text-xs font-medium text-secondary px-5 py-3">{t("kpi.kpisTracked")}</th>
                 <th className="text-center text-xs font-medium text-secondary px-5 py-3">{t("table.status")}</th>
                 <th className="px-5 py-3" />
               </tr>
@@ -320,7 +339,7 @@ export default function KpisPage() {
             <tbody>
               {drivers.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-12 text-center text-sm text-secondary">
+                  <td colSpan={5} className="px-5 py-12 text-center text-sm text-secondary">
                     {loading
                       ? t("errors.loadingData")
                       : `${t("kpi.noKpiData")} ${t("kpi.useComputeEndpoint")}`}
@@ -340,16 +359,12 @@ export default function KpisPage() {
                     <td className="px-5 py-3">
                       <PlatformDot platform={driver.platform} />
                     </td>
-                    <td className="px-5 py-3 text-sm text-secondary">{driver.zone || "-"}</td>
                     <td className="px-5 py-3">
                       {driver.overallScore != null ? (
                         <ScoreBar score={driver.overallScore} />
                       ) : (
                         <span className="text-xs text-secondary">{t("errors.noData")}</span>
                       )}
-                    </td>
-                    <td className="px-5 py-3 text-sm text-end font-mono text-secondary">
-                      {driver.kpis?.length || 0}
                     </td>
                     <td className="px-5 py-3 text-center">
                       {driver.overallScore != null ? (
@@ -418,8 +433,12 @@ export default function KpisPage() {
             {/* Individual KPIs */}
             <div className="space-y-3">
               <p className="text-xs font-medium text-secondary uppercase tracking-wide">{t("kpi.kpiBreakdown")}</p>
-              {selected.kpis && selected.kpis.length > 0 ? (
-                selected.kpis.map((kpi: any, idx: number) => (
+              {(() => {
+                const visibleKpis = (selected.kpis || [])
+                  .filter((k: any) => !HIDDEN_KPI_NAMES.has(k.name))
+                  .map((k: any) => ({ ...k, score: isCashKpi(k.name) && k.score != null ? Math.min(80, k.score) : k.score }));
+                return visibleKpis.length > 0 ? (
+                  visibleKpis.map((kpi: any, idx: number) => (
                   <div key={idx} className="bg-gray-50 rounded-xl p-3">
                     <div className="flex items-center justify-between mb-1.5">
                       <p className="text-sm font-medium">{kpi.name}</p>
@@ -439,11 +458,28 @@ export default function KpisPage() {
                 ))
               ) : (
                 <p className="text-sm text-secondary py-4 text-center">{t("kpi.noKpiRecordsForPeriod")}</p>
-              )}
+              );
+              })()}
             </div>
           </div>
         )}
       </SlidePanel>
     </div>
+  );
+}
+
+function FilterChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium transition-all",
+        active
+          ? "bg-gray-900 text-white shadow-sm"
+          : "bg-white text-gray-700 ring-1 ring-gray-200 hover:ring-gray-300",
+      )}
+    >
+      {children}
+    </button>
   );
 }

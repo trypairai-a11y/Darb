@@ -65,8 +65,8 @@ export default function PinnedViewTile({
   const pinnedAt = "pinnedAt" in pin ? pin.pinnedAt : undefined;
 
   return (
-    <div className="relative rounded-2xl ring-1 ring-sand-200 bg-card p-4 w-[340px] shrink-0 shadow-soft hover:shadow-lift hover:-translate-y-[1px] transition-all">
-      <div className="flex items-start justify-between mb-3">
+    <div className="relative w-[280px] shrink-0 rounded-[16px] border border-black/[0.06] bg-white/90 p-3 shadow-soft transition-all hover:-translate-y-[1px] hover:shadow-lift dark:bg-card/90">
+      <div className="mb-2 flex items-start justify-between">
         <div className="min-w-0">
           <div className="text-sm font-semibold truncate">{pin.title}</div>
           {pinnedAt && (
@@ -85,11 +85,11 @@ export default function PinnedViewTile({
         </button>
       </div>
 
-      <div className="h-[160px] overflow-hidden">
+      <div className="h-[96px] overflow-hidden rounded-[12px] bg-sand-50/70">
         <ChatViewRenderer view={generated} mode="readonly" />
       </div>
 
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-sand-100">
+      <div className="mt-3 flex items-center justify-between border-t border-sand-100 pt-3">
         {pin.sourceThreadId ? (
           <Link
             href={`/chat/${pin.sourceThreadId}${pin.sourceMessageId ? `#msg-${pin.sourceMessageId}` : ""}`}
@@ -111,14 +111,14 @@ export default function PinnedViewTile({
       </div>
 
       {menuOpen && (
-        <div className="absolute right-3 top-10 z-10 rounded-lg ring-1 ring-sand-200 bg-card shadow-lift py-1">
+        <div className="absolute right-3 top-10 z-10 rounded-lg bg-card py-1 shadow-lift ring-1 ring-sand-200">
           <button
             type="button"
             onClick={onRefresh}
             disabled={refreshing}
             className="flex items-center gap-2 px-3 h-8 text-xs hover:bg-sand-50 w-full disabled:opacity-60"
           >
-            <RefreshCw className="h-3 w-3" /> {refreshing ? "Refreshing…" : "Refresh"}
+              <RefreshCw className="h-3 w-3" /> {refreshing ? "Refreshing" : "Refresh"}
           </button>
         </div>
       )}

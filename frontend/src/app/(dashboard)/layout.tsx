@@ -1,4 +1,5 @@
 "use client";
+import dynamic from "next/dynamic";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -6,6 +7,11 @@ import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 import { cn } from "@/lib/cn";
+
+const AskDarbPalette = dynamic(() => import("@/components/ai/AskDarbPalette"), {
+  ssr: false,
+  loading: () => null,
+});
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const { collapsed, open } = useSidebar();
@@ -17,6 +23,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         <Header />
         <main className="p-8">{children}</main>
       </div>
+      <AskDarbPalette />
     </div>
   );
 }

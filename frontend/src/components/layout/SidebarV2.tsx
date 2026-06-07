@@ -26,6 +26,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import api from "@/lib/api";
+import { getPendingCount } from "@/lib/decisionsApi";
 
 /**
  * v2 Sidebar — workflow-oriented nav. Phase 2 Wave 3 adds:
@@ -138,7 +139,7 @@ export default function SidebarV2() {
     let mounted = true;
     async function loadPending() {
       try {
-        const { data } = await api.get("/api/decisions/pending-count");
+        const data = await getPendingCount();
         if (mounted) setPendingDecisions(data.count ?? 0);
       } catch {
         if (mounted) setPendingDecisions(null);

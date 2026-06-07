@@ -12,7 +12,6 @@ import type {
 } from "@/types/chat";
 import { useChatThread, usePatchThread } from "@/hooks/useChatThreads";
 import { useStreamingChat } from "@/hooks/useStreamingChat";
-import { chatApi } from "@/lib/api/chat";
 import { ChatMessageList } from "./ChatMessageList";
 import { ChatComposer } from "./ChatComposer";
 import { Pin, PinOff } from "lucide-react";
@@ -74,7 +73,10 @@ export function ChatThreadPane({ threadId, initialPrompt }: ChatThreadPaneProps)
         ),
       );
     },
-    onQueued: () => setStreamingState({ phase: "queued" }),
+    onQueued: (msgId) => {
+      setStreamingState({ phase: "queued", msgId });
+      void refetch();
+    },
     onComplete: () => {
       setStreamingState({ phase: "complete" });
       resetStreamingBuffers();
@@ -88,6 +90,7 @@ export function ChatThreadPane({ threadId, initialPrompt }: ChatThreadPaneProps)
     },
     onError: (err) => {
       setStreamingState({ phase: "error", errorMessage: err });
+      void refetch();
     },
   });
 
@@ -103,14 +106,6 @@ export function ChatThreadPane({ threadId, initialPrompt }: ChatThreadPaneProps)
   const send = async (content: string) => {
     setStreamingState({ phase: "queued" });
     resetStreamingBuffers();
-    try {
-      // Persist the user turn + create assistant placeholder server-side.
-      await chatApi.sendMessage(threadId, content);
-    } catch {
-      // If persistence fails, still try the SSE so the user gets a stream;
-      // the server will reject if auth/lock breaks.
-    }
-    await refetch();
     await stream.sendMessage(content);
   };
 
@@ -131,7 +126,7 @@ export function ChatThreadPane({ threadId, initialPrompt }: ChatThreadPaneProps)
   };
 
   return (
-    <main className="flex h-screen flex-1 flex-col bg-bg">
+    <div className="flex h-full flex-1 flex-col bg-transparent">
       <header className="flex items-center justify-between border-b border-sand-200 px-6 py-3">
         {editingTitle ? (
           <input
@@ -187,7 +182,7 @@ export function ChatThreadPane({ threadId, initialPrompt }: ChatThreadPaneProps)
         onCancel={onCancel}
         isStreaming={stream.isStreaming || streamingState.phase === "queued"}
       />
-    </main>
+    </div>
   );
 }
 

@@ -148,9 +148,15 @@ router.post("/", rbac(...MUTATORS), validateBody(companySchema.passthrough()), a
  */
 router.put("/:id", rbac(...MUTATORS), async (req: Request, res: Response) => {
   try {
+    const { name, platform, licenseCount, isActive } = req.body ?? {};
+    const data: Record<string, unknown> = {};
+    if (name !== undefined) data.name = name;
+    if (platform !== undefined) data.platform = platform;
+    if (licenseCount !== undefined) data.licenseCount = licenseCount;
+    if (isActive !== undefined) data.isActive = isActive;
     const company = await prisma.company.updateMany({
       where: { id: req.params.id, tenantId: req.user!.tenantId },
-      data: req.body,
+      data,
     });
     if (company.count === 0) { res.status(404).json({ error: "Company not found" }); return; }
     const updated = await prisma.company.findUnique({ where: { id: req.params.id } });

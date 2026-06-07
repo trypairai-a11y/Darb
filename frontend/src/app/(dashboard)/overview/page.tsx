@@ -4,16 +4,16 @@ import { useApiGet } from "@/hooks/useApi";
 import StatCard from "@/components/shared/StatCard";
 import PlatformBadge from "@/components/shared/PlatformBadge";
 import {
-  Users, CheckCircle2, DollarSign, UserX, AlertTriangle, CheckCircle,
-  Sparkles, ChevronDown, ChevronUp, RefreshCw, ArrowRight, TrendingUp, TrendingDown, Minus, X,
+  Users, CheckCircle2, DollarSign, AlertTriangle, CheckCircle,
+  Sparkles, ChevronDown, ChevronUp, RefreshCw, ArrowRight, TrendingUp, TrendingDown, Minus,
 } from "lucide-react";
 import InsightBanner from "@/components/shared/InsightBanner";
 import { cn } from "@/lib/cn";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import api from "@/lib/api";
 import { useI18n } from "@/i18n/I18nProvider";
-import { formatCurrency, formatDate, formatTime } from "@/i18n/format";
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from "recharts";
+import { formatCurrencyCompact, formatDate, formatDateTime } from "@/i18n/format";
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, ReferenceDot } from "recharts";
 
 interface Alert {
   id: string;
@@ -51,11 +51,11 @@ const SEVERITY_DOT: Record<string, string> = {
 };
 const SEVERITY_RANK: Record<string, number> = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
 
-const PLATFORM_COLORS: Record<string, { bg: string; line: string; chip: string }> = {
-  KEETA:     { bg: "#FEF3C7", line: "#F59E0B", chip: "bg-amber-100 text-amber-800" },
-  TALABAT:   { bg: "#FECACA", line: "#EF4444", chip: "bg-red-100 text-red-800" },
-  DELIVEROO: { bg: "#A7F3D0", line: "#10B981", chip: "bg-emerald-100 text-emerald-800" },
-  AMERICANA: { bg: "#BFDBFE", line: "#3B82F6", chip: "bg-blue-100 text-blue-800" },
+const PLATFORM_COLORS: Record<string, { line: string }> = {
+  KEETA:     { line: "#F59E0B" },
+  TALABAT:   { line: "#EF4444" },
+  DELIVEROO: { line: "#10B981" },
+  AMERICANA: { line: "#3B82F6" },
 };
 
 function ymd(d: Date) { return d.toLocaleDateString("en-CA"); }
@@ -66,7 +66,6 @@ export default function OverviewPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [showAllAlerts, setShowAllAlerts] = useState(false);
   const [companyId, setCompanyId] = useState<string>("ALL");
-  const [inactiveModalOpen, setInactiveModalOpen] = useState(false);
 
   const today = new Date();
   const todayStr = ymd(today);
@@ -77,10 +76,6 @@ export default function OverviewPage() {
   const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
   const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
   const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
-
-  // 3-days-ago boundary for inactive computation
-  const threeDaysAgo = new Date(today); threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-  const threeDaysAgoStr = ymd(threeDaysAgo);
 
   const companyParam = companyId !== "ALL" ? `&companyId=${companyId}` : "";
   const companyOnlyParam = companyId !== "ALL" ? `?companyId=${companyId}` : "";
@@ -95,14 +90,15 @@ export default function OverviewPage() {
   const { data: shiftsCompleted } = useApiGet<{ pagination: { total: number } }>(
     `/api/shifts?status=COMPLETED&dateFrom=${todayStr}&dateTo=${todayStr}&limit=1${companyParam}`,
   );
+  const { data: shiftsTotalToday } = useApiGet<{ pagination: { total: number } }>(
+    `/api/shifts?dateFrom=${todayStr}&dateTo=${todayStr}&limit=1${companyParam}`,
+  );
   const { data: ordersToday } = useApiGet<any>(`/api/orders/summary?dateFrom=${todayStr}&dateTo=${todayStr}${companyParam}`);
   const { data: ordersYesterday } = useApiGet<any>(`/api/orders/summary?dateFrom=${ydayStr}&dateTo=${ydayStr}${companyParam}`);
   const { data: attendanceSummary } = useApiGet<any>(`/api/attendance/summary${companyOnlyParam}`);
 
-  // Distinct active driverIds (last 3 days) — used to compute inactive list
-  const { data: recentOrders } = useApiGet<{ driverIds: string[] }>(
-    `/api/orders/active-drivers?dateFrom=${threeDaysAgoStr}&dateTo=${todayStr}${companyParam}`,
-  );
+  // Total violations across all platforms (lifetime, tenant-scoped)
+  const { data: violationsSummary } = useApiGet<{ total: number }>("/api/violations/summary");
 
   // Per-platform daily aggregates: this month + last month (server-aggregated)
   const { data: ordersThisMonth } = useApiGet<{ data: any[] }>(
@@ -110,6 +106,15 @@ export default function OverviewPage() {
   );
   const { data: ordersLastMonth } = useApiGet<{ data: any[] }>(
     `/api/orders/daily-by-platform?dateFrom=${ymd(lastMonthStart)}&dateTo=${ymd(lastMonthEnd)}${companyParam}`,
+  );
+
+  // KPI summary: this month + last month
+  const kpiCompanyParam = companyId !== "ALL" ? `&companyId=${companyId}` : "";
+  const { data: kpiThisMonth } = useApiGet<{ overallScore: number }>(
+    `/api/kpi/summary?dateFrom=${ymd(monthStart)}&dateTo=${todayStr}${kpiCompanyParam}`,
+  );
+  const { data: kpiLastMonth } = useApiGet<{ overallScore: number }>(
+    `/api/kpi/summary?dateFrom=${ymd(lastMonthStart)}&dateTo=${ymd(lastMonthEnd)}${kpiCompanyParam}`,
   );
 
   const handleRefreshDigest = async (e: React.MouseEvent) => {
@@ -133,26 +138,25 @@ export default function OverviewPage() {
   const totalDrivers = driversData?.pagination?.total ?? allDrivers.length;
   const alerts = alertsData?.data || [];
   const completedToday = shiftsCompleted?.pagination?.total || 0;
+  const totalShiftsToday = shiftsTotalToday?.pagination?.total || 0;
   const pendingCash = (cashData?.data || []).reduce(
     (s: number, r: any) => s + Number(r.pendingDues || 0),
     0,
   );
-
-  // Inactive >3 days: drivers with no OrderLog rows in last 3 days
-  const activeDriverIds = useMemo(
-    () => new Set(recentOrders?.driverIds || []),
-    [recentOrders],
-  );
-  const inactiveDrivers = useMemo(
-    () => allDrivers.filter((d) => d.status === "ACTIVE" && !activeDriverIds.has(d.id)),
-    [allDrivers, activeDriverIds],
-  );
+  const totalViolations = violationsSummary?.total ?? 0;
 
   // Order counts (today vs yesterday)
   const todayOrderCount = Number(ordersToday?.totalDeliveries ?? 0);
   const ydayOrderCount = Number(ordersYesterday?.totalDeliveries ?? 0);
   const dodPct = ydayOrderCount > 0
     ? Math.round(((todayOrderCount - ydayOrderCount) / ydayOrderCount) * 100)
+    : null;
+
+  // Overall KPI score: this month vs last
+  const kpiScoreNow = kpiThisMonth?.overallScore != null ? Math.round(Number(kpiThisMonth.overallScore)) : null;
+  const kpiScoreLast = kpiLastMonth?.overallScore != null ? Math.round(Number(kpiLastMonth.overallScore)) : null;
+  const kpiDeltaPct = kpiScoreNow != null && kpiScoreLast != null && kpiScoreLast > 0
+    ? Math.round(((kpiScoreNow - kpiScoreLast) / kpiScoreLast) * 100)
     : null;
 
   const presentRate = useMemo(() => {
@@ -176,44 +180,50 @@ export default function OverviewPage() {
     return `Steady morning. ${alerts.length} alert${alerts.length > 1 ? "s" : ""} open.`;
   }, [alerts]);
 
-  // Per-platform charts: total this month vs last month + 30-day daily series
+  // Per-platform charts: total this month vs last month + daily series (overlaid)
   const platformCharts = useMemo(() => {
     const platforms = ["KEETA", "TALABAT", "DELIVEROO", "AMERICANA"];
     const tm = ordersThisMonth?.data || [];
     const lm = ordersLastMonth?.data || [];
+    const lastMonthDays = lastMonthEnd.getDate();
+
     return platforms.map((platform) => {
       const tmRows = tm.filter((r: any) => r.platform === platform);
       const lmRows = lm.filter((r: any) => r.platform === platform);
       const tmTotal = tmRows.reduce((s: number, r: any) => s + (r.orderCount || 0), 0);
       const lmTotal = lmRows.reduce((s: number, r: any) => s + (r.orderCount || 0), 0);
       const change = lmTotal > 0 ? Math.round(((tmTotal - lmTotal) / lmTotal) * 100) : null;
+      const driverCount = allDrivers.filter((d) => d.platform === platform && d.status === "ACTIVE").length;
+      const avgPerDriver = driverCount > 0 ? Math.round(tmTotal / driverCount) : null;
 
-      // Daily series for this calendar month
-      const dayMap = new Map<string, number>();
+      // Index both months by day-of-month so they align on the same x-axis
+      const tmByDom = new Map<number, number>();
       for (const r of tmRows) {
-        const d = ymd(new Date(r.date));
-        dayMap.set(d, (dayMap.get(d) || 0) + (r.orderCount || 0));
+        const dom = new Date(r.date).getUTCDate();
+        tmByDom.set(dom, (tmByDom.get(dom) || 0) + (r.orderCount || 0));
       }
-      const series: { day: string; orders: number }[] = [];
-      const cursor = new Date(monthStart);
-      while (cursor <= today) {
-        const k = ymd(cursor);
-        series.push({ day: k.slice(5), orders: dayMap.get(k) || 0 });
-        cursor.setDate(cursor.getDate() + 1);
+      const lmByDom = new Map<number, number>();
+      for (const r of lmRows) {
+        const dom = new Date(r.date).getUTCDate();
+        lmByDom.set(dom, (lmByDom.get(dom) || 0) + (r.orderCount || 0));
       }
-      return { platform, tmTotal, lmTotal, change, series };
-    });
-  }, [ordersThisMonth, ordersLastMonth, monthStart, today]);
 
-  // Lock body scroll when modal open
-  useEffect(() => {
-    if (inactiveModalOpen) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "";
-    return () => { document.body.style.overflow = ""; };
-  }, [inactiveModalOpen]);
+      const todayDom = today.getDate();
+      const maxDom = Math.max(lastMonthDays, todayDom);
+      const series: { day: number; thisMonth: number | null; lastMonth: number | null }[] = [];
+      for (let d = 1; d <= maxDom; d++) {
+        series.push({
+          day: d,
+          thisMonth: d <= todayDom ? (tmByDom.get(d) || 0) : null,
+          lastMonth: d <= lastMonthDays ? (lmByDom.get(d) || 0) : null,
+        });
+      }
+      return { platform, tmTotal, lmTotal, change, series, avgPerDriver, driverCount };
+    });
+  }, [ordersThisMonth, ordersLastMonth, lastMonthEnd, today, allDrivers]);
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 w-full max-w-none">
       {/* Company filter chips */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
         <FilterChip active={companyId === "ALL"} onClick={() => setCompanyId("ALL")}>
@@ -258,7 +268,7 @@ export default function OverviewPage() {
 
               <div className="flex flex-wrap gap-2">
                 <Chip label="Orders today" value={todayOrderCount.toLocaleString()} trendPct={dodPct} />
-                <Chip label="Shifts completed" value={`${completedToday}`} />
+                <Chip label="Shifts completed" value={`${completedToday} / ${totalShiftsToday}`} />
                 <Chip label="Attendance" value={presentRate != null ? `${presentRate}%` : "—"} />
               </div>
 
@@ -283,30 +293,33 @@ export default function OverviewPage() {
       {/* AI Insights */}
       <InsightBanner context="dashboard" maxInsights={3} />
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* KPI Score + Stat Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <Link href="/kpis" className="contents">
+          <KpiScoreCard scoreNow={kpiScoreNow} scoreLast={kpiScoreLast} deltaPct={kpiDeltaPct} />
+        </Link>
         <Link href="/talabat/drivers" className="contents">
           <StatCard title={t("overview.totalDrivers")} value={totalDrivers} icon={Users} />
         </Link>
         <Link href="/attendance" className="contents">
-          <StatCard title="Shifts Completed" value={completedToday} icon={CheckCircle2} />
+          <StatCard title="Shifts Completed" value={`${completedToday} / ${totalShiftsToday}`} icon={CheckCircle2} />
         </Link>
         <Link href="/talabat/cash" className="contents">
           <StatCard
             title="Overdue Cash"
-            value={formatCurrency(pendingCash, locale)}
+            value={formatCurrencyCompact(pendingCash, locale)}
             icon={DollarSign}
             highlight={pendingCash > 0}
           />
         </Link>
-        <button onClick={() => setInactiveModalOpen(true)} className="contents text-left">
+        <Link href="/talabat/violations" className="contents">
           <StatCard
-            title="Inactive >3 Days"
-            value={inactiveDrivers.length}
-            icon={UserX}
-            highlight={inactiveDrivers.length > 0}
+            title="Total Violations"
+            value={totalViolations}
+            icon={AlertTriangle}
+            highlight={totalViolations > 0}
           />
-        </button>
+        </Link>
       </div>
 
       {/* Per-platform charts — positioned above alerts */}
@@ -360,7 +373,7 @@ export default function OverviewPage() {
                 </div>
                 {alert.driver && <PlatformBadge platform={alert.driver.platform} />}
                 <span className="text-xs text-secondary whitespace-nowrap">
-                  {formatTime(alert.createdAt, locale)}
+                  {formatDateTime(alert.createdAt, locale)}
                 </span>
               </div>
             ))}
@@ -368,58 +381,6 @@ export default function OverviewPage() {
         )}
       </div>
 
-      {/* Inactive drivers modal */}
-      {inactiveModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
-          onClick={() => setInactiveModalOpen(false)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-              <div>
-                <h3 className="text-base font-semibold text-foreground">Inactive drivers</h3>
-                <p className="text-xs text-secondary mt-0.5">No completed orders in the last 3 days · {inactiveDrivers.length} found</p>
-              </div>
-              <button
-                onClick={() => setInactiveModalOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 transition"
-              >
-                <X size={16} />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto px-3 py-3">
-              {inactiveDrivers.length === 0 ? (
-                <div className="text-center py-12 text-sm text-secondary">
-                  Everyone has been active in the last 3 days.
-                </div>
-              ) : (
-                <ul className="divide-y divide-gray-100">
-                  {inactiveDrivers.map((d) => (
-                    <li key={d.id} className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-gray-50">
-                      {d.photoUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={d.photoUrl} alt={d.name} className="w-9 h-9 rounded-full object-cover" />
-                      ) : (
-                        <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-500">
-                          {d.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{d.name}</p>
-                        <p className="text-[11px] text-secondary truncate">{d.company?.name ?? "—"}</p>
-                      </div>
-                      <PlatformBadge platform={d.platform} />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -457,57 +418,163 @@ function Chip({ label, value, trendPct }: { label: string; value: string; trendP
   );
 }
 
-function PlatformChartCard({ platform, tmTotal, lmTotal, change, series }:
-  { platform: string; tmTotal: number; lmTotal: number; change: number | null; series: { day: string; orders: number }[] }) {
-  const colors = PLATFORM_COLORS[platform] ?? PLATFORM_COLORS.KEETA;
-  const TrendIcon = change == null ? Minus : change > 0 ? TrendingUp : change < 0 ? TrendingDown : Minus;
-  const trendColor = change == null ? "text-gray-500" : change > 0 ? "text-green-600" : change < 0 ? "text-red-600" : "text-gray-500";
+function KpiScoreCard({ scoreNow, scoreLast, deltaPct }: { scoreNow: number | null; scoreLast: number | null; deltaPct: number | null }) {
+  const isUp = deltaPct != null && deltaPct > 0;
+  const isDown = deltaPct != null && deltaPct < 0;
+  const TrendIcon = isUp ? TrendingUp : isDown ? TrendingDown : Minus;
+  const pillCls = isUp
+    ? "bg-emerald-50 text-emerald-700 ring-emerald-100"
+    : isDown
+    ? "bg-red-50 text-red-700 ring-red-100"
+    : "bg-gray-50 text-gray-600 ring-gray-100";
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-      <div className="flex items-center justify-between mb-2">
-        <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide", colors.chip)}>
+    <div className="group bg-card border border-sand-200 dark:border-border rounded-2xl p-5 shadow-soft transition-all duration-400 ease-sierra-out hover:shadow-lift hover:-translate-y-[1px] cursor-pointer">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] uppercase tracking-[0.14em] font-medium text-sand-600 mb-3 truncate">Overall KPI Score</p>
+          <div className="flex items-baseline gap-2">
+            <p className="font-display text-4xl leading-none tracking-tight text-sand-900 dark:text-foreground">
+              {scoreNow != null ? `${scoreNow}%` : "—"}
+            </p>
+            {deltaPct != null && (
+              <span className={cn("inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ring-1", pillCls)}>
+                <TrendIcon size={10} />
+                {Math.abs(deltaPct)}%
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-sand-600 mt-2.5 truncate">
+            {scoreLast != null && scoreLast > 0 ? (
+              <>vs <span className="font-medium text-foreground">{scoreLast}%</span> last month</>
+            ) : (
+              "No data for last month"
+            )}
+          </p>
+        </div>
+        <div className="h-9 w-9 shrink-0 rounded-pill bg-sand-100 dark:bg-sand-900/40 flex items-center justify-center text-sand-700 transition-colors duration-400 ease-sierra-out group-hover:bg-primary/10 group-hover:text-primary">
+          <TrendingUp size={16} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PlatformChartCard({ platform, tmTotal, lmTotal, change, series, avgPerDriver, driverCount }:
+  { platform: string; tmTotal: number; lmTotal: number; change: number | null; series: { day: number; thisMonth: number | null; lastMonth: number | null }[]; avgPerDriver: number | null; driverCount: number }) {
+  const colors = PLATFORM_COLORS[platform] ?? PLATFORM_COLORS.KEETA;
+  const isUp = change != null && change > 0;
+  const isDown = change != null && change < 0;
+  const TrendIcon = isUp ? TrendingUp : isDown ? TrendingDown : Minus;
+  const trendPillCls = isUp
+    ? "bg-emerald-50 text-emerald-700 ring-emerald-100"
+    : isDown
+    ? "bg-red-50 text-red-700 ring-red-100"
+    : "bg-gray-50 text-gray-600 ring-gray-100";
+  const deltaAbs = Math.abs(tmTotal - lmTotal).toLocaleString();
+  const deltaSign = isUp ? "+" : isDown ? "−" : "";
+
+  // Last point on the this-month series (the "today" marker)
+  const todayPoint = (() => {
+    for (let i = series.length - 1; i >= 0; i--) {
+      const v = series[i].thisMonth;
+      if (v != null) return { day: series[i].day, value: v };
+    }
+    return null;
+  })();
+  return (
+    <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between mb-3">
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-700">
+          <span
+            className="w-2 h-2 rounded-full"
+            style={{ backgroundColor: colors.line, boxShadow: `0 0 0 3px ${colors.line}1A` }}
+          />
           {platform}
         </span>
-        <span className={cn("inline-flex items-center gap-0.5 text-xs font-medium", trendColor)}>
-          <TrendIcon size={12} />
+        <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1", trendPillCls)}>
+          <TrendIcon size={11} />
           {change == null ? "—" : `${Math.abs(change)}%`}
         </span>
       </div>
-      <div className="flex items-end justify-between gap-2 mb-2">
-        <div>
-          <p className="text-[10px] uppercase tracking-wider text-secondary">This month</p>
-          <p className="text-2xl font-display tracking-tight">{tmTotal.toLocaleString()}</p>
-        </div>
-        <div className="text-right">
-          <p className="text-[10px] uppercase tracking-wider text-secondary">Last month</p>
-          <p className="text-sm font-medium text-gray-500">{lmTotal.toLocaleString()}</p>
-        </div>
+
+      <div className="mb-1">
+        <p className="text-[10px] uppercase tracking-wider text-secondary">This month</p>
+        <p className="text-[28px] leading-none font-display tracking-tight text-foreground mt-1">
+          {tmTotal.toLocaleString()}
+        </p>
       </div>
-      <div className="h-16 -mx-1">
+      <p className="text-[11px] text-secondary mb-2">
+        {deltaSign && <span className={cn("font-medium", isUp ? "text-emerald-600" : isDown ? "text-red-600" : "text-gray-500")}>
+          {deltaSign}{deltaAbs}
+        </span>}
+        {deltaSign && " vs "}
+        <span className="text-gray-500">{lmTotal.toLocaleString()} last month</span>
+      </p>
+      <div className="flex items-baseline gap-1.5 mb-3">
+        <span className="text-[11px] uppercase tracking-wider text-secondary">Avg / driver</span>
+        <span className="text-sm font-semibold text-foreground tabular-nums">
+          {avgPerDriver != null ? avgPerDriver.toLocaleString() : "—"}
+        </span>
+        <span className="text-[10px] text-gray-400">· {driverCount} drivers</span>
+      </div>
+
+      <div className="h-20 -mx-1">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={series} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+          <AreaChart data={series} margin={{ top: 6, right: 6, left: 6, bottom: 2 }}>
             <defs>
               <linearGradient id={`g-${platform}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={colors.line} stopOpacity={0.35} />
+                <stop offset="0%" stopColor={colors.line} stopOpacity={0.22} />
                 <stop offset="100%" stopColor={colors.line} stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id={`g-lm-${platform}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#6B7280" stopOpacity={0.08} />
+                <stop offset="100%" stopColor="#6B7280" stopOpacity={0} />
               </linearGradient>
             </defs>
             <XAxis dataKey="day" hide />
             <YAxis hide />
             <Tooltip
-              contentStyle={{ fontSize: 11, padding: "4px 8px", borderRadius: 8 }}
+              cursor={{ stroke: colors.line, strokeOpacity: 0.3, strokeWidth: 1 }}
+              contentStyle={{ fontSize: 11, padding: "6px 10px", borderRadius: 10, border: "1px solid #E5E7EB", boxShadow: "0 4px 12px rgba(0,0,0,0.06)" }}
               labelFormatter={(d) => `Day ${d}`}
-              formatter={(v: any) => [`${v} orders`, ""]}
+              formatter={(v: any, name: any) => {
+                if (v == null) return [null, null] as any;
+                const label = name === "thisMonth" ? "This month" : "Last month";
+                return [`${v} orders`, label];
+              }}
             />
             <Area
               type="monotone"
-              dataKey="orders"
+              dataKey="lastMonth"
+              stroke="#9CA3AF"
+              strokeWidth={1.5}
+              strokeDasharray="4 3"
+              strokeOpacity={1}
+              fill={`url(#g-lm-${platform})`}
+              dot={false}
+              isAnimationActive={false}
+              connectNulls
+            />
+            <Area
+              type="monotone"
+              dataKey="thisMonth"
               stroke={colors.line}
-              strokeWidth={2}
+              strokeWidth={2.25}
               fill={`url(#g-${platform})`}
               dot={false}
               isAnimationActive={false}
+              connectNulls
             />
+            {todayPoint && (
+              <ReferenceDot
+                x={todayPoint.day}
+                y={todayPoint.value}
+                r={3}
+                fill={colors.line}
+                stroke="#fff"
+                strokeWidth={2}
+              />
+            )}
           </AreaChart>
         </ResponsiveContainer>
       </div>

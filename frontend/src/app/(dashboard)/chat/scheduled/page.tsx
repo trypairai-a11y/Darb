@@ -5,8 +5,8 @@ import { ScheduledBriefingsList } from "@/components/scheduled-jobs/ScheduledBri
 
 export default function ScheduledBriefingsPage() {
   return (
-    <main className="max-w-3xl mx-auto px-6 py-8">
+    <div className="w-full max-w-none">
       <ScheduledBriefingsList />
-    </main>
+    </div>
   );
 }

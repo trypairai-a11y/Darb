@@ -189,6 +189,7 @@ export async function detectGpsNotUploading(tenantId: string): Promise<number> {
 
   const staleDevices = await prisma.device.findMany({
     where: {
+      tenantId,
       driver: { tenantId, platform: "KEETA", status: "ACTIVE" },
       isOnline: true,
       lastSeen: { lt: fifteenMinAgo },

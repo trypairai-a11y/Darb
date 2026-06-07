@@ -2,7 +2,11 @@ import { Router, Request, Response } from "express";
 import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
+import { rbac } from "../middleware/rbac";
 import { parseLocalDate } from "../utils/date";
+
+const MUTATORS = ["ADMIN", "OPS_MANAGER"];
+const DESTRUCTIVE = ["ADMIN"];
 
 const router = Router();
 router.use(authMiddleware, tenantScope);
@@ -30,7 +34,7 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 // POST /api/americana/rates
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", rbac(...MUTATORS), async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
     const { chainId, vehicleType, ratePerOrder, effectiveFrom, effectiveTo, contractId } = req.body;
@@ -55,7 +59,7 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 // PUT /api/americana/rates/:id
-router.put("/:id", async (req: Request, res: Response) => {
+router.put("/:id", rbac(...MUTATORS), async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
     const { ratePerOrder, effectiveFrom, effectiveTo, contractId, vehicleType } = req.body;
@@ -78,7 +82,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 });
 
 // DELETE /api/americana/rates/:id
-router.delete("/:id", async (req: Request, res: Response) => {
+router.delete("/:id", rbac(...DESTRUCTIVE), async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
     const result = await prisma.americanaChainRate.deleteMany({

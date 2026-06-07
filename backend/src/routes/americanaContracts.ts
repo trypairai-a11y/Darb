@@ -2,9 +2,12 @@ import { Router, Request, Response } from "express";
 import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
+import { rbac } from "../middleware/rbac";
 import { upload } from "../utils/upload";
 import { parseLocalDate } from "../utils/date";
 // Contract OCR deferred to v2 per DS3 — upload archives PDF only, no extraction.
+
+const MUTATORS = ["ADMIN", "OPS_MANAGER"];
 
 const router = Router();
 router.use(authMiddleware, tenantScope);
@@ -41,7 +44,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 });
 
 // POST /api/americana/contracts/upload  (multipart: file=PDF)
-router.post("/upload", upload.single("file"), async (req: Request, res: Response) => {
+router.post("/upload", rbac(...MUTATORS), upload.single("file"), async (req: Request, res: Response) => {
   try {
     if (!req.file) { res.status(400).json({ error: "No file uploaded" }); return; }
     const tenantId = req.user!.tenantId;
@@ -70,7 +73,7 @@ router.post("/upload", upload.single("file"), async (req: Request, res: Response
 
 // POST /api/americana/contracts/:id/save-rates
 // Accepts: { rates: [{ chainId, vehicleType, ratePerOrder }] }
-router.post("/:id/save-rates", async (req: Request, res: Response) => {
+router.post("/:id/save-rates", rbac(...MUTATORS), async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
     const contract = await prisma.americanaContract.findFirst({
@@ -105,13 +108,16 @@ router.post("/:id/save-rates", async (req: Request, res: Response) => {
 });
 
 // PUT /api/americana/contracts/:id
-router.put("/:id", async (req: Request, res: Response) => {
+router.put("/:id", rbac(...MUTATORS), async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
-    const data: any = { ...req.body };
-    if (data.signedDate) data.signedDate = parseLocalDate(data.signedDate);
-    if (data.effectiveFrom) data.effectiveFrom = parseLocalDate(data.effectiveFrom);
-    if (data.effectiveTo !== undefined) data.effectiveTo = data.effectiveTo ? parseLocalDate(data.effectiveTo) : null;
+    const { contractRef, signedDate, effectiveFrom, effectiveTo, notes } = req.body ?? {};
+    const data: Record<string, unknown> = {};
+    if (contractRef !== undefined) data.contractRef = contractRef;
+    if (signedDate !== undefined) data.signedDate = parseLocalDate(signedDate);
+    if (effectiveFrom !== undefined) data.effectiveFrom = parseLocalDate(effectiveFrom);
+    if (effectiveTo !== undefined) data.effectiveTo = effectiveTo ? parseLocalDate(effectiveTo) : null;
+    if (notes !== undefined) data.notes = notes;
     const result = await prisma.americanaContract.updateMany({
       where: { id: req.params.id, tenantId },
       data,

@@ -77,7 +77,7 @@ function MultiSelectFilter({
       </button>
       <ChevronDown size={14} className="absolute end-2.5 top-1/2 -translate-y-1/2 text-sand-500 pointer-events-none" aria-hidden="true" />
       {open && (
-        <div role="listbox" aria-label={filter.label} aria-multiselectable="true" className="absolute top-full start-0 mt-1 bg-white border border-sand-300 rounded-pill shadow-lg z-50 min-w-[180px] py-1 max-h-60 overflow-y-auto">
+        <div role="listbox" aria-label={filter.label} aria-multiselectable="true" className="absolute top-full start-0 mt-1 bg-white border border-sand-300 rounded-xl shadow-lg z-50 min-w-[180px] py-1 max-h-60 overflow-y-auto">
           {filter.options?.map((opt) => {
             const isSelected = selected.includes(opt.value);
             return (
@@ -181,7 +181,7 @@ function DriverSearchFilter({
         </button>
       )}
       {open && suggestions.length > 0 && (
-        <div className="absolute top-full start-0 mt-1 bg-white border border-sand-300 rounded-pill shadow-lg z-50 min-w-[220px] py-1 max-h-60 overflow-y-auto">
+        <div className="absolute top-full start-0 mt-1 bg-white border border-sand-300 rounded-xl shadow-lg z-50 min-w-[220px] py-1 max-h-60 overflow-y-auto">
           {suggestions.map((opt) => (
             <button
               key={opt.value}

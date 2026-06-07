@@ -9,6 +9,20 @@ import type {
   AgentActionDetail,
   AuditListResponse,
 } from "@/types/decisions";
+import {
+  DEMO_DECISION_CARDS,
+  demoAuditResponse,
+  demoDecisionsResponse,
+  isDemoDecisionId,
+} from "@/mocks/demoDecisions";
+
+function shouldUseDemoFallback(error: unknown) {
+  const status = (error as { response?: { status?: number } })?.response?.status;
+  const isLocalhost =
+    typeof window !== "undefined" &&
+    ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  return isLocalhost && (status === 404 || status === 500 || status === undefined);
+}
 
 // ---- Decisions inbox ----
 
@@ -31,22 +45,49 @@ export interface ListDecisionsParams {
 export async function listDecisions(
   params: ListDecisionsParams = {},
 ): Promise<DecisionsListResponse> {
-  const { data } = await api.get<DecisionsListResponse>("/api/decisions", {
-    params,
-  });
-  return data;
+  try {
+    const { data } = await api.get<DecisionsListResponse>("/api/decisions", {
+      params,
+    });
+    if (!data.cards?.length && shouldUseDemoFallback({ response: { status: 404 } })) {
+      return demoDecisionsResponse();
+    }
+    return data;
+  } catch (error) {
+    if (shouldUseDemoFallback(error)) return demoDecisionsResponse();
+    throw error;
+  }
 }
 
 export async function getPendingCount(): Promise<{ count: number }> {
-  const { data } = await api.get<{ count: number }>(
-    "/api/decisions/pending-count",
-  );
-  return data;
+  try {
+    const { data } = await api.get<{ count: number }>(
+      "/api/decisions/pending-count",
+    );
+    return data;
+  } catch (error) {
+    if (shouldUseDemoFallback(error)) {
+      return { count: demoDecisionsResponse().counts.pending };
+    }
+    throw error;
+  }
 }
 
 export async function getDecision(id: string): Promise<DecisionCardData> {
-  const { data } = await api.get<DecisionCardData>(`/api/decisions/${id}`);
-  return data;
+  if (isDemoDecisionId(id)) {
+    const found = DEMO_DECISION_CARDS.find((c) => c.id === id);
+    if (found) return found;
+  }
+  try {
+    const { data } = await api.get<DecisionCardData>(`/api/decisions/${id}`);
+    return data;
+  } catch (error) {
+    if (shouldUseDemoFallback(error)) {
+      const found = DEMO_DECISION_CARDS.find((c) => c.id === id);
+      if (found) return found;
+    }
+    throw error;
+  }
 }
 
 export async function approveDecision(
@@ -57,6 +98,13 @@ export async function approveDecision(
   outcome: "success" | "failure";
   audit: unknown;
 }> {
+  if (isDemoDecisionId(id)) {
+    return {
+      agentActionId: `demo-action-${id}`,
+      outcome: "success",
+      audit: { demo: true, modifications: modifications ?? null },
+    };
+  }
   const body = modifications ? { modifications } : {};
   const { data } = await api.post(`/api/decisions/${id}/approve`, body);
   return data;
@@ -66,6 +114,9 @@ export async function dismissDecision(
   id: string,
   reason: string,
 ): Promise<{ agentMemoryId: string }> {
+  if (isDemoDecisionId(id)) {
+    return { agentMemoryId: `demo-memory-${reason.length}-${id}` };
+  }
   const { data } = await api.post(`/api/decisions/${id}/dismiss`, { reason });
   return data;
 }
@@ -73,6 +124,12 @@ export async function dismissDecision(
 export async function undoDecision(
   id: string,
 ): Promise<{ agentActionId: string; rolledBackAt: string }> {
+  if (isDemoDecisionId(id)) {
+    return {
+      agentActionId: `demo-action-${id}`,
+      rolledBackAt: new Date().toISOString(),
+    };
+  }
   const { data } = await api.post(`/api/decisions/${id}/undo`);
   return data;
 }
@@ -94,11 +151,19 @@ export interface ListAuditParams {
 export async function listAuditActions(
   params: ListAuditParams = {},
 ): Promise<AuditListResponse> {
-  const { data } = await api.get<AuditListResponse>(
-    "/api/audit/agent-actions",
-    { params },
-  );
-  return data;
+  try {
+    const { data } = await api.get<AuditListResponse>(
+      "/api/audit/agent-actions",
+      { params },
+    );
+    if (!data.rows?.length && shouldUseDemoFallback({ response: { status: 404 } })) {
+      return demoAuditResponse();
+    }
+    return data;
+  } catch (error) {
+    if (shouldUseDemoFallback(error)) return demoAuditResponse();
+    throw error;
+  }
 }
 
 export async function getAuditAction(id: string): Promise<AgentActionDetail> {

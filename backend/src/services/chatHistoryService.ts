@@ -166,6 +166,46 @@ export async function appendMessage(opts: {
   };
 }
 
+// ─── updateMessage ───────────────────────────────────────────────────────────
+
+export async function updateMessage(opts: {
+  id: string;
+  tenantId: string;
+  content?: string;
+  views?: GeneratedView[];
+  toolCalls?: ToolCallRecord[];
+  proposalId?: string | null;
+  state?: ChatMessageState;
+  promptTokens?: number;
+  completionTokens?: number;
+  latencyMs?: number;
+  modelName?: string | null;
+  errorMessage?: string | null;
+}): Promise<void> {
+  if (!opts.id) throw new Error("updateMessage: id required");
+  if (!opts.tenantId) throw new Error("updateMessage: tenantId required");
+
+  const data: any = {};
+  if (opts.content !== undefined) data.content = opts.content;
+  if (opts.views !== undefined) data.views = opts.views as any;
+  if (opts.toolCalls !== undefined) data.toolCalls = opts.toolCalls as any;
+  if (opts.proposalId !== undefined) data.proposalId = opts.proposalId;
+  if (opts.state !== undefined) data.state = opts.state;
+  if (opts.promptTokens !== undefined) data.promptTokens = opts.promptTokens;
+  if (opts.completionTokens !== undefined) data.completionTokens = opts.completionTokens;
+  if (opts.latencyMs !== undefined) data.latencyMs = opts.latencyMs;
+  if (opts.modelName !== undefined) data.modelName = opts.modelName;
+  if (opts.errorMessage !== undefined) data.errorMessage = opts.errorMessage;
+
+  const updated = await prisma.chatMessage.updateMany({
+    where: { id: opts.id, tenantId: opts.tenantId },
+    data,
+  });
+  if (updated.count === 0) {
+    throw new Error(`updateMessage: message ${opts.id} not found in tenant scope`);
+  }
+}
+
 // ─── recentTurns ─────────────────────────────────────────────────────────────
 
 export async function recentTurns(

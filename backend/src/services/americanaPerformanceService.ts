@@ -39,9 +39,18 @@ async function loadSettings(tenantId: string): Promise<AmericanaSettings> {
   };
 }
 
-function pickTarget(settings: AmericanaSettings, position: string | null | undefined): number {
+function pickTarget(
+  settings: AmericanaSettings,
+  position: string | null | undefined,
+  storeOverrides?: { car: number | null; bike: number | null } | null,
+): number {
   const p = (position || "").toLowerCase();
-  return p.includes("bike") ? settings.targetMonthlyOrders.bike : settings.targetMonthlyOrders.car;
+  const isBike = p.includes("bike");
+  if (storeOverrides) {
+    const o = isBike ? storeOverrides.bike : storeOverrides.car;
+    if (o != null && o > 0) return o;
+  }
+  return isBike ? settings.targetMonthlyOrders.bike : settings.targetMonthlyOrders.car;
 }
 
 export interface LeaderboardEntry {
@@ -75,7 +84,10 @@ export async function computeAmericanaLeaderboard(tenantId: string, month: Date)
   const [orders, violations] = await Promise.all([
     prisma.americanaDailyOrders.findMany({
       where: { tenantId, month: from },
-      include: { driver: { select: { id: true, name: true } } },
+      include: {
+        driver: { select: { id: true, name: true } },
+        storeRef: { select: { id: true, carMonthlyTarget: true, bikeMonthlyTarget: true } },
+      },
     }),
     prisma.violation.findMany({
       where: {
@@ -101,7 +113,10 @@ export async function computeAmericanaLeaderboard(tenantId: string, month: Date)
     const presentDays = days.filter((k) => (daily[k] || 0) > 0).length;
     const scheduledDays = Math.max(presentDays, days.length || 0);
     const attendancePct = scheduledDays > 0 ? presentDays / scheduledDays : 0;
-    const target = pickTarget(settings, o.position);
+    const storeOverrides = o.storeRef
+      ? { car: o.storeRef.carMonthlyTarget, bike: o.storeRef.bikeMonthlyTarget }
+      : null;
+    const target = pickTarget(settings, o.position, storeOverrides);
     const ordersPct = target > 0 ? o.totalOrders / target : 0;
     const viols = violationMap.get(o.driverId) ?? 0;
     const composite =
@@ -133,6 +148,157 @@ export async function computeAmericanaLeaderboard(tenantId: string, month: Date)
 
   entries.sort((a, b) => b.composite - a.composite);
   return entries;
+}
+
+// ─── Branch performance: drivers vs their own branch's average ────────────────
+
+export interface BranchDriverRow {
+  driverId: string;
+  driverName: string;
+  empId: string | null;
+  position: string | null;
+  totalOrders: number;
+  pctOfBranchAvg: number;
+  deltaFromAvg: number;
+  isUnderperforming: boolean;
+}
+
+export interface BranchPerformance {
+  storeId: string;
+  storeName: string;
+  chainName: string;
+  area: string | null;
+  driverCount: number;
+  totalOrders: number;
+  avgOrdersPerDriver: number;
+  underperformerCount: number;
+  drivers: BranchDriverRow[];
+}
+
+export interface SingleDriverBranch {
+  storeId: string;
+  storeName: string;
+  chainName: string;
+  area: string | null;
+  driverId: string;
+  driverName: string;
+  totalOrders: number;
+}
+
+export interface BranchPerformanceResult {
+  branches: BranchPerformance[];
+  singleDriverBranches: SingleDriverBranch[];
+}
+
+export async function computeAmericanaBranchPerformance(
+  tenantId: string,
+  month: Date,
+  opts?: { thresholdPct?: number },
+): Promise<BranchPerformanceResult> {
+  const thresholdPct = opts?.thresholdPct ?? 0.8;
+  const from = firstOfMonth(month);
+
+  const rows = await prisma.americanaDailyOrders.findMany({
+    where: { tenantId, month: from, storeId: { not: null } },
+    include: {
+      driver: { select: { id: true, name: true } },
+      storeRef: {
+        select: {
+          id: true,
+          name: true,
+          area: true,
+          chain: { select: { name: true } },
+        },
+      },
+    },
+  });
+
+  type Bucket = {
+    storeId: string;
+    storeName: string;
+    chainName: string;
+    area: string | null;
+    rows: typeof rows;
+  };
+  const byStore = new Map<string, Bucket>();
+  for (const r of rows) {
+    if (!r.storeRef) continue;
+    const id = r.storeRef.id;
+    let b = byStore.get(id);
+    if (!b) {
+      b = {
+        storeId: id,
+        storeName: r.storeRef.name,
+        chainName: r.storeRef.chain?.name ?? "—",
+        area: r.storeRef.area,
+        rows: [],
+      };
+      byStore.set(id, b);
+    }
+    b.rows.push(r);
+  }
+
+  const branches: BranchPerformance[] = [];
+  const singleDriverBranches: SingleDriverBranch[] = [];
+
+  for (const b of byStore.values()) {
+    const driverCount = b.rows.length;
+    const totalOrders = b.rows.reduce((s, r) => s + (r.totalOrders || 0), 0);
+
+    if (driverCount < 2) {
+      const r = b.rows[0];
+      singleDriverBranches.push({
+        storeId: b.storeId,
+        storeName: b.storeName,
+        chainName: b.chainName,
+        area: b.area,
+        driverId: r.driverId,
+        driverName: r.driver.name,
+        totalOrders: r.totalOrders || 0,
+      });
+      continue;
+    }
+
+    const avg = totalOrders / driverCount;
+    const drivers: BranchDriverRow[] = b.rows
+      .map((r) => {
+        const t = r.totalOrders || 0;
+        const pct = avg > 0 ? t / avg : 0;
+        return {
+          driverId: r.driverId,
+          driverName: r.driver.name,
+          empId: r.empId,
+          position: r.position,
+          totalOrders: t,
+          pctOfBranchAvg: pct,
+          deltaFromAvg: t - avg,
+          isUnderperforming: pct < thresholdPct,
+        };
+      })
+      .sort((a, z) => a.totalOrders - z.totalOrders);
+
+    branches.push({
+      storeId: b.storeId,
+      storeName: b.storeName,
+      chainName: b.chainName,
+      area: b.area,
+      driverCount,
+      totalOrders,
+      avgOrdersPerDriver: avg,
+      underperformerCount: drivers.filter((d) => d.isUnderperforming).length,
+      drivers,
+    });
+  }
+
+  branches.sort(
+    (a, z) =>
+      z.underperformerCount - a.underperformerCount ||
+      z.driverCount - a.driverCount ||
+      a.storeName.localeCompare(z.storeName),
+  );
+  singleDriverBranches.sort((a, z) => a.storeName.localeCompare(z.storeName));
+
+  return { branches, singleDriverBranches };
 }
 
 /**

@@ -141,23 +141,40 @@ router.get("/talabat/live", async (req: Request, res: Response) => {
     attention.sort((a, b) => severityRank[a.severity] - severityRank[b.severity]);
 
     // ── KPIs (today vs yesterday DoD) ────────────────────────────────────
+    // UTR is averaged only across drivers who hit the default shift period
+    const settings = await prisma.platformSettings.findUnique({
+      where: { tenantId_platform: { tenantId, platform } },
+      select: { shiftRules: true },
+    });
+    const sr = (settings?.shiftRules as any) || {};
+    const defaultHoursPerDay = Number(
+      sr?.MOTORCYCLE?.defaultHoursPerDay ??
+      sr?.CAR?.defaultHoursPerDay ??
+      sr?.defaultHoursPerDay ??
+      12
+    );
+
     const computeKpis = async (start: Date, end: Date) => {
-      const [orderAgg, metricAgg] = await Promise.all([
+      const [orderAgg, eligibleMetrics] = await Promise.all([
         prisma.orderLog.aggregate({
           where: { tenantId, platform, date: { gte: start, lt: end } },
           _sum: { orderCount: true },
         }),
-        prisma.talabatDailyMetrics.aggregate({
+        prisma.talabatDailyMetrics.findMany({
           where: {
             tenantId,
             shiftDate: { gte: start, lt: end },
             status: { in: ["PARSED", "APPROVED"] },
+            onlineHours: { gte: defaultHoursPerDay },
+            utr: { not: null },
           },
-          _avg: { utr: true },
+          select: { utr: true },
         }),
       ]);
       const totalOrders = orderAgg._sum.orderCount ?? 0;
-      const utrAvg = metricAgg._avg.utr;
+      const utrAvg = eligibleMetrics.length > 0
+        ? eligibleMetrics.reduce((sum, m) => sum + Number(m.utr), 0) / eligibleMetrics.length
+        : null;
       return {
         ordersCompleted: totalOrders,
         onTimeRate: null as number | null, // wired once on-time signal lands — see R9 / AttendanceRecord
@@ -507,10 +524,43 @@ router.get("/:platform", async (req: Request, res: Response) => {
     const absentCount = driverRows.filter((d) => d.attendance === "ABSENT").length;
     const activeViolations = (todayViolations as any[]).filter((v) => !v.resolved).length;
 
-    // UTR: average UTR of drivers who had orders today
-    const driversWithOrders = driverRows.filter((d) => d.todayOrders > 0 && d.utr != null);
-    const avgUtr = driversWithOrders.length > 0
-      ? driversWithOrders.reduce((sum, d) => sum + Number(d.utr), 0) / driversWithOrders.length
+    // UTR: average UTR of drivers who hit the default shift period today
+    const platformSettingsRow = await prisma.platformSettings.findUnique({
+      where: { tenantId_platform: { tenantId, platform } },
+      select: { shiftRules: true },
+    });
+    const psShiftRules = (platformSettingsRow?.shiftRules as any) || {};
+    const platformDefaultHours = Number(
+      psShiftRules?.MOTORCYCLE?.defaultHoursPerDay ??
+      psShiftRules?.CAR?.defaultHoursPerDay ??
+      psShiftRules?.defaultHoursPerDay ??
+      12
+    );
+    const driverIds = driverRows.map((d) => d.id);
+    const todayMetricsRows = platform === "TALABAT"
+      ? await prisma.talabatDailyMetrics.findMany({
+          where: { tenantId, driverId: { in: driverIds }, shiftDate: { gte: todayStart, lt: todayEnd } },
+          select: { driverId: true, onlineHours: true, utr: true },
+        })
+      : platform === "KEETA"
+      ? (await prisma.keetaDailyMetrics.findMany({
+          where: { tenantId, driverId: { in: driverIds }, date: { gte: todayStart, lt: todayEnd } },
+          select: { driverId: true, onlineTime: true },
+        })).map((m) => ({ driverId: m.driverId, onlineHours: (m.onlineTime ?? 0) / 60, utr: null as number | null }))
+      : [];
+    const hoursByDriver = new Map<string, number>();
+    const utrByDriverMetric = new Map<string, number>();
+    for (const m of todayMetricsRows) {
+      if (m.onlineHours != null) hoursByDriver.set(m.driverId, Number(m.onlineHours));
+      if ((m as any).utr != null) utrByDriverMetric.set(m.driverId, Number((m as any).utr));
+    }
+    const eligibleDrivers = driverRows.filter((d) => {
+      const hours = hoursByDriver.get(d.id) ?? 0;
+      const utrVal = utrByDriverMetric.get(d.id) ?? (d.utr != null ? Number(d.utr) : null);
+      return utrVal != null && hours >= platformDefaultHours;
+    });
+    const avgUtr = eligibleDrivers.length > 0
+      ? eligibleDrivers.reduce((sum, d) => sum + Number(utrByDriverMetric.get(d.id) ?? d.utr ?? 0), 0) / eligibleDrivers.length
       : null;
 
     // Historical trend data (if days param provided)

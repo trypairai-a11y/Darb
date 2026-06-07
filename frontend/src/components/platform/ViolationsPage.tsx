@@ -17,10 +17,17 @@ import {
   Clock,
   CheckCircle2,
   ExternalLink,
+  Plus,
 } from "lucide-react";
+import CreateAmericanaViolationModal from "./CreateAmericanaViolationModal";
 import { useI18n } from "@/i18n/I18nProvider";
 import { DirectionalIcon } from "@/i18n/directionalIcon";
 import { formatDate, formatTime, formatDateTime } from "@/i18n/format";
+import {
+  getMockAmericanaViolations,
+  getMockAmericanaSummary,
+  filterMockAmericanaViolations,
+} from "@/lib/mockAmericanaViolations";
 
 type ViolationTab =
   | "ALL"
@@ -45,6 +52,9 @@ const TYPE_COLORS: Record<string, string> = {
   INVALID_DELIVERY_PHOTO: "bg-blue-50 text-blue-600",
   GPS_NOT_UPLOADING: "bg-orange-50 text-orange-600",
   DELIVEROO_UNASSIGNED_ORDER: "bg-pink-50 text-pink-700",
+  AMERICANA_LATE_ARRIVAL: "bg-amber-50 text-amber-600",
+  AMERICANA_NO_SHOW: "bg-red-50 text-red-600",
+  AMERICANA_EARLY_DEPARTURE_QUIT: "bg-purple-50 text-purple-600",
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -89,10 +99,13 @@ interface ViolationsPageProps {
 export default function ViolationsPage({ platform }: ViolationsPageProps) {
   const { t, locale } = useI18n();
   const router = useRouter();
-  const [tab, setTab] = useState<ViolationTab>("ALL");
+  const [tab, setTab] = useState<ViolationTab>(
+    platform === "DELIVEROO" ? "DELIVEROO_UNASSIGNED_ORDER" : "ALL"
+  );
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [selected, setSelected] = useState<Violation | null>(null);
   const [page, setPage] = useState(1);
+  const [createOpen, setCreateOpen] = useState(false);
   const limit = 50;
 
   const violationTypeLabel = (type: string): string => {
@@ -164,7 +177,7 @@ export default function ViolationsPage({ platform }: ViolationsPageProps) {
   if (filters.violationStatus) params.set("violationStatus", filters.violationStatus);
   if (filters.appealStatus) params.set("appealStatus", filters.appealStatus);
 
-  const { data: summaryData } = useApiGet<any>(
+  const { data: summaryData, refetch: refetchSummary } = useApiGet<any>(
     `/api/violations/summary?platform=${platform}`
   );
   const { data, loading, refetch: refetchList } = useApiGet<any>(`/api/violations?${params}`);
@@ -183,16 +196,51 @@ export default function ViolationsPage({ platform }: ViolationsPageProps) {
     }
   };
 
-  const violations: Violation[] = data?.data || [];
-  const pagination = data?.pagination;
+  const apiViolations: Violation[] = data?.data || [];
+  const apiPagination = data?.pagination;
+  const apiTotal = summaryData?.total || 0;
 
-  const byType = summaryData?.byType || [];
-  const totalCount = summaryData?.total || 0;
-  const pendingAppeals = summaryData?.pendingAppeals || 0;
-  const established =
-    summaryData?.byStatus?.find((s: any) => s.status === "ESTABLISHED")?.count || 0;
-  const overturned =
-    summaryData?.byStatus?.find((s: any) => s.status === "OVERTURNED")?.count || 0;
+  // Demo fallback: when Americana has no real data, populate from mocks.
+  // Only kicks in once the summary has loaded and confirmed total=0, so real data wins.
+  const summaryLoaded = summaryData != null;
+  const useMock = platform === "AMERICANA" && summaryLoaded && apiTotal === 0;
+
+  const allMock = useMock ? getMockAmericanaViolations() : [];
+  const filteredMock = useMock
+    ? filterMockAmericanaViolations(allMock, {
+        violationType: tab !== "ALL" ? tab : undefined,
+        violationStatus: filters.violationStatus,
+        appealStatus: filters.appealStatus,
+        search: filters.search,
+        dateFrom: filters.dateFrom,
+        dateTo: filters.dateTo,
+      })
+    : [];
+
+  const mockSummary = useMock ? getMockAmericanaSummary() : null;
+
+  const violations: Violation[] = useMock
+    ? filteredMock.slice((page - 1) * limit, page * limit)
+    : apiViolations;
+
+  const pagination = useMock
+    ? {
+        page,
+        limit,
+        total: filteredMock.length,
+        totalPages: Math.max(1, Math.ceil(filteredMock.length / limit)),
+      }
+    : apiPagination;
+
+  const byType = useMock ? mockSummary!.byType : summaryData?.byType || [];
+  const totalCount = useMock ? mockSummary!.total : apiTotal;
+  const pendingAppeals = useMock ? mockSummary!.pendingAppeals : summaryData?.pendingAppeals || 0;
+  const established = useMock
+    ? mockSummary!.byStatus.find((s: any) => s.status === "ESTABLISHED")?.count || 0
+    : summaryData?.byStatus?.find((s: any) => s.status === "ESTABLISHED")?.count || 0;
+  const overturned = useMock
+    ? mockSummary!.byStatus.find((s: any) => s.status === "OVERTURNED")?.count || 0
+    : summaryData?.byStatus?.find((s: any) => s.status === "OVERTURNED")?.count || 0;
 
   const tabCounts: Record<ViolationTab, number> = {
     ALL: totalCount,
@@ -220,7 +268,7 @@ export default function ViolationsPage({ platform }: ViolationsPageProps) {
 
   const VIOLATION_TABS =
     platform === "DELIVEROO"
-      ? [...BASE_VIOLATION_TABS, DELIVEROO_UNASSIGNED_TAB]
+      ? [DELIVEROO_UNASSIGNED_TAB]
       : platform === "AMERICANA"
       ? [{ key: "ALL" as ViolationTab, label: t("labels.all") }, ...AMERICANA_TABS]
       : BASE_VIOLATION_TABS;
@@ -240,6 +288,18 @@ export default function ViolationsPage({ platform }: ViolationsPageProps) {
         <h1 className="text-xl font-semibold">{platformLabel}</h1>
         <span className="text-secondary/30 text-lg font-light">/</span>
         <span className="text-xl text-secondary font-medium">{t("violationsPage.pageTitle")}</span>
+        {platform === "AMERICANA" && (
+          <button
+            onClick={() => setCreateOpen(true)}
+            className={cn(
+              "ms-auto inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
+              accent.btn
+            )}
+          >
+            <Plus size={14} />
+            {locale === "ar" ? "إنشاء مخالفة" : "Create Violation"}
+          </button>
+        )}
       </div>
 
       {/* Summary Cards */}
@@ -658,6 +718,18 @@ export default function ViolationsPage({ platform }: ViolationsPageProps) {
           </div>
         )}
       </SlidePanel>
+
+      {createOpen && platform === "AMERICANA" && (
+        <CreateAmericanaViolationModal
+          onClose={() => setCreateOpen(false)}
+          onSuccess={() => {
+            setCreateOpen(false);
+            setPage(1);
+            refetchList();
+            refetchSummary();
+          }}
+        />
+      )}
     </div>
   );
 }

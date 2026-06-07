@@ -16,6 +16,8 @@ router.use(authMiddleware, tenantScope);
 
 const MUTATORS = ["ADMIN", "OPS_MANAGER", "SUPERVISOR"];
 const DESTRUCTIVE = ["ADMIN", "OPS_MANAGER"];
+const toNumber = (value: unknown) => Number(value ?? 0);
+const toIso = (value?: Date | string | null) => (value ? new Date(value).toISOString() : null);
 
 /**
  * @swagger
@@ -114,6 +116,16 @@ router.get("/", async (req: Request, res: Response) => {
     const driverIds = data.map((d) => d.id);
     const statsMap = await batchLoadDriverStats(tenantId, driverIds, dateRange);
 
+    // How many times each driver has deposited (lifetime count of cash deposit records)
+    const depositCountRows = driverIds.length
+      ? await prisma.cashRecord.groupBy({
+          by: ["driverId"],
+          where: { tenantId, driverId: { in: driverIds }, collectionAmount: { gt: 0 } },
+          _count: { _all: true },
+        })
+      : [];
+    const depositCountMap = new Map(depositCountRows.map((r) => [r.driverId, r._count._all]));
+
     // Batch-load current Americana store assignments (one row per driver for the current month
     // or the latest open assignment) so the drivers list can show chain + branch.
     const americanaIds = data.filter((d) => d.platform === "AMERICANA").map((d) => d.id);
@@ -151,6 +163,7 @@ router.get("/", async (req: Request, res: Response) => {
         totalSales: stats?.totalSales ?? null,
         cashCollected: stats?.cashCollected ?? null,
         cashDeposited: stats?.cashDeposited ?? null,
+        depositCount: depositCountMap.get(d.id) ?? 0,
         uti: stats?.uti ?? 0,
         workingHours: stats?.workingHours ?? null,
         talabatStatus,
@@ -632,35 +645,82 @@ router.get("/:id/file", async (req: Request, res: Response) => {
 
     const driver = await prisma.driver.findFirst({
       where: { id, tenantId },
-      select: {
-        id: true,
-        name: true,
-        photoUrl: true,
-        status: true,
-        platform: true,
-        platformDriverId: true,
-        phone: true,
-        vehicleType: true,
-        civilIdStatus: true,
+      include: {
+        company: { select: { id: true, name: true, platform: true } },
+        supervisor: { select: { id: true, name: true, phone: true, email: true } },
+        device: {
+          select: {
+            id: true,
+            imei: true,
+            model: true,
+            osVersion: true,
+            agentVersion: true,
+            lastSeen: true,
+            batteryLevel: true,
+            isOnline: true,
+            status: true,
+            lastLatitude: true,
+            lastLongitude: true,
+            sims: { select: { id: true, phoneNumber: true, carrier: true, status: true } },
+          },
+        },
+        assignedVehicle: {
+          select: {
+            id: true,
+            plateNumber: true,
+            vehicleType: true,
+            make: true,
+            model: true,
+            year: true,
+            color: true,
+            mileage: true,
+            status: true,
+            insuranceExpiry: true,
+            registrationExpiry: true,
+          },
+        },
+        inventory: {
+          select: { id: true, itemType: true, issued: true, quantity: true, issuedDate: true, returnedDate: true },
+          orderBy: { itemType: "asc" },
+        },
       },
     });
     if (!driver) return res.status(404).json({ error: "Driver not found" });
 
     const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekStart = new Date(now.getTime() - 7 * 86_400_000);
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const twoWeeksAgo = new Date(now.getTime() - 14 * 86_400_000);
 
     const [
+      batchHistory,
       latestScore,
       snapshots90d,
       attendance,
+      shifts,
+      recentOrders,
+      todayOrders,
+      weekOrders,
       cashRecords,
       pendingCash,
       recentViolations,
+      penalties,
+      appeals,
+      restrictions,
+      tickets,
+      vehicleInspections,
+      maintenanceRecords,
       activeSession,
       agentNotes,
       decisionAuditLog,
     ] = await Promise.all([
+      prisma.driverBatchHistory.findMany({
+        where: { tenantId, driverId: id },
+        orderBy: { changedAt: "desc" },
+        take: 50,
+        select: { id: true, batchNumber: true, changedAt: true, changedBy: true },
+      }),
       prisma.aiScore.findFirst({
         where: { tenantId, driverId: id },
         orderBy: { date: "desc" },
@@ -682,6 +742,52 @@ router.get("/:id/file", async (req: Request, res: Response) => {
         orderBy: { date: "desc" },
         take: 14,
       }),
+      prisma.shift.findMany({
+        where: { tenantId, driverId: id },
+        select: {
+          id: true,
+          date: true,
+          platform: true,
+          zone: true,
+          scheduledStart: true,
+          scheduledEnd: true,
+          actualStart: true,
+          actualEnd: true,
+          status: true,
+          plannedHoursMinutes: true,
+          actualHoursMinutes: true,
+          deliveryArea: true,
+        },
+        orderBy: { scheduledStart: "desc" },
+        take: 12,
+      }),
+      prisma.orderLog.findMany({
+        where: { tenantId, driverId: id },
+        select: {
+          id: true,
+          date: true,
+          platform: true,
+          orderCount: true,
+          cashCollected: true,
+          tips: true,
+          totalAmount: true,
+          restaurantName: true,
+          arrivalTime: true,
+          orderNumber: true,
+          paymentSource: true,
+          source: true,
+        },
+        orderBy: { date: "desc" },
+        take: 14,
+      }),
+      prisma.orderLog.aggregate({
+        where: { tenantId, driverId: id, date: { gte: todayStart } },
+        _sum: { orderCount: true, cashCollected: true },
+      }),
+      prisma.orderLog.aggregate({
+        where: { tenantId, driverId: id, date: { gte: weekStart } },
+        _sum: { orderCount: true, cashCollected: true },
+      }),
       prisma.cashRecord.findMany({
         where: { tenantId, driverId: id, date: { gte: monthStart } },
         select: { id: true, date: true, salesAmount: true, collectionAmount: true, pendingDues: true, status: true },
@@ -697,6 +803,52 @@ router.get("/:id/file", async (req: Request, res: Response) => {
         select: { id: true, violationType: true, violationStatus: true, appealStatus: true, violationTime: true, details: true },
         orderBy: { violationTime: "desc" },
         take: 20,
+      }),
+      prisma.penalty.findMany({
+        where: { tenantId, driverId: id },
+        select: { id: true, penaltyType: true, penaltyStatus: true, penaltyValue: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+        take: 12,
+      }),
+      prisma.appeal.findMany({
+        where: { tenantId, violation: { driverId: id } },
+        select: {
+          id: true,
+          appealLevel: true,
+          appealStatus: true,
+          channel: true,
+          reason: true,
+          rejectionNote: true,
+          appealedAt: true,
+          reviewedAt: true,
+          violation: { select: { id: true, violationType: true, violationTime: true } },
+        },
+        orderBy: { appealedAt: "desc" },
+        take: 12,
+      }),
+      prisma.driverRestriction.findMany({
+        where: { tenantId, driverId: id },
+        select: { id: true, type: true, startDate: true, endDate: true, reason: true, processedAt: true },
+        orderBy: { startDate: "desc" },
+        take: 10,
+      }),
+      prisma.ticket.findMany({
+        where: { tenantId, OR: [{ driverId: id }, { submitterDriverId: id }] },
+        select: { id: true, ticketNumber: true, category: true, priority: true, title: true, status: true, createdAt: true, slaDeadline: true },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+      }),
+      prisma.vehicleInspection.findMany({
+        where: { tenantId, driverId: id },
+        select: { id: true, date: true, status: true, notes: true, deductionApplied: true },
+        orderBy: { date: "desc" },
+        take: 6,
+      }),
+      prisma.maintenanceRecord.findMany({
+        where: { tenantId, driverId: id },
+        select: { id: true, category: true, type: true, cost: true, vendor: true, status: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+        take: 6,
       }),
       prisma.courierOnlineSession.findFirst({
         where: { tenantId, driverId: id, isOnline: true },
@@ -740,35 +892,193 @@ router.get("/:id/file", async (req: Request, res: Response) => {
         name: driver.name,
         civilIdMasked: null, // civil ID number is not stored; only expiry + status
         civilIdStatus: driver.civilIdStatus,
+        civilIdExpiry: toIso(driver.civilIdExpiry),
         photoUrl: driver.photoUrl,
         status: driver.status,
         platform: driver.platform,
         platformDriverId: driver.platformDriverId,
         phone: driver.phone,
         vehicleType: driver.vehicleType,
+        company: driver.company ? { id: driver.company.id, name: driver.company.name, platform: driver.company.platform } : null,
+        supervisor: driver.supervisor ? { id: driver.supervisor.id, name: driver.supervisor.name, phone: driver.supervisor.phone, email: driver.supervisor.email } : null,
+        zone: driver.zone,
+        batchNumber: driver.batchNumber,
+        hireDate: toIso(driver.hireDate),
+        monthlySalary: driver.monthlySalary ?? null,
+        performanceTier: driver.performanceTier ?? null,
       },
+      batchHistory: batchHistory.map((b) => ({
+        id: b.id,
+        batchNumber: b.batchNumber,
+        changedAt: toIso(b.changedAt) ?? "",
+        changedBy: b.changedBy,
+      })),
       liveStatus: {
-        onlineNow: !!activeSession,
-        lastSeenAt: activeSession?.lastGpsAt ?? null,
+        onlineNow: !!activeSession || !!driver.device?.isOnline,
+        lastSeenAt: toIso(activeSession?.lastGpsAt ?? driver.device?.lastSeen ?? null),
         activeShift: activeSession
-          ? { id: activeSession.id, startsAt: activeSession.startTime, area: activeSession.area }
+          ? { id: activeSession.id, startsAt: toIso(activeSession.startTime), area: activeSession.area }
+          : null,
+        area: activeSession?.area ?? driver.zone ?? null,
+        device: driver.device
+          ? {
+              id: driver.device.id,
+              model: driver.device.model,
+              osVersion: driver.device.osVersion,
+              agentVersion: driver.device.agentVersion,
+              batteryLevel: driver.device.batteryLevel,
+              status: driver.device.status,
+              isOnline: driver.device.isOnline,
+              lastSeen: toIso(driver.device.lastSeen),
+              latitude: driver.device.lastLatitude == null ? null : toNumber(driver.device.lastLatitude),
+              longitude: driver.device.lastLongitude == null ? null : toNumber(driver.device.lastLongitude),
+            }
           : null,
       },
-      score: latestScore ?? null,
+      score: latestScore
+        ? {
+            compositeScore: latestScore.compositeScore,
+            attendanceScore: latestScore.attendanceScore,
+            deliveryScore: latestScore.deliveryScore,
+            financialScore: latestScore.financialScore,
+            equipmentScore: latestScore.equipmentScore,
+            platformScore: latestScore.platformScore,
+            trend: latestScore.trend,
+            date: toIso(latestScore.date),
+          }
+        : null,
       scoreExplanation,
-      snapshots90d: snapshots90d ?? [],
+      snapshots90d: (snapshots90d ?? []).map((s: any) => ({
+        snapshotDate: toIso(s.snapshotDate) ?? "",
+        compositeScore: toNumber(s.compositeScore),
+        attendanceScore: toNumber(s.attendanceScore),
+        deliveryScore: toNumber(s.deliveryScore),
+        financialScore: toNumber(s.financialScore),
+        equipmentScore: toNumber(s.equipmentScore),
+        platformScore: toNumber(s.platformScore),
+        ordersCount: toNumber(s.ordersCount),
+        shiftsCount: toNumber(s.shiftsCount),
+        violationsCount: toNumber(s.violationsCount),
+        cashOutstandingKd: toNumber(s.cashOutstandingKd),
+      })),
       attendance: {
-        last14Days: attendance,
+        last14Days: attendance.map((a) => ({
+          ...a,
+          date: toIso(a.date) ?? "",
+        })),
         lateCount: attendance.filter((a) => a.status === "LATE").length,
         absentCount: attendance.filter((a) => a.status === "ABSENT").length,
       },
+      shifts: {
+        recent: shifts.map((shift) => ({
+          ...shift,
+          date: toIso(shift.date) ?? "",
+          scheduledStart: toIso(shift.scheduledStart),
+          scheduledEnd: toIso(shift.scheduledEnd),
+          actualStart: toIso(shift.actualStart),
+          actualEnd: toIso(shift.actualEnd),
+        })),
+      },
+      orders: {
+        todayCount: toNumber(todayOrders._sum.orderCount),
+        todayCash: toNumber(todayOrders._sum.cashCollected),
+        weekCount: toNumber(weekOrders._sum.orderCount),
+        weekCash: toNumber(weekOrders._sum.cashCollected),
+        recent: recentOrders.map((order) => ({
+          ...order,
+          date: toIso(order.date) ?? "",
+          arrivalTime: toIso(order.arrivalTime),
+          cashCollected: toNumber(order.cashCollected),
+          tips: toNumber(order.tips),
+          totalAmount: toNumber(order.totalAmount),
+        })),
+      },
       cash: {
         outstanding: Number(pendingCash._sum.pendingDues ?? 0),
-        records: cashRecords,
+        records: cashRecords.map((record) => ({
+          ...record,
+          date: toIso(record.date) ?? "",
+          salesAmount: toNumber(record.salesAmount),
+          collectionAmount: toNumber(record.collectionAmount),
+          pendingDues: toNumber(record.pendingDues),
+        })),
       },
       violations: {
-        items: recentViolations,
+        items: recentViolations.map((violation) => ({
+          ...violation,
+          violationTime: toIso(violation.violationTime) ?? "",
+        })),
+        penalties: penalties.map((penalty) => ({ ...penalty, createdAt: toIso(penalty.createdAt) ?? "" })),
+        appeals: appeals.map((appeal) => ({
+          ...appeal,
+          appealedAt: toIso(appeal.appealedAt) ?? "",
+          reviewedAt: toIso(appeal.reviewedAt),
+          violation: {
+            ...appeal.violation,
+            violationTime: toIso(appeal.violation.violationTime) ?? "",
+          },
+        })),
+        restrictions: restrictions.map((restriction) => ({
+          ...restriction,
+          startDate: toIso(restriction.startDate) ?? "",
+          endDate: toIso(restriction.endDate),
+          processedAt: toIso(restriction.processedAt),
+          active: !restriction.endDate || restriction.endDate >= now,
+        })),
       },
+      documents: [
+        { key: "civilId", label: "Civil ID", status: driver.civilIdStatus, expiry: toIso(driver.civilIdExpiry) },
+        { key: "healthCert", label: "Health certificate", status: driver.healthCertStatus, expiry: toIso(driver.healthCertExpiry) },
+        { key: "workPermit", label: "Work permit", status: driver.workPermitStatus, expiry: toIso(driver.workPermitExpiry) },
+        { key: "foodHandling", label: "Food handling", status: driver.foodHandlingCertStatus, expiry: toIso(driver.foodHandlingCertExpiry) },
+        { key: "vehicleReg", label: "Vehicle registration", status: driver.vehicleRegStatus, expiry: toIso(driver.vehicleRegExpiry) },
+        { key: "vehicleInsurance", label: "Vehicle insurance", status: driver.vehicleInsuranceStatus, expiry: toIso(driver.vehicleInsuranceExpiry) },
+        { key: "drivingLicense", label: "Driving license", status: driver.drivingLicenseStatus, expiry: toIso(driver.drivingLicenseExpiry) },
+      ],
+      assets: {
+        vehicle: driver.assignedVehicle
+          ? {
+              ...driver.assignedVehicle,
+              insuranceExpiry: toIso(driver.assignedVehicle.insuranceExpiry),
+              registrationExpiry: toIso(driver.assignedVehicle.registrationExpiry),
+            }
+          : null,
+        device: driver.device
+          ? {
+              id: driver.device.id,
+              imei: driver.device.imei,
+              model: driver.device.model,
+              osVersion: driver.device.osVersion,
+              agentVersion: driver.device.agentVersion,
+              lastSeen: toIso(driver.device.lastSeen),
+              batteryLevel: driver.device.batteryLevel,
+              isOnline: driver.device.isOnline,
+              status: driver.device.status,
+              latitude: driver.device.lastLatitude == null ? null : toNumber(driver.device.lastLatitude),
+              longitude: driver.device.lastLongitude == null ? null : toNumber(driver.device.lastLongitude),
+            }
+          : null,
+        sim: driver.device?.sims?.[0] ?? null,
+        inventory: driver.inventory.map((item) => ({
+          ...item,
+          issuedDate: toIso(item.issuedDate),
+          returnedDate: toIso(item.returnedDate),
+        })),
+        inspections: vehicleInspections.map((inspection) => ({
+          ...inspection,
+          date: toIso(inspection.date) ?? "",
+        })),
+        maintenance: maintenanceRecords.map((record) => ({
+          ...record,
+          createdAt: toIso(record.createdAt) ?? "",
+          cost: toNumber(record.cost),
+        })),
+      },
+      tickets: tickets.map((ticket) => ({
+        ...ticket,
+        createdAt: toIso(ticket.createdAt) ?? "",
+        slaDeadline: toIso(ticket.slaDeadline),
+      })),
       agentNotes: {
         proposals: decisionAuditLog.pending,
         observations: agentNotes,
@@ -920,12 +1230,30 @@ router.put("/:id", rbac(...MUTATORS), async (req: Request, res: Response) => {
     for (const k of allowed) {
       if (k in (req.body ?? {})) data[k] = (req.body as any)[k];
     }
-    const driver = await prisma.driver.updateMany({
-      where: { id: req.params.id, tenantId: req.user!.tenantId },
+    const tenantId = req.user!.tenantId;
+    const existing = await prisma.driver.findFirst({
+      where: { id: req.params.id, tenantId },
+      select: { batchNumber: true },
+    });
+    if (!existing) { res.status(404).json({ error: "Driver not found" }); return; }
+
+    const updated = await prisma.driver.update({
+      where: { id: req.params.id },
       data,
     });
-    if (driver.count === 0) { res.status(404).json({ error: "Driver not found" }); return; }
-    const updated = await prisma.driver.findUnique({ where: { id: req.params.id } });
+
+    // Record batch changes so the driver file can show the weekly batch timeline.
+    if ("batchNumber" in data && (data.batchNumber ?? null) !== (existing.batchNumber ?? null)) {
+      await prisma.driverBatchHistory.create({
+        data: {
+          tenantId,
+          driverId: req.params.id,
+          batchNumber: (data.batchNumber as string | null) ?? null,
+          changedBy: req.user!.userId,
+        },
+      });
+    }
+
     res.json(updated);
   } catch (err: any) {
     res.status(400).json({ error: err.message });

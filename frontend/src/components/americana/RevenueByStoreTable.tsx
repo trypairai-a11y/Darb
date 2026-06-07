@@ -89,7 +89,7 @@ export default function RevenueByStoreTable({ rows, loading, onSelect }: Props) 
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
       <div className="flex items-center justify-between p-5 border-b border-gray-100">
         <div>
-          <h3 className="text-base font-semibold">Revenue MTD by store</h3>
+          <h3 className="text-base font-semibold">Revenue by branch (month)</h3>
           <p className="text-xs text-secondary mt-0.5">Margin column available in v2 (DA3).</p>
         </div>
         <div className="flex items-center gap-2 text-sm">
@@ -112,11 +112,11 @@ export default function RevenueByStoreTable({ rows, loading, onSelect }: Props) 
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-xs text-secondary uppercase">
             <tr>
-              <th className="text-left p-3 cursor-pointer" onClick={() => toggleSort("storeName")}>Store <Icon k="storeName" /></th>
+              <th className="text-left p-3 cursor-pointer" onClick={() => toggleSort("storeName")}>Branch <Icon k="storeName" /></th>
               <th className="text-left p-3 cursor-pointer" onClick={() => toggleSort("chainName")}>Chain <Icon k="chainName" /></th>
               <th className="text-right p-3 cursor-pointer" onClick={() => toggleSort("orders")}>Orders <Icon k="orders" /></th>
               <th className="text-right p-3 cursor-pointer" onClick={() => toggleSort("rate")}>Rate <Icon k="rate" /></th>
-              <th className="text-right p-3 cursor-pointer" onClick={() => toggleSort("revenue")}>Revenue MTD <Icon k="revenue" /></th>
+              <th className="text-right p-3 cursor-pointer" onClick={() => toggleSort("revenue")}>Revenue (month) <Icon k="revenue" /></th>
               <th className="text-right p-3 cursor-pointer" onClick={() => toggleSort("revenueLM")}>Rev LM <Icon k="revenueLM" /></th>
               <th className="text-right p-3 cursor-pointer" onClick={() => toggleSort("deltaPct")}>Δ% <Icon k="deltaPct" /></th>
               <th className="text-left p-3">Trend</th>

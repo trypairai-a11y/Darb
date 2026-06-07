@@ -446,7 +446,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6 w-full max-w-none">
       <h1 className="text-xl font-semibold">{t("settingsPage.title")}</h1>
 
       {/* Tabs */}

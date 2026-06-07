@@ -35,27 +35,34 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  font-family: inherit;
 }
 
-html {
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
-}
-
-body {
+html, body {
   font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  background: var(--color-bg);
-  color: var(--color-fg);
-  font-size: 16px;
-  line-height: 24px;
-  letter-spacing: -0.005em;
+  font-feature-settings: "kern", "liga", "ss01";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.005em;
+}
+
+/* Form elements don't inherit font-family by default in all browsers — force them to. */
+input, button, textarea, select, optgroup, [contenteditable] {
+  font-family: inherit;
+  font-feature-settings: inherit;
+}
+
 /* Arabic locale: use a font with proper Arabic glyphs + neutral letter-spacing. */
-html[dir="rtl"] body,
-html[lang="ar"] body {
+html[dir="rtl"], html[lang="ar"],
+html[dir="rtl"] body, html[lang="ar"] body {
   font-family: 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Cairo', 'SF Pro Display', system-ui, sans-serif;
   letter-spacing: 0;
 }

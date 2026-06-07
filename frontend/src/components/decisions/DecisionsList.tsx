@@ -122,7 +122,7 @@ export function DecisionsList({
   if (loading) {
     return (
       <div
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-3"
         role="status"
         aria-live="polite"
         aria-busy="true"
@@ -130,7 +130,7 @@ export function DecisionsList({
         {Array.from({ length: 5 }).map((_, i) => (
           <Skeleton
             key={i}
-            className="h-[180px] rounded-2xl bg-sand-100"
+            className="h-[132px] rounded-[14px] bg-sand-100"
           />
         ))}
       </div>
@@ -151,7 +151,7 @@ export function DecisionsList({
     <div
       role="list"
       aria-live="polite"
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-3"
     >
       {cards.map((card, idx) => (
         <div

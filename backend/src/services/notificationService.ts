@@ -189,6 +189,46 @@ export async function createViolationNotifications(params: {
   return { created: inAppCount };
 }
 
+const TICKET_CATEGORY_LABELS: Record<string, string> = {
+  VEHICLE_REPAIR: "Vehicle repair",
+  EQUIPMENT_REQUEST: "Equipment request",
+  LEAVE_REQUEST: "Leave request",
+  SALARY_ISSUE: "Salary issue",
+  TRANSFER_REQUEST: "Transfer request",
+  COMPLAINT: "Complaint",
+  ACCIDENT_REPORT: "Accident report",
+  OTHER: "Other",
+};
+
+/**
+ * Notify supervisors/ops_managers/admins that a driver filed a ticket.
+ * Reuses the generic notification rule + role fan-out used for violations.
+ */
+export async function createTicketSubmittedNotification(params: {
+  tenantId: string;
+  ticket: {
+    id: string;
+    ticketNumber: string;
+    title: string;
+    category: string;
+  };
+  driverName?: string | null;
+}) {
+  const { tenantId, ticket, driverName } = params;
+  const categoryLabel = TICKET_CATEGORY_LABELS[ticket.category] ?? ticket.category;
+  const severity = ticket.category === "ACCIDENT_REPORT" ? "HIGH" : "MEDIUM";
+
+  return createViolationNotifications({
+    tenantId,
+    eventType: "TICKET_SUBMITTED",
+    severity,
+    title: "New driver ticket",
+    message: `${driverName ?? "A driver"} filed ${categoryLabel} · ${ticket.ticketNumber}: ${ticket.title}`,
+    sourceId: ticket.id,
+    metadata: { ticketId: ticket.id, category: ticket.category },
+  });
+}
+
 /** Severity mapping for violation event types */
 export function getViolationSeverity(type: string): string {
   const severityMap: Record<string, string> = {

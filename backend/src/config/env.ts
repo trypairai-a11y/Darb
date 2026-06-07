@@ -10,4 +10,6 @@ export const env = {
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET!,
   GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY || "",
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || "",
+  ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6",
+  DISABLE_AGENT_SCHEDULER: process.env.DISABLE_AGENT_SCHEDULER === "true",
 };

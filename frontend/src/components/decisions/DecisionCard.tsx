@@ -1,8 +1,7 @@
 "use client";
 // Phase 2 Wave 3 — DecisionCard. The hero component (UI-SPEC §3.1.2 + §3.1.3
-// + §3.1.5). Tag pill + confidence + headline + 2-line reasoning +
-// collapsible disclosures + 3-button action footer with keyboard shortcuts +
-// optimistic state transitions.
+// + §3.1.5). Simplified inbox row with tag, full headline, short reasoning,
+// compact approve/edit/dismiss actions, and optimistic state transitions.
 //
 // Server is the source of truth: optimistic flips are presentation-only;
 // the parent calls the API and rolls back on error (T-02-17 mitigation).
@@ -13,13 +12,9 @@ import {
   XCircle,
   Edit3,
   Trash2,
-  ChevronRight,
-  Info,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import TagPill from "./TagPill";
-import EvidenceList from "./EvidenceList";
-import AuditRowPreview from "./AuditRowPreview";
 import DismissConfirm from "./DismissConfirm";
 import { TOOL_EDITABLE_PARAMS, type DecisionCardData } from "@/types/decisions";
 
@@ -33,8 +28,6 @@ interface DecisionCardProps {
   onUndo?: () => void;
 }
 
-const HEADLINE_MAX = 90;
-
 export default function DecisionCard({
   card,
   focused,
@@ -44,10 +37,7 @@ export default function DecisionCard({
   onDismiss,
   onUndo,
 }: DecisionCardProps) {
-  const [showEvidence, setShowEvidence] = useState(false);
-  const [showAuditPreview, setShowAuditPreview] = useState(false);
   const [showDismissConfirm, setShowDismissConfirm] = useState(false);
-  const [reasoningExpanded, setReasoningExpanded] = useState(false);
   const cardRef = useRef<HTMLElement>(null);
 
   // Keyboard shortcuts when this card is focused.
@@ -115,13 +105,9 @@ export default function DecisionCard({
 
   const editableParams = TOOL_EDITABLE_PARAMS[card.toolName] ?? [];
   const showEditButton = editableParams.length > 0;
-  const headline =
-    card.headline.length > HEADLINE_MAX
-      ? card.headline.slice(0, HEADLINE_MAX) + "…"
-      : card.headline;
+  const displayText = formatDecisionText(card);
 
   const headlineId = `card-${index}-headline`;
-  const confidencePct = Math.max(0, Math.round(card.confidence * 100));
 
   // ---- Approved state ----
   if (card.state === "approved") {
@@ -136,8 +122,8 @@ export default function DecisionCard({
         role="article"
         aria-labelledby={headlineId}
         className={cn(
-          "bg-primary/5 border border-primary/20 rounded-2xl shadow-soft p-5 transition-all duration-250 ease-sierra-out",
-          focused && "ring-2 ring-primary/40",
+          "rounded-[14px] border border-primary/20 bg-primary/5 p-4 transition-all duration-250 ease-sierra-out",
+          focused && "ring-2 ring-primary/30",
         )}
       >
         <div className="flex items-center justify-between gap-3">
@@ -174,8 +160,8 @@ export default function DecisionCard({
         role="article"
         aria-labelledby={headlineId}
         className={cn(
-          "bg-card border border-sand-200 rounded-2xl shadow-soft p-5 opacity-60 transition-all duration-250 ease-sierra-out",
-          focused && "ring-2 ring-primary/40",
+          "rounded-[14px] border border-sand-200 bg-card p-4 opacity-60 transition-all duration-250 ease-sierra-out",
+          focused && "ring-2 ring-primary/30",
         )}
       >
         <div className="flex items-center gap-2">
@@ -197,176 +183,79 @@ export default function DecisionCard({
   return (
     <article
       ref={cardRef}
+      data-decision-card
       role="article"
       aria-labelledby={headlineId}
       className={cn(
-        "bg-card border border-sand-200 rounded-2xl shadow-soft p-5 transition-all duration-250 ease-sierra-out",
-        focused && "ring-2 ring-primary/40",
-        "hover:shadow-lift",
+        "rounded-[14px] border border-sand-200/80 bg-white p-4 shadow-none transition-all duration-250 ease-sierra-out dark:bg-card",
+        focused && "ring-2 ring-primary/30",
+        "hover:border-sand-300 hover:bg-sand-50/40",
       )}
     >
-      {/* Header: Tag + confidence + shortcut hint */}
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex items-center gap-2">
-          <TagPill tag={card.tag} />
-          {card.confidence > 0 && (
-            <span className="text-[11px] text-secondary tabular-nums">
-              {confidencePct}% confidence
-            </span>
-          )}
-          {!card.toolIsLive && (
-            <span
-              className="inline-flex items-center gap-1 text-[10px] text-sand-600 bg-sand-100 px-1.5 py-0.5 rounded-pill"
-              title="Action tool ships in Phase 8 — your approval is recorded for training"
-            >
-              <Info size={10} aria-hidden="true" />
-              <span>training-only</span>
-            </span>
-          )}
-        </div>
-        {focused && (
-          <span className="text-[11px] font-mono text-sand-500 hidden sm:inline">
-            ⌘{Math.min(index + 1, 9)}
-          </span>
-        )}
-      </div>
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+        <div className="min-w-0">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <TagPill tag={card.tag} />
+            {!card.toolIsLive && <span className="text-xs text-sand-500">Review only</span>}
+          </div>
 
-      {/* Driver name label (rendered above headline when headline doesn't
-          already include the driver name — keeps the driver searchable on
-          every card without duplicating it on cards whose headline already
-          starts with the name). Phase 3 placeholder for /drivers/[id]. */}
-      {card.driverName &&
-        !card.headline.includes(card.driverName) && (
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              if (typeof window !== "undefined") {
-                window.alert("Driver File ships in Phase 3");
-              }
-            }}
-            className="inline-block text-xs font-medium text-primary hover:underline decoration-primary/40 underline-offset-2"
+          <h3
+            id={headlineId}
+            className="mt-1 text-[15px] font-semibold leading-snug text-foreground"
+            title={displayText}
           >
-            {card.driverName}
-          </a>
-        )}
+            {displayText}
+          </h3>
+        </div>
 
-      {/* Headline */}
-      <h3
-        id={headlineId}
-        className="text-[15px] font-semibold text-foreground leading-snug mt-1"
-        title={card.headline}
-      >
-        {headline}
-      </h3>
-
-      {/* Reasoning */}
-      <p
-        className={cn(
-          "text-sm text-sand-700 leading-relaxed mt-2 cursor-pointer",
-          !reasoningExpanded && "line-clamp-2",
-        )}
-        onClick={() => setReasoningExpanded((v) => !v)}
-      >
-        {card.reasoning}
-      </p>
-
-      {/* Disclosures */}
-      <div className="flex flex-wrap gap-4 mt-3">
-        <button
-          type="button"
-          onClick={() => setShowEvidence((v) => !v)}
-          className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-pill"
-          aria-expanded={showEvidence}
+        <div
+          aria-live="polite"
+          className="flex flex-wrap items-center gap-2 border-t border-sand-200 pt-3 lg:flex-nowrap lg:justify-end lg:border-t-0 lg:pt-0"
         >
-          <ChevronRight
-            size={12}
-            className={cn(
-              "transition-transform duration-250 ease-sierra-out",
-              showEvidence && "rotate-90",
-            )}
-            aria-hidden="true"
-          />
-          Show evidence ({card.evidence?.length ?? 0})
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowAuditPreview((v) => !v)}
-          className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-pill"
-          aria-expanded={showAuditPreview}
-        >
-          <ChevronRight
-            size={12}
-            className={cn(
-              "transition-transform duration-250 ease-sierra-out",
-              showAuditPreview && "rotate-90",
-            )}
-            aria-hidden="true"
-          />
-          Audit-row preview
-        </button>
-      </div>
-
-      {showEvidence && <EvidenceList items={card.evidence ?? []} />}
-      {showAuditPreview && <AuditRowPreview proposal={card.proposalDraft} />}
-
-      {/* Action footer */}
-      <div
-        aria-live="polite"
-        className="flex flex-wrap items-center gap-3 mt-4 pt-4 border-t border-sand-200"
-      >
-        <button
-          type="button"
-          onClick={() => onApprove()}
-          disabled={!card.toolIsLive}
-          title={
-            card.toolIsLive
-              ? "Approve (⌘↵ when focused)"
-              : "Action tool ships in Phase 8 — your approval is recorded for training"
-          }
-          aria-label={`Approve ${card.tag} for ${card.driverName}`}
-          className={cn(
-            "inline-flex items-center gap-1.5 h-10 px-6 rounded-pill text-sm font-medium transition-colors duration-250 ease-sierra-out",
-            "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-card",
-            card.toolIsLive
-              ? "bg-primary text-white hover:bg-primary-hover focus:ring-primary"
-              : "bg-sand-200 text-sand-500 cursor-not-allowed",
-          )}
-        >
-          <Check size={14} aria-hidden="true" />
-          Approve
-          <kbd className="ms-1 hidden sm:inline font-mono text-[10px] opacity-80">
-            ⌘↵
-          </kbd>
-        </button>
-
-        {showEditButton && (
           <button
             type="button"
-            onClick={onEdit}
-            aria-label={`Edit ${card.tag} for ${card.driverName}`}
-            className="inline-flex items-center gap-1.5 h-10 px-5 rounded-pill text-sm font-medium text-sand-900 bg-card border border-sand-300 hover:bg-sand-100 transition-colors duration-250 ease-sierra-out focus:outline-none focus:ring-2 focus:ring-primary/40"
+            onClick={() => onApprove()}
+            disabled={!card.toolIsLive}
+            title={
+              card.toolIsLive
+                ? "Approve"
+                : "Action tool ships in Phase 8 — your approval is recorded for training"
+            }
+            aria-label={`Approve ${card.tag} for ${card.driverName}`}
+            className={cn(
+              "inline-flex h-9 items-center justify-center gap-1.5 rounded-pill px-4 text-sm font-medium transition duration-250 ease-sierra-out",
+              "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-card",
+              card.toolIsLive
+                ? "bg-primary text-white hover:scale-[1.01] hover:bg-primary-hover focus:ring-primary"
+                : "cursor-not-allowed bg-sand-200 text-sand-500",
+            )}
           >
-            <Edit3 size={14} aria-hidden="true" />
-            Edit
-            <kbd className="ms-1 hidden sm:inline font-mono text-[10px] opacity-70">
-              ⌘E
-            </kbd>
+            <Check size={14} aria-hidden="true" />
+            Approve
           </button>
-        )}
 
-        <button
-          type="button"
-          onClick={() => setShowDismissConfirm(true)}
-          aria-label={`Dismiss ${card.tag} for ${card.driverName}`}
-          className="inline-flex items-center gap-1.5 h-10 px-5 rounded-pill text-sm font-medium text-sand-700 bg-transparent hover:bg-sand-100 transition-colors duration-250 ease-sierra-out focus:outline-none focus:ring-2 focus:ring-primary/40"
-        >
-          <Trash2 size={14} aria-hidden="true" />
-          Dismiss
-          <kbd className="ms-1 hidden sm:inline font-mono text-[10px] opacity-70">
-            ⌘D
-          </kbd>
-        </button>
+          {showEditButton && (
+            <button
+              type="button"
+              onClick={onEdit}
+              aria-label={`Edit ${card.tag} for ${card.driverName}`}
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-pill border border-sand-300 bg-white px-3.5 text-sm font-medium text-sand-900 transition duration-250 ease-sierra-out hover:bg-sand-50 focus:outline-none focus:ring-2 focus:ring-primary/40"
+            >
+              <Edit3 size={14} aria-hidden="true" />
+              Edit
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setShowDismissConfirm(true)}
+            aria-label={`Dismiss ${card.tag} for ${card.driverName}`}
+            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-pill px-3.5 text-sm font-medium text-sand-700 transition duration-250 ease-sierra-out hover:bg-sand-100 focus:outline-none focus:ring-2 focus:ring-primary/40"
+          >
+            <Trash2 size={14} aria-hidden="true" />
+            Dismiss
+          </button>
+        </div>
       </div>
 
       <DismissConfirm
@@ -380,4 +269,18 @@ export default function DecisionCard({
       />
     </article>
   );
+}
+
+function formatDecisionText(card: DecisionCardData): string {
+  const base = cleanDecisionText(card.reasoning || card.headline || "Review this decision");
+  if (!card.driverName || card.driverName === "(unknown)") return base;
+  return base.includes(card.driverName) ? base : `${card.driverName} — ${base}`;
+}
+
+function cleanDecisionText(value: string): string {
+  return value
+    .replace(/\u2026/g, "")
+    .replace(/\.{3,}/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }

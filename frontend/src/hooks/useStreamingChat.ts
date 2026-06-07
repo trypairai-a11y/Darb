@@ -5,6 +5,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { GeneratedView } from "@/types/chat";
+import { getAccessToken } from "@/lib/api";
 
 export interface UseStreamingChatOpts {
   threadId?: string;
@@ -96,6 +97,8 @@ export function useStreamingChat(opts: UseStreamingChatOpts): UseStreamingChatRe
     const params = new URLSearchParams();
     if (optsRef.current.threadId) params.set("threadId", optsRef.current.threadId);
     params.set("q", content);
+    const token = getAccessToken();
+    if (token) params.set("token", token);
     const url = `/api/ai/chat/stream?${params.toString()}`;
 
     const src = new EventSource(url, { withCredentials: true });

@@ -90,25 +90,11 @@ class ToolRegistryImpl {
   /** Emit Anthropic-compatible tool schemas for the model. */
   getAnthropicSchema(agentId: string, role: UserRole): Anthropic.Tool[] {
     return this.list(agentId, role).map((t) => {
-      const schema: Anthropic.Tool = {
+      return {
         name: t.name,
         description: t.description,
         input_schema: t.inputSchema,
       };
-      // Strict mode opt-in: emit `strict: true` only when the tool sets it
-      // AND the inputSchema has `additionalProperties: false`. The Anthropic
-      // SDK type may not yet declare `strict` on Tool — the wire-protocol
-      // field is documented at platform.claude.com.
-      const inputSchemaWithGuards = t.inputSchema as Anthropic.Tool["input_schema"] & {
-        additionalProperties?: boolean;
-      };
-      if (
-        t.strict !== false &&
-        inputSchemaWithGuards.additionalProperties === false
-      ) {
-        (schema as Anthropic.Tool & { strict?: boolean }).strict = true;
-      }
-      return schema;
     });
   }
 

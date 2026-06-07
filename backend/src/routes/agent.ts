@@ -32,37 +32,73 @@ function _gcIdempotency() {
 router.post("/register", async (req: Request, res: Response) => {
   try {
     const { enrollmentCode, imei, model, osVersion } = req.body;
-    // Find driver by enrollment code (using platformDriverId as enrollment code for now)
+    const normalizedCode = String(enrollmentCode || "").trim();
+    const isDemoCode = normalizedCode.toUpperCase() === "DEMO";
+
+    const demoTenant = isDemoCode
+      ? await prisma.tenant.findFirst({ where: { name: "Osama Fleet Management" } })
+      : null;
+
+    // Find driver by enrollment code. Demo code is scoped to the seeded demo tenant only.
     const driver = await prisma.driver.findFirst({
-      where: { platformDriverId: enrollmentCode },
+      where: isDemoCode
+        ? {
+            tenantId: demoTenant?.id,
+            status: "ACTIVE",
+            name: { contains: "Qadir", mode: "insensitive" },
+          }
+        : { platformDriverId: normalizedCode },
       include: { company: true },
-    });
+    }) || (isDemoCode
+      ? await prisma.driver.findFirst({
+          where: { tenantId: demoTenant?.id, status: "ACTIVE" },
+          include: { company: true },
+          orderBy: { createdAt: "asc" },
+        })
+      : null);
     if (!driver) { res.status(404).json({ error: "Invalid enrollment code" }); return; }
 
-    const device = await prisma.device.upsert({
-      where: { imei },
-      create: {
-        imei,
-        model,
-        osVersion,
+    const deviceImei =
+      String(imei || "").trim() ||
+      `agent-${driver.id}`;
+
+    const existingDriverDevice = await prisma.device.findUnique({
+      where: { driverId: driver.id },
+    });
+    const existingImeiDevice = existingDriverDevice
+      ? null
+      : await prisma.device.findUnique({ where: { imei: deviceImei } });
+    const existingDevice = existingDriverDevice || existingImeiDevice;
+
+    const device = existingDevice
+      ? await prisma.device.update({
+          where: { id: existingDevice.id },
+          data: {
+            model: model || "Darb Agent",
+            osVersion: osVersion || "unknown",
+            ...(existingDevice.driverId === driver.id ? {} : { driverId: driver.id }),
+            status: "ACTIVE",
+            isOnline: true,
+            lastSeen: new Date(),
+          },
+        })
+      : await prisma.device.create({
+          data: {
+        imei: deviceImei,
+        model: model || "Darb Agent",
+        osVersion: osVersion || "unknown",
         driverId: driver.id,
         tenantId: driver.tenantId,
         status: "ACTIVE",
         isOnline: true,
         lastSeen: new Date(),
-      },
-      update: {
-        model,
-        osVersion,
-        driverId: driver.id,
-        status: "ACTIVE",
-        isOnline: true,
-        lastSeen: new Date(),
-      },
-    });
+          },
+        });
 
     res.status(201).json({
+      token: device.id,
       deviceId: device.id,
+      driverId: driver.id,
       driver: { id: driver.id, name: driver.name, platform: driver.platform },
       company: { id: driver.company.id, name: driver.company.name },
     });
@@ -70,6 +106,61 @@ router.post("/register", async (req: Request, res: Response) => {
     res.status(400).json({ error: err.message });
   }
 });
+
+function numeric(value: unknown): number {
+  if (value == null) return 0;
+  const maybeDecimal = value as { toNumber?: () => number };
+  if (typeof maybeDecimal.toNumber === "function") return maybeDecimal.toNumber();
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function kuwaitDayBounds(date = new Date()) {
+  const kuwaitOffsetMs = 3 * 60 * 60 * 1000;
+  const kuwaitNow = new Date(date.getTime() + kuwaitOffsetMs);
+  const startUtcMs =
+    Date.UTC(
+      kuwaitNow.getUTCFullYear(),
+      kuwaitNow.getUTCMonth(),
+      kuwaitNow.getUTCDate(),
+    ) - kuwaitOffsetMs;
+  return {
+    start: new Date(startUtcMs),
+    end: new Date(startUtcMs + 24 * 60 * 60 * 1000),
+  };
+}
+
+async function resolveDriverFromAgentRequest(req: Request) {
+  const auth = req.headers.authorization || "";
+  const bearerDeviceId = auth.toLowerCase().startsWith("bearer ")
+    ? auth.slice(7).trim()
+    : "";
+  const deviceId =
+    bearerDeviceId ||
+    (req.query.deviceId as string | undefined)?.trim() ||
+    (req.body?.deviceId as string | undefined)?.trim();
+
+  if (!deviceId) return null;
+
+  const device = await prisma.device.findUnique({
+    where: { id: deviceId },
+    include: {
+      sims: true,
+      driver: {
+        include: {
+          company: true,
+          supervisor: true,
+          assignedVehicle: true,
+          sims: true,
+          device: true,
+        },
+      },
+    },
+  });
+
+  if (!device?.driver) return null;
+  return { device, driver: device.driver };
+}
 
 router.post("/heartbeat", async (req: Request, res: Response) => {
   try {
@@ -121,6 +212,476 @@ router.post("/heartbeat", async (req: Request, res: Response) => {
     // is purely a client-side throttling signal. Future phases can add Device
     // columns if persistent storage becomes necessary.
     res.json({ status: "ok" });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+router.post("/push-token", async (req: Request, res: Response) => {
+  try {
+    const { deviceId, expoPushToken } = req.body as { deviceId?: string; expoPushToken?: string };
+    if (!deviceId) {
+      res.status(400).json({ error: "deviceId required" });
+      return;
+    }
+    if (!expoPushToken || !expoPushToken.startsWith("ExponentPushToken[")) {
+      res.status(400).json({ error: "Valid expoPushToken required" });
+      return;
+    }
+
+    const device = await prisma.device.findUnique({
+      where: { id: deviceId },
+      select: { driverId: true },
+    });
+    if (!device?.driverId) {
+      res.status(404).json({ error: "Device or driver not found" });
+      return;
+    }
+
+    await prisma.driver.update({
+      where: { id: device.driverId },
+      data: { expoPushToken },
+    });
+
+    res.json({ ok: true });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+router.get("/profile", async (req: Request, res: Response) => {
+  try {
+    const identity = await resolveDriverFromAgentRequest(req);
+    if (!identity) { res.status(404).json({ error: "Device or driver not found" }); return; }
+
+    const { driver, device } = identity;
+    const vehicle = driver.assignedVehicle;
+    const sim = driver.sims[0] || device.sims[0] || null;
+    const latestScore = await prisma.aiScore.findFirst({
+      where: { tenantId: driver.tenantId, driverId: driver.id },
+      orderBy: { date: "desc" },
+    });
+    const pendingCash = await prisma.cashRecord.aggregate({
+      where: { tenantId: driver.tenantId, driverId: driver.id, status: { in: ["PENDING", "PARTIALLY_PAID"] } },
+      _sum: { pendingDues: true },
+    });
+
+    res.json({
+      id: driver.id,
+      name: driver.name,
+      phone: driver.phone,
+      platform: driver.platform,
+      vehicleType: driver.vehicleType,
+      vehiclePlate: vehicle?.plateNumber ?? null,
+      vehicleLabel: vehicle ? `${vehicle.make} ${vehicle.model}` : null,
+      status: driver.status,
+      company: driver.company?.name ?? null,
+      supervisor: driver.supervisor?.name ?? null,
+      zone: driver.zone ?? null,
+      batchNumber: driver.batchNumber ?? null,
+      hireDate: driver.hireDate,
+      civilIdStatus: driver.civilIdStatus ?? null,
+      drivingLicenseStatus: driver.drivingLicenseStatus ?? null,
+      healthCertStatus: driver.healthCertStatus ?? null,
+      simNumber: sim?.phoneNumber ?? null,
+      device: {
+        id: device.id,
+        model: device.model,
+        osVersion: device.osVersion,
+        batteryLevel: device.batteryLevel,
+        isOnline: device.isOnline,
+        lastSeen: device.lastSeen,
+      },
+      score: latestScore?.compositeScore ?? null,
+      cashDue: numeric(pendingCash._sum.pendingDues),
+    });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+router.get("/stats", async (req: Request, res: Response) => {
+  try {
+    const identity = await resolveDriverFromAgentRequest(req);
+    if (!identity) { res.status(404).json({ error: "Device or driver not found" }); return; }
+
+    const { driver } = identity;
+    const now = new Date();
+    const today = kuwaitDayBounds(now);
+    const weekStart = new Date(today.start.getTime() - 6 * 24 * 60 * 60 * 1000);
+
+    const [todayOrders, weekOrders, latestScore, pendingCash, activeShift, nextShift, openTickets] =
+      await Promise.all([
+        prisma.orderLog.aggregate({
+          where: { tenantId: driver.tenantId, driverId: driver.id, date: { gte: today.start, lt: today.end } },
+          _sum: { orderCount: true, cashCollected: true, totalAmount: true },
+        }),
+        prisma.orderLog.aggregate({
+          where: { tenantId: driver.tenantId, driverId: driver.id, date: { gte: weekStart, lt: today.end } },
+          _sum: { orderCount: true, cashCollected: true, totalAmount: true },
+        }),
+        prisma.performanceSnapshot.findFirst({
+          where: { tenantId: driver.tenantId, driverId: driver.id },
+          orderBy: { snapshotDate: "desc" },
+        }),
+        prisma.cashRecord.aggregate({
+          where: { tenantId: driver.tenantId, driverId: driver.id, status: { in: ["PENDING", "PARTIALLY_PAID"] } },
+          _sum: { pendingDues: true },
+        }),
+        prisma.shift.findFirst({
+          where: {
+            tenantId: driver.tenantId,
+            driverId: driver.id,
+            status: "IN_PROGRESS",
+          },
+          orderBy: { scheduledStart: "desc" },
+        }),
+        prisma.shift.findFirst({
+          where: {
+            tenantId: driver.tenantId,
+            driverId: driver.id,
+            scheduledEnd: { gte: now },
+            status: { in: ["BOOKED", "IN_PROGRESS"] },
+          },
+          orderBy: { scheduledStart: "asc" },
+        }),
+        prisma.ticket.count({
+          where: {
+            tenantId: driver.tenantId,
+            submitterDriverId: driver.id,
+            status: { in: ["OPEN", "ASSIGNED", "IN_PROGRESS"] },
+          },
+        }),
+      ]);
+
+    const shiftForMinutes = activeShift || (
+      nextShift && nextShift.scheduledStart <= now && nextShift.scheduledEnd >= now
+        ? nextShift
+        : null
+    );
+    const onlineMinutes = shiftForMinutes
+      ? Math.max(
+          0,
+          Math.floor(
+            (now.getTime() - new Date(shiftForMinutes.actualStart ?? shiftForMinutes.scheduledStart).getTime()) /
+              60000,
+          ),
+        )
+      : 0;
+
+    res.json({
+      driverName: driver.name,
+      platform: driver.platform,
+      zone: driver.zone,
+      ordersToday: todayOrders._sum.orderCount ?? 0,
+      weekOrders: weekOrders._sum.orderCount ?? 0,
+      todayCash: numeric(todayOrders._sum.cashCollected) || numeric(todayOrders._sum.totalAmount),
+      weekCash: numeric(weekOrders._sum.cashCollected) || numeric(weekOrders._sum.totalAmount),
+      cashDue: numeric(pendingCash._sum.pendingDues),
+      onlineMinutes,
+      completionRate: latestScore?.deliveryScore ?? 0,
+      rating: latestScore ? Number((latestScore.compositeScore / 20).toFixed(1)) : 0,
+      score: latestScore?.compositeScore ?? null,
+      trend: latestScore?.trend ?? null,
+      openTickets,
+      onShift: Boolean(shiftForMinutes),
+      activeShift: shiftForMinutes
+        ? {
+            id: shiftForMinutes.id,
+            area: shiftForMinutes.deliveryArea ?? shiftForMinutes.zone,
+            startTime: shiftForMinutes.scheduledStart,
+            endTime: shiftForMinutes.scheduledEnd,
+            status: shiftForMinutes.status,
+          }
+        : null,
+      nextShift: nextShift
+        ? {
+            id: nextShift.id,
+            area: nextShift.deliveryArea ?? nextShift.zone,
+            startTime: nextShift.scheduledStart,
+            endTime: nextShift.scheduledEnd,
+            status: nextShift.status,
+          }
+        : null,
+    });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+router.get("/orders", async (req: Request, res: Response) => {
+  try {
+    const identity = await resolveDriverFromAgentRequest(req);
+    if (!identity) { res.status(404).json({ error: "Device or driver not found" }); return; }
+
+    const { driver } = identity;
+    const today = kuwaitDayBounds();
+    const since = new Date(today.start.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const rows = await prisma.orderLog.findMany({
+      where: { tenantId: driver.tenantId, driverId: driver.id, date: { gte: since } },
+      orderBy: [{ date: "desc" }, { arrivalTime: "desc" }],
+      take: 30,
+    });
+
+    res.json({
+      data: rows.map((order) => ({
+        id: order.id,
+        platform: order.platform,
+        status: "completed",
+        merchantName: order.restaurantName || "Restaurant",
+        deliveryAddress: driver.zone || order.paymentSource || "Delivery area",
+        amount: numeric(order.cashCollected) || numeric(order.totalAmount),
+        cashCollected: numeric(order.cashCollected),
+        orderCount: order.orderCount,
+        orderNumber: order.orderNumber,
+        createdAt: order.arrivalTime || order.date,
+      })),
+    });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+router.get("/shifts", async (req: Request, res: Response) => {
+  try {
+    const identity = await resolveDriverFromAgentRequest(req);
+    if (!identity) { res.status(404).json({ error: "Device or driver not found" }); return; }
+
+    const { driver } = identity;
+    const today = kuwaitDayBounds();
+    const since = new Date(today.start.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const until = new Date(today.start.getTime() + 14 * 24 * 60 * 60 * 1000);
+
+    const shifts = await prisma.shift.findMany({
+      where: {
+        tenantId: driver.tenantId,
+        driverId: driver.id,
+        scheduledStart: { gte: since, lt: until },
+      },
+      orderBy: { scheduledStart: "asc" },
+      take: 40,
+    });
+
+    res.json({
+      data: shifts.map((shift) => ({
+        id: shift.id,
+        date: shift.date,
+        startTime: shift.scheduledStart,
+        endTime: shift.scheduledEnd,
+        area: shift.deliveryArea || shift.zone,
+        status: shift.status,
+        actualStart: shift.actualStart,
+        actualEnd: shift.actualEnd,
+        platform: shift.platform,
+      })),
+    });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ─── Equipment ──────────────────────────────────────────────────────────────
+// The kit a driver is issued (helmet, bag, phone, etc.). Drivers can flag an
+// item as damaged / changed / request-change from the mobile app.
+const DEFAULT_EQUIPMENT_KIT = [
+  "HELMET",
+  "BIG_BAG",
+  "TSHIRT",
+  "MOBILE_PHONE",
+] as const;
+
+const REPORTABLE_CONDITIONS = ["DAMAGED", "CHANGED", "CHANGE_REQUESTED"] as const;
+type ReportableCondition = (typeof REPORTABLE_CONDITIONS)[number];
+
+const EQUIPMENT_LABELS: Record<string, string> = {
+  HELMET: "Helmet",
+  TSHIRT: "T-shirt",
+  PANTS: "Pants",
+  COOLING_VEST: "Cooling vest",
+  SAFETY_VEST: "Safety vest",
+  WATER_BOTTLE: "Water bottle",
+  GLOVES: "Gloves",
+  SAFETY_KIT: "Safety kit",
+  BIG_BAG: "Big delivery bag",
+  SMALL_BAG: "Small delivery bag",
+  CAP: "Cap",
+  MOBILE_PHONE: "Mobile phone",
+  SIM_CARD: "SIM card",
+  PETROL_CARD: "Petrol card",
+};
+
+function mapEquipment(item: {
+  id: string;
+  itemType: string;
+  quantity: number;
+  issued: boolean;
+  issuedDate: Date | null;
+  condition: string;
+  conditionNote: string | null;
+  conditionReportedAt: Date | null;
+}) {
+  return {
+    id: item.id,
+    itemType: item.itemType,
+    label: EQUIPMENT_LABELS[item.itemType] ?? item.itemType,
+    quantity: item.quantity,
+    issued: item.issued,
+    issuedDate: item.issuedDate,
+    condition: item.condition,
+    conditionNote: item.conditionNote,
+    conditionReportedAt: item.conditionReportedAt,
+  };
+}
+
+// GET /api/agent/equipment — list the driver's issued kit. If the driver has no
+// inventory rows yet, lazily provision the default kit so the screen is usable
+// immediately (assignment from an ops console is a separate, future flow).
+router.get("/equipment", async (req: Request, res: Response) => {
+  try {
+    const identity = await resolveDriverFromAgentRequest(req);
+    if (!identity) { res.status(404).json({ error: "Device or driver not found" }); return; }
+
+    const { driver } = identity;
+    let items = await prisma.driverInventory.findMany({
+      where: { driverId: driver.id },
+      orderBy: { createdAt: "asc" },
+    });
+
+    if (items.length === 0) {
+      await prisma.driverInventory.createMany({
+        data: DEFAULT_EQUIPMENT_KIT.map((itemType) => ({
+          driverId: driver.id,
+          itemType,
+          issued: true,
+          quantity: 1,
+          issuedDate: new Date(),
+        })),
+      });
+      items = await prisma.driverInventory.findMany({
+        where: { driverId: driver.id },
+        orderBy: { createdAt: "asc" },
+      });
+    }
+
+    res.json({ data: items.map(mapEquipment) });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// POST /api/agent/equipment/:id/condition — driver reports an item as
+// DAMAGED | CHANGED | CHANGE_REQUESTED with an optional note.
+router.post("/equipment/:id/condition", async (req: Request, res: Response) => {
+  try {
+    const identity = await resolveDriverFromAgentRequest(req);
+    if (!identity) { res.status(404).json({ error: "Device or driver not found" }); return; }
+
+    const { driver } = identity;
+    const { condition, note } = req.body as { condition?: string; note?: string };
+
+    if (!condition || !REPORTABLE_CONDITIONS.includes(condition as ReportableCondition)) {
+      res.status(400).json({
+        error: `condition must be one of ${REPORTABLE_CONDITIONS.join(", ")}`,
+      });
+      return;
+    }
+
+    // Ensure the item belongs to this driver before mutating it.
+    const existing = await prisma.driverInventory.findFirst({
+      where: { id: req.params.id, driverId: driver.id },
+    });
+    if (!existing) { res.status(404).json({ error: "Equipment item not found" }); return; }
+
+    const updated = await prisma.driverInventory.update({
+      where: { id: existing.id },
+      data: {
+        condition: condition as ReportableCondition,
+        conditionNote: typeof note === "string" && note.trim() ? note.trim() : null,
+        conditionReportedAt: new Date(),
+      },
+    });
+
+    res.json(mapEquipment(updated));
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+router.get("/points", async (req: Request, res: Response) => {
+  try {
+    const identity = await resolveDriverFromAgentRequest(req);
+    if (!identity) { res.status(404).json({ error: "Device or driver not found" }); return; }
+
+    const { driver } = identity;
+    const now = new Date();
+    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    const nextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+    const since = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5, 1));
+
+    const [latest, snapshots, monthlyShifts, monthlyViolations] = await Promise.all([
+      prisma.performanceSnapshot.findFirst({
+        where: { tenantId: driver.tenantId, driverId: driver.id },
+        orderBy: { snapshotDate: "desc" },
+      }),
+      prisma.performanceSnapshot.findMany({
+        where: { tenantId: driver.tenantId, driverId: driver.id, snapshotDate: { gte: since } },
+        orderBy: { snapshotDate: "asc" },
+      }),
+      prisma.shift.findMany({
+        where: {
+          tenantId: driver.tenantId,
+          driverId: driver.id,
+          scheduledStart: { gte: monthStart, lt: nextMonth },
+        },
+        select: { actualHoursMinutes: true, plannedHoursMinutes: true },
+      }),
+      prisma.violation.count({
+        where: { tenantId: driver.tenantId, driverId: driver.id, violationTime: { gte: monthStart, lt: nextMonth } },
+      }),
+    ]);
+
+    const monthlyBuckets = new Map<string, { year: number; month: number; total: number; count: number }>();
+    for (const snap of snapshots) {
+      const d = new Date(snap.snapshotDate);
+      const key = `${d.getUTCFullYear()}-${d.getUTCMonth() + 1}`;
+      const bucket = monthlyBuckets.get(key) || {
+        year: d.getUTCFullYear(),
+        month: d.getUTCMonth() + 1,
+        total: 0,
+        count: 0,
+      };
+      bucket.total += snap.compositeScore;
+      bucket.count += 1;
+      monthlyBuckets.set(key, bucket);
+    }
+
+    const hoursWorked = monthlyShifts.reduce(
+      (sum, shift) => sum + ((shift.actualHoursMinutes ?? shift.plannedHoursMinutes ?? 0) / 60),
+      0,
+    );
+
+    res.json({
+      driver: { id: driver.id, name: driver.name, platform: driver.platform, phone: driver.phone },
+      period: { year: now.getUTCFullYear(), month: now.getUTCMonth() + 1 },
+      current: latest ? {
+        totalScore: latest.compositeScore,
+        attendanceScore: latest.attendanceScore,
+        ordersScore: latest.deliveryScore,
+        hoursScore: Math.min(20, Math.round(hoursWorked / 8)),
+        violationsScore: latest.platformScore,
+        onTimePct: latest.attendanceScore,
+        ordersCount: latest.ordersCount,
+        hoursWorked,
+        violationsCount: monthlyViolations,
+        perPlatform: null,
+        computedAt: latest.computedAt,
+      } : null,
+      trend: Array.from(monthlyBuckets.values()).map((bucket) => ({
+        year: bucket.year,
+        month: bucket.month,
+        totalScore: Math.round(bucket.total / Math.max(1, bucket.count)),
+      })),
+    });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
@@ -577,12 +1138,18 @@ router.post("/selfie", upload.single("selfie"), async (req: Request, res: Respon
     }
 
     if (action === "ACTION_CLOCK_OUT") {
-      const targetId = providedShiftId;
-      if (!targetId) { res.status(400).json({ error: "shiftId required for clock-out" }); return; }
+      let shift = providedShiftId
+        ? await prisma.shift.findFirst({
+            where: { id: providedShiftId, tenantId, driverId: driver.id },
+          })
+        : null;
 
-      const shift = await prisma.shift.findFirst({
-        where: { id: targetId, tenantId, driverId: driver.id },
-      });
+      if (!shift) {
+        shift = await prisma.shift.findFirst({
+          where: { tenantId, driverId: driver.id, status: "IN_PROGRESS" },
+          orderBy: { actualStart: "desc" },
+        });
+      }
       if (!shift) { res.status(404).json({ error: "Shift not found" }); return; }
 
       const actualStart = shift.actualStart ?? shift.scheduledStart;

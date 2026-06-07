@@ -12,11 +12,11 @@ export default function EnrollmentScreen() {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleEnroll() {
-    if (!code.trim()) return;
+  async function handleEnroll(nextCode = code) {
+    if (!nextCode.trim()) return;
     setLoading(true);
     try {
-      await register(code.trim(), {
+      await register(nextCode.trim(), {
         model: Device.modelName || "unknown",
         osVersion: `${Platform.OS} ${Platform.Version}`,
         appVersion: "1.0.0",
@@ -30,8 +30,9 @@ export default function EnrollmentScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Darb Agent</Text>
-      <Text style={styles.subtitle}>Enter your enrollment code to get started</Text>
+      <Text style={styles.kicker}>Darb Driver</Text>
+      <Text style={styles.title}>Start your shift with confidence.</Text>
+      <Text style={styles.subtitle}>Enter the code from your supervisor, or use the demo driver to preview the app.</Text>
 
       <TextInput
         style={styles.input}
@@ -45,27 +46,45 @@ export default function EnrollmentScreen() {
 
       <TouchableOpacity
         style={[styles.button, loading && styles.buttonDisabled]}
-        onPress={handleEnroll}
+        onPress={() => handleEnroll()}
         disabled={loading}
       >
         <Text style={styles.buttonText}>{loading ? "Enrolling..." : "Enroll Device"}</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.secondaryButton}
+        onPress={() => {
+          setCode("DEMO");
+          handleEnroll("DEMO");
+        }}
+        disabled={loading}
+      >
+        <Text style={styles.secondaryButtonText}>Use demo driver</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", padding: 32, backgroundColor: "#f5f5f7" },
-  title: { fontSize: 28, fontWeight: "700", textAlign: "center", marginBottom: 8 },
-  subtitle: { fontSize: 14, color: "#86868b", textAlign: "center", marginBottom: 32 },
+  container: { flex: 1, justifyContent: "center", padding: 28, backgroundColor: "#f5f5f7" },
+  kicker: { fontSize: 13, fontWeight: "700", color: "#007A3D", textAlign: "center", marginBottom: 10 },
+  title: { fontSize: 32, fontWeight: "700", textAlign: "center", marginBottom: 10, color: "#1d1d1f", lineHeight: 38 },
+  subtitle: { fontSize: 15, color: "#6e6e73", textAlign: "center", marginBottom: 32, lineHeight: 21 },
   input: {
-    backgroundColor: "#fff", borderRadius: 12, padding: 16, fontSize: 18,
-    textAlign: "center", letterSpacing: 4, borderWidth: 1, borderColor: "#e5e7eb",
+    backgroundColor: "#fff", borderRadius: 16, padding: 16, fontSize: 18,
+    textAlign: "center", letterSpacing: 4, borderWidth: 1, borderColor: "#e5e5ea",
+    color: "#1d1d1f",
   },
   button: {
-    backgroundColor: "#007AFF", borderRadius: 12, padding: 16,
+    backgroundColor: "#007A3D", borderRadius: 16, padding: 16,
     marginTop: 24, alignItems: "center",
   },
   buttonDisabled: { opacity: 0.6 },
   buttonText: { color: "#fff", fontWeight: "600", fontSize: 16 },
+  secondaryButton: {
+    borderRadius: 16, padding: 16, marginTop: 12, alignItems: "center",
+    backgroundColor: "#fff", borderWidth: 1, borderColor: "#e5e5ea",
+  },
+  secondaryButtonText: { color: "#007A3D", fontWeight: "600", fontSize: 16 },
 });

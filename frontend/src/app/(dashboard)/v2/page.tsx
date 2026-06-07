@@ -66,7 +66,7 @@ export default function CommandCentrePage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="w-full max-w-none space-y-6">
       {/* Greeting */}
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-foreground text-white">

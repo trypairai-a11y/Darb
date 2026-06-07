@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
+import { sendDispatchDriverPush } from "../services/driverAppPushService";
 
 /**
  * v2 aggregation routes used by the Command Centre. One round-trip per page load.
@@ -57,6 +58,50 @@ router.get("/briefing", async (req: Request, res: Response) => {
       recommendations: content?.recommendations ?? [],
       generatedAt: latest.createdAt,
     });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/v2/dispatch/driver-push — app-only push to suggested drivers.
+router.post("/dispatch/driver-push", async (req: Request, res: Response) => {
+  try {
+    const title = typeof req.body?.title === "string" ? req.body.title.trim() : "";
+    const body = typeof req.body?.body === "string" ? req.body.body.trim() : "";
+    const driverIds = Array.isArray(req.body?.driverIds) ? req.body.driverIds.filter((id: unknown) => typeof id === "string") : [];
+    const candidateNames = Array.isArray(req.body?.candidateNames)
+      ? req.body.candidateNames.filter((name: unknown) => typeof name === "string")
+      : [];
+
+    if (!title) {
+      res.status(400).json({ error: "Title is required" });
+      return;
+    }
+    if (!body) {
+      res.status(400).json({ error: "Body is required" });
+      return;
+    }
+
+    const result = await sendDispatchDriverPush({
+      tenantId: req.user!.tenantId,
+      issuedById: req.user!.userId,
+      driverIds,
+      candidateNames,
+      title,
+      body,
+      data: {
+        actionId: typeof req.body?.actionId === "string" ? req.body.actionId : null,
+        zone: typeof req.body?.zone === "string" ? req.body.zone : null,
+        window: typeof req.body?.window === "string" ? req.body.window : null,
+      },
+    });
+
+    if (result.targeted === 0) {
+      res.status(404).json({ error: "No active matching drivers found" });
+      return;
+    }
+
+    res.json(result);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

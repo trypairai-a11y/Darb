@@ -3,6 +3,7 @@ import { registerTriageTools } from "./tools/_legacy/triage";
 import { registerReconciliationTools } from "./tools/_legacy/reconciliation";
 import { registerNarratorTools } from "./tools/_legacy/narrator";
 import { registerAllReadTools } from "./tools/read";
+import { AGENT_MODEL } from "./config";
 
 /**
  * Register the three v2 agents. Each agent is a prompt + trigger set +
@@ -20,7 +21,7 @@ registerAgent({
     "Ranks pending decisions (appeals, violations, cash gaps, stale alerts) by business impact and produces the Command Centre attention queue.",
   triggers: ["violation", "appeal_submitted", "cash_record_upserted", "cron"],
   actorRole: "OPS_MANAGER",
-  model: "claude-sonnet-4-6",
+  model: AGENT_MODEL,
   maxTokens: 4096,
   maxIterations: 8,
   promptFile: "triage.md",
@@ -32,7 +33,7 @@ registerAgent({
     "Explains CashRecord gaps between sales and collection; flags fraud patterns.",
   triggers: ["cash_record_upserted", "cron"],
   actorRole: "ACCOUNTANT",
-  model: "claude-sonnet-4-6",
+  model: AGENT_MODEL,
   maxTokens: 3072,
   maxIterations: 6,
   promptFile: "reconciliation.md",
@@ -44,7 +45,7 @@ registerAgent({
     "Produces hourly ops briefings from clustered alerts and violations.",
   triggers: ["cron"],
   actorRole: "OPS_MANAGER",
-  model: "claude-sonnet-4-6",
+  model: AGENT_MODEL,
   maxTokens: 2048,
   maxIterations: 4,
   promptFile: "narrator.md",
@@ -56,7 +57,7 @@ registerAgent({
     "Conversational Ask Darb surface. Reactive to user messages in the Cmd+K palette.",
   triggers: [], // reactive only — never triggered by events or cron
   actorRole: "OPS_MANAGER",
-  model: "claude-sonnet-4-6",
+  model: AGENT_MODEL,
   maxTokens: 4096,
   maxIterations: 5,
   promptFile: "chat.md",
@@ -77,7 +78,7 @@ registerAgent({
     "Continuous monitoring loop for the Decisions Surface. Tier-aware (hot 1m, warm 15m, cold 1h) — scans live fleet status, recent rejections, attendance, cash gaps, and weekly performance trends. Drafts WhatsApp/SMS/IN_APP courier messages and review flags via the propose-and-confirm contract; never executes side effects autonomously. Consults dismissed:* AgentMemory rows for 7-day suppression and stops at 50 proposals/tenant/day.",
   triggers: ["cron"],
   actorRole: "OPS_MANAGER",
-  model: "claude-sonnet-4-6",
+  model: AGENT_MODEL,
   maxTokens: 4096,
   maxIterations: 10,
   promptFile: "monitor.md",
@@ -95,7 +96,7 @@ registerAgent({
     "Generates 2-4 sentence plain-English explanations of a courier's composite performance score. Read-only narrative — never proposes actions. Cost-capped: single-shot, maxTokens=512.",
   triggers: [],
   actorRole: "OPS_MANAGER",
-  model: "claude-sonnet-4-6",
+  model: AGENT_MODEL,
   maxTokens: 512,
   maxIterations: 3,
   promptFile: "scoreExplainer.md",

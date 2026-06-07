@@ -10,7 +10,7 @@ import StatCard from "@/components/shared/StatCard";
 import { cn } from "@/lib/cn";
 import { cleanDriverName } from "@/lib/formatters";
 import { PageSkeleton } from "@/components/shared/Skeleton";
-import { Plus, Users, ShieldCheck, CheckCircle2, XCircle, TrendingUp, Package } from "lucide-react";
+import { Plus, Users, ShieldCheck, CheckCircle2, XCircle, AlertTriangle, TrendingUp, Package } from "lucide-react";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDate } from "@/i18n/format";
 
@@ -153,20 +153,37 @@ export default function TalabatDriversPage() {
     {
       key: "faceVerified",
       label: t("keetaPage.face"),
-      render: (_: any, r: any) =>
-        r.faceVerified != null ? (
-          r.faceVerified ? (
+      render: (_: any, r: any) => {
+        if (r.faceMismatch === true) {
+          return (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-600">
+              <AlertTriangle size={13} /> {t("keetaPage.faceMismatch")}
+            </span>
+          );
+        }
+        if (r.faceVerified === true) {
+          return (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-green-50 text-green-600">
-              <CheckCircle2 size={13} /> {t("keetaPage.facePass")}
+              <CheckCircle2 size={13} /> {t("keetaPage.faceSuccess")}
             </span>
-          ) : (
+          );
+        }
+        if (r.faceVerified === false) {
+          return (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-red-50 text-red-600">
-              <XCircle size={13} /> {t("keetaPage.faceFail")}
+              <XCircle size={13} /> {t("keetaPage.faceFailed")}
             </span>
-          )
-        ) : (
-          <span className="text-xs text-secondary">-</span>
-        ),
+          );
+        }
+        return <span className="text-xs text-secondary">-</span>;
+      },
+    },
+    {
+      key: "depositCount",
+      label: t("keetaPage.deposits"),
+      render: (v: number) => (
+        <span className="font-medium text-sm tabular-nums">{v ?? 0}</span>
+      ),
     },
     {
       key: "phone",

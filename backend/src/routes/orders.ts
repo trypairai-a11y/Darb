@@ -115,6 +115,12 @@ router.get("/", async (req: Request, res: Response) => {
       batchNumber: o.driver?.batchNumber || null,
       deliveriesCount: o.orderCount,
       cashCollectedKd: o.cashCollected != null ? Number(o.cashCollected) : 0,
+      orderId: o.orderNumber || (o.rawData as any)?.orderId || null,
+      amount: o.totalAmount != null ? Number(o.totalAmount) : ((o.rawData as any)?.amount ?? null),
+      storeName: o.restaurantName || (o.rawData as any)?.storeName || null,
+      driverName: o.driver?.name || null,
+      timestamp: o.arrivalTime || o.date,
+      status: (o.rawData as any)?.status || "DELIVERED",
     }));
 
     res.json(paginatedResponse(enriched, total, page, limit));
@@ -219,10 +225,39 @@ router.get("/active-drivers", async (req: Request, res: Response) => {
   }
 });
 
+// Most recent date that has at least one order log row for the given platform / tenant.
+// Used by the Americana orders page to default the date picker to "the most recent ingested day"
+// when today has no data yet.
+router.get("/latest-date", async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const { platform, companyId } = req.query;
+    const where: any = { tenantId };
+    if (platform) where.platform = platform;
+    if (companyId) where.driver = { companyId: companyId as string };
+    const latest = await prisma.orderLog.findFirst({
+      where,
+      orderBy: { date: "desc" },
+      select: { date: true },
+    });
+    if (!latest) {
+      res.json({ date: null });
+      return;
+    }
+    const d = latest.date;
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    res.json({ date: `${yyyy}-${mm}-${dd}` });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get("/summary", async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
-    const { platform, dateFrom, dateTo, companyId } = req.query;
+    const { platform, dateFrom, dateTo, companyId, date } = req.query;
     const where: any = { tenantId };
     if (platform) where.platform = platform;
     if (companyId) where.driver = { companyId: companyId as string };
@@ -230,6 +265,9 @@ router.get("/summary", async (req: Request, res: Response) => {
       where.date = {};
       if (dateFrom) where.date.gte = parseLocalDate(dateFrom as string);
       if (dateTo) where.date.lte = parseLocalDateEnd(dateTo as string);
+    } else if (date) {
+      // Single-day mode (used by /americana/orders): scope the main aggregate to that day.
+      where.date = { gte: parseLocalDate(date as string), lte: parseLocalDateEnd(date as string) };
     }
 
     const agg = await prisma.orderLog.aggregate({
@@ -286,7 +324,7 @@ router.get("/summary", async (req: Request, res: Response) => {
     const driverIds = driverBreakdown.map((z) => z.driverId);
     const drivers = driverIds.length > 0
       ? await prisma.driver.findMany({
-          where: { id: { in: driverIds } },
+          where: { tenantId, id: { in: driverIds } },
           select: { id: true, name: true, zone: true },
         })
       : [];
@@ -329,8 +367,105 @@ router.get("/summary", async (req: Request, res: Response) => {
     // Top zone
     const topZone = zones.length > 0 ? zones[0].zone : null;
 
+    // ── Top earners list (every driver with stats, sorted desc by orders) ──
+    const topEarners = driverBreakdown
+      .map((row) => {
+        const d = driverMap[row.driverId];
+        return {
+          driverId: row.driverId,
+          driverName: d?.name || "Unknown",
+          deliveries: row._sum.orderCount || 0,
+          cashKd: Number(row._sum.cashCollected || 0),
+          tipsKd: 0,
+          utr: null as number | null,
+        };
+      });
+
+    // ── Week-over-week comparison block ──
+    // currentRange = the requested window (or last 7 days). prevRange = same length immediately before.
+    const currentEnd = dateTo ? parseLocalDateEnd(dateTo as string) : new Date();
+    const currentStart = dateFrom
+      ? parseLocalDate(dateFrom as string)
+      : new Date(currentEnd.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const rangeMs = currentEnd.getTime() - currentStart.getTime();
+    const prevEnd = new Date(currentStart.getTime() - 1);
+    const prevStart = new Date(prevEnd.getTime() - rangeMs);
+    const prevWhere: any = { tenantId, date: { gte: prevStart, lte: prevEnd } };
+    if (platform) prevWhere.platform = platform;
+    if (companyId) prevWhere.driver = { companyId: companyId as string };
+    const prevAgg = await prisma.orderLog.aggregate({
+      where: prevWhere,
+      _sum: { orderCount: true, cashCollected: true, tips: true, distanceKm: true },
+    });
+    const thisWeek = {
+      deliveries: totalDeliveries,
+      cashKd: totalCashKd,
+      tipsKd: Number(agg._sum.tips || 0),
+      distanceKm: Number(agg._sum.distanceKm || 0),
+    };
+    const lastWeek = {
+      deliveries: prevAgg._sum.orderCount || 0,
+      cashKd: Number(prevAgg._sum.cashCollected || 0),
+      tipsKd: Number(prevAgg._sum.tips || 0),
+      distanceKm: Number(prevAgg._sum.distanceKm || 0),
+    };
+
+    // ── Single-day daily comparison block (used by /americana/orders) ──
+    // Returns today/yesterday counts + a 7-day rolling average leading up to the requested day.
+    let todayOrders = 0, todayAmount = 0;
+    let yesterdayOrders = 0, yesterdayAmount = 0;
+    let avgOrders: number | null = null, avgAmount: number | null = null;
+    if (date) {
+      // Format a Date as YYYY-MM-DD using local fields so we don't shift days through UTC.
+      const fmtLocal = (d: Date) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+      };
+      const target = parseLocalDate(date as string);
+      const yest = new Date(target);
+      yest.setDate(yest.getDate() - 1);
+      const yestStr = fmtLocal(yest);
+      const sevenStart = new Date(target);
+      sevenStart.setDate(sevenStart.getDate() - 6);
+      const sevenStartStr = fmtLocal(sevenStart);
+
+      const baseWhere: any = { tenantId };
+      if (platform) baseWhere.platform = platform;
+      if (companyId) baseWhere.driver = { companyId: companyId as string };
+
+      const [todayAgg, yestAgg, weekAgg] = await Promise.all([
+        prisma.orderLog.aggregate({
+          where: { ...baseWhere, date: { gte: parseLocalDate(date as string), lte: parseLocalDateEnd(date as string) } },
+          _sum: { orderCount: true, totalAmount: true },
+        }),
+        prisma.orderLog.aggregate({
+          where: { ...baseWhere, date: { gte: parseLocalDate(yestStr), lte: parseLocalDateEnd(yestStr) } },
+          _sum: { orderCount: true, totalAmount: true },
+        }),
+        prisma.orderLog.groupBy({
+          by: ["date"],
+          where: { ...baseWhere, date: { gte: parseLocalDate(sevenStartStr), lte: parseLocalDateEnd(date as string) } },
+          _sum: { orderCount: true, totalAmount: true },
+        }),
+      ]);
+      todayOrders = todayAgg._sum.orderCount || 0;
+      todayAmount = Number(todayAgg._sum.totalAmount || 0);
+      yesterdayOrders = yestAgg._sum.orderCount || 0;
+      yesterdayAmount = Number(yestAgg._sum.totalAmount || 0);
+      const days = weekAgg.length;
+      if (days > 0) {
+        const sumOrders = weekAgg.reduce((s, r) => s + (r._sum.orderCount || 0), 0);
+        const sumAmount = weekAgg.reduce((s, r) => s + Number(r._sum.totalAmount || 0), 0);
+        avgOrders = Math.round((sumOrders / days) * 10) / 10;
+        avgAmount = Math.round((sumAmount / days) * 1000) / 1000;
+      }
+    }
+
     res.json({
       totalDeliveries,
+      totalOrders: totalDeliveries,
       totalDistanceKm: Number(agg._sum.distanceKm || 0),
       totalTipsKd: Number(agg._sum.tips || 0),
       totalCashKd,
@@ -340,6 +475,15 @@ router.get("/summary", async (req: Request, res: Response) => {
       topDriverName,
       topZone,
       zones,
+      topEarners,
+      thisWeek,
+      lastWeek,
+      todayOrders,
+      todayAmount,
+      yesterdayOrders,
+      yesterdayAmount,
+      avgOrders,
+      avgAmount,
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -522,12 +666,24 @@ router.get("/top-restaurants", async (req: Request, res: Response) => {
       orderBy: { _sum: { orderCount: "desc" } },
     });
 
+    // Count distinct drivers per restaurant
+    const driverPairs = await prisma.orderLog.groupBy({
+      by: ["restaurantName", "driverId"],
+      where,
+    });
+    const driversByRestaurant = new Map<string, number>();
+    for (const p of driverPairs) {
+      if (!p.restaurantName) continue;
+      driversByRestaurant.set(p.restaurantName, (driversByRestaurant.get(p.restaurantName) || 0) + 1);
+    }
+
     const result = rows
       .filter((r) => r.restaurantName)
       .map((r) => ({
         restaurantName: r.restaurantName!,
         orders: r._sum.orderCount || 0,
         cashKd: Number(r._sum.cashCollected || 0),
+        drivers: driversByRestaurant.get(r.restaurantName!) || 0,
       }));
 
     res.json(result);
@@ -632,9 +788,19 @@ router.post("/", validateBody(createOrderSchema.passthrough()), async (req: Requ
 
 router.put("/:id", async (req: Request, res: Response) => {
   try {
+    const allowed = [
+      "shiftId", "date", "platform", "orderCount", "distanceKm",
+      "cashCollected", "tips", "totalAmount", "orderNumber",
+      "paymentSource", "restaurantName", "arrivalTime", "screenshotUrl",
+      "source", "rawData",
+    ] as const;
+    const data: Record<string, unknown> = {};
+    for (const k of allowed) {
+      if (k in (req.body ?? {})) data[k] = (req.body as any)[k];
+    }
     const order = await prisma.orderLog.updateMany({
       where: { id: req.params.id, tenantId: req.user!.tenantId },
-      data: req.body,
+      data,
     });
     if (order.count === 0) { res.status(404).json({ error: "Order not found" }); return; }
     const updated = await prisma.orderLog.findUnique({ where: { id: req.params.id } });
