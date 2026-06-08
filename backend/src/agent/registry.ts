@@ -131,8 +131,19 @@ class ToolRegistryImpl {
     }
     const input = parsed.data;
 
-    // Approval gate — when set, don't execute; persist for human review
-    if (tool.requiresApproval && !ctx.userId) {
+    // Approval gate — when set, don't execute; persist for human review.
+    //
+    // Auto-send mode: setting AGENT_AUTO_APPROVE="true" removes the human
+    // confirmation step entirely — gated tools execute immediately and their
+    // notification is sent automatically, with the execution recorded in the
+    // AgentToolCall audit trail (approvedBy = null, i.e. system-initiated).
+    //
+    // Default (unset) preserves the propose-and-confirm flow: proposals queue
+    // as PendingAgentAction rows for one-click approval. This keeps the v1
+    // "agent never executes unattended" invariant (see neverExecutes.test.ts)
+    // as the code/test default; auto-send is opted into per-environment.
+    const autoApprove = process.env.AGENT_AUTO_APPROVE === "true";
+    if (tool.requiresApproval && !ctx.userId && !autoApprove) {
       const pending = await prisma.pendingAgentAction.create({
         data: {
           tenantId: ctx.tenantId,

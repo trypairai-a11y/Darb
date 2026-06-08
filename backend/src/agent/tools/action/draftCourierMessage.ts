@@ -78,8 +78,9 @@ export const draftCourierMessage = defineTool({
   allowedAgents: ["monitor", "triage", "narrator", "chat"],
   editableParams: ["bodyEnglish"],
   async execute(ctx, input) {
-    // Only reached AFTER human approval — the registry's gate fires the
-    // pending-action path when ctx.userId is unset and requiresApproval=true.
+    // Reached either after a human approves (ctx.userId set) or, when
+    // AGENT_AUTO_APPROVE is on (default), directly from the monitor with no
+    // approval step — the notification is then sent automatically.
 
     const driver = await prisma.driver.findFirst({
       where: { id: input.driverId, tenantId: ctx.tenantId },
