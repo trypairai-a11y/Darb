@@ -199,6 +199,15 @@ export const mockNotifications = [
   },
 ];
 
+// ─── Equipment issued to the driver ───
+export const mockEquipment = [
+  { id: "eq1", itemType: "BAG", label: "Insulated delivery bag", quantity: 1, issued: true, issuedDate: "2024-11-03", condition: "OK", conditionNote: null, conditionReportedAt: null },
+  { id: "eq2", itemType: "JACKET", label: "Branded rain jacket", quantity: 1, issued: true, issuedDate: "2024-11-03", condition: "OK", conditionNote: null, conditionReportedAt: null },
+  { id: "eq3", itemType: "HELMET", label: "Safety helmet (M)", quantity: 1, issued: true, issuedDate: "2024-11-03", condition: "CHANGE_REQUESTED", conditionNote: "Strap worn out", conditionReportedAt: minutesAgo(60 * 30) },
+  { id: "eq4", itemType: "PHONE_HOLDER", label: "Handlebar phone mount", quantity: 1, issued: true, issuedDate: "2025-02-12", condition: "DAMAGED", conditionNote: "Clamp cracked", conditionReportedAt: minutesAgo(60 * 8) },
+  { id: "eq5", itemType: "POWERBANK", label: "Power bank 10,000mAh", quantity: 1, issued: true, issuedDate: "2025-02-12", condition: "OK", conditionNote: null, conditionReportedAt: null },
+];
+
 // ─── AI suggestions (home feed) ───
 export const mockAiSuggestions = [
   {

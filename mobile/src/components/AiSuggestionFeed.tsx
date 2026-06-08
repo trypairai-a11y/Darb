@@ -1,77 +1,51 @@
 /**
- * AiSuggestionFeed
- * -----------------
- * Bilingual AI-driven suggestion cards for couriers in the Expo app.
- * Renders ranked suggestion cards from mock data. Drop into the home screen
- * above the shift card.
+ * AiSuggestionFeed — horizontally-scrolling AI suggestion cards (HIG, light+dark).
  */
 
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
+import React, { useMemo } from "react";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { useTheme, type Palette, space, radius, continuous, shadow } from "../theme";
 import { mockAiSuggestions } from "../mockData";
 
 type SuggestionType =
-  | "GO_ONLINE_SURGE"
-  | "TAKE_SHIFT"
-  | "APPEAL_VIOLATION"
-  | "BONUS_PROXIMITY"
-  | "ROUTE_OPTIMIZATION"
-  | "REST_BREAK"
-  | "EARNINGS_INSIGHT";
+  | "GO_ONLINE_SURGE" | "TAKE_SHIFT" | "APPEAL_VIOLATION" | "BONUS_PROXIMITY"
+  | "ROUTE_OPTIMIZATION" | "REST_BREAK" | "EARNINGS_INSIGHT";
 
-const TYPE_COLORS: Record<SuggestionType, { bg: string; accent: string; emoji: string }> = {
-  GO_ONLINE_SURGE: { bg: "#FFF7E6", accent: "#F59E0B", emoji: "⚡" },
-  TAKE_SHIFT: { bg: "#EEF2FF", accent: "#6366F1", emoji: "🗓" },
-  APPEAL_VIOLATION: { bg: "#FEF2F2", accent: "#DC2626", emoji: "⚖" },
-  BONUS_PROXIMITY: { bg: "#ECFDF5", accent: "#10B981", emoji: "🎯" },
-  ROUTE_OPTIMIZATION: { bg: "#F0F9FF", accent: "#0284C7", emoji: "🧭" },
-  REST_BREAK: { bg: "#FAF5FF", accent: "#A855F7", emoji: "☕" },
-  EARNINGS_INSIGHT: { bg: "#F0FDFA", accent: "#0D9488", emoji: "💰" },
-};
-
-interface Props {
-  language?: "en" | "ar";
+function accentFor(type: SuggestionType, c: Palette): { accent: string; emoji: string } {
+  switch (type) {
+    case "GO_ONLINE_SURGE": return { accent: c.orange, emoji: "⚡️" };
+    case "TAKE_SHIFT": return { accent: c.indigo, emoji: "🗓" };
+    case "APPEAL_VIOLATION": return { accent: c.red, emoji: "⚖️" };
+    case "BONUS_PROXIMITY": return { accent: c.green, emoji: "🎯" };
+    case "ROUTE_OPTIMIZATION": return { accent: c.blue, emoji: "🧭" };
+    case "REST_BREAK": return { accent: c.purple, emoji: "☕️" };
+    default: return { accent: c.teal, emoji: "💰" };
+  }
 }
 
-export const AiSuggestionFeed: React.FC<Props> = ({ language = "en" }) => {
+export const AiSuggestionFeed: React.FC<{ language?: "en" | "ar" }> = ({ language = "en" }) => {
+  const { c, t } = useTheme();
+  const styles = useMemo(() => makeStyles(c), [c]);
   const isAr = language === "ar";
   const items = mockAiSuggestions;
-
   if (items.length === 0) return null;
 
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.row}
-      style={{ direction: isAr ? "rtl" : "ltr" } as any}
-    >
-      {items.map((s, idx) => {
-        const palette = TYPE_COLORS[s.type] ?? TYPE_COLORS.EARNINGS_INSIGHT;
-        const title = isAr ? s.titleAr : s.title;
-        const body = isAr ? s.bodyAr : s.body;
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row} style={styles.scroll}>
+      {items.map((s, i) => {
+        const meta = accentFor(s.type as SuggestionType, c);
         return (
-          <View
-            key={idx}
-            style={[styles.card, { backgroundColor: palette.bg, borderColor: palette.accent }]}
-          >
-            <Text style={styles.emoji}>{palette.emoji}</Text>
-            <Text style={[styles.title, { color: palette.accent }]} numberOfLines={2}>
-              {title}
-            </Text>
-            <Text style={styles.body} numberOfLines={3}>
-              {body}
-            </Text>
-            {s.estimatedValueKD != null && (
-              <View style={[styles.badge, { backgroundColor: palette.accent }]}>
-                <Text style={styles.badgeText}>+{s.estimatedValueKD} KD</Text>
-              </View>
-            )}
+          <View key={i} style={styles.card}>
+            <View style={styles.cardHead}>
+              <Text style={styles.emoji}>{meta.emoji}</Text>
+              {s.estimatedValueKD != null ? (
+                <View style={[styles.badge, { backgroundColor: meta.accent }]}>
+                  <Text style={[t.caption1, { color: c.white, fontWeight: "700" }]}>+{s.estimatedValueKD} KD</Text>
+                </View>
+              ) : null}
+            </View>
+            <Text style={[t.headline, { color: meta.accent }]} numberOfLines={2}>{isAr ? s.titleAr : s.title}</Text>
+            <Text style={[t.footnote, { color: c.secondaryLabel, marginTop: 4 }]} numberOfLines={3}>{isAr ? s.bodyAr : s.body}</Text>
           </View>
         );
       })}
@@ -79,26 +53,13 @@ export const AiSuggestionFeed: React.FC<Props> = ({ language = "en" }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  row: { paddingVertical: 4, paddingBottom: 16, gap: 12 },
-  card: {
-    width: 240,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    marginRight: 12,
-  },
-  emoji: { fontSize: 24, marginBottom: 6 },
-  title: { fontSize: 15, fontWeight: "700", marginBottom: 6 },
-  body: { fontSize: 13, color: "#374151", lineHeight: 18 },
-  badge: {
-    alignSelf: "flex-start",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    marginTop: 10,
-  },
-  badgeText: { color: "white", fontSize: 12, fontWeight: "600" },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  scroll: { marginHorizontal: -space.base, marginBottom: space.md },
+  row: { paddingHorizontal: space.base, gap: space.md, paddingVertical: space.xs },
+  card: { width: 230, backgroundColor: c.groupedSecondary, borderRadius: radius.card, padding: space.base, ...continuous, ...shadow.card },
+  cardHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: space.sm },
+  emoji: { fontSize: 22 },
+  badge: { borderRadius: radius.capsule, paddingHorizontal: 9, paddingVertical: 3 },
 });
 
 export default AiSuggestionFeed;

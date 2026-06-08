@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Platform } from "react-native";
 import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { setLastTab, type PlatformHint } from "../src/services/platformGuess";
@@ -20,11 +21,16 @@ export default function RootLayout() {
   // is set alongside driver_id when the backend includes it in the register response).
   // Per-screen useFocusEffect calls (see orders.tsx) keep the hint warm after this.
   useEffect(() => {
+    // expo-secure-store has no web implementation; skip the native-only
+    // platform-attribution hint on web (demo build).
+    if (Platform.OS === "web") return;
     let cancelled = false;
-    SecureStore.getItemAsync("driver_platform").then((p) => {
-      if (cancelled) return;
-      if (isPlatformHint(p)) setLastTab(p);
-    });
+    SecureStore.getItemAsync("driver_platform")
+      .then((p) => {
+        if (cancelled) return;
+        if (isPlatformHint(p)) setLastTab(p);
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };

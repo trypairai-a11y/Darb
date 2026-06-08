@@ -1,166 +1,123 @@
-import React, { useCallback, useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
-  ActivityIndicator,
-  TouchableOpacity,
-} from "react-native";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
+import { View, Text, StyleSheet, ScrollView, RefreshControl } from "react-native";
 import { DarbPointsResponse } from "../api/client";
 import { mockPoints } from "../mockData";
+import { Screen, Card, SectionHeader } from "../components/hig";
+import { useTheme, type Palette, space, radius, continuous } from "../theme";
 
-const MONTH_NAMES = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MAX = { attendance: 30, orders: 30, hours: 20, violations: 20 };
 
-const MAX_BY_BUCKET = {
-  attendance: 30,
-  orders: 30,
-  hours: 20,
-  violations: 20,
-};
-
-export default function DarbPointsScreen({ onBack }: { onBack?: () => void }) {
+export default function DarbPointsScreen() {
+  const { c, t } = useTheme();
+  const styles = useMemo(() => makeStyles(c), [c]);
   const [data, setData] = useState<DarbPointsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    else setLoading(true);
-    setError(null);
-    try {
-      setData(mockPoints as DarbPointsResponse);
-    } catch (e: any) {
-      setError(e.message || "Failed to load");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  const toneFor = useCallback((score: number | null) => {
+    if (score == null) return c.gray;
+    if (score >= 80) return c.green;
+    if (score >= 60) return c.orange;
+    return c.red;
+  }, [c]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  const load = useCallback(() => setData(mockPoints as DarbPointsResponse), []);
+  useEffect(() => { load(); }, [load]);
+  const onRefresh = () => { setRefreshing(true); setTimeout(() => { load(); setRefreshing(false); }, 400); };
 
   const score = data?.current?.totalScore ?? null;
-  const tone = score == null ? "#86868b" : score >= 80 ? "#16a34a" : score >= 60 ? "#d97706" : "#dc2626";
+  const tone = toneFor(score);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        {onBack && (
-          <TouchableOpacity onPress={onBack} style={styles.backBtn}>
-            <Text style={styles.backText}>← Back</Text>
-          </TouchableOpacity>
-        )}
-        <Text style={styles.title}>Darb Points</Text>
-        <Text style={styles.subtitle}>
-          {data ? `${MONTH_NAMES[data.period.month - 1]} ${data.period.year}` : "—"}
-        </Text>
-      </View>
-
+    <Screen>
       <ScrollView
-        contentContainerStyle={styles.scroll}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(true)} />}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={c.tint} />}
       >
-        {loading ? (
-          <ActivityIndicator size="large" color="#16a34a" style={{ marginTop: 60 }} />
-        ) : error ? (
-          <Text style={styles.errorText}>{error}</Text>
-        ) : !data ? null : (
+        <Text style={[t.largeTitle, { marginTop: space.sm }]}>Darb Points</Text>
+        <Text style={[t.subheadline, { color: c.secondaryLabel, marginTop: 2 }]}>
+          {data ? `${MONTHS[data.period.month - 1]} ${data.period.year}` : "—"}
+        </Text>
+
+        {data?.current ? (
           <>
-            <View style={styles.gauge}>
-              <Text style={[styles.score, { color: tone }]}>
-                {score != null ? Math.round(score) : "—"}
-              </Text>
-              <Text style={styles.scoreUnit}>/ 100</Text>
-            </View>
-
-            {data.current && (
-              <View style={styles.breakdown}>
-                <Bar label="Attendance" sub={`${data.current.onTimePct.toFixed(0)}% on-time`} value={data.current.attendanceScore} max={MAX_BY_BUCKET.attendance} />
-                <Bar label="Orders" sub={`${data.current.ordersCount} orders`} value={data.current.ordersScore} max={MAX_BY_BUCKET.orders} />
-                <Bar label="Hours" sub={`${data.current.hoursWorked.toFixed(1)} hrs`} value={data.current.hoursScore} max={MAX_BY_BUCKET.hours} />
-                <Bar label="Violations" sub={`${data.current.violationsCount} this month`} value={data.current.violationsScore} max={MAX_BY_BUCKET.violations} />
+            <Card style={styles.gauge}>
+              <View style={styles.scoreRow}>
+                <Text style={[styles.score, { color: tone }]}>{score != null ? Math.round(score) : "—"}</Text>
+                <Text style={[t.title3, { color: c.secondaryLabel, marginBottom: 8 }]}> / 100</Text>
               </View>
-            )}
+              <View style={styles.track}>
+                <View style={[styles.fill, { width: `${Math.min(100, score ?? 0)}%`, backgroundColor: tone }]} />
+              </View>
+              <Text style={[t.footnote, { color: c.secondaryLabel, marginTop: space.sm }]}>This month's standing</Text>
+            </Card>
 
-            {data.trend.length > 0 && (
-              <View style={styles.trendCard}>
-                <Text style={styles.trendTitle}>Last 6 months</Text>
-                <View style={styles.trendBars}>
-                  {data.trend.map((t) => {
-                    const h = Math.max(4, (t.totalScore / 100) * 80);
-                    return (
-                      <View key={`${t.year}-${t.month}`} style={styles.trendBarCol}>
-                        <View style={[styles.trendBar, { height: h }]} />
-                        <Text style={styles.trendLabel}>{MONTH_NAMES[t.month - 1]}</Text>
+            <SectionHeader>Breakdown</SectionHeader>
+            <Card style={{ gap: space.base }}>
+              <Bar label="Attendance" sub={`${data.current.onTimePct.toFixed(0)}% on-time`} value={data.current.attendanceScore} max={MAX.attendance} />
+              <Bar label="Orders" sub={`${data.current.ordersCount} orders`} value={data.current.ordersScore} max={MAX.orders} />
+              <Bar label="Hours" sub={`${data.current.hoursWorked.toFixed(1)} hrs`} value={data.current.hoursScore} max={MAX.hours} />
+              <Bar label="Violations" sub={`${data.current.violationsCount} this month`} value={data.current.violationsScore} max={MAX.violations} />
+            </Card>
+
+            {data.trend.length > 0 ? (
+              <>
+                <SectionHeader>Last 6 months</SectionHeader>
+                <Card>
+                  <View style={styles.trend}>
+                    {data.trend.map((tr) => (
+                      <View key={`${tr.year}-${tr.month}`} style={styles.trendCol}>
+                        <View style={styles.trendTrack}>
+                          <View style={[styles.trendBar, { height: `${Math.max(6, tr.totalScore)}%`, backgroundColor: toneFor(tr.totalScore) }]} />
+                        </View>
+                        <Text style={[t.caption2, { color: c.secondaryLabel }]}>{MONTHS[tr.month - 1]}</Text>
                       </View>
-                    );
-                  })}
-                </View>
-              </View>
-            )}
+                    ))}
+                  </View>
+                </Card>
+              </>
+            ) : null}
 
-            <Text style={styles.footnote}>
-              Score is recomputed daily across Keeta, Talabat, Deliveroo and Americana.
+            <Text style={[t.footnote, { color: c.tertiaryLabel, textAlign: "center", marginTop: space.lg }]}>
+              Recomputed daily across Keeta, Talabat, Deliveroo & Americana.
             </Text>
           </>
-        )}
+        ) : null}
       </ScrollView>
-    </View>
+    </Screen>
   );
 }
 
 function Bar({ label, sub, value, max }: { label: string; sub: string; value: number; max: number }) {
+  const { c, t } = useTheme();
+  const styles = useMemo(() => makeStyles(c), [c]);
   const pct = max === 0 ? 0 : Math.min(100, (value / max) * 100);
-  const tone = pct >= 80 ? "#16a34a" : pct >= 50 ? "#d97706" : "#dc2626";
+  const tone = pct >= 80 ? c.green : pct >= 50 ? c.orange : c.red;
   return (
-    <View style={styles.barRow}>
-      <View style={styles.barText}>
-        <Text style={styles.barLabel}>{label}</Text>
-        <Text style={styles.barSub}>{sub}</Text>
+    <View style={{ gap: 6 }}>
+      <View style={styles.barHead}>
+        <Text style={t.headline}>{label}</Text>
+        <Text style={[t.footnote, { color: c.secondaryLabel }]}>{sub}</Text>
       </View>
-      <View style={styles.barTrack}>
-        <View style={[styles.barFill, { width: `${pct}%`, backgroundColor: tone }]} />
+      <View style={styles.track}>
+        <View style={[styles.fill, { width: `${pct}%`, backgroundColor: tone }]} />
       </View>
-      <Text style={styles.barValue}>
-        {value.toFixed(1)} / {max}
-      </Text>
+      <Text style={[t.caption1, { color: c.tertiaryLabel, textAlign: "right" }]}>{value.toFixed(1)} / {max}</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f5f5f7" },
-  header: { paddingTop: 60, paddingHorizontal: 24, paddingBottom: 16, backgroundColor: "#fff", borderBottomWidth: 1, borderBottomColor: "#e5e5e7" },
-  backBtn: { marginBottom: 8 },
-  backText: { color: "#86868b", fontSize: 14 },
-  title: { fontSize: 24, fontWeight: "700", color: "#1d1d1f" },
-  subtitle: { fontSize: 13, color: "#86868b", marginTop: 2 },
-  scroll: { padding: 24, paddingBottom: 64 },
-  gauge: { alignItems: "center", paddingVertical: 32, backgroundColor: "#fff", borderRadius: 24, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
-  score: { fontSize: 80, fontWeight: "700", lineHeight: 88 },
-  scoreUnit: { fontSize: 16, color: "#86868b", marginTop: 4 },
-  breakdown: { marginTop: 16, backgroundColor: "#fff", borderRadius: 24, padding: 20, gap: 16, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
-  barRow: { gap: 6 },
-  barText: { flexDirection: "row", justifyContent: "space-between" },
-  barLabel: { fontSize: 14, fontWeight: "600", color: "#1d1d1f" },
-  barSub: { fontSize: 12, color: "#86868b" },
-  barTrack: { height: 8, backgroundColor: "#e5e5e7", borderRadius: 4, overflow: "hidden" },
-  barFill: { height: "100%", borderRadius: 4 },
-  barValue: { fontSize: 11, color: "#86868b", fontVariant: ["tabular-nums"], textAlign: "right" },
-  trendCard: { marginTop: 16, backgroundColor: "#fff", borderRadius: 24, padding: 20, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
-  trendTitle: { fontSize: 14, fontWeight: "600", color: "#1d1d1f", marginBottom: 12 },
-  trendBars: { flexDirection: "row", alignItems: "flex-end", gap: 8, height: 100 },
-  trendBarCol: { flex: 1, alignItems: "center", gap: 4 },
-  trendBar: { width: "100%", backgroundColor: "#16a34a", borderTopLeftRadius: 4, borderTopRightRadius: 4 },
-  trendLabel: { fontSize: 10, color: "#86868b" },
-  footnote: { marginTop: 24, fontSize: 11, color: "#86868b", textAlign: "center" },
-  errorText: { color: "#dc2626", textAlign: "center", marginTop: 60 },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  content: { paddingHorizontal: space.base, paddingBottom: space.xxxl },
+  gauge: { alignItems: "center", marginTop: space.base, paddingVertical: space.xl },
+  scoreRow: { flexDirection: "row", alignItems: "flex-end" },
+  score: { fontSize: 72, lineHeight: 76, fontWeight: "700", letterSpacing: -1 },
+  track: { height: 8, borderRadius: 4, backgroundColor: c.gray5, overflow: "hidden", width: "100%", ...continuous },
+  fill: { height: "100%", borderRadius: 4 },
+  barHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  trend: { flexDirection: "row", alignItems: "flex-end", gap: space.sm, height: 120 },
+  trendCol: { flex: 1, alignItems: "center", gap: 6 },
+  trendTrack: { width: "70%", height: 96, backgroundColor: c.gray5, borderRadius: radius.sm, overflow: "hidden", justifyContent: "flex-end", ...continuous },
+  trendBar: { width: "100%", borderRadius: radius.sm, ...continuous },
 });
