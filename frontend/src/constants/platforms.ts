@@ -46,7 +46,7 @@ export const PLATFORMS: Record<PlatformKey, PlatformConfig> = {
   },
   DELIVEROO: {
     key: "DELIVEROO",
-    label: "Deliveroo",
+    label: "Deliveroo Equipment",
     color: "#00CCBC",
     bgColor: "bg-teal-500",
     textColor: "text-teal-500",
