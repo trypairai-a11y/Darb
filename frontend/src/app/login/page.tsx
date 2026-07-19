@@ -16,18 +16,19 @@ import { useRouter } from "next/navigation";
  * isSuperAdmin flag.
  */
 const ROLE_LANDING: Record<string, string> = {
-  ADMIN: "/decisions",
-  OPS_MANAGER: "/decisions",
-  SUPERVISOR: "/v2/dispatch",
-  ACCOUNTANT: "/v2/money",
-  VIEWER: "/decisions",
-  // Darb 2.0 — vendors land in (and are fenced into) the vendor portal.
+  // Darb 2.0 — staff land on the live ops map, money roles on finance.
+  ADMIN: "/ops",
+  OPS_MANAGER: "/ops",
+  SUPERVISOR: "/ops",
+  ACCOUNTANT: "/finance",
+  VIEWER: "/orders",
+  // Vendors land in (and are fenced into) the vendor portal.
   VENDOR: "/vendor",
 };
 
 function landingForRole(role: string | undefined): string {
   if (!role) return "/decisions";
-  return ROLE_LANDING[role] ?? "/decisions";
+  return ROLE_LANDING[role] ?? "/ops";
 }
 
 export default function LoginPage() {

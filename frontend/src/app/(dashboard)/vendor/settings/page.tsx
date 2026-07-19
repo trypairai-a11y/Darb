@@ -14,6 +14,9 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { formatDateTime } from "@/i18n/format";
 import { cn } from "@/lib/cn";
 
+// v1 slim-down: Foodics UI stays hidden until the partner app is approved.
+const FOODICS_UI = false;
+
 export default function VendorSettingsPage() {
   const { t, locale } = useI18n();
   const toast = useToast();
@@ -30,6 +33,7 @@ export default function VendorSettingsPage() {
     queryKey: ["darb", "vendor", "foodics"],
     queryFn: () => vendorApi.foodicsStatus(),
     retry: false,
+    enabled: FOODICS_UI,
   });
 
   const vendor = meQuery.data?.vendor;
@@ -86,7 +90,9 @@ export default function VendorSettingsPage() {
         />
       </section>
 
-      {/* Foodics */}
+      {/* Foodics — hidden until the Foodics partner app is approved (v1 slim-down).
+          Flip to true once sandbox/production credentials exist. */}
+      {FOODICS_UI && (
       <section className="bg-card border border-sand-200 rounded-2xl shadow-soft p-6">
         <h2 className="font-medium text-sand-900">{t("foodics.title")}</h2>
         <p className="text-xs text-sand-600 mt-1 mb-4">{t("foodics.connectHint")}</p>
@@ -126,6 +132,7 @@ export default function VendorSettingsPage() {
           )}
         </div>
       </section>
+      )}
 
       {/* Profile (read-only) */}
       <section className="bg-card border border-sand-200 rounded-2xl shadow-soft p-6">

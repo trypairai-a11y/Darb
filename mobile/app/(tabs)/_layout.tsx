@@ -27,7 +27,9 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="home" options={{ title: "Home", tabBarIcon: ({ color }) => <Home size={24} color={color} /> }} />
       <Tabs.Screen name="wallet" options={{ title: "Wallet", tabBarIcon: ({ color }) => <Wallet size={24} color={color} /> }} />
-      <Tabs.Screen name="history" options={{ title: "History", tabBarIcon: ({ color }) => <History size={24} color={color} /> }} />
+      {/* v1 slim-down: History stays routable but off the tab bar (set href to
+          "/history" to restore). Drivers live in Home + Wallet. */}
+      <Tabs.Screen name="history" options={{ href: null, title: "History", tabBarIcon: ({ color }) => <History size={24} color={color} /> }} />
     </Tabs>
   );
 }

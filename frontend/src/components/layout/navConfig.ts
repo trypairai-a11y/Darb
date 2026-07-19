@@ -32,6 +32,11 @@ import {
 /** Flip to true to bring the Darb 1.0 platform modules back into the nav. */
 export const SHOW_LEGACY = false;
 
+// v1 slim-down (2026-07-19): advanced surfaces exist and work, but stay out of
+// the nav until the operation actually needs them. Routes remain reachable by
+// URL. Flip to true to restore Jeopardy/Alerts/Zone load/Fleet/Adjustments/Reports.
+export const SHOW_ADVANCED = false;
+
 export interface NavItem {
   /** i18n key resolved via useI18n().t */
   i18n: string;
@@ -73,11 +78,15 @@ export const NAV_SECTIONS: NavSection[] = [
     minRole: "SUPERVISOR",
     items: [
       { i18n: "darbNav.opsMap", path: "/ops", icon: Map },
-      { i18n: "darbNav.jeopardy", path: "/ops/jeopardy", icon: AlertTriangle },
-      { i18n: "darbNav.alerts", path: "/ops/alerts", icon: BellRing },
       { i18n: "darbNav.sos", path: "/ops/sos", icon: Siren },
-      { i18n: "darbNav.zoneLoad", path: "/ops/zones", icon: Hexagon },
       { i18n: "darbNav.orders", path: "/orders", icon: Briefcase },
+      ...(SHOW_ADVANCED
+        ? [
+            { i18n: "darbNav.jeopardy", path: "/ops/jeopardy", icon: AlertTriangle },
+            { i18n: "darbNav.alerts", path: "/ops/alerts", icon: BellRing },
+            { i18n: "darbNav.zoneLoad", path: "/ops/zones", icon: Hexagon },
+          ]
+        : []),
     ],
   },
   {
@@ -88,7 +97,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { i18n: "darbNav.zones", path: "/zones", icon: Hexagon },
       { i18n: "darbNav.pricing", path: "/pricing", icon: Coins },
       { i18n: "darbNav.vendors", path: "/vendors", icon: Store },
-      { i18n: "darbNav.fleet", path: "/fleet", icon: Truck },
+      ...(SHOW_ADVANCED ? [{ i18n: "darbNav.fleet", path: "/fleet", icon: Truck }] : []),
     ],
   },
   {
@@ -98,8 +107,12 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { i18n: "darbNav.financeOverview", path: "/finance", icon: Wallet },
       { i18n: "darbNav.remittances", path: "/finance/remittances", icon: HandCoins },
-      { i18n: "darbNav.adjustments", path: "/finance/adjustments", icon: Scale },
-      { i18n: "darbNav.reports", path: "/reports", icon: FileText },
+      ...(SHOW_ADVANCED
+        ? [
+            { i18n: "darbNav.adjustments", path: "/finance/adjustments", icon: Scale },
+            { i18n: "darbNav.reports", path: "/reports", icon: FileText },
+          ]
+        : []),
     ],
   },
   {
