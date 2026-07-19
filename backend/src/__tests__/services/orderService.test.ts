@@ -1,0 +1,461 @@
+// Darb 2.0 — orderService unit tests (plan §A2/§A8 orders core).
+//
+// House mocking pattern: moduleNameMapper folds ../config into the shared
+// prisma stub; the Darb 2.0 delegates are attached in-place here (parallel-
+// track safety — the shared mocks/config file is not edited). Collaborator
+// services (pricing quote, wallet settlements, dispatch queue, Foodics hook,
+// driver push) are jest.mock'ed at the module boundary.
+
+import { getMockPrisma, resetAllMocks } from "../setup";
+import { Prisma } from "../../generated/prisma";
+
+const prisma = getMockPrisma();
+
+// Attach Darb 2.0 delegates the shared mock doesn't know about yet.
+prisma.deliveryOrder = prisma.deliveryOrder ?? {};
+for (const fn of ["findMany", "findFirst", "create", "updateMany", "count"]) {
+  prisma.deliveryOrder[fn] = prisma.deliveryOrder[fn] ?? jest.fn();
+}
+prisma.dispatchOffer = prisma.dispatchOffer ?? {};
+for (const fn of ["findMany", "updateMany", "upsert", "create"]) {
+  prisma.dispatchOffer[fn] = prisma.dispatchOffer[fn] ?? jest.fn();
+}
+prisma.vendor = prisma.vendor ?? {};
+for (const fn of ["findFirst", "findMany", "updateMany"]) {
+  prisma.vendor[fn] = prisma.vendor[fn] ?? jest.fn();
+}
+prisma.vendorBranch = prisma.vendorBranch ?? {};
+for (const fn of ["findFirst", "findMany"]) {
+  prisma.vendorBranch[fn] = prisma.vendorBranch[fn] ?? jest.fn();
+}
+
+jest.mock("../../services/pricingService", () => ({
+  quoteDelivery: jest.fn(),
+}));
+jest.mock("../../services/wallet/walletService", () => ({
+  postCodSettlement: jest.fn().mockResolvedValue(undefined),
+  postPrepaidSettlement: jest.fn().mockResolvedValue(undefined),
+}));
+jest.mock("../../queues/dispatchQueue", () => ({
+  enqueueDispatchStart: jest.fn().mockResolvedValue(undefined),
+  enqueueDispatchNext: jest.fn().mockResolvedValue(undefined),
+  scheduleOfferExpiry: jest.fn().mockResolvedValue(undefined),
+  removeOfferExpiryJob: jest.fn().mockResolvedValue(undefined),
+}));
+jest.mock("../../services/foodics/writebackHook", () => ({
+  enqueueFoodicsWriteback: jest.fn().mockResolvedValue(undefined),
+}));
+jest.mock("../../services/driverAppPushService", () => ({
+  sendDispatchDriverPush: jest.fn().mockResolvedValue({ pushSent: 1 }),
+}));
+
+const { quoteDelivery } = require("../../services/pricingService");
+const {
+  postCodSettlement,
+  postPrepaidSettlement,
+} = require("../../services/wallet/walletService");
+const {
+  enqueueDispatchStart,
+  removeOfferExpiryJob,
+} = require("../../queues/dispatchQueue");
+const { enqueueFoodicsWriteback } = require("../../services/foodics/writebackHook");
+const { sendDispatchDriverPush } = require("../../services/driverAppPushService");
+const {
+  createDeliveryOrder,
+  completeDelivery,
+  cancelOrder,
+  assignDriverManually,
+  SLA_PROMISE_MINUTES,
+} = require("../../services/orderService");
+const { OrderStateConflictError } = require("../../services/orderStateMachine");
+
+const TENANT = "t-1";
+const D = (v: string | number) => new Prisma.Decimal(v);
+
+const VENDOR = { id: "v-1", code: "BRGB", isPaused: false, requiresCarOnly: false };
+const ACTOR = { type: "USER" as const, id: "u-1", name: "sup@darb.com" };
+
+const GOOD_QUOTE = {
+  ok: true,
+  pickupZoneId: "zone-a",
+  dropoffZoneId: "zone-b",
+  feeKwd: D("1.750"),
+  pickupZone: { id: "zone-a", code: "KWC", name: "Kuwait City", nameAr: null },
+  dropoffZone: { id: "zone-b", code: "SAL", name: "Salmiya", nameAr: null },
+};
+
+const CREATE_INPUT = {
+  tenantId: TENANT,
+  source: "VENDOR_PORTAL" as const,
+  vendorId: "v-1",
+  branchId: "b-1",
+  paymentMethod: "COD" as const,
+  orderTotalKwd: "5.000",
+  customerName: "Abdullah",
+  customerPhone: "+96550000001",
+  dropoff: { lat: 29.33, lng: 48.07 },
+  actor: ACTOR,
+};
+
+function primeHappyCreate(lastOrderNumber: string | null = null) {
+  prisma.vendor.findFirst.mockResolvedValue(VENDOR);
+  prisma.vendorBranch.findFirst.mockResolvedValue({ id: "b-1" });
+  quoteDelivery.mockResolvedValue(GOOD_QUOTE);
+
+  // findFirst serves BOTH the orderNumber-sequence lookup (where.orderNumber)
+  // and the post-transition re-fetch (where.id).
+  prisma.deliveryOrder.findFirst.mockImplementation(async ({ where }: any) => {
+    if (where.orderNumber) {
+      return lastOrderNumber ? { orderNumber: lastOrderNumber } : null;
+    }
+    if (where.id) {
+      const created = prisma.deliveryOrder.create.mock.calls[0]?.[0]?.data;
+      return created
+        ? { id: where.id, ...created, status: "DISPATCHING" }
+        : null;
+    }
+    return null;
+  });
+  prisma.deliveryOrder.create.mockImplementation(async ({ data }: any) => ({
+    id: "ord-1",
+    ...data,
+  }));
+  prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 1 });
+  prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+}
+
+beforeEach(() => {
+  resetAllMocks();
+  jest.clearAllMocks();
+  prisma.$transaction.mockImplementation(async (fn: any) => fn(prisma));
+});
+
+// ─── createDeliveryOrder ────────────────────────────────────────────────────
+
+describe("createDeliveryOrder", () => {
+  test("happy path: CREATED row with quote zones/fee, podPin, slaDeadline → DISPATCHING + dispatch-start + order.created", async () => {
+    primeHappyCreate();
+    const before = Date.now();
+
+    const order = await createDeliveryOrder(CREATE_INPUT);
+
+    // Row created with the quote's outputs.
+    const data = prisma.deliveryOrder.create.mock.calls[0][0].data;
+    expect(data).toMatchObject({
+      tenantId: TENANT,
+      source: "VENDOR_PORTAL",
+      vendorId: "v-1",
+      branchId: "b-1",
+      status: "CREATED",
+      paymentMethod: "COD",
+      pickupZoneId: "zone-a",
+      dropoffZoneId: "zone-b",
+      requiresCarOnly: false,
+    });
+    expect(data.deliveryFeeKwd.toFixed(3)).toBe("1.750");
+    expect(data.orderTotalKwd.toFixed(3)).toBe("5.000");
+
+    // orderNumber format "DRB-{vendorCode}-{seq}" (zero-padded seq).
+    expect(data.orderNumber).toBe("DRB-BRGB-0001");
+    expect(data.orderNumber).toMatch(/^DRB-BRGB-\d{4}$/);
+
+    // podPin: exactly 4 digits (leading zeros allowed).
+    expect(data.podPin).toMatch(/^\d{4}$/);
+
+    // slaDeadline ≈ now + SLA_PROMISE_MINUTES.
+    const sla = data.slaDeadline.getTime();
+    expect(sla).toBeGreaterThanOrEqual(before + SLA_PROMISE_MINUTES * 60_000 - 1000);
+    expect(sla).toBeLessThanOrEqual(Date.now() + SLA_PROMISE_MINUTES * 60_000 + 1000);
+
+    // CREATED → DISPATCHING guarded transition.
+    const transition = prisma.deliveryOrder.updateMany.mock.calls[0][0];
+    expect(transition.where).toEqual({ id: "ord-1", tenantId: TENANT, status: "CREATED" });
+    expect(transition.data.status).toBe("DISPATCHING");
+
+    // Timeline: order.created appended.
+    const actions = prisma.orderEvent.create.mock.calls.map((c: any) => c[0].data.action);
+    expect(actions).toContain("order.created");
+    expect(actions).toContain("order.dispatching");
+
+    expect(enqueueDispatchStart).toHaveBeenCalledWith("ord-1", TENANT);
+    expect(order.status).toBe("DISPATCHING");
+  });
+
+  test("orderNumber increments from the tenant/vendor max (ticketNumber pattern)", async () => {
+    primeHappyCreate("DRB-BRGB-0007");
+
+    await createDeliveryOrder(CREATE_INPUT);
+
+    const data = prisma.deliveryOrder.create.mock.calls[0][0].data;
+    expect(data.orderNumber).toBe("DRB-BRGB-0008");
+  });
+
+  test("paused vendor → REJECTED VENDOR_PAUSED persisted and returned; no quote, no dispatch", async () => {
+    prisma.vendor.findFirst.mockResolvedValue({ ...VENDOR, isPaused: true });
+    prisma.vendorBranch.findFirst.mockResolvedValue({ id: "b-1" });
+    prisma.deliveryOrder.findFirst.mockResolvedValue(null); // seq lookup
+    prisma.deliveryOrder.create.mockImplementation(async ({ data }: any) => ({
+      id: "ord-r",
+      ...data,
+    }));
+    prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+
+    const order = await createDeliveryOrder(CREATE_INPUT);
+
+    expect(order.status).toBe("REJECTED");
+    expect(order.rejectionReason).toBe("VENDOR_PAUSED");
+    expect(quoteDelivery).not.toHaveBeenCalled();
+    expect(enqueueDispatchStart).not.toHaveBeenCalled();
+    // Rejections persist a row — they never throw.
+    const data = prisma.deliveryOrder.create.mock.calls[0][0].data;
+    expect(data.status).toBe("REJECTED");
+    expect(data.rejectionReason).toBe("VENDOR_PAUSED");
+  });
+
+  test.each([
+    "OUT_OF_ZONE_DROPOFF",
+    "UNSERVICEABLE_PAIR",
+    "NO_COORDINATES",
+    "BRANCH_UNZONED",
+  ])("quote rejection %s → persisted REJECTED row returned, no dispatch", async (reason) => {
+    prisma.vendor.findFirst.mockResolvedValue(VENDOR);
+    prisma.vendorBranch.findFirst.mockResolvedValue({ id: "b-1" });
+    quoteDelivery.mockResolvedValue({ ok: false, reason });
+    prisma.deliveryOrder.findFirst.mockResolvedValue(null); // seq lookup
+    prisma.deliveryOrder.create.mockImplementation(async ({ data }: any) => ({
+      id: "ord-r",
+      ...data,
+    }));
+    prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+
+    const order = await createDeliveryOrder(CREATE_INPUT);
+
+    expect(order.status).toBe("REJECTED");
+    expect(order.rejectionReason).toBe(reason);
+    expect(prisma.deliveryOrder.updateMany).not.toHaveBeenCalled(); // no transition
+    expect(enqueueDispatchStart).not.toHaveBeenCalled();
+    const eventData = prisma.orderEvent.create.mock.calls[0][0].data;
+    expect(eventData.action).toBe("order.rejected");
+    expect(eventData.description).toContain(reason);
+  });
+
+  test("unknown vendor throws (caller error, nothing persisted)", async () => {
+    prisma.vendor.findFirst.mockResolvedValue(null);
+    await expect(createDeliveryOrder(CREATE_INPUT)).rejects.toThrow(/Vendor .* not found/);
+    expect(prisma.deliveryOrder.create).not.toHaveBeenCalled();
+  });
+
+  test("branch not belonging to the vendor throws", async () => {
+    prisma.vendor.findFirst.mockResolvedValue(VENDOR);
+    prisma.vendorBranch.findFirst.mockResolvedValue(null);
+    await expect(createDeliveryOrder(CREATE_INPUT)).rejects.toThrow(/Branch .* not found/);
+    expect(prisma.deliveryOrder.create).not.toHaveBeenCalled();
+  });
+});
+
+// ─── completeDelivery ───────────────────────────────────────────────────────
+
+const PICKED_UP_ORDER = {
+  id: "ord-1",
+  tenantId: TENANT,
+  orderNumber: "DRB-BRGB-0001",
+  vendorId: "v-1",
+  branchId: "b-1",
+  driverId: "drv-1",
+  status: "PICKED_UP",
+  paymentMethod: "COD",
+  orderTotalKwd: D("5.000"),
+  deliveryFeeKwd: D("1.000"),
+};
+
+describe("completeDelivery", () => {
+  function primeDeliver(order: any) {
+    prisma.deliveryOrder.findFirst
+      .mockResolvedValueOnce(order) // initial load
+      .mockResolvedValue({ ...order, status: "DELIVERED" }); // post-transition re-fetch
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 1 });
+    prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+  }
+
+  test("COD order: PICKED_UP→DELIVERED + postCodSettlement exactly once (inside the tx), prepaid NOT called", async () => {
+    primeDeliver(PICKED_UP_ORDER);
+
+    const { order } = await completeDelivery({
+      tenantId: TENANT,
+      orderId: "ord-1",
+      actor: { type: "DRIVER", id: "drv-1", name: "Qadir" },
+      codCollectedKwd: "5.000",
+      podMethod: "PIN",
+    });
+
+    const transition = prisma.deliveryOrder.updateMany.mock.calls[0][0];
+    expect(transition.where).toEqual({ id: "ord-1", tenantId: TENANT, status: "PICKED_UP" });
+    expect(transition.data.status).toBe("DELIVERED");
+    expect(transition.data.codCollectedKwd.toFixed(3)).toBe("5.000");
+
+    expect(postCodSettlement).toHaveBeenCalledTimes(1);
+    expect(postPrepaidSettlement).not.toHaveBeenCalled();
+    const [txArg, orderArg] = postCodSettlement.mock.calls[0];
+    expect(txArg).toBe(prisma); // the interactive tx client
+    expect(orderArg).toMatchObject({ id: "ord-1", tenantId: TENANT, driverId: "drv-1", vendorId: "v-1" });
+    expect(orderArg.orderTotalKwd.toFixed(3)).toBe("5.000");
+    expect(orderArg.deliveryFeeKwd.toFixed(3)).toBe("1.000");
+
+    expect(enqueueFoodicsWriteback).toHaveBeenCalledWith("ord-1", "DELIVERED");
+    expect(order.status).toBe("DELIVERED");
+  });
+
+  test("PREPAID order: postPrepaidSettlement exactly once, COD NOT called", async () => {
+    primeDeliver({ ...PICKED_UP_ORDER, paymentMethod: "PREPAID" });
+
+    await completeDelivery({
+      tenantId: TENANT,
+      orderId: "ord-1",
+      actor: { type: "DRIVER", id: "drv-1" },
+    });
+
+    expect(postPrepaidSettlement).toHaveBeenCalledTimes(1);
+    expect(postCodSettlement).not.toHaveBeenCalled();
+  });
+
+  test("guarded-transition loss (count 0) aborts the tx — no settlement is posted", async () => {
+    prisma.deliveryOrder.findFirst.mockResolvedValue(PICKED_UP_ORDER);
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 0 });
+
+    await expect(
+      completeDelivery({ tenantId: TENANT, orderId: "ord-1", actor: { type: "DRIVER" } }),
+    ).rejects.toThrow(OrderStateConflictError);
+
+    expect(postCodSettlement).not.toHaveBeenCalled();
+    expect(postPrepaidSettlement).not.toHaveBeenCalled();
+  });
+});
+
+// ─── assignDriverManually ───────────────────────────────────────────────────
+
+describe("assignDriverManually", () => {
+  test("cancels open OFFERED offers, records ACCEPTED round -1 offer, transitions to ASSIGNED, pushes to the driver", async () => {
+    const order = {
+      ...PICKED_UP_ORDER,
+      status: "DISPATCHING",
+      driverId: null,
+    };
+    prisma.deliveryOrder.findFirst.mockResolvedValue(order);
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 1 });
+    prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+    prisma.driver.findFirst.mockResolvedValue({ id: "drv-2", name: "Hamad" });
+    prisma.dispatchOffer.findMany.mockResolvedValue([{ id: "off-1" }, { id: "off-2" }]);
+    prisma.dispatchOffer.updateMany.mockResolvedValue({ count: 2 });
+    prisma.dispatchOffer.upsert.mockResolvedValue({ id: "off-manual" });
+
+    await assignDriverManually({
+      tenantId: TENANT,
+      orderId: "ord-1",
+      driverId: "drv-2",
+      actor: ACTOR,
+    });
+
+    // Open offers cancelled…
+    expect(prisma.dispatchOffer.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { tenantId: TENANT, orderId: "ord-1", status: "OFFERED" },
+        data: expect.objectContaining({ status: "CANCELLED" }),
+      }),
+    );
+    // …their expiry jobs best-effort removed…
+    expect(removeOfferExpiryJob).toHaveBeenCalledWith("off-1");
+    expect(removeOfferExpiryJob).toHaveBeenCalledWith("off-2");
+
+    // …manual ACCEPTED offer at round -1…
+    const upsert = prisma.dispatchOffer.upsert.mock.calls[0][0];
+    expect(upsert.where).toEqual({
+      orderId_driverId_round: { orderId: "ord-1", driverId: "drv-2", round: -1 },
+    });
+    expect(upsert.create).toMatchObject({
+      tenantId: TENANT,
+      orderId: "ord-1",
+      driverId: "drv-2",
+      round: -1,
+      status: "ACCEPTED",
+    });
+
+    // …guarded DISPATCHING→ASSIGNED with driverId + assignedAt…
+    const transition = prisma.deliveryOrder.updateMany.mock.calls[0][0];
+    expect(transition.where).toEqual({ id: "ord-1", tenantId: TENANT, status: "DISPATCHING" });
+    expect(transition.data).toMatchObject({ status: "ASSIGNED", driverId: "drv-2" });
+    expect(transition.data.assignedAt).toBeInstanceOf(Date);
+
+    // …Expo nudge + Foodics milestone.
+    expect(sendDispatchDriverPush).toHaveBeenCalledTimes(1);
+    expect(sendDispatchDriverPush.mock.calls[0][0]).toMatchObject({
+      tenantId: TENANT,
+      driverIds: ["drv-2"],
+    });
+    expect(enqueueFoodicsWriteback).toHaveBeenCalledWith("ord-1", "ASSIGNED");
+  });
+
+  test("409-style conflict when the order is not NO_DRIVER/DISPATCHING", async () => {
+    prisma.deliveryOrder.findFirst.mockResolvedValue({ ...PICKED_UP_ORDER, status: "DELIVERED" });
+
+    await expect(
+      assignDriverManually({ tenantId: TENANT, orderId: "ord-1", driverId: "drv-2", actor: ACTOR }),
+    ).rejects.toThrow(OrderStateConflictError);
+    expect(prisma.dispatchOffer.updateMany).not.toHaveBeenCalled();
+  });
+
+  test("push failure is swallowed (assignment still succeeds)", async () => {
+    prisma.deliveryOrder.findFirst.mockResolvedValue({ ...PICKED_UP_ORDER, status: "NO_DRIVER", driverId: null });
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 1 });
+    prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+    prisma.driver.findFirst.mockResolvedValue({ id: "drv-2", name: "Hamad" });
+    prisma.dispatchOffer.findMany.mockResolvedValue([]);
+    prisma.dispatchOffer.updateMany.mockResolvedValue({ count: 0 });
+    prisma.dispatchOffer.upsert.mockResolvedValue({ id: "off-manual" });
+    sendDispatchDriverPush.mockRejectedValueOnce(new Error("expo down"));
+
+    await expect(
+      assignDriverManually({ tenantId: TENANT, orderId: "ord-1", driverId: "drv-2", actor: ACTOR }),
+    ).resolves.toBeTruthy();
+  });
+});
+
+// ─── cancelOrder ────────────────────────────────────────────────────────────
+
+describe("cancelOrder", () => {
+  test("vendor default allowFrom refuses PICKED_UP; supervisor allowFrom permits it", async () => {
+    prisma.deliveryOrder.findFirst.mockResolvedValueOnce(PICKED_UP_ORDER);
+
+    await expect(
+      cancelOrder({ tenantId: TENANT, orderId: "ord-1", reason: "changed mind", actor: ACTOR }),
+    ).rejects.toThrow(OrderStateConflictError);
+
+    prisma.deliveryOrder.findFirst
+      .mockResolvedValueOnce(PICKED_UP_ORDER) // initial load
+      .mockResolvedValue({
+        ...PICKED_UP_ORDER,
+        status: "CANCELLED",
+        cancelReason: "customer unreachable",
+      }); // post-transition re-fetch
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 1 });
+    prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+    prisma.dispatchOffer.findMany.mockResolvedValue([]);
+    prisma.dispatchOffer.updateMany.mockResolvedValue({ count: 0 });
+
+    const order = await cancelOrder({
+      tenantId: TENANT,
+      orderId: "ord-1",
+      reason: "customer unreachable",
+      actor: ACTOR,
+      allowFrom: ["CREATED", "DISPATCHING", "NO_DRIVER", "ASSIGNED", "PICKED_UP"],
+    });
+
+    const transition = prisma.deliveryOrder.updateMany.mock.calls[0][0];
+    expect(transition.where).toEqual({ id: "ord-1", tenantId: TENANT, status: "PICKED_UP" });
+    expect(transition.data).toMatchObject({
+      status: "CANCELLED",
+      cancelReason: "customer unreachable",
+    });
+    expect(enqueueFoodicsWriteback).toHaveBeenCalledWith("ord-1", "CANCELLED");
+    expect(order.status).toBe("CANCELLED");
+  });
+});

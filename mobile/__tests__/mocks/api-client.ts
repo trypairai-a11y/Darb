@@ -36,6 +36,49 @@ export const requestUploadUrl = jest.fn(
 );
 export const recordDeliveryPhotoMetadata = jest.fn(async (_payload: any) => ({ ok: true }));
 
+// ─── Darb 2.0 delivery-loop surface ─────────────────────────────────────────
+// ApiError mirrors the real client's class (re-implemented here because the
+// moduleNameMapper regex would rewrite any import of the real module back to
+// this mock). Tests throw `new ApiError(409, {...})` to simulate conflicts.
+export class ApiError extends Error {
+  status: number;
+  code?: string;
+  body: any;
+  constructor(status: number, body: any = {}) {
+    super(body?.error || body?.message || `HTTP ${status}`);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = body?.code;
+    this.body = body;
+  }
+}
+
+export function isApiError(e: unknown, ...statuses: number[]): e is ApiError {
+  return e instanceof ApiError && (statuses.length === 0 || statuses.includes(e.status));
+}
+
+export const hasToken = jest.fn(async () => true);
+export const getState = jest.fn(async (): Promise<any> => ({
+  availability: "OFFLINE",
+  serverTime: new Date().toISOString(),
+}));
+export const postAvailability = jest.fn(async (_availability: string) => ({ availability: _availability }));
+export const acceptOffer = jest.fn(async (_offerId: string) => ({ order: { id: "ord1", status: "ASSIGNED" } }));
+export const rejectOffer = jest.fn(async (_offerId: string, _reason?: string) => ({ ok: true }));
+export const postOrderStatus = jest.fn(async (_orderId: string, _payload: any) => ({ ok: true }));
+export const postPod = jest.fn(async (_orderId: string, _payload: any) => ({}));
+export const postOrderFailed = jest.fn(async (_orderId: string, _reason: string) => ({ ok: true }));
+export const getWallet = jest.fn(async () => ({ cashOnHandKwd: 0, ceilingKwd: 100 }));
+export const postIncident = jest.fn(async (_payload: any) => ({ id: "inc1", status: "OPEN" }));
+export const getIncident = jest.fn(async (_id: string) => ({ id: "inc1", status: "OPEN" }));
+export const fetchMyOrders = jest.fn(async () => [] as any[]);
+export const fetchMyShifts = jest.fn(async () => [] as any[]);
+export const fetchMyEquipment = jest.fn(async () => [] as any[]);
+export const reportEquipmentCondition = jest.fn(async (_id: string, _c: any, _n?: string) => ({}));
+export const registerPushToken = jest.fn(async (_token: string) => ({ ok: true }));
+export const getStoredDriverId = jest.fn(async () => "drv");
+export const unenroll = jest.fn(async () => {});
+
 export const __mockApi = {
   agentFetch,
   register,
@@ -51,4 +94,18 @@ export const __mockApi = {
   getMyTicket,
   requestUploadUrl,
   recordDeliveryPhotoMetadata,
+  hasToken,
+  getState,
+  postAvailability,
+  acceptOffer,
+  rejectOffer,
+  postOrderStatus,
+  postPod,
+  postOrderFailed,
+  getWallet,
+  postIncident,
+  getIncident,
+  fetchMyOrders,
+  registerPushToken,
+  unenroll,
 };

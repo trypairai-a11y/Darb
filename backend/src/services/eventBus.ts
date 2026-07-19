@@ -21,7 +21,32 @@ export type DarbEventType =
   | "cash_record_upserted"
   | "agent_action_pending"
   | "agent_action_resolved"
-  | "briefing_published";
+  | "briefing_published"
+  // Legacy live-floor event names (Phase 7 REQ-floor-live-map) — published by
+  // the agent location ingest + consumed by the floor tests. The Darb 2.0
+  // union is a SUPERSET of these; do not remove.
+  | "gps_point"
+  | "online_session_update"
+  // Darb 2.0 delivery fulfillment events (§A7):
+  | "order.created"
+  | "order.rejected"
+  | "order.assigned"
+  | "order.picked_up"
+  | "order.delivered"
+  | "order.failed"
+  | "order.cancelled"
+  | "order.dispatch_exhausted"
+  | "offer.sent"
+  | "offer.accepted"
+  | "offer.declined"
+  | "offer.expired"
+  | "driver.location"
+  | "driver.online"
+  | "driver.offline"
+  | "sos.raised"
+  | "incident.updated"
+  | "remittance.recorded"
+  | "wallet.reconciliation_failed";
 
 export interface DarbEvent {
   type: DarbEventType;

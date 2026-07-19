@@ -65,6 +65,23 @@ const TENANT_SCOPED_MODELS = new Set([
   "PinnedView",
   "PerformanceSnapshot",
   "MetricEvent",
+  // Darb 2.0 — delivery fulfillment (kept in sync with prismaExtensions.ts;
+  // WebhookEvent stays excluded there AND here — rows are written before the
+  // tenant is resolved).
+  "Vendor",
+  "VendorBranch",
+  "DeliveryZone",
+  "ZoneSurcharge",
+  "FulfillmentSettings",
+  "DeliveryOrder",
+  "DispatchOffer",
+  "WalletAccount",
+  "WalletTransaction",
+  "WalletEntry",
+  "Remittance",
+  "WalletReconciliationRun",
+  "Incident",
+  "FoodicsConnection",
 ]);
 
 // Operations that read or bulk-modify rows; if these touch a tenant-scoped

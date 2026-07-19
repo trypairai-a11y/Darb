@@ -7,6 +7,9 @@ export interface JwtPayload {
   tenantId: string;
   role: string;
   email: string;
+  // Darb 2.0 — set for role=VENDOR users; scopes the vendor portal.
+  // Sourced from the User row at sign time, never from the client.
+  vendorId?: string;
 }
 
 declare global {

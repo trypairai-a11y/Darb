@@ -14,7 +14,6 @@
  */
 
 function loadSender() {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   return require("../../services/notification/whatsappCloudApi");
 }
 

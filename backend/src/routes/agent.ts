@@ -4,6 +4,7 @@ import { upload } from "../utils/upload";
 import { nextTicketNumber } from "../utils/ticketNumber";
 import { ticketSlaDeadline } from "../utils/ticketSla";
 import { createTicketSubmittedNotification } from "../services/notificationService";
+import { publishEvent } from "../services/eventBus";
 import { logger } from "../config/logger";
 import { presignPutUrl } from "../services/r2Service";
 import {
@@ -21,6 +22,12 @@ const router = Router();
 // mobile outbox replays a batch after a crash, the server collapses dupes.
 const _locationIdempotencyMap = new Map<string, number>();
 const IDEMPOTENCY_TTL_MS = 5 * 60 * 1000;
+
+// driver.location SSE throttle (§A7): ≤1 publish / 10s / driver, in-process.
+// The legacy `gps_point` event stays per-batch (floor tests assert one per
+// non-empty batch); only the Darb 2.0 `driver.location` stream is throttled.
+const _driverLocationLastPublish = new Map<string, number>();
+const DRIVER_LOCATION_THROTTLE_MS = 10_000;
 function _gcIdempotency() {
   const now = Date.now();
   for (const [k, exp] of _locationIdempotencyMap) {
@@ -130,7 +137,9 @@ function kuwaitDayBounds(date = new Date()) {
   };
 }
 
-async function resolveDriverFromAgentRequest(req: Request) {
+// Exported: routes/agentDelivery.ts (Darb 2.0 driver agent API) reuses this
+// device-token resolver as its auth primitive.
+export async function resolveDriverFromAgentRequest(req: Request) {
   const auth = req.headers.authorization || "";
   const bearerDeviceId = auth.toLowerCase().startsWith("bearer ")
     ? auth.slice(7).trim()
@@ -843,6 +852,36 @@ router.post(
               lastGpsLng: last.longitude,
             },
           });
+        }
+
+        // Live-floor + Darb 2.0 SSE fan-out. Best-effort: tenantId comes from
+        // the Device→Driver join (NEVER the request body), and a bus failure
+        // must not fail the already-persisted GPS write.
+        const nowIso = new Date().toISOString();
+        void publishEvent({
+          type: "gps_point",
+          tenantId,
+          payload: { driverId, lat: last.latitude, lng: last.longitude, capturedAt: last.capturedAt },
+          timestamp: nowIso,
+        }).catch(() => {});
+        if (!existing) {
+          // offline → online transition
+          void publishEvent({
+            type: "online_session_update",
+            tenantId,
+            payload: { driverId, isOnline: true },
+            timestamp: nowIso,
+          }).catch(() => {});
+        }
+        const lastPublishedAt = _driverLocationLastPublish.get(driverId) ?? 0;
+        if (Date.now() - lastPublishedAt >= DRIVER_LOCATION_THROTTLE_MS) {
+          _driverLocationLastPublish.set(driverId, Date.now());
+          void publishEvent({
+            type: "driver.location",
+            tenantId,
+            payload: { driverId, lat: last.latitude, lng: last.longitude, at: last.capturedAt },
+            timestamp: nowIso,
+          }).catch(() => {});
         }
       }
 

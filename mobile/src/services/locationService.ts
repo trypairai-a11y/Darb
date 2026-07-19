@@ -51,6 +51,23 @@ TaskManager.defineTask(LOCATION_TASK, async ({ data, error }: any) => {
   // network blip doesn't bubble up into the TaskManager runtime (which would mark
   // the task as failing and back off scheduling — see RESEARCH.md Pitfall 6).
   await flushPendingPoints().catch(() => {});
+
+  // Darb 2.0 layer C — while the courier is ONLINE/BUSY, piggyback a best-effort
+  // state hydrate + business-event flush on the ~30s background GPS wake. This is
+  // the last-resort offer/status channel when the app is backgrounded and push is
+  // unavailable (Expo Go). Dynamic imports keep the module graph of the headless
+  // task context lean, and every failure is swallowed for the same Pitfall-6 reason.
+  try {
+    const { useDriverStore } = await import("../store/driverStore");
+    if (useDriverStore.getState().availability !== "OFFLINE") {
+      const { hydrateNow } = await import("./offerChannel");
+      await hydrateNow();
+      const { flushEventOutbox } = await import("./eventOutbox");
+      await flushEventOutbox();
+    }
+  } catch {
+    /* never let the beacon task fail on delivery-loop work */
+  }
 });
 
 export type StartBeaconResult =
@@ -114,15 +131,3 @@ export async function getCurrentLocation(): Promise<Location.LocationObject | nu
   if (status !== "granted") return null;
   return Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
 }
-
-// ─── Backwards-compat aliases ────────────────────────────────────────────────
-// dashboard.tsx still imports startTracking/stopTracking. Wave 3 will rename
-// the call sites; Wave 1 keeps them callable so the existing app continues to
-// build and run unchanged.
-
-export const startTracking = async (): Promise<boolean> => {
-  const r = await startBeacon();
-  return r.ok;
-};
-
-export const stopTracking = stopBeacon;

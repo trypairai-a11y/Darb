@@ -124,7 +124,9 @@ export const prisma = {
     // is kept here for legacy tests; new tests should mock findFirst/update/create.
     upsert: jest.fn(),
     findFirst: jest.fn(),
+    findMany: jest.fn(),
     update: jest.fn(),
+    updateMany: jest.fn(),
     create: jest.fn(),
   },
   orderEvent: {

@@ -23,7 +23,6 @@ import { prisma } from "../mocks/config";
 // Lazy-load so the file-not-found error happens inside the `it` body
 // (Jest reports it as a normal test failure rather than a suite-load crash).
 function loadResolver() {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   return require("../../services/outboundResolver");
 }
 

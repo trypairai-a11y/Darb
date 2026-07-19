@@ -1,0 +1,491 @@
+// Darb 2.0 — dispatch engine unit tests (plan §A3).
+//
+// House mocking pattern: moduleNameMapper folds ../../config into the shared
+// prisma stub; Darb 2.0 delegates the shared mock doesn't know about are
+// attached in-place here (parallel-track safety — mocks/config.ts is not
+// edited). Collaborators (wallet ceiling, dispatch queue, Foodics hook,
+// event bus) are jest.mock'ed at the module boundary; the order state
+// machine runs REAL so the guarded-updateMany semantics are exercised.
+
+import { getMockPrisma, resetAllMocks } from "../../setup";
+import { Prisma } from "../../../generated/prisma";
+
+const prisma = getMockPrisma();
+
+// Attach Darb 2.0 delegates the shared mock doesn't know about yet.
+prisma.deliveryOrder = prisma.deliveryOrder ?? {};
+for (const fn of ["findFirst", "findMany", "create", "updateMany", "groupBy", "count"]) {
+  prisma.deliveryOrder[fn] = prisma.deliveryOrder[fn] ?? jest.fn();
+}
+prisma.dispatchOffer = prisma.dispatchOffer ?? {};
+for (const fn of ["findFirst", "findMany", "findUnique", "create", "updateMany", "upsert"]) {
+  prisma.dispatchOffer[fn] = prisma.dispatchOffer[fn] ?? jest.fn();
+}
+prisma.fulfillmentSettings = prisma.fulfillmentSettings ?? {};
+prisma.fulfillmentSettings.findUnique = prisma.fulfillmentSettings.findUnique ?? jest.fn();
+prisma.courierOnlineSession.findMany = prisma.courierOnlineSession.findMany ?? jest.fn();
+prisma.user = prisma.user ?? {};
+prisma.user.findMany = prisma.user.findMany ?? jest.fn();
+prisma.notification.createMany = prisma.notification.createMany ?? jest.fn();
+
+jest.mock("../../../services/wallet/walletService", () => ({
+  isDriverOverCeiling: jest.fn().mockResolvedValue(false),
+}));
+jest.mock("../../../queues/dispatchQueue", () => ({
+  enqueueDispatchStart: jest.fn().mockResolvedValue(undefined),
+  enqueueDispatchNext: jest.fn().mockResolvedValue(undefined),
+  scheduleOfferExpiry: jest.fn().mockResolvedValue(undefined),
+  removeOfferExpiryJob: jest.fn().mockResolvedValue(undefined),
+}));
+jest.mock("../../../services/foodics/writebackHook", () => ({
+  enqueueFoodicsWriteback: jest.fn().mockResolvedValue(undefined),
+}));
+jest.mock("../../../services/eventBus", () => ({
+  publishEvent: jest.fn().mockResolvedValue(undefined),
+  subscribe: jest.fn().mockReturnValue(() => {}),
+}));
+
+const { isDriverOverCeiling } = require("../../../services/wallet/walletService");
+const {
+  enqueueDispatchNext,
+  scheduleOfferExpiry,
+  removeOfferExpiryJob,
+} = require("../../../queues/dispatchQueue");
+const { enqueueFoodicsWriteback } = require("../../../services/foodics/writebackHook");
+const { publishEvent } = require("../../../services/eventBus") as { publishEvent: jest.Mock };
+const {
+  selectCandidates,
+  startDispatch,
+  dispatchNext,
+  expireOffer,
+  acceptOffer,
+  declineOffer,
+  OfferGoneError,
+} = require("../../../services/dispatch/dispatchEngine");
+
+const TENANT = "t-1";
+const ORDER_ID = "ord-1";
+const D = (v: string | number) => new Prisma.Decimal(v);
+
+// Pickup branch at Kuwait City. Latitude degrees ≈ 111.2 km each:
+//   +0.009 ≈ 1 km, +0.018 ≈ 2 km, +0.09 ≈ 10 km (outside the 8 km radius).
+const PICKUP = { lat: 29.3759, lng: 47.9774 };
+
+const BASE_ORDER = {
+  id: ORDER_ID,
+  tenantId: TENANT,
+  orderNumber: "DRB-BRGB-0001",
+  vendorId: "v-1",
+  status: "DISPATCHING",
+  offerRound: 0,
+  paymentMethod: "COD",
+  orderTotalKwd: D("5.000"),
+  deliveryFeeKwd: D("1.250"),
+  requiresCarOnly: false,
+  branch: { name: "BRGB Salmiya", lat: D(String(PICKUP.lat)), lng: D(String(PICKUP.lng)) },
+  dropoffZone: { code: "SAL", name: "Salmiya" },
+};
+
+function mkSession(
+  driverId: string,
+  latOffset: number,
+  overrides: Record<string, unknown> = {},
+  driverOverrides: Record<string, unknown> = {},
+) {
+  return {
+    driverId,
+    startTime: new Date(Date.now() - 3_600_000),
+    lastGpsAt: new Date(Date.now() - 30_000),
+    lastGpsLat: D(String(PICKUP.lat + latOffset)),
+    lastGpsLng: D(String(PICKUP.lng)),
+    driver: {
+      id: driverId,
+      name: `Driver ${driverId}`,
+      phone: "+96550000001",
+      status: "ACTIVE",
+      vehicleType: "MOTORCYCLE",
+      expoPushToken: null,
+      ...driverOverrides,
+    },
+    ...overrides,
+  };
+}
+
+function prime(opts: {
+  order?: Record<string, unknown>;
+  sessions?: unknown[];
+  busy?: Array<{ driverId: string }>;
+  offers?: Array<{ driverId: string; orderId: string; status: string }>;
+  idle?: Array<{ driverId: string; _max: { deliveredAt: Date | null } }>;
+} = {}) {
+  prisma.deliveryOrder.findFirst.mockResolvedValue({ ...BASE_ORDER, ...(opts.order ?? {}) });
+  prisma.fulfillmentSettings.findUnique.mockResolvedValue(null); // schema defaults
+  prisma.courierOnlineSession.findMany.mockResolvedValue(opts.sessions ?? []);
+  prisma.deliveryOrder.findMany.mockResolvedValue(opts.busy ?? []);
+  prisma.dispatchOffer.findMany.mockResolvedValue(opts.offers ?? []);
+  prisma.deliveryOrder.groupBy.mockResolvedValue(opts.idle ?? []);
+  prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 1 });
+  prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+  prisma.driver.findFirst.mockResolvedValue({ expoPushToken: null }); // pushless — skip Expo
+  prisma.user.findMany.mockResolvedValue([{ id: "u-sup" }]);
+  prisma.notification.createMany.mockResolvedValue({ count: 1 });
+  prisma.dispatchOffer.create.mockImplementation(async ({ data }: any) => ({
+    id: "off-1",
+    ...data,
+  }));
+}
+
+beforeEach(() => {
+  resetAllMocks();
+  jest.clearAllMocks();
+  (isDriverOverCeiling as jest.Mock).mockResolvedValue(false);
+  prisma.$transaction.mockImplementation(async (fn: any) => fn(prisma));
+});
+
+// ─── selectCandidates: filter matrix ────────────────────────────────────────
+
+describe("selectCandidates", () => {
+  test("ranks by distance ascending with rounded-up ETA at 30 km/h", async () => {
+    prime({ sessions: [mkSession("drv-far", 0.018), mkSession("drv-near", 0.009)] });
+
+    const candidates = await selectCandidates(TENANT, ORDER_ID);
+
+    expect(candidates.map((c: any) => c.driverId)).toEqual(["drv-near", "drv-far"]);
+    expect(candidates[0].distanceKm).toBeLessThan(candidates[1].distanceKm);
+    for (const c of candidates) {
+      expect(c.etaMin).toBe(Math.ceil((c.distanceKm / 30) * 60));
+      expect(c.activeOrders).toBe(0);
+    }
+  });
+
+  test("vehicle constraint: requiresCarOnly excludes non-CAR drivers even when nearer", async () => {
+    prime({
+      order: { requiresCarOnly: true },
+      sessions: [
+        mkSession("drv-moto", 0.009, {}, { vehicleType: "MOTORCYCLE" }),
+        mkSession("drv-car", 0.018, {}, { vehicleType: "CAR" }),
+      ],
+    });
+
+    const candidates = await selectCandidates(TENANT, ORDER_ID);
+    expect(candidates.map((c: any) => c.driverId)).toEqual(["drv-car"]);
+  });
+
+  test("busy exclusion: driver with an ASSIGNED/PICKED_UP order is skipped", async () => {
+    prime({
+      sessions: [mkSession("drv-busy", 0.009), mkSession("drv-free", 0.018)],
+      busy: [{ driverId: "drv-busy" }],
+    });
+
+    const candidates = await selectCandidates(TENANT, ORDER_ID);
+    expect(candidates.map((c: any) => c.driverId)).toEqual(["drv-free"]);
+  });
+
+  test("open-offer exclusion: driver with an OFFERED offer on ANY order is skipped", async () => {
+    prime({
+      sessions: [mkSession("drv-offered", 0.009), mkSession("drv-free", 0.018)],
+      offers: [{ driverId: "drv-offered", orderId: "some-other-order", status: "OFFERED" }],
+    });
+
+    const candidates = await selectCandidates(TENANT, ORDER_ID);
+    expect(candidates.map((c: any) => c.driverId)).toEqual(["drv-free"]);
+  });
+
+  test("prior-round exclusion: driver already offered THIS order (any status) is skipped", async () => {
+    prime({
+      sessions: [mkSession("drv-prior", 0.009), mkSession("drv-free", 0.018)],
+      offers: [{ driverId: "drv-prior", orderId: ORDER_ID, status: "DECLINED" }],
+    });
+
+    const candidates = await selectCandidates(TENANT, ORDER_ID);
+    expect(candidates.map((c: any) => c.driverId)).toEqual(["drv-free"]);
+  });
+
+  test("ceiling exclusion for COD passes the order total as the projected addition", async () => {
+    prime({ sessions: [mkSession("drv-capped", 0.009), mkSession("drv-ok", 0.018)] });
+    (isDriverOverCeiling as jest.Mock).mockImplementation(
+      async (_t: string, driverId: string) => driverId === "drv-capped",
+    );
+
+    const candidates = await selectCandidates(TENANT, ORDER_ID);
+
+    expect(candidates.map((c: any) => c.driverId)).toEqual(["drv-ok"]);
+    const additional = (isDriverOverCeiling as jest.Mock).mock.calls[0][2];
+    expect(additional).toBeDefined();
+    expect(new Prisma.Decimal(additional).toFixed(3)).toBe("5.000"); // COD ⇒ +orderTotal
+  });
+
+  test("ceiling check for PREPAID orders passes NO additional amount", async () => {
+    prime({ order: { paymentMethod: "PREPAID" }, sessions: [mkSession("drv-a", 0.009)] });
+
+    await selectCandidates(TENANT, ORDER_ID);
+
+    expect((isDriverOverCeiling as jest.Mock).mock.calls[0][2]).toBeUndefined();
+  });
+
+  test("stale GPS: session older than gpsStaleAfterSec is excluded", async () => {
+    prime({
+      sessions: [
+        mkSession("drv-stale", 0.009, { lastGpsAt: new Date(Date.now() - 10 * 60_000) }),
+        mkSession("drv-fresh", 0.018),
+      ],
+    });
+
+    const candidates = await selectCandidates(TENANT, ORDER_ID);
+    expect(candidates.map((c: any) => c.driverId)).toEqual(["drv-fresh"]);
+  });
+
+  test("radius: driver beyond searchRadiusKm is excluded", async () => {
+    prime({ sessions: [mkSession("drv-out", 0.09), mkSession("drv-in", 0.009)] });
+
+    const candidates = await selectCandidates(TENANT, ORDER_ID);
+    expect(candidates.map((c: any) => c.driverId)).toEqual(["drv-in"]);
+  });
+
+  test("inactive driver excluded; pushless driver NOT excluded", async () => {
+    prime({
+      sessions: [
+        mkSession("drv-suspended", 0.009, {}, { status: "SUSPENDED" }),
+        mkSession("drv-pushless", 0.018, {}, { expoPushToken: null }),
+      ],
+    });
+
+    const candidates = await selectCandidates(TENANT, ORDER_ID);
+    expect(candidates.map((c: any) => c.driverId)).toEqual(["drv-pushless"]);
+  });
+
+  test("distance tie → longest idle first; never-delivered ranks before recently-delivered", async () => {
+    const recent = new Date(Date.now() - 5 * 60_000);
+    const older = new Date(Date.now() - 120 * 60_000);
+    prime({
+      sessions: [
+        mkSession("drv-recent", 0.009),
+        mkSession("drv-older", 0.009),
+        mkSession("drv-never", 0.009),
+      ],
+      idle: [
+        { driverId: "drv-recent", _max: { deliveredAt: recent } },
+        { driverId: "drv-older", _max: { deliveredAt: older } },
+      ],
+    });
+
+    const candidates = await selectCandidates(TENANT, ORDER_ID);
+    expect(candidates.map((c: any) => c.driverId)).toEqual([
+      "drv-never",
+      "drv-older",
+      "drv-recent",
+    ]);
+  });
+
+  test("limit option truncates the ranked list", async () => {
+    prime({ sessions: [mkSession("drv-a", 0.009), mkSession("drv-b", 0.018)] });
+
+    const candidates = await selectCandidates(TENANT, ORDER_ID, { limit: 1 });
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].driverId).toBe("drv-a");
+  });
+});
+
+// ─── startDispatch / dispatchNext ───────────────────────────────────────────
+
+describe("startDispatch", () => {
+  test("happy path: DispatchOffer created, offerRound bumped, offer.sent + expiry scheduled", async () => {
+    prime({ sessions: [mkSession("drv-a", 0.009)] });
+    const before = Date.now();
+
+    await startDispatch(TENANT, ORDER_ID);
+
+    const created = prisma.dispatchOffer.create.mock.calls[0][0].data;
+    expect(created).toMatchObject({
+      tenantId: TENANT,
+      orderId: ORDER_ID,
+      driverId: "drv-a",
+      round: 0,
+      status: "OFFERED",
+    });
+    // expiresAt ≈ now + offerWindowSec (15s default)
+    const expiry = created.expiresAt.getTime();
+    expect(expiry).toBeGreaterThanOrEqual(before + 15_000 - 1_000);
+    expect(expiry).toBeLessThanOrEqual(Date.now() + 15_000 + 1_000);
+
+    // offerRound guarded increment while still DISPATCHING
+    const bump = prisma.deliveryOrder.updateMany.mock.calls.find(
+      (c: any) => c[0].data?.offerRound,
+    );
+    expect(bump[0].where).toEqual({ id: ORDER_ID, tenantId: TENANT, status: "DISPATCHING" });
+    expect(bump[0].data.offerRound).toEqual({ increment: 1 });
+
+    const sent = publishEvent.mock.calls.filter((c) => c[0]?.type === "offer.sent");
+    expect(sent).toHaveLength(1);
+    expect(sent[0][0].payload).toMatchObject({ orderId: ORDER_ID, offerId: "off-1", driverId: "drv-a", round: 0 });
+
+    expect(scheduleOfferExpiry).toHaveBeenCalledWith("off-1", 15_000);
+  });
+
+  test("no candidates → NO_DRIVER transition + supervisor Notification + dispatch_exhausted SSE", async () => {
+    prime({ sessions: [] });
+
+    await startDispatch(TENANT, ORDER_ID);
+
+    const transition = prisma.deliveryOrder.updateMany.mock.calls[0][0];
+    expect(transition.where).toEqual({ id: ORDER_ID, tenantId: TENANT, status: "DISPATCHING" });
+    expect(transition.data.status).toBe("NO_DRIVER");
+
+    expect(prisma.user.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          tenantId: TENANT,
+          role: { in: ["ADMIN", "OPS_MANAGER", "SUPERVISOR"] },
+        }),
+      }),
+    );
+    const notif = prisma.notification.createMany.mock.calls[0][0].data[0];
+    expect(notif).toMatchObject({ tenantId: TENANT, userId: "u-sup", type: "DISPATCH_EXHAUSTED" });
+
+    const exhausted = publishEvent.mock.calls.filter(
+      (c) => c[0]?.type === "order.dispatch_exhausted",
+    );
+    expect(exhausted).toHaveLength(1);
+    expect(scheduleOfferExpiry).not.toHaveBeenCalled();
+  });
+
+  test("round ≥ maxOfferRounds → NO_DRIVER without querying candidates", async () => {
+    prime({ order: { offerRound: 8 }, sessions: [mkSession("drv-a", 0.009)] });
+
+    await dispatchNext(TENANT, ORDER_ID);
+
+    expect(prisma.courierOnlineSession.findMany).not.toHaveBeenCalled();
+    expect(prisma.deliveryOrder.updateMany.mock.calls[0][0].data.status).toBe("NO_DRIVER");
+  });
+
+  test("order no longer DISPATCHING → silent skip (no offer, no transition)", async () => {
+    prime({ order: { status: "ASSIGNED" } });
+
+    await startDispatch(TENANT, ORDER_ID);
+
+    expect(prisma.dispatchOffer.create).not.toHaveBeenCalled();
+    expect(prisma.deliveryOrder.updateMany).not.toHaveBeenCalled();
+  });
+});
+
+// ─── accept-vs-expire race (both orders of the guarded updateMany) ──────────
+
+describe("acceptOffer vs expireOffer race", () => {
+  const OFFER = {
+    id: "off-1",
+    tenantId: TENANT,
+    orderId: ORDER_ID,
+    driverId: "drv-a",
+    round: 0,
+    status: "OFFERED",
+    expiresAt: new Date(Date.now() + 10_000),
+  };
+
+  test("accept wins: offer ACCEPTED + order DISPATCHING→ASSIGNED; a later expiry no-ops", async () => {
+    prisma.dispatchOffer.updateMany.mockResolvedValueOnce({ count: 1 }); // accept guard wins
+    prisma.dispatchOffer.findFirst.mockResolvedValue(OFFER);
+    prisma.deliveryOrder.findFirst
+      .mockResolvedValueOnce({ ...BASE_ORDER })
+      .mockResolvedValueOnce({ ...BASE_ORDER, status: "ASSIGNED", driverId: "drv-a" });
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 1 });
+    prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+
+    const { order } = await acceptOffer({ tenantId: TENANT, offerId: "off-1", driverId: "drv-a" });
+
+    expect(order.status).toBe("ASSIGNED");
+    const acceptGuard = prisma.dispatchOffer.updateMany.mock.calls[0][0];
+    expect(acceptGuard.where).toMatchObject({
+      id: "off-1",
+      tenantId: TENANT,
+      driverId: "drv-a",
+      status: "OFFERED",
+    });
+    expect(acceptGuard.where.expiresAt.gt).toBeInstanceOf(Date);
+    expect(acceptGuard.data.status).toBe("ACCEPTED");
+
+    const transition = prisma.deliveryOrder.updateMany.mock.calls[0][0];
+    expect(transition.where).toEqual({ id: ORDER_ID, tenantId: TENANT, status: "DISPATCHING" });
+    expect(transition.data).toMatchObject({ status: "ASSIGNED", driverId: "drv-a" });
+
+    expect(removeOfferExpiryJob).toHaveBeenCalledWith("off-1");
+    expect(enqueueFoodicsWriteback).toHaveBeenCalledWith(ORDER_ID, "ASSIGNED");
+    expect(publishEvent.mock.calls.some((c) => c[0]?.type === "offer.accepted")).toBe(true);
+    expect(publishEvent.mock.calls.some((c) => c[0]?.type === "order.assigned")).toBe(true);
+
+    // The expiry job then fires for the same offer — its guarded update loses.
+    jest.clearAllMocks();
+    prisma.dispatchOffer.findUnique.mockResolvedValue({ ...OFFER, status: "ACCEPTED" });
+    prisma.dispatchOffer.updateMany.mockResolvedValue({ count: 0 });
+
+    await expireOffer("off-1");
+
+    expect(enqueueDispatchNext).not.toHaveBeenCalled();
+    expect(publishEvent.mock.calls.filter((c) => c[0]?.type === "offer.expired")).toHaveLength(0);
+  });
+
+  test("expiry wins: offer EXPIRED + dispatch-next; the late accept gets OfferGoneError", async () => {
+    prisma.dispatchOffer.findUnique.mockResolvedValue(OFFER);
+    prisma.dispatchOffer.updateMany.mockResolvedValueOnce({ count: 1 }); // expiry guard wins
+
+    await expireOffer("off-1");
+
+    const expiryGuard = prisma.dispatchOffer.updateMany.mock.calls[0][0];
+    expect(expiryGuard.where).toMatchObject({ id: "off-1", tenantId: TENANT, status: "OFFERED" });
+    expect(expiryGuard.data.status).toBe("EXPIRED");
+    expect(enqueueDispatchNext).toHaveBeenCalledWith(ORDER_ID, TENANT);
+    expect(publishEvent.mock.calls.some((c) => c[0]?.type === "offer.expired")).toBe(true);
+
+    // Driver taps Accept a beat later — guarded update finds nothing OFFERED.
+    prisma.dispatchOffer.updateMany.mockResolvedValueOnce({ count: 0 });
+
+    await expect(
+      acceptOffer({ tenantId: TENANT, offerId: "off-1", driverId: "drv-a" }),
+    ).rejects.toBeInstanceOf(OfferGoneError);
+    // The order transition never ran.
+    expect(prisma.deliveryOrder.updateMany).not.toHaveBeenCalled();
+  });
+
+  test("accept transition losing to a concurrent cancel surfaces as OfferGoneError", async () => {
+    prisma.dispatchOffer.updateMany.mockResolvedValueOnce({ count: 1 });
+    prisma.dispatchOffer.findFirst.mockResolvedValue(OFFER);
+    prisma.deliveryOrder.findFirst.mockResolvedValue({ ...BASE_ORDER });
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 0 }); // order left DISPATCHING
+
+    await expect(
+      acceptOffer({ tenantId: TENANT, offerId: "off-1", driverId: "drv-a" }),
+    ).rejects.toBeInstanceOf(OfferGoneError);
+  });
+});
+
+// ─── declineOffer ───────────────────────────────────────────────────────────
+
+describe("declineOffer", () => {
+  test("guarded OFFERED→DECLINED + offer.declined + dispatch-next", async () => {
+    prisma.dispatchOffer.updateMany.mockResolvedValue({ count: 1 });
+    prisma.dispatchOffer.findFirst.mockResolvedValue({
+      id: "off-1",
+      tenantId: TENANT,
+      orderId: ORDER_ID,
+      driverId: "drv-a",
+      round: 2,
+    });
+
+    await declineOffer({ tenantId: TENANT, offerId: "off-1", driverId: "drv-a", reason: "too far" });
+
+    const guard = prisma.dispatchOffer.updateMany.mock.calls[0][0];
+    expect(guard.where).toMatchObject({ id: "off-1", driverId: "drv-a", status: "OFFERED" });
+    expect(guard.data.status).toBe("DECLINED");
+    expect(enqueueDispatchNext).toHaveBeenCalledWith(ORDER_ID, TENANT);
+    const declined = publishEvent.mock.calls.filter((c) => c[0]?.type === "offer.declined");
+    expect(declined[0][0].payload).toMatchObject({ offerId: "off-1", reason: "too far" });
+  });
+
+  test("late decline (already expired) is an idempotent no-op", async () => {
+    prisma.dispatchOffer.updateMany.mockResolvedValue({ count: 0 });
+
+    await expect(
+      declineOffer({ tenantId: TENANT, offerId: "off-1", driverId: "drv-a" }),
+    ).resolves.toBeUndefined();
+    expect(enqueueDispatchNext).not.toHaveBeenCalled();
+  });
+});

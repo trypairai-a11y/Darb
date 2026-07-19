@@ -91,6 +91,27 @@ export function formatCurrencyCompact(
   return locale === "ar" ? `${num} ${symbol}` : `${symbol} ${num}`;
 }
 
+/* ── Darb 2.0 ── */
+/**
+ * KWD money formatter — ALWAYS 3 decimal places (fils precision) and always
+ * latin digits, per product decision. "KD 1,250.500" / "1,250.500 د.ك".
+ * Accepts Prisma-Decimal strings as-is.
+ */
+export function formatKwd(
+  amount: number | string | null | undefined,
+  locale: Locale = "en",
+): string {
+  if (amount == null || amount === "") return "";
+  const value = typeof amount === "string" ? Number(amount) : amount;
+  if (Number.isNaN(value)) return "";
+  const num = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3,
+    useGrouping: true,
+  }).format(value);
+  return locale === "ar" ? `${num} د.ك` : `KD ${num}`;
+}
+
 export function formatPercent(
   value: number | null | undefined,
   locale: Locale = "en",

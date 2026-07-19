@@ -1197,6 +1197,371 @@ export interface Messages {
     maxLength: string;
     selectOption: string;
   };
+  /* ── Darb 2.0 ── */
+  darbNav: {
+    operations: string;
+    network: string;
+    finance: string;
+    system: string;
+    vendor: string;
+    legacy: string;
+    opsMap: string;
+    jeopardy: string;
+    alerts: string;
+    sos: string;
+    orders: string;
+    zones: string;
+    pricing: string;
+    vendors: string;
+    fleet: string;
+    financeOverview: string;
+    remittances: string;
+    adjustments: string;
+    reports: string;
+    vendorOrders: string;
+    vendorNewOrder: string;
+    vendorWallet: string;
+    vendorSettings: string;
+    comingSoonBody: string;
+    fleetSubtitle: string;
+    fleetDrivers: string;
+    fleetDriversDesc: string;
+    fleetAttendance: string;
+    fleetAttendanceDesc: string;
+    fleetAssets: string;
+    fleetAssetsDesc: string;
+    zoneLoad: string;
+  };
+  zonesPage: {
+    title: string;
+    subtitle: string;
+    newZone: string;
+    editZone: string;
+    editPolygon: string;
+    deleteZone: string;
+    code: string;
+    nameEn: string;
+    nameAr: string;
+    color: string;
+    active: string;
+    drawHint: string;
+    closePolygon: string;
+    undoVertex: string;
+    vertices: string;
+    saveZone: string;
+    deleteConfirmTitle: string;
+    deleteConfirmMessage: string;
+    zoneSaved: string;
+    zoneDeleted: string;
+    noZones: string;
+  };
+  pricingPage: {
+    title: string;
+    subtitle: string;
+    intraZoneFee: string;
+    intraZoneFeeHint: string;
+    surchargeMatrix: string;
+    matrixHint: string;
+    origin: string;
+    destination: string;
+    sameZone: string;
+    save: string;
+    saved: string;
+    unsavedChanges: string;
+  };
+  vendorsPage: {
+    title: string;
+    subtitle: string;
+    newVendor: string;
+    createVendor: string;
+    name: string;
+    nameAr: string;
+    code: string;
+    phone: string;
+    requiresCarOnly: string;
+    active: string;
+    paused: string;
+    branches: string;
+    profile: string;
+    foodics: string;
+    wallet: string;
+    users: string;
+    saveProfile: string;
+    vendorSaved: string;
+    vendorDeleted: string;
+    deleteConfirmTitle: string;
+    deleteConfirmMessage: string;
+    branchName: string;
+    address: string;
+    latitude: string;
+    longitude: string;
+    pickOnMap: string;
+    zone: string;
+    addBranch: string;
+    editBranch: string;
+    deleteBranch: string;
+    branchSaved: string;
+    branchDeleted: string;
+    deleteBranchConfirmTitle: string;
+    deleteBranchConfirmMessage: string;
+    noBranches: string;
+    createUser: string;
+    userName: string;
+    userEmail: string;
+    userPassword: string;
+    userCreated: string;
+    usersHint: string;
+    noVendors: string;
+  };
+  vendorPortal: {
+    pauseOrders: string;
+    resumeOrders: string;
+    pauseConfirmTitle: string;
+    pauseConfirmMessage: string;
+    pauseFailed: string;
+    boardTitle: string;
+    boardSubtitle: string;
+    walletBalance: string;
+    ordersToday: string;
+    live: string;
+    reconnecting: string;
+    colIncoming: string;
+    colEnRoute: string;
+    colPickedUp: string;
+    colDone: string;
+    emptyColumn: string;
+    pausedBanner: string;
+    newOrder: string;
+    newOrderTitle: string;
+    newOrderSubtitle: string;
+    branch: string;
+    selectBranch: string;
+    customerName: string;
+    customerPhone: string;
+    zone: string;
+    selectZone: string;
+    address: string;
+    addressPlaceholder: string;
+    mapPinHint: string;
+    quoteChecking: string;
+    quoteUnserviceable: string;
+    placeOrder: string;
+    orderPlaced: string;
+    orderDetail: string;
+    notFound: string;
+    backToBoard: string;
+    podPin: string;
+    podPinHint: string;
+    codCallout: string;
+    prepaidCallout: string;
+    cancelHint: string;
+    cancelMessage: string;
+    statements: string;
+    statementsHint: string;
+    downloadCsv: string;
+    settingsTitle: string;
+    settingsSubtitle: string;
+    profile: string;
+    pauseSection: string;
+    pauseHint: string;
+  };
+  dispatch: {
+    title: string;
+    subtitle: string;
+    orderNumber: string;
+    vendor: string;
+    customer: string;
+    driver: string;
+    fee: string;
+    total: string;
+    sla: string;
+    createdAt: string;
+    status: string;
+    source: string;
+    orderDetail: string;
+    timeline: string;
+    offers: string;
+    reassign: string;
+    candidates: string;
+    noCandidates: string;
+    assign: string;
+    assignConfirmTitle: string;
+    assignConfirmMessage: string;
+    redispatch: string;
+    redispatchConfirmTitle: string;
+    redispatchConfirmMessage: string;
+    cancelOrder: string;
+    cancelConfirmTitle: string;
+    cancelConfirmMessage: string;
+    cancelReason: string;
+    quoteBreakdown: string;
+    pickupZone: string;
+    dropoffZone: string;
+    deliveryFee: string;
+    orderTotal: string;
+    paymentMethod: string;
+    cod: string;
+    prepaid: string;
+    round: string;
+    manualAssign: string;
+    offerAccepted: string;
+    offerDeclined: string;
+    offerExpired: string;
+    offerCancelled: string;
+    offerPending: string;
+    noOffers: string;
+    eta: string;
+    searchPlaceholder: string;
+    noOrders: string;
+  };
+  wallet: {
+    title: string;
+    subtitle: string;
+    vendorPayables: string;
+    driverCash: string;
+    feesToday: string;
+    account: string;
+    balance: string;
+    date: string;
+    type: string;
+    orderRef: string;
+    debit: string;
+    credit: string;
+    runningBalance: string;
+    noEntries: string;
+    remittancesTitle: string;
+    remittancesSubtitle: string;
+    recordRemittance: string;
+    driver: string;
+    selectDriver: string;
+    heldBalance: string;
+    amount: string;
+    method: string;
+    note: string;
+    record: string;
+    remittanceRecorded: string;
+    history: string;
+    adjustmentsTitle: string;
+    adjustmentsSubtitle: string;
+    direction: string;
+    debitOption: string;
+    creditOption: string;
+    reason: string;
+    reasonRequired: string;
+    beforeBalance: string;
+    afterBalance: string;
+    applyAdjustment: string;
+    adjustConfirmTitle: string;
+    adjustConfirmMessage: string;
+    adjustmentApplied: string;
+    selectAccount: string;
+    auditLog: string;
+    methodCash: string;
+    methodBankTransfer: string;
+    methodAlMuzaini: string;
+    txCodSettlement: string;
+    txPrepaidSettlement: string;
+    txRemittance: string;
+    txAdjustment: string;
+    txVendorPayout: string;
+    openRemittances: string;
+    openAdjustments: string;
+    openReports: string;
+  };
+  incidents: {
+    sosAlert: string;
+    acknowledge: string;
+    resolve: string;
+    sos: string;
+    accident: string;
+    vehicleBreakdown: string;
+    customerIssue: string;
+    other: string;
+  };
+  darbOrderStatus: {
+    created: string;
+    rejected: string;
+    dispatching: string;
+    noDriver: string;
+    assigned: string;
+    pickedUp: string;
+    delivered: string;
+    failed: string;
+    cancelled: string;
+  };
+  foodics: {
+    title: string;
+    status: string;
+    connected: string;
+    notConnected: string;
+    connect: string;
+    connectHint: string;
+    branchMap: string;
+    foodicsBranch: string;
+    darbBranch: string;
+    lastEvent: string;
+    error: string;
+    pending: string;
+  };
+  opsPages: {
+    mapTitle: string;
+    railTitle: string;
+    railEmpty: string;
+    stalled: string;
+    gpsStale: string;
+    sosBadge: string;
+    activeOrders: string;
+    onlineDrivers: string;
+    jeopardyTitle: string;
+    jeopardySubtitle: string;
+    route: string;
+    alertsTitle: string;
+    alertsSubtitle: string;
+    stalledSection: string;
+    stalledHint: string;
+    gpsStaleSection: string;
+    gpsStaleHint: string;
+    lastSeen: string;
+    acknowledged: string;
+    call: string;
+    allClear: string;
+    sosTitle: string;
+    sosSubtitle: string;
+    soundLocked: string;
+    muteAlerts: string;
+    unmuteAlerts: string;
+    elapsed: string;
+    resolveTitle: string;
+    resolveNote: string;
+    resolveConfirm: string;
+    incidentResolved: string;
+    incidentAcked: string;
+    noIncidents: string;
+    photos: string;
+    category: string;
+    zonesTitle: string;
+    zonesSubtitle: string;
+    zone: string;
+    loadRatio: string;
+    avgSla: string;
+  };
+  reportsPage: {
+    title: string;
+    subtitle: string;
+    ordersCard: string;
+    ordersDesc: string;
+    settlementsCard: string;
+    settlementsDesc: string;
+    driverCashCard: string;
+    driverCashDesc: string;
+    zoneVolumesCard: string;
+    zoneVolumesDesc: string;
+    download: string;
+    preparing: string;
+    exportFailed: string;
+    noData: string;
+    rowsExported: string;
+  };
 }
 
 export const en: Messages = {
@@ -2393,6 +2758,371 @@ export const en: Messages = {
     maxLength: "Too long",
     selectOption: "Select an option",
   },
+  /* ── Darb 2.0 ── */
+  darbNav: {
+    operations: "Operations",
+    network: "Network",
+    finance: "Finance",
+    system: "System",
+    vendor: "Vendor",
+    legacy: "Legacy",
+    opsMap: "Ops Map",
+    jeopardy: "Jeopardy",
+    alerts: "Alerts",
+    sos: "SOS",
+    orders: "Orders",
+    zones: "Zones",
+    pricing: "Pricing",
+    vendors: "Vendors",
+    fleet: "Fleet",
+    financeOverview: "Overview",
+    remittances: "Remittances",
+    adjustments: "Adjustments",
+    reports: "Reports",
+    vendorOrders: "Orders",
+    vendorNewOrder: "New order",
+    vendorWallet: "Wallet",
+    vendorSettings: "Settings",
+    comingSoonBody: "This surface arrives in the next build wave. The navigation and data plumbing are already in place.",
+    fleetSubtitle: "Driver roster, attendance and equipment for the delivery fleet.",
+    fleetDrivers: "Drivers",
+    fleetDriversDesc: "Roster, profiles and driver files.",
+    fleetAttendance: "Attendance",
+    fleetAttendanceDesc: "Clock-ins, lateness and daily presence.",
+    fleetAssets: "Assets",
+    fleetAssetsDesc: "Vehicles, phones, SIMs and equipment.",
+    zoneLoad: "Zone load",
+  },
+  zonesPage: {
+    title: "Delivery zones",
+    subtitle: "Draw and manage the zones that price and gate every delivery.",
+    newZone: "New zone",
+    editZone: "Edit zone",
+    editPolygon: "Edit polygon",
+    deleteZone: "Delete zone",
+    code: "Code",
+    nameEn: "Name (English)",
+    nameAr: "Name (Arabic)",
+    color: "Color",
+    active: "Active",
+    drawHint: "Click the map to add points",
+    closePolygon: "Close polygon",
+    undoVertex: "Undo",
+    vertices: "points",
+    saveZone: "Save zone",
+    deleteConfirmTitle: "Delete zone?",
+    deleteConfirmMessage: "Branches and pricing rows referencing this zone will stop resolving. This cannot be undone.",
+    zoneSaved: "Zone saved",
+    zoneDeleted: "Zone deleted",
+    noZones: "No zones yet — draw the first one on the map.",
+  },
+  pricingPage: {
+    title: "Pricing",
+    subtitle: "Flat intra-zone fee plus a surcharge for every zone pair.",
+    intraZoneFee: "Intra-zone flat fee",
+    intraZoneFeeHint: "Base delivery fee when pickup and dropoff are in the same zone (KD).",
+    surchargeMatrix: "Zone-to-zone surcharges",
+    matrixHint: "Fee = flat fee + surcharge. Leave a cell empty to mark the pair unserviceable.",
+    origin: "Origin",
+    destination: "Destination",
+    sameZone: "—",
+    save: "Save pricing",
+    saved: "Pricing saved",
+    unsavedChanges: "Unsaved changes",
+  },
+  vendorsPage: {
+    title: "Vendors",
+    subtitle: "Restaurants and merchants sending orders into the network.",
+    newVendor: "New vendor",
+    createVendor: "Create vendor",
+    name: "Name",
+    nameAr: "Name (Arabic)",
+    code: "Code",
+    phone: "Phone",
+    requiresCarOnly: "Car-only deliveries",
+    active: "Active",
+    paused: "Paused",
+    branches: "Branches",
+    profile: "Profile",
+    foodics: "Foodics",
+    wallet: "Wallet",
+    users: "Users",
+    saveProfile: "Save profile",
+    vendorSaved: "Vendor saved",
+    vendorDeleted: "Vendor deleted",
+    deleteConfirmTitle: "Delete vendor?",
+    deleteConfirmMessage: "This removes the vendor, its branches and portal access. This cannot be undone.",
+    branchName: "Branch name",
+    address: "Address",
+    latitude: "Latitude",
+    longitude: "Longitude",
+    pickOnMap: "Click the map to set the branch location",
+    zone: "Zone",
+    addBranch: "Add branch",
+    editBranch: "Edit branch",
+    deleteBranch: "Delete branch",
+    branchSaved: "Branch saved",
+    branchDeleted: "Branch deleted",
+    deleteBranchConfirmTitle: "Delete branch?",
+    deleteBranchConfirmMessage: "Orders can no longer be created from this branch.",
+    noBranches: "No branches yet.",
+    createUser: "Create portal user",
+    userName: "Full name",
+    userEmail: "Email",
+    userPassword: "Password",
+    userCreated: "Portal user created",
+    usersHint: "Portal users sign in at the vendor portal and only see this vendor's orders and wallet.",
+    noVendors: "No vendors yet.",
+  },
+  vendorPortal: {
+    pauseOrders: "Pause orders",
+    resumeOrders: "Resume orders",
+    pauseConfirmTitle: "Pause incoming orders?",
+    pauseConfirmMessage: "New orders (including Foodics orders) will be rejected until you resume.",
+    pauseFailed: "Could not update pause state — reverted.",
+    boardTitle: "Order board",
+    boardSubtitle: "Live view of every delivery you've sent us.",
+    walletBalance: "Wallet balance",
+    ordersToday: "Orders today",
+    live: "Live",
+    reconnecting: "Reconnecting…",
+    colIncoming: "Incoming",
+    colEnRoute: "Driver en route",
+    colPickedUp: "Picked up",
+    colDone: "Done today",
+    emptyColumn: "Nothing here right now.",
+    pausedBanner: "Incoming orders are paused — new orders will be rejected until you resume.",
+    newOrder: "New order",
+    newOrderTitle: "New delivery order",
+    newOrderSubtitle: "Send a delivery to a customer — we quote the fee before you confirm.",
+    branch: "Branch",
+    selectBranch: "Select a branch",
+    customerName: "Customer name",
+    customerPhone: "Customer phone",
+    zone: "Dropoff zone",
+    selectZone: "Select a zone",
+    address: "Address",
+    addressPlaceholder: "Block, street, building…",
+    mapPinHint: "Click the map to drop the exact dropoff pin (recommended).",
+    quoteChecking: "Checking delivery fee…",
+    quoteUnserviceable: "This dropoff is outside the serviceable area.",
+    placeOrder: "Place order",
+    orderPlaced: "Order placed — dispatching a driver",
+    orderDetail: "Order detail",
+    notFound: "Order not found.",
+    backToBoard: "Back to board",
+    podPin: "Delivery PIN",
+    podPinHint: "Share this PIN with the customer — the driver needs it to complete the handover.",
+    codCallout: "Driver collects {amount} in cash from the customer.",
+    prepaidCallout: "Prepaid — the driver collects nothing.",
+    cancelHint: "Orders can only be cancelled before pickup.",
+    cancelMessage: "We'll stop looking for a driver and cancel this delivery. This cannot be undone.",
+    statements: "Monthly statements",
+    statementsHint: "Download a CSV of all wallet activity for a month.",
+    downloadCsv: "Download CSV",
+    settingsTitle: "Settings",
+    settingsSubtitle: "Pause orders, POS connection and your profile.",
+    profile: "Profile",
+    pauseSection: "Incoming orders",
+    pauseHint: "Pausing rejects new orders from the portal and Foodics until you resume.",
+  },
+  dispatch: {
+    title: "Delivery orders",
+    subtitle: "Every order in the network — live status, dispatch and SLA.",
+    orderNumber: "Order #",
+    vendor: "Vendor",
+    customer: "Customer",
+    driver: "Driver",
+    fee: "Fee",
+    total: "Total",
+    sla: "SLA",
+    createdAt: "Created",
+    status: "Status",
+    source: "Source",
+    orderDetail: "Order detail",
+    timeline: "Timeline",
+    offers: "Dispatch offers",
+    reassign: "Reassign",
+    candidates: "Candidate drivers",
+    noCandidates: "No eligible drivers right now.",
+    assign: "Assign",
+    assignConfirmTitle: "Assign driver?",
+    assignConfirmMessage: "The order will be assigned to {driver} immediately.",
+    redispatch: "Auto-redispatch",
+    redispatchConfirmTitle: "Re-run dispatch?",
+    redispatchConfirmMessage: "The dispatch engine will search for a driver again from round 1.",
+    cancelOrder: "Cancel order",
+    cancelConfirmTitle: "Cancel this order?",
+    cancelConfirmMessage: "The customer and vendor flows stop here. This cannot be undone.",
+    cancelReason: "Cancellation reason",
+    quoteBreakdown: "Quote breakdown",
+    pickupZone: "Pickup zone",
+    dropoffZone: "Dropoff zone",
+    deliveryFee: "Delivery fee",
+    orderTotal: "Order total",
+    paymentMethod: "Payment",
+    cod: "Cash on delivery",
+    prepaid: "Prepaid",
+    round: "Round",
+    manualAssign: "Manual assignment",
+    offerAccepted: "Accepted",
+    offerDeclined: "Declined",
+    offerExpired: "Expired",
+    offerCancelled: "Cancelled",
+    offerPending: "Waiting for response",
+    noOffers: "No dispatch offers yet.",
+    eta: "ETA",
+    searchPlaceholder: "Order #, customer, phone…",
+    noOrders: "No delivery orders match these filters.",
+  },
+  wallet: {
+    title: "Finance",
+    subtitle: "Wallet balances, cash flow and settlement across the network.",
+    vendorPayables: "Vendor payables",
+    driverCash: "Driver cash on hand",
+    feesToday: "Fees today",
+    account: "Account",
+    balance: "Balance",
+    date: "Date",
+    type: "Type",
+    orderRef: "Order",
+    debit: "Debit",
+    credit: "Credit",
+    runningBalance: "Balance",
+    noEntries: "No wallet entries yet.",
+    remittancesTitle: "Remittances",
+    remittancesSubtitle: "Record cash handed in by drivers.",
+    recordRemittance: "Record remittance",
+    driver: "Driver",
+    selectDriver: "Search for a driver",
+    heldBalance: "Cash held",
+    amount: "Amount (KD)",
+    method: "Method",
+    note: "Note",
+    record: "Record",
+    remittanceRecorded: "Remittance recorded",
+    history: "History",
+    adjustmentsTitle: "Adjustments",
+    adjustmentsSubtitle: "Manual wallet corrections — always with a reason, always audited.",
+    direction: "Direction",
+    debitOption: "Debit (increase balance)",
+    creditOption: "Credit (decrease balance)",
+    reason: "Reason",
+    reasonRequired: "A reason is required for every adjustment.",
+    beforeBalance: "Before",
+    afterBalance: "After",
+    applyAdjustment: "Apply adjustment",
+    adjustConfirmTitle: "Apply this adjustment?",
+    adjustConfirmMessage: "The wallet will move from {before} to {after}. A compensating ledger entry will be recorded.",
+    adjustmentApplied: "Adjustment applied",
+    selectAccount: "Select a wallet account",
+    auditLog: "Audit log",
+    methodCash: "Cash",
+    methodBankTransfer: "Bank transfer",
+    methodAlMuzaini: "Al Muzaini",
+    txCodSettlement: "COD settlement",
+    txPrepaidSettlement: "Prepaid settlement",
+    txRemittance: "Remittance",
+    txAdjustment: "Adjustment",
+    txVendorPayout: "Vendor payout",
+    openRemittances: "Record and review driver cash hand-ins.",
+    openAdjustments: "Correct wallet balances with an audit trail.",
+    openReports: "Financial reports and exports.",
+  },
+  incidents: {
+    sosAlert: "SOS alert",
+    acknowledge: "Acknowledge",
+    resolve: "Resolve",
+    sos: "SOS",
+    accident: "Accident",
+    vehicleBreakdown: "Vehicle breakdown",
+    customerIssue: "Customer issue",
+    other: "Other",
+  },
+  darbOrderStatus: {
+    created: "Created",
+    rejected: "Rejected",
+    dispatching: "Dispatching",
+    noDriver: "No driver",
+    assigned: "Assigned",
+    pickedUp: "Picked up",
+    delivered: "Delivered",
+    failed: "Failed",
+    cancelled: "Cancelled",
+  },
+  foodics: {
+    title: "Foodics POS",
+    status: "Connection status",
+    connected: "Connected",
+    notConnected: "Not connected",
+    connect: "Connect Foodics",
+    connectHint: "Orders flow from the till straight into dispatch once connected.",
+    branchMap: "Branch mapping",
+    foodicsBranch: "Foodics branch",
+    darbBranch: "Darb branch",
+    lastEvent: "Last event",
+    error: "Connection error",
+    pending: "Pending",
+  },
+  opsPages: {
+    mapTitle: "Ops map",
+    railTitle: "At-risk orders",
+    railEmpty: "No orders in jeopardy — all on track.",
+    stalled: "Stalled",
+    gpsStale: "GPS stale",
+    sosBadge: "SOS",
+    activeOrders: "Active orders",
+    onlineDrivers: "Online drivers",
+    jeopardyTitle: "Jeopardy",
+    jeopardySubtitle: "Active orders sorted by SLA runway — tightest first.",
+    route: "Route",
+    alertsTitle: "Alerts",
+    alertsSubtitle: "Stalled drivers and GPS dropouts on active jobs.",
+    stalledSection: "Stalled drivers",
+    stalledHint: "Stationary for more than 3 minutes on an active job.",
+    gpsStaleSection: "Stale GPS",
+    gpsStaleHint: "No location fix received recently.",
+    lastSeen: "Last seen",
+    acknowledged: "Acknowledged",
+    call: "Call",
+    allClear: "All clear — nothing needs attention.",
+    sosTitle: "SOS console",
+    sosSubtitle: "Open incidents from the field — acknowledge fast, resolve with a note.",
+    soundLocked: "Click anywhere to enable sound alerts.",
+    muteAlerts: "Mute alerts",
+    unmuteAlerts: "Unmute alerts",
+    elapsed: "Elapsed",
+    resolveTitle: "Resolve incident",
+    resolveNote: "Resolution note",
+    resolveConfirm: "Resolve",
+    incidentResolved: "Incident resolved",
+    incidentAcked: "Incident acknowledged",
+    noIncidents: "No open incidents.",
+    photos: "Photos",
+    category: "Category",
+    zonesTitle: "Zone load",
+    zonesSubtitle: "Where the pressure is — active orders vs drivers per zone.",
+    zone: "Zone",
+    loadRatio: "Load ratio",
+    avgSla: "Avg SLA left",
+  },
+  reportsPage: {
+    title: "Reports",
+    subtitle: "Date-ranged CSV exports across orders, settlements and cash.",
+    ordersCard: "Orders",
+    ordersDesc: "Every delivery order with status, fees and timestamps.",
+    settlementsCard: "Vendor settlements",
+    settlementsDesc: "Vendor payable ledger movements for the period.",
+    driverCashCard: "Driver cash",
+    driverCashDesc: "Driver cash-on-hand ledger movements for the period.",
+    zoneVolumesCard: "Zone volumes",
+    zoneVolumesDesc: "Order counts and fee totals per dropoff zone.",
+    download: "Download CSV",
+    preparing: "Preparing…",
+    exportFailed: "Export failed — try a narrower range.",
+    noData: "No rows in this range.",
+    rowsExported: "rows exported",
+  },
 };
 
 export const ar: Messages = {
@@ -3588,6 +4318,371 @@ export const ar: Messages = {
     minLength: "قصير جداً",
     maxLength: "طويل جداً",
     selectOption: "اختر خياراً",
+  },
+  /* ── Darb 2.0 ── */
+  darbNav: {
+    operations: "العمليات",
+    network: "الشبكة",
+    finance: "المالية",
+    system: "النظام",
+    vendor: "المطعم",
+    legacy: "الأنظمة القديمة",
+    opsMap: "خريطة العمليات",
+    jeopardy: "الطلبات المتأخرة",
+    alerts: "التنبيهات",
+    sos: "استغاثة",
+    orders: "الطلبات",
+    zones: "المناطق",
+    pricing: "التسعير",
+    vendors: "المطاعم",
+    fleet: "الأسطول",
+    financeOverview: "نظرة عامة",
+    remittances: "التوريدات النقدية",
+    adjustments: "التسويات",
+    reports: "التقارير",
+    vendorOrders: "الطلبات",
+    vendorNewOrder: "طلب جديد",
+    vendorWallet: "المحفظة",
+    vendorSettings: "الإعدادات",
+    comingSoonBody: "تصل هذه الواجهة في مرحلة البناء القادمة. التنقل وبنية البيانات جاهزة بالفعل.",
+    fleetSubtitle: "سجل السائقين والحضور والمعدات لأسطول التوصيل.",
+    fleetDrivers: "السائقون",
+    fleetDriversDesc: "السجل والملفات الشخصية وملفات السائقين.",
+    fleetAttendance: "الحضور",
+    fleetAttendanceDesc: "تسجيل الدخول والتأخير والحضور اليومي.",
+    fleetAssets: "الأصول",
+    fleetAssetsDesc: "المركبات والهواتف وشرائح الاتصال والمعدات.",
+    zoneLoad: "حِمل المناطق",
+  },
+  zonesPage: {
+    title: "مناطق التوصيل",
+    subtitle: "ارسم وأدر المناطق التي تحدد تسعير كل طلب ونطاق خدمته.",
+    newZone: "منطقة جديدة",
+    editZone: "تعديل المنطقة",
+    editPolygon: "تعديل الحدود",
+    deleteZone: "حذف المنطقة",
+    code: "الرمز",
+    nameEn: "الاسم (إنجليزي)",
+    nameAr: "الاسم (عربي)",
+    color: "اللون",
+    active: "مفعّلة",
+    drawHint: "انقر على الخريطة لإضافة نقاط",
+    closePolygon: "إغلاق المضلع",
+    undoVertex: "تراجع",
+    vertices: "نقاط",
+    saveZone: "حفظ المنطقة",
+    deleteConfirmTitle: "حذف المنطقة؟",
+    deleteConfirmMessage: "الفروع وصفوف التسعير المرتبطة بهذه المنطقة ستتوقف عن العمل. لا يمكن التراجع عن هذا الإجراء.",
+    zoneSaved: "تم حفظ المنطقة",
+    zoneDeleted: "تم حذف المنطقة",
+    noZones: "لا توجد مناطق بعد — ارسم المنطقة الأولى على الخريطة.",
+  },
+  pricingPage: {
+    title: "التسعير",
+    subtitle: "رسم ثابت داخل المنطقة مع رسم إضافي لكل زوج من المناطق.",
+    intraZoneFee: "الرسم الثابت داخل المنطقة",
+    intraZoneFeeHint: "رسم التوصيل الأساسي عندما يكون الاستلام والتسليم في نفس المنطقة (د.ك).",
+    surchargeMatrix: "الرسوم الإضافية بين المناطق",
+    matrixHint: "الرسم = الرسم الثابت + الإضافي. اترك الخلية فارغة لجعل المسار خارج نطاق الخدمة.",
+    origin: "من",
+    destination: "إلى",
+    sameZone: "—",
+    save: "حفظ التسعير",
+    saved: "تم حفظ التسعير",
+    unsavedChanges: "تغييرات غير محفوظة",
+  },
+  vendorsPage: {
+    title: "المطاعم",
+    subtitle: "المطاعم والمتاجر التي ترسل الطلبات إلى الشبكة.",
+    newVendor: "مطعم جديد",
+    createVendor: "إنشاء مطعم",
+    name: "الاسم",
+    nameAr: "الاسم (عربي)",
+    code: "الرمز",
+    phone: "الهاتف",
+    requiresCarOnly: "توصيل بالسيارة فقط",
+    active: "مفعّل",
+    paused: "موقوف مؤقتاً",
+    branches: "الفروع",
+    profile: "الملف",
+    foodics: "فودكس",
+    wallet: "المحفظة",
+    users: "المستخدمون",
+    saveProfile: "حفظ الملف",
+    vendorSaved: "تم حفظ المطعم",
+    vendorDeleted: "تم حذف المطعم",
+    deleteConfirmTitle: "حذف المطعم؟",
+    deleteConfirmMessage: "سيؤدي هذا إلى إزالة المطعم وفروعه ووصول البوابة. لا يمكن التراجع عن هذا الإجراء.",
+    branchName: "اسم الفرع",
+    address: "العنوان",
+    latitude: "خط العرض",
+    longitude: "خط الطول",
+    pickOnMap: "انقر على الخريطة لتحديد موقع الفرع",
+    zone: "المنطقة",
+    addBranch: "إضافة فرع",
+    editBranch: "تعديل الفرع",
+    deleteBranch: "حذف الفرع",
+    branchSaved: "تم حفظ الفرع",
+    branchDeleted: "تم حذف الفرع",
+    deleteBranchConfirmTitle: "حذف الفرع؟",
+    deleteBranchConfirmMessage: "لن يعود بالإمكان إنشاء طلبات من هذا الفرع.",
+    noBranches: "لا توجد فروع بعد.",
+    createUser: "إنشاء مستخدم للبوابة",
+    userName: "الاسم الكامل",
+    userEmail: "البريد الإلكتروني",
+    userPassword: "كلمة المرور",
+    userCreated: "تم إنشاء مستخدم البوابة",
+    usersHint: "يسجل مستخدمو البوابة الدخول إلى بوابة المطعم ويرون طلبات ومحفظة هذا المطعم فقط.",
+    noVendors: "لا توجد مطاعم بعد.",
+  },
+  vendorPortal: {
+    pauseOrders: "إيقاف الطلبات مؤقتاً",
+    resumeOrders: "استئناف الطلبات",
+    pauseConfirmTitle: "إيقاف الطلبات الواردة؟",
+    pauseConfirmMessage: "سيتم رفض الطلبات الجديدة (بما فيها طلبات فودكس) حتى تستأنف الاستقبال.",
+    pauseFailed: "تعذّر تحديث حالة الإيقاف — تم التراجع.",
+    boardTitle: "لوحة الطلبات",
+    boardSubtitle: "عرض حي لكل توصيلة أرسلتها إلينا.",
+    walletBalance: "رصيد المحفظة",
+    ordersToday: "طلبات اليوم",
+    live: "مباشر",
+    reconnecting: "جارٍ إعادة الاتصال…",
+    colIncoming: "واردة",
+    colEnRoute: "السائق في الطريق",
+    colPickedUp: "تم الاستلام",
+    colDone: "أُنجزت اليوم",
+    emptyColumn: "لا يوجد شيء هنا حالياً.",
+    pausedBanner: "الطلبات الواردة موقوفة مؤقتاً — سيتم رفض الطلبات الجديدة حتى تستأنف الاستقبال.",
+    newOrder: "طلب جديد",
+    newOrderTitle: "طلب توصيل جديد",
+    newOrderSubtitle: "أرسل توصيلة إلى عميل — نعرض رسوم التوصيل قبل التأكيد.",
+    branch: "الفرع",
+    selectBranch: "اختر فرعاً",
+    customerName: "اسم العميل",
+    customerPhone: "هاتف العميل",
+    zone: "منطقة التسليم",
+    selectZone: "اختر منطقة",
+    address: "العنوان",
+    addressPlaceholder: "القطعة، الشارع، المبنى…",
+    mapPinHint: "انقر على الخريطة لتحديد نقطة التسليم بدقة (يُنصح به).",
+    quoteChecking: "جارٍ احتساب رسوم التوصيل…",
+    quoteUnserviceable: "نقطة التسليم خارج نطاق الخدمة.",
+    placeOrder: "إرسال الطلب",
+    orderPlaced: "تم إرسال الطلب — جارٍ إسناد سائق",
+    orderDetail: "تفاصيل الطلب",
+    notFound: "الطلب غير موجود.",
+    backToBoard: "العودة إلى اللوحة",
+    podPin: "رمز التسليم",
+    podPinHint: "شارك هذا الرمز مع العميل — يحتاجه السائق لإتمام التسليم.",
+    codCallout: "سيحصّل السائق {amount} نقداً من العميل.",
+    prepaidCallout: "مدفوع مسبقاً — لا يحصّل السائق شيئاً.",
+    cancelHint: "لا يمكن إلغاء الطلب إلا قبل الاستلام.",
+    cancelMessage: "سنتوقف عن البحث عن سائق ونلغي هذه التوصيلة. لا يمكن التراجع عن هذا الإجراء.",
+    statements: "الكشوف الشهرية",
+    statementsHint: "حمّل ملف CSV بكل حركات المحفظة لشهر معيّن.",
+    downloadCsv: "تحميل CSV",
+    settingsTitle: "الإعدادات",
+    settingsSubtitle: "إيقاف الطلبات، ربط نقاط البيع، وملفك.",
+    profile: "الملف",
+    pauseSection: "الطلبات الواردة",
+    pauseHint: "الإيقاف المؤقت يرفض الطلبات الجديدة من البوابة وفودكس حتى تستأنف الاستقبال.",
+  },
+  dispatch: {
+    title: "طلبات التوصيل",
+    subtitle: "كل طلب في الشبكة — الحالة الحية والإسناد ومهلة التسليم.",
+    orderNumber: "رقم الطلب",
+    vendor: "المطعم",
+    customer: "العميل",
+    driver: "السائق",
+    fee: "الرسم",
+    total: "الإجمالي",
+    sla: "المهلة",
+    createdAt: "أُنشئ",
+    status: "الحالة",
+    source: "المصدر",
+    orderDetail: "تفاصيل الطلب",
+    timeline: "الخط الزمني",
+    offers: "عروض الإسناد",
+    reassign: "إعادة الإسناد",
+    candidates: "السائقون المرشحون",
+    noCandidates: "لا يوجد سائقون مؤهلون حالياً.",
+    assign: "إسناد",
+    assignConfirmTitle: "إسناد السائق؟",
+    assignConfirmMessage: "سيتم إسناد الطلب إلى {driver} فوراً.",
+    redispatch: "إعادة الإسناد التلقائي",
+    redispatchConfirmTitle: "إعادة تشغيل الإسناد؟",
+    redispatchConfirmMessage: "سيبحث محرك الإسناد عن سائق من جديد بدءاً من الجولة الأولى.",
+    cancelOrder: "إلغاء الطلب",
+    cancelConfirmTitle: "إلغاء هذا الطلب؟",
+    cancelConfirmMessage: "تتوقف رحلة العميل والمطعم هنا. لا يمكن التراجع عن هذا الإجراء.",
+    cancelReason: "سبب الإلغاء",
+    quoteBreakdown: "تفاصيل التسعيرة",
+    pickupZone: "منطقة الاستلام",
+    dropoffZone: "منطقة التسليم",
+    deliveryFee: "رسم التوصيل",
+    orderTotal: "إجمالي الطلب",
+    paymentMethod: "الدفع",
+    cod: "الدفع عند الاستلام",
+    prepaid: "مدفوع مسبقاً",
+    round: "الجولة",
+    manualAssign: "إسناد يدوي",
+    offerAccepted: "مقبول",
+    offerDeclined: "مرفوض",
+    offerExpired: "منتهي الصلاحية",
+    offerCancelled: "ملغى",
+    offerPending: "بانتظار الرد",
+    noOffers: "لا توجد عروض إسناد بعد.",
+    eta: "الوصول المتوقع",
+    searchPlaceholder: "رقم الطلب، العميل، الهاتف…",
+    noOrders: "لا توجد طلبات توصيل مطابقة لهذه الفلاتر.",
+  },
+  wallet: {
+    title: "المالية",
+    subtitle: "أرصدة المحافظ والتدفق النقدي والتسويات عبر الشبكة.",
+    vendorPayables: "مستحقات المطاعم",
+    driverCash: "النقد بحوزة السائقين",
+    feesToday: "رسوم اليوم",
+    account: "الحساب",
+    balance: "الرصيد",
+    date: "التاريخ",
+    type: "النوع",
+    orderRef: "الطلب",
+    debit: "مدين",
+    credit: "دائن",
+    runningBalance: "الرصيد",
+    noEntries: "لا توجد قيود في المحفظة بعد.",
+    remittancesTitle: "التوريدات النقدية",
+    remittancesSubtitle: "تسجيل النقد المسلَّم من السائقين.",
+    recordRemittance: "تسجيل توريد",
+    driver: "السائق",
+    selectDriver: "ابحث عن سائق",
+    heldBalance: "النقد المحتفظ به",
+    amount: "المبلغ (د.ك)",
+    method: "الطريقة",
+    note: "ملاحظة",
+    record: "تسجيل",
+    remittanceRecorded: "تم تسجيل التوريد",
+    history: "السجل",
+    adjustmentsTitle: "التسويات",
+    adjustmentsSubtitle: "تصحيحات يدوية للمحافظ — دائماً بسبب موثّق وقابل للتدقيق.",
+    direction: "الاتجاه",
+    debitOption: "مدين (زيادة الرصيد)",
+    creditOption: "دائن (خفض الرصيد)",
+    reason: "السبب",
+    reasonRequired: "السبب مطلوب لكل تسوية.",
+    beforeBalance: "قبل",
+    afterBalance: "بعد",
+    applyAdjustment: "تطبيق التسوية",
+    adjustConfirmTitle: "تطبيق هذه التسوية؟",
+    adjustConfirmMessage: "سينتقل رصيد المحفظة من {before} إلى {after}. سيتم تسجيل قيد تعويضي في الدفتر.",
+    adjustmentApplied: "تم تطبيق التسوية",
+    selectAccount: "اختر حساب محفظة",
+    auditLog: "سجل التدقيق",
+    methodCash: "نقداً",
+    methodBankTransfer: "تحويل بنكي",
+    methodAlMuzaini: "المزيني",
+    txCodSettlement: "تسوية دفع عند الاستلام",
+    txPrepaidSettlement: "تسوية مدفوعة مسبقاً",
+    txRemittance: "توريد نقدي",
+    txAdjustment: "تسوية يدوية",
+    txVendorPayout: "دفعة للمطعم",
+    openRemittances: "تسجيل ومراجعة النقد المسلَّم من السائقين.",
+    openAdjustments: "تصحيح أرصدة المحافظ مع سجل تدقيق.",
+    openReports: "التقارير المالية والتصدير.",
+  },
+  incidents: {
+    sosAlert: "نداء استغاثة",
+    acknowledge: "تأكيد الاستلام",
+    resolve: "إغلاق البلاغ",
+    sos: "استغاثة",
+    accident: "حادث",
+    vehicleBreakdown: "عطل في المركبة",
+    customerIssue: "مشكلة مع العميل",
+    other: "أخرى",
+  },
+  darbOrderStatus: {
+    created: "جديد",
+    rejected: "مرفوض",
+    dispatching: "جارٍ الإسناد",
+    noDriver: "لا يوجد سائق",
+    assigned: "مُسند",
+    pickedUp: "تم الاستلام",
+    delivered: "تم التسليم",
+    failed: "فشل",
+    cancelled: "ملغى",
+  },
+  foodics: {
+    title: "نقاط بيع فودكس",
+    status: "حالة الاتصال",
+    connected: "متصل",
+    notConnected: "غير متصل",
+    connect: "ربط فودكس",
+    connectHint: "بعد الربط تتدفق الطلبات من الكاشير إلى الإسناد مباشرة.",
+    branchMap: "ربط الفروع",
+    foodicsBranch: "فرع فودكس",
+    darbBranch: "فرع درب",
+    lastEvent: "آخر حدث",
+    error: "خطأ في الاتصال",
+    pending: "قيد الانتظار",
+  },
+  opsPages: {
+    mapTitle: "خريطة العمليات",
+    railTitle: "طلبات في خطر",
+    railEmpty: "لا توجد طلبات في خطر — كل شيء على المسار.",
+    stalled: "متوقف",
+    gpsStale: "GPS منقطع",
+    sosBadge: "استغاثة",
+    activeOrders: "الطلبات النشطة",
+    onlineDrivers: "السائقون المتصلون",
+    jeopardyTitle: "الطلبات الحرجة",
+    jeopardySubtitle: "الطلبات النشطة مرتبة حسب المهلة المتبقية — الأضيق أولاً.",
+    route: "المسار",
+    alertsTitle: "التنبيهات",
+    alertsSubtitle: "سائقون متوقفون وانقطاعات GPS أثناء مهام نشطة.",
+    stalledSection: "سائقون متوقفون",
+    stalledHint: "متوقف لأكثر من ٣ دقائق أثناء مهمة نشطة.",
+    gpsStaleSection: "GPS منقطع",
+    gpsStaleHint: "لم يصل تحديث موقع مؤخراً.",
+    lastSeen: "آخر ظهور",
+    acknowledged: "تم التأكيد",
+    call: "اتصال",
+    allClear: "كل شيء على ما يرام — لا شيء يحتاج انتباهاً.",
+    sosTitle: "وحدة الاستغاثة",
+    sosSubtitle: "بلاغات مفتوحة من الميدان — أكّد الاستلام بسرعة وأغلقها بملاحظة.",
+    soundLocked: "انقر في أي مكان لتفعيل التنبيهات الصوتية.",
+    muteAlerts: "كتم التنبيهات",
+    unmuteAlerts: "إلغاء كتم التنبيهات",
+    elapsed: "المدة المنقضية",
+    resolveTitle: "إغلاق البلاغ",
+    resolveNote: "ملاحظة الإغلاق",
+    resolveConfirm: "إغلاق",
+    incidentResolved: "تم إغلاق البلاغ",
+    incidentAcked: "تم تأكيد استلام البلاغ",
+    noIncidents: "لا توجد بلاغات مفتوحة.",
+    photos: "الصور",
+    category: "التصنيف",
+    zonesTitle: "حِمل المناطق",
+    zonesSubtitle: "أين الضغط — الطلبات النشطة مقابل السائقين لكل منطقة.",
+    zone: "المنطقة",
+    loadRatio: "نسبة الحِمل",
+    avgSla: "متوسط المهلة المتبقية",
+  },
+  reportsPage: {
+    title: "التقارير",
+    subtitle: "تصدير CSV حسب فترة زمنية للطلبات والتسويات والنقد.",
+    ordersCard: "الطلبات",
+    ordersDesc: "كل طلب توصيل مع الحالة والرسوم والتواريخ.",
+    settlementsCard: "تسويات المطاعم",
+    settlementsDesc: "حركات دفتر مستحقات المطاعم خلال الفترة.",
+    driverCashCard: "نقد السائقين",
+    driverCashDesc: "حركات دفتر النقد لدى السائقين خلال الفترة.",
+    zoneVolumesCard: "أحجام المناطق",
+    zoneVolumesDesc: "عدد الطلبات وإجمالي الرسوم لكل منطقة تسليم.",
+    download: "تحميل CSV",
+    preparing: "جارٍ التحضير…",
+    exportFailed: "فشل التصدير — جرّب فترة أضيق.",
+    noData: "لا توجد صفوف في هذه الفترة.",
+    rowsExported: "صفاً تم تصديره",
   },
 };
 

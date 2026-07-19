@@ -1,0 +1,46 @@
+{
+  "_fixture": "HAND-BUILT from the documented Foodics webhook fields. customer_address WITHOUT latitude/longitude — must still map (orderService persists a REJECTED NO_COORDINATES row for supervisor fixing). RE-RECORD against the Foodics sandbox before go-live.",
+  "event": "order.delivery.created",
+  "business": {
+    "id": "9a7c1e02-3f45-4d21-8f6e-1a2b3c4d5e6f",
+    "name": "Burger Boulevard KW"
+  },
+  "payload": {
+    "id": "f00d1c50-aaaa-4bbb-8ccc-000000000003",
+    "app_id": "darb-partner-app",
+    "number": 1044,
+    "reference": "KW-1044",
+    "source": 3,
+    "status": 2,
+    "delivery_status": 1,
+    "type": 3,
+    "total_price": 3.5,
+    "subtotal_price": 3.5,
+    "customer_notes": "Call on arrival",
+    "created_at": "2026-07-19 13:02:41",
+    "updated_at": "2026-07-19 13:02:41",
+    "branch": {
+      "id": "b7a11111-2222-4333-8444-555566667777",
+      "name": "Salmiya Branch",
+      "name_localized": "فرع السالمية",
+      "reference": "SAL-01"
+    },
+    "customer": {
+      "id": "c0ffee00-1111-4222-8333-444455556668",
+      "name": "Fahad Al-Rashidi",
+      "dial_code": "965",
+      "phone": "51112223"
+    },
+    "customer_address": {
+      "id": "add4e550-1111-4222-8333-444455556668",
+      "name": "Hawally",
+      "description": "Hawally, Tunis Street, near the pharmacy",
+      "latitude": null,
+      "longitude": null
+    },
+    "payments": [],
+    "tags": [
+      { "id": "7a9d0000-1111-4222-8333-444455556666", "name": "Darb" }
+    ]
+  }
+}

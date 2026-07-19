@@ -25,7 +25,8 @@
  * REQ-floor-live-map, CON-tenant-scope-everywhere.
  */
 
-import { publishEvent, subscribe } from "../../services/eventBus";
+import { publishEvent, subscribe, DarbEvent } from "../../services/eventBus";
+import { eventVisibleTo } from "../../routes/events";
 
 describe("Phase 7 / REQ-floor-live-map: cross-tenant SSE isolation (Pitfall 6)", () => {
   test("publishEvent on tenA's channel does NOT leak to tenB's subscriber within 500ms", async () => {
@@ -131,3 +132,57 @@ describe("Phase 7 / REQ-floor-live-map: cross-tenant SSE isolation (Pitfall 6)",
 // channel-keying scheme that enforces tenant isolation is already in
 // place in services/eventBus.ts (events:{tenantId}) — this test
 // future-proofs against any regression that bypasses the scheme.
+
+// ─── Darb 2.0 §A7 — vendor SSE scoping ──────────────────────────────────────
+// VENDOR connections share the tenant channel with staff, so channel keying
+// alone is not enough: routes/events.ts filters per-connection with
+// eventVisibleTo. Vendors must see ONLY order.* events for their own
+// vendorId; staff behavior is unchanged (full tenant firehose).
+
+describe("Darb 2.0 §A7: vendor SSE event scoping (eventVisibleTo)", () => {
+  const t = new Date().toISOString();
+  const mkEvent = (type: DarbEvent["type"], payload: Record<string, unknown>): DarbEvent => ({
+    type,
+    tenantId: "tenA",
+    payload,
+    timestamp: t,
+  });
+
+  const vendorUser = { role: "VENDOR", vendorId: "vend-1" };
+  const staffUser = { role: "SUPERVISOR", vendorId: undefined };
+
+  test("vendor sees order.* events carrying its own vendorId", () => {
+    expect(eventVisibleTo(vendorUser, mkEvent("order.created", { vendorId: "vend-1", orderId: "o1" }))).toBe(true);
+    expect(eventVisibleTo(vendorUser, mkEvent("order.delivered", { vendorId: "vend-1", orderId: "o1" }))).toBe(true);
+  });
+
+  test("vendor does NOT see another vendor's order events", () => {
+    expect(eventVisibleTo(vendorUser, mkEvent("order.created", { vendorId: "vend-2", orderId: "o2" }))).toBe(false);
+  });
+
+  test("vendor does NOT see order events with no vendorId in the payload", () => {
+    expect(eventVisibleTo(vendorUser, mkEvent("order.created", { orderId: "o3" }))).toBe(false);
+  });
+
+  test("vendor does NOT see non-order events (driver GPS, offers, wallet, SOS)", () => {
+    expect(eventVisibleTo(vendorUser, mkEvent("driver.location", { driverId: "d1", vendorId: "vend-1" }))).toBe(false);
+    expect(eventVisibleTo(vendorUser, mkEvent("offer.sent", { vendorId: "vend-1" }))).toBe(false);
+    expect(eventVisibleTo(vendorUser, mkEvent("wallet.reconciliation_failed", { vendorId: "vend-1" }))).toBe(false);
+    expect(eventVisibleTo(vendorUser, mkEvent("sos.raised", { driverId: "d1" }))).toBe(false);
+  });
+
+  test("vendor token without vendorId fails closed (sees nothing)", () => {
+    const malformed = { role: "VENDOR", vendorId: undefined };
+    expect(eventVisibleTo(malformed, mkEvent("order.created", { vendorId: "vend-1" }))).toBe(false);
+  });
+
+  test("staff roles receive the full tenant firehose, unchanged", () => {
+    for (const role of ["ADMIN", "OPS_MANAGER", "SUPERVISOR", "ACCOUNTANT", "VIEWER"]) {
+      const user = { role, vendorId: undefined };
+      expect(eventVisibleTo(user, mkEvent("order.created", { vendorId: "vend-1" }))).toBe(true);
+      expect(eventVisibleTo(user, mkEvent("driver.location", { driverId: "d1" }))).toBe(true);
+      expect(eventVisibleTo(user, mkEvent("sos.raised", { driverId: "d1" }))).toBe(true);
+    }
+    expect(eventVisibleTo(staffUser, mkEvent("offer.expired", {}))).toBe(true);
+  });
+});

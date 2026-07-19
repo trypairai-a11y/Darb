@@ -21,6 +21,8 @@ const ROLE_LANDING: Record<string, string> = {
   SUPERVISOR: "/v2/dispatch",
   ACCOUNTANT: "/v2/money",
   VIEWER: "/decisions",
+  // Darb 2.0 — vendors land in (and are fenced into) the vendor portal.
+  VENDOR: "/vendor",
 };
 
 function landingForRole(role: string | undefined): string {

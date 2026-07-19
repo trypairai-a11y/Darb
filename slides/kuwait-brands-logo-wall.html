@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kuwait's Leading Brands — Logo Wall</title>
+<style>
+  :root {
+    --ink: #0a0a0f;
+    --muted: #6b7280;
+    --line: #ececf0;
+    --card: #ffffff;
+    --bg: #f6f7f9;
+    --accent: #2f6bff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .slide {
+    width: 100vw;
+    min-height: 100vh;
+    background:
+      radial-gradient(1400px 700px at 88% -8%, #ffffff 0%, rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, #fbfbfd 0%, var(--bg) 100%);
+    padding: 40px 56px 34px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+  .slide::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(1000px 560px at 108% 118%, rgba(47,107,255,0.06), transparent 60%);
+    pointer-events: none;
+  }
+
+  header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 26px; }
+  .eyebrow {
+    font-size: 14px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 8px;
+  }
+  h1 { font-size: 40px; line-height: 1.04; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; }
+  .count {
+    font-size: 14px; color: var(--muted); font-weight: 600;
+    border: 1px solid var(--line); padding: 8px 16px; border-radius: 999px; background: #fff;
+    white-space: nowrap;
+  }
+
+  .grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 14px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 11px;
+    padding: 14px 10px;
+    text-align: center;
+    min-height: 0;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(15,20,40,.08); }
+
+  /* iOS-squircle brand tile */
+  .mark {
+    width: 68px; height: 68px;
+    border-radius: 18px;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(15,20,40,.18), inset 0 1px 0 rgba(255,255,255,.35);
+    overflow: hidden;
+    flex: none;
+  }
+  .mark::after {
+    content: "";
+    position: absolute; left: 0; right: 0; top: 0; height: 55%;
+    background: linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+  .mark.has-logo {
+    background: #fff !important;
+    border: 1px solid var(--line);
+    box-shadow: 0 4px 12px rgba(15,20,40,.10);
+  }
+  .mark.has-logo::after { display: none; }
+  .mark.has-logo img { width: 80%; height: 80%; object-fit: contain; }
+  .mark.has-logo.dark {
+    background: linear-gradient(145deg, #1c2030 0%, #343b52 100%) !important;
+    border: none;
+    box-shadow: 0 6px 16px rgba(15,20,40,.22);
+  }
+  .mono {
+    font-weight: 800; letter-spacing: -0.02em; line-height: 1; z-index: 1;
+    text-shadow: 0 1px 1px rgba(0,0,0,.12);
+  }
+
+  .name { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.15; letter-spacing: -0.01em; }
+  .sub { font-size: 11px; color: var(--muted); margin-top: -2px; }
+
+  footer {
+    margin-top: 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 13px; color: var(--muted);
+  }
+  .brandtag { font-weight: 700; color: var(--ink); letter-spacing: -0.01em; font-size: 15px; }
+
+  /* ---------- Tablet ---------- */
+  @media (max-width: 820px) {
+    .slide { width: 100%; min-height: 100dvh; overflow: visible; padding: 28px 22px 26px; }
+    header { margin-bottom: 20px; }
+    h1 { font-size: 30px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+    .mark { width: 58px; height: 58px; border-radius: 15px; }
+  }
+
+  /* ---------- Phones ---------- */
+  @media (max-width: 560px) {
+    html, body { height: auto; }
+    .slide { width: 100%; min-height: 100dvh; overflow: visible; padding: 20px 14px 24px; }
+    header {
+      flex-direction: column; align-items: flex-start; gap: 10px; margin-bottom: 16px;
+    }
+    .eyebrow { font-size: 12px; letter-spacing: 0.12em; margin-bottom: 6px; }
+    h1 { font-size: 23px; line-height: 1.08; }
+    .count { font-size: 12px; padding: 6px 12px; }
+    .grid { grid-template-columns: repeat(3, 1fr); gap: 9px; }
+    .card { padding: 11px 6px; gap: 8px; border-radius: 13px; }
+    .mark { width: 50px; height: 50px; border-radius: 13px; }
+    .mark.has-logo img { width: 82%; height: 82%; }
+    .mono { font-size: 20px !important; }
+    .name { font-size: 11.5px; }
+    .sub { font-size: 9.5px; }
+  }
+
+  /* ---------- Small phones ---------- */
+  @media (max-width: 380px) {
+    .grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    h1 { font-size: 21px; }
+    .mark { width: 52px; height: 52px; }
+  }
+</style>
+</head>
+<body>
+  <div class="slide">
+    <header>
+      <div>
+        <div class="eyebrow">Kuwait Market</div>
+        <h1>Leading Brands &amp; Enterprises</h1>
+      </div>
+      <div class="count" id="count">companies</div>
+    </header>
+
+    <div class="grid" id="grid"></div>
+  </div>
+
+<script>
+  // [name, sector, monogram, color1, color2, slug]
+  const companies = [
+    ["Zain", "Telecom", "Z", "#7A1FA2", "#B14FD8", "zain"],
+    ["Ooredoo", "Telecom", "O", "#ED1C24", "#FF5A5F", "ooredoo"],
+    ["stc Kuwait", "Telecom", "stc", "#4F2D7F", "#8E2DA8", "stc"],
+    ["Kuwait Finance House", "Banking", "KFH", "#00857C", "#00BBA6", "kfh"],
+    ["National Bank of Kuwait", "Banking", "NBK", "#00366B", "#0A66B5", "nbk"],
+    ["Gulf Bank", "Banking", "GB", "#D81E2C", "#F2545B", "gulfbank"],
+    ["Boubyan Bank", "Banking", "B", "#007A33", "#37B24D", "boubyan"],
+    ["Burgan Bank", "Banking", "B", "#7A1530", "#B23A55", "burgan"],
+    ["Warba Bank", "Banking", "W", "#00833E", "#27B463", "warba"],
+    ["Ahli United Bank", "Banking", "AUB", "#004B8D", "#1E78C8", "ahliunited"],
+    ["Commercial Bank (CBK)", "Banking", "CBK", "#003B5C", "#0E6FA0", "cbk"],
+    ["Kuwait Intl Bank", "Banking", "KIB", "#5BB84A", "#86D26E", "kib"],
+    ["Jazeera Airways", "Aviation", "J", "#C8102E", "#1B2A55", "jazeera"],
+    ["Kuwait Airways", "Aviation", "KU", "#00529B", "#2E86D6", "kuwaitairways"],
+    ["Alshaya Group", "Retail", "A", "#1A1A1A", "#4A4A4A", "alshaya"],
+    ["Kout Food Group", "F&B", "K", "#D4002A", "#F23A5A", "koutfood"],
+    ["Xcite", "Electronics", "X", "#FF6A00", "#FF9A3D", "xcite"],
+    ["The Sultan Center", "Retail", "TSC", "#E30613", "#FF4D58", "tsc"],
+    ["Eureka", "Electronics", "E", "#E2001A", "#FF4B5C", "eureka"],
+    ["Ubuy", "E-commerce", "U", "#F7941D", "#FFB85C", "ubuy"],
+    ["Taw9eel", "On-demand", "9", "#0AA14B", "#34C26F", "taw9eel"],
+    ["Al Yasra Fashion", "Retail", "AY", "#111111", "#444444", "alyasra"],
+    ["Alghanim Industries", "Conglomerate", "A", "#0033A0", "#2E6BD6", "alghanim"],
+    ["JustClean", "On-demand", "JC", "#00B5A6", "#46D8CC", "justclean"],
+    ["Behbehani Group", "Automotive", "B", "#1C2B4A", "#3C5280", "behbehani"],
+    ["Al-Sayer Group", "Automotive", "AS", "#C8102E", "#F0445A", "alsayer"],
+    ["Agility", "Logistics", "A", "#E4002B", "#FF4359", "agility"],
+    ["KIPCO", "Investment", "K", "#1B3A6B", "#3A66A8", "kipco"],
+    ["Mabanee", "Real Estate", "M", "#0E7C66", "#33B499", "mabanee"],
+    ["Gulf Insurance (GIG)", "Insurance", "GIG", "#00529B", "#2E86D6", "gig"],
+    ["Al Mulla Group", "Conglomerate", "M", "#B4172A", "#E04356", "almulla"],
+    ["Mezzan Holding", "Consumer Goods", "M", "#0E5A8A", "#2E8FC8", "mezzan"],
+    ["Oula", "Fuel & Retail", "O", "#ED1C24", "#FF5A5F", "oula"],
+    ["Kuwait Oil Co.", "Energy", "KOC", "#008A4B", "#2EBE76", "koc"],
+    ["Equate", "Petrochemical", "E", "#00A0DF", "#46C3F2", "equate"],
+    ["Kharafi National", "Infrastructure", "K", "#003D7A", "#2E73C0", "kharafi"],
+    ["Kuwait Petroleum Corp.", "Energy", "KPC", "#00833E", "#2EB463", "kpc"],
+    ["Humansoft Holding", "Education", "H", "#E2231A", "#FF5147", "humansoft"],
+    ["ACICO Group", "Industrial", "A", "#C8102E", "#E8485C", "acico"],
+    ["National Aviation Services", "Aviation", "NAS", "#00529B", "#2E86D6", "nas"],
+    ["Combined Group", "Contracting", "CGC", "#1B3A6B", "#3A66A8", "cgc"],
+    ["Kuwait Flour Mills", "F&B", "KFMB", "#B8860B", "#D9A93A", "kfmb"],
+    ["KNPC", "Energy", "K", "#0A4DA0", "#2E86D6", "knpc"],
+    ["National Industries Co.", "Industrial", "NIC", "#1B3A6B", "#3A66A8", "nig"],
+    ["Sakan", "Real Estate", "S", "#0A7D4A", "#34B473", "sakan"],
+    ["Bleems", "E-commerce", "B", "#FF3366", "#FF6B8E", "bleems"],
+    ["Wiyak", "On-demand", "W", "#7B2FF7", "#A66BFF", "wiyak"],
+    ["Sheeel", "E-commerce", "S", "#7A1340", "#B23A6B", "sheeel"],
+    ["ABK", "Banking", "ABK", "#1574C4", "#5BA3DC", "abk"],
+    ["Boursa Kuwait", "Stock Exchange", "BK", "#C5944B", "#DBB87F", "boursa"],
+    ["KNET", "Payments", "KNT", "#0872B9", "#5FA8D8", "knet"],
+    ["Tap Payments", "Fintech", "Tap", "#20232B", "#5A5E6B", "tappayments"],
+    ["MyFatoorah", "Fintech", "MF", "#0030FF", "#0074FF", "myfatoorah"],
+    ["Hesabe", "Fintech", "H", "#231B63", "#4A3FA3", "hesabe"],
+    ["UPayments", "Fintech", "UP", "#4F46E5", "#8B5CF6", "upayments"],
+    ["Markaz", "Asset Management", "M", "#00498E", "#336DA5", "markaz"],
+    ["Kamco Invest", "Investment", "K", "#002B66", "#3E639E", "kamco"],
+    ["Global Investment House", "Investment", "GIH", "#46699C", "#A7B6D4", "globalinv"],
+    ["Kuwait Investment Co.", "Investment", "KIC", "#26265E", "#6B6BA8", "kic"],
+    ["National Investments", "Investment", "NIC", "#842445", "#B26A82", "nic"],
+    ["Wafra International", "Investment", "W", "#134D9A", "#45A7DF", "wafra"],
+    ["Warba Insurance", "Insurance", "WI", "#C78A3E", "#DCAF73", "warbains"],
+    ["Al Ahleia Insurance", "Insurance", "AIC", "#054C8F", "#4F83BC", "alahleia"],
+    ["Kuwait Insurance Co.", "Insurance", "KI", "#1A3860", "#56719B", "kuwaitins"],
+    ["Americana Group", "F&B", "A", "#E31837", "#F4707F", "americana"],
+    ["KDD", "Dairy", "KDD", "#D71920", "#F26B6E", "kdd"],
+    ["KD Cow", "Dairy", "KD", "#E1251B", "#F2837C", "kdcow"],
+    ["Mais Alghanim", "Restaurants", "MA", "#B5985A", "#D9C593", "maisalghanim"],
+    ["Gastronomica", "Restaurants", "G", "#1A1A1A", "#5A5A5A", "gastronomica"],
+    ["Solo Pizza Napulitana", "Restaurants", "SP", "#C8102E", "#E8606F", "solopizza"],
+    ["Naif Chicken", "Restaurants", "N", "#C32033", "#28427B", "naif"],
+    ["Maki", "Restaurants", "M", "#1E1E1E", "#8A6D3B", "maki"],
+    ["KITCO", "Snacks", "K", "#E0301E", "#F9B233", "kitco"],
+    ["Al Wazzan Foods", "Food Trading", "AW", "#1A4E8A", "#5B8BC4", "alwazzan"],
+    ["Saveco", "Supermarkets", "SV", "#E1251B", "#F0786F", "saveco"],
+    ["OnCost", "Supermarkets", "OC", "#1C3F94", "#6C8BD1", "oncost"],
+    ["Gulfmart", "Supermarkets", "GM", "#6CB33F", "#A5D67E", "gulfmart"],
+    ["City Hyper", "Hypermarkets", "CC", "#F7941D", "#FBBE6E", "cityhyper"],
+    ["Trolley", "Convenience", "T", "#F58220", "#FFAD5C", "trolley"],
+    ["Chocomelt", "Desserts", "CM", "#1C1C1C", "#6B4F3A", "chocomelt"],
+    ["Pick", "Desserts", "P", "#6E3FA3", "#A57FD0", "pick"],
+    ["The Chocolate Bar", "Desserts", "TCB", "#E20A87", "#F77FC1", "chocolatebar"],
+    ["Al Mawashi", "Meat", "AM", "#B01F24", "#D9777B", "almawashi"],
+    ["Shrimpy", "Fast Food", "S", "#0057A8", "#F47B20", "shrimpy"],
+    ["Talabat", "Food Delivery", "T", "#FF5900", "#FFA266", "talabat"],
+    ["Floward", "Gifting", "F", "#002C38", "#36707E", "floward"],
+    ["Cinescape", "Cinema", "C", "#E32726", "#F28B8A", "cinescape"],
+    ["4Sale", "Classifieds", "4S", "#1D4AFF", "#7390FF", "foursale"],
+    ["Riva Fashion", "Fashion", "R", "#231F20", "#6E6A6B", "riva"],
+    ["Best Al-Yousifi", "Electronics", "BAY", "#E30613", "#F4717B", "bestalyousifi"],
+    ["Hassan's Optician", "Eyewear", "H", "#DD0023", "#F26A80", "hassans"],
+    ["Kefan Optics", "Eyewear", "K", "#3F9347", "#7CC282", "kefan"],
+    ["Al Ostoura", "Luxury Fashion", "AO", "#1A1A1A", "#5C5C5C", "alostoura"],
+    ["Future Kid", "Entertainment", "FK", "#005AB6", "#5B9BD5", "futurekid"],
+    ["Abyat", "Home Retail", "A", "#E94E09", "#FBB231", "abyat"],
+    ["City Centre", "Hypermarket", "CC", "#147DB5", "#F0C517", "citycentre"],
+    ["Midas Furniture", "Furniture", "M", "#CF152D", "#E97584", "midas"],
+    ["Atyab Al Marshoud", "Perfumes", "AM", "#1A1A1A", "#B9975B", "marshoud"],
+    ["Bilbayt", "Catering Tech", "BB", "#00DAAB", "#6EEFD4", "bilbayt"],
+    ["Dabdoob", "Toys E-commerce", "D", "#ED2D7B", "#F584B3", "dabdoob"],
+    ["V-Thru", "E-commerce", "V", "#00B1AA", "#5FD6D1", "vthru"],
+    ["Trafalgar", "Luxury Retail", "TR", "#393939", "#757575", "trafalgar"],
+    ["Tamdeen Group", "Real Estate", "T", "#757575", "#ABABAB", "tamdeen"],
+    ["Salhia Real Estate", "Real Estate", "S", "#1A3450", "#8FAEB9", "salhia"],
+    ["URC", "Real Estate", "URC", "#022557", "#4A77B8", "urc"],
+    ["Al Mazaya Holding", "Real Estate", "M", "#142368", "#5563B8", "mazaya"],
+    ["Al Tijaria", "Real Estate", "AT", "#14387A", "#0090D0", "altijaria"],
+    ["ALARGAN", "Real Estate", "A", "#80008D", "#B44FC0", "alargan"],
+    ["Kuwait Cement", "Building Materials", "KC", "#0050A0", "#5C9BD6", "kuwaitcement"],
+    ["Gulf Cable", "Manufacturing", "GCE", "#980008", "#D4565A", "gulfcable"],
+    ["HEISCO", "Heavy Industry", "H", "#12284C", "#0082CA", "heisco"],
+    ["M.A. Kharafi & Sons", "Construction", "MAK", "#E20A16", "#F2696F", "makharafi"],
+    ["Ahmadiah", "Construction", "AH", "#D71F26", "#F08A8E", "ahmadiah"],
+    ["SSH", "Engineering", "SSH", "#54565A", "#9DA0A4", "ssh"],
+    ["Pace", "Engineering", "P", "#AF143C", "#E0577B", "pace"],
+    ["Gulf Consult", "Engineering", "GC", "#11355F", "#4C7BB0", "gulfconsult"],
+    ["Boubyan Petrochemical", "Petrochemicals", "BPC", "#C61018", "#E06065", "boubyanpetro"],
+    ["QPIC", "Petrochemicals", "Q", "#003860", "#7FB8D4", "qpic"],
+    ["KGL", "Logistics", "KGL", "#F78F1E", "#FBB45D", "kgl"],
+    ["Al Babtain Group", "Automotive", "AB", "#BE2031", "#DE5A68", "albabtain"],
+    ["Ali Alghanim & Sons", "Automotive", "AAS", "#1C1F22", "#4A4F57", "alialghanim"],
+    ["KAICO", "Automotive", "KAI", "#223369", "#5570B8", "kaico"],
+    ["Mutawa Alkazi", "Automotive", "MA", "#E11420", "#F2545E", "mutawaalkazi"],
+    ["Al Mailem Group", "Automotive", "AM", "#2245A4", "#5474CE", "almailem"],
+    ["City Group", "Transport", "CG", "#E0121F", "#F25B64", "citygroup"],
+    ["Posta Plus", "Courier", "PP", "#E8731F", "#F5A45C", "postaplus"],
+    ["IPG", "Energy Trading", "IPG", "#1B1B55", "#44449A", "ipg"],
+    ["NAPESCO", "Oilfield Services", "NPS", "#004A99", "#4D8BD1", "napesco"],
+    ["UPAC", "Aviation Services", "UP", "#002F80", "#4A6FC0", "upac"],
+    ["Baims", "Edtech", "B", "#45AAF2", "#8CCBF7", "baims"],
+    ["CODED", "Tech Education", "C", "#192C4D", "#3D5A8F", "coded"],
+    ["Dar Al Shifa Hospital", "Healthcare", "DS", "#2E3192", "#FAB713", "daralshifa"],
+    ["New Mowasat Hospital", "Healthcare", "NM", "#009BA4", "#4DC3CA", "newmowasat"],
+    ["Royale Hayat Hospital", "Healthcare", "RH", "#58595B", "#A7A9AC", "royalehayat"],
+    ["Al Salam Hospital", "Healthcare", "SIH", "#208882", "#5BB8B0", "alsalamhospital"],
+    ["GUST", "Education", "G", "#1626EE", "#6E78F6", "gust"],
+    ["AUK", "Education", "AUK", "#9A182B", "#C75A6B", "auk"],
+    ["AUM", "Education", "AUM", "#D71920", "#F26B70", "aum"],
+    ["KCST", "Education", "KC", "#9B3E39", "#C77A75", "kcst"],
+    ["Al Qabas", "Media", "Q", "#0158A3", "#0282CB", "alqabas"],
+    ["Al Rai Media", "Media", "R", "#E30613", "#F4686D", "alrai"],
+    ["Kuwait Times", "Media", "KT", "#009FE5", "#66C6F0", "kuwaittimes"],
+    ["Arab Times", "Media", "AT", "#00B0F5", "#6BD2F9", "arabtimes"],
+    ["Al Anba", "Media", "AN", "#E41824", "#F2777D", "alanba"],
+    ["KOTC", "Shipping", "KO", "#23874B", "#57AE7C", "kotc"],
+    ["Alghanim International", "Contracting", "AI", "#0058A8", "#58C8F0", "alghanimintl"],
+  ];
+
+  // Real logo files with non-png extensions need explicit mapping
+  const logoSrc = {
+    "abk": "logos/abk.svg",
+    "abyat": "logos/abyat.svg",
+    "acico": "logos/acico.jpg",
+    "ahliunited": "logos/ahliunited.webp",
+    "alargan": "logos/alargan.svg",
+    "almailem": "logos/almailem.svg",
+    "alrai": "logos/alrai.svg",
+    "alsalamhospital": "logos/alsalamhospital.jpg",
+    "alsayer": "logos/alsayer.jpg",
+    "alyasra": "logos/alyasra.jpg",
+    "arabtimes": "logos/arabtimes.svg",
+    "auk": "logos/auk.svg",
+    "aum": "logos/aum.svg",
+    "baims": "logos/baims.jpg",
+    "behbehani": "logos/behbehani.webp",
+    "bestalyousifi": "logos/bestalyousifi.svg",
+    "boursa": "logos/boursa.svg",
+    "burgan": "logos/burgan.svg",
+    "cbk": "logos/cbk.jpg",
+    "cgc": "logos/cgc.jpg",
+    "dabdoob": "logos/dabdoob.svg",
+    "eureka": "logos/eureka.jpg",
+    "foursale": "logos/foursale.svg",
+    "futurekid": "logos/futurekid.svg",
+    "gastronomica": "logos/gastronomica.svg",
+    "globalinv": "logos/globalinv.jpg",
+    "gulfbank": "logos/gulfbank.jpg",
+    "gulfmart": "logos/gulfmart.jpg",
+    "gust": "logos/gust.jpg",
+    "hassans": "logos/hassans.jpg",
+    "heisco": "logos/heisco.svg",
+    "kamco": "logos/kamco.svg",
+    "kfh": "logos/kfh.jpg",
+    "kib": "logos/kib.jpg",
+    "knet": "logos/knet.svg",
+    "kpc": "logos/kpc.svg",
+    "kuwaitcement": "logos/kuwaitcement.jpg",
+    "kuwaitins": "logos/kuwaitins.svg",
+    "kuwaittimes": "logos/kuwaittimes.svg",
+    "makharafi": "logos/makharafi.svg",
+    "maki": "logos/maki.jpg",
+    "markaz": "logos/markaz.svg",
+    "naif": "logos/naif.jpg",
+    "nbk": "logos/nbk.svg",
+    "newmowasat": "logos/newmowasat.svg",
+    "ooredoo": "logos/ooredoo.svg",
+    "pick": "logos/pick.webp",
+    "postaplus": "logos/postaplus.jpg",
+    "royalehayat": "logos/royalehayat.webp",
+    "salhia": "logos/salhia.svg",
+    "shrimpy": "logos/shrimpy.jpg",
+    "solopizza": "logos/solopizza.jpg",
+    "talabat": "logos/talabat.svg",
+    "tamdeen": "logos/tamdeen.svg",
+    "tappayments": "logos/tappayments.svg",
+    "trafalgar": "logos/trafalgar.svg",
+    "upac": "logos/upac.svg",
+    "upayments": "logos/upayments.svg",
+    "vthru": "logos/vthru.svg",
+    "warba": "logos/warba.webp",
+    "warbains": "logos/warbains.svg",
+  };
+
+  // Logos that are white/light — shown on a dark tile instead of white
+  const darkTiles = new Set(["alghanimintl", "alrai", "baims", "maisalghanim", "mutawaalkazi", "myfatoorah", "nic", "royalehayat", "ssh"]);
+
+  const grid = document.getElementById("grid");
+  document.getElementById("count").textContent = companies.length + " companies";
+
+  companies.forEach(([name, sub, mono, c1, c2, slug]) => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const mark = document.createElement("div");
+    mark.className = "mark";
+    mark.style.background = "linear-gradient(145deg, " + c1 + " 0%, " + c2 + " 100%)";
+
+    const m = document.createElement("span");
+    m.className = "mono";
+    m.textContent = mono;
+    const len = mono.length;
+    m.style.fontSize = len >= 3 ? "19px" : len === 2 ? "25px" : "30px";
+    mark.appendChild(m);
+
+    // Try a real logo; fall back to the crafted tile if it isn't there.
+    // Drop a file into logos/<slug>.png (or set logoSrc) and it appears automatically.
+    const src = logoSrc[slug] || ("logos/" + slug + ".png");
+    const img = new Image();
+    img.alt = name;
+    img.onload = function () {
+      mark.classList.add("has-logo");
+      if (darkTiles.has(slug)) mark.classList.add("dark");
+      mark.style.background = "";
+      mark.innerHTML = "";
+      mark.appendChild(img);
+    };
+    img.src = src;
+
+    const nm = document.createElement("div");
+    nm.className = "name";
+    nm.textContent = name;
+
+    const sb = document.createElement("div");
+    sb.className = "sub";
+    sb.textContent = sub;
+
+    card.appendChild(mark);
+    card.appendChild(nm);
+    card.appendChild(sb);
+    grid.appendChild(card);
+  });
+</script>
+</body>
+</html>

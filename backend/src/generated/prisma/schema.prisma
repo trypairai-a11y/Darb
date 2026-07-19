@@ -26,6 +26,7 @@ enum UserRole {
   SUPERVISOR
   ACCOUNTANT
   VIEWER
+  VENDOR
 }
 
 enum DriverStatus {
@@ -453,6 +454,21 @@ model Tenant {
   americanaStoreAssignments AmericanaStoreAssignment[]
   americanaDailyIngestions  AmericanaDailyIngestion[]
   sims                      Sim[]
+  // Darb 2.0 — delivery fulfillment (Slice A1)
+  vendors                   Vendor[]
+  vendorBranches            VendorBranch[]
+  deliveryZones             DeliveryZone[]
+  zoneSurcharges            ZoneSurcharge[]
+  fulfillmentSettings       FulfillmentSettings?
+  deliveryOrders            DeliveryOrder[]
+  dispatchOffers            DispatchOffer[]
+  walletAccounts            WalletAccount[]
+  walletTransactions        WalletTransaction[]
+  walletEntries             WalletEntry[]
+  remittances               Remittance[]
+  walletReconciliationRuns  WalletReconciliationRun[]
+  incidents                 Incident[]
+  foodicsConnections        FoodicsConnection[]
 }
 
 // 2. Company
@@ -489,12 +505,16 @@ model User {
   // attacks (T-02-06).
   isSuperAdmin Boolean   @default(false)
   jobGrade     String? // e.g. "Team Leader", "Supervisor", "Senior Supervisor", "Area Manager"
+  // Darb 2.0 — set for role=VENDOR users; scopes the vendor portal (vendorId
+  // comes from the JWT, never from the client).
+  vendorId     String?
   isActive     Boolean   @default(true)
   lastLoginAt  DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   tenant                Tenant               @relation(fields: [tenantId], references: [id])
+  vendor                Vendor?              @relation(fields: [vendorId], references: [id])
   supervisedDrivers     Driver[]             @relation("DriverSupervisor")
   issuedCommands        DeviceCommand[]      @relation("CommandIssuer")
   acknowledgedAlerts    Alert[]              @relation("AlertAcknowledger")
@@ -602,6 +622,11 @@ model Driver {
   sims                      Sim[]
   performanceSnapshots      PerformanceSnapshot[]
   batchHistory              DriverBatchHistory[]
+  // Darb 2.0 — delivery fulfillment (Slice A1)
+  deliveryOrders            DeliveryOrder[]
+  dispatchOffers            DispatchOffer[]
+  remittances               Remittance[]
+  incidents                 Incident[]
 
   @@index([tenantId])
   @@index([companyId])
@@ -1822,23 +1847,27 @@ model NotificationRule {
 
 // 34. CourierOnlineSession - tracks real-time courier online status for monitor
 model CourierOnlineSession {
-  id         String    @id @default(uuid())
-  tenantId   String
-  driverId   String
-  startTime  DateTime
-  endTime    DateTime?
-  isOnline   Boolean   @default(true)
-  lastGpsAt  DateTime?
-  lastGpsLat Decimal?  @db.Decimal(10, 7)
-  lastGpsLng Decimal?  @db.Decimal(10, 7)
-  area       String?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id           String    @id @default(uuid())
+  tenantId     String
+  driverId     String
+  startTime    DateTime
+  endTime      DateTime?
+  isOnline     Boolean   @default(true)
+  // Darb 2.0 dispatch availability: ONLINE | BUSY | OFFLINE. Dispatch requires
+  // ONLINE; the presence sweeper forces OFFLINE when GPS goes stale.
+  availability String    @default("OFFLINE")
+  lastGpsAt    DateTime?
+  lastGpsLat   Decimal?  @db.Decimal(10, 7)
+  lastGpsLng   Decimal?  @db.Decimal(10, 7)
+  area         String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
   driver Driver @relation(fields: [driverId], references: [id])
 
   @@index([tenantId, isOnline])
+  @@index([tenantId, availability])
   @@index([driverId, startTime])
 }
 
@@ -2555,4 +2584,431 @@ model ScheduledBriefing {
 
   @@index([tenantId, active, nextFireAt])
   @@index([userId, active])
+}
+
+// ─── Darb 2.0 — B2B Delivery Fulfillment (Slice A1) ─────────────────────────
+
+enum DeliveryOrderStatus {
+  CREATED
+  REJECTED
+  DISPATCHING
+  NO_DRIVER
+  ASSIGNED
+  PICKED_UP
+  DELIVERED
+  FAILED
+  CANCELLED
+}
+
+enum DeliveryOrderSource {
+  FOODICS
+  VENDOR_PORTAL
+  SUPERVISOR
+}
+
+enum PaymentMethod {
+  COD
+  PREPAID
+}
+
+enum OfferStatus {
+  OFFERED
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  CANCELLED
+}
+
+enum WalletOwnerType {
+  DRIVER_CASH
+  VENDOR_PAYABLE
+  PLATFORM_REVENUE
+  PLATFORM_CLEARING
+}
+
+enum WalletTxType {
+  COD_SETTLEMENT
+  PREPAID_SETTLEMENT
+  REMITTANCE
+  ADJUSTMENT
+  VENDOR_PAYOUT
+}
+
+enum IncidentType {
+  SOS
+  ACCIDENT
+  VEHICLE_BREAKDOWN
+  CUSTOMER_ISSUE
+  OTHER
+}
+
+enum IncidentStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+enum FoodicsConnStatus {
+  PENDING
+  CONNECTED
+  DISCONNECTED
+  ERROR
+}
+
+enum WebhookEventStatus {
+  RECEIVED
+  PROCESSED
+  FAILED
+}
+
+// D1. Vendor - restaurant / merchant that sends us delivery orders
+model Vendor {
+  id              String   @id @default(uuid())
+  tenantId        String
+  name            String
+  nameAr          String?
+  code            String // short code used in order numbers, e.g. "BRGB"
+  phone           String?
+  requiresCarOnly Boolean  @default(false)
+  isPaused        Boolean  @default(false) // paused vendors get orders REJECTED (VENDOR_PAUSED)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant            Tenant             @relation(fields: [tenantId], references: [id])
+  branches          VendorBranch[]
+  users             User[]
+  orders            DeliveryOrder[]
+  foodicsConnection FoodicsConnection?
+
+  @@unique([tenantId, code])
+  @@index([tenantId, isActive])
+}
+
+// D2. VendorBranch - physical pickup location; zoneId resolved point-in-polygon
+//     at save time and re-resolved on zone edits.
+model VendorBranch {
+  id              String   @id @default(uuid())
+  tenantId        String
+  vendorId        String
+  name            String
+  nameAr          String?
+  address         String?
+  phone           String?
+  lat             Decimal? @db.Decimal(10, 7)
+  lng             Decimal? @db.Decimal(10, 7)
+  zoneId          String?
+  foodicsBranchId String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant Tenant          @relation(fields: [tenantId], references: [id])
+  vendor Vendor          @relation(fields: [vendorId], references: [id])
+  zone   DeliveryZone?   @relation(fields: [zoneId], references: [id])
+  orders DeliveryOrder[]
+
+  @@unique([tenantId, foodicsBranchId])
+  @@index([tenantId])
+  @@index([vendorId])
+}
+
+// D3. DeliveryZone - GeoJSON polygon ([lng,lat] ring) with a precomputed bbox
+//     prefilter [minLng, minLat, maxLng, maxLat] and centroid.
+model DeliveryZone {
+  id          String   @id @default(uuid())
+  tenantId    String
+  code        String // e.g. "SALMIYA"
+  name        String
+  nameAr      String?
+  polygon     Json // GeoJSON Polygon geometry, coordinates in [lng, lat] order
+  bbox        Json // [minLng, minLat, maxLng, maxLat]
+  centroidLat Decimal? @db.Decimal(10, 7)
+  centroidLng Decimal? @db.Decimal(10, 7)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant           Tenant          @relation(fields: [tenantId], references: [id])
+  branches         VendorBranch[]
+  originSurcharges ZoneSurcharge[] @relation("SurchargeOrigin")
+  destSurcharges   ZoneSurcharge[] @relation("SurchargeDest")
+  pickupOrders     DeliveryOrder[] @relation("OrderPickupZone")
+  dropoffOrders    DeliveryOrder[] @relation("OrderDropoffZone")
+
+  @@unique([tenantId, code])
+  @@index([tenantId, isActive])
+}
+
+// D4. ZoneSurcharge - cross-zone delivery surcharge. Absence of a row for an
+//     (origin, dest) pair means the pair is unserviceable.
+model ZoneSurcharge {
+  id           String   @id @default(uuid())
+  tenantId     String
+  originZoneId String
+  destZoneId   String
+  surchargeKwd Decimal  @db.Decimal(10, 3)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant     Tenant       @relation(fields: [tenantId], references: [id])
+  originZone DeliveryZone @relation("SurchargeOrigin", fields: [originZoneId], references: [id])
+  destZone   DeliveryZone @relation("SurchargeDest", fields: [destZoneId], references: [id])
+
+  @@unique([tenantId, originZoneId, destZoneId])
+  @@index([tenantId])
+}
+
+// D5. FulfillmentSettings - one row per tenant; dispatch + pricing knobs
+model FulfillmentSettings {
+  id                   String   @id @default(uuid())
+  tenantId             String   @unique
+  intraZoneFeeKwd      Decimal  @default(1.250) @db.Decimal(10, 3)
+  driverCashCeilingKwd Decimal  @default(100.000) @db.Decimal(10, 3)
+  offerWindowSec       Int      @default(15)
+  maxOfferRounds       Int      @default(8)
+  searchRadiusKm       Float    @default(8)
+  gpsStaleAfterSec     Int      @default(180)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+}
+
+// D6. DeliveryOrder - core Darb 2.0 order (Foodics webhook, vendor portal, or
+//     supervisor manual). Coarse status FSM; granular milestones live in
+//     OrderEvent rows keyed by this id.
+model DeliveryOrder {
+  id              String              @id @default(uuid())
+  tenantId        String
+  orderNumber     String // "DRB-{vendorCode}-{seq}"
+  source          DeliveryOrderSource
+  foodicsOrderId  String?
+  vendorId        String
+  branchId        String
+  status          DeliveryOrderStatus @default(CREATED)
+  paymentMethod   PaymentMethod       @default(COD)
+  orderTotalKwd   Decimal             @db.Decimal(10, 3)
+  deliveryFeeKwd  Decimal?            @db.Decimal(10, 3)
+  customerName    String?
+  customerPhone   String?
+  dropoffAddress  String?
+  dropoffLat      Decimal?            @db.Decimal(10, 7)
+  dropoffLng      Decimal?            @db.Decimal(10, 7)
+  pickupZoneId    String?
+  dropoffZoneId   String?
+  driverId        String?
+  offerRound      Int                 @default(0)
+  requiresCarOnly Boolean             @default(false)
+  rejectionReason String? // OUT_OF_ZONE_DROPOFF | UNSERVICEABLE_PAIR | NO_COORDINATES | BRANCH_UNZONED | VENDOR_PAUSED
+  cancelReason    String?
+  failureReason   String?
+  proofPhotoUrl   String?
+  podPin          String? // 4-digit PIN generated at creation
+  codCollectedKwd Decimal?            @db.Decimal(10, 3)
+  slaDeadline     DateTime?
+  assignedAt      DateTime?
+  pickedUpAt      DateTime?
+  deliveredAt     DateTime?
+  cancelledAt     DateTime?
+  metadata        Json?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  tenant      Tenant          @relation(fields: [tenantId], references: [id])
+  vendor      Vendor          @relation(fields: [vendorId], references: [id])
+  branch      VendorBranch    @relation(fields: [branchId], references: [id])
+  driver      Driver?         @relation(fields: [driverId], references: [id])
+  pickupZone  DeliveryZone?   @relation("OrderPickupZone", fields: [pickupZoneId], references: [id])
+  dropoffZone DeliveryZone?   @relation("OrderDropoffZone", fields: [dropoffZoneId], references: [id])
+  offers      DispatchOffer[]
+  incidents   Incident[]
+
+  @@unique([tenantId, orderNumber])
+  @@unique([tenantId, foodicsOrderId])
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, vendorId, createdAt])
+  @@index([driverId, status])
+  @@index([tenantId, slaDeadline])
+}
+
+// D7. DispatchOffer - one serialized 15s offer to one driver per round
+model DispatchOffer {
+  id          String      @id @default(uuid())
+  tenantId    String
+  orderId     String
+  driverId    String
+  round       Int
+  distanceKm  Float?
+  status      OfferStatus @default(OFFERED)
+  offeredAt   DateTime    @default(now())
+  expiresAt   DateTime
+  respondedAt DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  tenant Tenant        @relation(fields: [tenantId], references: [id])
+  order  DeliveryOrder @relation(fields: [orderId], references: [id])
+  driver Driver        @relation(fields: [driverId], references: [id])
+
+  @@unique([orderId, driverId, round])
+  @@index([tenantId, status])
+  @@index([driverId, status])
+}
+
+// D8. WalletAccount - one ledger account per owner; balanceKwd is a cache,
+//     the WalletEntry rows are the source of truth.
+model WalletAccount {
+  id         String          @id @default(uuid())
+  tenantId   String
+  ownerType  WalletOwnerType
+  ownerKey   String // "DRIVER:{id}" | "VENDOR:{id}" | "PLATFORM_REVENUE" | "PLATFORM_CLEARING"
+  balanceKwd Decimal         @default(0) @db.Decimal(10, 3)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  tenant  Tenant        @relation(fields: [tenantId], references: [id])
+  entries WalletEntry[]
+
+  @@unique([tenantId, ownerKey])
+  @@index([tenantId, ownerType])
+}
+
+// D9. WalletTransaction - append-only double-entry transaction header.
+//     No update/delete code paths; corrections are compensating transactions.
+model WalletTransaction {
+  id             String       @id @default(uuid())
+  tenantId       String
+  type           WalletTxType
+  idempotencyKey String       @unique // "cod-settle:{orderId}", "remit:{id}", ...
+  orderId        String?
+  remittanceId   String?
+  memo           String?
+  createdById    String?
+  createdAt      DateTime     @default(now())
+
+  tenant  Tenant        @relation(fields: [tenantId], references: [id])
+  entries WalletEntry[]
+
+  @@index([tenantId, createdAt])
+  @@index([orderId])
+}
+
+// D10. WalletEntry - balanced debit/credit legs of a WalletTransaction
+model WalletEntry {
+  id                String   @id @default(uuid())
+  tenantId          String
+  transactionId     String
+  accountId         String
+  direction         String // DEBIT | CREDIT
+  amountKwd         Decimal  @db.Decimal(10, 3) // always > 0
+  runningBalanceKwd Decimal  @db.Decimal(10, 3)
+  createdAt         DateTime @default(now())
+
+  tenant      Tenant            @relation(fields: [tenantId], references: [id])
+  transaction WalletTransaction @relation(fields: [transactionId], references: [id])
+  account     WalletAccount     @relation(fields: [accountId], references: [id])
+
+  @@index([tenantId])
+  @@index([transactionId])
+  @@index([accountId, createdAt])
+}
+
+// D11. Remittance - driver hands collected cash to the hub
+model Remittance {
+  id           String        @id @default(uuid())
+  tenantId     String
+  driverId     String
+  amountKwd    Decimal       @db.Decimal(10, 3)
+  method       DepositMethod
+  receiptUrl   String?
+  receivedById String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  driver Driver @relation(fields: [driverId], references: [id])
+
+  @@index([tenantId, createdAt])
+  @@index([driverId, createdAt])
+}
+
+// D12. WalletReconciliationRun - nightly invariant checks over the ledger
+model WalletReconciliationRun {
+  id        String   @id @default(uuid())
+  tenantId  String
+  runDate   DateTime
+  status    String // OK | MISMATCH
+  checks    Json
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, runDate])
+  @@index([tenantId, status])
+}
+
+// D13. Incident - SOS + operational incidents raised from the driver app
+model Incident {
+  id               String         @id @default(uuid())
+  tenantId         String
+  type             IncidentType
+  status           IncidentStatus @default(OPEN)
+  severity         String         @default("HIGH") // LOW, MEDIUM, HIGH, CRITICAL
+  driverId         String
+  orderId          String?
+  lat              Decimal?       @db.Decimal(10, 7)
+  lng              Decimal?       @db.Decimal(10, 7)
+  description      String?
+  reportedVia      String? // APP, PHONE
+  acknowledgedAt   DateTime?
+  acknowledgedById String?
+  resolvedAt       DateTime?
+  resolvedById     String?
+  resolutionNote   String?
+  metadata         Json? // photo R2 keys etc.
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  tenant Tenant         @relation(fields: [tenantId], references: [id])
+  driver Driver         @relation(fields: [driverId], references: [id])
+  order  DeliveryOrder? @relation(fields: [orderId], references: [id])
+
+  @@index([tenantId, status])
+  @@index([driverId, createdAt])
+}
+
+// D14. FoodicsConnection - per-vendor Foodics OAuth connection
+model FoodicsConnection {
+  id             String            @id @default(uuid())
+  tenantId       String
+  vendorId       String            @unique
+  accessTokenEnc String? // AES-256-GCM encrypted (env FOODICS_TOKEN_KEY)
+  orderTagId     String? // only orders tagged with this tag are ingested
+  webhookSecret  String
+  status         FoodicsConnStatus @default(PENDING)
+  lastEventAt    DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  vendor Vendor @relation(fields: [vendorId], references: [id])
+
+  @@index([tenantId])
+}
+
+// D15. WebhookEvent - raw inbound webhook idempotency log. Intentionally NOT
+//      tenant-scoped: rows are written before the tenant is resolved.
+model WebhookEvent {
+  id          String             @id @default(uuid())
+  provider    String // "foodics"
+  eventKey    String             @unique // idempotency key derived from the payload
+  payload     Json
+  status      WebhookEventStatus @default(RECEIVED)
+  error       String?
+  processedAt DateTime?
+  createdAt   DateTime           @default(now())
+
+  @@index([status, createdAt])
 }

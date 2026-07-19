@@ -1,0 +1,54 @@
+{
+  "_fixture": "HAND-BUILT from the documented Foodics webhook fields. A present, non-empty payments array means paid online/at-till => PREPAID. RE-RECORD against the Foodics sandbox before go-live.",
+  "event": "order.delivery.created",
+  "business": {
+    "id": "9a7c1e02-3f45-4d21-8f6e-1a2b3c4d5e6f",
+    "name": "Burger Boulevard KW"
+  },
+  "payload": {
+    "id": "f00d1c50-aaaa-4bbb-8ccc-000000000002",
+    "app_id": "darb-partner-app",
+    "number": 1043,
+    "reference": "KW-1043",
+    "source": 3,
+    "status": 2,
+    "delivery_status": 1,
+    "type": 3,
+    "total_price": "12.750",
+    "subtotal_price": "12.000",
+    "customer_notes": null,
+    "created_at": "2026-07-19 12:18:05",
+    "updated_at": "2026-07-19 12:18:05",
+    "branch": {
+      "id": "b7a11111-2222-4333-8444-555566667777",
+      "name": "Salmiya Branch",
+      "name_localized": "فرع السالمية",
+      "reference": "SAL-01"
+    },
+    "customer": {
+      "id": "c0ffee00-1111-4222-8333-444455556667",
+      "name": "Noura Al-Mutairi",
+      "dial_code": "965",
+      "phone": "+96555009876"
+    },
+    "customer_address": {
+      "id": "add4e550-1111-4222-8333-444455556667",
+      "name": "Office",
+      "description": "Kuwait City, Al Hamra Tower, Floor 21",
+      "latitude": "29.378586",
+      "longitude": "47.993202"
+    },
+    "payments": [
+      {
+        "id": "9ay00000-1111-4222-8333-444455556666",
+        "amount": 12.75,
+        "tendered": 12.75,
+        "business_date": "2026-07-19",
+        "added_at": "2026-07-19 12:18:01"
+      }
+    ],
+    "tags": [
+      { "id": "7a9d0000-1111-4222-8333-444455556666", "name": "Darb" }
+    ]
+  }
+}

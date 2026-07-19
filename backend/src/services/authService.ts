@@ -40,7 +40,10 @@ export class AuthService {
   }
 
   static async login(email: string, password: string) {
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: { vendor: { select: { id: true, name: true } } },
+    });
     if (!user || !user.isActive) throw new Error("Invalid credentials");
 
     const valid = await bcrypt.compare(password, user.passwordHash);
@@ -56,6 +59,7 @@ export class AuthService {
       tenantId: user.tenantId,
       role: user.role,
       email: user.email,
+      ...(user.vendorId ? { vendorId: user.vendorId } : {}),
     };
 
     const accessToken = this.generateAccessToken(payload);
@@ -64,7 +68,11 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role, tenantId: user.tenantId },
+      user: {
+        id: user.id, email: user.email, name: user.name, role: user.role, tenantId: user.tenantId,
+        vendorId: user.vendorId,
+        ...(user.vendorId && user.vendor ? { vendor: user.vendor } : {}),
+      },
     };
   }
 
@@ -83,7 +91,10 @@ export class AuthService {
 
     if (redis) await redis.del(`otp:${phone}`);
 
-    const user = await prisma.user.findFirst({ where: { phone } });
+    const user = await prisma.user.findFirst({
+      where: { phone },
+      include: { vendor: { select: { id: true, name: true } } },
+    });
     if (!user) throw new Error("User not found");
 
     const payload: JwtPayload = {
@@ -91,12 +102,17 @@ export class AuthService {
       tenantId: user.tenantId,
       role: user.role,
       email: user.email,
+      ...(user.vendorId ? { vendorId: user.vendorId } : {}),
     };
 
     return {
       accessToken: this.generateAccessToken(payload),
       refreshToken: this.generateRefreshToken(payload),
-      user: { id: user.id, email: user.email, name: user.name, role: user.role, tenantId: user.tenantId },
+      user: {
+        id: user.id, email: user.email, name: user.name, role: user.role, tenantId: user.tenantId,
+        vendorId: user.vendorId,
+        ...(user.vendorId && user.vendor ? { vendor: user.vendor } : {}),
+      },
     };
   }
 
@@ -110,6 +126,7 @@ export class AuthService {
       tenantId: user.tenantId,
       role: user.role,
       email: user.email,
+      ...(user.vendorId ? { vendorId: user.vendorId } : {}),
     };
 
     return { accessToken: this.generateAccessToken(payload) };
@@ -152,6 +169,7 @@ export class AuthService {
       tenantId: user.tenantId,
       role: user.role,
       email: user.email,
+      ...(user.vendorId ? { vendorId: user.vendorId } : {}),
     };
 
     const accessToken = this.generateAccessToken(payload);
@@ -160,7 +178,10 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role, tenantId: user.tenantId },
+      user: {
+        id: user.id, email: user.email, name: user.name, role: user.role, tenantId: user.tenantId,
+        vendorId: user.vendorId,
+      },
     };
   }
 
@@ -177,9 +198,17 @@ export class AuthService {
         id: true, email: true, name: true, phone: true, role: true,
         tenantId: true, isActive: true, isSuperAdmin: true, lastLoginAt: true,
         tenant: { select: { id: true, name: true, subscriptionPlan: true } },
+        // Darb 2.0 — vendor identity for role=VENDOR portal users.
+        vendorId: true,
+        vendor: { select: { id: true, name: true } },
       },
     });
     if (!user) throw new Error("User not found");
+    // Keep the payload lean for staff users: only surface `vendor` when set.
+    if (!user.vendorId) {
+      const { vendor: _vendor, ...rest } = user;
+      return { ...rest, vendorId: null };
+    }
     return user;
   }
 

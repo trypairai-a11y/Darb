@@ -7,19 +7,26 @@
 
 import React, { Children, isValidElement, useMemo } from "react";
 import {
-  View, Text, TouchableOpacity, StyleSheet, SafeAreaView,
+  View, Text, TouchableOpacity, StyleSheet,
   type ViewStyle, type StyleProp,
 } from "react-native";
+import { SafeAreaView, type Edge } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import {
   useTheme, type Palette, space, radius, continuous, shadow, hitSlop,
 } from "../theme";
 
-// ─── Screen container ───
-export function Screen({ children, style }: { children: React.ReactNode; style?: StyleProp<ViewStyle> }) {
+// ─── Screen container — atmospheric gradient canvas + top safe-area inset ───
+export function Screen({ children, style, edges = ["top"] }: { children: React.ReactNode; style?: StyleProp<ViewStyle>; edges?: Edge[] }) {
   const { c } = useTheme();
-  return <SafeAreaView style={[{ flex: 1, backgroundColor: c.groupedBackground }, style]}>{children}</SafeAreaView>;
+  return (
+    <View style={{ flex: 1, backgroundColor: c.systemBackground }}>
+      <LinearGradient colors={[c.bgTop, c.bgBottom]} locations={[0, 0.55]} style={StyleSheet.absoluteFill} />
+      <SafeAreaView edges={edges} style={[{ flex: 1 }, style]}>{children}</SafeAreaView>
+    </View>
+  );
 }
 
 // ─── Large-title heading ───
@@ -43,7 +50,7 @@ export function NavBar({ title, trailing, onBack }: { title?: string; trailing?:
   const s = useMemo(() => makeStyles(c), [c]);
   return (
     <View style={s.navBar}>
-      <TouchableOpacity style={s.navBack} hitSlop={hitSlop} onPress={onBack ?? (() => router.back())}>
+      <TouchableOpacity style={s.navBack} hitSlop={hitSlop} accessibilityRole="button" accessibilityLabel="Back" onPress={onBack ?? (() => router.back())}>
         <ChevronLeft size={26} color={c.tint} />
         <Text style={[t.body, { color: c.tint, marginLeft: -4 }]}>Back</Text>
       </TouchableOpacity>
@@ -57,7 +64,7 @@ export function NavBar({ title, trailing, onBack }: { title?: string; trailing?:
 export function Card({ children, style }: { children: React.ReactNode; style?: StyleProp<ViewStyle> }) {
   const { c } = useTheme();
   return (
-    <View style={[{ backgroundColor: c.groupedSecondary, borderRadius: radius.card, padding: space.base, ...continuous, ...shadow.card }, style]}>
+    <View style={[{ backgroundColor: c.groupedSecondary, borderRadius: radius.card, padding: space.base, borderWidth: 1, borderColor: c.hairline, ...continuous, ...shadow.card }, style]}>
       {children}
     </View>
   );
@@ -125,7 +132,7 @@ export function Button({ title, onPress, variant = "filled", disabled, style }: 
 }) {
   const { c, t } = useTheme();
   const palette: Record<BtnVariant, { bg: string; fg: string }> = {
-    filled: { bg: c.tint, fg: c.white },
+    filled: { bg: c.tint, fg: c.onTint },
     tinted: { bg: c.tintFill, fg: c.tint },
     destructive: { bg: c.red, fg: c.white },
     plain: { bg: "transparent", fg: c.tint },
@@ -136,7 +143,13 @@ export function Button({ title, onPress, variant = "filled", disabled, style }: 
       activeOpacity={0.85}
       onPress={onPress}
       disabled={disabled}
-      style={[{ height: 50, borderRadius: radius.button, alignItems: "center", justifyContent: "center", paddingHorizontal: space.lg, ...continuous, backgroundColor: p.bg }, disabled && { opacity: 0.4 }, style]}
+      accessibilityRole="button"
+      style={[
+        { height: 52, borderRadius: radius.button, alignItems: "center", justifyContent: "center", paddingHorizontal: space.lg, ...continuous, backgroundColor: p.bg },
+        variant === "filled" && !disabled && shadow.glow,
+        disabled && { opacity: 0.4 },
+        style,
+      ]}
     >
       <Text style={[t.headline, { color: p.fg }]}>{title}</Text>
     </TouchableOpacity>

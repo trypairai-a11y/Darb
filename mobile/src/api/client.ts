@@ -2,8 +2,36 @@ import * as SecureStore from "expo-secure-store";
 
 export const BASE_URL = process.env.EXPO_PUBLIC_API_URL || "https://backend-snowy-ten-52.vercel.app";
 
+/**
+ * ApiError — thrown for non-2xx responses. Carries the HTTP status + the
+ * backend's machine code (`body.code`, e.g. "CASH_CEILING_LOCKOUT",
+ * "PIN_MISMATCH") so callers can branch on 409/410/422 without string-matching
+ * the human message. `body` keeps extra fields (e.g. `attemptsLeft`).
+ */
+export class ApiError extends Error {
+  status: number;
+  code?: string;
+  body: any;
+  constructor(status: number, body: any) {
+    super(body?.error || body?.message || `HTTP ${status}`);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = body?.code;
+    this.body = body ?? {};
+  }
+}
+
+export function isApiError(e: unknown, ...statuses: number[]): e is ApiError {
+  return e instanceof ApiError && (statuses.length === 0 || statuses.includes(e.status));
+}
+
 async function getToken(): Promise<string | null> {
-  return SecureStore.getItemAsync("agent_token");
+  // SecureStore rejects on web — treat as signed-out rather than crashing.
+  return SecureStore.getItemAsync("agent_token").catch(() => null);
+}
+
+export async function hasToken(): Promise<boolean> {
+  return (await getToken()) != null;
 }
 
 async function getDeviceId(): Promise<string> {
@@ -21,7 +49,7 @@ async function agentFetchMultipart<T = any>(path: string, formData: FormData): P
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `HTTP ${res.status}`);
+    throw new ApiError(res.status, body);
   }
   return res.json();
 }
@@ -41,7 +69,7 @@ export async function agentFetch<T = any>(
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `HTTP ${res.status}`);
+    throw new ApiError(res.status, body);
   }
   return res.json();
 }
@@ -335,6 +363,196 @@ export async function reportEquipmentCondition(
     method: "POST",
     body: JSON.stringify({ deviceId, condition, note }),
   });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Darb 2.0 — delivery-loop agent API (contract: plan §A9, backend routes/agent*)
+// All money values are KWD serialized as numbers or 3dp strings; the app
+// formats with formatKwd() and never does float money math.
+// ═══════════════════════════════════════════════════════════════════════════
+
+export type Availability = "OFFLINE" | "ONLINE" | "BUSY";
+
+/** Client-side order stage. Server FSM keeps coarse statuses (ASSIGNED /
+ *  PICKED_UP); heading/arrived milestones are OrderEvents. `/state` reports the
+ *  furthest milestone so the stepper can restore mid-delivery. */
+export type OrderStage =
+  | "HEADING_TO_PICKUP"
+  | "ARRIVED_AT_PICKUP"
+  | "PICKED_UP"
+  | "HEADING_TO_DROPOFF"
+  | "ARRIVED_AT_DROPOFF";
+
+export interface AgentOfferSummary {
+  id: string;
+  restaurantName: string;
+  pickupArea?: string | null;
+  dropoffZone?: string | null;
+  feeKwd: number | string;
+  distanceKm?: number | string | null;
+  paymentMethod?: "COD" | "PREPAID";
+  codAmountKwd?: number | string | null;
+  expiresAt: string; // ISO — countdown source of truth (with clock skew)
+}
+
+export interface AgentActiveOrder {
+  id: string;
+  orderNumber?: string | null;
+  status: string; // server coarse status (ASSIGNED | PICKED_UP | …)
+  stage?: OrderStage | null; // furthest milestone the server has seen
+  slaDeadline?: string | null;
+  paymentMethod?: "COD" | "PREPAID";
+  codAmountKwd?: number | string | null;
+  deliveryFeeKwd?: number | string | null;
+  pickup?: { name?: string | null; address?: string | null; lat?: number | null; lng?: number | null; phone?: string | null } | null;
+  dropoff?: { address?: string | null; lat?: number | null; lng?: number | null } | null;
+  customerName?: string | null;
+  customerPhone?: string | null;
+}
+
+export interface AgentWalletSummary {
+  cashOnHandKwd: number | string;
+  ceilingKwd: number | string;
+  todayCollectedKwd?: number | string;
+  todayDeliveries?: number;
+  blocked?: boolean;
+}
+
+export interface AgentStateResponse {
+  driver?: { id: string; name?: string; phone?: string | null; platform?: string | null } | null;
+  availability: Availability;
+  lockout?: { active: boolean; reason?: string | null } | boolean | null;
+  activeOffer?: AgentOfferSummary | null;
+  activeOrder?: AgentActiveOrder | null;
+  wallet?: AgentWalletSummary | null;
+  supervisorPhone?: string | null;
+  serverTime: string; // ISO — clockSkewMs = serverTime - Date.now()
+}
+
+/** GET /api/agent/state — THE hydration + poll endpoint. */
+export async function getState(): Promise<AgentStateResponse> {
+  return agentFetch<AgentStateResponse>("/api/agent/state");
+}
+
+/** POST /api/agent/availability → 200 | 409 CASH_CEILING_LOCKOUT | 409 ACTIVE_ORDER. */
+export async function postAvailability(availability: Availability): Promise<{ availability: Availability }> {
+  return agentFetch("/api/agent/availability", {
+    method: "POST",
+    body: JSON.stringify({ availability }),
+  });
+}
+
+/** POST /api/agent/offers/:id/accept → {order, serverTime} | 410/409 expired/withdrawn. */
+export async function acceptOffer(offerId: string): Promise<{ order: AgentActiveOrder; serverTime?: string }> {
+  return agentFetch(`/api/agent/offers/${encodeURIComponent(offerId)}/accept`, { method: "POST" });
+}
+
+/** POST /api/agent/offers/:id/reject — idempotent 200. */
+export async function rejectOffer(offerId: string, reason?: string): Promise<{ ok: boolean }> {
+  return agentFetch(`/api/agent/offers/${encodeURIComponent(offerId)}/reject`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });
+}
+
+/** POST /api/agent/orders/:id/status — granular milestones, idempotency-keyed. */
+export async function postOrderStatus(
+  orderId: string,
+  payload: {
+    status: OrderStage;
+    occurredAt: string;
+    idempotencyKey: string;
+    lat?: number;
+    lng?: number;
+  },
+): Promise<{ ok: boolean; order?: AgentActiveOrder }> {
+  return agentFetch(`/api/agent/orders/${encodeURIComponent(orderId)}/status`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+/** POST /api/agent/orders/:id/pod — atomic verify + DELIVERED + wallet posting. */
+export async function postPod(
+  orderId: string,
+  payload: {
+    method: "PIN" | "PHOTO";
+    pin?: string;
+    photoKey?: string;
+    codCollectedKwd?: number;
+    lat: number;
+    lng: number;
+    idempotencyKey: string;
+  },
+): Promise<{ order?: AgentActiveOrder; wallet?: AgentWalletSummary }> {
+  return agentFetch(`/api/agent/orders/${encodeURIComponent(orderId)}/pod`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+/** POST /api/agent/orders/:id/failed → FAILED. */
+export async function postOrderFailed(orderId: string, reason: string, note?: string): Promise<{ ok: boolean }> {
+  return agentFetch(`/api/agent/orders/${encodeURIComponent(orderId)}/failed`, {
+    method: "POST",
+    body: JSON.stringify({ reason, note }),
+  });
+}
+
+export interface AgentRemittance {
+  id: string;
+  amountKwd: number | string;
+  method?: string | null;
+  createdAt: string;
+}
+
+export interface AgentWalletResponse extends AgentWalletSummary {
+  remittances?: AgentRemittance[];
+}
+
+/** GET /api/agent/wallet — cash/ceiling/today/lockout + remittance history. */
+export async function getWallet(): Promise<AgentWalletResponse> {
+  return agentFetch<AgentWalletResponse>("/api/agent/wallet");
+}
+
+export type IncidentCategory = "ACCIDENT" | "BREAKDOWN" | "CUSTOMER_AGGRESSION" | "ROAD_BLOCKAGE";
+
+export interface AgentIncident {
+  id: string;
+  status: "OPEN" | "ACKNOWLEDGED" | "RESOLVED" | string;
+  supervisorPhone?: string | null;
+}
+
+/** POST /api/agent/incidents — multipart, ≤3 photos (mirrors the tickets upload). */
+export async function postIncident(payload: {
+  category: IncidentCategory;
+  description?: string;
+  lat?: number;
+  lng?: number;
+  orderId?: string;
+  photos?: { uri: string; mime?: string }[];
+}): Promise<AgentIncident> {
+  const deviceId = await getDeviceId();
+  const formData = new FormData();
+  formData.append("deviceId", deviceId);
+  formData.append("category", payload.category);
+  if (payload.description) formData.append("description", payload.description);
+  if (payload.lat != null) formData.append("lat", String(payload.lat));
+  if (payload.lng != null) formData.append("lng", String(payload.lng));
+  if (payload.orderId) formData.append("orderId", payload.orderId);
+  (payload.photos ?? []).slice(0, 3).forEach((photo, i) => {
+    formData.append("photos", {
+      uri: photo.uri,
+      name: `incident-${i}.jpg`,
+      type: photo.mime ?? "image/jpeg",
+    } as any);
+  });
+  return agentFetchMultipart<AgentIncident>("/api/agent/incidents", formData);
+}
+
+/** GET /api/agent/incidents/:id — 10s status poll after an SOS. */
+export async function getIncident(id: string): Promise<AgentIncident> {
+  return agentFetch<AgentIncident>(`/api/agent/incidents/${encodeURIComponent(id)}`);
 }
 
 // ─── Identity helpers (for components that need the resolved driver id) ───

@@ -5,6 +5,7 @@ import {
 } from "./notificationService";
 import { logger } from "../config/logger";
 import { createViolationWithAlert } from "./violationEngine";
+import { publishEvent } from "./eventBus";
 
 // R5 · GPS-stale escalation chain. Runs every 5 minutes against every tenant.
 //
@@ -189,5 +190,77 @@ export function stopGpsMonitorScheduler() {
   if (timer) {
     clearInterval(timer);
     timer = null;
+  }
+}
+
+// ─── Darb 2.0 presence sweeper (plan §A10) ──────────────────────────────────
+//
+// Dispatch only offers to couriers whose CourierOnlineSession.availability is
+// ONLINE with fresh GPS. This sweeper is the enforcement half: every minute,
+// any non-OFFLINE session whose lastGpsAt is older than 5 minutes is forced
+// OFFLINE (isOnline=false) and a `driver.offline` SSE event is published so
+// the ops map drops the marker. Sessions with lastGpsAt=null are left alone —
+// a courier who just toggled ONLINE may not have uploaded a first fix yet,
+// and dispatch already excludes them via its own GPS-freshness check.
+
+const PRESENCE_SWEEP_INTERVAL_MS = 60 * 1000;
+const PRESENCE_STALE_MS = 5 * 60 * 1000;
+
+let presenceTimer: NodeJS.Timeout | null = null;
+
+/** One sweep pass. Exported for tests + returns how many sessions were forced offline. */
+export async function sweepStalePresence(now: Date = new Date()): Promise<number> {
+  const cutoff = new Date(now.getTime() - PRESENCE_STALE_MS);
+
+  // Cross-tenant by design — this is a scheduler entry point (mirrors
+  // runGpsPass above); results carry tenantId for the per-tenant publish.
+  const stale = await prisma.courierOnlineSession.findMany({
+    where: {
+      availability: { not: "OFFLINE" },
+      lastGpsAt: { lt: cutoff },
+    },
+    select: { id: true, tenantId: true, driverId: true, lastGpsAt: true },
+  });
+  if (stale.length === 0) return 0;
+
+  await prisma.courierOnlineSession.updateMany({
+    where: { id: { in: stale.map((s) => s.id) } },
+    data: { availability: "OFFLINE", isOnline: false },
+  });
+
+  for (const session of stale) {
+    await publishEvent({
+      type: "driver.offline",
+      tenantId: session.tenantId,
+      payload: {
+        driverId: session.driverId,
+        reason: "GPS_STALE",
+        lastGpsAt: session.lastGpsAt?.toISOString() ?? null,
+      },
+      timestamp: now.toISOString(),
+    }).catch((err) => logger.warn({ err }, "[presenceSweeper] publish driver.offline failed"));
+  }
+
+  logger.info({ count: stale.length }, "[presenceSweeper] forced stale sessions OFFLINE");
+  return stale.length;
+}
+
+/** Start the 1-minute presence sweep loop (listen-block boot, idempotent). */
+export function startPresenceSweeper() {
+  if (presenceTimer) return;
+  if (process.env.DISABLE_GPS_MONITOR === "1") return;
+
+  presenceTimer = setInterval(() => {
+    sweepStalePresence().catch((err) =>
+      logger.error({ err }, "[presenceSweeper] sweep failed")
+    );
+  }, PRESENCE_SWEEP_INTERVAL_MS);
+  console.log("[gpsMonitor] presence sweeper started (1m interval)");
+}
+
+export function stopPresenceSweeper() {
+  if (presenceTimer) {
+    clearInterval(presenceTimer);
+    presenceTimer = null;
   }
 }

@@ -44,6 +44,22 @@ const TENANT_SCOPED_MODELS = new Set<string>([
   "PinnedView",
   "PerformanceSnapshot",
   "MetricEvent",
+  // Darb 2.0 — delivery fulfillment (Slice A1). WebhookEvent is intentionally
+  // excluded: rows are written before the tenant is resolved.
+  "Vendor",
+  "VendorBranch",
+  "DeliveryZone",
+  "ZoneSurcharge",
+  "FulfillmentSettings",
+  "DeliveryOrder",
+  "DispatchOffer",
+  "WalletAccount",
+  "WalletTransaction",
+  "WalletEntry",
+  "Remittance",
+  "WalletReconciliationRun",
+  "Incident",
+  "FoodicsConnection",
 ]);
 
 const MUTATION_OPS = new Set([

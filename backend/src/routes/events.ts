@@ -32,6 +32,24 @@ function sseAuth(req: Request, res: Response, next: NextFunction): void {
 router.use(sseAuth);
 
 /**
+ * Darb 2.0 vendor SSE scoping (plan §A7). Staff connections receive the
+ * tenant firehose (unchanged). VENDOR connections receive ONLY `order.*`
+ * events whose payload.vendorId matches the vendorId baked into their JWT —
+ * everything else (driver GPS, wallet, incidents, other vendors' orders) is
+ * dropped server-side. Exported for the events tenant-isolation test.
+ */
+export function eventVisibleTo(
+  user: Pick<JwtPayload, "role" | "vendorId">,
+  event: DarbEvent
+): boolean {
+  if (user.role !== "VENDOR") return true; // staff: tenant firehose, unchanged
+  if (!user.vendorId) return false; // malformed vendor token — fail closed
+  if (!event.type.startsWith("order.")) return false;
+  const payloadVendorId = (event.payload as { vendorId?: unknown } | undefined)?.vendorId;
+  return payloadVendorId === user.vendorId;
+}
+
+/**
  * GET /api/events — Server-Sent Events stream.
  *
  * The client connects with a Bearer token (query param or header) and
@@ -66,8 +84,10 @@ router.get("/", (req: Request, res: Response) => {
   // Send initial connection confirmation
   res.write(`event: connected\ndata: ${JSON.stringify({ tenantId, timestamp: new Date().toISOString() })}\n\n`);
 
-  // Subscribe to tenant events
+  // Subscribe to tenant events (vendor connections get a filtered view)
+  const user = req.user!;
   const unsubscribe = subscribe(tenantId, (event: DarbEvent) => {
+    if (!eventVisibleTo(user, event)) return;
     res.write(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`);
   });
 

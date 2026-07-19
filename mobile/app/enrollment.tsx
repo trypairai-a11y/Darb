@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import * as Device from "expo-device";
 import { register } from "../src/api/client";
 import { Button, Screen } from "../src/components/hig";
+import { t as tr } from "../src/i18n/strings";
 import { useTheme, type Palette, space, radius, continuous, fontFamily } from "../src/theme";
 
 export default function EnrollmentScreen() {
@@ -22,9 +23,11 @@ export default function EnrollmentScreen() {
         osVersion: `${Platform.OS} ${Platform.Version}`,
         appVersion: "1.0.0",
       });
-      router.replace("/(tabs)/dashboard");
+      // Back through the boot gate: it hydrates /state and routes to the
+      // right surface (delivery flow if an order is already assigned).
+      router.replace("/");
     } catch (err: any) {
-      Alert.alert("Enrollment failed", err.message || "Check your code and try again");
+      Alert.alert(tr("enroll.failed_title"), err.message || tr("enroll.failed_body"));
     }
     setLoading(false);
   }
@@ -32,15 +35,15 @@ export default function EnrollmentScreen() {
   return (
     <Screen>
       <View style={styles.container}>
-        <Text style={[t.footnote, styles.kicker]}>DARB DRIVER</Text>
-        <Text style={[t.title1, { textAlign: "center", marginBottom: space.md }]}>Start your shift with confidence.</Text>
+        <Text style={[t.footnote, styles.kicker]}>{tr("enroll.kicker")}</Text>
+        <Text style={[t.title1, { textAlign: "center", marginBottom: space.md }]}>{tr("enroll.title")}</Text>
         <Text style={[t.callout, { color: c.secondaryLabel, textAlign: "center", marginBottom: space.xxl }]}>
-          Enter the code from your supervisor, or preview the app with the demo driver.
+          {tr("enroll.subtitle")}
         </Text>
 
         <TextInput
           style={styles.input}
-          placeholder="Enrollment code"
+          placeholder={tr("enroll.placeholder")}
           placeholderTextColor={c.placeholder}
           value={code}
           onChangeText={setCode}
@@ -48,8 +51,10 @@ export default function EnrollmentScreen() {
           autoCorrect={false}
         />
 
-        <Button title={loading ? "Enrolling…" : "Enroll device"} onPress={() => handleEnroll()} disabled={loading} style={{ marginTop: space.lg }} />
-        <Button title="Use demo driver" variant="tinted" onPress={() => router.replace("/(tabs)/dashboard")} disabled={loading} style={{ marginTop: space.md }} />
+        <Button title={loading ? tr("enroll.cta_busy") : tr("enroll.cta")} onPress={() => handleEnroll()} disabled={loading} style={{ marginTop: space.lg }} />
+        {/* Demo is a REAL enrollment against the backend's DEMO code — same
+            device-token auth, same live delivery loop, demo tenant data. */}
+        <Button title={tr("enroll.demo")} variant="tinted" onPress={() => handleEnroll("DEMO")} disabled={loading} style={{ marginTop: space.md }} />
       </View>
     </Screen>
   );

@@ -31,7 +31,6 @@ jest.mock(
 
 // Helper to lazy-load the tool after the mocks are set up.
 function loadTool() {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   return require("../../../agent/tools/action/draftCourierMessage").draftCourierMessage;
 }
 
@@ -124,7 +123,6 @@ describe("draftCourierMessage — Phase 9 bilingual extension (Wave 0 RED)", () 
   });
 
   test("calls outboundResolver.deliver after Notification.create when ctx.userId is set (post-approval path)", async () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const outboundResolver = require("../../../services/outboundResolver");
     const tool = loadTool();
     await tool.execute(ctx, {
@@ -158,7 +156,6 @@ describe("draftCourierMessage — Phase 9 bilingual extension (Wave 0 RED)", () 
       outboundOptIn: false,
       preferredLanguage: "AR",
     });
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const outboundResolver = require("../../../services/outboundResolver");
     (outboundResolver.deliver as jest.Mock).mockClear();
     const tool = loadTool();

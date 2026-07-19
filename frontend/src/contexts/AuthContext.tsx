@@ -14,6 +14,11 @@ interface User {
   // on the type (older sessions / mock users may not include it).
   isSuperAdmin?: boolean;
   tenant?: { id: string; name: string };
+  // Darb 2.0 — VENDOR-role users carry their vendor binding so the frontend
+  // can fence them into /vendor/* and scope portal calls. Optional: staff
+  // users and older sessions won't include them.
+  vendorId?: string;
+  vendor?: { id: string; name: string };
 }
 
 interface AuthContextType {

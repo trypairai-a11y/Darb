@@ -14,6 +14,10 @@
         "NSCameraUsageDescription": "Darb captures delivery photos and clock-in selfies",
         "NSLocationWhenInUseUsageDescription": "Darb tracks your location during active shifts",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Darb tracks your location during active shifts so the office can see your live position even when your phone is in your pocket. We never track you off-shift.",
+        "LSApplicationQueriesSchemes": [
+          "comgooglemaps",
+          "waze"
+        ],
         "UIBackgroundModes": [
           "location",
           "fetch",
@@ -51,7 +55,8 @@
       "expo-secure-store",
       "expo-router",
       "expo-sqlite",
-      "expo-asset"
+      "expo-asset",
+      "expo-font"
     ],
     "web": {
       "bundler": "metro",

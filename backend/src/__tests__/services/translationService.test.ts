@@ -23,7 +23,6 @@ jest.mock("@anthropic-ai/sdk", () => {
 });
 
 function loadService() {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   return require("../../services/translationService");
 }
 
@@ -45,7 +44,6 @@ describe("translateToArabic — Wave 0 RED", () => {
 
   test("strips U+202D (LEFT-TO-RIGHT OVERRIDE) and U+202E (RIGHT-TO-LEFT OVERRIDE) from output (security)", async () => {
     // Inject the override chars into the mocked response.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const sdk = require("@anthropic-ai/sdk");
     (sdk._create as jest.Mock).mockResolvedValueOnce({
       content: [{ type: "text", text: "‮محمد‭ dangerous" }],
@@ -60,7 +58,6 @@ describe("translateToArabic — Wave 0 RED", () => {
   });
 
   test("preserves Latin tokens listed in ctx.preserveLatinTokens", async () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const sdk = require("@anthropic-ai/sdk");
     (sdk._create as jest.Mock).mockResolvedValueOnce({
       content: [{ type: "text", text: "مرحبا Mohamed، أهلا بك في Darb" }],
@@ -81,7 +78,6 @@ describe("translateToArabic — Wave 0 RED", () => {
       audience: "kuwait-courier",
       register: "khaleeji",
     });
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const sdk = require("@anthropic-ai/sdk");
     const lastCall = (sdk._create as jest.Mock).mock.calls[0]?.[0] ?? {};
     const promptStr = JSON.stringify(lastCall);
@@ -102,7 +98,6 @@ describe("translateToArabic — Wave 0 RED", () => {
       audience: "generic",
       register: "msa",
     });
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const sdk = require("@anthropic-ai/sdk");
     const lastCall = (sdk._create as jest.Mock).mock.calls[0]?.[0] ?? {};
     const promptStr = JSON.stringify(lastCall);

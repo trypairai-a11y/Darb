@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
+import { haversineMeters } from "../utils/geo";
 
 const router = Router();
 router.use(authMiddleware, tenantScope);
@@ -150,18 +151,6 @@ router.get("/couriers", async (req: Request, res: Response) => {
  *       200:
  *         description: Three alert categories each with count and driver list
  */
-// Haversine (metres) — mirrors helper in violationEngine.ts
-function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6_371_000;
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
 router.get("/alerts", async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;

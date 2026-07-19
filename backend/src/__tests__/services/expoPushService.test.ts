@@ -13,7 +13,6 @@
 import { prisma } from "../mocks/config";
 
 function loadService() {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   return require("../../services/expoPushService");
 }
 

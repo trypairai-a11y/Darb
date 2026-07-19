@@ -1,10 +1,12 @@
 import { Tabs } from "expo-router";
 import { StyleSheet } from "react-native";
-import { Home, Trophy, Package, Ticket } from "lucide-react-native";
-import { useTheme, fontFamily } from "../../src/theme";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { History, Home, Wallet } from "lucide-react-native";
+import { useTheme, fonts } from "../../src/theme";
 
 export default function TabLayout() {
   const { c } = useTheme();
+  const insets = useSafeAreaInsets();
   return (
     <Tabs
       screenOptions={{
@@ -13,21 +15,19 @@ export default function TabLayout() {
           backgroundColor: c.systemBackground,
           borderTopColor: c.separator,
           borderTopWidth: StyleSheet.hairlineWidth,
-          height: 84,
-          paddingTop: 8,
-          paddingBottom: 26,
+          height: 58 + insets.bottom,
+          paddingTop: 9,
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 9,
         },
-        tabBarLabelStyle: { fontFamily, fontSize: 10, fontWeight: "500", letterSpacing: 0.07 },
+        tabBarLabelStyle: { fontFamily: fonts.bodySemibold, fontSize: 10, letterSpacing: 0.2 },
         tabBarActiveTintColor: c.tint,
-        tabBarInactiveTintColor: c.secondaryLabel,
-        tabBarItemStyle: { paddingTop: 2 },
-        sceneStyle: { backgroundColor: c.groupedBackground },
+        tabBarInactiveTintColor: c.gray,
+        sceneStyle: { backgroundColor: c.systemBackground },
       }}
     >
-      <Tabs.Screen name="dashboard" options={{ title: "Home", tabBarIcon: ({ color, focused }) => <Home size={26} color={color} strokeWidth={focused ? 2.4 : 2} /> }} />
-      <Tabs.Screen name="points" options={{ title: "Score", tabBarIcon: ({ color, focused }) => <Trophy size={26} color={color} strokeWidth={focused ? 2.4 : 2} /> }} />
-      <Tabs.Screen name="equipment" options={{ title: "Equipment", tabBarIcon: ({ color, focused }) => <Package size={26} color={color} strokeWidth={focused ? 2.4 : 2} /> }} />
-      <Tabs.Screen name="tickets" options={{ title: "Tickets", tabBarIcon: ({ color, focused }) => <Ticket size={26} color={color} strokeWidth={focused ? 2.4 : 2} /> }} />
+      <Tabs.Screen name="home" options={{ title: "Home", tabBarIcon: ({ color }) => <Home size={24} color={color} /> }} />
+      <Tabs.Screen name="wallet" options={{ title: "Wallet", tabBarIcon: ({ color }) => <Wallet size={24} color={color} /> }} />
+      <Tabs.Screen name="history" options={{ title: "History", tabBarIcon: ({ color }) => <History size={24} color={color} /> }} />
     </Tabs>
   );
 }

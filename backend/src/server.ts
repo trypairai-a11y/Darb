@@ -73,9 +73,24 @@ import adminRouter from "./routes/admin";
 import chatRouter from "./routes/chat";
 import pinnedViewsRouter from "./routes/pinnedViews";
 import scheduledBriefingsRouter from "./routes/scheduledBriefings";
+// Darb 2.0 — delivery fulfillment (plan §A8/§A10)
+import webhooksRouter from "./routes/webhooks";
+import foodicsRouter, { foodicsCallbackRouter } from "./routes/foodics";
+import zonesRouter from "./routes/zones";
+import vendorsRouter from "./routes/vendors";
+import vendorPortalRouter from "./routes/vendorPortal";
+import deliveryOrdersRouter from "./routes/deliveryOrders";
+import walletsRouter from "./routes/wallets";
+import incidentsRouter from "./routes/incidents";
+import dispatchMonitorRouter from "./routes/dispatchMonitor";
+import agentDeliveryRouter from "./routes/agentDelivery";
+import { blockVendorOutsideAllowlist } from "./middleware/vendorContainment";
+import { startDispatchWorker } from "./queues/dispatchWorker";
+import { startFoodicsWorker } from "./queues/foodicsWorker";
+import { startWalletReconciliationWorker } from "./queues/walletReconciliationWorker";
 import { startScheduledBriefingsWorker } from "./queues/scheduledBriefingsWorker";
 import { startAnomalyScheduler } from "./services/anomalyScheduler";
-import { startGpsMonitorScheduler } from "./services/gpsMonitorService";
+import { startGpsMonitorScheduler, startPresenceSweeper } from "./services/gpsMonitorService";
 import { startKeetaPortalScraperScheduler } from "./queues/keetaPortalScraperWorker";
 import { startPerformanceTierScheduler } from "./queues/performanceTierWorker";
 import { startInsightsScheduler } from "./services/insightsScheduler";
@@ -142,7 +157,13 @@ app.use(
     autoLogging: { ignore: (req) => req.url === "/api/health" || req.url === "/" },
   })
 );
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json({
+  limit: "10mb",
+  // Darb 2.0 — capture the raw request body for webhook HMAC verification
+  // (routes/webhooks.ts checks X-Foodics-Signature against req.rawBody when
+  // FOODICS_WEBHOOK_HMAC_SECRET is set).
+  verify: (req, _res, buf) => { (req as unknown as { rawBody?: Buffer }).rawBody = buf; },
+}));
 app.use(cookieParser());
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
@@ -180,6 +201,20 @@ const apiLimiter = rateLimit({
 app.use("/api/auth", authLimiter);
 app.use("/api", apiLimiter);
 
+// Darb 2.0 — vendor containment (plan §A8): VENDOR-role tokens may only reach
+// /api/auth, /api/vendor, /api/foodics and /api/events. One app-wide gate,
+// mounted before every API router, protects the ~60 legacy staff routers
+// without editing them. Non-vendor traffic passes through untouched.
+app.use(blockVendorOutsideAllowlist);
+
+// Darb 2.0 — PUBLIC routers (no auth) mounted BEFORE the auth-carrying ones.
+// webhooksRouter: third-party platform callbacks (per-connection path secret).
+// foodicsCallbackRouter: OAuth redirect from the Foodics console — defines
+// ONLY GET /callback, so sharing the /api/foodics prefix with the authed
+// foodicsRouter below is collision-free.
+app.use("/api/webhooks", webhooksRouter);
+app.use("/api/foodics", foodicsCallbackRouter);
+
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/drivers", driverRoutes);
@@ -195,6 +230,12 @@ app.use("/api/tickets", ticketRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/leave-requests", leaveRequestRoutes);
 app.use("/api/agent", agentRoutes);
+// Darb 2.0 driver agent API (device-token auth) — same mount as agent.ts,
+// AFTER it. Path sets are disjoint (verified): agent.ts owns /register,
+// /heartbeat, /location, /orders (GET), /tickets, ...; agentDelivery owns
+// /state, /availability, /offers/:id/*, /orders/:id/{status,pod,failed},
+// /wallet, /incidents.
+app.use("/api/agent", agentDeliveryRouter);
 app.use("/api/ai", aiRoutes);
 app.use("/api/talabat", talabatRoutes);
 app.use("/api/americana/chains", americanaChainsRoutes);
@@ -254,6 +295,24 @@ app.use("/api/pinned-views", pinnedViewsRouter);
 // Phase 4 Wave 5 — Scheduled briefings CRUD + BullMQ JobScheduler worker.
 app.use("/api/scheduled-briefings", scheduledBriefingsRouter);
 startScheduledBriefingsWorker();
+// Darb 2.0 — delivery fulfillment surface (plan §A8):
+//   /api/zones           zones CRUD + resolve/quote + surcharges + settings
+//   /api/vendors         staff-facing vendor management
+//   /api/vendor          vendor-portal (VENDOR role, vendorScope from JWT)
+//   /api/delivery-orders staff order console (list/detail/timeline/assign/…)
+//   /api/wallets         wallet accounts/entries/remittances/adjustments
+//   /api/incidents       SOS + incident management
+//   /api/dispatch        live positions snapshot + ops overview
+//   /api/foodics         authed Foodics connect/status/branch-map/disconnect
+//                        (public GET /callback mounted earlier, same prefix)
+app.use("/api/zones", zonesRouter);
+app.use("/api/vendors", vendorsRouter);
+app.use("/api/vendor", vendorPortalRouter);
+app.use("/api/delivery-orders", deliveryOrdersRouter);
+app.use("/api/wallets", walletsRouter);
+app.use("/api/incidents", incidentsRouter);
+app.use("/api/dispatch", dispatchMonitorRouter);
+app.use("/api/foodics", foodicsRouter);
 
 // API Documentation (Swagger UI — available at /api-docs)
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
@@ -282,6 +341,14 @@ if (process.env.VERCEL !== "1") {
     startInsightsScheduler();
     startShiftComplianceScheduler();
     startAmericanaInboxWatcher();
+    // Darb 2.0 workers (plan §A10) — boot ONLY here (not module scope):
+    // BullMQ when Redis is configured, in-process setTimeout fallback otherwise.
+    startDispatchWorker();
+    startFoodicsWorker();
+    startWalletReconciliationWorker();
+    // Presence sweeper — every minute, force availability OFFLINE for
+    // sessions whose GPS is >5 min stale + publish driver.offline.
+    startPresenceSweeper();
     // v2 agent runtime — no-op when ANTHROPIC_API_KEY is unset
     void startAgentScheduler();
   });
