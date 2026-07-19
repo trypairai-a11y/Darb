@@ -8,6 +8,9 @@ generator client {
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
+  // Direct (non-pooled) connection for migrations — Neon's pooler cannot run
+  // Prisma migrate, which is why `postinstall`'s migrate deploy silently skipped.
+  directUrl  = env("DATABASE_URL_UNPOOLED")
   extensions = [pg_trgm]
 }
 
