@@ -132,6 +132,7 @@ const staticAllowedOrigins = [
 const vercelOriginPattern = /^https:\/\/[a-z0-9-]+-trypairai-6527s-projects\.vercel\.app$/i;
 const vercelAliasAllowlist = new Set<string>([
   "https://frontend-ebon-nine-34.vercel.app",
+  "https://pair-darb.vercel.app",
 ]);
 
 app.use(cors({
