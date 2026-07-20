@@ -161,6 +161,7 @@ exports.Prisma.UserScalarFieldEnum = {
   isSuperAdmin: 'isSuperAdmin',
   jobGrade: 'jobGrade',
   vendorId: 'vendorId',
+  fleetPartnerId: 'fleetPartnerId',
   isActive: 'isActive',
   lastLoginAt: 'lastLoginAt',
   createdAt: 'createdAt',
@@ -192,6 +193,8 @@ exports.Prisma.DriverScalarFieldEnum = {
   offDaysResetMonth: 'offDaysResetMonth',
   performanceTier: 'performanceTier',
   tierComputedAt: 'tierComputedAt',
+  throttledUntil: 'throttledUntil',
+  fleetPartnerId: 'fleetPartnerId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   healthCertExpiry: 'healthCertExpiry',
@@ -1462,6 +1465,7 @@ exports.Prisma.VendorScalarFieldEnum = {
   phone: 'phone',
   requiresCarOnly: 'requiresCarOnly',
   isPaused: 'isPaused',
+  creditCapKwd: 'creditCapKwd',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -1518,6 +1522,12 @@ exports.Prisma.FulfillmentSettingsScalarFieldEnum = {
   maxOfferRounds: 'maxOfferRounds',
   searchRadiusKm: 'searchRadiusKm',
   gpsStaleAfterSec: 'gpsStaleAfterSec',
+  radiusWidenAfterRounds: 'radiusWidenAfterRounds',
+  radiusWidenFactor: 'radiusWidenFactor',
+  maxSearchRadiusKm: 'maxSearchRadiusKm',
+  batchingEnabled: 'batchingEnabled',
+  batchMaxDropKm: 'batchMaxDropKm',
+  batchMaxOrders: 'batchMaxOrders',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -1551,6 +1561,13 @@ exports.Prisma.DeliveryOrderScalarFieldEnum = {
   podPin: 'podPin',
   codCollectedKwd: 'codCollectedKwd',
   slaDeadline: 'slaDeadline',
+  scheduledAt: 'scheduledAt',
+  returnedAt: 'returnedAt',
+  batchId: 'batchId',
+  tipKwd: 'tipKwd',
+  trackingToken: 'trackingToken',
+  externalRef: 'externalRef',
+  refundedAt: 'refundedAt',
   assignedAt: 'assignedAt',
   pickedUpAt: 'pickedUpAt',
   deliveredAt: 'deliveredAt',
@@ -1567,6 +1584,7 @@ exports.Prisma.DispatchOfferScalarFieldEnum = {
   driverId: 'driverId',
   round: 'round',
   distanceKm: 'distanceKm',
+  batchId: 'batchId',
   status: 'status',
   offeredAt: 'offeredAt',
   expiresAt: 'expiresAt',
@@ -1675,6 +1693,94 @@ exports.Prisma.WebhookEventScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.ApiKeyScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  vendorId: 'vendorId',
+  name: 'name',
+  keyHash: 'keyHash',
+  keyPrefix: 'keyPrefix',
+  isActive: 'isActive',
+  lastUsedAt: 'lastUsedAt',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OrderRatingScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  orderId: 'orderId',
+  driverId: 'driverId',
+  stars: 'stars',
+  comment: 'comment',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.VendorStatementScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  vendorId: 'vendorId',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd',
+  openingBalanceKwd: 'openingBalanceKwd',
+  codNetKwd: 'codNetKwd',
+  prepaidFeesKwd: 'prepaidFeesKwd',
+  refundsKwd: 'refundsKwd',
+  closingBalanceKwd: 'closingBalanceKwd',
+  status: 'status',
+  payoutTxId: 'payoutTxId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RefundScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  orderId: 'orderId',
+  vendorId: 'vendorId',
+  amountKwd: 'amountKwd',
+  reason: 'reason',
+  status: 'status',
+  requestedById: 'requestedById',
+  processedById: 'processedById',
+  walletTxId: 'walletTxId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.FleetPartnerScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  contactName: 'contactName',
+  contactPhone: 'contactPhone',
+  contactEmail: 'contactEmail',
+  flatFeePerOrderKwd: 'flatFeePerOrderKwd',
+  minOnlineHoursPerDay: 'minOnlineHoursPerDay',
+  minDriversOnline: 'minDriversOnline',
+  disciplineStatus: 'disciplineStatus',
+  disciplineNote: 'disciplineNote',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.FleetPayoutStatementScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  fleetPartnerId: 'fleetPartnerId',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd',
+  deliveredOrders: 'deliveredOrders',
+  feePerOrderKwd: 'feePerOrderKwd',
+  totalKwd: 'totalKwd',
+  status: 'status',
+  payoutTxId: 'payoutTxId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1726,7 +1832,8 @@ exports.Prisma.UserOrderByRelevanceFieldEnum = {
   passwordHash: 'passwordHash',
   name: 'name',
   jobGrade: 'jobGrade',
-  vendorId: 'vendorId'
+  vendorId: 'vendorId',
+  fleetPartnerId: 'fleetPartnerId'
 };
 
 exports.Prisma.DriverOrderByRelevanceFieldEnum = {
@@ -1744,6 +1851,7 @@ exports.Prisma.DriverOrderByRelevanceFieldEnum = {
   expoPushToken: 'expoPushToken',
   offDaysResetMonth: 'offDaysResetMonth',
   performanceTier: 'performanceTier',
+  fleetPartnerId: 'fleetPartnerId',
   healthCertStatus: 'healthCertStatus',
   workPermitStatus: 'workPermitStatus',
   foodHandlingCertStatus: 'foodHandlingCertStatus',
@@ -2545,14 +2653,18 @@ exports.Prisma.DeliveryOrderOrderByRelevanceFieldEnum = {
   cancelReason: 'cancelReason',
   failureReason: 'failureReason',
   proofPhotoUrl: 'proofPhotoUrl',
-  podPin: 'podPin'
+  podPin: 'podPin',
+  batchId: 'batchId',
+  trackingToken: 'trackingToken',
+  externalRef: 'externalRef'
 };
 
 exports.Prisma.DispatchOfferOrderByRelevanceFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
   orderId: 'orderId',
-  driverId: 'driverId'
+  driverId: 'driverId',
+  batchId: 'batchId'
 };
 
 exports.Prisma.WalletAccountOrderByRelevanceFieldEnum = {
@@ -2621,6 +2733,63 @@ exports.Prisma.WebhookEventOrderByRelevanceFieldEnum = {
   eventKey: 'eventKey',
   error: 'error'
 };
+
+exports.Prisma.ApiKeyOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  vendorId: 'vendorId',
+  name: 'name',
+  keyHash: 'keyHash',
+  keyPrefix: 'keyPrefix',
+  createdById: 'createdById'
+};
+
+exports.Prisma.OrderRatingOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  orderId: 'orderId',
+  driverId: 'driverId',
+  comment: 'comment'
+};
+
+exports.Prisma.VendorStatementOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  vendorId: 'vendorId',
+  status: 'status',
+  payoutTxId: 'payoutTxId'
+};
+
+exports.Prisma.RefundOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  orderId: 'orderId',
+  vendorId: 'vendorId',
+  reason: 'reason',
+  status: 'status',
+  requestedById: 'requestedById',
+  processedById: 'processedById',
+  walletTxId: 'walletTxId'
+};
+
+exports.Prisma.FleetPartnerOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  contactName: 'contactName',
+  contactPhone: 'contactPhone',
+  contactEmail: 'contactEmail',
+  disciplineStatus: 'disciplineStatus',
+  disciplineNote: 'disciplineNote'
+};
+
+exports.Prisma.FleetPayoutStatementOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  fleetPartnerId: 'fleetPartnerId',
+  status: 'status',
+  payoutTxId: 'payoutTxId'
+};
 exports.SubscriptionPlan = exports.$Enums.SubscriptionPlan = {
   FREE: 'FREE',
   PRO: 'PRO',
@@ -2646,7 +2815,8 @@ exports.UserRole = exports.$Enums.UserRole = {
   SUPERVISOR: 'SUPERVISOR',
   ACCOUNTANT: 'ACCOUNTANT',
   VIEWER: 'VIEWER',
-  VENDOR: 'VENDOR'
+  VENDOR: 'VENDOR',
+  FLEET: 'FLEET'
 };
 
 exports.VehicleType = exports.$Enums.VehicleType = {
@@ -2946,7 +3116,8 @@ exports.ViolationType = exports.$Enums.ViolationType = {
   DELIVEROO_UNASSIGNED_ORDER: 'DELIVEROO_UNASSIGNED_ORDER',
   AMERICANA_LATE_ARRIVAL: 'AMERICANA_LATE_ARRIVAL',
   AMERICANA_NO_SHOW: 'AMERICANA_NO_SHOW',
-  AMERICANA_EARLY_DEPARTURE_QUIT: 'AMERICANA_EARLY_DEPARTURE_QUIT'
+  AMERICANA_EARLY_DEPARTURE_QUIT: 'AMERICANA_EARLY_DEPARTURE_QUIT',
+  LOW_CUSTOMER_RATING: 'LOW_CUSTOMER_RATING'
 };
 
 exports.ViolationStatus = exports.$Enums.ViolationStatus = {
@@ -2987,7 +3158,8 @@ exports.WithdrawalStatus = exports.$Enums.WithdrawalStatus = {
 exports.DeliveryOrderSource = exports.$Enums.DeliveryOrderSource = {
   FOODICS: 'FOODICS',
   VENDOR_PORTAL: 'VENDOR_PORTAL',
-  SUPERVISOR: 'SUPERVISOR'
+  SUPERVISOR: 'SUPERVISOR',
+  PARTNER_API: 'PARTNER_API'
 };
 
 exports.DeliveryOrderStatus = exports.$Enums.DeliveryOrderStatus = {
@@ -2999,7 +3171,8 @@ exports.DeliveryOrderStatus = exports.$Enums.DeliveryOrderStatus = {
   PICKED_UP: 'PICKED_UP',
   DELIVERED: 'DELIVERED',
   FAILED: 'FAILED',
-  CANCELLED: 'CANCELLED'
+  CANCELLED: 'CANCELLED',
+  RETURNED: 'RETURNED'
 };
 
 exports.PaymentMethod = exports.$Enums.PaymentMethod = {
@@ -3027,7 +3200,10 @@ exports.WalletTxType = exports.$Enums.WalletTxType = {
   PREPAID_SETTLEMENT: 'PREPAID_SETTLEMENT',
   REMITTANCE: 'REMITTANCE',
   ADJUSTMENT: 'ADJUSTMENT',
-  VENDOR_PAYOUT: 'VENDOR_PAYOUT'
+  VENDOR_PAYOUT: 'VENDOR_PAYOUT',
+  REFUND: 'REFUND',
+  TIP: 'TIP',
+  FLEET_PAYOUT: 'FLEET_PAYOUT'
 };
 
 exports.IncidentType = exports.$Enums.IncidentType = {
@@ -3154,7 +3330,13 @@ exports.Prisma.ModelName = {
   WalletReconciliationRun: 'WalletReconciliationRun',
   Incident: 'Incident',
   FoodicsConnection: 'FoodicsConnection',
-  WebhookEvent: 'WebhookEvent'
+  WebhookEvent: 'WebhookEvent',
+  ApiKey: 'ApiKey',
+  OrderRating: 'OrderRating',
+  VendorStatement: 'VendorStatement',
+  Refund: 'Refund',
+  FleetPartner: 'FleetPartner',
+  FleetPayoutStatement: 'FleetPayoutStatement'
 };
 
 /**

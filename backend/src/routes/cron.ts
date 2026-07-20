@@ -23,6 +23,7 @@ import { Router, Request, Response } from "express";
 import { logger } from "../config/logger";
 import { sweepDispatch } from "../services/dispatch/dispatchEngine";
 import { sweepStalePresence } from "../services/gpsMonitorService";
+import { sweepScheduledOrders } from "../services/orderService";
 
 const router = Router();
 
@@ -85,11 +86,21 @@ router.get("/dispatch-sweep", async (req: Request, res: Response) => {
       logger.warn({ err }, "cron: presence sweep failed, continuing to dispatch");
     }
 
+    // Leg 0 (PRD §6): due scheduled orders enter DISPATCHING before the
+    // dispatch sweep so they get their first offer on the same tick.
+    let scheduledAdvanced = 0;
+    try {
+      scheduledAdvanced = await sweepScheduledOrders();
+    } catch (err) {
+      logger.warn({ err }, "cron: scheduled-orders sweep failed, continuing to dispatch");
+    }
+
     const dispatch = await sweepDispatch();
 
     return res.json({
       ok: true,
       presenceOffline,
+      scheduledAdvanced,
       ...dispatch,
       durationMs: Date.now() - startedAt,
     });

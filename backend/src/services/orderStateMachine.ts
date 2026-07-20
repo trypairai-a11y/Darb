@@ -71,10 +71,13 @@ export const ALLOWED: Record<DeliveryOrderStatus, DeliveryOrderStatus[]> = {
   NO_DRIVER: ["DISPATCHING", "ASSIGNED", "CANCELLED"],
   ASSIGNED: ["PICKED_UP", "FAILED", "CANCELLED"],
   PICKED_UP: ["DELIVERED", "FAILED", "CANCELLED"],
+  // PRD §6 return-to-merchant: after a FAILED delivery (customer unreachable)
+  // rider support authorises the return. FAILED is no longer terminal.
+  FAILED: ["RETURNED"],
   // Terminal states:
   DELIVERED: [],
-  FAILED: [],
   CANCELLED: [],
+  RETURNED: [],
 };
 
 /** Pure legality check for a from→to pair. */
@@ -100,6 +103,7 @@ const SSE_TYPE_FOR_STATUS: Partial<Record<DeliveryOrderStatus, DarbEventType>> =
   FAILED: "order.failed",
   CANCELLED: "order.cancelled",
   NO_DRIVER: "order.dispatch_exhausted",
+  RETURNED: "order.returned",
 };
 
 interface PendingSseEvent {
@@ -197,6 +201,8 @@ function describeTransition(
       return `Order rejected`;
     case "CREATED":
       return `Order re-entered pipeline after dropoff fix (by ${by})`;
+    case "RETURNED":
+      return `Return to merchant authorised (by ${by})`;
     default:
       return `Order moved ${from} → ${to}`;
   }

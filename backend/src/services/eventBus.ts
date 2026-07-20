@@ -46,7 +46,12 @@ export type DarbEventType =
   | "sos.raised"
   | "incident.updated"
   | "remittance.recorded"
-  | "wallet.reconciliation_failed";
+  | "wallet.reconciliation_failed"
+  // Darb 2.0 PRD build (DARB2-PRD-001 v3.0):
+  | "order.returned"
+  | "order.cancel_requested"
+  | "order.rated"
+  | "order.tipped";
 
 export interface DarbEvent {
   type: DarbEventType;

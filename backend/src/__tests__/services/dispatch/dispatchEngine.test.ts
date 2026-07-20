@@ -661,3 +661,36 @@ describe("sweepDispatch", () => {
     expect(result.truncated).toBe(true);
   });
 });
+
+// ─── effectiveRadiusKm (PRD §8 auto-widen) ──────────────────────────────────
+
+describe("effectiveRadiusKm", () => {
+  const { effectiveRadiusKm } = require("../../../services/dispatch/dispatchEngine");
+  const S = {
+    searchRadiusKm: 8,
+    radiusWidenAfterRounds: 3,
+    radiusWidenFactor: 1.5,
+    maxSearchRadiusKm: 15,
+  };
+
+  test.each([
+    [0, 8],
+    [1, 8],
+    [2, 8],
+    [3, 12],
+    [4, 12],
+    [5, 12],
+    [6, 15], // 8 * 1.5^2 = 18, capped at 15
+    [12, 15],
+  ])("round %i → %i km", (round, expected) => {
+    expect(effectiveRadiusKm(S, round)).toBe(expected);
+  });
+
+  test("radiusWidenAfterRounds=0 disables widening entirely", () => {
+    expect(effectiveRadiusKm({ ...S, radiusWidenAfterRounds: 0 }, 10)).toBe(8);
+  });
+
+  test("negative rounds are clamped to the base radius", () => {
+    expect(effectiveRadiusKm(S, -2)).toBe(8);
+  });
+});

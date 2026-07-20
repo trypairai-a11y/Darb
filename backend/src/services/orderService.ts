@@ -8,7 +8,7 @@
  * (status-guarded updateMany + OrderEvent append + post-commit SSE).
  * Money is Prisma.Decimal everywhere.
  */
-import { randomInt } from "crypto";
+import { randomBytes, randomInt } from "crypto";
 import { DeliveryOrder, DeliveryOrderStatus, Prisma } from "../generated/prisma";
 import { prisma } from "../config";
 import { logger } from "../config/logger";
@@ -37,6 +37,12 @@ import { sendDispatchDriverPush } from "./driverAppPushService";
  */
 export const SLA_PROMISE_MINUTES = 45;
 
+/**
+ * PRD §6 scheduled orders: dispatch starts this many minutes before
+ * scheduledAt. Orders scheduled closer than the lead dispatch immediately.
+ */
+export const SCHEDULE_LEAD_MINUTES = 15;
+
 /** Domain error for lookups — routes map to HTTP 404. */
 export class OrderNotFoundError extends Error {
   constructor(orderId: string) {
@@ -49,7 +55,7 @@ export class OrderNotFoundError extends Error {
 
 export interface CreateOrderInput {
   tenantId: string;
-  source: "FOODICS" | "VENDOR_PORTAL" | "SUPERVISOR";
+  source: "FOODICS" | "VENDOR_PORTAL" | "SUPERVISOR" | "PARTNER_API";
   vendorId: string;
   branchId: string;
   paymentMethod: "COD" | "PREPAID";
@@ -59,6 +65,10 @@ export interface CreateOrderInput {
   dropoffAddress?: string;
   dropoff: { lat?: number; lng?: number; zoneId?: string };
   foodicsOrderId?: string;
+  /** PRD §2 partner intake: the merchant system's own order id (idempotency). */
+  externalRef?: string;
+  /** PRD §6 scheduling: future dispatch time. Omit for immediate orders. */
+  scheduledAt?: Date;
   metadata?: Record<string, unknown>;
   actor: OrderActor;
 }
@@ -92,6 +102,14 @@ async function nextOrderNumber(
 /** 4 random digits (leading zeros allowed), crypto-sourced. */
 function generatePodPin(): string {
   return String(randomInt(0, 10_000)).padStart(4, "0");
+}
+
+/**
+ * PRD §12 tracking-link credential: 128-bit random, base64url. The only auth
+ * for the public /api/track surface, so it must be unguessable.
+ */
+export function generateTrackingToken(): string {
+  return randomBytes(16).toString("base64url");
 }
 
 function isP2002(err: unknown): boolean {
@@ -217,6 +235,8 @@ export async function createDeliveryOrder(input: CreateOrderInput): Promise<Deli
     dropoffLat,
     dropoffLng,
     foodicsOrderId: input.foodicsOrderId ?? null,
+    externalRef: input.externalRef ?? null,
+    trackingToken: generateTrackingToken(),
     requiresCarOnly: vendor.requiresCarOnly,
     metadata: (input.metadata ?? undefined) as Prisma.InputJsonValue | undefined,
   };
@@ -280,6 +300,14 @@ export async function createDeliveryOrder(input: CreateOrderInput): Promise<Deli
   }
 
   // ── Happy path: CREATED row → DISPATCHING ───────────────────────────────
+  // PRD §6 scheduling: a far-enough-future scheduledAt persists as CREATED
+  // and is advanced to DISPATCHING by sweepScheduledOrders near the due time.
+  const scheduledAt =
+    input.scheduledAt &&
+    input.scheduledAt.getTime() > Date.now() + SCHEDULE_LEAD_MINUTES * 60_000
+      ? input.scheduledAt
+      : null;
+
   const attemptCreate = () =>
     prisma.$transaction(async (tx) => {
       const orderNumber = await nextOrderNumber(tx, tenantId, vendor.code);
@@ -292,7 +320,13 @@ export async function createDeliveryOrder(input: CreateOrderInput): Promise<Deli
           dropoffZoneId: quote.dropoffZoneId,
           deliveryFeeKwd: quote.feeKwd,
           podPin: generatePodPin(),
-          slaDeadline: new Date(Date.now() + SLA_PROMISE_MINUTES * 60_000),
+          scheduledAt,
+          // The 45-minute promise counts from dispatch start: creation for
+          // immediate orders, the scheduled time for scheduled ones.
+          slaDeadline: new Date(
+            (scheduledAt ? scheduledAt.getTime() : Date.now()) +
+              SLA_PROMISE_MINUTES * 60_000,
+          ),
         },
       });
       await tx.orderEvent.create({
@@ -300,7 +334,9 @@ export async function createDeliveryOrder(input: CreateOrderInput): Promise<Deli
           tenantId,
           orderId: order.id,
           action: "order.created",
-          description: `Order ${orderNumber} created via ${input.source}`,
+          description: scheduledAt
+            ? `Order ${orderNumber} scheduled via ${input.source} for ${scheduledAt.toISOString()}`
+            : `Order ${orderNumber} created via ${input.source}`,
           operator: actor.name ?? actor.type,
           operatorId: actor.id ?? null,
           timestamp: new Date(),
@@ -310,19 +346,27 @@ export async function createDeliveryOrder(input: CreateOrderInput): Promise<Deli
             feeKwd: quote.feeKwd.toFixed(3),
             pickupZoneId: quote.pickupZoneId,
             dropoffZoneId: quote.dropoffZoneId,
+            ...(scheduledAt ? { scheduledAt: scheduledAt.toISOString() } : {}),
           } as Prisma.InputJsonValue,
         },
       });
-      await transitionOrder(tx, {
-        orderId: order.id,
-        tenantId,
-        from: "CREATED",
-        to: "DISPATCHING",
-        actor: SYSTEM_ACTOR,
-        eventMeta: baseEventMeta({ ...order, deliveryFeeKwd: quote.feeKwd }),
-      });
+      if (!scheduledAt) {
+        await transitionOrder(tx, {
+          orderId: order.id,
+          tenantId,
+          from: "CREATED",
+          to: "DISPATCHING",
+          actor: SYSTEM_ACTOR,
+          eventMeta: baseEventMeta({ ...order, deliveryFeeKwd: quote.feeKwd }),
+        });
+      }
       const updated = await tx.deliveryOrder.findFirst({ where: { id: order.id, tenantId } });
-      return { tx, order: updated ?? { ...order, status: "DISPATCHING" as DeliveryOrderStatus } };
+      return {
+        tx,
+        order:
+          updated ??
+          { ...order, status: (scheduledAt ? "CREATED" : "DISPATCHING") as DeliveryOrderStatus },
+      };
     });
 
   let created: { tx: object; order: DeliveryOrder };
@@ -343,13 +387,105 @@ export async function createDeliveryOrder(input: CreateOrderInput): Promise<Deli
     feeKwd: quote.feeKwd.toFixed(3),
   });
 
-  try {
-    await enqueueDispatchStart(order.id, tenantId);
-  } catch (err) {
-    logger.error({ err, orderId: order.id }, "enqueueDispatchStart failed — order stuck in DISPATCHING until redispatch");
+  if (!scheduledAt) {
+    try {
+      await enqueueDispatchStart(order.id, tenantId);
+    } catch (err) {
+      logger.error({ err, orderId: order.id }, "enqueueDispatchStart failed — order stuck in DISPATCHING until redispatch");
+    }
   }
 
   return order;
+}
+
+// ─── Scheduled orders sweep ────────────────────────────────────────────────
+
+/**
+ * PRD §6: advance due scheduled orders (CREATED with scheduledAt within the
+ * lead window) into DISPATCHING. Cross-tenant by design — driven by the
+ * /api/cron tick, same trust model as sweepDispatch. The guarded
+ * CREATED→DISPATCHING transition makes concurrent sweeps safe; a vendor
+ * cancel that lands first simply wins the guard.
+ */
+export async function sweepScheduledOrders(now = new Date()): Promise<number> {
+  const dueBefore = new Date(now.getTime() + SCHEDULE_LEAD_MINUTES * 60_000);
+  // eslint-disable-next-line no-restricted-syntax -- cron sweep is cross-tenant by design
+  const due = await prisma.deliveryOrder.findMany({
+    where: {
+      status: "CREATED",
+      scheduledAt: { not: null, lte: dueBefore },
+    },
+    select: {
+      id: true,
+      tenantId: true,
+      orderNumber: true,
+      vendorId: true,
+      deliveryFeeKwd: true,
+    },
+    take: 200,
+  });
+
+  let advanced = 0;
+  for (const order of due) {
+    try {
+      const tx = await prisma.$transaction(async (trx) => {
+        await transitionOrder(trx, {
+          orderId: order.id,
+          tenantId: order.tenantId,
+          from: "CREATED",
+          to: "DISPATCHING",
+          actor: SYSTEM_ACTOR,
+          eventMeta: baseEventMeta(order),
+        });
+        return trx;
+      });
+      flushOrderEvents(tx);
+      await enqueueDispatchStart(order.id, order.tenantId);
+      advanced += 1;
+    } catch (err) {
+      if (err instanceof OrderStateConflictError) continue; // cancelled meanwhile
+      logger.error({ err, orderId: order.id }, "sweepScheduledOrders: advance failed");
+    }
+  }
+  return advanced;
+}
+
+// ─── Return to merchant ────────────────────────────────────────────────────
+
+/**
+ * PRD §6/§10: rider support authorises return-to-merchant after a FAILED
+ * delivery (customer unreachable). FAILED→RETURNED.
+ *
+ * Wallet: deliberate no-op. COD/prepaid settlement only posts inside the
+ * DELIVERED transition, which never ran for a FAILED order — no cash was
+ * ledgered, so there is nothing to reverse. A future failed-delivery fee
+ * would be a new ADJUSTMENT posting, not a change here.
+ */
+export async function returnToMerchant(args: {
+  tenantId: string;
+  orderId: string;
+  actor: OrderActor;
+  note?: string;
+}): Promise<DeliveryOrder> {
+  const { tenantId, orderId, actor, note } = args;
+  const order = await getOrderOrThrow(tenantId, orderId);
+
+  const tx = await prisma.$transaction(async (trx) => {
+    await transitionOrder(trx, {
+      orderId,
+      tenantId,
+      from: "FAILED",
+      to: "RETURNED",
+      actor,
+      data: { returnedAt: new Date() },
+      eventMeta: { ...baseEventMeta(order), ...(note ? { note } : {}) },
+    });
+    return trx;
+  });
+  flushOrderEvents(tx);
+
+  const updated = await prisma.deliveryOrder.findFirst({ where: { id: orderId, tenantId } });
+  return updated ?? { ...order, status: "RETURNED" as DeliveryOrderStatus };
 }
 
 // ─── Cancel ────────────────────────────────────────────────────────────────

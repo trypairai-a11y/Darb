@@ -1,6 +1,8 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
+import { randomBytes } from "crypto";
+import { hashApiKey } from "../middleware/partnerAuth";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { point } from "@turf/helpers";
 import { prisma } from "../config";
@@ -521,6 +523,94 @@ router.get("/:id/wallet", async (req: Request, res: Response) => {
         transaction: e.transaction,
       })),
     });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Partner API keys (PRD §2 order intake) ─────────────────────────────────
+
+/**
+ * @swagger
+ * /api/vendors/{id}/api-keys:
+ *   get:
+ *     tags: [Vendors]
+ *     summary: List partner API keys for a vendor (never the raw key)
+ */
+router.get("/:id/api-keys", rbac("ADMIN"), async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const vendor = await findTenantVendor(tenantId, req.params.id);
+    if (!vendor) { res.status(404).json({ error: "Vendor not found" }); return; }
+
+    const keys = await prisma.apiKey.findMany({
+      where: { tenantId, vendorId: vendor.id },
+      select: {
+        id: true, name: true, keyPrefix: true, isActive: true,
+        lastUsedAt: true, createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    res.json(keys);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/vendors/{id}/api-keys:
+ *   post:
+ *     tags: [Vendors]
+ *     summary: Create a partner API key (ADMIN only) — the raw key is returned ONCE
+ */
+router.post(
+  "/:id/api-keys",
+  rbac("ADMIN"),
+  validateBody(z.object({ name: z.string().trim().min(2).max(100) })),
+  async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.user!.tenantId;
+      const vendor = await findTenantVendor(tenantId, req.params.id);
+      if (!vendor) { res.status(404).json({ error: "Vendor not found" }); return; }
+
+      // 32 random bytes base64url ≈ 43 chars; prefixed for support lookups.
+      const rawKey = `dpk_${randomBytes(32).toString("base64url")}`;
+      const key = await prisma.apiKey.create({
+        data: {
+          tenantId,
+          vendorId: vendor.id,
+          name: (req.body as { name: string }).name,
+          keyHash: hashApiKey(rawKey),
+          keyPrefix: rawKey.slice(0, 8),
+          createdById: req.user!.userId,
+        },
+        select: { id: true, name: true, keyPrefix: true, createdAt: true },
+      });
+      // The ONLY time the raw key crosses the wire.
+      res.status(201).json({ ...key, rawKey });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+/**
+ * @swagger
+ * /api/vendors/api-keys/{keyId}:
+ *   delete:
+ *     tags: [Vendors]
+ *     summary: Revoke a partner API key (soft — isActive=false)
+ */
+router.delete("/api-keys/:keyId", rbac("ADMIN"), async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const result = await prisma.apiKey.updateMany({
+      where: { id: req.params.keyId, tenantId },
+      data: { isActive: false },
+    });
+    if (result.count === 0) { res.status(404).json({ error: "Key not found" }); return; }
+    res.json({ ok: true });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

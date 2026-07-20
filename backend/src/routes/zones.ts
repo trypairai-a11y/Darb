@@ -92,6 +92,13 @@ const settingsSchema = z.object({
   maxOfferRounds: z.number().int().min(1).max(20).optional(),
   searchRadiusKm: z.number().positive().max(100).optional(),
   gpsStaleAfterSec: z.number().int().min(30).max(3600).optional(),
+  // PRD §8 dispatch knobs: auto-widen + auto-batching.
+  radiusWidenAfterRounds: z.number().int().min(0).max(20).optional(),
+  radiusWidenFactor: z.number().min(1).max(5).optional(),
+  maxSearchRadiusKm: z.number().positive().max(100).optional(),
+  batchingEnabled: z.boolean().optional(),
+  batchMaxDropKm: z.number().positive().max(20).optional(),
+  batchMaxOrders: z.number().int().min(2).max(5).optional(),
 });
 
 // ─── Polygon normalization ──────────────────────────────────────────────────
@@ -415,6 +422,12 @@ router.put(
       if (body.maxOfferRounds !== undefined) data.maxOfferRounds = body.maxOfferRounds;
       if (body.searchRadiusKm !== undefined) data.searchRadiusKm = body.searchRadiusKm;
       if (body.gpsStaleAfterSec !== undefined) data.gpsStaleAfterSec = body.gpsStaleAfterSec;
+      if (body.radiusWidenAfterRounds !== undefined) data.radiusWidenAfterRounds = body.radiusWidenAfterRounds;
+      if (body.radiusWidenFactor !== undefined) data.radiusWidenFactor = body.radiusWidenFactor;
+      if (body.maxSearchRadiusKm !== undefined) data.maxSearchRadiusKm = body.maxSearchRadiusKm;
+      if (body.batchingEnabled !== undefined) data.batchingEnabled = body.batchingEnabled;
+      if (body.batchMaxDropKm !== undefined) data.batchMaxDropKm = body.batchMaxDropKm;
+      if (body.batchMaxOrders !== undefined) data.batchMaxOrders = body.batchMaxOrders;
 
       const settings = await prisma.fulfillmentSettings.upsert({
         where: { tenantId },

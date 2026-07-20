@@ -20,9 +20,13 @@ jest.mock("../../services/dispatch/dispatchEngine", () => ({
 jest.mock("../../services/gpsMonitorService", () => ({
   sweepStalePresence: jest.fn().mockResolvedValue(3),
 }));
+jest.mock("../../services/orderService", () => ({
+  sweepScheduledOrders: jest.fn().mockResolvedValue(2),
+}));
 
 const { sweepDispatch } = require("../../services/dispatch/dispatchEngine");
 const { sweepStalePresence } = require("../../services/gpsMonitorService");
+const { sweepScheduledOrders } = require("../../services/orderService");
 import cronRouter from "../../routes/cron";
 
 const SECRET = "s3cr3t-cron-token";
@@ -117,10 +121,12 @@ describe("cron authorization", () => {
     expect(res.body).toMatchObject({
       ok: true,
       presenceOffline: 3,
+      scheduledAdvanced: 2,
       expired: 2,
       advanced: 1,
     });
     expect(sweepStalePresence).toHaveBeenCalledTimes(1);
+    expect(sweepScheduledOrders).toHaveBeenCalledTimes(1);
     expect(sweepDispatch).toHaveBeenCalledTimes(1);
   });
 });
@@ -135,6 +141,18 @@ describe("cron sweep behaviour", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.presenceOffline).toBe(0);
+    expect(sweepDispatch).toHaveBeenCalledTimes(1);
+  });
+
+  test("a scheduled-orders failure still lets the dispatch sweep run", async () => {
+    (sweepScheduledOrders as jest.Mock).mockRejectedValueOnce(new Error("db hiccup"));
+
+    const res = await request(makeApp())
+      .get("/api/cron/dispatch-sweep")
+      .set("Authorization", `Bearer ${SECRET}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.scheduledAdvanced).toBe(0);
     expect(sweepDispatch).toHaveBeenCalledTimes(1);
   });
 

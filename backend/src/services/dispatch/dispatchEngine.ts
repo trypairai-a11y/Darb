@@ -66,11 +66,17 @@ const AVG_SPEED_KMH = 30;
 
 const SUPERVISOR_ROLES = ["ADMIN", "OPS_MANAGER", "SUPERVISOR"] as const;
 
-interface DispatchSettings {
+export interface DispatchSettings {
   offerWindowSec: number;
   maxOfferRounds: number;
   searchRadiusKm: number;
   gpsStaleAfterSec: number;
+  radiusWidenAfterRounds: number;
+  radiusWidenFactor: number;
+  maxSearchRadiusKm: number;
+  batchingEnabled: boolean;
+  batchMaxDropKm: number;
+  batchMaxOrders: number;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -101,7 +107,35 @@ async function getDispatchSettings(tenantId: string): Promise<DispatchSettings> 
     maxOfferRounds: row?.maxOfferRounds ?? 8,
     searchRadiusKm: row?.searchRadiusKm ?? 8,
     gpsStaleAfterSec: row?.gpsStaleAfterSec ?? 180,
+    radiusWidenAfterRounds: row?.radiusWidenAfterRounds ?? 3,
+    radiusWidenFactor: row?.radiusWidenFactor ?? 1.5,
+    maxSearchRadiusKm: row?.maxSearchRadiusKm ?? 15,
+    batchingEnabled: row?.batchingEnabled ?? true,
+    batchMaxDropKm: row?.batchMaxDropKm ?? 1.5,
+    batchMaxOrders: row?.batchMaxOrders ?? 2,
   };
+}
+
+/**
+ * PRD §8 auto-widen: effective search radius for an offer round. Widens by
+ * radiusWidenFactor every radiusWidenAfterRounds rounds, capped at
+ * maxSearchRadiusKm. Defaults: rounds 0-2 at 8 km, 3-5 at 12 km, 6+ at 15 km.
+ */
+export function effectiveRadiusKm(
+  settings: Pick<
+    DispatchSettings,
+    "searchRadiusKm" | "radiusWidenAfterRounds" | "radiusWidenFactor" | "maxSearchRadiusKm"
+  >,
+  round: number,
+): number {
+  const widenings =
+    settings.radiusWidenAfterRounds > 0
+      ? Math.floor(Math.max(0, round) / settings.radiusWidenAfterRounds)
+      : 0;
+  return Math.min(
+    settings.searchRadiusKm * Math.pow(settings.radiusWidenFactor, widenings),
+    settings.maxSearchRadiusKm,
+  );
 }
 
 type SessionWithDriver = {
@@ -209,7 +243,8 @@ export async function selectCandidates(
     if (!session.lastGpsAt || session.lastGpsAt.getTime() <= staleCutoff.getTime()) continue;
 
     const distanceKm = haversineMeters(pickupLat, pickupLng, lat, lng) / 1000;
-    if (distanceKm > settings.searchRadiusKm) continue;
+    // PRD §8 auto-widen: the radius grows with the order's offer round.
+    if (distanceKm > effectiveRadiusKm(settings, order.offerRound)) continue;
 
     prelim.push({
       driverId: driver.id,

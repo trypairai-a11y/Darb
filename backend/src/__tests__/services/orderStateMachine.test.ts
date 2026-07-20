@@ -49,6 +49,7 @@ describe("ALLOWED transition table (§A2 legality matrix)", () => {
     ["PICKED_UP", "DELIVERED"],
     ["PICKED_UP", "FAILED"],
     ["PICKED_UP", "CANCELLED"], // supervisor pre-DELIVERED cancel
+    ["FAILED", "RETURNED"], // PRD §6 return-to-merchant authorisation
   ];
 
   test.each(LEGAL)("%s → %s is legal", (from, to) => {
@@ -66,8 +67,14 @@ describe("ALLOWED transition table (§A2 legality matrix)", () => {
 
   test("terminal states have no outgoing transitions", () => {
     expect(ALLOWED.DELIVERED).toEqual([]);
-    expect(ALLOWED.FAILED).toEqual([]);
     expect(ALLOWED.CANCELLED).toEqual([]);
+    expect(ALLOWED.RETURNED).toEqual([]);
+    // FAILED is no longer terminal: return-to-merchant is its only exit.
+    expect(ALLOWED.FAILED).toEqual(["RETURNED"]);
+  });
+
+  test("DELIVERED can never become RETURNED (only FAILED can)", () => {
+    expect(isTransitionAllowed("DELIVERED", "RETURNED")).toBe(false);
   });
 
   test("no state transitions to itself", () => {

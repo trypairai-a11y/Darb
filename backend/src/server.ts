@@ -67,6 +67,8 @@ import walletsRouter from "./routes/wallets";
 import incidentsRouter from "./routes/incidents";
 import dispatchMonitorRouter from "./routes/dispatchMonitor";
 import cronRouter from "./routes/cron";
+import partnerRouter from "./routes/partner";
+import trackRouter from "./routes/track";
 import agentDeliveryRouter from "./routes/agentDelivery";
 import { blockVendorOutsideAllowlist } from "./middleware/vendorContainment";
 import { startDispatchWorker } from "./queues/dispatchWorker";
@@ -202,6 +204,11 @@ app.use("/api/foodics", foodicsCallbackRouter);
 // schedulers below would otherwise own. Bearer CRON_SECRET, cross-tenant by
 // design, fails closed when the secret is unset. See routes/cron.ts.
 app.use("/api/cron", cronRouter);
+// partnerRouter: PRD §2 merchant order intake — API-key auth (partnerAuth),
+// never JWT. trackRouter: PRD §12 public customer tracking — the 128-bit
+// trackingToken is the only credential; strict safe-subset responses.
+app.use("/api/partner", partnerRouter);
+app.use("/api/track", trackRouter);
 
 // Routes
 app.use("/api/auth", authRoutes);

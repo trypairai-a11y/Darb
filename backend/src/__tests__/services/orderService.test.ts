@@ -459,3 +459,149 @@ describe("cancelOrder", () => {
     expect(order.status).toBe("CANCELLED");
   });
 });
+
+// ─── Scheduled orders (PRD §6) ──────────────────────────────────────────────
+
+describe("scheduled orders", () => {
+  const { returnToMerchant, sweepScheduledOrders, SCHEDULE_LEAD_MINUTES } =
+    require("../../services/orderService");
+
+  test("a far-future scheduledAt persists CREATED, skips dispatch, anchors slaDeadline to the schedule", async () => {
+    primeHappyCreate();
+    // The post-create re-fetch must reflect the row as persisted (CREATED) —
+    // primeHappyCreate's default hardcodes the immediate-dispatch shape.
+    prisma.deliveryOrder.findFirst.mockImplementation(async ({ where }: any) => {
+      if (where.orderNumber) return null;
+      if (where.id) {
+        const created = prisma.deliveryOrder.create.mock.calls[0]?.[0]?.data;
+        return created ? { id: where.id, ...created } : null;
+      }
+      return null;
+    });
+    const scheduledAt = new Date(Date.now() + 2 * 60 * 60_000); // +2h
+
+    const order = await createDeliveryOrder({ ...CREATE_INPUT, scheduledAt });
+
+    const data = prisma.deliveryOrder.create.mock.calls[0][0].data;
+    expect(data.status).toBe("CREATED");
+    expect(data.scheduledAt).toEqual(scheduledAt);
+    // Promise counts from the scheduled time, not creation.
+    expect(data.slaDeadline.getTime()).toBe(
+      scheduledAt.getTime() + SLA_PROMISE_MINUTES * 60_000,
+    );
+    // No CREATED→DISPATCHING transition, no dispatch enqueue.
+    expect(prisma.deliveryOrder.updateMany).not.toHaveBeenCalled();
+    expect(enqueueDispatchStart).not.toHaveBeenCalled();
+    expect(order.status).toBe("CREATED");
+  });
+
+  test("a scheduledAt inside the lead window dispatches immediately like an unscheduled order", async () => {
+    primeHappyCreate();
+    const scheduledAt = new Date(Date.now() + (SCHEDULE_LEAD_MINUTES - 5) * 60_000);
+
+    await createDeliveryOrder({ ...CREATE_INPUT, scheduledAt });
+
+    expect(prisma.deliveryOrder.updateMany).toHaveBeenCalled();
+    expect(enqueueDispatchStart).toHaveBeenCalled();
+  });
+
+  test("sweepScheduledOrders advances only due CREATED orders and enqueues dispatch", async () => {
+    prisma.deliveryOrder.findMany = prisma.deliveryOrder.findMany ?? jest.fn();
+    prisma.deliveryOrder.findMany.mockResolvedValue([
+      { id: "ord-s1", tenantId: TENANT, orderNumber: "DRB-BRGB-0009", vendorId: "v-1", deliveryFeeKwd: D("1.250") },
+    ]);
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 1 });
+    prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+
+    const advanced = await sweepScheduledOrders(new Date());
+
+    expect(advanced).toBe(1);
+    const guard = prisma.deliveryOrder.updateMany.mock.calls[0][0];
+    expect(guard.where).toMatchObject({ id: "ord-s1", status: "CREATED" });
+    expect(guard.data).toMatchObject({ status: "DISPATCHING" });
+    expect(enqueueDispatchStart).toHaveBeenCalledWith("ord-s1", TENANT);
+  });
+
+  test("sweepScheduledOrders skips an order cancelled meanwhile (guard count 0) without failing the sweep", async () => {
+    prisma.deliveryOrder.findMany.mockResolvedValue([
+      { id: "ord-s2", tenantId: TENANT, orderNumber: "DRB-BRGB-0010", vendorId: "v-1", deliveryFeeKwd: null },
+    ]);
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 0 });
+
+    const advanced = await sweepScheduledOrders(new Date());
+
+    expect(advanced).toBe(0);
+    expect(enqueueDispatchStart).not.toHaveBeenCalled();
+  });
+});
+
+// ─── Return to merchant (PRD §6/§10) ────────────────────────────────────────
+
+describe("returnToMerchant", () => {
+  const { returnToMerchant } = require("../../services/orderService");
+
+  const FAILED_ORDER = {
+    id: "ord-1",
+    tenantId: TENANT,
+    orderNumber: "DRB-BRGB-0001",
+    vendorId: "v-1",
+    driverId: "drv-1",
+    status: "FAILED",
+    deliveryFeeKwd: D("1.250"),
+  };
+
+  test("FAILED→RETURNED sets returnedAt, appends the event, posts NO wallet transaction", async () => {
+    prisma.deliveryOrder.findFirst
+      .mockResolvedValueOnce(FAILED_ORDER) // getOrderOrThrow
+      .mockResolvedValueOnce({ ...FAILED_ORDER, status: "RETURNED" }); // re-fetch
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 1 });
+    prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+
+    const order = await returnToMerchant({
+      tenantId: TENANT,
+      orderId: "ord-1",
+      actor: ACTOR,
+      note: "customer unreachable, pharmacy restocks",
+    });
+
+    const guard = prisma.deliveryOrder.updateMany.mock.calls[0][0];
+    expect(guard.where).toEqual({ id: "ord-1", tenantId: TENANT, status: "FAILED" });
+    expect(guard.data).toMatchObject({ status: "RETURNED" });
+    expect(guard.data.returnedAt).toBeInstanceOf(Date);
+    // Deliberate wallet no-op: settlement never ran for a FAILED order.
+    expect(postCodSettlement).not.toHaveBeenCalled();
+    expect(postPrepaidSettlement).not.toHaveBeenCalled();
+    expect(order.status).toBe("RETURNED");
+  });
+
+  test("returning a DELIVERED order throws OrderStateConflictError", async () => {
+    prisma.deliveryOrder.findFirst.mockResolvedValueOnce({ ...FAILED_ORDER, status: "DELIVERED" });
+    // The FAILED-status guard matches no row for a DELIVERED order.
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 0 });
+
+    await expect(
+      returnToMerchant({ tenantId: TENANT, orderId: "ord-1", actor: ACTOR }),
+    ).rejects.toThrow(OrderStateConflictError);
+  });
+});
+
+// ─── Tracking token (PRD §12) ───────────────────────────────────────────────
+
+describe("tracking token", () => {
+  const { generateTrackingToken } = require("../../services/orderService");
+
+  test("every created order carries an unguessable trackingToken", async () => {
+    primeHappyCreate();
+    await createDeliveryOrder(CREATE_INPUT);
+    const data = prisma.deliveryOrder.create.mock.calls[0][0].data;
+    expect(typeof data.trackingToken).toBe("string");
+    expect(data.trackingToken.length).toBeGreaterThanOrEqual(20);
+  });
+
+  test("generateTrackingToken is 128-bit random base64url and collision-free across calls", () => {
+    const a = generateTrackingToken();
+    const b = generateTrackingToken();
+    expect(a).not.toBe(b);
+    expect(a).toMatch(/^[A-Za-z0-9_-]+$/);
+  });
+});

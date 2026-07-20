@@ -29,6 +29,7 @@ import {
   cancelOrder,
   createDeliveryOrder,
   redispatchOrder,
+  returnToMerchant,
 } from "../services/orderService";
 import { enqueueDispatchStart } from "../queues/dispatchQueue";
 import { selectCandidates } from "../services/dispatch/dispatchEngine";
@@ -39,7 +40,7 @@ const SUPERVISOR_PLUS = ["ADMIN", "OPS_MANAGER", "SUPERVISOR"];
 
 const DELIVERY_ORDER_STATUSES = [
   "CREATED", "REJECTED", "DISPATCHING", "NO_DRIVER", "ASSIGNED",
-  "PICKED_UP", "DELIVERED", "FAILED", "CANCELLED",
+  "PICKED_UP", "DELIVERED", "FAILED", "CANCELLED", "RETURNED",
 ] as const;
 
 /** Supervisor cancel: any pre-DELIVERED state (§A2). */
@@ -77,6 +78,8 @@ const createOrderSchema = z.object({
     zoneId: z.string().min(1).optional(),
   }),
   foodicsOrderId: z.string().min(1).optional(),
+  // PRD §6 scheduling: ISO datetime in the future for scheduled orders.
+  scheduledAt: z.coerce.date().optional(),
   metadata: z.record(z.unknown()).optional(),
 });
 
@@ -244,6 +247,7 @@ router.post(
         dropoffAddress: body.dropoffAddress,
         dropoff: body.dropoff,
         foodicsOrderId: body.foodicsOrderId,
+        scheduledAt: body.scheduledAt,
         metadata: body.metadata,
         actor: staffActor(req),
       });
@@ -415,6 +419,35 @@ router.post(
         reason: (req.body as z.infer<typeof cancelSchema>).reason,
         actor: staffActor(req),
         allowFrom: SUPERVISOR_CANCELLABLE,
+      });
+      res.json(order);
+    } catch (err) {
+      handleOrderError(res, err);
+    }
+  },
+);
+
+/**
+ * @swagger
+ * /api/delivery-orders/{id}/return:
+ *   post:
+ *     tags: [Delivery Orders]
+ *     summary: Authorise return-to-merchant after a FAILED delivery (PRD §6)
+ */
+router.post(
+  "/:id/return",
+  rbac(...SUPERVISOR_PLUS),
+  async (req: Request, res: Response) => {
+    try {
+      const note =
+        typeof (req.body as { note?: unknown })?.note === "string"
+          ? String((req.body as { note: string }).note).slice(0, 500)
+          : undefined;
+      const order = await returnToMerchant({
+        tenantId: req.user!.tenantId,
+        orderId: req.params.id,
+        actor: staffActor(req),
+        note,
       });
       res.json(order);
     } catch (err) {
