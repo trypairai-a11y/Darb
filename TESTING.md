@@ -190,6 +190,19 @@ Remote push needs an EAS dev build — Expo Go only covers the foreground poll p
 
 ---
 
+## 7b. Second pass — contract drift (commit `f486ca1` … see §8b)
+
+A 32-agent adversarial sweep after the first pass found that four of the six
+original bugs were instances of one systemic pattern — **frontend/backend
+contract drift**, where the client sends or reads a field name the server does
+not use. Hunting that pattern deliberately turned up seven more, several of
+which made a whole page write-dead. All are fixed; see §8b.
+
+The lesson for future work: this codebase has no mechanical guard tying
+`frontend/src/lib/darbApi.ts` to the zod schemas in `backend/src/routes/`.
+Nothing fails at compile time when they disagree — the request just 400s at
+runtime, and several call sites swallowed that silently.
+
 ## 8. Fixed while testing (commit `f486ca1`)
 
 Five defects, all in the shipped v1 surface, all found by actually clicking
@@ -214,3 +227,74 @@ through it rather than by the test suites:
    (Remittance has no note column), never joined by the list endpoint.
 
 Both sides are deployed to production and the legacy aliases re-pointed.
+
+## 8b. Second-pass fixes
+
+Found by adversarially verifying the first six fixes and then hunting the same
+defect classes. Each was reproduced against the running stack before and after.
+
+**Vendor order creation was impossible.** Three stacked faults: the order form
+called `/api/zones/quote` and `/api/zones`, which VENDOR tokens are contained
+away from (403); the submit gate read `quote.serviceable` on a response that
+returns `ok`, so the button never enabled; and the payload sent flat
+`dropoffLat/dropoffLng` where the schema wants a nested `dropoff`. Added
+vendor-scoped `GET /api/vendor/zones` and `POST /api/vendor/quote` (a vendor may
+only quote from its own branches — foreign branch → 404) rather than widening
+the containment allowlist. Verified in the browser: the fee now quotes
+"KD 1.750 (Salmiya → Hawally)" and the order persists.
+
+**Vendor order cancel always 400'd.** The client called `cancelOrder(id)` with
+no reason and the confirm modal had no field to collect one. `ConfirmModal` now
+takes `children` and `confirmDisabled`, and the cancel flow collects a reason.
+
+**`/pricing` was write-dead.** The client wrapped the matrix as `{surcharges}`;
+the endpoint takes a bare array. Because the save threw, the intra-zone fee on
+the next line never saved either. *Note: that PUT is a full replace — sending a
+partial array deletes the rest of the matrix. `npx tsx prisma/seed-darb2.ts`
+restores it.*
+
+**SOS resolution notes were silently discarded.** Client sent `{note}`, schema
+declares `resolutionNote`; zod stripped it and returned 200 with a success
+toast. Data loss behind a green checkmark.
+
+**Creating a vendor or a branch with any blank optional field 400'd.** The forms
+send `null`; the create schemas used `.optional()` (which rejects null) while
+the sibling update schemas correctly used `.nullable().optional()`.
+
+**Branch edit and delete 404'd.** The client invented a vendor segment;
+the routes mount at `/api/vendors/branches/:branchId`.
+
+**Finance KPIs would have hard-zeroed in production.** `walletsApi.accounts()`
+was unpaginated against a server that clamps `limit` to 100. With ~1 wallet
+account per driver and 95 drivers, the platform-revenue account falls off page
+one, so "Fees today" would confidently render `KD 0.000`. Same clamp truncated
+the remittance held-balance lookup and the vendor CSV statement. Added
+`fetchAllPages()` and used the server-side `type=PLATFORM_REVENUE` filter.
+
+**My own new `/api/wallets/entries` had two defects:** a malformed `dateFrom`
+returned a 500 leaking the server path and live tenantId, and it parsed dates as
+UTC while its sibling in the same file used the local-time helpers — a 3-hour
+window skew in Kuwait. Both fixed.
+
+## 9. Still open — needs a decision, not a patch
+
+**Two agent endpoints accept unauthenticated writes.** `POST /api/agent/location`
+and `POST /api/agent/captured-orders` take a body-supplied `driverId` that is
+never checked against the authenticated device. Proven live with no auth header:
+another courier was flipped online, and a forged captured-order row persisted.
+I did not fix these — they sit on the driver app's hot path and tightening auth
+there risks breaking the mobile client, so it needs a deliberate call rather
+than a same-session patch. **Treat as ship-blocking.**
+
+**`Job Grade` in Settings → Users is a dead control.** `jobGrade` appears
+nowhere in the backend outside the schema; the update 404s and the dropdown
+snaps blank. Either wire it up or hide the field — a product decision.
+
+**The `no-prisma-without-tenant` lint rule cannot catch route-level holes.** It
+runs against a hand-maintained ~70-path allowlist, so new files are unprotected
+by default.
+
+**Nothing enforces the leaflet SSR boundary.** `ZonePolygonsLayer` still
+re-exports the geometry helpers, so importing them from there compiles cleanly
+and silently restores the `/zones` 500. A `no-restricted-imports` rule would
+make it durable.

@@ -11,7 +11,7 @@ import FilterBar from "@/components/shared/FilterBar";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
-import { walletsApi, unwrapList } from "@/lib/darbApi";
+import { walletsApi, unwrapList, fetchAllPages } from "@/lib/darbApi";
 import type { Remittance, RemittanceMethod, WalletAccount } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDateTime, formatKwd } from "@/i18n/format";
@@ -48,11 +48,13 @@ export default function RemittancesPage() {
     return list.map((d) => ({ id: d.id, name: d.name ?? d.fullName ?? d.id }));
   }, [driversQuery.data]);
 
+  // Paged: one wallet account per driver means the selected driver is usually
+  // past the server's 100-row clamp, which rendered "held balance —".
   const accountsQuery = useQuery({
-    queryKey: ["darb", "wallet-accounts"],
-    queryFn: () => walletsApi.accounts(),
+    queryKey: ["darb", "wallet-accounts", "all"],
+    queryFn: () => fetchAllPages<WalletAccount>((p) => walletsApi.accounts(p)),
   });
-  const accounts = useMemo(() => unwrapList<WalletAccount>(accountsQuery.data), [accountsQuery.data]);
+  const accounts = useMemo(() => accountsQuery.data ?? [], [accountsQuery.data]);
   const heldAccount = driverId
     ? accounts.find((a) => a.ownerType === "DRIVER_CASH" && a.ownerKey === `DRIVER:${driverId}`)
     : undefined;

@@ -13,6 +13,7 @@ import {
   createDeliveryOrder,
 } from "../services/orderService";
 import { OrderStateConflictError } from "../services/orderStateMachine";
+import { quoteDelivery } from "../services/pricingService";
 
 /**
  * Vendor portal API (Darb 2.0, plan §A8 /api/vendor).
@@ -65,6 +66,15 @@ const vendorCreateOrderSchema = z.object({
 
 const vendorCancelSchema = z.object({
   reason: z.string().trim().min(1, "Reason is required").max(500),
+});
+
+const vendorQuoteSchema = z.object({
+  branchId: z.string().min(1, "Branch is required"),
+  dropoff: z.object({
+    lat: z.number().gte(-90).lte(90).optional(),
+    lng: z.number().gte(-180).lte(180).optional(),
+    zoneId: z.string().min(1).optional(),
+  }),
 });
 
 const fmtKwd = (v: unknown) => Number(v ?? 0).toFixed(3);
@@ -423,6 +433,100 @@ router.get("/branches", async (req: Request, res: Response) => {
       include: { zone: { select: { id: true, code: true, name: true } } },
     });
     res.json(branches);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Zones & quote ───────────────────────────────────────────────────────────
+//
+// The order form needs the zone list and a fee quote, but VENDOR tokens are
+// contained to /api/vendor by blockVendorOutsideAllowlist and cannot reach
+// /api/zones. These mirror the staff endpoints with the vendor's own scope
+// applied, rather than widening the containment allowlist.
+
+/**
+ * @swagger
+ * /api/vendor/zones:
+ *   get:
+ *     tags: [Vendor Portal]
+ *     summary: Active delivery zones, for the dropoff picker
+ *     responses:
+ *       200:
+ *         description: Active zones (id, code, name, nameAr, polygon)
+ */
+router.get("/zones", async (req: Request, res: Response) => {
+  try {
+    const { tenantId } = req.user!;
+    const zones = await prisma.deliveryZone.findMany({
+      where: { tenantId, isActive: true },
+      orderBy: { name: "asc" },
+      // No `color` column on DeliveryZone — the map falls back to its own
+      // palette by index, same as the staff /api/zones list.
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        nameAr: true,
+        polygon: true,
+        bbox: true,
+        isActive: true,
+      },
+    });
+    res.json(zones);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/vendor/quote:
+ *   post:
+ *     tags: [Vendor Portal]
+ *     summary: Quote the delivery fee for a dropoff from one of the vendor's branches
+ *     responses:
+ *       200:
+ *         description: "{ ok: true, feeKwd, zones… } or { ok: false, reason }"
+ *       404:
+ *         description: Branch does not belong to this vendor
+ */
+router.post("/quote", validateBody(vendorQuoteSchema), async (req: Request, res: Response) => {
+  try {
+    const { tenantId, vendorId } = req.user!;
+    const input = req.body as z.infer<typeof vendorQuoteSchema>;
+
+    // A vendor may only quote from its own branches.
+    const branch = await prisma.vendorBranch.findFirst({
+      where: { id: input.branchId, tenantId, vendorId: vendorId! },
+      select: { id: true },
+    });
+    if (!branch) {
+      res.status(404).json({ error: "Branch not found" });
+      return;
+    }
+
+    // Shape the argument explicitly — validateBody guarantees both fields, but
+    // z.infer reports them optional under ts-jest's strict:false compile.
+    const result = await quoteDelivery(tenantId, {
+      branchId: input.branchId,
+      dropoff: input.dropoff ?? {},
+    });
+    // `in` rather than discriminating on `result.ok`: ts-jest compiles with
+    // strict:false, which widens the ok:true/ok:false literals and collapses
+    // the union, so discriminant narrowing fails there even though tsc is fine.
+    if ("reason" in result) {
+      res.json({ ok: false, reason: result.reason });
+      return;
+    }
+    res.json({
+      ok: true,
+      pickupZoneId: result.pickupZoneId,
+      dropoffZoneId: result.dropoffZoneId,
+      feeKwd: result.feeKwd.toFixed(3),
+      pickupZone: result.pickupZone,
+      dropoffZone: result.dropoffZone,
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

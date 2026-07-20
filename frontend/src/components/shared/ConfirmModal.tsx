@@ -14,6 +14,10 @@ interface ConfirmModalProps {
   onConfirm: () => void | Promise<void>;
   onCancel: () => void;
   loading?: boolean;
+  /** Extra content between the message and the buttons — e.g. a reason field. */
+  children?: React.ReactNode;
+  /** Block confirmation until the caller's own input is valid. */
+  confirmDisabled?: boolean;
 }
 
 export default function ConfirmModal({
@@ -26,6 +30,8 @@ export default function ConfirmModal({
   onConfirm,
   onCancel,
   loading = false,
+  children,
+  confirmDisabled = false,
 }: ConfirmModalProps) {
   const { t } = useI18n();
   const resolvedConfirm = confirmLabel ?? t("actions.confirm");
@@ -97,6 +103,8 @@ export default function ConfirmModal({
           </div>
         </div>
 
+        {children && <div className="mt-4">{children}</div>}
+
         <div className="mt-6 flex justify-end gap-2">
           <button
             onClick={onCancel}
@@ -108,7 +116,7 @@ export default function ConfirmModal({
           <button
             ref={confirmRef}
             onClick={onConfirm}
-            disabled={loading}
+            disabled={loading || confirmDisabled}
             className={cn(
               "px-5 h-10 text-sm font-medium text-white rounded-pill transition-colors duration-250 ease-sierra-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-card disabled:opacity-50",
               confirmColors[variant]

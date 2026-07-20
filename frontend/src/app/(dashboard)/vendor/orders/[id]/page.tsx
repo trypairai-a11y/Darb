@@ -53,6 +53,8 @@ export default function VendorOrderDetailPage() {
 
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  // The backend requires a non-empty reason on cancel.
+  const [cancelReason, setCancelReason] = useState("");
 
   const ordersQuery = useQuery({
     queryKey: ["darb", "vendor", "orders"],
@@ -80,9 +82,10 @@ export default function VendorOrderDetailPage() {
     if (!order) return;
     setCancelling(true);
     try {
-      await vendorApi.cancelOrder(order.id);
+      await vendorApi.cancelOrder(order.id, cancelReason.trim());
       toast.success(t("toast.updated"));
       setConfirmCancel(false);
+      setCancelReason("");
       await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", "orders"] });
     } catch (err) {
       const msg =
@@ -272,9 +275,26 @@ export default function VendorOrderDetailPage() {
         variant="danger"
         loading={cancelling}
         confirmLabel={t("dispatch.cancelOrder")}
+        confirmDisabled={cancelReason.trim() === ""}
         onConfirm={() => void cancelOrder()}
-        onCancel={() => setConfirmCancel(false)}
-      />
+        onCancel={() => {
+          setConfirmCancel(false);
+          setCancelReason("");
+        }}
+      >
+        <label className="block">
+          <span className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
+            {t("dispatch.cancelReason")}
+          </span>
+          <input
+            value={cancelReason}
+            onChange={(e) => setCancelReason(e.target.value)}
+            maxLength={500}
+            autoFocus
+            className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </label>
+      </ConfirmModal>
     </div>
   );
 }

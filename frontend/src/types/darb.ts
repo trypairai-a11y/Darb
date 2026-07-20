@@ -103,7 +103,8 @@ export interface ZoneQuote {
   pickupZone?: Pick<DeliveryZone, "id" | "code" | "name" | "nameAr"> | null;
   dropoffZone?: Pick<DeliveryZone, "id" | "code" | "name" | "nameAr"> | null;
   feeKwd?: Kwd;
-  serviceable: boolean;
+  /** The quote endpoints answer with `ok`, not `serviceable`. */
+  ok: boolean;
   reason?: OrderRejectionReason | string;
 }
 

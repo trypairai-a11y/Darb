@@ -159,11 +159,19 @@ router.get("/entries", rbac(...FINANCE_READ), async (req: Request, res: Response
       }
       where.account = { ownerType: type as string };
     }
-    // dateFrom/dateTo are inclusive calendar days; dateTo covers the whole day.
+    // dateFrom/dateTo are inclusive calendar days in the server's local zone —
+    // parseLocalDate keeps this window identical to /remittances below, which
+    // matters because Kuwait is UTC+3 and a hardcoded Z would shift the day.
     if (dateFrom || dateTo) {
+      const from = dateFrom ? parseLocalDate(dateFrom as string) : null;
+      const to = dateTo ? parseLocalDateEnd(dateTo as string) : null;
+      if ((from && Number.isNaN(from.getTime())) || (to && Number.isNaN(to.getTime()))) {
+        res.status(400).json({ error: "dateFrom/dateTo must be YYYY-MM-DD" });
+        return;
+      }
       where.createdAt = {};
-      if (dateFrom) where.createdAt.gte = new Date(`${dateFrom}T00:00:00.000Z`);
-      if (dateTo) where.createdAt.lte = new Date(`${dateTo}T23:59:59.999Z`);
+      if (from) where.createdAt.gte = from;
+      if (to) where.createdAt.lte = to;
     }
 
     const [entries, total] = await Promise.all([

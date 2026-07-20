@@ -9,7 +9,7 @@ import { HandCoins, Scale, FileText, Wallet, Truck, Store } from "lucide-react";
 import StatCard from "@/components/shared/StatCard";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
-import { walletsApi, unwrapList } from "@/lib/darbApi";
+import { walletsApi, fetchAllPages } from "@/lib/darbApi";
 import type { WalletAccount, WalletEntry } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd } from "@/i18n/format";
@@ -24,30 +24,38 @@ function sumBalances(accounts: WalletAccount[], ownerType: WalletAccount["ownerT
 export default function FinanceOverviewPage() {
   const { t, locale } = useI18n();
 
+  // These feed totals, so they must not stop at the server's 100-row clamp —
+  // with ~1 wallet account per driver, page 1 is all drivers and no platform
+  // account, which silently rendered "KD 0.000" for fees.
   const accountsQuery = useQuery({
-    queryKey: ["darb", "wallet-accounts"],
-    queryFn: () => walletsApi.accounts(),
+    queryKey: ["darb", "wallet-accounts", "all"],
+    queryFn: () => fetchAllPages<WalletAccount>((p) => walletsApi.accounts(p)),
   });
-  const accounts = useMemo(() => unwrapList<WalletAccount>(accountsQuery.data), [accountsQuery.data]);
+  const accounts = useMemo(() => accountsQuery.data ?? [], [accountsQuery.data]);
 
   const todayIso = new Date().toISOString().slice(0, 10);
   const entriesQuery = useQuery({
     queryKey: ["darb", "wallet-entries", "today", todayIso],
-    queryFn: () => walletsApi.entries({ dateFrom: todayIso, limit: 500 }),
+    queryFn: () =>
+      fetchAllPages<WalletEntry>((p) => walletsApi.entries(p), {
+        dateFrom: todayIso,
+        type: "PLATFORM_REVENUE",
+      }),
     retry: false,
   });
 
   const vendorPayables = sumBalances(accounts, "VENDOR_PAYABLE");
   const driverCash = sumBalances(accounts, "DRIVER_CASH");
 
-  const feesToday = useMemo(() => {
-    const revenueIds = new Set(
-      accounts.filter((a) => a.ownerType === "PLATFORM_REVENUE").map((a) => a.id)
-    );
-    return unwrapList<WalletEntry>(entriesQuery.data)
-      .filter((e) => revenueIds.has(e.accountId) && e.direction === "CREDIT")
-      .reduce((sum, e) => sum + (Number(e.amountKwd) || 0), 0);
-  }, [accounts, entriesQuery.data]);
+  // The query already filters to PLATFORM_REVENUE server-side, so this no
+  // longer depends on the platform account appearing in the accounts page.
+  const feesToday = useMemo(
+    () =>
+      (entriesQuery.data ?? [])
+        .filter((e) => e.direction === "CREDIT")
+        .reduce((sum, e) => sum + (Number(e.amountKwd) || 0), 0),
+    [entriesQuery.data]
+  );
 
   if (accountsQuery.isLoading) return <PageSkeleton statCards={3} tableRows={3} tableCols={3} />;
   if (accountsQuery.error) {

@@ -11,7 +11,7 @@ import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
 import WalletLedgerTable from "@/components/darb/WalletLedgerTable";
-import { vendorApi, unwrapList } from "@/lib/darbApi";
+import { vendorApi, unwrapList, fetchAllPages } from "@/lib/darbApi";
 import { downloadCsv } from "@/lib/csv";
 import type { WalletEntry } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -76,13 +76,13 @@ export default function VendorWalletPage() {
   async function downloadStatement(month: MonthOption) {
     setDownloadingMonth(month.key);
     try {
-      const res = await vendorApi.walletEntries({
+      // Paged: the server clamps limit to 100, so a >100-entry month used to
+      // export a statement whose running balance did not tie out.
+      const rows = await fetchAllPages<WalletEntry>((p) => vendorApi.walletEntries(p), {
         month: month.key,
         dateFrom: month.dateFrom,
         dateTo: month.dateTo,
-        limit: 1000,
       });
-      const rows = unwrapList<WalletEntry>(res);
       if (rows.length === 0) {
         toast.info(t("reportsPage.noData"));
         return;

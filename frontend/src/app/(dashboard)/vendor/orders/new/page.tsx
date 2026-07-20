@@ -12,7 +12,7 @@ import type { OrderMarker } from "@/components/map/LiveMap";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
-import { vendorApi, zonesApi, unwrapList } from "@/lib/darbApi";
+import { vendorApi, unwrapList } from "@/lib/darbApi";
 import { pointInZone, zoneCentroid } from "@/lib/geo";
 import type { DeliveryZone, ZoneQuote } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -36,8 +36,8 @@ export default function VendorNewOrderPage() {
   const branches = useMemo(() => meQuery.data?.branches ?? [], [meQuery.data?.branches]);
 
   const zonesQuery = useQuery({
-    queryKey: ["darb", "zones"],
-    queryFn: () => zonesApi.list(),
+    queryKey: ["darb", "vendor", "zones"],
+    queryFn: () => vendorApi.zones(),
     staleTime: 5 * 60_000,
   });
   const zones = useMemo(
@@ -83,7 +83,7 @@ export default function VendorNewOrderPage() {
     }
     setQuoting(true);
     const timer = setTimeout(() => {
-      zonesApi
+      vendorApi
         .quote({ branchId, dropoff })
         .then((q) => setQuote(q))
         .catch(() => setQuote(null))
@@ -128,7 +128,7 @@ export default function VendorNewOrderPage() {
     customerPhone.trim() !== "" &&
     !!dropoff &&
     totalValid &&
-    !!quote?.serviceable &&
+    !!quote?.ok &&
     !submitting;
 
   async function submit(e: React.FormEvent) {
@@ -141,8 +141,7 @@ export default function VendorNewOrderPage() {
         customerName: customerName.trim() || undefined,
         customerPhone: customerPhone.trim(),
         dropoffAddress: address.trim() || undefined,
-        dropoffLat: dropoff.lat,
-        dropoffLng: dropoff.lng,
+        dropoff: { lat: dropoff.lat, lng: dropoff.lng },
         orderTotalKwd: orderTotal,
         paymentMethod,
       });
@@ -307,7 +306,7 @@ export default function VendorNewOrderPage() {
                 "flex items-center gap-2.5 px-4 py-3 rounded-xl border text-sm",
                 quoting
                   ? "border-sand-200 bg-sand-100/60 text-sand-700"
-                  : quote?.serviceable
+                  : quote?.ok
                     ? "border-green-200 bg-green-50 text-green-800"
                     : "border-red-200 bg-red-50 text-red-700"
               )}
@@ -317,7 +316,7 @@ export default function VendorNewOrderPage() {
                   <Loader2 size={15} className="animate-spin" aria-hidden="true" />
                   {t("vendorPortal.quoteChecking")}
                 </>
-              ) : quote?.serviceable ? (
+              ) : quote?.ok ? (
                 <>
                   <BadgeCheck size={15} aria-hidden="true" />
                   <span>

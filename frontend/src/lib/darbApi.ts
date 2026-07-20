@@ -53,6 +53,30 @@ async function get<T>(url: string, params?: Params): Promise<T> {
   return data;
 }
 
+/**
+ * Fetch every page of a paginated list.
+ *
+ * The server clamps `limit` to 100 (getPagination), so asking for 500 or 1000
+ * silently returns the first 100 rows. Anything that aggregates or exports —
+ * balances, KPI totals, CSV statements — must page through instead, or it
+ * quietly reports a number that is only true for a small dataset.
+ */
+export async function fetchAllPages<T>(
+  fetchPage: (params: Params) => Promise<T[] | Paginated<T> | { data: T[] }>,
+  params: Params = {},
+  maxPages = 50
+): Promise<T[]> {
+  const out: T[] = [];
+  for (let page = 1; page <= maxPages; page++) {
+    const res = await fetchPage({ ...params, page, limit: 100 });
+    out.push(...unwrapList<T>(res));
+    const pagination = (res as Paginated<T>)?.pagination;
+    // A bare array means the endpoint isn't paginated — one call is all there is.
+    if (!pagination || page >= pagination.totalPages) break;
+  }
+  return out;
+}
+
 async function post<T>(url: string, body?: unknown): Promise<T> {
   const { data } = await api.post<T>(url, body);
   return data;
@@ -82,8 +106,9 @@ export const zonesApi = {
   update: (id: string, body: Partial<DeliveryZone>) => put<DeliveryZone>(`/api/zones/${id}`, body),
   remove: (id: string) => del<{ success?: boolean }>(`/api/zones/${id}`),
   getSurcharges: () => get<ZoneSurcharge[] | { data: ZoneSurcharge[] }>("/api/zones/surcharges"),
+  // The endpoint takes the matrix as a bare array, not wrapped.
   putSurcharges: (surcharges: ZoneSurcharge[]) =>
-    put<{ success?: boolean }>("/api/zones/surcharges", { surcharges }),
+    put<{ success?: boolean }>("/api/zones/surcharges", surcharges),
   getSettings: () => get<FulfillmentSettings>("/api/zones/settings"),
   putSettings: (settings: Partial<FulfillmentSettings>) =>
     put<FulfillmentSettings>("/api/zones/settings", settings),
@@ -105,10 +130,12 @@ export const vendorsApi = {
     get<VendorBranch[] | { data: VendorBranch[] }>(`/api/vendors/${vendorId}/branches`),
   createBranch: (vendorId: string, body: Partial<VendorBranch>) =>
     post<VendorBranch>(`/api/vendors/${vendorId}/branches`, body),
-  updateBranch: (vendorId: string, branchId: string, body: Partial<VendorBranch>) =>
-    put<VendorBranch>(`/api/vendors/${vendorId}/branches/${branchId}`, body),
-  removeBranch: (vendorId: string, branchId: string) =>
-    del<{ success?: boolean }>(`/api/vendors/${vendorId}/branches/${branchId}`),
+  // Branch update/delete are mounted without a vendor segment (the handler
+  // scopes by branchId + tenantId) — see swagger /api/vendors/branches/{id}.
+  updateBranch: (_vendorId: string, branchId: string, body: Partial<VendorBranch>) =>
+    put<VendorBranch>(`/api/vendors/branches/${branchId}`, body),
+  removeBranch: (_vendorId: string, branchId: string) =>
+    del<{ success?: boolean }>(`/api/vendors/branches/${branchId}`),
   createUser: (vendorId: string, body: { name: string; email: string; password: string }) =>
     post<VendorUser>(`/api/vendors/${vendorId}/users`, body),
   wallet: (vendorId: string, params?: Params) =>
@@ -166,7 +193,10 @@ export const walletsApi = {
 export const incidentsApi = {
   list: (params?: Params) => get<Paginated<Incident> | Incident[]>("/api/incidents", params),
   ack: (id: string) => post<Incident>(`/api/incidents/${id}/ack`),
-  resolve: (id: string, note?: string) => post<Incident>(`/api/incidents/${id}/resolve`, { note }),
+  // The field is resolutionNote — zod strips a stray `note`, so the text was
+  // silently dropped while the request still returned 200.
+  resolve: (id: string, resolutionNote?: string) =>
+    post<Incident>(`/api/incidents/${id}/resolve`, { resolutionNote }),
 };
 
 // ── /api/dispatch ────────────────────────────────────────────────────────
@@ -184,18 +214,25 @@ export const vendorApi = {
   me: () => get<Vendor & { branches?: VendorBranch[] }>("/api/vendor/me"),
   orders: (params?: Params) =>
     get<Paginated<DeliveryOrder> | DeliveryOrder[]>("/api/vendor/orders", params),
+  // The backend takes the dropoff nested — zod strips unknown keys, so a flat
+  // dropoffLat/dropoffLng silently loses the coordinates rather than erroring.
   createOrder: (body: {
     branchId: string;
     customerName?: string;
     customerPhone: string;
     dropoffAddress?: string;
-    dropoffLat?: number;
-    dropoffLng?: number;
+    dropoff: { lat?: number; lng?: number; zoneId?: string };
     orderTotalKwd: number | string;
     paymentMethod: string;
   }) => post<DeliveryOrder>("/api/vendor/orders", body),
-  cancelOrder: (id: string, reason?: string) =>
+  // reason is required by the backend schema — the caller must collect one.
+  cancelOrder: (id: string, reason: string) =>
     post<DeliveryOrder>(`/api/vendor/orders/${id}/cancel`, { reason }),
+  // Vendor-scoped mirrors of /api/zones — VENDOR tokens are contained to
+  // /api/vendor and get a 403 on the staff zone routes.
+  zones: () => get<DeliveryZone[]>("/api/vendor/zones"),
+  quote: (body: { branchId: string; dropoff: { lat: number; lng: number } }) =>
+    post<ZoneQuote>("/api/vendor/quote", body),
   pause: (paused: boolean) => post<Vendor>("/api/vendor/pause", { paused }),
   wallet: () => get<VendorWallet>("/api/vendor/wallet"),
   walletEntries: (params?: Params) =>

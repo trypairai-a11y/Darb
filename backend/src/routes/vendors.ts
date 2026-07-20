@@ -31,14 +31,15 @@ router.use(authMiddleware, tenantScope);
 
 const createVendorSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  nameAr: z.string().optional(),
+  // nullable like the update schema: the form sends null for a blank field.
+  nameAr: z.string().nullable().optional(),
   code: z
     .string()
     .min(2, "Code must be 2-10 characters")
     .max(10, "Code must be 2-10 characters")
     .regex(/^[A-Za-z0-9]+$/, "Code must be alphanumeric")
     .transform((s) => s.toUpperCase()),
-  phone: z.string().optional(),
+  phone: z.string().nullable().optional(),
   // NOTE: Vendor has no email column (schema D1); contact email lives on the
   // vendor's portal User accounts (POST /:id/users).
   requiresCarOnly: z.boolean().optional(),
@@ -62,12 +63,13 @@ const updateVendorSchema = z.object({
 
 const createBranchSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  nameAr: z.string().optional(),
-  address: z.string().optional(),
-  phone: z.string().optional(),
+  // nullable like updateBranchSchema: the form sends null for blank fields.
+  nameAr: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
+  phone: z.string().nullable().optional(),
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
-  foodicsBranchId: z.string().optional(),
+  foodicsBranchId: z.string().nullable().optional(),
   isActive: z.boolean().optional(),
 });
 
