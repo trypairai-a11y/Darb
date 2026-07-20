@@ -17,6 +17,7 @@
  * exp.host with channelId "darb-offers" (sendDispatchDriverPush is NOT used
  * because it queues MDM DeviceCommand rows and pins channelId "darb-inbox").
  */
+import { randomUUID } from "crypto";
 import { DeliveryOrder, Prisma } from "../../generated/prisma";
 import { prisma } from "../../config";
 import { logger } from "../../config/logger";
@@ -36,6 +37,7 @@ import {
   scheduleOfferExpiry,
 } from "../../queues/dispatchQueue";
 import { enqueueFoodicsWriteback } from "../foodics/writebackHook";
+import { fireCustomerMilestone } from "../customerMessagingService";
 
 // ─── Errors ─────────────────────────────────────────────────────────────────
 
@@ -535,6 +537,37 @@ async function runDispatchRound(tenantId: string, orderId: string): Promise<void
     throw err;
   }
 
+  // PRD §8 auto-batching: try to attach ONE sibling (one pickup, multiple
+  // drops) in its own tx — any race degrades to the single-order offer that
+  // already committed above.
+  let batch: { siblingOfferId: string; batchId: string } | null = null;
+  if (settings.batchingEnabled) {
+    try {
+      const sibling = await findBatchSibling(tenantId, order, settings, now);
+      if (sibling) {
+        const combinedCod =
+          order.paymentMethod === "COD" || sibling.paymentMethod === "COD"
+            ? new Prisma.Decimal(
+                order.paymentMethod === "COD" ? (order.orderTotalKwd as unknown as Prisma.Decimal.Value) : 0,
+              ).plus(
+                sibling.paymentMethod === "COD"
+                  ? new Prisma.Decimal(sibling.orderTotalKwd as unknown as Prisma.Decimal.Value)
+                  : 0,
+              )
+            : null;
+        batch = await attachBatchSibling({
+          tenantId,
+          primaryOffer: offer,
+          driverId: candidate.driverId,
+          sibling,
+          paymentGuardKwd: combinedCod,
+        });
+      }
+    } catch (err) {
+      logger.warn({ err, orderId }, "batching attempt failed — offer continues single");
+    }
+  }
+
   void sendOfferPush(order, offer, candidate.driverId).catch((err) =>
     logger.warn({ err, offerId: offer.id }, "offer push failed"),
   );
@@ -548,9 +581,160 @@ async function runDispatchRound(tenantId: string, orderId: string): Promise<void
     round,
     distanceKm: candidate.distanceKm,
     expiresAt: expiresAt.toISOString(),
+    ...(batch ? { batchId: batch.batchId, batchSize: 2 } : {}),
   });
 
   await scheduleOfferExpiry(offer.id, settings.offerWindowSec * 1000);
+  if (batch) {
+    await scheduleOfferExpiry(batch.siblingOfferId, settings.offerWindowSec * 1000);
+  }
+}
+
+// ─── Auto-batching (PRD §8: one pickup, multiple drops only) ────────────────
+
+/**
+ * Find ONE batchable sibling for a primary order: another DISPATCHING order
+ * from the SAME pickup branch whose drop is close to the primary's drop
+ * (same dropoff zone, or within batchMaxDropKm by haversine), with no live
+ * offer of its own. Vehicle constraint respected; combined COD cash checked
+ * against the driver ceiling by the caller.
+ */
+export async function findBatchSibling(
+  tenantId: string,
+  order: {
+    id: string;
+    branchId: string;
+    dropoffZoneId: string | null;
+    dropoffLat: unknown;
+    dropoffLng: unknown;
+    requiresCarOnly: boolean;
+  },
+  settings: DispatchSettings,
+  now = new Date(),
+): Promise<DeliveryOrder | null> {
+  const candidates = await prisma.deliveryOrder.findMany({
+    where: {
+      tenantId,
+      branchId: order.branchId,
+      id: { not: order.id },
+      status: "DISPATCHING",
+      offers: { none: { status: "OFFERED", expiresAt: { gt: now } } },
+    },
+    orderBy: { createdAt: "asc" }, // oldest waiting customer first
+    take: 10,
+  });
+
+  const pLat = toNum(order.dropoffLat);
+  const pLng = toNum(order.dropoffLng);
+
+  for (const sibling of candidates) {
+    // The chosen driver already satisfies the PRIMARY's vehicle constraint;
+    // a sibling that is stricter than the primary could mismatch.
+    if (sibling.requiresCarOnly && !order.requiresCarOnly) continue;
+
+    const sameZone =
+      order.dropoffZoneId != null && sibling.dropoffZoneId === order.dropoffZoneId;
+    let nearDrop = false;
+    const sLat = toNum(sibling.dropoffLat);
+    const sLng = toNum(sibling.dropoffLng);
+    if (pLat != null && pLng != null && sLat != null && sLng != null) {
+      nearDrop = haversineMeters(pLat, pLng, sLat, sLng) / 1000 <= settings.batchMaxDropKm;
+    }
+    if (sameZone || nearDrop) return sibling;
+  }
+  return null;
+}
+
+/**
+ * Attach a batch sibling to a just-created primary offer, in its OWN
+ * transaction so any race simply degrades to a single-order offer without
+ * disturbing the primary:
+ *
+ *   - sibling DispatchOffer created for the same driver/window
+ *   - sibling order's offerRound CAS-bumped (count 0 ⇒ raced ⇒ rollback)
+ *   - primary offer stamped with the shared batchId (guard: still OFFERED)
+ *
+ * Returns the sibling offer id, or null when batching was not possible.
+ */
+async function attachBatchSibling(args: {
+  tenantId: string;
+  primaryOffer: { id: string; expiresAt: Date };
+  driverId: string;
+  sibling: DeliveryOrder;
+  paymentGuardKwd: Prisma.Decimal | null;
+}): Promise<{ siblingOfferId: string; batchId: string } | null> {
+  const { tenantId, primaryOffer, driverId, sibling } = args;
+
+  // Combined COD ceiling: the driver will carry BOTH orders' cash.
+  if (args.paymentGuardKwd) {
+    const over = await isDriverOverCeiling(tenantId, driverId, args.paymentGuardKwd);
+    if (over) return null;
+  }
+
+  const batchId = randomUUID();
+  try {
+    const created = await prisma.$transaction(async (trx) => {
+      const offer = await trx.dispatchOffer.create({
+        data: {
+          tenantId,
+          orderId: sibling.id,
+          driverId,
+          round: sibling.offerRound,
+          batchId,
+          status: "OFFERED",
+          offeredAt: new Date(),
+          expiresAt: primaryOffer.expiresAt,
+        },
+      });
+      const bumped = await trx.deliveryOrder.updateMany({
+        where: { id: sibling.id, tenantId, status: "DISPATCHING", offerRound: sibling.offerRound },
+        data: { offerRound: { increment: 1 } },
+      });
+      if (bumped.count === 0) {
+        throw new OrderStateConflictError(sibling.id, "DISPATCHING", "DISPATCHING");
+      }
+      const stamped = await trx.dispatchOffer.updateMany({
+        where: { id: primaryOffer.id, tenantId, status: "OFFERED" },
+        data: { batchId },
+      });
+      if (stamped.count === 0) {
+        // Primary already accepted/expired in the window — no batch.
+        throw new OrderStateConflictError(sibling.id, "DISPATCHING", "DISPATCHING");
+      }
+      return offer;
+    });
+    return { siblingOfferId: created.id, batchId };
+  } catch (err) {
+    if (err instanceof OrderStateConflictError || isP2002(err)) return null;
+    logger.warn({ err, siblingId: sibling.id }, "batch attach failed — continuing single");
+    return null;
+  }
+}
+
+/**
+ * Close every OTHER still-OFFERED offer of a batch (decline/expiry of one
+ * closes the whole batch) and return the affected sibling order ids so the
+ * caller can advance them. Guarded updateMany — safe against races.
+ */
+async function closeBatchSiblings(
+  tenantId: string,
+  batchId: string,
+  exceptOfferId: string,
+  toStatus: "DECLINED" | "EXPIRED",
+): Promise<string[]> {
+  const siblings = await prisma.dispatchOffer.findMany({
+    where: { tenantId, batchId, id: { not: exceptOfferId }, status: "OFFERED" },
+    select: { id: true, orderId: true },
+  });
+  if (siblings.length === 0) return [];
+  await prisma.dispatchOffer.updateMany({
+    where: { tenantId, batchId, id: { not: exceptOfferId }, status: "OFFERED" },
+    data: { status: toStatus, respondedAt: new Date() },
+  });
+  for (const s of siblings) {
+    void removeOfferExpiryJob(s.id).catch(() => {});
+  }
+  return siblings.map((s) => s.orderId);
 }
 
 /** dispatch-start job body: first offer round for a fresh DISPATCHING order. */
@@ -598,7 +782,21 @@ export async function expireOffer(
     driverId: offer.driverId,
     round: offer.round,
   });
-  if (advance) await enqueueDispatchNext(offer.orderId, offer.tenantId);
+
+  // PRD §8 batching: expiring one offer of a batch closes the whole batch —
+  // a live sibling offer would otherwise block its order from the leg-2
+  // advance selector forever.
+  let siblingOrderIds: string[] = [];
+  if (offer.batchId) {
+    siblingOrderIds = await closeBatchSiblings(offer.tenantId, offer.batchId, offerId, "EXPIRED");
+  }
+
+  if (advance) {
+    await enqueueDispatchNext(offer.orderId, offer.tenantId);
+    for (const orderId of siblingOrderIds) {
+      await enqueueDispatchNext(orderId, offer.tenantId);
+    }
+  }
   return true;
 }
 
@@ -732,7 +930,7 @@ export async function acceptOffer(args: {
   const { tenantId, offerId, driverId } = args;
   const now = new Date();
 
-  let committed: { tx: object; order: DeliveryOrder };
+  let committed: { tx: object; order: DeliveryOrder; siblingOrders: string[] };
   try {
     committed = await prisma.$transaction(async (trx) => {
       const won = await trx.dispatchOffer.updateMany({
@@ -754,7 +952,7 @@ export async function acceptOffer(args: {
         from: "DISPATCHING",
         to: "ASSIGNED",
         actor: { type: "DRIVER", id: driverId },
-        data: { driverId, assignedAt: now },
+        data: { driverId, assignedAt: now, ...(offer.batchId ? { batchId: offer.batchId } : {}) },
         eventMeta: {
           orderNumber: order.orderNumber,
           vendorId: order.vendorId,
@@ -767,6 +965,52 @@ export async function acceptOffer(args: {
         },
       });
 
+      // PRD §8 batching: winning one offer of a batch wins the whole batch.
+      // Partial wins are acceptable — a sibling cancelled mid-offer must never
+      // roll back the primary accept, so each sibling is guarded separately.
+      const siblingOrders: string[] = [];
+      if (offer.batchId) {
+        const siblings = await trx.dispatchOffer.findMany({
+          where: {
+            tenantId,
+            batchId: offer.batchId,
+            id: { not: offerId },
+            driverId,
+            status: "OFFERED",
+          },
+        });
+        for (const sib of siblings) {
+          const sibWon = await trx.dispatchOffer.updateMany({
+            where: { id: sib.id, tenantId, status: "OFFERED" },
+            data: { status: "ACCEPTED", respondedAt: now },
+          });
+          if (sibWon.count === 0) continue;
+          try {
+            await transitionOrder(trx, {
+              orderId: sib.orderId,
+              tenantId,
+              from: "DISPATCHING",
+              to: "ASSIGNED",
+              actor: { type: "DRIVER", id: driverId },
+              data: { driverId, assignedAt: now, batchId: offer.batchId },
+              eventMeta: { driverId, offerId: sib.id, round: sib.round, batchId: offer.batchId },
+            });
+            siblingOrders.push(sib.orderId);
+          } catch (err) {
+            if (err instanceof OrderStateConflictError) {
+              // Sibling order left DISPATCHING (cancelled) — close its offer
+              // honestly and move on; the primary accept stands.
+              await trx.dispatchOffer.updateMany({
+                where: { id: sib.id, tenantId },
+                data: { status: "CANCELLED" },
+              });
+              continue;
+            }
+            throw err;
+          }
+        }
+      }
+
       // Contract #2: carrying an order ⇒ session availability BUSY (same tx
       // as the ASSIGNED transition so the flag can't disagree with the order).
       await markDriverBusy(trx, tenantId, driverId);
@@ -775,6 +1019,7 @@ export async function acceptOffer(args: {
       return {
         tx: trx,
         order: fresh ?? ({ ...order, status: "ASSIGNED", driverId, assignedAt: now } as DeliveryOrder),
+        siblingOrders,
       };
     });
   } catch (err) {
@@ -794,6 +1039,18 @@ export async function acceptOffer(args: {
   void enqueueFoodicsWriteback(committed.order.id, "ASSIGNED").catch((err) =>
     logger.warn({ err, orderId: committed.order.id }, "foodics writeback enqueue failed"),
   );
+  fireCustomerMilestone(committed.order.id, tenantId, "ASSIGNED");
+
+  // Batched siblings: same post-commit fan-out per accepted order.
+  for (const siblingOrderId of committed.siblingOrders) {
+    publishOrderEvent(tenantId, "offer.accepted", {
+      orderId: siblingOrderId,
+      driverId,
+      batchOf: committed.order.id,
+    });
+    void enqueueFoodicsWriteback(siblingOrderId, "ASSIGNED").catch(() => {});
+    fireCustomerMilestone(siblingOrderId, tenantId, "ASSIGNED");
+  }
 
   return { order: committed.order };
 }
@@ -828,5 +1085,15 @@ export async function declineOffer(args: {
     round: offer.round,
     ...(reason ? { reason } : {}),
   });
+
+  // PRD §8 batching: declining one offer of a batch declines the whole batch.
+  let siblingOrderIds: string[] = [];
+  if (offer.batchId) {
+    siblingOrderIds = await closeBatchSiblings(tenantId, offer.batchId, offerId, "DECLINED");
+  }
+
   await enqueueDispatchNext(offer.orderId, tenantId);
+  for (const orderId of siblingOrderIds) {
+    await enqueueDispatchNext(orderId, tenantId);
+  }
 }

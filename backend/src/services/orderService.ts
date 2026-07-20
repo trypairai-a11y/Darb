@@ -29,6 +29,7 @@ import {
 import { enqueueDispatchStart, removeOfferExpiryJob } from "../queues/dispatchQueue";
 import { markDriverBusy, releaseDriverToOnline } from "./dispatch/driverPresence";
 import { enqueueFoodicsWriteback } from "./foodics/writebackHook";
+import { fireCustomerMilestone } from "./customerMessagingService";
 import { sendDispatchDriverPush } from "./driverAppPushService";
 
 /**
@@ -393,6 +394,7 @@ export async function createDeliveryOrder(input: CreateOrderInput): Promise<Deli
     status: order.status,
     feeKwd: quote.feeKwd.toFixed(3),
   });
+  fireCustomerMilestone(order.id, tenantId, "CREATED");
 
   if (!scheduledAt) {
     try {
@@ -546,6 +548,7 @@ export async function cancelOrder(args: {
   flushOrderEvents(tx);
   removeExpiryJobs(cancelledOffers);
   fireFoodicsWriteback(orderId, "CANCELLED");
+  fireCustomerMilestone(orderId, tenantId, "CANCELLED");
   return updated ?? { ...order, status: "CANCELLED", cancelReason: reason };
 }
 
@@ -618,6 +621,7 @@ export async function completeDelivery(args: {
 
   flushOrderEvents(tx); // publishes order.delivered
   fireFoodicsWriteback(orderId, "DELIVERED");
+  fireCustomerMilestone(orderId, tenantId, "DELIVERED");
 
   return { order: updated ?? { ...order, status: "DELIVERED" } };
 }
@@ -726,6 +730,7 @@ export async function assignDriverManually(args: {
   flushOrderEvents(tx); // publishes order.assigned
   removeExpiryJobs(cancelledOffers);
   fireFoodicsWriteback(orderId, "ASSIGNED");
+  fireCustomerMilestone(orderId, tenantId, "ASSIGNED");
 
   try {
     await sendDispatchDriverPush({

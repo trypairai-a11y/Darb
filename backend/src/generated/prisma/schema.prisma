@@ -21,6 +21,7 @@ enum Platform {
   TALABAT
   DELIVEROO
   AMERICANA
+  DARB
 }
 
 enum UserRole {
@@ -2843,7 +2844,7 @@ model DeliveryOrder {
   driverId        String?
   offerRound      Int                 @default(0)
   requiresCarOnly Boolean             @default(false)
-  rejectionReason String? // OUT_OF_ZONE_DROPOFF | UNSERVICEABLE_PAIR | NO_COORDINATES | BRANCH_UNZONED | VENDOR_PAUSED
+  rejectionReason String? // OUT_OF_ZONE_DROPOFF | UNSERVICEABLE_PAIR | NO_COORDINATES | BRANCH_UNZONED | VENDOR_PAUSED | VENDOR_CREDIT_CAP
   cancelReason    String?
   failureReason   String?
   proofPhotoUrl   String?

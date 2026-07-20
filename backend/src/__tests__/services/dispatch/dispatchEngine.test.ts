@@ -40,6 +40,9 @@ jest.mock("../../../queues/dispatchQueue", () => ({
 jest.mock("../../../services/foodics/writebackHook", () => ({
   enqueueFoodicsWriteback: jest.fn().mockResolvedValue(undefined),
 }));
+jest.mock("../../../services/customerMessagingService", () => ({
+  fireCustomerMilestone: jest.fn(),
+}));
 jest.mock("../../../services/eventBus", () => ({
   publishEvent: jest.fn().mockResolvedValue(undefined),
   subscribe: jest.fn().mockReturnValue(() => {}),
@@ -692,5 +695,204 @@ describe("effectiveRadiusKm", () => {
 
   test("negative rounds are clamped to the base radius", () => {
     expect(effectiveRadiusKm(S, -2)).toBe(8);
+  });
+});
+
+// ─── Auto-batching (PRD §8: one pickup, multiple drops only) ────────────────
+
+describe("findBatchSibling", () => {
+  const { findBatchSibling } = require("../../../services/dispatch/dispatchEngine");
+  const SETTINGS = {
+    offerWindowSec: 15, maxOfferRounds: 8, searchRadiusKm: 8, gpsStaleAfterSec: 180,
+    radiusWidenAfterRounds: 3, radiusWidenFactor: 1.5, maxSearchRadiusKm: 15,
+    batchingEnabled: true, batchMaxDropKm: 1.5, batchMaxOrders: 2,
+  };
+  const PRIMARY = {
+    id: ORDER_ID,
+    branchId: "b-1",
+    dropoffZoneId: "zone-b",
+    dropoffLat: 29.34,
+    dropoffLng: 48.09,
+    requiresCarOnly: false,
+  };
+
+  beforeEach(() => {
+    resetAllMocks();
+    jest.clearAllMocks();
+  });
+
+  test("same dropoff zone qualifies", async () => {
+    prisma.deliveryOrder.findMany.mockResolvedValue([
+      { id: "ord-2", branchId: "b-1", status: "DISPATCHING", dropoffZoneId: "zone-b", dropoffLat: null, dropoffLng: null, requiresCarOnly: false, offerRound: 0 },
+    ]);
+    const sibling = await findBatchSibling(TENANT, PRIMARY, SETTINGS);
+    expect(sibling?.id).toBe("ord-2");
+    // Selector: same branch, DISPATCHING, no live offer.
+    const where = prisma.deliveryOrder.findMany.mock.calls[0][0].where;
+    expect(where).toMatchObject({ branchId: "b-1", status: "DISPATCHING" });
+    expect(where.offers.none.status).toBe("OFFERED");
+  });
+
+  test("different zone but drop within batchMaxDropKm qualifies; far drop does not", async () => {
+    prisma.deliveryOrder.findMany.mockResolvedValue([
+      // ~1.1km north of the primary drop (0.01 deg lat ≈ 1.11 km)
+      { id: "near", branchId: "b-1", dropoffZoneId: "zone-c", dropoffLat: 29.35, dropoffLng: 48.09, requiresCarOnly: false, offerRound: 0 },
+    ]);
+    expect((await findBatchSibling(TENANT, PRIMARY, SETTINGS))?.id).toBe("near");
+
+    prisma.deliveryOrder.findMany.mockResolvedValue([
+      // ~5.5km away
+      { id: "far", branchId: "b-1", dropoffZoneId: "zone-c", dropoffLat: 29.39, dropoffLng: 48.09, requiresCarOnly: false, offerRound: 0 },
+    ]);
+    expect(await findBatchSibling(TENANT, PRIMARY, SETTINGS)).toBeNull();
+  });
+
+  test("a car-only sibling cannot batch behind a bike-eligible primary", async () => {
+    prisma.deliveryOrder.findMany.mockResolvedValue([
+      { id: "carOnly", branchId: "b-1", dropoffZoneId: "zone-b", dropoffLat: null, dropoffLng: null, requiresCarOnly: true, offerRound: 0 },
+    ]);
+    expect(await findBatchSibling(TENANT, PRIMARY, SETTINGS)).toBeNull();
+  });
+});
+
+describe("batched accept / decline / expire", () => {
+  const BATCH_OFFER = {
+    id: "off-1",
+    tenantId: TENANT,
+    orderId: ORDER_ID,
+    driverId: "drv-a",
+    round: 0,
+    batchId: "batch-1",
+    status: "OFFERED",
+    expiresAt: new Date(Date.now() + 10_000),
+  };
+  const SIBLING_OFFER = {
+    id: "off-2",
+    tenantId: TENANT,
+    orderId: "ord-2",
+    driverId: "drv-a",
+    round: 0,
+    batchId: "batch-1",
+    status: "OFFERED",
+    expiresAt: BATCH_OFFER.expiresAt,
+  };
+
+  beforeEach(() => {
+    resetAllMocks();
+    jest.clearAllMocks();
+    prisma.$transaction.mockImplementation(async (fn: any) => fn(prisma));
+    prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+  });
+
+  test("accepting one offer of a batch assigns BOTH orders to the driver and stamps batchId", async () => {
+    prisma.dispatchOffer.updateMany
+      .mockResolvedValueOnce({ count: 1 }) // primary accept guard
+      .mockResolvedValueOnce({ count: 1 }); // sibling accept guard
+    prisma.dispatchOffer.findFirst.mockResolvedValue(BATCH_OFFER);
+    prisma.dispatchOffer.findMany.mockResolvedValue([SIBLING_OFFER]);
+    prisma.deliveryOrder.findFirst
+      .mockResolvedValueOnce({ ...BASE_ORDER }) // primary load
+      .mockResolvedValueOnce({ ...BASE_ORDER, status: "ASSIGNED", driverId: "drv-a" }); // fresh
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 1 });
+
+    const { order } = await acceptOffer({ tenantId: TENANT, offerId: "off-1", driverId: "drv-a" });
+
+    expect(order.status).toBe("ASSIGNED");
+    // Two ASSIGNED transitions (primary + sibling), both carrying the batchId.
+    const transitions = prisma.deliveryOrder.updateMany.mock.calls.map((c: any) => c[0]);
+    expect(transitions).toHaveLength(2);
+    expect(transitions[0].where.id).toBe(ORDER_ID);
+    expect(transitions[0].data).toMatchObject({ status: "ASSIGNED", driverId: "drv-a", batchId: "batch-1" });
+    expect(transitions[1].where.id).toBe("ord-2");
+    expect(transitions[1].data).toMatchObject({ status: "ASSIGNED", driverId: "drv-a", batchId: "batch-1" });
+    // BUSY set exactly once for the whole batch.
+    expect(prisma.courierOnlineSession.updateMany).toHaveBeenCalledTimes(1);
+    // Sibling gets its own post-commit fan-out.
+    expect(enqueueFoodicsWriteback).toHaveBeenCalledWith("ord-2", "ASSIGNED");
+  });
+
+  test("a sibling cancelled mid-offer degrades to a single accept — primary stands", async () => {
+    prisma.dispatchOffer.updateMany
+      .mockResolvedValueOnce({ count: 1 }) // primary accept guard
+      .mockResolvedValueOnce({ count: 1 }) // sibling offer guard wins...
+      .mockResolvedValueOnce({ count: 1 }); // ...then sibling offer honestly CANCELLED
+    prisma.dispatchOffer.findFirst.mockResolvedValue(BATCH_OFFER);
+    prisma.dispatchOffer.findMany.mockResolvedValue([SIBLING_OFFER]);
+    prisma.deliveryOrder.findFirst
+      .mockResolvedValueOnce({ ...BASE_ORDER })
+      .mockResolvedValueOnce({ ...BASE_ORDER, status: "ASSIGNED", driverId: "drv-a" });
+    prisma.deliveryOrder.updateMany
+      .mockResolvedValueOnce({ count: 1 }) // primary transition wins
+      .mockResolvedValueOnce({ count: 0 }); // sibling transition loses (cancelled)
+
+    const { order } = await acceptOffer({ tenantId: TENANT, offerId: "off-1", driverId: "drv-a" });
+
+    expect(order.status).toBe("ASSIGNED");
+    // Sibling offer flipped to CANCELLED (3rd dispatchOffer.updateMany call).
+    const sibCancel = prisma.dispatchOffer.updateMany.mock.calls[2][0];
+    expect(sibCancel.where).toMatchObject({ id: "off-2" });
+    expect(sibCancel.data.status).toBe("CANCELLED");
+  });
+
+  test("declining one offer of a batch closes the sibling offer and advances BOTH orders", async () => {
+    prisma.dispatchOffer.updateMany
+      .mockResolvedValueOnce({ count: 1 }) // decline guard
+      .mockResolvedValueOnce({ count: 1 }); // closeBatchSiblings updateMany
+    prisma.dispatchOffer.findFirst.mockResolvedValue(BATCH_OFFER);
+    prisma.dispatchOffer.findMany.mockResolvedValue([{ id: "off-2", orderId: "ord-2" }]);
+
+    await declineOffer({ tenantId: TENANT, offerId: "off-1", driverId: "drv-a" });
+
+    const close = prisma.dispatchOffer.updateMany.mock.calls[1][0];
+    expect(close.where).toMatchObject({ batchId: "batch-1", status: "OFFERED" });
+    expect(close.data.status).toBe("DECLINED");
+    expect(enqueueDispatchNext).toHaveBeenCalledWith(ORDER_ID, TENANT);
+    expect(enqueueDispatchNext).toHaveBeenCalledWith("ord-2", TENANT);
+  });
+
+  test("expiring one offer of a batch closes the sibling too (advance mode)", async () => {
+    prisma.dispatchOffer.findUnique.mockResolvedValue(BATCH_OFFER);
+    prisma.dispatchOffer.updateMany
+      .mockResolvedValueOnce({ count: 1 }) // expiry guard
+      .mockResolvedValueOnce({ count: 1 }); // closeBatchSiblings
+    prisma.dispatchOffer.findMany.mockResolvedValue([{ id: "off-2", orderId: "ord-2" }]);
+
+    const won = await expireOffer("off-1");
+
+    expect(won).toBe(true);
+    const close = prisma.dispatchOffer.updateMany.mock.calls[1][0];
+    expect(close.where).toMatchObject({ batchId: "batch-1", status: "OFFERED" });
+    expect(close.data.status).toBe("EXPIRED");
+    expect(enqueueDispatchNext).toHaveBeenCalledWith(ORDER_ID, TENANT);
+    expect(enqueueDispatchNext).toHaveBeenCalledWith("ord-2", TENANT);
+  });
+});
+
+// ─── releaseDriverToOnline batching guard ───────────────────────────────────
+
+describe("releaseDriverToOnline (batching guard)", () => {
+  const { releaseDriverToOnline } = require("../../../services/dispatch/driverPresence");
+
+  test("driver still carrying another active order stays BUSY", async () => {
+    const tx = {
+      deliveryOrder: { count: jest.fn().mockResolvedValue(1) },
+      courierOnlineSession: { updateMany: jest.fn() },
+    };
+    await releaseDriverToOnline(tx as any, TENANT, "drv-a");
+    expect(tx.courierOnlineSession.updateMany).not.toHaveBeenCalled();
+  });
+
+  test("no remaining active orders → session released to ONLINE", async () => {
+    const tx = {
+      deliveryOrder: { count: jest.fn().mockResolvedValue(0) },
+      courierOnlineSession: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+    };
+    await releaseDriverToOnline(tx as any, TENANT, "drv-a");
+    expect(tx.courierOnlineSession.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ availability: "BUSY" }),
+        data: { availability: "ONLINE" },
+      }),
+    );
   });
 });

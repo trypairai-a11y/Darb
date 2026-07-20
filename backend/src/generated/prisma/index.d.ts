@@ -556,7 +556,8 @@ export const Platform: {
   KEETA: 'KEETA',
   TALABAT: 'TALABAT',
   DELIVEROO: 'DELIVEROO',
-  AMERICANA: 'AMERICANA'
+  AMERICANA: 'AMERICANA',
+  DARB: 'DARB'
 };
 
 export type Platform = (typeof Platform)[keyof typeof Platform]

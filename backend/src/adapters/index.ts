@@ -5,7 +5,9 @@ import { keetaAdapter } from "./keetaAdapter";
 import { americanaAdapter } from "./americanaAdapter";
 import { deliverooAdapter } from "./deliverooAdapter";
 
-const registry: Record<Platform, PlatformAdapter> = {
+// Partial by design: DARB (the 2.0 delivery platform) has no legacy
+// scraper/ingest adapter — getAdapter throws for it, which is correct.
+const registry: Partial<Record<Platform, PlatformAdapter>> = {
   TALABAT: talabatAdapter,
   KEETA: keetaAdapter,
   AMERICANA: americanaAdapter,

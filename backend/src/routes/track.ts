@@ -9,7 +9,8 @@
  * POST /:token/cancel does NOT cancel the order — it raises an OPS_TODO
  * notification for rider support (PRD §10: support acts on live orders).
  * POST /:token/tip posts the TIP wallet transaction (driver keeps 100%);
- * POST /:token/rating lands with the ratings build phase.
+ * POST /:token/rating records the 1-5 star rating (low ratings feed the
+ * driver violation ladder).
  */
 import { Router, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
@@ -18,6 +19,7 @@ import { prisma } from "../config";
 import { logger } from "../config/logger";
 import { publishOrderEvent } from "../services/orderStateMachine";
 import { postTip } from "../services/wallet/walletService";
+import { RatingError, submitRating } from "../services/ratingService";
 
 const router = Router();
 
@@ -276,6 +278,39 @@ router.post("/:token/tip", writeLimiter, async (req: Request, res: Response) => 
   } catch (err) {
     logger.error({ err }, "track: tip failed");
     res.status(500).json({ error: "Tip failed" });
+  }
+});
+
+/**
+ * @swagger
+ * /api/track/{token}/rating:
+ *   post:
+ *     tags: [Tracking]
+ *     summary: Rate the delivery 1-5 stars with an optional comment (once per order)
+ */
+router.post("/:token/rating", writeLimiter, async (req: Request, res: Response) => {
+  try {
+    const order = await findOrderByToken(req.params.token);
+    if (!order) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+
+    const body = req.body as { stars?: unknown; comment?: unknown };
+    const rating = await submitRating({
+      tenantId: order.tenantId,
+      orderId: order.id,
+      stars: Number(body?.stars),
+      comment: typeof body?.comment === "string" ? body.comment : undefined,
+    });
+    res.status(201).json({ ok: true, stars: rating.stars });
+  } catch (err) {
+    if (err instanceof RatingError) {
+      res.status(err.httpStatus).json({ error: err.message });
+      return;
+    }
+    logger.error({ err }, "track: rating failed");
+    res.status(500).json({ error: "Rating failed" });
   }
 });
 

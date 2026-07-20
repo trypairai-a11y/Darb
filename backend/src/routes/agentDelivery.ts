@@ -40,6 +40,7 @@ import {
   transitionOrder,
 } from "../services/orderStateMachine";
 import { enqueueFoodicsWriteback } from "../services/foodics/writebackHook";
+import { fireCustomerMilestone } from "../services/customerMessagingService";
 import { completeDelivery, failDelivery } from "../services/orderService";
 import {
   getDriverWalletSummary,
@@ -580,6 +581,7 @@ router.post("/orders/:id/status", async (req: Request, res: Response) => {
       void enqueueFoodicsWriteback(order.id, "PICKED_UP").catch((e) =>
         logger.warn({ err: e, orderId: order.id }, "foodics writeback enqueue failed"),
       );
+      fireCustomerMilestone(order.id, driver.tenantId, "PICKED_UP");
     } else {
       await prisma.orderEvent.create({
         data: {

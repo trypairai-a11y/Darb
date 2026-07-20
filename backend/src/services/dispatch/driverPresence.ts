@@ -29,12 +29,23 @@ export async function markDriverBusy(
   });
 }
 
-/** Order reached a terminal state — a still-open BUSY session goes ONLINE. */
+/**
+ * Order reached a terminal state — a still-open BUSY session goes ONLINE.
+ *
+ * PRD §8 batching guard: a batched driver still carrying ANOTHER
+ * ASSIGNED/PICKED_UP order must stay BUSY, or he re-enters the candidate
+ * pool mid-second-drop. Callers run this inside the same tx as the terminal
+ * transition, so the just-finished order no longer matches the count.
+ */
 export async function releaseDriverToOnline(
   tx: Tx,
   tenantId: string,
   driverId: string
 ): Promise<void> {
+  const stillActive = await tx.deliveryOrder.count({
+    where: { tenantId, driverId, status: { in: ["ASSIGNED", "PICKED_UP"] } },
+  });
+  if (stillActive > 0) return;
   await tx.courierOnlineSession.updateMany({
     where: { tenantId, driverId, isOnline: true, availability: "BUSY" },
     data: { availability: "ONLINE" },

@@ -2806,7 +2806,8 @@ exports.Platform = exports.$Enums.Platform = {
   KEETA: 'KEETA',
   TALABAT: 'TALABAT',
   DELIVEROO: 'DELIVEROO',
-  AMERICANA: 'AMERICANA'
+  AMERICANA: 'AMERICANA',
+  DARB: 'DARB'
 };
 
 exports.UserRole = exports.$Enums.UserRole = {
