@@ -60,10 +60,10 @@ export function SuperAdminGuard({ children }: SuperAdminGuardProps) {
           person who set up the workspace if you need access.
         </p>
         <Link
-          href="/decisions"
+          href="/ops"
           className="inline-block text-sm text-primary hover:underline"
         >
-          Back to /decisions →
+          Back to operations →
         </Link>
       </div>
     );

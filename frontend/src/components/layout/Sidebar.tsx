@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
@@ -7,12 +6,9 @@ import { useSidebar } from "@/contexts/SidebarContext";
 import { useRole } from "@/hooks/useRole";
 import { useI18n } from "@/i18n/I18nProvider";
 import LanguageSwitcher from "./LanguageSwitcher";
-import { ChevronDown, PanelLeftClose } from "lucide-react";
-import { DirectionalIcon } from "@/i18n/directionalIcon";
+import { PanelLeftClose } from "lucide-react";
 import {
   NAV_SECTIONS,
-  SHOW_LEGACY,
-  SHOW_V1,
   buildIsActive,
   type NavItem,
   type NavSection,
@@ -23,15 +19,8 @@ export default function Sidebar() {
   const { collapsed, open, setOpen } = useSidebar();
   const { role, hasRole } = useRole();
   const { t, dir } = useI18n();
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-
-  const toggleGroup = (key: string) => {
-    setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
 
   const sectionVisible = (section: NavSection): boolean => {
-    if (!SHOW_V1) return false;
-    if (section.legacy && !SHOW_LEGACY) return false;
     if (section.roles) return section.roles.includes(role);
     if (section.minRole) return hasRole(section.minRole);
     return true;
@@ -40,24 +29,18 @@ export default function Sidebar() {
   const visibleSections = NAV_SECTIONS.filter(sectionVisible);
   const isActive = buildIsActive(visibleSections, pathname);
 
-  const renderItem = (item: NavItem, indent = false) => (
+  const renderItem = (item: NavItem) => (
     <Link
       key={item.path}
       href={item.path}
       className={cn(
-        indent
-          ? "flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] transition-all duration-250 ease-sierra-out"
-          : "flex items-center gap-3 px-3 py-2 rounded-pill text-sm font-medium transition-all duration-250 ease-sierra-out mb-0.5",
+        "flex items-center gap-3 px-3 py-2 rounded-pill text-sm font-medium transition-all duration-250 ease-sierra-out mb-0.5",
         isActive(item.path)
-          ? indent
-            ? "bg-white/10 text-white font-medium"
-            : "bg-primary text-white shadow-soft"
-          : indent
-            ? "text-white/55 hover:text-white hover:bg-white/5"
-            : "text-white/70 hover:bg-white/5 hover:text-white"
+          ? "bg-primary text-white shadow-soft"
+          : "text-white/70 hover:bg-white/5 hover:text-white"
       )}
     >
-      <item.icon size={indent ? 14 : 18} aria-hidden="true" />
+      <item.icon size={18} aria-hidden="true" />
       {!collapsed && <span className="flex-1">{t(item.i18n)}</span>}
     </Link>
   );
@@ -91,11 +74,6 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto py-4 px-2">
-        {visibleSections.length === 0 && !collapsed && (
-          <div className="px-3 py-2 text-[11px] font-medium text-white/30 uppercase tracking-[0.18em]">
-            {t("darbNav.rebuilding")}
-          </div>
-        )}
         {visibleSections.map((section, sectionIdx) => (
           <div key={section.key} className={cn(sectionIdx > 0 && "mt-6")}>
             {!collapsed && (
@@ -104,34 +82,6 @@ export default function Sidebar() {
               </div>
             )}
             {section.items.map((item) => renderItem(item))}
-
-            {/* Collapsible groups (legacy platform trees) */}
-            {(section.groups ?? []).map((group) => (
-              <div key={group.key} className="mb-1">
-                <button
-                  onClick={() => toggleGroup(group.key)}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-3 py-2 rounded-pill text-sm font-medium transition-all duration-250 ease-sierra-out",
-                    pathname.startsWith(`/${group.key}`)
-                      ? "bg-white/10 text-white"
-                      : "text-white/70 hover:bg-white/5 hover:text-white"
-                  )}
-                >
-                  <span className={cn("w-2 h-2 rounded-full shrink-0", group.dotClass)} />
-                  {!collapsed && (
-                    <>
-                      <span className="flex-1 text-start">{group.name}</span>
-                      {expanded[group.key] ? <ChevronDown size={14} /> : <DirectionalIcon kind="chevron-forward" size={14} />}
-                    </>
-                  )}
-                </button>
-                {!collapsed && expanded[group.key] && (
-                  <div className="ms-5 mt-0.5 space-y-0.5 animate-fade-in">
-                    {group.items.map((item) => renderItem(item, true))}
-                  </div>
-                )}
-              </div>
-            ))}
           </div>
         ))}
       </nav>

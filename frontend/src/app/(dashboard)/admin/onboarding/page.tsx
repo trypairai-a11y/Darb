@@ -72,7 +72,7 @@ export default function AdminOnboardingPage() {
             )}
           </div>
           <Link
-            href="/decisions"
+            href="/ops"
             className="inline-flex items-center gap-1.5 text-sm text-sand-600 hover:text-slate-900"
           >
             <ArrowLeft size={14} />

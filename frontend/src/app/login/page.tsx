@@ -5,11 +5,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 
 /**
- * Per UI-SPEC §2.2 + orchestrator decision: post-auth landing depends on the
- * authenticated User's role.
- *   ADMIN / OPS_MANAGER / VIEWER → /decisions    (Phase 2 wedge surface)
- *   SUPERVISOR                   → /v2/dispatch  (Floor watchtower)
- *   ACCOUNTANT                   → /v2/money     (Finance lens until /finance/cash ships)
+ * Post-auth landing depends on the authenticated User's role. Staff land on
+ * the live ops map, money roles on finance, portal roles inside their fenced
+ * portal.
  *
  * SUPER_ADMIN is a separate flag (User.isSuperAdmin), not a UserRole — the
  * standard role-landing applies, with /admin/* surfaces gated by the
@@ -27,7 +25,7 @@ const ROLE_LANDING: Record<string, string> = {
 };
 
 function landingForRole(role: string | undefined): string {
-  if (!role) return "/decisions";
+  if (!role) return "/ops";
   return ROLE_LANDING[role] ?? "/ops";
 }
 
