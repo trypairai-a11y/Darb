@@ -29,6 +29,15 @@ import {
   PlusCircle,
 } from "lucide-react";
 
+/**
+ * Master kill-switch (2026-07-20). The product is being rebuilt from a new PRD,
+ * so the whole v1/v2 nav is hidden: the sidebar renders a "Rebuilding"
+ * placeholder instead of any section. Nothing is deleted and no route is
+ * guarded, so every page below still loads if you type its URL directly.
+ * Flip to true to bring the entire existing surface back.
+ */
+export const SHOW_V1 = false;
+
 /** Flip to true to bring the Darb 1.0 platform modules back into the nav. */
 export const SHOW_LEGACY = false;
 

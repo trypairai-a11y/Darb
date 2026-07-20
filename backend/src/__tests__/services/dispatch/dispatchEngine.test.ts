@@ -58,6 +58,7 @@ const {
   startDispatch,
   dispatchNext,
   expireOffer,
+  sweepDispatch,
   acceptOffer,
   declineOffer,
   OfferGoneError,
@@ -308,11 +309,18 @@ describe("startDispatch", () => {
     expect(expiry).toBeGreaterThanOrEqual(before + 15_000 - 1_000);
     expect(expiry).toBeLessThanOrEqual(Date.now() + 15_000 + 1_000);
 
-    // offerRound guarded increment while still DISPATCHING
+    // offerRound compare-and-set: guarded on BOTH still-DISPATCHING and the
+    // round we read. Without `offerRound: round` two concurrent rounds each
+    // pass the status guard and the order gets two live OFFERED offers.
     const bump = prisma.deliveryOrder.updateMany.mock.calls.find(
       (c: any) => c[0].data?.offerRound,
     );
-    expect(bump[0].where).toEqual({ id: ORDER_ID, tenantId: TENANT, status: "DISPATCHING" });
+    expect(bump[0].where).toEqual({
+      id: ORDER_ID,
+      tenantId: TENANT,
+      status: "DISPATCHING",
+      offerRound: 0,
+    });
     expect(bump[0].data.offerRound).toEqual({ increment: 1 });
 
     const sent = publishEvent.mock.calls.filter((c) => c[0]?.type === "offer.sent");
@@ -487,5 +495,169 @@ describe("declineOffer", () => {
       declineOffer({ tenantId: TENANT, offerId: "off-1", driverId: "drv-a" }),
     ).resolves.toBeUndefined();
     expect(enqueueDispatchNext).not.toHaveBeenCalled();
+  });
+});
+
+
+// ─── Cron sweep (serverless dispatch driver) ────────────────────────────────
+//
+// On Vercel this sweep is the ONLY thing that moves dispatch: no Redis, and
+// startDispatchWorker never boots, so enqueueDispatchStart/Next are dropped
+// outright. That makes leg 2 (advance DISPATCHING orders with no live offer)
+// load-bearing — an order there has never been offered to anyone, so a sweep
+// that only expired existing offers would find nothing to do, forever.
+//
+// The property these tests defend is RE-DERIVABILITY: the advance set is a
+// pure function of committed state, never of "what leg 1 just expired". That
+// is what lets a killed lambda resume on the next tick instead of stranding
+// orders in DISPATCHING with no offer and nothing to retry them.
+
+describe("sweepDispatch", () => {
+  const NOW = new Date("2026-07-20T12:00:00Z");
+
+  const dueOffer = (id: string) => ({ id });
+  const wedged = (id: string) => ({ id, tenantId: TENANT });
+
+  beforeEach(() => {
+    // runDispatchRound bails immediately on a non-DISPATCHING order, so
+    // deliveryOrder.findFirst call count == number of orders advanced.
+    prisma.deliveryOrder.findFirst.mockResolvedValue({ ...BASE_ORDER, status: "CANCELLED" });
+    prisma.dispatchOffer.findMany.mockResolvedValue([]);
+    prisma.deliveryOrder.findMany.mockResolvedValue([]);
+  });
+
+  test("idle: nothing due and nothing wedged", async () => {
+    const result = await sweepDispatch({ now: NOW });
+
+    expect(result).toMatchObject({ expired: 0, advanced: 0, wedged: 0, truncated: false });
+    expect(prisma.dispatchOffer.updateMany).not.toHaveBeenCalled();
+  });
+
+  test("leg 1 selects only OFFERED offers whose window has elapsed", async () => {
+    await sweepDispatch({ now: NOW, limit: 25 });
+
+    const q = prisma.dispatchOffer.findMany.mock.calls[0][0];
+    expect(q.where).toEqual({ status: "OFFERED", expiresAt: { lte: NOW } });
+    expect(q.take).toBe(25);
+  });
+
+  test("leg 2 selects DISPATCHING orders with NO live offer — not offers", async () => {
+    await sweepDispatch({ now: NOW, limit: 25 });
+
+    const q = prisma.deliveryOrder.findMany.mock.calls[0][0];
+    expect(q.where).toEqual({
+      status: "DISPATCHING",
+      offers: { none: { status: "OFFERED", expiresAt: { gt: NOW } } },
+    });
+    // Oldest customer first.
+    expect(q.orderBy).toEqual({ createdAt: "asc" });
+  });
+
+  test("BOOTSTRAP: advances an order that has never had an offer at all", async () => {
+    // The prod symptom on Vercel — enqueueDispatchStart was dropped, so the
+    // order sits in DISPATCHING with zero DispatchOffer rows. Leg 1 finds
+    // nothing; leg 2 must still pick it up.
+    prisma.dispatchOffer.findMany.mockResolvedValue([]);
+    prisma.deliveryOrder.findMany.mockResolvedValue([wedged("ord-never-offered")]);
+
+    const result = await sweepDispatch({ now: NOW });
+
+    expect(result).toMatchObject({ expired: 0, advanced: 1 });
+    expect(prisma.deliveryOrder.findFirst).toHaveBeenCalledTimes(1);
+  });
+
+  test("RECOVERY: re-advances an order stranded by a previous half-finished run", async () => {
+    // Its only offer is already EXPIRED, so leg 1 cannot see it. Leg 2 can,
+    // because the order is still DISPATCHING with no live offer.
+    prisma.dispatchOffer.findMany.mockResolvedValue([]);
+    prisma.deliveryOrder.findMany.mockResolvedValue([wedged("ord-stranded")]);
+
+    const result = await sweepDispatch({ now: NOW });
+
+    expect(result.advanced).toBe(1);
+  });
+
+  test("expires due offers and advances wedged orders in the same run", async () => {
+    prisma.dispatchOffer.findMany.mockResolvedValue([dueOffer("off-1"), dueOffer("off-2")]);
+    prisma.dispatchOffer.findUnique
+      .mockResolvedValueOnce({ id: "off-1", tenantId: TENANT, orderId: "ord-a", round: 0, driverId: "d1" })
+      .mockResolvedValueOnce({ id: "off-2", tenantId: TENANT, orderId: "ord-b", round: 0, driverId: "d2" });
+    prisma.dispatchOffer.updateMany.mockResolvedValue({ count: 1 });
+    prisma.deliveryOrder.findMany.mockResolvedValue([wedged("ord-a"), wedged("ord-b")]);
+
+    const result = await sweepDispatch({ now: NOW });
+
+    expect(result).toMatchObject({ expired: 2, advanced: 2 });
+    expect(publishEvent.mock.calls.filter((c) => c[0]?.type === "offer.expired")).toHaveLength(2);
+  });
+
+  test("never double-advances: leg 1 does not enqueue, leg 2 drives", async () => {
+    prisma.dispatchOffer.findMany.mockResolvedValue([dueOffer("off-1")]);
+    prisma.dispatchOffer.findUnique.mockResolvedValue({
+      id: "off-1", tenantId: TENANT, orderId: "ord-a", round: 0, driverId: "d1",
+    });
+    prisma.dispatchOffer.updateMany.mockResolvedValue({ count: 1 });
+    prisma.deliveryOrder.findMany.mockResolvedValue([wedged("ord-a")]);
+
+    await sweepDispatch({ now: NOW });
+
+    // With Redis present, an enqueue here would run dispatchNext a second time.
+    expect(enqueueDispatchNext).not.toHaveBeenCalled();
+    expect(prisma.deliveryOrder.findFirst).toHaveBeenCalledTimes(1);
+  });
+
+  test("an offer whose guarded update lost the race is not counted", async () => {
+    prisma.dispatchOffer.findMany.mockResolvedValue([dueOffer("off-1")]);
+    prisma.dispatchOffer.findUnique.mockResolvedValue({
+      id: "off-1", tenantId: TENANT, orderId: "ord-a", round: 0, driverId: "d1",
+    });
+    prisma.dispatchOffer.updateMany.mockResolvedValue({ count: 0 }); // accepted first
+
+    const result = await sweepDispatch({ now: NOW });
+
+    expect(result.expired).toBe(0);
+  });
+
+  test("a throwing dispatchNext does not abort the batch and is retried next tick", async () => {
+    prisma.deliveryOrder.findMany.mockResolvedValue([wedged("ord-a"), wedged("ord-b")]);
+    prisma.deliveryOrder.findFirst
+      .mockRejectedValueOnce(new Error("db blip"))
+      .mockResolvedValueOnce({ ...BASE_ORDER, status: "CANCELLED" });
+
+    const result = await sweepDispatch({ now: NOW });
+
+    // ord-a failed, ord-b still ran. Nothing was mutated for ord-a, so it
+    // still matches the leg-2 selector on the next tick.
+    expect(result.advanced).toBe(1);
+    expect(result.wedged).toBe(2);
+  });
+
+  test("a failing expire does not stop the rest of leg 1", async () => {
+    prisma.dispatchOffer.findMany.mockResolvedValue([dueOffer("off-1"), dueOffer("off-2")]);
+    prisma.dispatchOffer.findUnique
+      .mockRejectedValueOnce(new Error("db blip"))
+      .mockResolvedValueOnce({ id: "off-2", tenantId: TENANT, orderId: "ord-b", round: 0, driverId: "d2" });
+    prisma.dispatchOffer.updateMany.mockResolvedValue({ count: 1 });
+
+    const result = await sweepDispatch({ now: NOW });
+
+    expect(result.expired).toBe(1);
+  });
+
+  test("reports truncated when the per-run cap is hit, so a backlog is visible", async () => {
+    prisma.deliveryOrder.findMany.mockResolvedValue([wedged("o1"), wedged("o2")]);
+
+    const result = await sweepDispatch({ now: NOW, limit: 2 });
+
+    expect(result.truncated).toBe(true);
+  });
+
+  test("stops advancing when the wall-clock budget is spent rather than being killed", async () => {
+    prisma.deliveryOrder.findMany.mockResolvedValue([wedged("o1"), wedged("o2"), wedged("o3")]);
+
+    const result = await sweepDispatch({ now: NOW, budgetMs: -1 });
+
+    expect(result.advanced).toBe(0);
+    expect(result.truncated).toBe(true);
   });
 });

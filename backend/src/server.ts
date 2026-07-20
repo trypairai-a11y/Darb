@@ -83,6 +83,7 @@ import deliveryOrdersRouter from "./routes/deliveryOrders";
 import walletsRouter from "./routes/wallets";
 import incidentsRouter from "./routes/incidents";
 import dispatchMonitorRouter from "./routes/dispatchMonitor";
+import cronRouter from "./routes/cron";
 import agentDeliveryRouter from "./routes/agentDelivery";
 import { blockVendorOutsideAllowlist } from "./middleware/vendorContainment";
 import { startDispatchWorker } from "./queues/dispatchWorker";
@@ -215,6 +216,10 @@ app.use(blockVendorOutsideAllowlist);
 // foodicsRouter below is collision-free.
 app.use("/api/webhooks", webhooksRouter);
 app.use("/api/foodics", foodicsCallbackRouter);
+// cronRouter: Vercel Cron tick that drives the sweeps the listen-block
+// schedulers below would otherwise own. Bearer CRON_SECRET, cross-tenant by
+// design, fails closed when the secret is unset. See routes/cron.ts.
+app.use("/api/cron", cronRouter);
 
 // Routes
 app.use("/api/auth", authRoutes);

@@ -472,10 +472,17 @@ async function runDispatchRound(tenantId: string, orderId: string): Promise<void
           expiresAt,
         },
       });
-      // Guarded bump — count 0 means the order left DISPATCHING under us;
-      // throwing rolls the offer row back.
+      // Guarded bump — count 0 means the order left DISPATCHING under us OR
+      // another round already advanced offerRound past the value we read at
+      // line 444; throwing rolls the offer row back. The `offerRound: round`
+      // compare-and-set is what serializes two concurrent rounds: without it
+      // both readers pass the status guard, both increment, and the order ends
+      // up with two live OFFERED offers whenever they pick different drivers
+      // (the @@unique([orderId, driverId, round]) only catches same-driver).
+      // That race is reachable now that the cron sweep can drive dispatchNext
+      // concurrently with a BullMQ worker on another host.
       const bumped = await trx.deliveryOrder.updateMany({
-        where: { id: orderId, tenantId, status: "DISPATCHING" },
+        where: { id: orderId, tenantId, status: "DISPATCHING", offerRound: round },
         data: { offerRound: { increment: 1 } },
       });
       if (bumped.count === 0) {
@@ -523,17 +530,32 @@ export async function dispatchNext(tenantId: string, orderId: string): Promise<v
 
 // ─── Offer expiry (offer-expiry job body) ──────────────────────────────────
 
-export async function expireOffer(offerId: string): Promise<void> {
+/**
+ * Mark one OFFERED offer EXPIRED and (by default) enqueue the next round.
+ *
+ * Returns true when THIS call won the guarded update — i.e. it is the caller
+ * that actually expired the offer. Losers of the accept-vs-expire race and
+ * unknown ids return false.
+ *
+ * `advance: false` skips the enqueueDispatchNext call so a caller that is
+ * already awaiting dispatchNext itself does not advance the order twice. The
+ * cron sweep uses this; the BullMQ worker keeps the default.
+ */
+export async function expireOffer(
+  offerId: string,
+  opts: { advance?: boolean } = {},
+): Promise<boolean> {
+  const { advance = true } = opts;
   // offerId is a global uuid; the row carries the tenant for the guarded update.
   // eslint-disable-next-line no-prisma-without-tenant -- queue-internal entry point: offerId comes from our own delayed job (never a client), and every subsequent write re-filters on the row's own tenantId.
   const offer = await prisma.dispatchOffer.findUnique({ where: { id: offerId } });
-  if (!offer) return;
+  if (!offer) return false;
 
   const won = await prisma.dispatchOffer.updateMany({
     where: { id: offerId, tenantId: offer.tenantId, status: "OFFERED" },
     data: { status: "EXPIRED", respondedAt: new Date() },
   });
-  if (won.count === 0) return; // accepted/declined/cancelled first — lost the race
+  if (won.count === 0) return false; // accepted/declined/cancelled first — lost the race
 
   publishOrderEvent(offer.tenantId, "offer.expired", {
     orderId: offer.orderId,
@@ -541,7 +563,121 @@ export async function expireOffer(offerId: string): Promise<void> {
     driverId: offer.driverId,
     round: offer.round,
   });
-  await enqueueDispatchNext(offer.orderId, offer.tenantId);
+  if (advance) await enqueueDispatchNext(offer.orderId, offer.tenantId);
+  return true;
+}
+
+// ─── Cron sweep (serverless-safe dispatch driver) ───────────────────────────
+
+/**
+ * Default wall-clock budget for one sweep. Kept well under the lambda ceiling
+ * (vercel.json sets maxDuration: 60) so the sweep always returns rather than
+ * being killed — see the re-derivability note below for why being killed is
+ * survivable anyway, and why we still prefer not to be.
+ */
+const SWEEP_BUDGET_MS = 40_000;
+
+/**
+ * Drive dispatch forward from durable state. Two legs:
+ *
+ *   1. EXPIRE  — every OFFERED offer whose expiresAt has elapsed → EXPIRED.
+ *   2. ADVANCE — every DISPATCHING order with no live offer → dispatchNext.
+ *
+ * Why this exists: on Vercel the listen block never runs, so startDispatchWorker
+ * never registers the in-process handlers, and there is no Redis. That means
+ * BOTH legs of the normal flow are dead — not just offer expiry. enqueueDispatchStart
+ * (order create, redispatch) and enqueueDispatchNext (decline, expiry) are all
+ * dropped with "job dropped" warnings, so on the deploy an order reaches
+ * DISPATCHING and never receives a first offer at all. Expiring offers alone
+ * would fix nothing, because no offer is ever created to expire.
+ *
+ * Leg 2 is therefore the load-bearing one, and it is deliberately derived from
+ * ORDERS rather than from the offers leg 1 happened to expire. That makes the
+ * whole sweep RE-DERIVABLE: the work set is a pure function of committed state,
+ * so a sweep that dies halfway (killed lambda, thrown dispatchNext, deploy
+ * mid-run) loses nothing — the next tick recomputes the same set and picks up
+ * exactly where it left off. Deriving the advance set from an in-memory list of
+ * "offers I just expired" would instead strand those orders permanently, since
+ * an EXPIRED offer is invisible to leg 1 forever after.
+ *
+ * The same selector also covers every other way an order gets wedged:
+ * never-offered (round 1 dropped), last offer DECLINED, last offer EXPIRED by a
+ * previous run, or stranded by an earlier crash. One query, all four cases.
+ *
+ * Safe alongside a real BullMQ worker on a long-lived host: expireOffer's
+ * guarded updateMany means only one caller wins each offer, and runDispatchRound's
+ * compare-and-set on offerRound means only one caller wins each round.
+ */
+export async function sweepDispatch(
+  opts: { limit?: number; budgetMs?: number; now?: Date } = {},
+): Promise<{ expired: number; advanced: number; wedged: number; truncated: boolean }> {
+  const { limit = 100, budgetMs = SWEEP_BUDGET_MS, now = new Date() } = opts;
+  const startedAt = Date.now();
+  const outOfBudget = () => Date.now() - startedAt > budgetMs;
+
+  // ── Leg 1: expire elapsed offers ──────────────────────────────────────────
+  // Cross-tenant by design — this is a system sweep, not a request path.
+  // eslint-disable-next-line no-prisma-without-tenant -- cron-internal: selects only rows whose own expiresAt has elapsed; expireOffer re-filters every write on the row's own tenantId.
+  const due = await prisma.dispatchOffer.findMany({
+    where: { status: "OFFERED", expiresAt: { lte: now } },
+    select: { id: true },
+    orderBy: { expiresAt: "asc" },
+    take: limit,
+  });
+
+  let expired = 0;
+  for (const offer of due) {
+    if (outOfBudget()) break;
+    try {
+      // advance:false — leg 2 owns advancement. Letting expireOffer enqueue
+      // here would double-advance whenever Redis IS present.
+      if (await expireOffer(offer.id, { advance: false })) expired += 1;
+    } catch (err) {
+      logger.warn({ err, offerId: offer.id }, "sweepDispatch: expire failed");
+    }
+  }
+
+  // ── Leg 2: advance orders with no live offer ──────────────────────────────
+  // `none` rather than a join on leg 1's results: this is what makes the sweep
+  // re-derivable and what catches orders that never got an offer at all.
+  // eslint-disable-next-line no-prisma-without-tenant -- cron-internal: cross-tenant by design; dispatchNext re-filters on each row's own tenantId.
+  const wedgedOrders = await prisma.deliveryOrder.findMany({
+    where: {
+      status: "DISPATCHING",
+      offers: { none: { status: "OFFERED", expiresAt: { gt: now } } },
+    },
+    select: { id: true, tenantId: true },
+    orderBy: { createdAt: "asc" }, // oldest customer waiting first
+    take: limit,
+  });
+
+  let advanced = 0;
+  let truncated = due.length === limit || wedgedOrders.length === limit;
+  for (const order of wedgedOrders) {
+    if (outOfBudget()) {
+      truncated = true;
+      break;
+    }
+    try {
+      await dispatchNext(order.tenantId, order.id);
+      advanced += 1;
+    } catch (err) {
+      // Safe to swallow: this order still matches the leg-2 selector next tick.
+      logger.warn({ err, orderId: order.id }, "sweepDispatch: advance failed");
+    }
+  }
+
+  if (truncated) {
+    logger.warn(
+      { limit, dueFound: due.length, wedgedFound: wedgedOrders.length, advanced },
+      "sweepDispatch: hit the per-run cap — backlog remains, next tick continues",
+    );
+  }
+  logger.info(
+    { expired, advanced, wedged: wedgedOrders.length, durationMs: Date.now() - startedAt },
+    "dispatch sweep",
+  );
+  return { expired, advanced, wedged: wedgedOrders.length, truncated };
 }
 
 // ─── Accept / decline ───────────────────────────────────────────────────────

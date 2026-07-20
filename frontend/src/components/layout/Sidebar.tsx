@@ -12,6 +12,7 @@ import { DirectionalIcon } from "@/i18n/directionalIcon";
 import {
   NAV_SECTIONS,
   SHOW_LEGACY,
+  SHOW_V1,
   buildIsActive,
   type NavItem,
   type NavSection,
@@ -29,6 +30,7 @@ export default function Sidebar() {
   };
 
   const sectionVisible = (section: NavSection): boolean => {
+    if (!SHOW_V1) return false;
     if (section.legacy && !SHOW_LEGACY) return false;
     if (section.roles) return section.roles.includes(role);
     if (section.minRole) return hasRole(section.minRole);
@@ -89,6 +91,11 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto py-4 px-2">
+        {visibleSections.length === 0 && !collapsed && (
+          <div className="px-3 py-2 text-[11px] font-medium text-white/30 uppercase tracking-[0.18em]">
+            {t("darbNav.rebuilding")}
+          </div>
+        )}
         {visibleSections.map((section, sectionIdx) => (
           <div key={section.key} className={cn(sectionIdx > 0 && "mt-6")}>
             {!collapsed && (

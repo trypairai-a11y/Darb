@@ -59,7 +59,11 @@ let _workerSingleton: Worker<DispatchJobData> | null = null;
 export function startDispatchWorker(): Worker<DispatchJobData> | null {
   // Always wire the Redis-less fallbacks — dispatchQueue degrades offer-expiry
   // to setTimeout and dispatch-start/next to setImmediate through these.
-  setOfferExpiryHandler(expireOffer);
+  // Wrapped, not passed by reference: expireOffer returns whether it won the
+  // guarded update, and OfferExpiryHandler is `=> void | Promise<void>`.
+  setOfferExpiryHandler(async (offerId) => {
+    await expireOffer(offerId);
+  });
   setDispatchJobHandler((name, data) =>
     name === "dispatch-start"
       ? startDispatch(data.tenantId, data.orderId)

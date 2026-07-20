@@ -1205,6 +1205,7 @@ export interface Messages {
     system: string;
     vendor: string;
     legacy: string;
+    rebuilding: string;
     opsMap: string;
     jeopardy: string;
     alerts: string;
@@ -2766,6 +2767,7 @@ export const en: Messages = {
     system: "System",
     vendor: "Vendor",
     legacy: "Legacy",
+    rebuilding: "Rebuilding",
     opsMap: "Ops Map",
     jeopardy: "Jeopardy",
     alerts: "Alerts",
@@ -4327,6 +4329,7 @@ export const ar: Messages = {
     system: "النظام",
     vendor: "المطعم",
     legacy: "الأنظمة القديمة",
+    rebuilding: "قيد إعادة البناء",
     opsMap: "خريطة العمليات",
     jeopardy: "الطلبات المتأخرة",
     alerts: "التنبيهات",

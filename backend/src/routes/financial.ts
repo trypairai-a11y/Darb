@@ -4,7 +4,7 @@ import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
 import { rbac } from "../middleware/rbac";
 import { getPagination, paginatedResponse } from "../utils/pagination";
-import { triggerWithdrawal } from "../queues/autoWithdrawWorker";
+import { triggerWithdrawal, settleWithdrawal, failWithdrawal } from "../queues/autoWithdrawWorker";
 
 const router = Router();
 router.use(authMiddleware, tenantScope);
@@ -185,6 +185,43 @@ router.get("/withdrawals", async (req: Request, res: Response) => {
     res.json(paginatedResponse(data, total, page, limit));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// Settlement is manual and explicit: accepting an invoice records a PENDING
+// payout intent, and only a confirmed bank transfer moves it to WITHDRAWN /
+// Billing PAID. ADMIN + ACCOUNTANT only — this is the write that says money
+// left the account. A real payout-provider webhook would call the same
+// settleWithdrawal/failWithdrawal service functions.
+router.post("/withdrawals/:id/settle", rbac("ADMIN", "ACCOUNTANT"), async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const { reference } = req.body || {};
+    if (!reference || typeof reference !== "string" || !reference.trim()) {
+      res.status(400).json({ error: "A bank transfer reference is required to settle a withdrawal" });
+      return;
+    }
+    const withdrawal = await settleWithdrawal(tenantId, req.params.id, {
+      reference: reference.trim(),
+      actor: req.user!.email,
+    });
+    res.json(withdrawal);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+router.post("/withdrawals/:id/fail", rbac("ADMIN", "ACCOUNTANT"), async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const { reason } = req.body || {};
+    const withdrawal = await failWithdrawal(tenantId, req.params.id, {
+      reason: typeof reason === "string" && reason.trim() ? reason.trim() : undefined,
+      actor: req.user!.email,
+    });
+    res.json(withdrawal);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
   }
 });
 
