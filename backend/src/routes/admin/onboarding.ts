@@ -11,9 +11,6 @@
 // Endpoints (per UI-SPEC §8.3):
 //   POST /tenants                                  — create Tenant + owner User
 //   POST /tenants/:tid/couriers/import             — XLSX/CSV courier import
-//   POST /tenants/:tid/platform-credentials        — encrypted creds for scrapers
-//   POST /tenants/:tid/run-backwash                — kicks off BullMQ job
-//   GET  /tenants/:tid/backwash-status?jobId=X     — poll progress
 //   GET  /tenants/:tid/report                      — Darb's read on your fleet
 //   POST /tenants/:tid/start-trial                 — flip designPartner + trialEndsAt
 //
@@ -33,23 +30,11 @@ import { requireSuperAdmin } from "../../middleware/superAdmin";
 import { writeAgentAction } from "../../agent";
 import { logger } from "../../config/logger";
 import { buildOnboardingReport } from "../../services/onboarding/reportBuilder";
-import {
-  getOnboardingBackwashQueue,
-  getBackwashJob,
-  type BackwashPlatform,
-} from "../../queues/onboardingBackwashWorker";
 
 const router = Router();
 router.use(authMiddleware, requireSuperAdmin);
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
-
-const VALID_PLATFORMS = new Set<BackwashPlatform>([
-  "KEETA",
-  "TALABAT",
-  "DELIVEROO",
-  "AMERICANA",
-]);
 
 function generateTempPassword(length = 16): string {
   // 16-char alphanumeric. Founder shares verbally during onboarding —
@@ -267,143 +252,6 @@ router.post(
         valid,
         invalid: { missingPhone, duplicateCivilId },
         created,
-      });
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      return res.status(500).json({ error: msg });
-    }
-  },
-);
-
-// ─── POST /tenants/:tid/platform-credentials ───────────────────────────────
-
-router.post(
-  "/tenants/:tenantId/platform-credentials",
-  async (req: Request, res: Response) => {
-    try {
-      const { tenantId } = req.params;
-      const { platform, username, password, enabled } = (req.body ?? {}) as {
-        platform?: BackwashPlatform;
-        username?: string;
-        password?: string;
-        enabled?: boolean;
-      };
-
-      if (!platform || !VALID_PLATFORMS.has(platform)) {
-        return res.status(400).json({ error: "platform must be KEETA, TALABAT, DELIVEROO, or AMERICANA" });
-      }
-      if (!username || !password) {
-        return res.status(400).json({ error: "username and password required" });
-      }
-
-      const tenant = await (prisma as unknown as {
-        tenant: { findFirst: (args: unknown) => Promise<{ id: string } | null> };
-      }).tenant.findFirst({ where: { id: tenantId } });
-      if (!tenant) {
-        return res.status(404).json({ error: "Tenant not found" });
-      }
-
-      // T-02-24 mitigation: reuse existing TalabatSession / Keeta credential
-      // models that already encrypt at rest. For Phase 2 we surface a
-      // lightweight handoff that records the platform was connected; real
-      // credential persistence happens via the existing platform-specific
-      // session models in Phase 6 (Ingest Adapter Layer).
-      //
-      // We deliberately do NOT introduce a new secret-storage path here —
-      // every secret-storage code path in the codebase has had a security
-      // review, and adding a new one is exactly the kind of T-02-24
-      // disclosure surface this Phase is trying to avoid.
-
-      logger?.info?.(
-        { tenantId, platform, enabled: enabled !== false },
-        "platform credential handoff (Phase 6 will persist via existing session models)",
-      );
-
-      return res.status(202).json({
-        connected: true,
-        platform,
-        note: "Phase 6 wires the credential into the existing platform session model. Phase 2 records the handoff.",
-      });
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      return res.status(500).json({ error: msg });
-    }
-  },
-);
-
-// ─── POST /tenants/:tid/run-backwash ───────────────────────────────────────
-
-router.post(
-  "/tenants/:tenantId/run-backwash",
-  async (req: Request, res: Response) => {
-    try {
-      const { tenantId } = req.params;
-      const { windowDays, platforms } = (req.body ?? {}) as {
-        windowDays?: number;
-        platforms?: string[];
-      };
-
-      const tenant = await (prisma as unknown as {
-        tenant: { findFirst: (args: unknown) => Promise<{ id: string } | null> };
-      }).tenant.findFirst({ where: { id: tenantId } });
-      if (!tenant) {
-        return res.status(404).json({ error: "Tenant not found" });
-      }
-
-      const queue = getOnboardingBackwashQueue();
-      if (!queue) {
-        return res.status(503).json({
-          error: "Queue disabled — REDIS_URL not configured",
-        });
-      }
-
-      const platformList: BackwashPlatform[] = (platforms ?? [
-        "KEETA",
-        "TALABAT",
-        "DELIVEROO",
-        "AMERICANA",
-      ]).filter((p): p is BackwashPlatform =>
-        VALID_PLATFORMS.has(p as BackwashPlatform),
-      );
-
-      if (platformList.length === 0) {
-        return res.status(400).json({ error: "platforms must include at least one of KEETA/TALABAT/DELIVEROO/AMERICANA" });
-      }
-
-      const job = await queue.add("backwash", {
-        tenantId,
-        platforms: platformList,
-        windowDays: windowDays ?? 30,
-      });
-
-      return res.json({ jobId: String(job.id), tenantId });
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      return res.status(500).json({ error: msg });
-    }
-  },
-);
-
-// ─── GET /tenants/:tid/backwash-status ─────────────────────────────────────
-
-router.get(
-  "/tenants/:tenantId/backwash-status",
-  async (req: Request, res: Response) => {
-    try {
-      const { jobId } = req.query as { jobId?: string };
-      if (!jobId) {
-        return res.status(400).json({ error: "jobId query param required" });
-      }
-
-      const job = await getBackwashJob(jobId);
-      if (!job) {
-        return res.status(404).json({ error: "Job not found" });
-      }
-
-      return res.json({
-        jobId: job.id,
-        state: job.state,
-        progress: job.progress,
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
