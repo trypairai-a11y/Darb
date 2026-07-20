@@ -323,7 +323,14 @@ describe("Vendor portal routes", () => {
       const res = await request(makeApp()).get("/api/vendor/wallet");
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual({ ownerKey: "VENDOR:v-1", balanceKwd: "0.000", accountId: null });
+      expect(res.body).toEqual({
+        ownerKey: "VENDOR:v-1",
+        balanceKwd: "0.000",
+        accountId: null,
+        // PRD §11 credit line fields (no vendor row mocked ⇒ no cap).
+        creditCapKwd: null,
+        creditUsedKwd: "0.000",
+      });
       expect(prisma.walletAccount.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { tenantId: "t-1", ownerKey: "VENDOR:v-1" },

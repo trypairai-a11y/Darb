@@ -164,3 +164,66 @@ describe("POST /api/track/:token/cancel", () => {
     expect(prisma.notification.createMany).not.toHaveBeenCalled();
   });
 });
+
+// ─── POST /api/track/:token/tip (PRD §11) ───────────────────────────────────
+
+jest.mock("../../services/wallet/walletService", () => ({
+  postTip: jest.fn().mockResolvedValue({ transactionId: "wtx-tip", balances: {} }),
+}));
+const { postTip } = require("../../services/wallet/walletService");
+
+describe("POST /api/track/:token/tip", () => {
+  beforeEach(() => {
+    prisma.deliveryOrder.updateMany = jest.fn().mockResolvedValue({ count: 1 });
+    prisma.orderEvent = prisma.orderEvent ?? {};
+    prisma.orderEvent.create = jest.fn().mockResolvedValue({ id: "evt" });
+    prisma.$transaction = jest.fn(async (fn: any) => fn(prisma));
+  });
+
+  const DELIVERED = { ...BASE_ORDER, status: "DELIVERED", deliveredAt: new Date() };
+
+  test("happy path: once-only guard flips tipKwd, TIP posting fires, driver keeps 100%", async () => {
+    prisma.deliveryOrder.findUnique.mockResolvedValue(DELIVERED);
+
+    const res = await request(makeApp())
+      .post(`/api/track/${TOKEN}/tip`)
+      .send({ amountKwd: 0.5 });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ ok: true, tipKwd: "0.500" });
+    const guard = prisma.deliveryOrder.updateMany.mock.calls[0][0];
+    expect(guard.where).toMatchObject({ id: "ord-1", status: "DELIVERED", tipKwd: null });
+    expect(postTip).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ id: "ord-1", driverId: "drv-1" }),
+      expect.anything(),
+    );
+  });
+
+  test("second tip 409s (guard count 0) and posts nothing", async () => {
+    prisma.deliveryOrder.findUnique.mockResolvedValue(DELIVERED);
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 0 });
+
+    const res = await request(makeApp())
+      .post(`/api/track/${TOKEN}/tip`)
+      .send({ amountKwd: 0.5 });
+
+    expect(res.status).toBe(409);
+    expect(postTip).not.toHaveBeenCalled();
+  });
+
+  test("tips before delivery are refused", async () => {
+    prisma.deliveryOrder.findUnique.mockResolvedValue({ ...BASE_ORDER, status: "PICKED_UP" });
+    const res = await request(makeApp()).post(`/api/track/${TOKEN}/tip`).send({ amountKwd: 1 });
+    expect(res.status).toBe(409);
+  });
+
+  test("absurd amounts are rejected (cap 20 KWD, must be positive)", async () => {
+    prisma.deliveryOrder.findUnique.mockResolvedValue(DELIVERED);
+    for (const amountKwd of [0, -1, 21, "abc"]) {
+      const res = await request(makeApp()).post(`/api/track/${TOKEN}/tip`).send({ amountKwd });
+      expect(res.status).toBe(400);
+    }
+    expect(postTip).not.toHaveBeenCalled();
+  });
+});

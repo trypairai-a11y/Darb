@@ -8,9 +8,8 @@
  *
  * POST /:token/cancel does NOT cancel the order — it raises an OPS_TODO
  * notification for rider support (PRD §10: support acts on live orders).
- * Rating and tip POSTs land in later build phases and are registered by
- * registerTrackMoneyRoutes/registerTrackRatingRoutes to keep this file the
- * single mount point.
+ * POST /:token/tip posts the TIP wallet transaction (driver keeps 100%);
+ * POST /:token/rating lands with the ratings build phase.
  */
 import { Router, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
@@ -18,6 +17,7 @@ import { Prisma } from "../generated/prisma";
 import { prisma } from "../config";
 import { logger } from "../config/logger";
 import { publishOrderEvent } from "../services/orderStateMachine";
+import { postTip } from "../services/wallet/walletService";
 
 const router = Router();
 
@@ -209,6 +209,73 @@ router.post("/:token/cancel", writeLimiter, async (req: Request, res: Response) 
   } catch (err) {
     logger.error({ err }, "track: cancel request failed");
     res.status(500).json({ error: "Request failed" });
+  }
+});
+
+/**
+ * @swagger
+ * /api/track/{token}/tip:
+ *   post:
+ *     tags: [Tracking]
+ *     summary: Customer tips the driver (DELIVERED orders only; once; driver keeps 100%)
+ */
+router.post("/:token/tip", writeLimiter, async (req: Request, res: Response) => {
+  try {
+    const order = await findOrderByToken(req.params.token);
+    if (!order) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+    if (order.status !== "DELIVERED" || !order.driver) {
+      res.status(409).json({ error: "Tips are only possible after delivery" });
+      return;
+    }
+
+    const raw = (req.body as { amountKwd?: unknown })?.amountKwd;
+    const amount = Number(raw);
+    if (!Number.isFinite(amount) || amount <= 0 || amount > 20) {
+      res.status(400).json({ error: "amountKwd must be between 0.001 and 20.000" });
+      return;
+    }
+    const tip = new Prisma.Decimal(amount.toFixed(3));
+
+    const driverId = order.driver.id;
+    const posted = await prisma.$transaction(async (tx) => {
+      // Once-only guard: the tipKwd column flips from NULL exactly once.
+      const guarded = await tx.deliveryOrder.updateMany({
+        where: { id: order.id, tenantId: order.tenantId, status: "DELIVERED", tipKwd: null },
+        data: { tipKwd: tip },
+      });
+      if (guarded.count === 0) return null;
+      await postTip(tx, { id: order.id, tenantId: order.tenantId, driverId }, tip);
+      await tx.orderEvent.create({
+        data: {
+          tenantId: order.tenantId,
+          orderId: order.id,
+          action: "order.tipped",
+          description: `Customer tipped ${tip.toFixed(3)} KWD — driver keeps 100%`,
+          operator: "customer",
+          timestamp: new Date(),
+          metadata: { tipKwd: tip.toFixed(3) } as Prisma.InputJsonValue,
+        },
+      });
+      return true;
+    });
+    if (!posted) {
+      res.status(409).json({ error: "This order has already been tipped" });
+      return;
+    }
+
+    publishOrderEvent(order.tenantId, "order.tipped", {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      vendorId: order.vendorId,
+      tipKwd: tip.toFixed(3),
+    });
+    res.json({ ok: true, tipKwd: tip.toFixed(3) });
+  } catch (err) {
+    logger.error({ err }, "track: tip failed");
+    res.status(500).json({ error: "Tip failed" });
   }
 });
 

@@ -14,6 +14,7 @@ import { prisma } from "../config";
 import { logger } from "../config/logger";
 import { quoteDelivery } from "./pricingService";
 import {
+  isVendorOverCreditCap,
   postCodSettlement,
   postPrepaidSettlement,
 } from "./wallet/walletService";
@@ -287,6 +288,12 @@ export async function createDeliveryOrder(input: CreateOrderInput): Promise<Deli
   };
 
   if (vendor.isPaused) return persistRejected("VENDOR_PAUSED");
+
+  // PRD §11 credit line: outstanding debt at/over the cap pauses intake
+  // until the merchant settles.
+  if (await isVendorOverCreditCap(tenantId, vendor.id)) {
+    return persistRejected("VENDOR_CREDIT_CAP");
+  }
 
   const quote = await quoteDelivery(tenantId, {
     branchId: input.branchId,

@@ -245,3 +245,99 @@ describe("driver cash balance + ceiling", () => {
     ).resolves.toBe(true);
   });
 });
+
+// ─── Tips (PRD §11 — driver keeps 100%) ─────────────────────────────────────
+
+describe("postTip", () => {
+  const { postTip } = require("../../../services/wallet/walletService");
+
+  test("legs: PLATFORM_CLEARING DEBIT tip / DRIVER_CASH CREDIT tip — driver's cash-to-remit drops by the tip", async () => {
+    const { tx, raw, balances, accountId } = makeLedgerTx({
+      "DRIVER:drv-1": "10.000",
+      PLATFORM_CLEARING: "0",
+    });
+
+    const posted = await postTip(
+      tx,
+      { id: "ord-1", tenantId: "test-tenant-id", driverId: "drv-1" },
+      D("0.500"),
+    );
+
+    expect(posted).not.toBeNull();
+    const header = raw.walletTransaction.create.mock.calls[0][0].data;
+    expect(header).toMatchObject({ type: "TIP", idempotencyKey: "tip:ord-1", orderId: "ord-1" });
+    // Driver cash balance DECREASES (CREDIT on an asset-like account): he
+    // keeps the tip at remittance time.
+    expect(balances.get(accountId("DRIVER:drv-1"))!.toFixed(3)).toBe("9.500");
+    expect(balances.get(accountId("PLATFORM_CLEARING"))!.toFixed(3)).toBe("0.500");
+    // Balanced: one DEBIT and one CREDIT of the same amount.
+    const entries = raw.walletEntry.create.mock.calls.map((c: any) => c[0].data);
+    expect(entries).toHaveLength(2);
+    expect(entries.map((e: any) => e.direction).sort()).toEqual(["CREDIT", "DEBIT"]);
+  });
+
+  test("replay is a no-op: duplicate idempotencyKey returns null without touching balances", async () => {
+    const { tx, raw, balances, accountId } = makeLedgerTx({ "DRIVER:drv-1": "10.000" });
+    raw.walletTransaction.create.mockRejectedValueOnce(
+      Object.assign(new Error("dup"), { code: "P2002" }),
+    );
+
+    const posted = await postTip(
+      tx,
+      { id: "ord-1", tenantId: "test-tenant-id", driverId: "drv-1" },
+      D("0.500"),
+    );
+
+    expect(posted).toBeNull();
+    expect(balances.get(accountId("DRIVER:drv-1"))!.toFixed(3)).toBe("10.000");
+  });
+
+  test("zero or negative tips are rejected", async () => {
+    const { tx } = makeLedgerTx();
+    await expect(
+      postTip(tx, { id: "ord-1", tenantId: "test-tenant-id", driverId: "drv-1" }, D("0")),
+    ).rejects.toThrow(WalletError);
+  });
+});
+
+// ─── Vendor credit line (PRD §11) ───────────────────────────────────────────
+
+describe("isVendorOverCreditCap", () => {
+  const { isVendorOverCreditCap } = require("../../../services/wallet/walletService");
+
+  beforeEach(() => {
+    (prisma as any).vendor = (prisma as any).vendor ?? {};
+    (prisma as any).vendor.findFirst = jest.fn();
+    (prisma as any).walletAccount = (prisma as any).walletAccount ?? {};
+    (prisma as any).walletAccount.findUnique = jest.fn();
+  });
+
+  test("no cap configured (NULL) ⇒ never over", async () => {
+    (prisma as any).vendor.findFirst.mockResolvedValue({ creditCapKwd: null });
+    expect(await isVendorOverCreditCap("t-1", "v-1")).toBe(false);
+  });
+
+  test("debt below the cap ⇒ not over", async () => {
+    (prisma as any).vendor.findFirst.mockResolvedValue({ creditCapKwd: D("100.000") });
+    (prisma as any).walletAccount.findUnique.mockResolvedValue({ balanceKwd: D("-40.000") });
+    expect(await isVendorOverCreditCap("t-1", "v-1")).toBe(false);
+  });
+
+  test("debt AT the cap ⇒ over (intake pauses)", async () => {
+    (prisma as any).vendor.findFirst.mockResolvedValue({ creditCapKwd: D("100.000") });
+    (prisma as any).walletAccount.findUnique.mockResolvedValue({ balanceKwd: D("-100.000") });
+    expect(await isVendorOverCreditCap("t-1", "v-1")).toBe(true);
+  });
+
+  test("a POSITIVE payable balance (Darb owes the vendor) is never debt", async () => {
+    (prisma as any).vendor.findFirst.mockResolvedValue({ creditCapKwd: D("1.000") });
+    (prisma as any).walletAccount.findUnique.mockResolvedValue({ balanceKwd: D("500.000") });
+    expect(await isVendorOverCreditCap("t-1", "v-1")).toBe(false);
+  });
+
+  test("no wallet account yet ⇒ not over", async () => {
+    (prisma as any).vendor.findFirst.mockResolvedValue({ creditCapKwd: D("100.000") });
+    (prisma as any).walletAccount.findUnique.mockResolvedValue(null);
+    expect(await isVendorOverCreditCap("t-1", "v-1")).toBe(false);
+  });
+});

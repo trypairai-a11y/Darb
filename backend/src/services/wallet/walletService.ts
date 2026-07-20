@@ -59,7 +59,10 @@ export type WalletTxTypeLiteral =
   | "PREPAID_SETTLEMENT"
   | "REMITTANCE"
   | "ADJUSTMENT"
-  | "VENDOR_PAYOUT";
+  | "VENDOR_PAYOUT"
+  | "REFUND"
+  | "TIP"
+  | "FLEET_PAYOUT";
 
 /** Domain error — routes map instances to HTTP 400. */
 export class WalletError extends Error {}
@@ -360,6 +363,84 @@ export async function postPrepaidSettlement(
   });
 }
 
+// ─── Tips (PRD §11 — driver keeps 100%) ────────────────────────────────────
+
+/**
+ * Post a customer tip for a delivered order. Idempotent via "tip:{orderId}".
+ *
+ * Legs: PLATFORM_CLEARING DEBIT tip (the tip reaches Darb through the
+ * merchant settlement flow), DRIVER_CASH CREDIT tip (the driver's
+ * cash-to-remit drops by the tip, i.e. he keeps it in full at remittance —
+ * Darb takes no cut). getDriverWalletSummary surfaces the tip aggregates so
+ * the driver app can show them; the remittance UI's "cash to remit" is
+ * already net of tips by construction.
+ */
+export async function postTip(
+  tx: Tx,
+  order: { id: string; tenantId: string; driverId: string },
+  tipKwd: Prisma.Decimal
+): Promise<PostResult | null> {
+  if (tipKwd.lte(0)) throw new WalletError("Tip must be greater than zero");
+
+  const driverAccount = await ensureAccount(tx, order.tenantId, "DRIVER_CASH", {
+    driverId: order.driverId,
+  });
+  const clearing = await ensureAccount(tx, order.tenantId, "PLATFORM_CLEARING");
+
+  return postLedgerTransaction(tx, {
+    tenantId: order.tenantId,
+    type: "TIP",
+    idempotencyKey: `tip:${order.id}`,
+    orderId: order.id,
+    memo: `Customer tip for order ${order.id} — driver keeps 100%`,
+    legs: [
+      {
+        accountId: clearing.id,
+        ownerType: "PLATFORM_CLEARING",
+        direction: "DEBIT",
+        amountKwd: tipKwd,
+      },
+      {
+        accountId: driverAccount.id,
+        ownerType: "DRIVER_CASH",
+        direction: "CREDIT",
+        amountKwd: tipKwd,
+      },
+    ],
+  });
+}
+
+// ─── Vendor credit line (PRD §11 — cap pauses intake) ──────────────────────
+
+/**
+ * Is the vendor's outstanding debt to Darb at or over its credit cap?
+ *
+ * Debt = the NEGATIVE side of the VENDOR_PAYABLE balance (prepaid fees and
+ * refunds drive the payable negative — that IS the credit line being
+ * consumed). Vendor.creditCapKwd NULL ⇒ no cap ⇒ never over (same
+ * "unconfigured = permissive" stance as isDriverOverCeiling). Reads the
+ * cached balanceKwd; the nightly reconciliation is the backstop.
+ */
+export async function isVendorOverCreditCap(
+  tenantId: string,
+  vendorId: string
+): Promise<boolean> {
+  const vendor = await prisma.vendor.findFirst({
+    where: { id: vendorId, tenantId },
+    select: { creditCapKwd: true },
+  });
+  if (!vendor?.creditCapKwd) return false;
+
+  // eslint-disable-next-line no-prisma-without-tenant -- tenantId is inside the tenantId_ownerKey compound unique key; the rule only sees top-level keys.
+  const account = await prisma.walletAccount.findUnique({
+    where: { tenantId_ownerKey: { tenantId, ownerKey: vendorOwnerKey(vendorId) } },
+    select: { balanceKwd: true },
+  });
+  if (!account) return false;
+  const debt = account.balanceKwd.isNegative() ? account.balanceKwd.neg() : ZERO;
+  return debt.greaterThanOrEqualTo(vendor.creditCapKwd);
+}
+
 // ─── Balance / ceiling reads (feed dispatch + the agent app) ───────────────
 
 /** Cash the driver currently holds. 0 when no account exists yet. */
@@ -407,6 +488,8 @@ export async function getDriverWalletSummary(
   cashOnHandKwd: string;
   ceilingKwd: string;
   todayCollectedKwd: string;
+  tipsTodayKwd: string;
+  tipsTotalKwd: string;
   blocked: boolean;
   remittances: Array<{
     id: string;
@@ -433,20 +516,46 @@ export async function getDriverWalletSummary(
   const blocked = settings ? balance.greaterThan(ceiling) : false;
 
   let todayCollected: Prisma.Decimal = ZERO;
+  let tipsToday: Prisma.Decimal = ZERO;
+  let tipsTotal: Prisma.Decimal = ZERO;
   if (account) {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
-    const agg = await prisma.walletEntry.aggregate({
-      where: {
-        tenantId,
-        accountId: account.id,
-        direction: "DEBIT",
-        createdAt: { gte: startOfDay },
-        transaction: { type: "COD_SETTLEMENT" },
-      },
-      _sum: { amountKwd: true },
-    });
+    const [agg, tipTodayAgg, tipTotalAgg] = await Promise.all([
+      prisma.walletEntry.aggregate({
+        where: {
+          tenantId,
+          accountId: account.id,
+          direction: "DEBIT",
+          createdAt: { gte: startOfDay },
+          transaction: { type: "COD_SETTLEMENT" },
+        },
+        _sum: { amountKwd: true },
+      }),
+      // PRD §11 tips — CREDIT legs on the driver account from TIP postings.
+      prisma.walletEntry.aggregate({
+        where: {
+          tenantId,
+          accountId: account.id,
+          direction: "CREDIT",
+          createdAt: { gte: startOfDay },
+          transaction: { type: "TIP" },
+        },
+        _sum: { amountKwd: true },
+      }),
+      prisma.walletEntry.aggregate({
+        where: {
+          tenantId,
+          accountId: account.id,
+          direction: "CREDIT",
+          transaction: { type: "TIP" },
+        },
+        _sum: { amountKwd: true },
+      }),
+    ]);
     todayCollected = agg._sum.amountKwd ?? ZERO;
+    tipsToday = tipTodayAgg._sum.amountKwd ?? ZERO;
+    tipsTotal = tipTotalAgg._sum.amountKwd ?? ZERO;
   }
 
   const remittances = await prisma.remittance.findMany({
@@ -466,6 +575,8 @@ export async function getDriverWalletSummary(
     cashOnHandKwd: toKwdString(balance),
     ceilingKwd: toKwdString(ceiling),
     todayCollectedKwd: toKwdString(todayCollected),
+    tipsTodayKwd: toKwdString(tipsToday),
+    tipsTotalKwd: toKwdString(tipsTotal),
     blocked,
     remittances: remittances.map((r) => ({
       id: r.id,

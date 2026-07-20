@@ -14,6 +14,7 @@ import {
 } from "../services/orderService";
 import { OrderStateConflictError } from "../services/orderStateMachine";
 import { quoteDelivery } from "../services/pricingService";
+import { RefundError, requestRefund } from "../services/wallet/refundService";
 
 /**
  * Vendor portal API (Darb 2.0, plan §A8 /api/vendor).
@@ -333,13 +334,24 @@ router.post(
 router.get("/wallet", async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId } = req.user!;
-    const account = await prisma.walletAccount.findFirst({
-      where: { tenantId, ownerKey: `VENDOR:${vendorId!}` },
-    });
+    const [account, vendor] = await Promise.all([
+      prisma.walletAccount.findFirst({
+        where: { tenantId, ownerKey: `VENDOR:${vendorId!}` },
+      }),
+      prisma.vendor.findFirst({
+        where: { id: vendorId!, tenantId },
+        select: { creditCapKwd: true },
+      }),
+    ]);
+    // PRD §11 credit line: debt = the negative side of the payable balance.
+    const balance = account?.balanceKwd ?? null;
+    const debt = balance && balance.isNegative() ? balance.neg() : null;
     res.json({
       ownerKey: `VENDOR:${vendorId!}`,
       balanceKwd: fmtKwd(account?.balanceKwd),
       accountId: account?.id ?? null,
+      creditCapKwd: vendor?.creditCapKwd ? fmtKwd(vendor.creditCapKwd) : null,
+      creditUsedKwd: debt ? fmtKwd(debt) : "0.000",
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -527,6 +539,83 @@ router.post("/quote", validateBody(vendorQuoteSchema), async (req: Request, res:
       pickupZone: result.pickupZone,
       dropoffZone: result.dropoffZone,
     });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Refunds (PRD §11 — merchant approves/raises, Darb processes) ──────────
+
+/**
+ * @swagger
+ * /api/vendor/orders/{id}/refund-request:
+ *   post:
+ *     tags: [Vendor Portal]
+ *     summary: Raise a full-order refund request for a DELIVERED order
+ */
+router.post("/orders/:id/refund-request", async (req: Request, res: Response) => {
+  try {
+    const { tenantId, vendorId, userId } = req.user!;
+    const reason =
+      typeof (req.body as { reason?: unknown })?.reason === "string"
+        ? String((req.body as { reason: string }).reason)
+        : "";
+    const refund = await requestRefund({
+      tenantId,
+      vendorId: vendorId!,
+      orderId: req.params.id,
+      reason,
+      requestedById: userId,
+    });
+    res.status(201).json(refund);
+  } catch (err: any) {
+    if (err?.code === "P2002") {
+      res.status(409).json({ error: "A refund request already exists for this order" });
+      return;
+    }
+    if (err instanceof RefundError) { res.status(400).json({ error: err.message }); return; }
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/vendor/refunds:
+ *   get:
+ *     tags: [Vendor Portal]
+ *     summary: The vendor's own refund requests
+ */
+router.get("/refunds", async (req: Request, res: Response) => {
+  try {
+    const { tenantId, vendorId } = req.user!;
+    const rows = await prisma.refund.findMany({
+      where: { tenantId, vendorId: vendorId! },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+      include: { order: { select: { id: true, orderNumber: true } } },
+    });
+    res.json(rows);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/vendor/statements:
+ *   get:
+ *     tags: [Vendor Portal]
+ *     summary: The vendor's monthly netting statements
+ */
+router.get("/statements", async (req: Request, res: Response) => {
+  try {
+    const { tenantId, vendorId } = req.user!;
+    const rows = await prisma.vendorStatement.findMany({
+      where: { tenantId, vendorId: vendorId! },
+      orderBy: { periodStart: "desc" },
+      take: 24,
+    });
+    res.json(rows);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

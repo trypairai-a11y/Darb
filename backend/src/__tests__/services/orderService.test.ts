@@ -35,6 +35,7 @@ jest.mock("../../services/pricingService", () => ({
 jest.mock("../../services/wallet/walletService", () => ({
   postCodSettlement: jest.fn().mockResolvedValue(undefined),
   postPrepaidSettlement: jest.fn().mockResolvedValue(undefined),
+  isVendorOverCreditCap: jest.fn().mockResolvedValue(false),
 }));
 jest.mock("../../queues/dispatchQueue", () => ({
   enqueueDispatchStart: jest.fn().mockResolvedValue(undefined),

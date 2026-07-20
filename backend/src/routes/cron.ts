@@ -24,6 +24,12 @@ import { logger } from "../config/logger";
 import { sweepDispatch } from "../services/dispatch/dispatchEngine";
 import { sweepStalePresence } from "../services/gpsMonitorService";
 import { sweepScheduledOrders } from "../services/orderService";
+import { processTick as walletReconciliationTick } from "../queues/walletReconciliationWorker";
+import {
+  generateMonthlyStatements,
+  previousMonthPeriod,
+} from "../services/wallet/vendorSettlementService";
+import { prisma } from "../config";
 
 const router = Router();
 
@@ -107,6 +113,58 @@ router.get("/dispatch-sweep", async (req: Request, res: Response) => {
   } catch (error) {
     logger.error({ err: error }, "cron: dispatch sweep failed");
     return res.status(500).json({ error: "Dispatch sweep failed" });
+  }
+});
+
+/**
+ * GET /api/cron/daily
+ *
+ * The consolidated nightly tick (Vercel Hobby allows only daily crons and a
+ * small number of them, so every nightly job shares one endpoint):
+ *   1. Wallet reconciliation — the §A5 invariant self-check for yesterday,
+ *      per tenant (reuses the BullMQ worker's pure tick processor).
+ *   2. Monthly netting — on the 1st of the month (or ?netting=1 to force),
+ *      generate vendor statements for the closed month, per tenant.
+ * Later build phases append legs here (performance tiers, fleet discipline,
+ * founder digest) instead of adding new cron entries.
+ */
+router.get("/daily", async (req: Request, res: Response) => {
+  if (!authorizeCron(req, res)) return;
+
+  const startedAt = Date.now();
+  const out: Record<string, unknown> = { ok: true };
+  try {
+    try {
+      const recon = await walletReconciliationTick({});
+      out.reconciliation = recon;
+    } catch (err) {
+      logger.error({ err }, "cron daily: wallet reconciliation failed");
+      out.reconciliation = { error: true };
+    }
+
+    const isFirstOfMonth = new Date().getUTCDate() === 1;
+    if (isFirstOfMonth || req.query.netting === "1") {
+      const period = previousMonthPeriod();
+      let statements = 0;
+      let errors = 0;
+      // eslint-disable-next-line no-restricted-syntax -- cross-tenant by design (same trust model as the sweep above)
+      const tenants = await prisma.tenant.findMany({ select: { id: true } });
+      for (const tenant of tenants) {
+        try {
+          statements += await generateMonthlyStatements(tenant.id, period);
+        } catch (err) {
+          errors += 1;
+          logger.error({ err, tenantId: tenant.id }, "cron daily: netting failed for tenant");
+        }
+      }
+      out.netting = { statements, errors, periodStart: period.start };
+    }
+
+    out.durationMs = Date.now() - startedAt;
+    return res.json(out);
+  } catch (error) {
+    logger.error({ err: error }, "cron: daily tick failed");
+    return res.status(500).json({ error: "Daily tick failed" });
   }
 });
 

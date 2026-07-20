@@ -17,6 +17,12 @@ import { parseLocalDate, parseLocalDateEnd } from "../utils/date";
 import { validateBody } from "../utils/validate";
 import { postAdjustment, toKwdString, WalletError } from "../services/wallet/walletService";
 import { recordRemittance } from "../services/wallet/remittanceService";
+import {
+  generateMonthlyStatements,
+  postVendorPayout,
+  previousMonthPeriod,
+} from "../services/wallet/vendorSettlementService";
+import { RefundError, processRefund } from "../services/wallet/refundService";
 
 const FINANCE_READ = ["ADMIN", "OPS_MANAGER", "ACCOUNTANT"];
 const REMITTANCE_WRITE = ["ACCOUNTANT", "SUPERVISOR", "ADMIN"];
@@ -528,5 +534,149 @@ router.get("/reconciliation", rbac(...FINANCE_READ), async (req: Request, res: R
     res.status(500).json({ error: err.message });
   }
 });
+
+// ─── Vendor statements (PRD §11 monthly netting) ────────────────────────────
+
+/**
+ * @swagger
+ * /api/wallets/vendor-statements:
+ *   get:
+ *     tags: [Wallets]
+ *     summary: List monthly vendor statements (finance)
+ */
+router.get("/vendor-statements", rbac(...FINANCE_READ), async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const where: any = { tenantId };
+    if (typeof req.query.vendorId === "string") where.vendorId = req.query.vendorId;
+    if (typeof req.query.status === "string") where.status = req.query.status;
+    const { skip, page, limit } = getPagination(req);
+    const [rows, total] = await Promise.all([
+      prisma.vendorStatement.findMany({
+        where,
+        orderBy: [{ periodStart: "desc" }, { createdAt: "desc" }],
+        skip,
+        take: limit,
+        include: { vendor: { select: { id: true, name: true, code: true } } },
+      }),
+      prisma.vendorStatement.count({ where }),
+    ]);
+    res.json(paginatedResponse(rows, total, page, limit));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/wallets/vendor-statements/generate:
+ *   post:
+ *     tags: [Wallets]
+ *     summary: Generate statements for the last closed month (idempotent)
+ */
+router.post(
+  "/vendor-statements/generate",
+  rbac("ADMIN", "ACCOUNTANT"),
+  async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.user!.tenantId;
+      const period = previousMonthPeriod();
+      const created = await generateMonthlyStatements(tenantId, period);
+      res.json({ ok: true, created, periodStart: period.start, periodEnd: period.end });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+/**
+ * @swagger
+ * /api/wallets/vendor-statements/{id}/payout:
+ *   post:
+ *     tags: [Wallets]
+ *     summary: Settle a positive statement — posts VENDOR_PAYOUT and marks PAID
+ */
+router.post(
+  "/vendor-statements/:id/payout",
+  rbac("ADMIN", "ACCOUNTANT"),
+  async (req: Request, res: Response) => {
+    try {
+      const posted = await postVendorPayout({
+        tenantId: req.user!.tenantId,
+        statementId: req.params.id,
+        actorId: req.user!.userId,
+      });
+      res.json({ ok: true, transactionId: posted?.transactionId ?? null, replay: posted === null });
+    } catch (err: any) {
+      if (err instanceof WalletError) { res.status(400).json({ error: err.message }); return; }
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+// ─── Refunds (PRD §11 — merchant approves, Darb processes) ─────────────────
+
+/**
+ * @swagger
+ * /api/wallets/refunds:
+ *   get:
+ *     tags: [Wallets]
+ *     summary: List refund requests (finance)
+ */
+router.get("/refunds", rbac(...FINANCE_READ), async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const where: any = { tenantId };
+    if (typeof req.query.status === "string") where.status = req.query.status;
+    if (typeof req.query.vendorId === "string") where.vendorId = req.query.vendorId;
+    const { skip, page, limit } = getPagination(req);
+    const [rows, total] = await Promise.all([
+      prisma.refund.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+        include: {
+          order: { select: { id: true, orderNumber: true } },
+          vendor: { select: { id: true, name: true, code: true } },
+        },
+      }),
+      prisma.refund.count({ where }),
+    ]);
+    res.json(paginatedResponse(rows, total, page, limit));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/wallets/refunds/{id}/process:
+ *   post:
+ *     tags: [Wallets]
+ *     summary: Approve (posts compensating REFUND) or reject a refund request
+ */
+router.post(
+  "/refunds/:id/process",
+  rbac("ADMIN", "ACCOUNTANT"),
+  validateBody(z.object({ approve: z.boolean() })),
+  async (req: Request, res: Response) => {
+    try {
+      const refund = await processRefund({
+        tenantId: req.user!.tenantId,
+        refundId: req.params.id,
+        approve: (req.body as { approve: boolean }).approve,
+        actorId: req.user!.userId,
+      });
+      res.json(refund);
+    } catch (err: any) {
+      if (err instanceof RefundError || err instanceof WalletError) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
 
 export default router;
