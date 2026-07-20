@@ -30,6 +30,7 @@ enum UserRole {
   ACCOUNTANT
   VIEWER
   VENDOR
+  FLEET
 }
 
 enum DriverStatus {
@@ -320,6 +321,7 @@ enum ViolationType {
   AMERICANA_LATE_ARRIVAL
   AMERICANA_NO_SHOW
   AMERICANA_EARLY_DEPARTURE_QUIT
+  LOW_CUSTOMER_RATING
 }
 
 enum ViolationStatus {
@@ -472,6 +474,13 @@ model Tenant {
   walletReconciliationRuns  WalletReconciliationRun[]
   incidents                 Incident[]
   foodicsConnections        FoodicsConnection[]
+  // Darb 2.0 PRD build (DARB2-PRD-001 v3.0)
+  apiKeys                   ApiKey[]
+  orderRatings              OrderRating[]
+  vendorStatements          VendorStatement[]
+  refunds                   Refund[]
+  fleetPartners             FleetPartner[]
+  fleetPayoutStatements     FleetPayoutStatement[]
 }
 
 // 2. Company
@@ -511,6 +520,9 @@ model User {
   // Darb 2.0 — set for role=VENDOR users; scopes the vendor portal (vendorId
   // comes from the JWT, never from the client).
   vendorId     String?
+  // Darb 2.0 PRD — set for role=FLEET users; scopes the fleet portal
+  // (fleetPartnerId comes from the JWT, never from the client).
+  fleetPartnerId String?
   isActive     Boolean   @default(true)
   lastLoginAt  DateTime?
   createdAt    DateTime  @default(now())
@@ -518,6 +530,7 @@ model User {
 
   tenant                Tenant               @relation(fields: [tenantId], references: [id])
   vendor                Vendor?              @relation(fields: [vendorId], references: [id])
+  fleetPartner          FleetPartner?        @relation(fields: [fleetPartnerId], references: [id])
   supervisedDrivers     Driver[]             @relation("DriverSupervisor")
   issuedCommands        DeviceCommand[]      @relation("CommandIssuer")
   acknowledgedAlerts    Alert[]              @relation("AlertAcknowledger")
@@ -563,6 +576,11 @@ model Driver {
   offDaysResetMonth  String? // format: "YYYY-MM", reset tracker
   performanceTier    String? // GOLD | SILVER | BRONZE | WATCHLIST (R9)
   tierComputedAt     DateTime?
+  // PRD §9 fleet discipline ladder: while set and in the future, the driver
+  // sorts after all non-throttled candidates in dispatch.
+  throttledUntil     DateTime?
+  // PRD §9 fleet governance: which delivery company employs this driver.
+  fleetPartnerId     String?
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
@@ -582,9 +600,10 @@ model Driver {
   civilIdExpiry          DateTime?
   civilIdStatus          String?
 
-  tenant     Tenant  @relation(fields: [tenantId], references: [id])
-  company    Company @relation(fields: [companyId], references: [id])
-  supervisor User?   @relation("DriverSupervisor", fields: [supervisorId], references: [id])
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  company      Company       @relation(fields: [companyId], references: [id])
+  supervisor   User?         @relation("DriverSupervisor", fields: [supervisorId], references: [id])
+  fleetPartner FleetPartner? @relation(fields: [fleetPartnerId], references: [id])
 
   inventory                 DriverInventory[]
   shifts                    Shift[]
@@ -630,6 +649,7 @@ model Driver {
   dispatchOffers            DispatchOffer[]
   remittances               Remittance[]
   incidents                 Incident[]
+  orderRatings              OrderRating[]
 
   @@index([tenantId])
   @@index([companyId])
@@ -2601,12 +2621,14 @@ enum DeliveryOrderStatus {
   DELIVERED
   FAILED
   CANCELLED
+  RETURNED
 }
 
 enum DeliveryOrderSource {
   FOODICS
   VENDOR_PORTAL
   SUPERVISOR
+  PARTNER_API
 }
 
 enum PaymentMethod {
@@ -2635,6 +2657,9 @@ enum WalletTxType {
   REMITTANCE
   ADJUSTMENT
   VENDOR_PAYOUT
+  REFUND
+  TIP
+  FLEET_PAYOUT
 }
 
 enum IncidentType {
@@ -2674,6 +2699,10 @@ model Vendor {
   phone           String?
   requiresCarOnly Boolean  @default(false)
   isPaused        Boolean  @default(false) // paused vendors get orders REJECTED (VENDOR_PAUSED)
+  // PRD §11 credit line: NULL = no cap. When the vendor's outstanding debt
+  // (negative VENDOR_PAYABLE balance) reaches the cap, new orders are
+  // REJECTED (VENDOR_CREDIT_CAP) until settled.
+  creditCapKwd    Decimal? @db.Decimal(10, 3)
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -2683,6 +2712,9 @@ model Vendor {
   users             User[]
   orders            DeliveryOrder[]
   foodicsConnection FoodicsConnection?
+  apiKeys           ApiKey[]
+  statements        VendorStatement[]
+  refunds           Refund[]
 
   @@unique([tenantId, code])
   @@index([tenantId, isActive])
@@ -2772,6 +2804,14 @@ model FulfillmentSettings {
   maxOfferRounds       Int      @default(8)
   searchRadiusKm       Float    @default(8)
   gpsStaleAfterSec     Int      @default(180)
+  // PRD §8 dispatch: progressive radius widening across offer rounds.
+  radiusWidenAfterRounds Int    @default(3)
+  radiusWidenFactor      Float  @default(1.5)
+  maxSearchRadiusKm      Float  @default(15)
+  // PRD §8 dispatch: auto-batching (one pickup, multiple drops only).
+  batchingEnabled        Boolean @default(true)
+  batchMaxDropKm         Float   @default(1.5)
+  batchMaxOrders         Int     @default(2)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
@@ -2810,6 +2850,23 @@ model DeliveryOrder {
   podPin          String? // 4-digit PIN generated at creation
   codCollectedKwd Decimal?            @db.Decimal(10, 3)
   slaDeadline     DateTime?
+  // PRD §6 scheduling: NULL = immediate. Scheduled orders persist as CREATED
+  // and are advanced to DISPATCHING by the cron sweep near the due time.
+  scheduledAt     DateTime?
+  // PRD §6 return-to-merchant: set on the FAILED→RETURNED transition.
+  returnedAt      DateTime?
+  // PRD §8 auto-batching: set at accept time when the driver won a batched
+  // offer (one pickup, multiple drops). NULL for single-order trips.
+  batchId         String?
+  // PRD §11 tips: customer tip via the tracking link; driver keeps 100%.
+  tipKwd          Decimal?            @db.Decimal(10, 3)
+  // PRD §12 tracking link credential: 128-bit random, the only auth for the
+  // public /api/track surface. NULL only on pre-PRD historical rows.
+  trackingToken   String?             @unique
+  // PRD §2 partner intake idempotency: the merchant system's own order id.
+  externalRef     String?
+  // PRD §11 refunds: set when a full-order refund is PROCESSED.
+  refundedAt      DateTime?
   assignedAt      DateTime?
   pickedUpAt      DateTime?
   deliveredAt     DateTime?
@@ -2826,14 +2883,19 @@ model DeliveryOrder {
   dropoffZone DeliveryZone?   @relation("OrderDropoffZone", fields: [dropoffZoneId], references: [id])
   offers      DispatchOffer[]
   incidents   Incident[]
+  rating      OrderRating?
+  refund      Refund?
 
   @@unique([tenantId, orderNumber])
   @@unique([tenantId, foodicsOrderId])
+  @@unique([tenantId, vendorId, externalRef])
   @@index([tenantId, status])
   @@index([tenantId, createdAt])
   @@index([tenantId, vendorId, createdAt])
   @@index([driverId, status])
   @@index([tenantId, slaDeadline])
+  @@index([tenantId, status, scheduledAt])
+  @@index([tenantId, batchId])
 }
 
 // D7. DispatchOffer - one serialized 15s offer to one driver per round
@@ -2844,6 +2906,9 @@ model DispatchOffer {
   driverId    String
   round       Int
   distanceKm  Float?
+  // PRD §8 auto-batching: offers created together for one driver share a
+  // batchId; accept/decline/expire act on the whole batch.
+  batchId     String?
   status      OfferStatus @default(OFFERED)
   offeredAt   DateTime    @default(now())
   expiresAt   DateTime
@@ -2858,6 +2923,7 @@ model DispatchOffer {
   @@unique([orderId, driverId, round])
   @@index([tenantId, status])
   @@index([driverId, status])
+  @@index([batchId])
 }
 
 // D8. WalletAccount - one ledger account per owner; balanceKwd is a cache,
@@ -3014,4 +3080,152 @@ model WebhookEvent {
   createdAt   DateTime           @default(now())
 
   @@index([status, createdAt])
+}
+
+// ── Darb 2.0 PRD build (DARB2-PRD-001 v3.0) ────────────────────────────────
+
+// D16. ApiKey - partner order-intake credential (PRD §2: orders arrive
+//      ready-made via API). The raw key is shown once at creation; only its
+//      sha256 hash is stored. Auth attaches {tenantId, vendorId} to the
+//      request, so a key is always scoped to exactly one merchant.
+model ApiKey {
+  id          String    @id @default(uuid())
+  tenantId    String
+  vendorId    String
+  name        String // operator label, e.g. "Royal POS integration"
+  keyHash     String    @unique // sha256(rawKey)
+  keyPrefix   String // first 8 chars of the raw key, for support lookups
+  isActive    Boolean   @default(true)
+  lastUsedAt  DateTime?
+  createdById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  vendor Vendor @relation(fields: [vendorId], references: [id])
+
+  @@index([tenantId, vendorId])
+}
+
+// D17. OrderRating - customer 1-5 star rating from the tracking link
+//      (PRD §12). One per order; stars <= 2 feed the violation ladder
+//      (LOW_CUSTOMER_RATING).
+model OrderRating {
+  id        String   @id @default(uuid())
+  tenantId  String
+  orderId   String   @unique
+  driverId  String
+  stars     Int // 1..5, validated at the route layer
+  comment   String?
+  createdAt DateTime @default(now())
+
+  tenant Tenant        @relation(fields: [tenantId], references: [id])
+  order  DeliveryOrder @relation(fields: [orderId], references: [id])
+  driver Driver        @relation(fields: [driverId], references: [id])
+
+  @@index([tenantId, driverId, createdAt])
+}
+
+// D18. VendorStatement - monthly netting statement per merchant (PRD §11:
+//      "at month-end the net decides who pays whom"). Idempotent on
+//      (tenantId, vendorId, periodStart). closingBalance > 0 = Darb owes the
+//      vendor; payout posts a VENDOR_PAYOUT wallet transaction.
+model VendorStatement {
+  id                String   @id @default(uuid())
+  tenantId          String
+  vendorId          String
+  periodStart       DateTime // first day of month, 00:00 UTC
+  periodEnd         DateTime // exclusive
+  openingBalanceKwd Decimal  @db.Decimal(10, 3)
+  codNetKwd         Decimal  @db.Decimal(10, 3) // Σ COD (total - fee) credited
+  prepaidFeesKwd    Decimal  @db.Decimal(10, 3) // Σ prepaid fees debited
+  refundsKwd        Decimal  @default(0) @db.Decimal(10, 3)
+  closingBalanceKwd Decimal  @db.Decimal(10, 3)
+  status            String   @default("FINAL") // FINAL | PAID
+  payoutTxId        String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  vendor Vendor @relation(fields: [vendorId], references: [id])
+
+  @@unique([tenantId, vendorId, periodStart])
+  @@index([tenantId, periodStart])
+}
+
+// D19. Refund - full-order refund (PRD §11: merchant approves, Darb
+//      processes). One per order. Processing posts a compensating REFUND
+//      wallet transaction; driver cash is never touched.
+model Refund {
+  id            String   @id @default(uuid())
+  tenantId      String
+  orderId       String   @unique
+  vendorId      String
+  amountKwd     Decimal  @db.Decimal(10, 3) // orderTotalKwd snapshot
+  reason        String
+  status        String   @default("REQUESTED") // REQUESTED | PROCESSED | REJECTED
+  requestedById String?
+  processedById String?
+  walletTxId    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant Tenant        @relation(fields: [tenantId], references: [id])
+  order  DeliveryOrder @relation(fields: [orderId], references: [id])
+  vendor Vendor        @relation(fields: [vendorId], references: [id])
+
+  @@index([tenantId, status])
+}
+
+// D20. FleetPartner - subcontracted delivery company (PRD §9: Darb employs
+//      no drivers; fleets are onboarded, governed and paid a flat per-order
+//      rate). Deliberately separate from the legacy Company model, which is
+//      welded to the aggregator platforms.
+model FleetPartner {
+  id                   String   @id @default(uuid())
+  tenantId             String
+  name                 String
+  contactName          String?
+  contactPhone         String?
+  contactEmail         String?
+  flatFeePerOrderKwd   Decimal  @default(1.100) @db.Decimal(10, 3)
+  minOnlineHoursPerDay Float?
+  minDriversOnline     Json? // { "<zoneId>": n } contractual commitment
+  disciplineStatus     String   @default("OK") // OK | WARNED | THROTTLED | SUSPENDED | REMOVED
+  disciplineNote       String?
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  tenant     Tenant                 @relation(fields: [tenantId], references: [id])
+  drivers    Driver[]
+  users      User[]
+  statements FleetPayoutStatement[]
+
+  @@index([tenantId, isActive])
+}
+
+// D21. FleetPayoutStatement - monthly fleet payout (PRD §11: delivered
+//      orders x flat fee, fleets paid monthly). feePerOrderKwd is snapshotted
+//      so a rate change never rewrites history. Payment posts a FLEET_PAYOUT
+//      wallet transaction.
+model FleetPayoutStatement {
+  id              String   @id @default(uuid())
+  tenantId        String
+  fleetPartnerId  String
+  periodStart     DateTime
+  periodEnd       DateTime // exclusive
+  deliveredOrders Int
+  feePerOrderKwd  Decimal  @db.Decimal(10, 3)
+  totalKwd        Decimal  @db.Decimal(10, 3)
+  status          String   @default("FINAL") // FINAL | PAID
+  payoutTxId      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant Tenant       @relation(fields: [tenantId], references: [id])
+  fleet  FleetPartner @relation(fields: [fleetPartnerId], references: [id])
+
+  @@unique([tenantId, fleetPartnerId, periodStart])
+  @@index([tenantId, periodStart])
 }
