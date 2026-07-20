@@ -109,11 +109,15 @@ export default function VendorsPage() {
         ),
     },
     {
-      key: "_count",
+      key: "branchCount",
       label: t("vendorsPage.branches"),
       sortable: false,
-      render: (v: Vendor["_count"], row: Vendor) => (
-        <span className="tabular-nums">{v?.branches ?? row.branches?.length ?? 0}</span>
+      // The list endpoint returns a flat branchCount; the detail shapes carry
+      // the branches array (or a Prisma _count) instead.
+      render: (v: Vendor["branchCount"], row: Vendor) => (
+        <span className="tabular-nums">
+          {v ?? row._count?.branches ?? row.branches?.length ?? 0}
+        </span>
       ),
     },
     {

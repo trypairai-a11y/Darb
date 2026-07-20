@@ -123,6 +123,94 @@ router.get("/accounts", rbac(...FINANCE_READ), async (req: Request, res: Respons
 
 /**
  * @swagger
+ * /api/wallets/entries:
+ *   get:
+ *     tags: [Wallets]
+ *     summary: Ledger entries across every account in the tenant, newest first
+ *     parameters:
+ *       - in: query
+ *         name: accountId
+ *         schema: { type: string }
+ *       - in: query
+ *         name: type
+ *         schema: { type: string, enum: [DRIVER_CASH, VENDOR_PAYABLE, PLATFORM_REVENUE, PLATFORM_CLEARING] }
+ *       - in: query
+ *         name: dateFrom
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: dateTo
+ *         schema: { type: string, format: date }
+ *     responses:
+ *       200:
+ *         description: Paginated entries with the owning account and transaction context
+ */
+router.get("/entries", rbac(...FINANCE_READ), async (req: Request, res: Response) => {
+  try {
+    const { skip, limit, page } = getPagination(req);
+    const tenantId = req.user!.tenantId;
+    const { accountId, type, dateFrom, dateTo } = req.query;
+
+    const where: any = { tenantId };
+    if (accountId) where.accountId = accountId as string;
+    if (type) {
+      if (!OWNER_TYPES.includes(type as any)) {
+        res.status(400).json({ error: `type must be one of ${OWNER_TYPES.join(", ")}` });
+        return;
+      }
+      where.account = { ownerType: type as string };
+    }
+    // dateFrom/dateTo are inclusive calendar days; dateTo covers the whole day.
+    if (dateFrom || dateTo) {
+      where.createdAt = {};
+      if (dateFrom) where.createdAt.gte = new Date(`${dateFrom}T00:00:00.000Z`);
+      if (dateTo) where.createdAt.lte = new Date(`${dateTo}T23:59:59.999Z`);
+    }
+
+    const [entries, total] = await Promise.all([
+      prisma.walletEntry.findMany({
+        where: { ...where, tenantId },
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        include: {
+          account: { select: { id: true, ownerType: true, ownerKey: true } },
+          transaction: {
+            select: { id: true, type: true, memo: true, orderId: true, remittanceId: true },
+          },
+        },
+      }),
+      prisma.walletEntry.count({ where: { ...where, tenantId } }),
+    ]);
+
+    const data = entries.map((e) => ({
+      id: e.id,
+      accountId: e.accountId,
+      account: {
+        id: e.account.id,
+        ownerType: e.account.ownerType,
+        ownerKey: e.account.ownerKey,
+      },
+      direction: e.direction,
+      amountKwd: toKwdString(e.amountKwd),
+      runningBalanceKwd: toKwdString(e.runningBalanceKwd),
+      createdAt: e.createdAt,
+      transaction: {
+        id: e.transaction.id,
+        type: e.transaction.type,
+        memo: e.transaction.memo,
+        orderId: e.transaction.orderId,
+        remittanceId: e.transaction.remittanceId,
+      },
+    }));
+
+    res.json(paginatedResponse(data, total, page, limit));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
  * /api/wallets/accounts/{id}/entries:
  *   get:
  *     tags: [Wallets]
@@ -310,12 +398,26 @@ router.get("/remittances", rbac(...REMITTANCE_READ), async (req: Request, res: R
       prisma.remittance.count({ where: { ...where, tenantId } }),
     ]);
 
+    // The hand-in note lives on the wallet transaction memo (Remittance has no
+    // note column), so fetch the memos for this page and fold them back in.
+    const memoByRemittanceId = new Map<string, string | null>();
+    if (remittances.length > 0) {
+      const transactions = await prisma.walletTransaction.findMany({
+        where: { tenantId, remittanceId: { in: remittances.map((r) => r.id) } },
+        select: { remittanceId: true, memo: true },
+      });
+      for (const tx of transactions) {
+        if (tx.remittanceId) memoByRemittanceId.set(tx.remittanceId, tx.memo);
+      }
+    }
+
     const data = remittances.map((r) => ({
       id: r.id,
       driverId: r.driverId,
       driver: r.driver,
       amountKwd: toKwdString(r.amountKwd),
       method: r.method,
+      note: memoByRemittanceId.get(r.id) ?? null,
       receiptUrl: r.receiptUrl,
       receivedById: r.receivedById,
       createdAt: r.createdAt,

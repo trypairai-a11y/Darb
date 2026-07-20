@@ -180,7 +180,8 @@ export const dispatchApi = {
 // ── /api/vendor (vendor-portal scope — vendorId comes from the JWT) ──────
 
 export const vendorApi = {
-  me: () => get<{ vendor: Vendor; branches?: VendorBranch[] }>("/api/vendor/me"),
+  // Returns the vendor flat at the root, with its branches alongside.
+  me: () => get<Vendor & { branches?: VendorBranch[] }>("/api/vendor/me"),
   orders: (params?: Params) =>
     get<Paginated<DeliveryOrder> | DeliveryOrder[]>("/api/vendor/orders", params),
   createOrder: (body: {
@@ -195,7 +196,7 @@ export const vendorApi = {
   }) => post<DeliveryOrder>("/api/vendor/orders", body),
   cancelOrder: (id: string, reason?: string) =>
     post<DeliveryOrder>(`/api/vendor/orders/${id}/cancel`, { reason }),
-  pause: (isPaused: boolean) => post<Vendor>("/api/vendor/pause", { isPaused }),
+  pause: (paused: boolean) => post<Vendor>("/api/vendor/pause", { paused }),
   wallet: () => get<VendorWallet>("/api/vendor/wallet"),
   walletEntries: (params?: Params) =>
     get<Paginated<WalletEntry> | WalletEntry[]>("/api/vendor/wallet/entries", params),

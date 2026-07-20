@@ -208,7 +208,7 @@ export default function VendorBoardPage() {
 
   const ordersToday = useMemo(() => orders.filter((o) => isToday(o.createdAt)).length, [orders]);
 
-  const vendor = meQuery.data?.vendor;
+  const vendor = meQuery.data;
   const balance = walletQuery.data?.balanceKwd ?? walletQuery.data?.account?.balanceKwd;
 
   if (ordersQuery.isLoading || meQuery.isLoading) {

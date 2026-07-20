@@ -36,7 +36,7 @@ export default function VendorSettingsPage() {
     enabled: FOODICS_UI,
   });
 
-  const vendor = meQuery.data?.vendor;
+  const vendor = meQuery.data;
   const branches = useMemo(() => meQuery.data?.branches ?? [], [meQuery.data?.branches]);
 
   async function connectFoodics() {

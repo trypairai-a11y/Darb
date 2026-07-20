@@ -121,6 +121,9 @@ export interface Vendor {
   createdAt?: string;
   updatedAt?: string;
   branches?: VendorBranch[];
+  /** Flat count returned by the vendors list endpoint. */
+  branchCount?: number;
+  foodicsConnected?: boolean;
   _count?: { branches?: number; orders?: number; users?: number };
 }
 

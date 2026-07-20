@@ -12,7 +12,7 @@ import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
 import LiveMap from "@/components/map/LiveMap";
-import { zoneRingLatLngs } from "@/components/map/ZonePolygonsLayer";
+import { zoneRingLatLngs } from "@/components/map/zoneGeometry";
 import { zonesApi, unwrapList } from "@/lib/darbApi";
 import type { DeliveryZone, GeoJsonPolygon } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";

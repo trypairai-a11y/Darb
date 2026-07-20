@@ -4,30 +4,12 @@ import { memo } from "react";
 import { Polygon, Tooltip } from "react-leaflet";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { DeliveryZone } from "@/types/darb";
+import { zoneColor, zoneRingLatLngs } from "./zoneGeometry";
 
-/** Fallback palette cycled when a zone has no explicit color. */
-const ZONE_PALETTE = [
-  "#006838",
-  "#2563eb",
-  "#d97706",
-  "#7c3aed",
-  "#db2777",
-  "#0d9488",
-  "#b45309",
-  "#4f46e5",
-];
-
-export function zoneRingLatLngs(zone: DeliveryZone): [number, number][] {
-  const ring = zone.polygon?.coordinates?.[0];
-  if (!Array.isArray(ring)) return [];
-  return ring
-    .filter((p): p is number[] => Array.isArray(p) && p.length >= 2)
-    .map((p) => [p[1], p[0]] as [number, number]);
-}
-
-export function zoneColor(zone: DeliveryZone, index: number): string {
-  return zone.color || ZONE_PALETTE[index % ZONE_PALETTE.length];
-}
+// Re-exported for callers already importing them from here. Pages that need
+// only the geometry should import "./zoneGeometry" directly — this module
+// drags react-leaflet in, which cannot be server-rendered.
+export { zoneColor, zoneRingLatLngs };
 
 interface ZonePolygonsLayerProps {
   zones: DeliveryZone[];
