@@ -77,3 +77,4 @@ backend/uploads/
 backend/.vercel-backend-env
 backend/seed-prod.sh
 backend/prisma/seed-*.ts
+backend/.env.local.secrets
