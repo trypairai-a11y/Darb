@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 // on the right surface. Only the ROOT path redirects — deep links, assets and
 // the API proxy are untouched, so one app serves every handle.
 const HANDLE_LANDING: Record<string, string> = {
-  "darb-admin.vercel.app": "/cockpit",
+  "darb-hq.vercel.app": "/cockpit",
   "darb-ops.vercel.app": "/ops",
   "darb-merchant.vercel.app": "/vendor",
   "darb-fleet.vercel.app": "/fleet-portal",

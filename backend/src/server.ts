@@ -124,7 +124,7 @@ const vercelAliasAllowlist = new Set<string>([
   "https://pair-darb.vercel.app",
   "https://darbkw.vercel.app",
   // Persona handles (one frontend app behind them all) + the driver web app.
-  "https://darb-admin.vercel.app",
+  "https://darb-hq.vercel.app",
   "https://darb-ops.vercel.app",
   "https://darb-merchant.vercel.app",
   "https://darb-fleet.vercel.app",
