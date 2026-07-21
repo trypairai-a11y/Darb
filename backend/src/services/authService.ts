@@ -60,6 +60,7 @@ export class AuthService {
       role: user.role,
       email: user.email,
       ...(user.vendorId ? { vendorId: user.vendorId } : {}),
+      ...(user.fleetPartnerId ? { fleetPartnerId: user.fleetPartnerId } : {}),
     };
 
     const accessToken = this.generateAccessToken(payload);
@@ -71,6 +72,7 @@ export class AuthService {
       user: {
         id: user.id, email: user.email, name: user.name, role: user.role, tenantId: user.tenantId,
         vendorId: user.vendorId,
+        fleetPartnerId: user.fleetPartnerId,
         ...(user.vendorId && user.vendor ? { vendor: user.vendor } : {}),
       },
     };
@@ -103,6 +105,7 @@ export class AuthService {
       role: user.role,
       email: user.email,
       ...(user.vendorId ? { vendorId: user.vendorId } : {}),
+      ...(user.fleetPartnerId ? { fleetPartnerId: user.fleetPartnerId } : {}),
     };
 
     return {
@@ -111,6 +114,7 @@ export class AuthService {
       user: {
         id: user.id, email: user.email, name: user.name, role: user.role, tenantId: user.tenantId,
         vendorId: user.vendorId,
+        fleetPartnerId: user.fleetPartnerId,
         ...(user.vendorId && user.vendor ? { vendor: user.vendor } : {}),
       },
     };
@@ -127,6 +131,7 @@ export class AuthService {
       role: user.role,
       email: user.email,
       ...(user.vendorId ? { vendorId: user.vendorId } : {}),
+      ...(user.fleetPartnerId ? { fleetPartnerId: user.fleetPartnerId } : {}),
     };
 
     return { accessToken: this.generateAccessToken(payload) };
@@ -170,6 +175,7 @@ export class AuthService {
       role: user.role,
       email: user.email,
       ...(user.vendorId ? { vendorId: user.vendorId } : {}),
+      ...(user.fleetPartnerId ? { fleetPartnerId: user.fleetPartnerId } : {}),
     };
 
     const accessToken = this.generateAccessToken(payload);

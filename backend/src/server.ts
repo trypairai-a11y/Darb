@@ -70,7 +70,11 @@ import cronRouter from "./routes/cron";
 import partnerRouter from "./routes/partner";
 import trackRouter from "./routes/track";
 import agentDeliveryRouter from "./routes/agentDelivery";
+import fleetsRouter from "./routes/fleets";
+import fleetPortalRouter from "./routes/fleetPortal";
+import cockpitRouter from "./routes/cockpit";
 import { blockVendorOutsideAllowlist } from "./middleware/vendorContainment";
+import { blockFleetOutsideAllowlist } from "./middleware/fleetContainment";
 import { startDispatchWorker } from "./queues/dispatchWorker";
 import { startFoodicsWorker } from "./queues/foodicsWorker";
 import { startWalletReconciliationWorker } from "./queues/walletReconciliationWorker";
@@ -192,6 +196,7 @@ app.use("/api", apiLimiter);
 // mounted before every API router, protects the ~60 legacy staff routers
 // without editing them. Non-vendor traffic passes through untouched.
 app.use(blockVendorOutsideAllowlist);
+app.use(blockFleetOutsideAllowlist);
 
 // Darb 2.0 — PUBLIC routers (no auth) mounted BEFORE the auth-carrying ones.
 // webhooksRouter: third-party platform callbacks (per-connection path secret).
@@ -283,6 +288,10 @@ startScheduledBriefingsWorker();
 //                        (public GET /callback mounted earlier, same prefix)
 app.use("/api/zones", zonesRouter);
 app.use("/api/vendors", vendorsRouter);
+// Darb 2.0 PRD §9/§14 — fleet governance + founder cockpit
+app.use("/api/fleets", fleetsRouter);
+app.use("/api/fleet", fleetPortalRouter);
+app.use("/api/cockpit", cockpitRouter);
 app.use("/api/vendor", vendorPortalRouter);
 app.use("/api/delivery-orders", deliveryOrdersRouter);
 app.use("/api/wallets", walletsRouter);

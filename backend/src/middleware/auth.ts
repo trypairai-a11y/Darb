@@ -10,6 +10,8 @@ export interface JwtPayload {
   // Darb 2.0 — set for role=VENDOR users; scopes the vendor portal.
   // Sourced from the User row at sign time, never from the client.
   vendorId?: string;
+  // Darb 2.0 PRD — set for role=FLEET users; scopes the fleet portal.
+  fleetPartnerId?: string;
 }
 
 declare global {

@@ -29,6 +29,9 @@ import {
   generateMonthlyStatements,
   previousMonthPeriod,
 } from "../services/wallet/vendorSettlementService";
+import { generateFleetStatements } from "../services/fleetService";
+import { applyFleetDiscipline } from "../services/fleetDiscipline";
+import { computeAllTenantTiers, snapshotAllTenants } from "../services/performanceService";
 import { prisma } from "../config";
 
 const router = Router();
@@ -142,22 +145,46 @@ router.get("/daily", async (req: Request, res: Response) => {
       out.reconciliation = { error: true };
     }
 
+    // eslint-disable-next-line no-restricted-syntax -- cross-tenant by design (same trust model as the sweep above)
+    const tenants = await prisma.tenant.findMany({ select: { id: true } });
+
+    // PRD §9: fleet discipline ladder, escalation-only, per tenant.
+    let disciplineChanged = 0;
+    for (const tenant of tenants) {
+      try {
+        disciplineChanged += await applyFleetDiscipline(tenant.id);
+      } catch (err) {
+        logger.error({ err, tenantId: tenant.id }, "cron daily: fleet discipline failed");
+      }
+    }
+    out.discipline = { changed: disciplineChanged };
+
+    // Performance tiers + daily snapshots (was the in-process scheduler's job).
+    try {
+      await computeAllTenantTiers();
+      const snap = await snapshotAllTenants();
+      out.performance = { snapshots: snap.written };
+    } catch (err) {
+      logger.error({ err }, "cron daily: performance tiers failed");
+      out.performance = { error: true };
+    }
+
     const isFirstOfMonth = new Date().getUTCDate() === 1;
     if (isFirstOfMonth || req.query.netting === "1") {
       const period = previousMonthPeriod();
       let statements = 0;
+      let fleetStatements = 0;
       let errors = 0;
-      // eslint-disable-next-line no-restricted-syntax -- cross-tenant by design (same trust model as the sweep above)
-      const tenants = await prisma.tenant.findMany({ select: { id: true } });
       for (const tenant of tenants) {
         try {
           statements += await generateMonthlyStatements(tenant.id, period);
+          fleetStatements += await generateFleetStatements(tenant.id, period);
         } catch (err) {
           errors += 1;
           logger.error({ err, tenantId: tenant.id }, "cron daily: netting failed for tenant");
         }
       }
-      out.netting = { statements, errors, periodStart: period.start };
+      out.netting = { statements, fleetStatements, errors, periodStart: period.start };
     }
 
     out.durationMs = Date.now() - startedAt;

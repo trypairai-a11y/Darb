@@ -153,6 +153,7 @@ type SessionWithDriver = {
     status: string;
     vehicleType: string | null;
     expoPushToken: string | null;
+    throttledUntil: Date | null;
   };
 };
 
@@ -227,6 +228,7 @@ export async function selectCandidates(
           status: true,
           vehicleType: true,
           expoPushToken: true,
+          throttledUntil: true,
         },
       },
     },
@@ -234,7 +236,7 @@ export async function selectCandidates(
 
   // JS-side re-check of freshness/coords (mocked stores and clock drift), then
   // driver status + vehicle constraint + radius.
-  const prelim: Array<Candidate & { lastGpsAt: Date }> = [];
+  const prelim: Array<Candidate & { lastGpsAt: Date; throttled: boolean }> = [];
   for (const session of latestSessionPerDriver(sessions)) {
     const { driver } = session;
     if (!driver || driver.status !== "ACTIVE") continue;
@@ -256,6 +258,8 @@ export async function selectCandidates(
       etaMin: Math.ceil((distanceKm / AVG_SPEED_KMH) * 60),
       activeOrders: 0,
       lastGpsAt: session.lastGpsAt,
+      throttled:
+        driver.throttledUntil != null && driver.throttledUntil.getTime() > Date.now(),
     });
   }
   if (prelim.length === 0) return [];
@@ -333,6 +337,9 @@ export async function selectCandidates(
   }
 
   filtered.sort((a, b) => {
+    // PRD §9 discipline: throttled drivers rank after every non-throttled
+    // candidate regardless of distance.
+    if (a.throttled !== b.throttled) return a.throttled ? 1 : -1;
     if (a.distanceKm !== b.distanceKm) return a.distanceKm - b.distanceKm;
     const aLast = lastDeliveredByDriver.get(a.driverId) ?? -Infinity;
     const bLast = lastDeliveredByDriver.get(b.driverId) ?? -Infinity;
@@ -340,7 +347,7 @@ export async function selectCandidates(
   });
 
   const limit = opts?.limit;
-  const ranked = filtered.map(({ lastGpsAt: _drop, ...candidate }) => candidate);
+  const ranked = filtered.map(({ lastGpsAt: _drop, throttled: _t, ...candidate }) => candidate);
   return typeof limit === "number" && limit > 0 ? ranked.slice(0, limit) : ranked;
 }
 
