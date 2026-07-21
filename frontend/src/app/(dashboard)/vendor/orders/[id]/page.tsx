@@ -8,7 +8,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Banknote, KeyRound, XCircle } from "lucide-react";
+import { Banknote, HandCoins, KeyRound, XCircle } from "lucide-react";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
@@ -55,6 +55,10 @@ export default function VendorOrderDetailPage() {
   const [cancelling, setCancelling] = useState(false);
   // The backend requires a non-empty reason on cancel.
   const [cancelReason, setCancelReason] = useState("");
+  // PRD build — refund request (DELIVERED orders without an existing refund).
+  const [confirmRefund, setConfirmRefund] = useState(false);
+  const [refunding, setRefunding] = useState(false);
+  const [refundReason, setRefundReason] = useState("");
 
   const ordersQuery = useQuery({
     queryKey: ["darb", "vendor", "orders"],
@@ -65,6 +69,15 @@ export default function VendorOrderDetailPage() {
   const order = useMemo(
     () => unwrapList<DeliveryOrder>(ordersQuery.data).find((o) => o.id === orderId) ?? null,
     [ordersQuery.data, orderId]
+  );
+
+  const refundsQuery = useQuery({
+    queryKey: ["darb", "vendor", "refunds"],
+    queryFn: () => vendorApi.refunds(),
+  });
+  const existingRefund = useMemo(
+    () => (refundsQuery.data ?? []).find((r) => r.orderId === orderId) ?? null,
+    [refundsQuery.data, orderId]
   );
 
   const timeline = useMemo<DeliveryOrderEvent[]>(() => {
@@ -94,6 +107,32 @@ export default function VendorOrderDetailPage() {
       toast.error(msg);
     } finally {
       setCancelling(false);
+    }
+  }
+
+  async function requestRefund() {
+    if (!order) return;
+    setRefunding(true);
+    try {
+      await vendorApi.requestRefund(order.id, refundReason.trim());
+      toast.success(t("vendorExtra.refundRequested"));
+      setConfirmRefund(false);
+      setRefundReason("");
+      await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", "refunds"] });
+    } catch (err) {
+      const resp = (err as { response?: { status?: number; data?: { error?: string } } }).response;
+      // 409: a refund request already exists for this order.
+      const msg =
+        resp?.status === 409
+          ? resp?.data?.error ?? t("vendorExtra.refundStatusRequested")
+          : resp?.data?.error ?? t("toast.failedSave");
+      toast.error(msg);
+      if (resp?.status === 409) {
+        setConfirmRefund(false);
+        await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", "refunds"] });
+      }
+    } finally {
+      setRefunding(false);
     }
   }
 
@@ -267,6 +306,50 @@ export default function VendorOrderDetailPage() {
           </button>
         </div>
       )}
+
+      {/* Request refund (delivered orders without an existing refund) */}
+      {order.status === "DELIVERED" && !refundsQuery.isLoading && !existingRefund && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setConfirmRefund(true)}
+            className="inline-flex items-center gap-1.5 px-4 h-10 rounded-pill bg-sand-100 text-sand-800 text-sm font-medium hover:bg-sand-200 transition-colors"
+          >
+            <HandCoins size={14} aria-hidden="true" />
+            {t("vendorExtra.refundRequest")}
+          </button>
+        </div>
+      )}
+
+      <ConfirmModal
+        open={confirmRefund}
+        title={t("vendorExtra.refundRequest")}
+        message={t("vendorExtra.refundReason")}
+        variant="default"
+        loading={refunding}
+        confirmLabel={t("vendorExtra.refundSubmit")}
+        confirmDisabled={refundReason.trim() === ""}
+        onConfirm={() => void requestRefund()}
+        onCancel={() => {
+          setConfirmRefund(false);
+          setRefundReason("");
+        }}
+      >
+        <label className="block">
+          <span className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
+            {t("vendorExtra.refundReason")}
+          </span>
+          <textarea
+            value={refundReason}
+            onChange={(e) => setRefundReason(e.target.value)}
+            maxLength={500}
+            rows={3}
+            autoFocus
+            required
+            className="w-full px-3 py-2 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </label>
+      </ConfirmModal>
 
       <ConfirmModal
         open={confirmCancel}

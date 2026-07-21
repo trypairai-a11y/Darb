@@ -20,8 +20,9 @@ const ROLE_LANDING: Record<string, string> = {
   SUPERVISOR: "/ops",
   ACCOUNTANT: "/finance",
   VIEWER: "/orders",
-  // Vendors land in (and are fenced into) the vendor portal.
+  // Portal roles land in (and are fenced into) their portals.
   VENDOR: "/vendor",
+  FLEET: "/fleet-portal",
 };
 
 function landingForRole(role: string | undefined): string {

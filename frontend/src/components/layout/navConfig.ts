@@ -24,6 +24,11 @@ import {
   SlidersHorizontal,
   ClipboardList,
   PlusCircle,
+  Truck,
+  Gauge,
+  BarChart3,
+  Megaphone,
+  Users,
 } from "lucide-react";
 
 export interface NavItem {
@@ -70,6 +75,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { i18n: "darbNav.zones", path: "/zones", icon: Hexagon },
       { i18n: "darbNav.pricing", path: "/pricing", icon: Coins },
       { i18n: "darbNav.vendors", path: "/vendors", icon: Store },
+      { i18n: "darbNav.fleet", path: "/fleets", icon: Truck },
     ],
   },
   {
@@ -92,6 +98,12 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    key: "cockpit",
+    i18n: "cockpit.navSection",
+    minRole: "ADMIN",
+    items: [{ i18n: "cockpit.navTitle", path: "/cockpit", icon: Gauge }],
+  },
+  {
     key: "vendor",
     i18n: "darbNav.vendor",
     roles: ["VENDOR"],
@@ -99,7 +111,19 @@ export const NAV_SECTIONS: NavSection[] = [
       { i18n: "darbNav.vendorOrders", path: "/vendor", icon: ClipboardList },
       { i18n: "darbNav.vendorNewOrder", path: "/vendor/orders/new", icon: PlusCircle },
       { i18n: "darbNav.vendorWallet", path: "/vendor/wallet", icon: Wallet },
+      { i18n: "vendorExtra.navAnalytics", path: "/vendor/analytics", icon: BarChart3 },
+      { i18n: "vendorExtra.navCampaigns", path: "/vendor/campaigns", icon: Megaphone },
       { i18n: "darbNav.vendorSettings", path: "/vendor/settings", icon: Settings },
+    ],
+  },
+  {
+    key: "fleetPortal",
+    i18n: "fleetPortal.navSection",
+    roles: ["FLEET"],
+    items: [
+      { i18n: "fleetPortal.navRoster", path: "/fleet-portal", icon: Users },
+      { i18n: "fleetPortal.navScorecard", path: "/fleet-portal/scorecard", icon: Gauge },
+      { i18n: "fleetPortal.navPayouts", path: "/fleet-portal/payouts", icon: Wallet },
     ],
   },
 ];

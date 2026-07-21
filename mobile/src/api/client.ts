@@ -416,6 +416,10 @@ export interface AgentWalletSummary {
   todayCollectedKwd?: number | string;
   todayDeliveries?: number;
   blocked?: boolean;
+  /** 3dp KWD strings. Optional: old backends omit them (tips ship post-PRD;
+   *  the driver keeps 100%). Render defensively — only when present. */
+  tipsTodayKwd?: string;
+  tipsTotalKwd?: string;
 }
 
 export interface AgentStateResponse {

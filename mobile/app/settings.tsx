@@ -4,12 +4,13 @@ import { useFocusEffect, useRouter } from "expo-router";
 import * as Device from "expo-device";
 import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
-import { Bell, LogOut, MapPin } from "lucide-react-native";
+import { Award, Bell, Check, LogOut, MapPin } from "lucide-react-native";
 import { ListGroup, ListRow, NavBar, Screen } from "../src/components/hig";
 import { t as tr } from "../src/i18n/strings";
 import { PermissionRationale } from "../src/components/PermissionRationale";
 import { stopOfferChannel } from "../src/services/offerChannel";
 import { useDriverStore } from "../src/store/driverStore";
+import { useLanguageStore } from "../src/store/languageStore";
 import { useTheme, type Palette, space, radius, continuous, shadow } from "../src/theme";
 
 export default function SettingsScreen() {
@@ -19,6 +20,8 @@ export default function SettingsScreen() {
 
   const driver = useDriverStore((s) => s.driver);
   const reset = useDriverStore((s) => s.reset);
+  const lang = useLanguageStore((s) => s.lang);
+  const setLang = useLanguageStore((s) => s.setLang);
   const [locationGranted, setLocationGranted] = useState<boolean | null>(null);
   const [notifGranted, setNotifGranted] = useState<boolean | null>(null);
   const [showRationale, setShowRationale] = useState(false);
@@ -82,6 +85,29 @@ export default function SettingsScreen() {
             <Text style={[t.subheadline, { color: c.secondaryLabel, marginTop: 2 }]}>{driver.phone}</Text>
           ) : null}
         </View>
+
+        <ListGroup header={tr("settings.profile")}>
+          <ListRow
+            icon={<Award size={16} color={c.tint} />}
+            title={tr("settings.my_points")}
+            chevron
+            onPress={() => router.push("/points")}
+          />
+        </ListGroup>
+
+        {/* Language switch — layout stays LTR; only the strings change. */}
+        <ListGroup header={tr("settings.language")}>
+          <ListRow
+            title={tr("settings.lang_en")}
+            trailing={lang === "en" ? <Check size={18} color={c.tint} /> : undefined}
+            onPress={() => setLang("en")}
+          />
+          <ListRow
+            title={tr("settings.lang_ar")}
+            trailing={lang === "ar" ? <Check size={18} color={c.tint} /> : undefined}
+            onPress={() => setLang("ar")}
+          />
+        </ListGroup>
 
         <ListGroup header={tr("settings.permissions")}>
           <ListRow

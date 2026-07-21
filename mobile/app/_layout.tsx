@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AppState, Platform, View, type AppStateStatus } from "react-native";
+import { AppState, I18nManager, Platform, View, type AppStateStatus } from "react-native";
 import { Stack, usePathname, useRouter } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -11,6 +11,11 @@ import { hydrateNow, startOfferChannel, stopOfferChannel } from "../src/services
 import { flushEventOutbox } from "../src/services/eventOutbox";
 import { addPushWakeupListener } from "../src/services/pushNotifications";
 import { useDriverStore } from "../src/store/driverStore";
+import { useLanguageStore } from "../src/store/languageStore";
+
+// Layout stays LTR by design even in Arabic: we deliberately do NOT flip RTL
+// layout — Arabic strings render right-to-left inside Text naturally.
+I18nManager.allowRTL(false);
 
 const PLATFORM_HINTS: ReadonlyArray<PlatformHint> = ["KEETA", "TALABAT", "DELIVEROO", "AMERICANA"];
 function isPlatformHint(p: string | null): p is PlatformHint {
@@ -85,6 +90,11 @@ function DeliveryLoopController() {
 }
 
 export default function RootLayout() {
+  // Language store hydrates from AsyncStorage before first render (gated with
+  // the same fail-open timeout as fonts). `lang` re-keys the navigator so a
+  // language change re-renders every mounted screen without an app restart.
+  const lang = useLanguageStore((s) => s.lang);
+  const langHydrated = useLanguageStore((s) => s.hydrated);
   const [fontsLoaded, fontError] = useFonts({
     BricolageGrotesque_700Bold,
     BricolageGrotesque_800ExtraBold,
@@ -110,7 +120,7 @@ export default function RootLayout() {
     return () => { cancelled = true; };
   }, []);
 
-  if (!fontsLoaded && !fontError && !timedOut) {
+  if ((!fontsLoaded && !fontError && !timedOut) || (!langHydrated && !timedOut)) {
     return <View style={{ flex: 1, backgroundColor: "#0A0B0D" }} />;
   }
 
@@ -118,7 +128,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="light" />
       <DeliveryLoopController />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#0A0B0D" } }}>
+      <Stack key={lang} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#0A0B0D" } }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="enrollment" />
         <Stack.Screen name="(tabs)" />
@@ -131,6 +141,7 @@ export default function RootLayout() {
         <Stack.Screen name="delivery/failed" />
         <Stack.Screen name="sos" options={{ presentation: "modal" }} />
         <Stack.Screen name="settings" />
+        <Stack.Screen name="points" />
       </Stack>
     </SafeAreaProvider>
   );

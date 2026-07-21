@@ -4,7 +4,7 @@ import {
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import * as Location from "expo-location";
-import { ChevronRight, MapPin, MapPinOff, Phone, Settings, TriangleAlert } from "lucide-react-native";
+import { Award, ChevronRight, MapPin, MapPinOff, Phone, Settings, TriangleAlert } from "lucide-react-native";
 import { Card, Screen } from "../../src/components/hig";
 import { formatKwd } from "../../src/i18n/format";
 import { t as tr } from "../../src/i18n/strings";
@@ -16,10 +16,12 @@ import { useDriverStore } from "../../src/store/driverStore";
 import { useTheme, type Palette, space, radius, continuous, shadow } from "../../src/theme";
 import type { Availability } from "../../src/api/client";
 
-const AVAILABILITY_OPTIONS: { value: Availability; label: string }[] = [
-  { value: "ONLINE", label: tr("home.status.online") },
-  { value: "BUSY", label: tr("home.status.busy") },
-  { value: "OFFLINE", label: tr("home.status.offline") },
+// Label keys resolved at render time so a language switch takes effect
+// without reloading the module.
+const AVAILABILITY_OPTIONS: { value: Availability; labelKey: string }[] = [
+  { value: "ONLINE", labelKey: "home.status.online" },
+  { value: "BUSY", labelKey: "home.status.busy" },
+  { value: "OFFLINE", labelKey: "home.status.offline" },
 ];
 
 function PulseRing({ color }: { color: string }) {
@@ -198,7 +200,9 @@ export default function HomeScreen() {
               <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
             )}
             <Text style={[t.title2, { flex: 1 }]}>
-              {idleOnline ? tr("home.waiting") : AVAILABILITY_OPTIONS.find((o) => o.value === availability)?.label}
+              {idleOnline
+                ? tr("home.waiting")
+                : tr(AVAILABILITY_OPTIONS.find((o) => o.value === availability)?.labelKey ?? "")}
             </Text>
             {availabilitySync === "pending" ? (
               <Text style={[t.caption1, { color: c.secondaryLabel }]}>…</Text>
@@ -232,7 +236,7 @@ export default function HomeScreen() {
                       { color: active ? (o.value === "ONLINE" ? c.onTint : c.systemBackground) : c.secondaryLabel },
                     ]}
                   >
-                    {o.label}
+                    {tr(o.labelKey)}
                   </Text>
                 </TouchableOpacity>
               );
@@ -260,6 +264,18 @@ export default function HomeScreen() {
         <View style={[styles.grid, { marginTop: space.md }]}>
           <Metric label={tr("home.cash_on_hand")} value={formatKwd(wallet?.cashOnHandKwd)} wide />
         </View>
+
+        {/* ─── Darb Points entry ─── */}
+        <TouchableOpacity
+          style={styles.pointsRow}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          onPress={() => router.push("/points")}
+        >
+          <Award size={18} color={c.tint} />
+          <Text style={[t.subheadline, { color: c.label, flex: 1 }]}>{tr("settings.my_points")}</Text>
+          <ChevronRight size={16} color={c.gray3} />
+        </TouchableOpacity>
 
         {/* ─── Permission health ─── */}
         <TouchableOpacity
@@ -335,6 +351,11 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   metric: {
     flex: 1, backgroundColor: c.groupedSecondary, borderRadius: radius.card,
     padding: space.base, borderWidth: 1, borderColor: c.hairline, ...continuous, ...shadow.card,
+  },
+  pointsRow: {
+    flexDirection: "row", alignItems: "center", gap: space.md, marginTop: space.md,
+    backgroundColor: c.groupedSecondary, borderRadius: radius.card, padding: space.base,
+    borderWidth: 1, borderColor: c.hairline, ...continuous,
   },
   permRow: {
     flexDirection: "row", alignItems: "center", gap: space.md, marginTop: space.lg,

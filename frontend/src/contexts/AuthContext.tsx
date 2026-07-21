@@ -19,6 +19,9 @@ interface User {
   // users and older sessions won't include them.
   vendorId?: string;
   vendor?: { id: string; name: string };
+  // Darb 2.0 — FLEET-role users carry their fleet-partner binding so the
+  // frontend can fence them into /fleet-portal/* and scope portal calls.
+  fleetPartnerId?: string;
 }
 
 interface AuthContextType {
@@ -52,7 +55,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const publicRoutes = ["/", "/login"];
-    if (publicRoutes.includes(pathname)) {
+    // /track/* is the public customer tracking surface (PRD §12): no session,
+    // no refresh call, no redirect.
+    if (publicRoutes.includes(pathname) || pathname.startsWith("/track")) {
       setLoading(false);
       return;
     }

@@ -45,7 +45,7 @@ api.interceptors.response.use(
         accessToken = null;
         if (typeof window !== "undefined") {
           const path = window.location.pathname;
-          const publicRoutes = ["/", "/login"];
+          const publicRoutes = ["/", "/login", "/track"];
           const isPublic = publicRoutes.some((r) => path === r || (r !== "/" && path.startsWith(`${r}/`)));
           if (!isPublic) {
             window.location.href = "/login";

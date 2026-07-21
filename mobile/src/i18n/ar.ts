@@ -1,0 +1,196 @@
+/**
+ * ar.ts — complete Arabic dictionary, keyed identically to the EN dictionary
+ * in strings.ts (diffable line-by-line). Gulf/Kuwait Arabic, driver-facing
+ * tone. Interpolation placeholders ({amount}, {count}, …) are identical to EN.
+ *
+ * Layout stays LTR app-wide; these strings render right-to-left inside Text
+ * naturally.
+ */
+
+const AR: Record<string, string> = {
+  // ─── Common ───
+  "common.ok": "حسناً",
+  "common.cancel": "إلغاء",
+  "common.retry": "إعادة المحاولة",
+  "common.back": "رجوع",
+  "common.submit": "إرسال",
+  "common.loading": "جارٍ التحميل…",
+  "common.offline_note": "يبدو أنك غير متصل بالإنترنت",
+  "common.call_supervisor": "اتصل بالمشرف",
+  "common.syncing": "جارٍ مزامنة {count}…",
+
+  // ─── Enrollment / boot ───
+  "enroll.kicker": "سائق درب",
+  "enroll.title": "ابدأ وردّيتك بثقة.",
+  "enroll.subtitle": "أدخل الرمز من مشرفك، أو جرّب التطبيق بحساب السائق التجريبي.",
+  "enroll.placeholder": "رمز التسجيل",
+  "enroll.cta": "تسجيل الجهاز",
+  "enroll.cta_busy": "جارٍ التسجيل…",
+  "enroll.demo": "استخدم السائق التجريبي",
+  "enroll.failed_title": "فشل التسجيل",
+  "enroll.failed_body": "تأكد من الرمز وحاول مرة ثانية",
+
+  // ─── Tabs ───
+  "tabs.home": "الرئيسية",
+  "tabs.wallet": "المحفظة",
+  "tabs.history": "السجل",
+
+  // ─── Home / availability ───
+  "home.status.online": "متصل",
+  "home.status.busy": "مشغول",
+  "home.status.offline": "غير متصل",
+  "home.waiting": "بانتظار العروض…",
+  "home.waiting_sub": "ابقَ قريباً من منطقتك. العروض الجديدة ترن بصوت عالٍ.",
+  "home.offline_hint": "فعّل حالة متصل لتبدأ باستقبال عروض التوصيل.",
+  "home.busy_hint": "أكمل توصيلتك الحالية لتستقبل عروضاً جديدة.",
+  "home.today": "اليوم",
+  "home.deliveries": "التوصيلات",
+  "home.collected": "المحصّل",
+  "home.cash_on_hand": "الكاش بحوزتك",
+  "home.resume_delivery": "استئناف التوصيلة",
+  "home.lockout_title": "العروض متوقفة: الكاش تجاوز الحد",
+  "home.lockout_body": "سلّم الكاش في المقر لتعود لاستقبال العروض.",
+  "home.permission_warning": "مطلوب إذن الموقع",
+  "home.permission_warning_sub": "العروض تتطلب الموقع في الخلفية. اضغط للإصلاح.",
+  "home.permission_ok": "مشاركة الموقع فعّالة",
+  "home.availability_error": "تعذّر تغيير الحالة",
+
+  // ─── Offer ───
+  "offer.title": "عرض توصيل جديد",
+  "offer.pickup": "الاستلام",
+  "offer.dropoff": "التسليم",
+  "offer.distance": "{km} كم",
+  "offer.cod": "تحصيل كاش",
+  "offer.prepaid": "مدفوع مسبقاً",
+  "offer.accept": "قبول",
+  "offer.reject": "رفض",
+  "offer.accepting": "جارٍ القبول…",
+  "offer.expired": "انتهى العرض",
+  "offer.expired_sub": "تم عرضه على سائق آخر.",
+
+  // ─── Delivery ───
+  "delivery.title": "توصيلة نشطة",
+  "delivery.stage.HEADING_TO_PICKUP": "في الطريق إلى المطعم",
+  "delivery.stage.ARRIVED_AT_PICKUP": "عند المطعم",
+  "delivery.stage.PICKED_UP": "تم استلام الطلب",
+  "delivery.stage.HEADING_TO_DROPOFF": "في الطريق إلى العميل",
+  "delivery.stage.ARRIVED_AT_DROPOFF": "عند العميل",
+  "delivery.next.HEADING_TO_PICKUP": "وصلت إلى المطعم",
+  "delivery.next.ARRIVED_AT_PICKUP": "استلمت الطلب",
+  "delivery.next.PICKED_UP": "متجه إلى العميل",
+  "delivery.next.HEADING_TO_DROPOFF": "وصلت إلى العميل",
+  "delivery.next.ARRIVED_AT_DROPOFF": "إكمال التوصيلة",
+  "delivery.sla_remaining": "{time} حتى الموعد النهائي",
+  "delivery.sla_overdue": "متأخر بمقدار {time}",
+  "delivery.cod_title": "الدفع عند الاستلام",
+  "delivery.cod_body": "حصّل {amount} من العميل",
+  "delivery.navigate": "الملاحة",
+  "delivery.call_customer": "اتصل بالعميل",
+  "delivery.failed_link": "فشل التوصيل",
+  "delivery.no_order": "لا توجد توصيلة نشطة",
+  "delivery.no_order_sub": "فعّل حالة متصل من الرئيسية لاستقبال العروض.",
+
+  // ─── POD ───
+  "pod.title": "إكمال التوصيلة",
+  "pod.collect": "حصّل {amount}",
+  "pod.collect_confirm": "استلمت المبلغ كاملاً نقداً",
+  "pod.method_pin": "رمز PIN",
+  "pod.method_photo": "صورة",
+  "pod.pin_hint": "اطلب من العميل رمز التوصيل المكوّن من 4 أرقام",
+  "pod.pin_mismatch": "رمز خاطئ، تبقّى {attemptsLeft} محاولات",
+  "pod.pin_locked": "الرمز مقفل، استخدم صورة التوصيل بدلاً منه",
+  "pod.pin_offline": "الرمز يحتاج اتصالاً بالإنترنت، التقط صورة التوصيل بدلاً منه",
+  "pod.photo_hint": "صوّر الطلب عند باب العميل",
+  "pod.take_photo": "التقط صورة",
+  "pod.retake": "إعادة التصوير",
+  "pod.confirm_delivery": "تأكيد التوصيل",
+  "pod.submitting": "جارٍ التأكيد…",
+  "pod.delivered": "تم التوصيل",
+  "pod.delivered_queued": "تم التوصيل، وسيُرفع الإثبات تلقائياً",
+
+  // ─── Failed ───
+  "failed.title": "فشل التوصيل",
+  "failed.subtitle": "اختر ما حدث. سيتم إشعار المشرف.",
+  "failed.reason.CUSTOMER_UNREACHABLE": "تعذّر الوصول للعميل",
+  "failed.reason.WRONG_ADDRESS": "عنوان خاطئ",
+  "failed.reason.CUSTOMER_REFUSED": "العميل رفض الطلب",
+  "failed.reason.OTHER": "سبب آخر",
+  "failed.note_placeholder": "أضف ملاحظة قصيرة…",
+  "failed.submit": "الإبلاغ عن فشل التوصيل",
+
+  // ─── Wallet ───
+  "wallet.title": "المحفظة",
+  "wallet.today": "المحصّل اليوم",
+  "wallet.cash_on_hand": "الكاش بحوزتك",
+  "wallet.ceiling": "من الحد {ceiling}",
+  "wallet.lockout_title": "وصلت إلى حد الكاش",
+  "wallet.lockout_body": "العروض متوقفة. سلّم الكاش في المقر للاستئناف.",
+  "wallet.remittances": "سجل التسليمات",
+  "wallet.no_remittances": "لا توجد تسليمات بعد",
+  "wallet.tips": "الإكراميات",
+  "wallet.tips_today": "إكراميات اليوم",
+  "wallet.tips_total": "إجمالي الإكراميات",
+  "wallet.tips_note": "الإكراميات لك بالكامل، تحتفظ بنسبة 100%.",
+
+  // ─── History ───
+  "history.title": "السجل",
+  "history.empty": "لا توجد توصيلات سابقة",
+  "history.empty_sub": "تظهر هنا التوصيلات المكتملة خلال آخر 7 أيام.",
+
+  // ─── SOS ───
+  "sos.title": "بلاغ طوارئ",
+  "sos.subtitle": "ماذا حدث؟ موقعك المباشر يُرفق تلقائياً.",
+  "sos.cat.ACCIDENT": "حادث",
+  "sos.cat.BREAKDOWN": "عطل في المركبة",
+  "sos.cat.CUSTOMER_AGGRESSION": "اعتداء من عميل",
+  "sos.cat.ROAD_BLOCKAGE": "إغلاق طريق",
+  "sos.add_photos": "أضف صوراً ({count}/3)",
+  "sos.describe": "صف ما حدث (اختياري)",
+  "sos.send": "إرسال البلاغ",
+  "sos.sending": "جارٍ الإرسال…",
+  "sos.sent_title": "تم إشعار المشرف",
+  "sos.sent_body": "حافظ على سلامتك. تم إرسال بلاغك وموقعك.",
+  "sos.acked": "اطّلع المشرف على بلاغك",
+  "sos.queued_title": "سيُرسل البلاغ تلقائياً",
+  "sos.queued_body": "أنت غير متصل، والبلاغ في قائمة الانتظار. اتصل بمشرفك الآن.",
+
+  // ─── Darb Points ───
+  "points.title": "نقاط درب",
+  "points.overall": "النتيجة الإجمالية",
+  "points.breakdown": "تفاصيل النتيجة",
+  "points.attendance": "الحضور",
+  "points.orders": "الطلبات",
+  "points.hours": "الساعات",
+  "points.violations": "المخالفات",
+  "points.stats": "هذا الشهر",
+  "points.stat_on_time": "نسبة الالتزام بالوقت",
+  "points.stat_orders": "الطلبات المكتملة",
+  "points.stat_hours": "ساعات العمل",
+  "points.stat_violations": "المخالفات",
+  "points.trend": "الأشهر الأخيرة",
+  "points.empty": "لا توجد نتيجة بعد",
+  "points.empty_sub": "تظهر نتيجتك بعد أول شهر يتم احتسابه.",
+  "points.error": "تعذّر تحميل نقاطك",
+  "points.error_sub": "تأكد من الاتصال وحاول مرة ثانية.",
+  "points.updated": "آخر تحديث {date}",
+
+  // ─── Settings ───
+  "settings.title": "الإعدادات",
+  "settings.profile": "السائق",
+  "settings.device": "الجهاز",
+  "settings.permissions": "الأذونات",
+  "settings.location_permission": "مشاركة الموقع",
+  "settings.notifications_permission": "الإشعارات",
+  "settings.fix": "إصلاح",
+  "settings.granted": "ممنوح",
+  "settings.open_settings": "افتح إعدادات النظام",
+  "settings.sign_out": "تسجيل الخروج",
+  "settings.sign_out_title": "تسجيل الخروج",
+  "settings.sign_out_body": "ستحتاج رمز التسجيل للدخول مرة ثانية. سيتوقف تتبع GPS.",
+  "settings.language": "اللغة / Language",
+  "settings.lang_en": "English",
+  "settings.lang_ar": "العربية",
+  "settings.my_points": "نقاط درب الخاصة بي",
+};
+
+export default AR;

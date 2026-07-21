@@ -1,12 +1,19 @@
 /**
- * strings.ts — flat EN dictionary + t() helper.
+ * strings.ts — flat dictionaries + t() helper with a language switch.
  *
- * Darb 2.0 ships English-first; the Arabic pass lands later in v1 by adding a
- * second dictionary keyed identically and a language switch. Keep keys flat
- * ("screen.element") so the AR file can be diffed line-by-line.
+ * Two dictionaries keyed identically: EN (this file, also the fallback) and AR
+ * (./ar.ts). t() reads a module-level active dictionary with per-key EN
+ * fallback; the persisted language store (src/store/languageStore.ts) calls
+ * setLanguage() on hydrate and on user change, and the root layout re-keys the
+ * navigator so every mounted screen re-renders.
+ *
+ * Layout stays LTR by design (I18nManager.allowRTL(false) at boot); Arabic
+ * strings render right-to-left inside Text naturally.
  *
  * Interpolation: t("pod.collect", { amount: "KD 3.500" }) replaces {amount}.
  */
+
+import AR from "./ar";
 
 const EN: Record<string, string> = {
   // ─── Common ───
@@ -30,6 +37,11 @@ const EN: Record<string, string> = {
   "enroll.demo": "Use demo driver",
   "enroll.failed_title": "Enrollment failed",
   "enroll.failed_body": "Check your code and try again",
+
+  // ─── Tabs ───
+  "tabs.home": "Home",
+  "tabs.wallet": "Wallet",
+  "tabs.history": "History",
 
   // ─── Home / availability ───
   "home.status.online": "Online",
@@ -123,6 +135,10 @@ const EN: Record<string, string> = {
   "wallet.lockout_body": "Offers are paused. Hand in cash at the hub to resume.",
   "wallet.remittances": "Remittance history",
   "wallet.no_remittances": "No remittances yet",
+  "wallet.tips": "Tips",
+  "wallet.tips_today": "Tips today",
+  "wallet.tips_total": "Tips total",
+  "wallet.tips_note": "Tips are yours. You keep 100%.",
 
   // ─── History ───
   "history.title": "History",
@@ -146,6 +162,26 @@ const EN: Record<string, string> = {
   "sos.queued_title": "Report will send automatically",
   "sos.queued_body": "You're offline — the report is queued. Call your supervisor now.",
 
+  // ─── Darb Points ───
+  "points.title": "Darb Points",
+  "points.overall": "Overall score",
+  "points.breakdown": "Score breakdown",
+  "points.attendance": "Attendance",
+  "points.orders": "Orders",
+  "points.hours": "Hours",
+  "points.violations": "Violations",
+  "points.stats": "This month",
+  "points.stat_on_time": "On-time rate",
+  "points.stat_orders": "Orders completed",
+  "points.stat_hours": "Hours worked",
+  "points.stat_violations": "Violations",
+  "points.trend": "Recent months",
+  "points.empty": "No score yet",
+  "points.empty_sub": "Your score appears after your first scored month.",
+  "points.error": "Couldn't load your points",
+  "points.error_sub": "Check your connection and try again.",
+  "points.updated": "Updated {date}",
+
   // ─── Settings ───
   "settings.title": "Settings",
   "settings.profile": "Driver",
@@ -159,10 +195,29 @@ const EN: Record<string, string> = {
   "settings.sign_out": "Sign out",
   "settings.sign_out_title": "Sign out",
   "settings.sign_out_body": "You'll need your enrollment code to sign back in. GPS tracking will stop.",
+  "settings.language": "Language / اللغة",
+  "settings.lang_en": "English",
+  "settings.lang_ar": "العربية",
+  "settings.my_points": "My Darb Points",
 };
 
+export type Lang = "en" | "ar";
+
+const DICTS: Record<Lang, Record<string, string>> = { en: EN, ar: AR };
+
+let activeLang: Lang = "en";
+
+/** Switch the active dictionary. Callers re-render via the language store. */
+export function setLanguage(lang: Lang): void {
+  activeLang = lang === "ar" ? "ar" : "en";
+}
+
+export function getLanguage(): Lang {
+  return activeLang;
+}
+
 export function t(key: string, vars?: Record<string, string | number>): string {
-  let s = EN[key] ?? key;
+  let s = DICTS[activeLang][key] ?? EN[key] ?? key;
   if (vars) {
     for (const [k, v] of Object.entries(vars)) {
       s = s.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));

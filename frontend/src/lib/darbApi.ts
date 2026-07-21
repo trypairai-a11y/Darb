@@ -27,6 +27,15 @@ import type {
   WalletReconciliationRun,
   ZoneQuote,
   ZoneSurcharge,
+  VendorAnalytics,
+  RefundRow,
+  VendorStatementRow,
+  FleetProfile,
+  FleetDriverRow,
+  FleetScorecard,
+  FleetStatementRow,
+  FleetEarnings,
+  CockpitSummary,
 } from "@/types/darb";
 
 type Params = Record<string, string | number | boolean | undefined | null>;
@@ -241,6 +250,43 @@ export const vendorApi = {
   foodicsStatus: () => get<FoodicsStatus>("/api/vendor/foodics/status"),
   /** Returns { authUrl } — the caller redirects the browser there. */
   foodicsConnect: () => get<{ authUrl: string }>("/api/vendor/foodics/connect"),
+  // ── PRD build: analytics, refunds, statements ──
+  analytics: (params?: { from?: string; to?: string; branchId?: string | null }) =>
+    get<VendorAnalytics>("/api/vendor/analytics", params as Params),
+  refunds: () => get<RefundRow[]>("/api/vendor/refunds"),
+  /** 409 means a refund request already exists for this order. */
+  requestRefund: (orderId: string, reason: string) =>
+    post<RefundRow>(`/api/vendor/orders/${orderId}/refund-request`, { reason }),
+  statements: () => get<VendorStatementRow[]>("/api/vendor/statements"),
+};
+
+// ── /api/fleet (fleet-portal scope — fleetPartnerId comes from the JWT) ──
+
+export const fleetApi = {
+  me: () => get<FleetProfile>("/api/fleet/me"),
+  drivers: () => get<FleetDriverRow[]>("/api/fleet/drivers"),
+  scorecard: (params?: { from?: string; to?: string }) =>
+    get<FleetScorecard>("/api/fleet/scorecard", params as Params),
+  statements: () => get<FleetStatementRow[]>("/api/fleet/statements"),
+  earnings: (params?: { month?: string }) =>
+    get<FleetEarnings>("/api/fleet/earnings", params as Params),
+};
+
+// ── /api/fleets (staff scope) ────────────────────────────────────────────
+
+export const fleetsApi = {
+  list: (params?: Params) =>
+    get<Paginated<FleetProfile> | FleetProfile[]>("/api/fleets", params),
+  getById: (id: string) => get<FleetProfile>(`/api/fleets/${id}`),
+  scorecard: (id: string, params?: { from?: string; to?: string }) =>
+    get<FleetScorecard>(`/api/fleets/${id}/scorecard`, params as Params),
+  statements: (id: string) => get<FleetStatementRow[]>(`/api/fleets/${id}/statements`),
+};
+
+// ── /api/cockpit (ADMIN-only founder summary) ────────────────────────────
+
+export const cockpitApi = {
+  summary: () => get<CockpitSummary>("/api/cockpit/summary"),
 };
 
 // ── /api/foodics ─────────────────────────────────────────────────────────

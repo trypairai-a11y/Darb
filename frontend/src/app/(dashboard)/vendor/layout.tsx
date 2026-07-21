@@ -1,0 +1,74 @@
+"use client";
+// Darb 2.0 PRD build — vendor portal layout. Wraps every /vendor/* page in
+// the VendorBranchProvider and, when the vendor has 2+ branches, renders a
+// compact pill selector sub-header so pages (analytics first) can scope to
+// one branch. Single-branch vendors see no extra chrome.
+import { ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { cn } from "@/lib/cn";
+import { VendorBranchProvider, useVendorBranch } from "@/contexts/VendorBranchContext";
+import { vendorApi } from "@/lib/darbApi";
+import { useRole } from "@/hooks/useRole";
+import { useI18n } from "@/i18n/I18nProvider";
+
+function BranchPills() {
+  const { t } = useI18n();
+  const { isVendor } = useRole();
+  const { branchId, setBranchId } = useVendorBranch();
+
+  const meQuery = useQuery({
+    queryKey: ["darb", "vendor", "me"],
+    queryFn: () => vendorApi.me(),
+    enabled: isVendor,
+    staleTime: 5 * 60_000,
+  });
+
+  const branches = meQuery.data?.branches ?? [];
+  if (branches.length < 2) return null;
+
+  const pill = (active: boolean) =>
+    cn(
+      "px-3.5 h-8 inline-flex items-center rounded-pill text-xs font-medium transition-colors duration-250 ease-sierra-out whitespace-nowrap",
+      active
+        ? "bg-primary text-white shadow-soft"
+        : "bg-sand-100 text-sand-700 hover:bg-sand-200"
+    );
+
+  return (
+    <div className="flex items-center gap-2 overflow-x-auto pb-1 -mb-1" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        aria-selected={branchId === null}
+        onClick={() => setBranchId(null)}
+        className={pill(branchId === null)}
+      >
+        {t("vendorExtra.branchAll")}
+      </button>
+      {branches.map((b) => (
+        <button
+          key={b.id}
+          type="button"
+          role="tab"
+          aria-selected={branchId === b.id}
+          onClick={() => setBranchId(b.id)}
+          className={pill(branchId === b.id)}
+          dir="auto"
+        >
+          {b.name}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export default function VendorLayout({ children }: { children: ReactNode }) {
+  return (
+    <VendorBranchProvider>
+      <div className="space-y-4">
+        <BranchPills />
+        {children}
+      </div>
+    </VendorBranchProvider>
+  );
+}

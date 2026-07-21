@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { Linking, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useFocusEffect } from "expo-router";
-import { Banknote, Phone, TriangleAlert } from "lucide-react-native";
+import { Banknote, Coins, Phone, TriangleAlert } from "lucide-react-native";
 import { getWallet, type AgentRemittance } from "../../src/api/client";
 import { LargeTitle, ListGroup, ListRow, Screen } from "../../src/components/hig";
 import { formatKwd } from "../../src/i18n/format";
@@ -86,6 +86,26 @@ export default function WalletScreen() {
             <View style={[styles.barFill, { width: `${Math.round(ratio * 100)}%`, backgroundColor: barColor }]} />
           </View>
         </View>
+
+        {/* ─── Tips (driver keeps 100%) — only when the backend sends them ─── */}
+        {wallet?.tipsTodayKwd != null || wallet?.tipsTotalKwd != null ? (
+          <ListGroup header={tr("wallet.tips")} footer={tr("wallet.tips_note")} style={{ marginTop: space.xs }}>
+            {wallet?.tipsTodayKwd != null ? (
+              <ListRow
+                icon={<Coins size={16} color={c.tint} />}
+                title={tr("wallet.tips_today")}
+                detail={formatKwd(wallet.tipsTodayKwd)}
+              />
+            ) : null}
+            {wallet?.tipsTotalKwd != null ? (
+              <ListRow
+                icon={<Coins size={16} color={c.tint} />}
+                title={tr("wallet.tips_total")}
+                detail={formatKwd(wallet.tipsTotalKwd)}
+              />
+            ) : null}
+          </ListGroup>
+        ) : null}
 
         {lockout.active ? (
           <View style={styles.lockout}>

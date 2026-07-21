@@ -621,4 +621,104 @@ router.get("/statements", async (req: Request, res: Response) => {
   }
 });
 
+
+// ─── Analytics (PRD §7 Data Analytics tab — order-derived v1) ───────────────
+
+/**
+ * @swagger
+ * /api/vendor/analytics:
+ *   get:
+ *     tags: [Vendor Portal]
+ *     summary: Order-derived analytics (totals, repeat buyers, top customers, by-day)
+ *     parameters:
+ *       - in: query
+ *         name: from
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: to
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: branchId
+ *         schema: { type: string }
+ */
+router.get("/analytics", async (req: Request, res: Response) => {
+  try {
+    const { tenantId, vendorId } = req.user!;
+    const to = typeof req.query.to === "string" ? new Date(`${req.query.to}T23:59:59.999`) : new Date();
+    const from =
+      typeof req.query.from === "string"
+        ? new Date(`${req.query.from}T00:00:00.000`)
+        : new Date(to.getTime() - 30 * 86_400_000);
+    const branchId = typeof req.query.branchId === "string" ? req.query.branchId : undefined;
+
+    const where: any = {
+      tenantId,
+      vendorId: vendorId!,
+      status: "DELIVERED",
+      deliveredAt: { gte: from, lte: to },
+      ...(branchId ? { branchId } : {}),
+    };
+
+    const orders = await prisma.deliveryOrder.findMany({
+      where,
+      select: {
+        orderTotalKwd: true,
+        customerPhone: true,
+        customerName: true,
+        deliveredAt: true,
+      },
+      take: 10_000,
+    });
+
+    let revenue = 0;
+    const byCustomer = new Map<string, { name: string | null; orders: number; totalKwd: number }>();
+    const byDay = new Map<string, { orders: number; totalKwd: number }>();
+    for (const o of orders) {
+      const total = Number(o.orderTotalKwd);
+      revenue += total;
+      if (o.customerPhone) {
+        const c = byCustomer.get(o.customerPhone) ?? { name: o.customerName, orders: 0, totalKwd: 0 };
+        c.orders += 1;
+        c.totalKwd += total;
+        if (!c.name && o.customerName) c.name = o.customerName;
+        byCustomer.set(o.customerPhone, c);
+      }
+      const day = o.deliveredAt ? o.deliveredAt.toISOString().slice(0, 10) : "unknown";
+      const d = byDay.get(day) ?? { orders: 0, totalKwd: 0 };
+      d.orders += 1;
+      d.totalKwd += total;
+      byDay.set(day, d);
+    }
+
+    const repeatBuyers = [...byCustomer.values()].filter((c) => c.orders >= 2).length;
+    const topCustomers = [...byCustomer.entries()]
+      .sort((a, b) => b[1].totalKwd - a[1].totalKwd)
+      .slice(0, 10)
+      .map(([phone, c]) => ({
+        phone,
+        name: c.name,
+        orders: c.orders,
+        totalKwd: c.totalKwd.toFixed(3),
+      }));
+
+    res.json({
+      from,
+      to,
+      branchId: branchId ?? null,
+      ordersTotal: orders.length,
+      revenueKwd: revenue.toFixed(3),
+      avgOrderValueKwd: orders.length > 0 ? (revenue / orders.length).toFixed(3) : "0.000",
+      uniqueCustomers: byCustomer.size,
+      repeatBuyers,
+      topCustomers,
+      byDay: [...byDay.entries()]
+        .filter(([day]) => day !== "unknown")
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([day, d]) => ({ day, orders: d.orders, totalKwd: d.totalKwd.toFixed(3) })),
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

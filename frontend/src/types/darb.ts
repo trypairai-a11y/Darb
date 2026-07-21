@@ -468,4 +468,154 @@ export interface VendorWallet {
   account?: WalletAccount | null;
   balanceKwd?: Kwd;
   entries?: WalletEntry[];
+  // PRD §11 credit line (null cap = no cap configured).
+  creditCapKwd?: Kwd | null;
+  creditUsedKwd?: Kwd;
+}
+
+// ── Darb 2.0 PRD build ────────────────────────────────────────────────────
+
+export interface VendorAnalytics {
+  from: string;
+  to: string;
+  branchId: string | null;
+  ordersTotal: number;
+  revenueKwd: string;
+  avgOrderValueKwd: string;
+  uniqueCustomers: number;
+  repeatBuyers: number;
+  topCustomers: Array<{ phone: string; name: string | null; orders: number; totalKwd: string }>;
+  byDay: Array<{ day: string; orders: number; totalKwd: string }>;
+}
+
+export interface RefundRow {
+  id: string;
+  orderId: string;
+  amountKwd: string;
+  reason: string;
+  status: "REQUESTED" | "PROCESSED" | "REJECTED";
+  createdAt: string;
+  order?: { id: string; orderNumber: string };
+  vendor?: { id: string; name: string; code: string };
+}
+
+export interface VendorStatementRow {
+  id: string;
+  periodStart: string;
+  periodEnd: string;
+  openingBalanceKwd: string;
+  codNetKwd: string;
+  prepaidFeesKwd: string;
+  refundsKwd: string;
+  closingBalanceKwd: string;
+  status: "FINAL" | "PAID";
+}
+
+export interface FleetProfile {
+  id: string;
+  name: string;
+  contactName: string | null;
+  contactPhone: string | null;
+  contactEmail: string | null;
+  flatFeePerOrderKwd: string;
+  minOnlineHoursPerDay: number | null;
+  minDriversOnline: Record<string, number> | null;
+  disciplineStatus: "OK" | "WARNED" | "THROTTLED" | "SUSPENDED" | "REMOVED";
+  isActive: boolean;
+}
+
+export interface FleetDriverRow {
+  id: string;
+  name: string;
+  phone: string;
+  status: string;
+  vehicleType: string;
+  performanceTier: string | null;
+  throttledUntil: string | null;
+  civilIdStatus: string | null;
+  drivingLicenseStatus: string | null;
+  vehicleRegStatus: string | null;
+  healthCertStatus: string | null;
+  rating: { avg: number | null; count: number };
+}
+
+export interface FleetScorecard {
+  fleetPartnerId: string;
+  driverCount: number;
+  deliveredOrders: number;
+  onTimeRate: number | null;
+  acceptanceRate: number | null;
+  onlineHours: number;
+  contractedHours: number | null;
+  utilisation: number | null;
+  avgRating: number | null;
+  ratingCount: number;
+}
+
+export interface FleetStatementRow {
+  id: string;
+  periodStart: string;
+  periodEnd: string;
+  deliveredOrders: number;
+  feePerOrderKwd: string;
+  totalKwd: string;
+  status: "FINAL" | "PAID";
+}
+
+export interface FleetEarnings {
+  periodStart: string;
+  periodEnd: string;
+  feePerOrderKwd: string;
+  deliveredOrders: number;
+  totalKwd: string;
+  orders: Array<{
+    id: string;
+    orderNumber: string;
+    deliveredAt: string;
+    driverName: string | null;
+    feeKwd: string;
+  }>;
+}
+
+export interface CockpitSummary {
+  generatedAt: string;
+  orders: {
+    activeNow: number;
+    byStatus: Record<string, number>;
+    deliveredToday: number;
+    cancelledToday: number;
+    noDriverToday: number;
+    onTimeRateToday: number | null;
+  };
+  zones: Array<{
+    zoneId: string;
+    code: string;
+    name: string;
+    deliveredToday: number;
+    onTimeRate: number | null;
+  }>;
+  money: {
+    feesTodayKwd: string;
+    fleetCostTodayKwd: string;
+    netMarginTodayKwd: string;
+    tipsTodayKwd: string;
+  };
+  fleet: {
+    driversOnlineNow: number;
+    driversBusyNow: number;
+    fleets: Array<{
+      fleetPartnerId: string;
+      name: string;
+      disciplineStatus: string;
+      driversOnline: number;
+      minDriversOnline: number | null;
+      deliveredToday: number;
+    }>;
+  };
+  cash: {
+    driverCashInFieldKwd: string;
+    depositedTodayKwd: string;
+    clearingBalanceKwd: string;
+  };
+  alerts: Array<{ kind: string; severity: "HIGH" | "MEDIUM"; message: string }>;
 }

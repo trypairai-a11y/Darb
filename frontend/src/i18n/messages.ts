@@ -1563,6 +1563,169 @@ export interface Messages {
     noData: string;
     rowsExported: string;
   };
+  track: {
+    deliveredByDarb: string;
+    orderLabel: string;
+    statusCreated: string;
+    statusScheduled: string;
+    statusDispatching: string;
+    statusAssigned: string;
+    statusPickedUp: string;
+    statusDelivered: string;
+    statusCancelled: string;
+    statusFailed: string;
+    statusReturned: string;
+    etaLabel: string;
+    minutes: string;
+    yourDriver: string;
+    callDriver: string;
+    liveMap: string;
+    timelinePlaced: string;
+    timelineAssigned: string;
+    timelinePickedUp: string;
+    timelineDelivered: string;
+    rateTitle: string;
+    ratePlaceholder: string;
+    rateSubmit: string;
+    rateThanks: string;
+    tipTitle: string;
+    tipSubtitle: string;
+    tipCustom: string;
+    tipSubmit: string;
+    tipThanks: string;
+    cancelTitle: string;
+    cancelReason: string;
+    cancelSubmit: string;
+    cancelSent: string;
+    notFoundTitle: string;
+    notFoundBody: string;
+    loading: string;
+    errorGeneric: string;
+  };
+  fleetPortal: {
+    navSection: string;
+    navRoster: string;
+    navScorecard: string;
+    navPayouts: string;
+    rosterTitle: string;
+    rosterSubtitle: string;
+    driverName: string;
+    phone: string;
+    vehicle: string;
+    status: string;
+    tier: string;
+    rating: string;
+    docs: string;
+    throttled: string;
+    scorecardTitle: string;
+    onTimeRate: string;
+    acceptanceRate: string;
+    utilisation: string;
+    deliveredOrders: string;
+    onlineHours: string;
+    contractedHours: string;
+    payoutsTitle: string;
+    period: string;
+    orders: string;
+    feePerOrder: string;
+    total: string;
+    statementStatus: string;
+    earningsTitle: string;
+    noStatements: string;
+    disciplineBanner: string;
+  };
+  cockpit: {
+    navSection: string;
+    navTitle: string;
+    title: string;
+    subtitle: string;
+    activeOrders: string;
+    deliveredToday: string;
+    onTimeToday: string;
+    feesToday: string;
+    fleetCostToday: string;
+    netMarginToday: string;
+    tipsToday: string;
+    driversOnline: string;
+    driversBusy: string;
+    cashInField: string;
+    depositedToday: string;
+    clearingBalance: string;
+    zonesTitle: string;
+    zoneName: string;
+    zoneDelivered: string;
+    zoneOnTime: string;
+    fleetsTitle: string;
+    fleetName: string;
+    fleetOnline: string;
+    fleetCommitted: string;
+    fleetDelivered: string;
+    fleetDiscipline: string;
+    alertsTitle: string;
+    noAlerts: string;
+    exportCsv: string;
+    refreshed: string;
+  };
+  campaigns: {
+    title: string;
+    subtitle: string;
+    pendingApproval: string;
+    pendingBody: string;
+    templatesTitle: string;
+    templateWinback: string;
+    templateWinbackBody: string;
+    templateNewArrival: string;
+    templateNewArrivalBody: string;
+    templateWeekend: string;
+    templateWeekendBody: string;
+    schedule: string;
+    audience: string;
+    audienceLapsed: string;
+    audienceAll: string;
+    audienceLoyal: string;
+    saveDraft: string;
+    send: string;
+    drafts: string;
+    noDrafts: string;
+    draftSaved: string;
+  };
+  vendorExtra: {
+    navAnalytics: string;
+    navCampaigns: string;
+    analyticsTitle: string;
+    analyticsSubtitle: string;
+    ordersTotal: string;
+    revenueTotal: string;
+    avgOrderValue: string;
+    repeatBuyers: string;
+    topCustomersTitle: string;
+    customerPhone: string;
+    customerOrders: string;
+    customerTotal: string;
+    byDayTitle: string;
+    exportCsv: string;
+    printPdf: string;
+    branchAll: string;
+    creditLine: string;
+    creditUsed: string;
+    creditOf: string;
+    refundsTitle: string;
+    refundRequest: string;
+    refundReason: string;
+    refundSubmit: string;
+    refundRequested: string;
+    refundStatusRequested: string;
+    refundStatusProcessed: string;
+    refundStatusRejected: string;
+    statementsTitle: string;
+    statementPeriod: string;
+    statementOpening: string;
+    statementCodNet: string;
+    statementFees: string;
+    statementRefunds: string;
+    statementClosing: string;
+    statementStatus: string;
+  };
 }
 
 export const en: Messages = {
@@ -3125,6 +3288,169 @@ export const en: Messages = {
     noData: "No rows in this range.",
     rowsExported: "rows exported",
   },
+  track: {
+    deliveredByDarb: "delivered by Darb",
+    orderLabel: "Order",
+    statusCreated: "Order confirmed",
+    statusScheduled: "Scheduled",
+    statusDispatching: "Finding your driver",
+    statusAssigned: "Driver on the way to pick up",
+    statusPickedUp: "Out for delivery",
+    statusDelivered: "Delivered",
+    statusCancelled: "Cancelled",
+    statusFailed: "Delivery attempt failed",
+    statusReturned: "Returned to store",
+    etaLabel: "Arriving in about",
+    minutes: "min",
+    yourDriver: "Your driver",
+    callDriver: "Call driver",
+    liveMap: "Live location",
+    timelinePlaced: "Order placed",
+    timelineAssigned: "Driver assigned",
+    timelinePickedUp: "Picked up",
+    timelineDelivered: "Delivered",
+    rateTitle: "Rate your delivery",
+    ratePlaceholder: "Add a comment (optional)",
+    rateSubmit: "Submit rating",
+    rateThanks: "Thank you for your feedback!",
+    tipTitle: "Tip your driver",
+    tipSubtitle: "100% goes to the driver.",
+    tipCustom: "Custom amount (KWD)",
+    tipSubmit: "Send tip",
+    tipThanks: "Tip sent. Thank you!",
+    cancelTitle: "Need to cancel?",
+    cancelReason: "Tell us why (optional)",
+    cancelSubmit: "Request cancellation",
+    cancelSent: "Request sent. Support will contact you shortly.",
+    notFoundTitle: "Order not found",
+    notFoundBody: "This tracking link is invalid or has expired.",
+    loading: "Loading your order…",
+    errorGeneric: "Something went wrong. Pull to retry.",
+  },
+  fleetPortal: {
+    navSection: "Fleet portal",
+    navRoster: "Roster",
+    navScorecard: "Scorecard",
+    navPayouts: "Payouts",
+    rosterTitle: "Driver roster",
+    rosterSubtitle: "Your drivers, their documents and ratings.",
+    driverName: "Driver",
+    phone: "Phone",
+    vehicle: "Vehicle",
+    status: "Status",
+    tier: "Tier",
+    rating: "Rating",
+    docs: "Documents",
+    throttled: "Throttled",
+    scorecardTitle: "Performance scorecard",
+    onTimeRate: "On-time rate",
+    acceptanceRate: "Acceptance rate",
+    utilisation: "Utilisation",
+    deliveredOrders: "Delivered orders",
+    onlineHours: "Online hours",
+    contractedHours: "Contracted hours",
+    payoutsTitle: "Payout statements",
+    period: "Period",
+    orders: "Orders",
+    feePerOrder: "Fee/order",
+    total: "Total",
+    statementStatus: "Status",
+    earningsTitle: "Earnings this month",
+    noStatements: "No statements yet. They generate on the 1st of each month.",
+    disciplineBanner: "Your fleet is under review. Contact Darb operations.",
+  },
+  cockpit: {
+    navSection: "Cockpit",
+    navTitle: "Founder cockpit",
+    title: "Founder cockpit",
+    subtitle: "Live operation, money and cash position.",
+    activeOrders: "Active orders",
+    deliveredToday: "Delivered today",
+    onTimeToday: "On-time today",
+    feesToday: "Fees today",
+    fleetCostToday: "Fleet cost today",
+    netMarginToday: "Net margin today",
+    tipsToday: "Tips today",
+    driversOnline: "Drivers online",
+    driversBusy: "Drivers busy",
+    cashInField: "Cash in the field",
+    depositedToday: "Deposited today",
+    clearingBalance: "Hub cash (clearing)",
+    zonesTitle: "On-time by zone (today)",
+    zoneName: "Zone",
+    zoneDelivered: "Delivered",
+    zoneOnTime: "On-time",
+    fleetsTitle: "Fleet partners",
+    fleetName: "Fleet",
+    fleetOnline: "Online",
+    fleetCommitted: "Committed",
+    fleetDelivered: "Delivered today",
+    fleetDiscipline: "Discipline",
+    alertsTitle: "Threshold alerts",
+    noAlerts: "All clear. No thresholds breached.",
+    exportCsv: "Export CSV",
+    refreshed: "Refreshed",
+  },
+  campaigns: {
+    title: "Campaigns",
+    subtitle: "WhatsApp campaigns for your customers, powered by Pair AI.",
+    pendingApproval: "Pending WhatsApp Business approval",
+    pendingBody: "Sending activates the moment the WhatsApp Business account clears. You can prepare drafts now.",
+    templatesTitle: "Templates",
+    templateWinback: "Win back lapsed customers",
+    templateWinbackBody: "A gentle nudge to customers who have not ordered in 30 days.",
+    templateNewArrival: "New arrivals",
+    templateNewArrivalBody: "Announce new products to your repeat buyers.",
+    templateWeekend: "Weekend offer",
+    templateWeekendBody: "A time-boxed weekend promotion to your full list.",
+    schedule: "Schedule",
+    audience: "Audience",
+    audienceLapsed: "Lapsed customers (30d+)",
+    audienceAll: "All customers",
+    audienceLoyal: "Loyal customers (5+ orders)",
+    saveDraft: "Save draft",
+    send: "Send",
+    drafts: "Drafts",
+    noDrafts: "No drafts yet. Pick a template to start.",
+    draftSaved: "Draft saved.",
+  },
+  vendorExtra: {
+    navAnalytics: "Analytics",
+    navCampaigns: "Campaigns",
+    analyticsTitle: "Analytics",
+    analyticsSubtitle: "Your delivery performance and customers.",
+    ordersTotal: "Orders",
+    revenueTotal: "Order value",
+    avgOrderValue: "Avg order value",
+    repeatBuyers: "Repeat buyers",
+    topCustomersTitle: "Top customers",
+    customerPhone: "Customer",
+    customerOrders: "Orders",
+    customerTotal: "Total (KWD)",
+    byDayTitle: "Orders by day",
+    exportCsv: "Export CSV",
+    printPdf: "Print / PDF",
+    branchAll: "All branches",
+    creditLine: "Credit line",
+    creditUsed: "used",
+    creditOf: "of",
+    refundsTitle: "Refunds",
+    refundRequest: "Request refund",
+    refundReason: "Reason for the refund",
+    refundSubmit: "Submit request",
+    refundRequested: "Refund requested. Darb finance will review it.",
+    refundStatusRequested: "Requested",
+    refundStatusProcessed: "Processed",
+    refundStatusRejected: "Rejected",
+    statementsTitle: "Monthly statements",
+    statementPeriod: "Period",
+    statementOpening: "Opening",
+    statementCodNet: "COD net",
+    statementFees: "Fees",
+    statementRefunds: "Refunds",
+    statementClosing: "Closing",
+    statementStatus: "Status",
+  },
 };
 
 export const ar: Messages = {
@@ -4686,6 +5012,169 @@ export const ar: Messages = {
     exportFailed: "فشل التصدير — جرّب فترة أضيق.",
     noData: "لا توجد صفوف في هذه الفترة.",
     rowsExported: "صفاً تم تصديره",
+  },
+  track: {
+    deliveredByDarb: "التوصيل عبر درب",
+    orderLabel: "الطلب",
+    statusCreated: "تم تأكيد الطلب",
+    statusScheduled: "مجدول",
+    statusDispatching: "نبحث عن سائق لك",
+    statusAssigned: "السائق في طريقه للاستلام",
+    statusPickedUp: "الطلب في الطريق إليك",
+    statusDelivered: "تم التوصيل",
+    statusCancelled: "ملغي",
+    statusFailed: "تعذر التوصيل",
+    statusReturned: "أعيد إلى المتجر",
+    etaLabel: "يصل خلال حوالي",
+    minutes: "دقيقة",
+    yourDriver: "سائقك",
+    callDriver: "اتصل بالسائق",
+    liveMap: "الموقع المباشر",
+    timelinePlaced: "تم الطلب",
+    timelineAssigned: "تم تعيين السائق",
+    timelinePickedUp: "تم الاستلام",
+    timelineDelivered: "تم التوصيل",
+    rateTitle: "قيّم التوصيل",
+    ratePlaceholder: "أضف تعليقاً (اختياري)",
+    rateSubmit: "إرسال التقييم",
+    rateThanks: "شكراً لتقييمك!",
+    tipTitle: "أكرم السائق",
+    tipSubtitle: "المبلغ كاملاً يذهب للسائق.",
+    tipCustom: "مبلغ آخر (د.ك)",
+    tipSubmit: "إرسال الإكرامية",
+    tipThanks: "تم إرسال الإكرامية. شكراً لك!",
+    cancelTitle: "تريد الإلغاء؟",
+    cancelReason: "أخبرنا بالسبب (اختياري)",
+    cancelSubmit: "طلب إلغاء",
+    cancelSent: "تم إرسال الطلب. سيتواصل معك الدعم قريباً.",
+    notFoundTitle: "الطلب غير موجود",
+    notFoundBody: "رابط التتبع غير صالح أو منتهي.",
+    loading: "جارٍ تحميل طلبك…",
+    errorGeneric: "حدث خطأ ما. حاول مرة أخرى.",
+  },
+  fleetPortal: {
+    navSection: "بوابة الأسطول",
+    navRoster: "السائقون",
+    navScorecard: "الأداء",
+    navPayouts: "المستحقات",
+    rosterTitle: "قائمة السائقين",
+    rosterSubtitle: "سائقوك ووثائقهم وتقييماتهم.",
+    driverName: "السائق",
+    phone: "الهاتف",
+    vehicle: "المركبة",
+    status: "الحالة",
+    tier: "الفئة",
+    rating: "التقييم",
+    docs: "الوثائق",
+    throttled: "مقيد",
+    scorecardTitle: "بطاقة الأداء",
+    onTimeRate: "نسبة الالتزام بالوقت",
+    acceptanceRate: "نسبة القبول",
+    utilisation: "نسبة الاستغلال",
+    deliveredOrders: "الطلبات الموصلة",
+    onlineHours: "ساعات الاتصال",
+    contractedHours: "الساعات المتعاقد عليها",
+    payoutsTitle: "كشوف المستحقات",
+    period: "الفترة",
+    orders: "الطلبات",
+    feePerOrder: "الأجر لكل طلب",
+    total: "الإجمالي",
+    statementStatus: "الحالة",
+    earningsTitle: "أرباح هذا الشهر",
+    noStatements: "لا توجد كشوف بعد. تصدر أول كل شهر.",
+    disciplineBanner: "أسطولك قيد المراجعة. تواصل مع عمليات درب.",
+  },
+  cockpit: {
+    navSection: "غرفة القيادة",
+    navTitle: "لوحة المؤسسين",
+    title: "لوحة المؤسسين",
+    subtitle: "التشغيل المباشر والأموال ووضع النقد.",
+    activeOrders: "الطلبات النشطة",
+    deliveredToday: "الموصلة اليوم",
+    onTimeToday: "الالتزام بالوقت اليوم",
+    feesToday: "رسوم اليوم",
+    fleetCostToday: "تكلفة الأسطول اليوم",
+    netMarginToday: "صافي الهامش اليوم",
+    tipsToday: "إكراميات اليوم",
+    driversOnline: "سائقون متصلون",
+    driversBusy: "سائقون مشغولون",
+    cashInField: "النقد بحوزة السائقين",
+    depositedToday: "المودع اليوم",
+    clearingBalance: "نقد المركز (تسوية)",
+    zonesTitle: "الالتزام بالوقت حسب المنطقة (اليوم)",
+    zoneName: "المنطقة",
+    zoneDelivered: "موصلة",
+    zoneOnTime: "في الوقت",
+    fleetsTitle: "شركات التوصيل",
+    fleetName: "الأسطول",
+    fleetOnline: "متصل",
+    fleetCommitted: "متعاقد عليه",
+    fleetDelivered: "موصلة اليوم",
+    fleetDiscipline: "الانضباط",
+    alertsTitle: "تنبيهات الحدود",
+    noAlerts: "كل شيء سليم. لا تجاوزات.",
+    exportCsv: "تصدير CSV",
+    refreshed: "آخر تحديث",
+  },
+  campaigns: {
+    title: "الحملات",
+    subtitle: "حملات واتساب لعملائك، مدعومة من Pair AI.",
+    pendingApproval: "بانتظار اعتماد واتساب للأعمال",
+    pendingBody: "يتفعل الإرسال فور اعتماد حساب واتساب للأعمال. يمكنك تجهيز المسودات الآن.",
+    templatesTitle: "القوالب",
+    templateWinback: "استرجاع العملاء المنقطعين",
+    templateWinbackBody: "تذكير لطيف للعملاء الذين لم يطلبوا منذ 30 يوماً.",
+    templateNewArrival: "وصل حديثاً",
+    templateNewArrivalBody: "أعلن عن منتجاتك الجديدة لعملائك الدائمين.",
+    templateWeekend: "عرض نهاية الأسبوع",
+    templateWeekendBody: "عرض محدود لنهاية الأسبوع لكامل قائمتك.",
+    schedule: "الجدولة",
+    audience: "الجمهور",
+    audienceLapsed: "عملاء منقطعون (+30 يوماً)",
+    audienceAll: "جميع العملاء",
+    audienceLoyal: "عملاء أوفياء (+5 طلبات)",
+    saveDraft: "حفظ مسودة",
+    send: "إرسال",
+    drafts: "المسودات",
+    noDrafts: "لا مسودات بعد. اختر قالباً للبدء.",
+    draftSaved: "تم حفظ المسودة.",
+  },
+  vendorExtra: {
+    navAnalytics: "التحليلات",
+    navCampaigns: "الحملات",
+    analyticsTitle: "التحليلات",
+    analyticsSubtitle: "أداء التوصيل وعملاؤك.",
+    ordersTotal: "الطلبات",
+    revenueTotal: "قيمة الطلبات",
+    avgOrderValue: "متوسط قيمة الطلب",
+    repeatBuyers: "عملاء متكررون",
+    topCustomersTitle: "أفضل العملاء",
+    customerPhone: "العميل",
+    customerOrders: "الطلبات",
+    customerTotal: "الإجمالي (د.ك)",
+    byDayTitle: "الطلبات حسب اليوم",
+    exportCsv: "تصدير CSV",
+    printPdf: "طباعة / PDF",
+    branchAll: "جميع الفروع",
+    creditLine: "خط الائتمان",
+    creditUsed: "مستخدم",
+    creditOf: "من",
+    refundsTitle: "المبالغ المستردة",
+    refundRequest: "طلب استرداد",
+    refundReason: "سبب الاسترداد",
+    refundSubmit: "إرسال الطلب",
+    refundRequested: "تم طلب الاسترداد. ستراجعه مالية درب.",
+    refundStatusRequested: "مطلوب",
+    refundStatusProcessed: "تمت المعالجة",
+    refundStatusRejected: "مرفوض",
+    statementsTitle: "الكشوف الشهرية",
+    statementPeriod: "الفترة",
+    statementOpening: "الافتتاحي",
+    statementCodNet: "صافي الدفع النقدي",
+    statementFees: "الرسوم",
+    statementRefunds: "الاستردادات",
+    statementClosing: "الختامي",
+    statementStatus: "الحالة",
   },
 };
 
