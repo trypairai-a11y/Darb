@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { Alert, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import * as Device from "expo-device";
 import * as Location from "expo-location";
@@ -9,6 +9,7 @@ import { ListGroup, ListRow, NavBar, Screen } from "../src/components/hig";
 import { t as tr } from "../src/i18n/strings";
 import { PermissionRationale } from "../src/components/PermissionRationale";
 import { stopOfferChannel } from "../src/services/offerChannel";
+import { confirmAction } from "../src/utils/alert";
 import { useDriverStore } from "../src/store/driverStore";
 import { useLanguageStore } from "../src/store/languageStore";
 import { useTheme, type Palette, space, radius, continuous, shadow } from "../src/theme";
@@ -28,6 +29,13 @@ export default function SettingsScreen() {
 
   const checkPermissions = useCallback(async () => {
     try {
+      if (Platform.OS === "web") {
+        // Browsers only have a foreground location grant; push doesn't exist.
+        const fg = await Location.getForegroundPermissionsAsync();
+        setLocationGranted(fg.status === "granted");
+        setNotifGranted(null);
+        return;
+      }
       const [fg, bg] = await Promise.all([
         Location.getForegroundPermissionsAsync(),
         Location.getBackgroundPermissionsAsync(),
@@ -51,22 +59,23 @@ export default function SettingsScreen() {
   );
 
   const handleSignOut = useCallback(() => {
-    Alert.alert(tr("settings.sign_out_title"), tr("settings.sign_out_body"), [
-      { text: tr("common.cancel"), style: "cancel" },
-      {
-        text: tr("settings.sign_out"),
-        style: "destructive",
-        onPress: async () => {
+    // confirmAction falls back to window.confirm on web (RNW Alert is a no-op).
+    confirmAction({
+      title: tr("settings.sign_out_title"),
+      message: tr("settings.sign_out_body"),
+      confirmLabel: tr("settings.sign_out"),
+      cancelLabel: tr("common.cancel"),
+      destructive: true,
+      onConfirm: () => {
+        void (async () => {
           stopOfferChannel();
-          if (Platform.OS !== "web") {
-            try { const { stopBeacon } = await import("../src/services/locationService"); await stopBeacon(); } catch {}
-          }
+          try { const { stopBeacon } = await import("../src/services/locationService"); await stopBeacon(); } catch {}
           try { const { unenroll } = await import("../src/api/client"); await unenroll(); } catch {}
           reset();
           router.replace("/enrollment");
-        },
+        })();
       },
-    ]);
+    });
   }, [reset, router]);
 
   const initials =

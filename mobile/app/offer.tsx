@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BackHandler, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { BackHandler, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useRouter } from "expo-router";
 import Svg, { Circle } from "react-native-svg";
 import { Audio } from "expo-av";
@@ -64,7 +64,9 @@ export default function OfferScreen() {
   }, [offer, offerResolved, dismiss]);
 
   // Android back — a dispatch offer cannot be dismissed by accident.
+  // Web: BackHandler is a react-native-web stub — skip it.
   useEffect(() => {
+    if (Platform.OS === "web") return;
     const sub = BackHandler.addEventListener("hardwareBackPress", () => true);
     return () => sub.remove();
   }, []);

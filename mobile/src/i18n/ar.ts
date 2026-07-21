@@ -174,6 +174,10 @@ const AR: Record<string, string> = {
   "points.error_sub": "تأكد من الاتصال وحاول مرة ثانية.",
   "points.updated": "آخر تحديث {date}",
 
+  // ─── Web (browser build) ───
+  "web.keep_tab_open": "أبقِ هذه الصفحة مفتوحة أثناء الوردية. يتوقف تتبع GPS عند إخفاء الصفحة أو إغلاقها.",
+  "web.location_denied": "الموقع محظور في المتصفح. اسمح بالوصول إلى الموقع لهذا الموقع حتى يتمكن المكتب من تتبع ورديتك.",
+
   // ─── Settings ───
   "settings.title": "الإعدادات",
   "settings.profile": "السائق",

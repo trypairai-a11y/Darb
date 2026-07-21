@@ -182,6 +182,10 @@ const EN: Record<string, string> = {
   "points.error_sub": "Check your connection and try again.",
   "points.updated": "Updated {date}",
 
+  // ─── Web (browser build) ───
+  "web.keep_tab_open": "Keep this tab open while on shift. GPS tracking pauses when the tab is hidden or closed.",
+  "web.location_denied": "Location is blocked in your browser. Allow location access for this site so the office can track your shift.",
+
   // ─── Settings ───
   "settings.title": "Settings",
   "settings.profile": "Driver",

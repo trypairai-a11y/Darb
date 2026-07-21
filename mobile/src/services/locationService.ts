@@ -19,17 +19,21 @@
  *   that runs before any React tree is mounted.
  */
 
+import { Platform } from "react-native";
 import * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
 import { enqueueGpsPoint, flushPendingPoints } from "./outbox";
 import { getLastTab } from "./platformGuess";
 
 const LOCATION_TASK = "darb-background-location";
+const isWeb = Platform.OS === "web";
 
 // MUST be at module top-level — see header doc. Anti-pattern alarm: do not move this
 // inside useEffect, useLayoutEffect, or any conditional branch. The OS rehydrates the
 // task by name; module-load is the only safe time to register.
-TaskManager.defineTask(LOCATION_TASK, async ({ data, error }: any) => {
+// Web: TaskManager has no browser implementation — skipped entirely; the web
+// beacon lives in webLocationService.ts (navigator.geolocation.watchPosition).
+if (!isWeb) TaskManager.defineTask(LOCATION_TASK, async ({ data, error }: any) => {
   if (error) return;
   if (!data) return;
   const { locations } = data as { locations: Location.LocationObject[] };
@@ -75,6 +79,13 @@ export type StartBeaconResult =
   | { ok: false; reason: "foreground_denied" | "background_denied" | "unknown" };
 
 export async function startBeacon(): Promise<StartBeaconResult> {
+  // Web: no TaskManager, no background permission — delegate to the
+  // watchPosition-based beacon which feeds the same outbox/POST pipeline.
+  if (isWeb) {
+    const { startWebBeacon } = await import("./webLocationService");
+    return startWebBeacon();
+  }
+
   // Step 1: ask for WhenInUse first. iOS requires this — asking for Always without
   // a prior WhenInUse grant on iOS 14+ silently denies. Android allows the upgrade
   // either way but matching iOS keeps the prompt sequence identical cross-platform.
@@ -116,6 +127,10 @@ export async function startBeacon(): Promise<StartBeaconResult> {
 }
 
 export async function stopBeacon(): Promise<void> {
+  if (isWeb) {
+    const { stopWebBeacon } = await import("./webLocationService");
+    return stopWebBeacon();
+  }
   // Drain the outbox before stopping — last-mile flush so we don't leave 1-2 stale
   // points sitting in SQLite for the next shift. Best-effort: if the network is down
   // the rows stay queued and the next startBeacon picks them up.

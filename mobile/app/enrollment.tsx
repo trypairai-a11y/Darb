@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
-import { View, Text, TextInput, StyleSheet, Alert, Platform } from "react-native";
+import { View, Text, TextInput, StyleSheet, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import * as Device from "expo-device";
 import { register } from "../src/api/client";
 import { Button, Screen } from "../src/components/hig";
 import { t as tr } from "../src/i18n/strings";
+import { showAlert } from "../src/utils/alert";
 import { useTheme, type Palette, space, radius, continuous, fontFamily } from "../src/theme";
 
 export default function EnrollmentScreen() {
@@ -20,14 +21,15 @@ export default function EnrollmentScreen() {
     try {
       await register(nextCode.trim(), {
         model: Device.modelName || "unknown",
-        osVersion: `${Platform.OS} ${Platform.Version}`,
+        // Platform.Version is undefined on web — send a stable label instead.
+        osVersion: `${Platform.OS} ${Platform.Version ?? "web"}`,
         appVersion: "1.0.0",
       });
       // Back through the boot gate: it hydrates /state and routes to the
       // right surface (delivery flow if an order is already assigned).
       router.replace("/");
     } catch (err: any) {
-      Alert.alert(tr("enroll.failed_title"), err.message || tr("enroll.failed_body"));
+      showAlert(tr("enroll.failed_title"), err.message || tr("enroll.failed_body"));
     }
     setLoading(false);
   }

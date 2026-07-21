@@ -19,7 +19,7 @@
 
 import * as Application from "expo-application";
 import * as Battery from "expo-battery";
-import * as SecureStore from "expo-secure-store";
+import * as SecureStore from "./deviceStorage";
 import { heartbeat } from "../api/client";
 import { getLastTab } from "./platformGuess";
 

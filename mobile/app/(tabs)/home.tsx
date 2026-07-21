@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Alert, Animated, Easing, Linking, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View,
+  Animated, Easing, Linking, Platform, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import * as Location from "expo-location";
@@ -9,6 +9,8 @@ import { Card, Screen } from "../../src/components/hig";
 import { formatKwd } from "../../src/i18n/format";
 import { t as tr } from "../../src/i18n/strings";
 import { PermissionRationale } from "../../src/components/PermissionRationale";
+import { WebShiftBanner } from "../../src/components/WebShiftBanner";
+import { showAlert } from "../../src/utils/alert";
 import { hydrateNow } from "../../src/services/offerChannel";
 import { startBeacon, stopBeacon } from "../../src/services/locationService";
 import { registerForPushNotifications } from "../../src/services/pushNotifications";
@@ -67,6 +69,12 @@ export default function HomeScreen() {
 
   const checkPermissions = useCallback(async () => {
     try {
+      if (Platform.OS === "web") {
+        // Browsers only have a foreground grant — background is out of scope.
+        const fg = await Location.getForegroundPermissionsAsync();
+        setLocationGranted(fg.status === "granted");
+        return;
+      }
       const [fg, bg] = await Promise.all([
         Location.getForegroundPermissionsAsync(),
         Location.getBackgroundPermissionsAsync(),
@@ -98,7 +106,7 @@ export default function HomeScreen() {
             : res.reason === "ACTIVE_ORDER"
               ? tr("home.busy_hint")
               : res.reason ?? "";
-        Alert.alert(tr("home.availability_error"), msg);
+        showAlert(tr("home.availability_error"), msg);
         return;
       }
       if (next === "ONLINE") {
@@ -168,6 +176,9 @@ export default function HomeScreen() {
             <Settings size={20} color={c.label} />
           </TouchableOpacity>
         </View>
+
+        {/* Web-only: keep-tab-open / location-blocked advisory while on shift */}
+        <WebShiftBanner />
 
         {lockout.active ? (
           <View style={styles.lockout}>

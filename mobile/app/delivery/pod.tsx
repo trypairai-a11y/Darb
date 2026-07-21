@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator, Image, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View,
+  ActivityIndicator, Image, Platform, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View,
 } from "react-native";
 import { Redirect, useRouter } from "expo-router";
 import { CameraView, useCameraPermissions } from "expo-camera";
@@ -14,6 +14,7 @@ import { formatKwd } from "../../src/i18n/format";
 import { t as tr } from "../../src/i18n/strings";
 import { enqueueEvent, flushEventOutbox } from "../../src/services/eventOutbox";
 import { uploadDeliveryPhoto } from "../../src/services/photoService";
+import { pickWebPhoto } from "../../src/utils/webImagePicker";
 import { hydrateNow } from "../../src/services/offerChannel";
 import { useDriverStore } from "../../src/store/driverStore";
 import { useTheme, type Palette, space, radius, continuous, shadow } from "../../src/theme";
@@ -121,6 +122,13 @@ export default function PodScreen() {
   }, [order, pin, submitting, codGateOpen, pinAvailable, codAmount, pinMisses, setWallet, finish]);
 
   const capturePhoto = useCallback(async () => {
+    // Web: skip the in-app camera entirely — a file input with
+    // capture="environment" opens the phone-browser's native camera and
+    // degrades to a file picker on desktop. Feeds the same photoUri state.
+    if (Platform.OS === "web") {
+      pickWebPhoto(setPhotoUri);
+      return;
+    }
     if (!cameraPermission?.granted) {
       const res = await requestCameraPermission();
       if (!res.granted) return;
@@ -172,14 +180,18 @@ export default function PodScreen() {
         // Offline (or upload failed): persist the photo durably — the cache
         // dir can be purged before we get signal again — and queue a POD row.
         // The outbox flush replays presign → PUT → /pod until it lands.
+        // Web: no FileSystem — keep the blob/object URI (valid for this tab's
+        // lifetime; a reload before sync loses the photo, retake required).
         let durableUri = photoUri;
-        try {
-          const dir = `${FileSystem.documentDirectory}pod/`;
-          await FileSystem.makeDirectoryAsync(dir, { intermediates: true }).catch(() => {});
-          durableUri = `${dir}${order.id}.jpg`;
-          await FileSystem.copyAsync({ from: photoUri, to: durableUri });
-        } catch {
-          durableUri = photoUri;
+        if (Platform.OS !== "web") {
+          try {
+            const dir = `${FileSystem.documentDirectory}pod/`;
+            await FileSystem.makeDirectoryAsync(dir, { intermediates: true }).catch(() => {});
+            durableUri = `${dir}${order.id}.jpg`;
+            await FileSystem.copyAsync({ from: photoUri, to: durableUri });
+          } catch {
+            durableUri = photoUri;
+          }
         }
         await enqueueEvent("POD", `pod:${order.id}`, {
           orderId: order.id,

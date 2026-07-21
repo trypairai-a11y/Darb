@@ -60,6 +60,12 @@ export function availableNavApps(platform: string = Platform.OS): NavApp[] {
 
 export async function openNav(app: NavApp, target: NavTarget): Promise<void> {
   const { primary, fallback } = buildNavLink(app, target);
+  // Web: custom app schemes open blank tabs — always use the https fallback,
+  // which mobile browsers hand off to the installed maps app anyway.
+  if (Platform.OS === "web") {
+    await Linking.openURL(fallback).catch(() => {});
+    return;
+  }
   try {
     const canOpen = await Linking.canOpenURL(primary);
     await Linking.openURL(canOpen ? primary : fallback);

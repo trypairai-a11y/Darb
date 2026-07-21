@@ -10,6 +10,7 @@ import { formatClock, formatKwd } from "../../src/i18n/format";
 import { t as tr } from "../../src/i18n/strings";
 import { enqueueOrderStatus, flushEventOutbox } from "../../src/services/eventOutbox";
 import { availableNavApps, openNav, type NavApp } from "../../src/services/navLinks";
+import { WebShiftBanner } from "../../src/components/WebShiftBanner";
 import { STAGE_ORDER, nextStage, stageIndex, useDriverStore } from "../../src/store/driverStore";
 import { remainingMsSigned } from "../../src/utils/countdown";
 import { useTheme, type Palette, space, radius, continuous, shadow } from "../../src/theme";
@@ -124,6 +125,7 @@ export default function DeliveryScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <WebShiftBanner />
         <View style={styles.headerRow}>
           <View style={{ flex: 1 }}>
             <Text style={[t.footnote, { color: c.tint, letterSpacing: 1.4, textTransform: "uppercase" }]}>

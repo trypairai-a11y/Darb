@@ -3,13 +3,21 @@ import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { registerPushToken } from "../api/client";
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+// Web: there is NO push channel — offer delivery relies on the offerChannel
+// foreground poll (4s hunting / 12s active). Everything here no-ops cleanly.
+if (Platform.OS !== "web") {
+  try {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+      }),
+    });
+  } catch {
+    /* never let module load crash the app */
+  }
+}
 
 /**
  * Android channels:
@@ -40,6 +48,10 @@ async function ensureAndroidChannels(): Promise<void> {
 }
 
 export async function registerForPushNotifications(): Promise<{ ok: boolean; token?: string; reason?: string }> {
+  if (Platform.OS === "web") {
+    // No Expo push on web — polling is the delivery channel.
+    return { ok: false, reason: "web_unsupported" };
+  }
   if (!Device.isDevice) {
     return { ok: false, reason: "physical_device_required" };
   }
@@ -80,6 +92,7 @@ function dataFrom(notification: Notifications.Notification): PushData {
  * Returns an unsubscribe function.
  */
 export function addPushWakeupListener(onWake: (data: PushData) => void): () => void {
+  if (Platform.OS === "web") return () => {};
   const received = Notifications.addNotificationReceivedListener((notification) => {
     onWake(dataFrom(notification));
   });

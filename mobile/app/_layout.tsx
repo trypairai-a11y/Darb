@@ -3,7 +3,7 @@ import { AppState, I18nManager, Platform, View, type AppStateStatus } from "reac
 import { Stack, usePathname, useRouter } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import * as SecureStore from "expo-secure-store";
+import * as SecureStore from "../src/services/deviceStorage";
 import { useFonts, BricolageGrotesque_700Bold, BricolageGrotesque_800ExtraBold } from "@expo-google-fonts/bricolage-grotesque";
 import { Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold, Manrope_800ExtraBold } from "@expo-google-fonts/manrope";
 import { setLastTab, type PlatformHint } from "../src/services/platformGuess";
@@ -70,6 +70,16 @@ function DeliveryLoopController() {
     return unsub;
   }, []);
 
+  // Web GPS lifeline: wire the watchPosition beacon to availability +
+  // visibilitychange so a page reload while ONLINE resumes tracking. No-op on
+  // native (the TaskManager beacon owns that path).
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+    import("../src/services/webLocationService")
+      .then((m) => m.initWebLocationService())
+      .catch(() => {});
+  }, []);
+
   // Offer → present the locked modal.
   useEffect(() => {
     const path = pathnameRef.current;
@@ -112,7 +122,7 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (Platform.OS === "web") return;
+    // deviceStorage works on web too (localStorage) — no platform guard needed.
     let cancelled = false;
     SecureStore.getItemAsync("driver_platform")
       .then((p) => { if (!cancelled && isPlatformHint(p)) setLastTab(p); })

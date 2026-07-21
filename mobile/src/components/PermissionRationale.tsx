@@ -35,6 +35,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Platform } from "react-native";
 import * as Location from "expo-location";
 import { startBeacon } from "../services/locationService";
 
@@ -50,6 +51,17 @@ export function PermissionRationale({ visible, onComplete }: PermissionRationale
 
   async function askForeground() {
     setStage("fg-asking");
+
+    // Web: there is no background permission and no "Allow All The Time"
+    // dialog — the browser prompt IS the whole flow. startBeacon() (web path)
+    // triggers it and starts watchPosition on grant.
+    if (Platform.OS === "web") {
+      const result = await startBeacon();
+      setStage("explain");
+      onComplete(result.ok);
+      return;
+    }
+
     const fg = await Location.requestForegroundPermissionsAsync();
     if (fg.status !== "granted") {
       // Reset for next open. Without this, reopening the modal after a denial

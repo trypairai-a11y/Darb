@@ -16,8 +16,9 @@
  *   backend has to mediate — and it's tiny (a signed string).
  */
 
+import { Platform } from "react-native";
 import * as ImageManipulator from "expo-image-manipulator";
-import * as SecureStore from "expo-secure-store";
+import * as SecureStore from "./deviceStorage";
 import { recordDeliveryPhotoMetadata, requestUploadUrl } from "../api/client";
 
 export interface UploadDeliveryPhotoArgs {
@@ -51,10 +52,16 @@ export async function uploadDeliveryPhoto(args: UploadDeliveryPhotoArgs): Promis
   // layer streams the file without round-tripping through JS memory. This is
   // the recommended pattern for image uploads in RN
   // (https://reactnative.dev/docs/network#sending-binary-data).
+  // Web: the RN file descriptor would serialize as "[object Object]" — resolve
+  // the (blob:/data:) URI to a real Blob and PUT that instead.
+  const putBody: any =
+    Platform.OS === "web"
+      ? await (await fetch(compressed.uri)).blob()
+      : ({ uri: compressed.uri, name: "delivery.jpg", type: "image/jpeg" } as any);
   const putResponse = await fetch(presign.url, {
     method: "PUT",
     headers: { "Content-Type": "image/jpeg" },
-    body: { uri: compressed.uri, name: "delivery.jpg", type: "image/jpeg" } as any,
+    body: putBody,
   });
   if (!putResponse.ok) {
     throw new Error(`presigned PUT failed: HTTP ${putResponse.status}`);

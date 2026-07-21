@@ -1,6 +1,32 @@
-import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
+// deviceStorage = SecureStore on native, localStorage on web — expo-secure-store
+// has no web implementation and would break the device-token flow in the browser.
+import * as SecureStore from "../services/deviceStorage";
 
 export const BASE_URL = process.env.EXPO_PUBLIC_API_URL || "https://backend-snowy-ten-52.vercel.app";
+
+/**
+ * Append a photo part to a multipart body.
+ * Native: RN fetch accepts {uri,name,type} descriptors and streams the file.
+ * Web: that descriptor would serialize as "[object Object]" — resolve the
+ * blob/object/data URI to a real Blob and append it as a File instead.
+ */
+async function appendFilePart(
+  formData: FormData,
+  field: string,
+  file: { uri: string; name: string; type: string },
+): Promise<void> {
+  if (Platform.OS === "web") {
+    try {
+      const blob = await (await fetch(file.uri)).blob();
+      formData.append(field, new File([blob], file.name, { type: file.type }));
+      return;
+    } catch {
+      /* fall through — better a broken part than a thrown submit */
+    }
+  }
+  formData.append(field, file as any);
+}
 
 /**
  * ApiError — thrown for non-2xx responses. Carries the HTTP status + the
@@ -147,11 +173,11 @@ export async function uploadSelfie(payload: {
   formData.append("action", payload.type === "clock_in" ? "ACTION_CLOCK_IN" : "ACTION_CLOCK_OUT");
   formData.append("latitude", String(payload.latitude));
   formData.append("longitude", String(payload.longitude));
-  formData.append("selfie", {
+  await appendFilePart(formData, "selfie", {
     uri: payload.imageUri,
     name: `${payload.type}.jpg`,
     type: "image/jpeg",
-  } as any);
+  });
   return agentFetchMultipart("/api/agent/selfie", formData);
 }
 
@@ -272,13 +298,13 @@ export async function submitTicket(payload: {
   formData.append("title", payload.title);
   formData.append("description", payload.description);
   if (payload.priority) formData.append("priority", payload.priority);
-  payload.photos.forEach((photo, i) => {
-    formData.append("photos", {
+  for (const [i, photo] of payload.photos.entries()) {
+    await appendFilePart(formData, "photos", {
       uri: photo.uri,
       name: `photo-${i}.jpg`,
       type: photo.mime ?? "image/jpeg",
-    } as any);
-  });
+    });
+  }
   return agentFetchMultipart<TicketRecord>("/api/agent/tickets", formData);
 }
 
@@ -544,13 +570,13 @@ export async function postIncident(payload: {
   if (payload.lat != null) formData.append("lat", String(payload.lat));
   if (payload.lng != null) formData.append("lng", String(payload.lng));
   if (payload.orderId) formData.append("orderId", payload.orderId);
-  (payload.photos ?? []).slice(0, 3).forEach((photo, i) => {
-    formData.append("photos", {
+  for (const [i, photo] of (payload.photos ?? []).slice(0, 3).entries()) {
+    await appendFilePart(formData, "photos", {
       uri: photo.uri,
       name: `incident-${i}.jpg`,
       type: photo.mime ?? "image/jpeg",
-    } as any);
-  });
+    });
+  }
   return agentFetchMultipart<AgentIncident>("/api/agent/incidents", formData);
 }
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator, Image, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
+  ActivityIndicator, Image, Linking, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { CameraView, useCameraPermissions } from "expo-camera";
@@ -12,6 +12,7 @@ import { getIncident, postIncident, type IncidentCategory } from "../src/api/cli
 import { Button, NavBar, Screen } from "../src/components/hig";
 import { t as tr } from "../src/i18n/strings";
 import { enqueueEvent, flushEventOutbox } from "../src/services/eventOutbox";
+import { pickWebPhoto } from "../src/utils/webImagePicker";
 import { useDriverStore } from "../src/store/driverStore";
 import { useTheme, type Palette, space, radius, continuous, shadow } from "../src/theme";
 
@@ -61,6 +62,13 @@ export default function SosScreen() {
 
   const addPhoto = useCallback(async () => {
     if (photos.length >= 3) return;
+    // Web: native camera via file input (capture="environment"); no CameraView.
+    if (Platform.OS === "web") {
+      pickWebPhoto((uri) => {
+        if (uri) setPhotos((prev) => (prev.length >= 3 ? prev : [...prev, uri]));
+      });
+      return;
+    }
     if (!cameraPermission?.granted) {
       const res = await requestCameraPermission();
       if (!res.granted) return;

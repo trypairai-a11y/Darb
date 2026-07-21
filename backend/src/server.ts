@@ -123,6 +123,13 @@ const vercelAliasAllowlist = new Set<string>([
   "https://frontend-ebon-nine-34.vercel.app",
   "https://pair-darb.vercel.app",
   "https://darbkw.vercel.app",
+  // Persona handles (one frontend app behind them all) + the driver web app.
+  "https://darb-admin.vercel.app",
+  "https://darb-ops.vercel.app",
+  "https://darb-merchant.vercel.app",
+  "https://darb-fleet.vercel.app",
+  "https://darb-track.vercel.app",
+  "https://darb-driver.vercel.app",
 ]);
 
 app.use(cors({

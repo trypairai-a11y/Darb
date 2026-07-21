@@ -18,7 +18,9 @@
  * rewritten with the storage key so a later retry never re-uploads.
  */
 
+import { Platform } from "react-native";
 import * as SQLite from "expo-sqlite";
+import { WebQueue } from "./webQueueStore";
 import {
   isApiError,
   postIncident,
@@ -74,6 +76,16 @@ interface EventRow {
   createdAt: number;
 }
 
+// Web fallback: same public API, storage swapped for a localStorage-persisted
+// queue (expo-sqlite is unavailable in this web setup). Business events keep
+// their no-give-up FIFO semantics; persistence is best effort across reloads.
+const isWeb = Platform.OS === "web";
+let _webQueue: WebQueue | null = null;
+function wq(): WebQueue {
+  if (!_webQueue) _webQueue = new WebQueue("darb-outbox-events");
+  return _webQueue;
+}
+
 let _db: SQLite.SQLiteDatabase | null = null;
 
 async function db(): Promise<SQLite.SQLiteDatabase> {
@@ -95,11 +107,16 @@ async function db(): Promise<SQLite.SQLiteDatabase> {
 }
 
 async function refreshPendingCount(): Promise<number> {
-  const d = await db();
-  const r = await d.getFirstAsync<{ count: number }>(
-    `SELECT COUNT(*) as count FROM event_outbox`,
-  );
-  const count = r?.count ?? 0;
+  let count: number;
+  if (isWeb) {
+    count = wq().count();
+  } else {
+    const d = await db();
+    const r = await d.getFirstAsync<{ count: number }>(
+      `SELECT COUNT(*) as count FROM event_outbox`,
+    );
+    count = r?.count ?? 0;
+  }
   useDriverStore.getState().setPendingEventCount(count);
   return count;
 }
@@ -109,13 +126,17 @@ export async function enqueueEvent(
   idempotencyKey: string,
   payload: EventPayload,
 ): Promise<void> {
-  const d = await db();
-  await d.runAsync(
-    `INSERT OR IGNORE INTO event_outbox (idempotencyKey, kind, payload) VALUES (?, ?, ?)`,
-    idempotencyKey,
-    kind,
-    JSON.stringify(payload),
-  );
+  if (isWeb) {
+    wq().insertIgnore(idempotencyKey, JSON.stringify(payload), kind);
+  } else {
+    const d = await db();
+    await d.runAsync(
+      `INSERT OR IGNORE INTO event_outbox (idempotencyKey, kind, payload) VALUES (?, ?, ?)`,
+      idempotencyKey,
+      kind,
+      JSON.stringify(payload),
+    );
+  }
   await refreshPendingCount();
 }
 
@@ -161,12 +182,16 @@ async function deliverRow(row: EventRow): Promise<void> {
       });
       photoKey = uploaded.key;
       // Persist the key so retries never re-upload the photo.
-      const d = await db();
-      await d.runAsync(
-        `UPDATE event_outbox SET payload = ? WHERE id = ?`,
-        JSON.stringify({ ...p, photoKey }),
-        row.id,
-      );
+      if (isWeb) {
+        wq().setPayload(row.id, JSON.stringify({ ...p, photoKey }));
+      } else {
+        const d = await db();
+        await d.runAsync(
+          `UPDATE event_outbox SET payload = ? WHERE id = ?`,
+          JSON.stringify({ ...p, photoKey }),
+          row.id,
+        );
+      }
     }
     const res = await postPod(p.orderId, {
       method: p.method,
@@ -203,33 +228,39 @@ export async function flushEventOutbox(): Promise<{ flushed: number; remaining: 
   let sawConflict = false;
   let flushed = 0;
   try {
-    const d = await db();
-    const rows = await d.getAllAsync<EventRow>(
-      `SELECT id, idempotencyKey, kind, payload, attempts, createdAt
-         FROM event_outbox
-        ORDER BY id ASC
-        LIMIT 20`,
-    );
+    const d = isWeb ? null : await db();
+    const rows: EventRow[] = isWeb
+      ? (wq().head(20) as EventRow[])
+      : await d!.getAllAsync<EventRow>(
+          `SELECT id, idempotencyKey, kind, payload, attempts, createdAt
+             FROM event_outbox
+            ORDER BY id ASC
+            LIMIT 20`,
+        );
 
     for (const row of rows) {
       try {
         await deliverRow(row);
-        await d.runAsync(`DELETE FROM event_outbox WHERE id = ?`, row.id);
+        if (isWeb) wq().remove([row.id]);
+        else await d!.runAsync(`DELETE FROM event_outbox WHERE id = ?`, row.id);
         flushed++;
       } catch (e: any) {
         if (isApiError(e, 409)) {
           // The server's state machine already moved past this event — drop
           // the row and re-hydrate so the UI adopts the server's truth.
-          await d.runAsync(`DELETE FROM event_outbox WHERE id = ?`, row.id);
+          if (isWeb) wq().remove([row.id]);
+          else await d!.runAsync(`DELETE FROM event_outbox WHERE id = ?`, row.id);
           sawConflict = true;
           continue;
         }
         // Anything else (network, 5xx, 4xx): attempts++ for observability,
         // never give up, and STOP so FIFO order is preserved.
-        await d.runAsync(
-          `UPDATE event_outbox SET attempts = attempts + 1 WHERE id = ?`,
-          row.id,
-        );
+        if (isWeb) wq().bumpAttempts([row.id]);
+        else
+          await d!.runAsync(
+            `UPDATE event_outbox SET attempts = attempts + 1 WHERE id = ?`,
+            row.id,
+          );
         break;
       }
     }
@@ -252,12 +283,17 @@ export async function countPendingEvents(): Promise<number> {
 // ─── Test-only seams (mirrors outbox.ts) ────────────────────────────────────
 
 export async function _resetForTests(): Promise<void> {
-  const d = await db();
-  await d.runAsync(`DELETE FROM event_outbox`);
+  if (isWeb) {
+    wq().clear();
+  } else {
+    const d = await db();
+    await d.runAsync(`DELETE FROM event_outbox`);
+  }
   useDriverStore.getState().setPendingEventCount(0);
 }
 
 export async function _allRowsForTests(): Promise<EventRow[]> {
+  if (isWeb) return wq().all() as EventRow[];
   const d = await db();
   return d.getAllAsync(
     `SELECT id, idempotencyKey, kind, payload, attempts, createdAt FROM event_outbox`,
