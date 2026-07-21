@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Darb 2.0 (PRD DARB2-PRD-001 v3.0) is a zone-based delivery and growth platform for Kuwait, built by Pair. Merchants (pharmacies first, then restaurants and retail) push ready, priced orders via API; Darb owns dispatch, the driver, the delivery, money settlement, and the data layer. Fulfilment is 100% subcontracted delivery companies (fleet partners) governed by Darb. The legacy multi-aggregator platform (Keeta/Talabat/Deliveroo/Americana modules) was deleted in the 2026-07 PRD rebuild; their Prisma models remain in the schema (no destructive migrations), but the code surfaces are gone.
+Darb 2.0 (PRD DARB2-PRD-001 v3.0) is a zone-based delivery and growth platform for Kuwait. Merchants (pharmacies first, then restaurants and retail) push ready, priced orders via API; Darb owns dispatch, the driver, the delivery, money settlement, and the data layer. Fulfilment is 100% subcontracted delivery companies (fleet partners) governed by Darb. The legacy multi-aggregator platform (Keeta/Talabat/Deliveroo/Americana modules) was deleted in the 2026-07 PRD rebuild; their Prisma models remain in the schema (no destructive migrations), but the code surfaces are gone.
 
 ## Tech Stack
 

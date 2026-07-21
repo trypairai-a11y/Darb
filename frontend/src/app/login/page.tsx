@@ -97,7 +97,7 @@ export default function LoginPage() {
           </div>
 
           <div className="flex items-center justify-between text-xs text-white/50">
-            <span>© {new Date().getFullYear()} Darb by Pair</span>
+            <span>© {new Date().getFullYear()} Darb</span>
             <span className="font-mono">Kuwait · v2.0</span>
           </div>
         </div>

@@ -3393,7 +3393,7 @@ export const en: Messages = {
   },
   campaigns: {
     title: "Campaigns",
-    subtitle: "WhatsApp campaigns for your customers, powered by Pair AI.",
+    subtitle: "WhatsApp campaigns for your customers.",
     pendingApproval: "Pending WhatsApp Business approval",
     pendingBody: "Sending activates the moment the WhatsApp Business account clears. You can prepare drafts now.",
     templatesTitle: "Templates",
@@ -5118,7 +5118,7 @@ export const ar: Messages = {
   },
   campaigns: {
     title: "الحملات",
-    subtitle: "حملات واتساب لعملائك، مدعومة من Pair AI.",
+    subtitle: "حملات واتساب لعملائك.",
     pendingApproval: "بانتظار اعتماد واتساب للأعمال",
     pendingBody: "يتفعل الإرسال فور اعتماد حساب واتساب للأعمال. يمكنك تجهيز المسودات الآن.",
     templatesTitle: "القوالب",
