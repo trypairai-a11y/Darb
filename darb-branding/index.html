@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Darb Brand Guidelines</title>
 <meta name="description" content="Darb brand guidelines: identity, colour, typography, product UI system, Arabic/RTL, and accessibility for the Darb Fleet Operating System.">
-<meta name="theme-color" content="#05351D" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0B1410" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#0B1F3C" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A1220" media="(prefers-color-scheme: dark)">
 <meta property="og:title" content="Darb Brand Guidelines v1.0">
 <meta property="og:description" content="The road is the whole idea. Identity, colour, typography, and the product UI system.">
 <meta property="og:type" content="website">
@@ -35,7 +35,43 @@ html{scroll-behavior:smooth;}
   :root:not([data-theme="light"]) .theme-btn .moon{display:block;}
   :root:not([data-theme="light"]) .theme-btn .sun{display:none;}
 }
-@media print{.theme-btn,.rail{display:none !important;}}
+@page{size:A4 portrait;margin:12mm;}
+@page cover{size:A4 portrait;margin:0;}
+@media print{
+  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;
+    box-shadow:none !important;text-shadow:none !important;
+    animation:none !important;transition:none !important;}
+  .theme-btn,.rail{display:none !important;}
+  html,body{background:#fff !important;width:100% !important;}
+  .shell{display:block !important;min-height:0 !important;}
+  .doc{display:block !important;width:100% !important;padding:0 !important;}
+  .wrap{max-width:100% !important;width:100% !important;box-sizing:border-box;margin:0 !important;padding:0 !important;}
+  /* full-bleed cover */
+  .mast{page:cover;box-sizing:border-box;min-height:100vh;
+    margin:0 !important;padding:0 !important;
+    display:flex;flex-direction:column;justify-content:center;
+    break-after:page;page-break-after:always;}
+  .mast .wrap{padding:0 54px !important;max-width:none !important;}
+  /* one continuous document: sections flow page to page at full size, no forced breaks or scaling */
+  .sec{break-before:auto !important;height:auto !important;overflow:visible !important;
+    box-sizing:border-box;margin:0 0 30px !important;padding:0 !important;
+    display:block !important;}
+  .sec.centered{display:block !important;}
+  .sec-fit{transform:none !important;width:100% !important;}
+  .road{display:block !important;margin:24px 0 !important;}
+  .sec-head,h3,h4{break-after:avoid;page-break-after:avoid;}
+  .card,.grid,figure,table,.tw,pre,blockquote,.rules,.rule,.note,.spec,
+  .logo-stage,.appcard,.avatar-row,.pill-row,.fix{break-inside:avoid;page-break-inside:avoid;}
+  img,svg{max-height:180mm;}
+  .foot{display:none !important;}
+}
+/* slide body: single portrait column at the original design proportions, grids kept intact
+   (applied by the fit script so on-screen measuring matches the printed page exactly) */
+.sec-fit.slide{width:703px;}
+.sec-fit.slide .g2{grid-template-columns:1fr 1fr;}
+.sec-fit.slide .g3{grid-template-columns:repeat(3,1fr);}
+.sec-fit.slide .g4{grid-template-columns:repeat(4,1fr);}
+.sec-fit.slide .sub{margin-top:22px;}
 </style>
 </head>
 <body>
@@ -62,8 +98,8 @@ html{scroll-behavior:smooth;}
    Lifted verbatim from frontend/tailwind.config.ts + globals.css.
    This document is built in the system it documents.                */
 :root{
-  --forest:#006838; --forest-hover:#00552E; --forest-deep:#05351D;
-  --forest-300:#82B792; --forest-100:#D7E8DC;
+  --forest:#1D4E89; --forest-hover:#163C6E; --forest-deep:#0B1F3C;
+  --forest-300:#F5C518; --forest-100:#DBE7F5; --dot:#F5C518;
   --bg:#F6F5F3; --surface:#FBFAF8; --card:#FFFFFF;
   --ink:#302E2D; --secondary:#716F6C; --muted:#A99E92; --border:#E4E0DC;
   --sand-200:#EDEAE5; --sand-800:#4A4744;
@@ -80,10 +116,10 @@ html{scroll-behavior:smooth;}
 }
 @media (prefers-color-scheme:dark){
   :root{
-    --bg:#0B1410; --surface:#111A15; --card:#151F19;
-    --ink:#EDEAE5; --secondary:#A99E92; --muted:#716F6C; --border:#26312B;
-    --sand-200:#26312B; --sand-800:#B9AFA3;
-    --forest:#4E9E6E; --forest-hover:#6BB489;
+    --bg:#0A1220; --surface:#101722; --card:#131B27;
+    --ink:#EDEAE5; --secondary:#A99E92; --muted:#716F6C; --border:#232B37;
+    --sand-200:#232B37; --sand-800:#B9AFA3;
+    --forest:#5E93D6; --forest-hover:#7EA9E3;
     --amber:#FBBF24; --amber-bg:#2A2110;
     --red:#F87171; --red-bg:#2C1615;
     --slate2:#8FB0C7; --clay:#DFA184; --link:#8FAEEE;
@@ -92,10 +128,10 @@ html{scroll-behavior:smooth;}
   }
 }
 :root[data-theme="dark"]{
-  --bg:#0B1410; --surface:#111A15; --card:#151F19;
-  --ink:#EDEAE5; --secondary:#A99E92; --muted:#716F6C; --border:#26312B;
-  --sand-200:#26312B; --sand-800:#B9AFA3;
-  --forest:#4E9E6E; --forest-hover:#6BB489;
+  --bg:#0A1220; --surface:#101722; --card:#131B27;
+  --ink:#EDEAE5; --secondary:#A99E92; --muted:#716F6C; --border:#232B37;
+  --sand-200:#232B37; --sand-800:#B9AFA3;
+  --forest:#5E93D6; --forest-hover:#7EA9E3;
   --amber:#FBBF24; --amber-bg:#2A2110;
   --red:#F87171; --red-bg:#2C1615;
   --slate2:#8FB0C7; --clay:#DFA184; --link:#8FAEEE;
@@ -106,7 +142,7 @@ html{scroll-behavior:smooth;}
   --bg:#F6F5F3; --surface:#FBFAF8; --card:#FFFFFF;
   --ink:#302E2D; --secondary:#716F6C; --muted:#A99E92; --border:#E4E0DC;
   --sand-200:#EDEAE5; --sand-800:#4A4744;
-  --forest:#006838; --forest-hover:#00552E;
+  --forest:#1D4E89; --forest-hover:#163C6E;
   --amber:#B45309; --amber-bg:#FFFBEB;
   --red:#B91C1C; --red-bg:#FEF2F2;
   --slate2:#27455C; --clay:#C57B59; --link:#3860BE;
@@ -144,16 +180,16 @@ a{color:inherit;}
 .rail nav{display:flex;flex-direction:column;gap:1px;padding:0 12px;}
 .rail-sec{
   font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;
-  color:#5E7A69;padding:20px 10px 7px;
+  color:#5E6E86;padding:20px 10px 7px;
 }
 .rail a{
   display:flex;gap:10px;align-items:baseline;
   padding:7px 10px;border-radius:8px;text-decoration:none;
-  font-size:13.5px;color:#C3D2C8;
+  font-size:13.5px;color:#C0CCDD;
   transition:background 200ms var(--ease),color 200ms var(--ease);
 }
 .rail a:hover{background:rgba(255,255,255,.07);color:#fff;}
-.rail a .n{font-family:var(--mono);font-size:10px;color:#5E7A69;flex:0 0 16px;}
+.rail a .n{font-family:var(--mono);font-size:10px;color:#5E6E86;flex:0 0 16px;}
 
 .doc{flex:1 1 auto;min-width:0;padding:0 0 120px;}
 .wrap{max-width:860px;margin:0 auto;padding:0 48px;}
@@ -175,12 +211,12 @@ a{color:inherit;}
 }
 .mast h1 em{font-style:normal;color:var(--forest-300);}
 .mast-lede{
-  font-size:17.5px;line-height:1.62;color:#B5C5BB;max-width:52ch;
+  font-size:17.5px;line-height:1.62;color:#AAB7CC;max-width:52ch;
 }
 .mast-meta{
   display:flex;flex-wrap:wrap;gap:0 34px;margin-top:40px;
   padding-top:24px;border-top:1px solid rgba(237,234,229,.16);
-  font-family:var(--mono);font-size:11px;color:#8FA697;
+  font-family:var(--mono);font-size:11px;color:#93A4C0;
 }
 .mast-meta b{display:block;color:#EDEAE5;font-weight:400;margin-top:3px;}
 
@@ -409,11 +445,11 @@ em{font-style:normal;font-weight:700;}
 <aside class="rail">
   <div class="rail-brand">
     <svg width="34" height="34" viewBox="0 0 100 100" aria-hidden="true">
-      <circle cx="50" cy="50" r="50" fill="#0A2B18"/>
+      <circle cx="50" cy="50" r="50" fill="#0A1E3A"/>
       <path d="M42 100 L47.6 34 h4.8 L58 100 Z" fill="#FBFAF8" opacity=".92"/>
-      <path d="M46.6 46 h6.8 v9 h-6.8 Z M45.9 62 h8.2 v10 h-8.2 Z M45 82 h10 v11 h-10 Z" fill="#0A2B18"/>
-      <circle cx="50" cy="30" r="11" fill="none" stroke="#82B792" stroke-width="3"/>
-      <circle cx="50" cy="30" r="7" fill="#82B792"/>
+      <path d="M46.6 46 h6.8 v9 h-6.8 Z M45.9 62 h8.2 v10 h-8.2 Z M45 82 h10 v11 h-10 Z" fill="#0A1E3A"/>
+      <circle cx="50" cy="30" r="11" fill="none" stroke="#F5C518" stroke-width="3"/>
+      <circle cx="50" cy="30" r="7" fill="#F5C518"/>
     </svg>
     <div>
       <div class="rail-brand-name">darb<span style="color:var(--forest-300)">.</span></div>
@@ -449,13 +485,10 @@ em{font-style:normal;font-weight:700;}
     <h1>The road is<br>the <em>whole idea.</em></h1>
     <p class="mast-lede">
       <span class="ar" style="font-weight:600">درب</span>, <em style="font-style:normal;color:#EDEAE5">darb</em>, Arabic for
-      <em style="font-style:normal;color:#EDEAE5">path</em>. Every part of this identity comes back to that:
-      a road running to a horizon, and a system that tells you exactly what is happening along it.
-      These are the rules for drawing, writing, and building Darb.
+      <em style="font-style:normal;color:#EDEAE5">path</em>. A road to a horizon, and a system that tells you what is happening along it.
     </p>
     <div class="mast-meta">
       <div>Version<b>1.0 · 20 July 2026</b></div>
-      <div>Owner<b>Pair</b></div>
       <div>Applies to<b>Dashboard · Mobile · Vendor portal · Print</b></div>
       <div>Source of truth<b class="mono">tailwind.config.ts</b></div>
     </div>
@@ -467,57 +500,40 @@ em{font-style:normal;font-weight:700;}
 <!-- ── 01 Foundation ─────────────────────────────────────────────── -->
 <section id="foundation" class="sec">
   <div class="sec-head"><span class="sec-num">01</span><h2>Foundation</h2></div>
-  <p>
-    Darb is the operating system for delivery fleets in Kuwait. It sits between the platforms
-    (Keeta, Talabat, Deliveroo, Americana) and the people actually on the road, and turns four
-    incompatible feeds into one honest picture of a day.
-  </p>
+  <p>One console for a multi-platform delivery fleet in Kuwait. Four feeds, one honest picture.</p>
 
   <div class="grid g3" style="margin-bottom:26px">
     <div class="card">
       <div class="rail-brand-sub" style="color:var(--forest);margin:0 0 8px">Positioning</div>
-      <p style="font-size:14px;line-height:1.5;color:var(--secondary)">
-        One console for a multi-platform fleet. Not a tracker. A system of record that
-        settles what happened and what it cost.
-      </p>
+      <p style="font-size:14px;line-height:1.5;color:var(--secondary)">A system of record, not a tracker.</p>
     </div>
     <div class="card">
       <div class="rail-brand-sub" style="color:var(--forest);margin:0 0 8px">Audience</div>
-      <p style="font-size:14px;line-height:1.5;color:var(--secondary)">
-        Ops managers and supervisors running shifts hour to hour; accountants closing the
-        month; couriers who need the app to be fast and plain.
-      </p>
+      <p style="font-size:14px;line-height:1.5;color:var(--secondary)">Ops managers, accountants, couriers.</p>
     </div>
     <div class="card">
       <div class="rail-brand-sub" style="color:var(--forest);margin:0 0 8px">Character</div>
-      <p style="font-size:14px;line-height:1.5;color:var(--secondary)">
-        Warm, exact, unhurried. Sand and forest rather than the neon of the platforms
-        it aggregates. Calm is the differentiator.
-      </p>
+      <p style="font-size:14px;line-height:1.5;color:var(--secondary)">Warm, exact, unhurried. Calm over neon.</p>
     </div>
   </div>
 
   <div class="sub">
     <h3>The three commitments</h3>
-    <p>Every design and copy decision should be traceable to one of these.</p>
     <div class="tw">
       <table>
         <thead><tr><th style="width:150px">Commitment</th><th>What it means in practice</th></tr></thead>
         <tbody>
           <tr>
             <td><b>Legible under pressure</b></td>
-            <td>An ops manager reads a screen mid-shift with one hand on a phone. Status must be readable
-              at a glance, encoded in shape and colour, never in a number alone.</td>
+            <td>Status readable at a glance. Shape and colour, never a number alone.</td>
           </tr>
           <tr>
             <td><b>Bilingual by default</b></td>
-            <td>Arabic is not a translation layer bolted on at the end. Every screen mirrors,
-              every number formats, every date reads correctly in <code>ar-KW</code>.</td>
+            <td>Every screen mirrors, every value formats in <code>ar-KW</code>.</td>
           </tr>
           <tr>
             <td><b>Neutral to platforms</b></td>
-            <td>Darb never dresses itself in Keeta yellow or Talabat orange. Platform colour identifies
-              a row's origin; it never becomes Darb's own voice.</td>
+            <td>Platform colour marks a row's origin, never Darb's voice.</td>
           </tr>
         </tbody>
       </table>
@@ -530,41 +546,33 @@ em{font-style:normal;font-weight:700;}
 <!-- ── 02 Logo ───────────────────────────────────────────────────── -->
 <section id="logo" class="sec">
   <div class="sec-head"><span class="sec-num">02</span><h2>Logo</h2></div>
-  <p>
-    The mark is a road receding to a horizon, with the sun sitting on it. The wordmark is
-    lowercase, because Darb is a tool rather than an announcement, and the full stop is the one place the
-    brand permits itself a flourish.
-  </p>
+  <p>A road receding to a horizon, sun on the line. Lowercase wordmark, one full stop for a flourish.</p>
 
   <div class="note" style="margin-bottom:30px">
-    <b>Version 1.0 recolours the mark.</b> The original artwork was navy and amber, which
-    matched nothing else in the product. It is now forest and sand, so the logo and the interface
-    are finally the same brand. One considered exception: the horizon sun is
-    <span class="mono">#82B792</span> (forest&#8209;300), not <span class="mono">#006838</span>.
-    Forest on forest&#8209;deep measures 1.98:1 and disappears. Forest&#8209;300 measures 5.96:1
-    and holds.
+    <b>v1.0 recolours the mark</b> to navy and sand, with a yellow dot. The sun and full stop are
+    <span class="mono">#F5C518</span>, which holds at roughly 9:1 on navy&#8209;deep, where navy on navy would vanish.
   </div>
 
   <div class="sub">
     <h3>Primary lockup</h3>
-    <p>Horizontal mark plus wordmark plus descriptor. The default for anything wider than 200px.</p>
+    <p>Mark + wordmark + descriptor. Default above 200px.</p>
     <div class="logo-stage stage-sand">
       <svg width="330" height="86" viewBox="0 0 330 86" role="img" aria-label="darb, Fleet Operating System">
         <g>
-          <circle cx="43" cy="43" r="43" fill="#05351D"/>
+          <circle cx="43" cy="43" r="43" fill="#0B1F3C"/>
           <path d="M34.5 86 L40.3 26 h5.4 L51.5 86 Z" fill="#FBFAF8" opacity=".9"/>
-          <path d="M39.6 38 h6.2 v8 h-6.2 Z M38.9 53 h7.6 v9 h-7.6 Z M38 71 h9.4 v10 h-9.4 Z" fill="#05351D"/>
-          <circle cx="43" cy="24" r="12.5" fill="none" stroke="#82B792" stroke-width="3.4"/>
-          <circle cx="43" cy="24" r="8" fill="#82B792"/>
+          <path d="M39.6 38 h6.2 v8 h-6.2 Z M38.9 53 h7.6 v9 h-7.6 Z M38 71 h9.4 v10 h-9.4 Z" fill="#0B1F3C"/>
+          <circle cx="43" cy="24" r="12.5" fill="none" stroke="#F5C518" stroke-width="3.4"/>
+          <circle cx="43" cy="24" r="8" fill="#F5C518"/>
         </g>
         <text x="108" y="52" font-family="Almarai,system-ui,sans-serif"
-              font-size="46" font-weight="600" letter-spacing="-1.1" fill="#05351D">darb</text>
-        <circle cx="216" cy="45" r="7" fill="#006838"/>
+              font-size="46" font-weight="600" letter-spacing="-1.1" fill="#0B1F3C">darb</text>
+        <circle cx="216" cy="45" r="7" fill="#F5C518"/>
         <text x="110" y="72" font-family="Almarai,system-ui,sans-serif"
               font-size="11" font-weight="600" letter-spacing="1.7" fill="#4A4744">FLEET OPERATING SYSTEM</text>
       </svg>
     </div>
-    <div class="stage-cap">Primary: forest-deep on sand <span style="color:var(--border)">·</span> minimum width 200px</div>
+    <div class="stage-cap">Primary: navy-deep on sand <span style="color:var(--border)">·</span> minimum width 200px</div>
   </div>
 
   <div class="grid g2" style="margin-top:30px">
@@ -572,32 +580,32 @@ em{font-style:normal;font-weight:700;}
       <div class="logo-stage stage-forest">
         <svg width="220" height="60" viewBox="0 0 220 60" role="img" aria-label="darb reversed">
           <g>
-            <circle cx="30" cy="30" r="30" fill="#0A2B18"/>
+            <circle cx="30" cy="30" r="30" fill="#0A1E3A"/>
             <path d="M24 60 L28.1 18 h3.8 L36 60 Z" fill="#FBFAF8" opacity=".92"/>
-            <path d="M27.6 26 h4.4 v5.6 h-4.4 Z M27.1 37 h5.4 v6.3 h-5.4 Z M26.5 50 h6.6 v7 h-6.6 Z" fill="#0A2B18"/>
-            <circle cx="30" cy="17" r="8.8" fill="none" stroke="#82B792" stroke-width="2.4"/>
-            <circle cx="30" cy="17" r="5.6" fill="#82B792"/>
+            <path d="M27.6 26 h4.4 v5.6 h-4.4 Z M27.1 37 h5.4 v6.3 h-5.4 Z M26.5 50 h6.6 v7 h-6.6 Z" fill="#0A1E3A"/>
+            <circle cx="30" cy="17" r="8.8" fill="none" stroke="#F5C518" stroke-width="2.4"/>
+            <circle cx="30" cy="17" r="5.6" fill="#F5C518"/>
           </g>
           <text x="76" y="41" font-family="Almarai,system-ui,sans-serif"
                 font-size="34" font-weight="600" letter-spacing="-0.8" fill="#FBFAF8">darb</text>
-          <circle cx="156" cy="35" r="5.2" fill="#82B792"/>
+          <circle cx="156" cy="35" r="5.2" fill="#F5C518"/>
         </svg>
       </div>
-      <div class="stage-cap">Reversed: on forest-deep, sand wordmark</div>
+      <div class="stage-cap">Reversed: on navy-deep, sand wordmark</div>
     </div>
     <div>
       <div class="logo-stage stage-white">
         <svg width="200" height="60" viewBox="0 0 200 60" role="img" aria-label="darb one colour">
           <g>
-            <circle cx="30" cy="30" r="30" fill="#05351D"/>
+            <circle cx="30" cy="30" r="30" fill="#0B1F3C"/>
             <path d="M24 60 L28.1 18 h3.8 L36 60 Z" fill="#FFFFFF" opacity=".9"/>
-            <path d="M27.6 26 h4.4 v5.6 h-4.4 Z M27.1 37 h5.4 v6.3 h-5.4 Z M26.5 50 h6.6 v7 h-6.6 Z" fill="#05351D"/>
+            <path d="M27.6 26 h4.4 v5.6 h-4.4 Z M27.1 37 h5.4 v6.3 h-5.4 Z M26.5 50 h6.6 v7 h-6.6 Z" fill="#0B1F3C"/>
             <circle cx="30" cy="17" r="8.8" fill="none" stroke="#FFFFFF" stroke-width="2.4"/>
             <circle cx="30" cy="17" r="5.6" fill="#FFFFFF"/>
           </g>
           <text x="76" y="41" font-family="Almarai,system-ui,sans-serif"
-                font-size="34" font-weight="600" letter-spacing="-0.8" fill="#05351D">darb</text>
-          <circle cx="156" cy="35" r="5.2" fill="#05351D"/>
+                font-size="34" font-weight="600" letter-spacing="-0.8" fill="#0B1F3C">darb</text>
+          <circle cx="156" cy="35" r="5.2" fill="#0B1F3C"/>
         </svg>
       </div>
       <div class="stage-cap">One-colour: engraving, fax, embroidery, stamps</div>
@@ -606,10 +614,7 @@ em{font-style:normal;font-weight:700;}
 
   <div class="sub">
     <h3>Construction &amp; clear space</h3>
-    <p>
-      The mark's diameter is the unit, <span class="mono">D</span>. Every other measurement derives from it,
-      so the lockup rebuilds correctly at any size.
-    </p>
+    <p>The mark diameter is the unit, <span class="mono">D</span>. Everything derives from it.</p>
     <div class="tw">
       <table>
         <thead><tr><th>Measure</th><th class="num" style="text-align:end">Value</th><th>Note</th></tr></thead>
@@ -619,7 +624,7 @@ em{font-style:normal;font-weight:700;}
           <tr><td>Mark → wordmark gap</td><td class="num">0.30 D</td><td>Optical, measured to the <code>d</code> stem, not the bounding box.</td></tr>
           <tr><td>Wordmark cap height</td><td class="num">0.54 D</td><td>Baseline aligns to the mark's optical centre.</td></tr>
           <tr><td>Descriptor size</td><td class="num">0.13 D</td><td>Tracking +0.15em, weight 600, colour <span class="mono">#4A4744</span>.</td></tr>
-          <tr><td>Full-stop diameter</td><td class="num">0.16 D</td><td>Always <span class="mono">#006838</span> on light, <span class="mono">#82B792</span> on forest.</td></tr>
+          <tr><td>Full-stop diameter</td><td class="num">0.16 D</td><td>Always <span class="mono">#F5C518</span>, the yellow dot; navy on the one-colour mark.</td></tr>
         </tbody>
       </table>
     </div>
@@ -638,8 +643,7 @@ em{font-style:normal;font-weight:700;}
       </table>
     </div>
     <p style="margin-top:12px;font-size:13.5px;color:var(--secondary)">
-      At 24px and below the road's dashes merge. The favicon and app icon use a
-      <b>simplified mark</b>: solid road, no dashes, sun retained.
+      Below 24px, favicon/app icon use a <b>simplified mark</b>: solid road, no dashes, sun kept.
     </p>
   </div>
 
@@ -649,7 +653,7 @@ em{font-style:normal;font-weight:700;}
       <div class="rule do">
         <b>Do</b>
         <ul>
-          <li>Place the mark on sand, white, or forest&#8209;deep.</li>
+          <li>Place the mark on sand, white, or navy&#8209;deep.</li>
           <li>Scale the whole lockup as one locked group.</li>
           <li>Use the reversed lockup on any ground darker than <span class="mono">#4A4744</span>.</li>
           <li>Keep the descriptor only where it is legible at 11px or larger.</li>
@@ -662,7 +666,7 @@ em{font-style:normal;font-weight:700;}
           <li>Set the wordmark in title case, all caps, or any face other than the brand sans.</li>
           <li>Add a gradient, bevel, outer glow, or drop shadow to the mark.</li>
           <li>Stretch, rotate, or reflow the lockup vertically without the approved stacked variant.</li>
-          <li>Place the lockup over a photograph without a forest&#8209;deep veil beneath it.</li>
+          <li>Place the lockup over a photograph without a navy&#8209;deep veil beneath it.</li>
         </ul>
       </div>
     </div>
@@ -674,28 +678,24 @@ em{font-style:normal;font-weight:700;}
 <!-- ── 03 Colour ─────────────────────────────────────────────────── -->
 <section id="colour" class="sec">
   <div class="sec-head"><span class="sec-num">03</span><h2>Colour</h2></div>
-  <p>
-    One accent, a warm neutral field, and a strictly separate semantic set. The neutrals are
-    sand-biased on purpose, because a cool grey next to forest reads clinical, and Darb is not a
-    hospital chart.
-  </p>
+  <p>One accent, a warm neutral field, a separate semantic set. Sand-biased, never clinical grey.</p>
 
   <div class="sub">
     <h3>Core</h3>
-    <p>Forest is the only brand accent. If something needs emphasis and isn't a status, it is forest.</p>
+    <p>Navy is the only brand accent.</p>
     <div class="grid g4">
-      <div class="sw"><span class="sw-chip" style="background:#006838"></span><div class="sw-body">
-        <div class="sw-name">Forest</div><div class="sw-hex">#006838</div>
+      <div class="sw"><span class="sw-chip" style="background:#1D4E89"></span><div class="sw-body">
+        <div class="sw-name">Navy</div><div class="sw-hex">#1D4E89</div>
         <div class="sw-use">Primary actions, links, active nav, success. The accent.</div></div></div>
-      <div class="sw"><span class="sw-chip" style="background:#00552E"></span><div class="sw-body">
-        <div class="sw-name">Forest Hover</div><div class="sw-hex">#00552E</div>
+      <div class="sw"><span class="sw-chip" style="background:#163C6E"></span><div class="sw-body">
+        <div class="sw-name">Navy Hover</div><div class="sw-hex">#163C6E</div>
         <div class="sw-use">Hover and pressed states of primary only.</div></div></div>
-      <div class="sw"><span class="sw-chip" style="background:#05351D"></span><div class="sw-body">
-        <div class="sw-name">Forest Deep</div><div class="sw-hex">#05351D</div>
+      <div class="sw"><span class="sw-chip" style="background:#0B1F3C"></span><div class="sw-body">
+        <div class="sw-name">Navy Deep</div><div class="sw-hex">#0B1F3C</div>
         <div class="sw-use">Sidebar, mastheads, reversed grounds, print covers.</div></div></div>
-      <div class="sw"><span class="sw-chip" style="background:#82B792"></span><div class="sw-body">
-        <div class="sw-name">Forest 300</div><div class="sw-hex">#82B792</div>
-        <div class="sw-use">Accent <em>on</em> forest-deep, where full forest fails contrast.</div></div></div>
+      <div class="sw"><span class="sw-chip" style="background:#F5C518"></span><div class="sw-body">
+        <div class="sw-name">Dot Yellow</div><div class="sw-hex">#F5C518</div>
+        <div class="sw-use">The brand dot and sun. Sits <em>on</em> navy-deep, where navy would fail contrast.</div></div></div>
     </div>
   </div>
 
@@ -723,36 +723,31 @@ em{font-style:normal;font-weight:700;}
 
   <div class="sub">
     <h3>Neutrals: dark</h3>
-    <p>Dark mode is a near-black forest, not a neutral grey. The hue carries through.</p>
+    <p>Dark mode is a near-black navy, not grey.</p>
     <div class="grid g4">
-      <div class="sw"><span class="sw-chip" style="background:#0B1410"></span><div class="sw-body">
-        <div class="sw-name">Ground</div><div class="sw-hex">#0B1410</div><div class="sw-use">Page background.</div></div></div>
-      <div class="sw"><span class="sw-chip" style="background:#151F19"></span><div class="sw-body">
-        <div class="sw-name">Card</div><div class="sw-hex">#151F19</div><div class="sw-use">Cards, panels, sheets.</div></div></div>
-      <div class="sw"><span class="sw-chip" style="background:#26312B"></span><div class="sw-body">
-        <div class="sw-name">Border</div><div class="sw-hex">#26312B</div><div class="sw-use">Hairlines.</div></div></div>
+      <div class="sw"><span class="sw-chip" style="background:#0A1220"></span><div class="sw-body">
+        <div class="sw-name">Ground</div><div class="sw-hex">#0A1220</div><div class="sw-use">Page background.</div></div></div>
+      <div class="sw"><span class="sw-chip" style="background:#131B27"></span><div class="sw-body">
+        <div class="sw-name">Card</div><div class="sw-hex">#131B27</div><div class="sw-use">Cards, panels, sheets.</div></div></div>
+      <div class="sw"><span class="sw-chip" style="background:#232B37"></span><div class="sw-body">
+        <div class="sw-name">Border</div><div class="sw-hex">#232B37</div><div class="sw-use">Hairlines.</div></div></div>
       <div class="sw"><span class="sw-chip" style="background:#EDEAE5"></span><div class="sw-body">
         <div class="sw-name">Ink</div><div class="sw-hex">#EDEAE5</div><div class="sw-use">Body text, warm off-white.</div></div></div>
     </div>
     <div class="note" style="margin-top:16px">
-      <b>Forest lifts in dark mode.</b> <span class="mono">#006838</span> on <span class="mono">#0B1410</span>
-      is too dark to read. Dark themes substitute <span class="mono">#4E9E6E</span> for the accent and
-      <span class="mono">#6BB489</span> for its hover. This document does exactly that. Toggle your theme to see it.
+      <b>Navy lifts in dark mode:</b> accent <span class="mono">#5E93D6</span>, hover <span class="mono">#7EA9E3</span>.
     </div>
   </div>
 
   <div class="sub">
     <h3>Semantic</h3>
-    <p>
-      Status colour is a separate system from the accent. It is never used decoratively, and forest
-      does double duty as success, which is why nothing else may be forest-adjacent.
-    </p>
+    <p>Status colour is a separate system. Never decorative. Navy doubles as success.</p>
     <div class="tw">
       <table>
         <thead><tr><th>State</th><th>Example</th><th class="tok">Fill</th><th class="tok">Text</th><th>Applies to</th></tr></thead>
         <tbody>
           <tr><td><b>Success</b></td><td><span class="pill p-ok"><span class="dot"></span>Active</span></td>
-            <td class="tok">forest / 10%</td><td class="tok">#006838</td>
+            <td class="tok">navy / 10%</td><td class="tok">#1D4E89</td>
             <td>Active, Present, Settled, Approved, Completed, Overturned</td></tr>
           <tr><td><b>Warning</b></td><td><span class="pill p-warn"><span class="dot"></span>Late</span></td>
             <td class="tok">#FFFBEB</td><td class="tok">#B45309</td>
@@ -776,10 +771,7 @@ em{font-style:normal;font-weight:700;}
 
   <div class="sub">
     <h3>Platform accents</h3>
-    <p>
-      Borrowed identity, used for one job: telling you which platform a row came from. They are the
-      most saturated colours in the system and the most tightly fenced.
-    </p>
+    <p>Borrowed identity, one job: which platform a row came from.</p>
     <div class="grid g4">
       <div class="sw"><span class="sw-chip" style="background:#FFB800;height:54px"></span><div class="sw-body">
         <div class="sw-name">Keeta</div><div class="sw-hex">#FFB800</div></div></div>
@@ -799,10 +791,7 @@ em{font-style:normal;font-weight:700;}
     <div class="stage-cap">Correct usage: 10–14% tint, 30% ring, darkened text. Never the raw hex as text.</div>
 
     <div class="note" style="margin-top:20px">
-      <b>Why the tint, not the hex.</b> As text on white, Keeta measures 1.73:1, Deliveroo 2.03:1 and
-      Talabat 3.13:1, all illegible. Platform colour therefore only ever appears as a
-      <b>tinted chip with darkened text</b>, or as a 3px indicator bar. It never carries a status,
-      never fills a button, and never sets a heading.
+      <b>Tint, not hex.</b> Raw platform colour is illegible as text. Use a tinted chip or 3px bar only, never a button or heading.
     </div>
   </div>
 </section>
@@ -812,11 +801,7 @@ em{font-style:normal;font-weight:700;}
 <!-- ── 04 Typography ─────────────────────────────────────────────── -->
 <section id="type" class="sec">
   <div class="sec-head"><span class="sec-num">04</span><h2>Typography</h2></div>
-  <p>
-    Two faces. Almarai carries both scripts, so an Arabic heading and its English counterpart
-    share one skeleton instead of politely disagreeing. Geist Mono handles anything that has to
-    line up in a column.
-  </p>
+  <p>Two faces. Almarai carries both scripts. Geist Mono for anything that lines up in a column.</p>
 
   <div class="grid g3" style="margin-bottom:30px">
     <div class="card">
@@ -848,27 +833,20 @@ em{font-style:normal;font-weight:700;}
     <div class="tw"><table>
       <thead><tr><th class="num" style="text-align:start">Weight</th><th>Role</th><th>Notes</th></tr></thead>
       <tbody>
-        <tr><td class="num" style="text-align:start">300</td><td>Light</td><td>Large Arabic display only, above 36px. Too fragile for interface text.</td></tr>
-        <tr><td class="num" style="text-align:start">400</td><td>Regular</td><td>Body, table cells, display headings, form values. The default.</td></tr>
-        <tr><td class="num" style="text-align:start">700</td><td>Bold</td><td>Titles, labels, buttons, badges, emphasis. The only accent weight.</td></tr>
-        <tr><td class="num" style="text-align:start">800</td><td>Extrabold</td><td>The wordmark and cover slides. Never inside the product.</td></tr>
+        <tr><td class="num" style="text-align:start">300</td><td>Light</td><td>Large Arabic display only, above 36px.</td></tr>
+        <tr><td class="num" style="text-align:start">400</td><td>Regular</td><td>Body, cells, headings, form values. The default.</td></tr>
+        <tr><td class="num" style="text-align:start">700</td><td>Bold</td><td>Titles, labels, buttons, badges. The only accent weight.</td></tr>
+        <tr><td class="num" style="text-align:start">800</td><td>Extrabold</td><td>Wordmark and cover slides only.</td></tr>
       </tbody>
     </table></div>
     <div class="note" style="margin-top:16px">
-      <b>There is no 500 or 600.</b> CSS font-matching resolves a requested 500 down to 400 and a
-      600 up to 700, so existing markup keeps working, but the intermediate step disappears. Code
-      should ask for 400 or 700 directly rather than relying on that fallback. Never enable
-      synthetic bold or oblique: Almarai has no true italic, and a faked slant breaks Arabic joins.
+      <b>No 500 or 600.</b> Ask for 400 or 700 directly. Never synthetic bold or oblique, it breaks Arabic joins.
     </div>
   </div>
 
   <div class="sub">
     <h3>Scale</h3>
-    <p>
-      Almarai is rounder and wider than a system sans, so tracking is looser here than the previous
-      stack allowed. Display sizes carry a little negative tracking; body and below sit at zero, and
-      Arabic always sits at zero.
-    </p>
+    <p>Display carries slight negative tracking. Body and Arabic sit at zero.</p>
     <div class="card" style="padding:4px 24px">
       <div class="spec"><div class="spec-meta">display-lg<br>48 / 54 · −.01em · 400</div>
         <div class="spec-sample" style="font-size:48px;line-height:54px;letter-spacing:-.01em;font-weight:400">Fleet overview</div></div>
@@ -891,11 +869,7 @@ em{font-style:normal;font-weight:700;}
 
   <div class="sub">
     <h3>Numerals</h3>
-    <p>
-      Anything that stacks into a column (money, counts, durations, IDs) is set
-      <code>tabular-nums</code> and aligned to the end edge. Kuwaiti dinar always shows three
-      decimal places, because fils are three digits and rounding them is a real accounting error.
-    </p>
+    <p>Columns are <code>tabular-nums</code>, end-aligned. KD always shows 3 decimals.</p>
     <div class="tw">
       <table>
         <thead><tr><th>Type</th><th>Format</th><th class="num" style="text-align:end">Example</th></tr></thead>
@@ -916,10 +890,7 @@ em{font-style:normal;font-weight:700;}
 <!-- ── 05 Voice ──────────────────────────────────────────────────── -->
 <section id="voice" class="sec">
   <div class="sec-head"><span class="sec-num">05</span><h2>Voice &amp; tone</h2></div>
-  <p>
-    Darb reports. It does not cheer, apologise, or hedge. Most of what it says is read by someone
-    who is busy and slightly behind.
-  </p>
+  <p>Darb reports. It does not cheer, apologise, or hedge.</p>
 
   <div class="grid g3" style="margin-bottom:26px">
     <div class="card"><div class="sw-name">Plain</div>
@@ -945,11 +916,7 @@ em{font-style:normal;font-weight:700;}
 
   <div class="sub">
     <h3>Buttons say what happens</h3>
-    <p>
-      A control is labelled with its verb and its object, and the confirmation echoes it in past tense.
-      <code>Publish</code> → <code>Published</code>. Never <code>Submit</code>, <code>OK</code>, or <code>Done</code>
-      where a real verb exists.
-    </p>
+    <p>Verb + object, confirmation echoes in past tense. <code>Publish</code> → <code>Published</code>. Never <code>Submit</code>, <code>OK</code>, <code>Done</code>.</p>
   </div>
 </section>
 
@@ -958,11 +925,7 @@ em{font-style:normal;font-weight:700;}
 <!-- ── 06 Tokens ─────────────────────────────────────────────────── -->
 <section id="tokens" class="sec">
   <div class="sec-head"><span class="sec-num">06</span><h2>Tokens</h2></div>
-  <p>
-    <span class="mono">frontend/tailwind.config.ts</span> and <span class="mono">globals.css</span> are the
-    source of truth. Nothing below is aspirational. It is what ships. New code consumes tokens;
-    raw hex in a component is a bug.
-  </p>
+  <p><span class="mono">tailwind.config.ts</span> + <span class="mono">globals.css</span> are the source of truth. Raw hex in a component is a bug.</p>
 
   <div class="sub">
     <h3>Radius</h3>
@@ -976,8 +939,7 @@ em{font-style:normal;font-weight:700;}
       </tbody>
     </table></div>
     <p style="margin-top:12px;font-size:13.5px;color:var(--secondary)">
-      Four values, not six. <code>rounded-sm</code> and <code>rounded-lg</code> exist in config for
-      legacy pages and should not appear in new work.
+      Four values, not six. <code>rounded-sm</code> / <code>rounded-lg</code> are legacy only.
     </p>
   </div>
 
@@ -995,7 +957,7 @@ em{font-style:normal;font-weight:700;}
       <div class="card" style="box-shadow:0 0 0 3px rgba(0,104,56,.18)">
         <div class="sw-name">shadow-ring</div>
         <div class="sw-hex">focus</div>
-        <div class="sw-use">Keyboard focus. 3px forest at 18%, never a browser default outline.</div></div>
+        <div class="sw-use">Keyboard focus. 3px navy at 18%, never a browser default outline.</div></div>
     </div>
     <p style="margin-top:14px;font-size:13.5px;color:var(--secondary)">
       Shadows are tinted <span class="mono">rgba(15,31,24,·)</span>, a green-black rather than neutral black.
@@ -1044,7 +1006,7 @@ em{font-style:normal;font-weight:700;}
       <div class="stage-cap" style="margin-top:14px">Primary · Secondary · Disabled (opacity .5, no press transform)</div>
       <div class="onforest" style="margin-top:18px">
         <button type="button" class="btn b-ghost">View shift</button>
-        <span style="color:#8FA697;font-size:12.5px;margin-inline-start:12px" class="mono">ghost: forest grounds only</span>
+        <span style="color:#93A4C0;font-size:12.5px;margin-inline-start:12px" class="mono">ghost: navy grounds only</span>
       </div>
     </div>
     <div class="rules" style="margin-top:16px">
@@ -1063,10 +1025,7 @@ em{font-style:normal;font-weight:700;}
 
   <div class="sub">
     <h3>Status badges</h3>
-    <p>
-      Pill, 6px dot, sentence case. The dot matters: it is what makes status readable to
-      colour-blind users and at a glance across a dense table.
-    </p>
+    <p>Pill, 6px dot, sentence case. The dot keeps status readable for colour-blind users.</p>
     <div class="card">
       <div class="pill-row">
         <span class="pill p-ok"><span class="dot"></span>Active</span>
@@ -1085,10 +1044,7 @@ em{font-style:normal;font-weight:700;}
 
   <div class="sub">
     <h3>Cards</h3>
-    <p>
-      One recipe: <code>bg-card</code> · <code>border-sand-200</code> · <code>rounded-2xl</code> ·
-      <code>shadow-soft</code> · <code>p-6</code>. Interactive cards add a 1px lift on hover.
-    </p>
+    <p>One recipe: <code>bg-card</code> · <code>border-sand-200</code> · <code>rounded-2xl</code> · <code>shadow-soft</code> · <code>p-6</code>.</p>
     <div class="grid g3">
       <div class="card" style="padding:20px">
         <div style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--secondary)">Online now</div>
@@ -1111,10 +1067,7 @@ em{font-style:normal;font-weight:700;}
 
   <div class="sub">
     <h3>Tables</h3>
-    <p>
-      Darb is mostly tables, so they get the most rules. Header 11px uppercase secondary on surface;
-      rows 41px; hairline separators; no zebra striping. Numbers are always mono, tabular, end-aligned.
-    </p>
+    <p>Header 11px upper on surface, rows 41px, hairlines, no zebra. Numbers mono, tabular, end-aligned.</p>
     <div class="tw">
       <table>
         <thead><tr>
@@ -1157,15 +1110,12 @@ em{font-style:normal;font-weight:700;}
 <!-- ── 08 Layout ─────────────────────────────────────────────────── -->
 <section id="layout" class="sec">
   <div class="sec-head"><span class="sec-num">08</span><h2>Layout</h2></div>
-  <p>
-    A fixed forest-deep rail against a sand field. The rail is the one permanently dark surface in
-    the product, in both themes. It anchors the eye and keeps the content area calm.
-  </p>
+  <p>A fixed navy-deep rail against a sand field. The one permanently dark surface, in both themes.</p>
 
   <div class="tw"><table>
     <thead><tr><th>Element</th><th class="num" style="text-align:end">Size</th><th>Behaviour</th></tr></thead>
     <tbody>
-      <tr><td>Sidebar</td><td class="num">240 px</td><td>Forest-deep, sticky full height. Collapses to 64px.</td></tr>
+      <tr><td>Sidebar</td><td class="num">240 px</td><td>Navy-deep, sticky full height. Collapses to 64px.</td></tr>
       <tr><td>Sidebar, collapsed</td><td class="num">64 px</td><td>Icons only; label appears on hover after 400ms.</td></tr>
       <tr><td>Header</td><td class="num">64 px</td><td>Sticky, <code>surface/90</code> with backdrop blur, hairline bottom.</td></tr>
       <tr><td>Content padding</td><td class="num">32 px</td><td><code>p-8</code> at desktop, <code>p-5</code> below 768px.</td></tr>
@@ -1177,10 +1127,7 @@ em{font-style:normal;font-weight:700;}
 
   <div class="sub">
     <h3>Spacing scale</h3>
-    <p>
-      A 4px base. In practice the product lives on six values. Using anything else usually means
-      the layout is fighting itself.
-    </p>
+    <p>A 4px base. The product lives on six values.</p>
     <div class="pill-row">
       <span class="pill p-neut mono">4</span><span class="pill p-neut mono">8</span>
       <span class="pill p-neut mono">12</span><span class="pill p-neut mono">16</span>
@@ -1191,11 +1138,7 @@ em{font-style:normal;font-weight:700;}
 
   <div class="sub">
     <h3>Icons</h3>
-    <p>
-      Lucide only, at <b>14px</b> in dense contexts and <b>16px</b> everywhere else. Two sizes.
-      Stroke stays at the library default; icons inherit <code>currentColor</code> and never carry
-      their own colour.
-    </p>
+    <p>Lucide only. <b>14px</b> dense, <b>16px</b> elsewhere. Inherit <code>currentColor</code>, never their own colour.</p>
   </div>
 </section>
 
@@ -1204,10 +1147,7 @@ em{font-style:normal;font-weight:700;}
 <!-- ── 09 Bilingual ──────────────────────────────────────────────── -->
 <section id="bilingual" class="sec">
   <div class="sec-head"><span class="sec-num">09</span><h2>Arabic &amp; RTL</h2></div>
-  <p>
-    Kuwait operations run in both languages, often in the same sentence. Arabic support is a
-    structural requirement, not a feature flag.
-  </p>
+  <p>Kuwait runs in both languages, often in one sentence. Arabic is structural, not a feature flag.</p>
 
   <div class="grid g2" style="margin-bottom:24px">
     <div class="card">
@@ -1241,26 +1181,23 @@ em{font-style:normal;font-weight:700;}
 <!-- ── 10 Accessibility ──────────────────────────────────────────── -->
 <section id="a11y" class="sec">
   <div class="sec-head"><span class="sec-num">10</span><h2>Accessibility</h2></div>
-  <p>
-    Target is WCAG 2.1 AA. Every ratio below is measured, not assumed. The ones that fail are
-    listed because knowing where the floor is matters more than a clean table.
-  </p>
+  <p>Target WCAG 2.1 AA. Every ratio below is measured, failures included.</p>
 
   <div class="tw"><table>
     <thead><tr><th>Pairing</th><th class="num" style="text-align:end">Ratio</th><th>Verdict</th></tr></thead>
     <tbody>
       <tr><td>Ink <span class="mono">#302E2D</span> on sand</td><td class="num">12.40</td><td><span class="pill p-ok" style="font-size:11px;padding:2px 9px">AAA</span></td></tr>
-      <tr><td>Forest <span class="mono">#006838</span> on white</td><td class="num">6.91</td><td><span class="pill p-ok" style="font-size:11px;padding:2px 9px">AA</span></td></tr>
-      <tr><td>Forest on sand</td><td class="num">6.35</td><td><span class="pill p-ok" style="font-size:11px;padding:2px 9px">AA</span></td></tr>
-      <tr><td>White on forest</td><td class="num">6.91</td><td><span class="pill p-ok" style="font-size:11px;padding:2px 9px">AA</span></td></tr>
+      <tr><td>Navy <span class="mono">#1D4E89</span> on white</td><td class="num">8.39</td><td><span class="pill p-ok" style="font-size:11px;padding:2px 9px">AAA</span></td></tr>
+      <tr><td>Navy on sand</td><td class="num">7.70</td><td><span class="pill p-ok" style="font-size:11px;padding:2px 9px">AAA</span></td></tr>
+      <tr><td>White on navy</td><td class="num">8.39</td><td><span class="pill p-ok" style="font-size:11px;padding:2px 9px">AAA</span></td></tr>
       <tr><td>Secondary <span class="mono">#716F6C</span> on sand</td><td class="num">4.60</td><td><span class="pill p-ok" style="font-size:11px;padding:2px 9px">AA</span></td></tr>
       <tr><td>Sand-800 <span class="mono">#4A4744</span> on sand</td><td class="num">8.47</td><td><span class="pill p-ok" style="font-size:11px;padding:2px 9px">AAA</span></td></tr>
       <tr><td>Ink on dark ground</td><td class="num">15.60</td><td><span class="pill p-ok" style="font-size:11px;padding:2px 9px">AAA</span></td></tr>
       <tr><td>Danger <span class="mono">#B91C1C</span> on its tint</td><td class="num">5.91</td><td><span class="pill p-ok" style="font-size:11px;padding:2px 9px">AA</span></td></tr>
       <tr><td>Warning <span class="mono">#B45309</span> on its tint</td><td class="num">4.84</td><td><span class="pill p-ok" style="font-size:11px;padding:2px 9px">AA</span></td></tr>
-      <tr><td>Forest-300 on forest-deep</td><td class="num">5.96</td><td><span class="pill p-ok" style="font-size:11px;padding:2px 9px">AA</span></td></tr>
+      <tr><td>Dot yellow on navy-deep</td><td class="num">10.10</td><td><span class="pill p-ok" style="font-size:11px;padding:2px 9px">AAA</span></td></tr>
       <tr><td>Muted <span class="mono">#A99E92</span> on sand</td><td class="num">2.41</td><td><span class="pill p-warn" style="font-size:11px;padding:2px 9px">Decoration only</span></td></tr>
-      <tr><td>Forest on forest-deep</td><td class="num">1.98</td><td><span class="pill p-bad" style="font-size:11px;padding:2px 9px">Never</span></td></tr>
+      <tr><td>Navy on navy-deep</td><td class="num">1.96</td><td><span class="pill p-bad" style="font-size:11px;padding:2px 9px">Never</span></td></tr>
       <tr><td>Keeta <span class="mono">#FFB800</span> as text on white</td><td class="num">1.73</td><td><span class="pill p-bad" style="font-size:11px;padding:2px 9px">Never</span></td></tr>
       <tr><td>Deliveroo <span class="mono">#00CCBC</span> as text on white</td><td class="num">2.03</td><td><span class="pill p-bad" style="font-size:11px;padding:2px 9px">Never</span></td></tr>
       <tr><td>Talabat <span class="mono">#FF5A00</span> as text on white</td><td class="num">3.13</td><td><span class="pill p-bad" style="font-size:11px;padding:2px 9px">Never</span></td></tr>
@@ -1271,7 +1208,7 @@ em{font-style:normal;font-weight:700;}
     <h3>Beyond contrast</h3>
     <div class="rules">
       <div class="rule do"><b>Required</b><ul>
-        <li>Focus is always visible: 3px forest ring at 18%, offset 2px. Never <code>outline:none</code> alone.</li>
+        <li>Focus is always visible: 3px navy ring at 18%, offset 2px. Never <code>outline:none</code> alone.</li>
         <li>Touch targets ≥ 44 × 44px on mobile, ≥ 32px on desktop pointers.</li>
         <li>Status carries a dot or icon as well as colour, never colour alone.</li>
         <li>Every icon-only control has an <code>aria-label</code>.</li>
@@ -1280,7 +1217,7 @@ em{font-style:normal;font-weight:700;}
       </ul></div>
       <div class="rule dont"><b>Watch for</b><ul>
         <li>Muted grey used for real content instead of placeholders. It fails at 2.41:1.</li>
-        <li>Disabled controls at <code>opacity-50</code> dropping below 3:1. Pair with helper text.</li>
+        <li>Disabled controls at <code>opacity-50</code> dropping below 3:1. Add helper text.</li>
         <li>Map pins as the only carrier of state; the list must say the same thing in words.</li>
         <li>Toasts that vanish before an eight-second read.</li>
       </ul></div>
@@ -1293,10 +1230,7 @@ em{font-style:normal;font-weight:700;}
 <!-- ── 11 Applications ───────────────────────────────────────────── -->
 <section id="apps" class="sec">
   <div class="sec-head"><span class="sec-num">11</span><h2>Applications</h2></div>
-  <p>
-    The identity off-screen. Everything here uses the same tokens, and the dashed rule from the mark
-    recurs as the connective device across formats.
-  </p>
+  <p>The identity off-screen. The dashed rule from the mark is the connective device.</p>
 
   <div class="grid g2">
     <div class="appcard">
@@ -1307,7 +1241,7 @@ em{font-style:normal;font-weight:700;}
           <div class="rl">Operations Lead</div>
           <div class="dv"></div>
           <div class="ct">
-            <span style="font-weight:600;color:var(--ink)">darb<span style="color:var(--forest)">.</span></span>
+            <span style="font-weight:600;color:var(--ink)">darb<span style="color:var(--dot)">.</span></span>
             &nbsp;Fleet Operating System<br>
             +965 0000 0000 · <a href="#apps">darb.com.kw</a>
           </div>
@@ -1321,7 +1255,7 @@ em{font-style:normal;font-weight:700;}
         <div class="inv-strip"></div>
         <div class="inv-head">
           <div>
-            <div style="font-size:19px;font-weight:600;letter-spacing:-.01em">darb<span style="color:var(--forest)">.</span></div>
+            <div style="font-size:19px;font-weight:600;letter-spacing:-.01em">darb<span style="color:var(--dot)">.</span></div>
             <div style="font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--secondary);margin-top:3px">Fleet Operating System</div>
           </div>
           <div style="text-align:end">
@@ -1344,39 +1278,39 @@ em{font-style:normal;font-weight:700;}
       <div class="avatar-row">
         <div class="av">
           <svg width="88" height="88" viewBox="0 0 100 100" style="border-radius:22px" role="img" aria-label="App icon">
-            <rect width="100" height="100" rx="0" fill="#05351D"/>
+            <rect width="100" height="100" rx="0" fill="#0B1F3C"/>
             <path d="M36 100 L46.2 30 h7.6 L64 100 Z" fill="#FBFAF8" opacity=".92"/>
-            <circle cx="50" cy="26" r="13" fill="#82B792"/>
+            <circle cx="50" cy="26" r="13" fill="#F5C518"/>
           </svg>
           <div class="av-cap">App icon 88</div>
         </div>
         <div class="av">
           <svg width="56" height="56" viewBox="0 0 100 100" style="border-radius:9999px" role="img" aria-label="Social avatar">
-            <circle cx="50" cy="50" r="50" fill="#05351D"/>
+            <circle cx="50" cy="50" r="50" fill="#0B1F3C"/>
             <path d="M36 100 L46.2 30 h7.6 L64 100 Z" fill="#FBFAF8" opacity=".92"/>
-            <circle cx="50" cy="26" r="13" fill="#82B792"/>
+            <circle cx="50" cy="26" r="13" fill="#F5C518"/>
           </svg>
           <div class="av-cap">Avatar 56</div>
         </div>
         <div class="av">
           <svg width="32" height="32" viewBox="0 0 100 100" style="border-radius:8px" role="img" aria-label="Favicon 32">
-            <rect width="100" height="100" fill="#05351D"/>
+            <rect width="100" height="100" fill="#0B1F3C"/>
             <path d="M34 100 L46 32 h8 L66 100 Z" fill="#FBFAF8"/>
-            <circle cx="50" cy="27" r="14" fill="#82B792"/>
+            <circle cx="50" cy="27" r="14" fill="#F5C518"/>
           </svg>
           <div class="av-cap">Favicon 32</div>
         </div>
         <div class="av">
           <svg width="16" height="16" viewBox="0 0 100 100" style="border-radius:4px" role="img" aria-label="Favicon 16">
-            <rect width="100" height="100" fill="#05351D"/>
+            <rect width="100" height="100" fill="#0B1F3C"/>
             <path d="M32 100 L46 36 h8 L68 100 Z" fill="#FBFAF8"/>
-            <circle cx="50" cy="28" r="16" fill="#82B792"/>
+            <circle cx="50" cy="28" r="16" fill="#F5C518"/>
           </svg>
           <div class="av-cap">Favicon 16</div>
         </div>
       </div>
       <div class="stage-cap" style="margin-top:16px">
-        The road widens and the sun grows as size drops. Optical compensation, not uniform scaling.
+        Road widens and sun grows as size drops. Optical compensation, not uniform scaling.
       </div>
     </div>
   </div>
@@ -1386,12 +1320,12 @@ em{font-style:normal;font-weight:700;}
     <div class="tw"><table>
       <thead><tr><th>Surface</th><th>Treatment</th></tr></thead>
       <tbody>
-        <tr><td><b>Presentation decks</b></td><td>Forest-deep cover with reversed lockup; sand interior slides. One idea per slide, 36px display headings, charts in forest with sand grid lines.</td></tr>
-        <tr><td><b>Invoices &amp; contracts</b></td><td>Plain white ground, no gradients, no watermark. A 4px forest strip across the top is the only colour. Numbers mono and tabular throughout.</td></tr>
-        <tr><td><b>Business cards</b></td><td>55 × 85mm. Front: mark centred on forest-deep. Back: name and contact in ink on sand, dashed rule between blocks.</td></tr>
-        <tr><td><b>Courier-facing print</b></td><td>Arabic first and larger, English beneath. High contrast, minimum 14pt. These are read in sunlight, in a hurry.</td></tr>
-        <tr><td><b>Vehicle &amp; uniform</b></td><td>Mark only, one colour, no descriptor. Reversed on dark garments, forest-deep on light.</td></tr>
-        <tr><td><b>Social</b></td><td>Avatar is the circular simplified mark. Never crop the wordmark into a square.</td></tr>
+        <tr><td><b>Presentation decks</b></td><td>Navy-deep cover, sand slides. One idea per slide, 36px headings.</td></tr>
+        <tr><td><b>Invoices &amp; contracts</b></td><td>Plain white, no watermark. 4px navy top strip is the only colour.</td></tr>
+        <tr><td><b>Business cards</b></td><td>55 × 85mm. Front: mark on navy-deep. Back: contact in ink on sand.</td></tr>
+        <tr><td><b>Courier-facing print</b></td><td>Arabic first and larger, English beneath. Min 14pt, read in sunlight.</td></tr>
+        <tr><td><b>Vehicle &amp; uniform</b></td><td>Mark only, one colour, no descriptor.</td></tr>
+        <tr><td><b>Social</b></td><td>Circular simplified mark. Never crop the wordmark square.</td></tr>
       </tbody>
     </table></div>
   </div>
@@ -1402,11 +1336,7 @@ em{font-style:normal;font-weight:700;}
 <!-- ── 12 Known drift ────────────────────────────────────────────── -->
 <section id="fixes" class="sec">
   <div class="sec-head"><span class="sec-num">12</span><h2>Known drift</h2></div>
-  <p>
-    A brand book is only true if the code agrees with it. These are the places where the codebase
-    currently contradicts the rules above, found while auditing for v1.0. Ordered by how visible
-    the inconsistency is to a user.
-  </p>
+  <p>Where the codebase currently contradicts the rules above. Ordered by user visibility.</p>
 
   <div class="card" style="padding:4px 24px">
     <div class="fix">
@@ -1414,10 +1344,7 @@ em{font-style:normal;font-weight:700;}
       <div>
         <div class="fix-t">Two disagreeing platform palettes</div>
         <div class="fix-d">
-          <code>constants/platforms.ts</code> defines Americana as <span class="mono">#E63946</span> while
-          <code>tailwind.config.ts</code> defines it as <span class="mono">#0066FF</span>, and exports generic
-          Tailwind classes (<code>bg-orange-500</code>, <code>bg-yellow-500</code>) instead of brand tokens.
-          Two <code>getPlatformColor</code> functions return different shapes. Consolidate on the config values.
+          <code>constants/platforms.ts</code> (Americana <span class="mono">#E63946</span>) contradicts <code>tailwind.config.ts</code> (<span class="mono">#0066FF</span>). Consolidate on config values.
         </div>
       </div>
     </div>
@@ -1426,9 +1353,7 @@ em{font-style:normal;font-weight:700;}
       <div>
         <div class="fix-t">Three separate badge palettes</div>
         <div class="fix-d">
-          <code>StatusBadge</code> uses the semantic set, <code>PlatformBadge</code> adds a ring the
-          StatusBadge version omits, and <code>darb/OrderStatusBadge.tsx</code> bypasses tokens entirely with
-          raw <code>blue-50</code> / <code>green-50</code> / <code>gray-100</code>. One badge component should own all three.
+          <code>StatusBadge</code>, <code>PlatformBadge</code> and <code>OrderStatusBadge.tsx</code> disagree; the last bypasses tokens with raw <code>blue-50</code> / <code>green-50</code>. One badge should own all three.
         </div>
       </div>
     </div>
@@ -1437,9 +1362,7 @@ em{font-style:normal;font-weight:700;}
       <div>
         <div class="fix-t">RTL alignment will not mirror</div>
         <div class="fix-d">
-          Physical <code>text-left</code> / <code>text-right</code> outnumber logical
-          <code>text-start</code> / <code>text-end</code> by roughly 414 to 175. Every one of those is a cell
-          that stays put when the page flips to Arabic. Highest-value single sweep in the list.
+          Physical <code>text-left</code> / <code>text-right</code> outnumber logical by ~414 to 175. Each stays put when the page flips to Arabic. Highest-value sweep.
         </div>
       </div>
     </div>
@@ -1448,9 +1371,7 @@ em{font-style:normal;font-weight:700;}
       <div>
         <div class="fix-t">The logo does not match the product</div>
         <div class="fix-d">
-          <code>public/logo.png</code> is still navy and amber and appears in
-          <code>SidebarV2.tsx:192</code> against a forest sidebar. Replace with the forest recolour,
-          exported as SVG so it stays crisp at rail width.
+          <code>public/logo.png</code> is still navy/amber in <code>SidebarV2.tsx:192</code>. Replace with the navy recolour as SVG.
         </div>
       </div>
     </div>
@@ -1459,14 +1380,7 @@ em{font-style:normal;font-weight:700;}
       <div>
         <div class="fix-t">The product runs Almarai in Arabic only</div>
         <div class="fix-d">
-          Arabic is done and shipped: IBM Plex Sans Arabic is gone, Almarai is self-hosted at
-          <code>public/fonts/almarai/</code> with <code>unicode-range</code> subsets, and its CDN
-          <code>@import</code> was removed. Latin has not followed. The product still sets SF Pro
-          Display, pulled from <code>fonts.cdnfonts.com</code> on every page load, which is a
-          third-party dependency that fails silently. Until Latin moves to Almarai, this document
-          describes the target rather than the running product. Closing it means switching the
-          <code>sans</code> and <code>display</code> stacks in <code>tailwind.config.ts</code> and
-          dropping the last <code>@import</code>.
+          Arabic ships Almarai self-hosted. Latin still sets SF Pro Display from <code>fonts.cdnfonts.com</code> on every load. Switch the <code>sans</code> / <code>display</code> stacks to Almarai and drop the last <code>@import</code>.
         </div>
       </div>
     </div>
@@ -1475,10 +1389,7 @@ em{font-style:normal;font-weight:700;}
       <div>
         <div class="fix-t">No shared Button component</div>
         <div class="fix-d">
-          There is no <code>components/ui/</code>. 36 files hand-roll buttons, split between
-          <code>rounded-xl</code> and <code>rounded-pill</code> shapes, with disabled states at
-          <code>opacity-50</code>, <code>-40</code> and <code>-30</code>. The <code>.btn-*</code> primitives
-          in <code>globals.css</code> define no disabled state at all.
+          No <code>components/ui/</code>. 36 files hand-roll buttons across <code>rounded-xl</code> / <code>rounded-pill</code> and mixed disabled opacities.
         </div>
       </div>
     </div>
@@ -1487,8 +1398,7 @@ em{font-style:normal;font-weight:700;}
       <div>
         <div class="fix-t">Numeric columns are not tabular by default</div>
         <div class="fix-d">
-          <code>DataTable</code> has no number-alignment convention; callers pass <code>className</code> ad hoc,
-          and only 41 files use <code>tabular-nums</code> anywhere. Digits wobble between rows in most tables.
+          <code>DataTable</code> has no number-alignment convention; only 41 files use <code>tabular-nums</code>. Digits wobble between rows.
         </div>
       </div>
     </div>
@@ -1497,9 +1407,7 @@ em{font-style:normal;font-weight:700;}
       <div>
         <div class="fix-t">Shadow and radius drift</div>
         <div class="fix-d">
-          Stock <code>shadow-sm</code> outnumbers <code>shadow-soft</code> 205 to 53, and six radius values
-          are in active use against the four this document sanctions. Card padding is split between
-          <code>p-5</code> and <code>p-6</code>.
+          <code>shadow-sm</code> outnumbers <code>shadow-soft</code> 205 to 53; six radius values against the sanctioned four.
         </div>
       </div>
     </div>
@@ -1524,6 +1432,11 @@ em{font-style:normal;font-weight:700;}
 </main>
 </div><!-- /shell -->
 
+<div id="slideFooter">
+  <span>Darb Brand Guidelines</span>
+  <span><b>darb</b> · Version 1.0</span>
+</div>
+
 <script>
 (function(){
   var root = document.documentElement;
@@ -1538,6 +1451,40 @@ em{font-style:normal;font-weight:700;}
     root.setAttribute('data-theme', next);
     try { localStorage.setItem('darb-theme', next); } catch (e) {}
   });
+})();
+</script>
+
+<script>
+/* Fit-to-slide: scale each section so it fills exactly one printed page (no spill, no big gap). */
+(function(){
+  var WIDTH = 703;    /* A4-portrait printable width  @96dpi (210mm - 24mm margins) */
+  var AVAIL = 940;   /* content target; section box is 1032px, ~9% safety buffer */
+  function fit(){
+    document.querySelectorAll('main .wrap > .sec').forEach(function(sec){
+      var f = sec.querySelector(':scope > .sec-fit');
+      if(!f){
+        f = document.createElement('div');
+        f.className = 'sec-fit slide';
+        while(sec.firstChild){ f.appendChild(sec.firstChild); }
+        sec.appendChild(f);
+      }
+      f.classList.add('slide');
+      f.style.width = WIDTH + 'px';
+      f.style.transform = 'none';
+      var h = f.getBoundingClientRect().height;
+      var scale = Math.min(1, AVAIL / h);
+      sec.style.setProperty('--fit', scale.toFixed(4));
+      /* sections that fit without shrinking get vertically centred so the page reads as balanced */
+      if(scale >= 0.999){ sec.classList.add('centered'); }
+      f.style.width = '';        /* let print CSS own width + transform */
+      f.style.transform = '';
+    });
+  }
+  function run(){
+    if(document.fonts && document.fonts.ready){ document.fonts.ready.then(fit).catch(fit); }
+    else { fit(); }
+  }
+  if(document.readyState === 'complete'){ run(); } else { window.addEventListener('load', run); }
 })();
 </script>
 </body>
