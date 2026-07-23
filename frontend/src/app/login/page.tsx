@@ -56,10 +56,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen w-full flex bg-sand-100">
-      {/* Left brand panel — deep forest */}
-      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-forest-800 text-white">
-        <div className="absolute inset-0 bg-gradient-to-br from-forest-800 via-forest-900 to-forest-700 opacity-95" />
-        <div className="absolute -top-24 -right-24 w-[520px] h-[520px] rounded-full bg-forest-600/30 blur-3xl" />
+      {/* Left brand panel — deep navy */}
+      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-navy-800 text-white">
+        <div className="absolute inset-0 bg-gradient-to-br from-navy-800 via-navy-900 to-navy-700 opacity-95" />
+        <div className="absolute -top-24 -right-24 w-[520px] h-[520px] rounded-full bg-navy-600/30 blur-3xl" />
         <div className="absolute bottom-0 -left-10 w-[420px] h-[420px] rounded-full bg-moss/20 blur-3xl" />
 
         <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16 w-full">

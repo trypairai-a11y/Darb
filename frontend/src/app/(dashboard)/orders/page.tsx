@@ -511,7 +511,7 @@ export default function DeliveryOrdersPage() {
       {pending?.kind === "cancel" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
           <div
-            className="absolute inset-0 bg-forest-900/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-navy-900/40 backdrop-blur-sm"
             onClick={() => setPending(null)}
             aria-hidden="true"
           />

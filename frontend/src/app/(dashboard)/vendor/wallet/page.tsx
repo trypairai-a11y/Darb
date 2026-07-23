@@ -197,7 +197,7 @@ export default function VendorWalletPage() {
                   aria-valuemax={100}
                 >
                   <div
-                    className="h-full rounded-pill bg-forest-700"
+                    className="h-full rounded-pill bg-navy-700"
                     style={{ width: `${Math.round(creditRatio * 100)}%` }}
                   />
                 </div>

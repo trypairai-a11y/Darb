@@ -123,7 +123,7 @@ export default function TrackView({ token }: { token: string }) {
           {t(STATUS_KEY[order.status] ?? "track.statusCreated")}
         </h2>
         {order.etaMin != null && !TERMINAL.has(order.status) && (
-          <p className="mt-2 inline-flex items-baseline gap-1 rounded-pill bg-forest-900 px-4 py-1.5 text-white">
+          <p className="mt-2 inline-flex items-baseline gap-1 rounded-pill bg-navy-900 px-4 py-1.5 text-white">
             <span className="text-xs opacity-80">{t("track.etaLabel")}</span>
             <span dir="ltr" className="font-display text-lg tabular-nums">{order.etaMin}</span>
             <span className="text-xs opacity-80">{t("track.minutes")}</span>
@@ -141,7 +141,7 @@ export default function TrackView({ token }: { token: string }) {
                 <span
                   className={cn(
                     "flex h-5 w-5 items-center justify-center rounded-full text-[10px]",
-                    reached ? "bg-forest-900 text-white" : "bg-sand-200 text-sand-500",
+                    reached ? "bg-navy-900 text-white" : "bg-sand-200 text-sand-500",
                   )}
                 >
                   {i + 1}
@@ -166,7 +166,7 @@ export default function TrackView({ token }: { token: string }) {
             {order.driver.phone && (
               <a
                 href={`tel:${order.driver.phone}`}
-                className="inline-flex items-center gap-2 rounded-pill bg-forest-900 px-4 py-2 text-sm text-white"
+                className="inline-flex items-center gap-2 rounded-pill bg-navy-900 px-4 py-2 text-sm text-white"
               >
                 <Phone size={14} /> {t("track.callDriver")}
               </a>
@@ -243,7 +243,7 @@ function RatingCard({
 
   if (state === "done") {
     return (
-      <section className="mt-4 rounded-2xl bg-white shadow-soft border border-sand-200 p-5 text-center text-sm text-forest-900">
+      <section className="mt-4 rounded-2xl bg-white shadow-soft border border-sand-200 p-5 text-center text-sm text-navy-900">
         {t("track.rateThanks")}
       </section>
     );
@@ -281,7 +281,7 @@ function RatingCard({
             setState(err instanceof TrackApiError && err.status === 409 ? "done" : "error");
           }
         }}
-        className="mt-3 w-full rounded-pill bg-forest-900 py-2.5 text-sm text-white disabled:opacity-40"
+        className="mt-3 w-full rounded-pill bg-navy-900 py-2.5 text-sm text-white disabled:opacity-40"
       >
         {t("track.rateSubmit")}
       </button>
@@ -320,7 +320,7 @@ function TipCard({
 
   if (state === "done") {
     return (
-      <section className="mt-4 rounded-2xl bg-white shadow-soft border border-sand-200 p-5 text-center text-sm text-forest-900">
+      <section className="mt-4 rounded-2xl bg-white shadow-soft border border-sand-200 p-5 text-center text-sm text-navy-900">
         {t("track.tipThanks")}
       </section>
     );
@@ -338,7 +338,7 @@ function TipCard({
             className={cn(
               "flex-1 rounded-pill border py-2 text-sm tabular-nums",
               amount === n && !custom
-                ? "border-forest-900 bg-forest-900 text-white"
+                ? "border-navy-900 bg-navy-900 text-white"
                 : "border-sand-300 text-slate-900 hover:bg-sand-100",
             )}
             dir="ltr"
@@ -367,7 +367,7 @@ function TipCard({
             setState(err instanceof TrackApiError && err.status === 409 ? "done" : "error");
           }
         }}
-        className="mt-3 w-full rounded-pill bg-forest-900 py-2.5 text-sm text-white disabled:opacity-40"
+        className="mt-3 w-full rounded-pill bg-navy-900 py-2.5 text-sm text-white disabled:opacity-40"
       >
         {t("track.tipSubmit")}
       </button>

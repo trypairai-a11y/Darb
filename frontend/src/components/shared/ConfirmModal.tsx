@@ -74,7 +74,7 @@ export default function ConfirmModal({
       aria-describedby="confirm-modal-message"
     >
       <div
-        className="absolute inset-0 bg-forest-900/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-navy-900/40 backdrop-blur-sm"
         onClick={onCancel}
         aria-hidden="true"
       />

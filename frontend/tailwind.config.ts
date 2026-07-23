@@ -30,13 +30,12 @@ const config: Config = {
         },
 
         /**
-         * The `forest` scale is kept under its old name on purpose: it is used
-         * in ~40 places across the dashboard and renaming it here would be a
-         * mechanical churn commit on top of a visual one. The values are navy.
-         * 300 is the brand's yellow accent, matching --forest-300 in the
-         * guidelines, which is what carries the dot and the on-dark highlight.
+         * Brand navy ramp. 300 is the brand's yellow accent, matching
+         * --forest-300 in the guidelines (that token is still named for the
+         * old palette), which is what carries the dot in the mark and the
+         * on-dark highlight.
          */
-        forest: {
+        navy: {
           50: "#F2F6FC",
           100: "#DBE7F5",
           200: "#B7CDEA",
@@ -128,7 +127,7 @@ const config: Config = {
       backgroundImage: {
         "hero-veil": "linear-gradient(180deg, rgba(11,31,60,0) 0%, rgba(11,31,60,0.65) 100%)",
         "sand-gradient": "linear-gradient(180deg, #F6F5F3 0%, #EDEAE5 100%)",
-        "forest-gradient": "linear-gradient(180deg, #0B1F3C 0%, #0A1220 100%)",
+        "navy-gradient": "linear-gradient(180deg, #0B1F3C 0%, #0A1220 100%)",
       },
       transitionTimingFunction: {
         "sierra-out": "cubic-bezier(0.22, 1, 0.36, 1)",

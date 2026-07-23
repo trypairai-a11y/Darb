@@ -53,7 +53,7 @@ export default function Header() {
         <ThemeToggle />
         <NotificationDropdown />
         <div className="hidden md:flex items-center gap-3 ms-2 ps-3 border-s border-sand-200 dark:border-border">
-          <div className="h-9 w-9 rounded-full bg-forest-800 text-white flex items-center justify-center font-display text-sm">
+          <div className="h-9 w-9 rounded-full bg-navy-800 text-white flex items-center justify-center font-display text-sm">
             {initial}
           </div>
           <div className="text-end leading-tight">

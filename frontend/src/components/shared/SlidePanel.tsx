@@ -12,7 +12,7 @@ interface SlidePanelProps {
 export default function SlidePanel({ open, onClose, title, subtitle, children }: SlidePanelProps) {
   if (!open) return null;
   return (
-    <div className="fixed top-16 left-0 right-0 bottom-0 bg-forest-900/25 backdrop-blur-sm z-50 flex justify-end" onClick={onClose}>
+    <div className="fixed top-16 left-0 right-0 bottom-0 bg-navy-900/25 backdrop-blur-sm z-50 flex justify-end" onClick={onClose}>
       <div
         className="bg-card border-s border-sand-200 w-full max-w-md h-full shadow-float overflow-y-auto p-6 animate-in slide-in-from-right duration-250"
         onClick={(e) => e.stopPropagation()}
