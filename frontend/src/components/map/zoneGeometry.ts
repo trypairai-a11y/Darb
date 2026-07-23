@@ -14,12 +14,12 @@ import type { DeliveryZone } from "@/types/darb";
  * without shouting.
  */
 export const ZONE_PALETTE = [
-  "#3D6B52", // muted forest
-  "#4A6B8A", // slate blue
+  "#2F5D8C", // brand navy
   "#8A6A45", // clay brown
+  "#4F7A75", // deep teal
   "#6B5B7B", // dusty violet
   "#8A5A63", // muted rose
-  "#4F7A75", // deep teal
+  "#55744A", // moss
   "#7A6B4A", // olive
   "#5A6478", // steel
 ];

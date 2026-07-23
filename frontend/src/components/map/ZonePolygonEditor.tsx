@@ -25,7 +25,7 @@ interface ZonePolygonEditorProps {
 
 export default function ZonePolygonEditor({
   initialRing,
-  color = "#006838",
+  color = "#1D4E89",
   onComplete,
   onCancel,
 }: ZonePolygonEditorProps) {

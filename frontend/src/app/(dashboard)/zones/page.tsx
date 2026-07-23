@@ -35,7 +35,7 @@ const EMPTY_FORM: ZoneFormState = {
   code: "",
   name: "",
   nameAr: "",
-  color: "#006838",
+  color: "#1D4E89",
   isActive: true,
   ring: null,
 };
@@ -107,7 +107,7 @@ export default function ZonesPage() {
             name: zone.name,
             nameAr: zone.nameAr ?? "",
             // Show the colour the map is actually drawing, not a green default.
-            color: zone.color ?? colorById[zone.id] ?? "#006838",
+            color: zone.color ?? colorById[zone.id] ?? "#1D4E89",
             isActive: zone.isActive !== false,
             ring: ring ?? zone.polygon?.coordinates?.[0] ?? null,
           }
@@ -178,7 +178,7 @@ export default function ZonesPage() {
         <span className="inline-flex items-center gap-2">
           <span
             className="inline-block h-2.5 w-2.5 rounded-full"
-            style={{ background: colorById[row.id] ?? "#006838" }}
+            style={{ background: colorById[row.id] ?? "#1D4E89" }}
             aria-hidden="true"
           />
           <span className="font-mono text-xs">{v}</span>
@@ -301,7 +301,7 @@ export default function ZonesPage() {
               drawing
                 ? {
                     initialRing: editorInitialRing,
-                    color: drawing.zone?.color ?? "#006838",
+                    color: drawing.zone?.color ?? "#1D4E89",
                     onComplete: handleEditorComplete,
                     onCancel: () => setDrawing(null),
                   }

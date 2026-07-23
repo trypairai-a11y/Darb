@@ -30,7 +30,7 @@ export default function ScoreTrendChart({ points }: ScoreTrendChartProps) {
           <XAxis dataKey="snapshotDate" stroke="#9ca3af" fontSize={11} />
           <YAxis stroke="#9ca3af" fontSize={11} domain={[0, 100]} />
           <Tooltip />
-          <Line type="monotone" dataKey="compositeScore" stroke="#006838" strokeWidth={2} dot={false} />
+          <Line type="monotone" dataKey="compositeScore" stroke="#1D4E89" strokeWidth={2} dot={false} />
         </LineChart>
       </ResponsiveContainer>
     </div>

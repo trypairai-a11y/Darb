@@ -112,7 +112,7 @@ export default function LiveMapInner({
     return KUWAIT_CENTER;
   }, [center, marker]);
 
-  const singleIcon = useMemo(() => pinIcon(marker?.color ?? "#006838"), [marker?.color]);
+  const singleIcon = useMemo(() => pinIcon(marker?.color ?? "#1D4E89"), [marker?.color]);
 
   return (
     <MapContainer

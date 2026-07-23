@@ -20,25 +20,37 @@ const config: Config = {
         muted: "var(--color-muted)",
         surface: "var(--color-surface)",
 
+        // Brand navy (darb-branding/index.html v1.0). The mark was recoloured
+        // from forest to navy and sand with a yellow dot; the product follows.
         primary: {
-          DEFAULT: "#006838",
-          hover: "#00552E",
-          soft: "#F9FFFA",
-          ring: "rgba(0, 104, 56, 0.18)",
+          DEFAULT: "#1D4E89",
+          hover: "#163C6E",
+          soft: "#F5F8FD",
+          ring: "rgba(29, 78, 137, 0.18)",
         },
 
+        /**
+         * The `forest` scale is kept under its old name on purpose: it is used
+         * in ~40 places across the dashboard and renaming it here would be a
+         * mechanical churn commit on top of a visual one. The values are navy.
+         * 300 is the brand's yellow accent, matching --forest-300 in the
+         * guidelines, which is what carries the dot and the on-dark highlight.
+         */
         forest: {
-          50: "#F0F7F2",
-          100: "#D7E8DC",
-          200: "#AFD1B8",
-          300: "#82B792",
-          400: "#569B6C",
-          500: "#2F8350",
-          600: "#006838",
-          700: "#054E2A",
-          800: "#05351D",
-          900: "#042716",
+          50: "#F2F6FC",
+          100: "#DBE7F5",
+          200: "#B7CDEA",
+          300: "#F5C518",
+          400: "#5E93D6",
+          500: "#3B6FB0",
+          600: "#1D4E89",
+          700: "#163C6E",
+          800: "#0B1F3C",
+          900: "#0A1220",
         },
+
+        /** The brand's yellow: the sun in the mark, and the full stop. */
+        dot: "#F5C518",
 
         sand: {
           50: "#FBFAF8",
@@ -111,12 +123,12 @@ const config: Config = {
         soft: "0 1px 2px rgba(15, 31, 24, 0.04), 0 2px 8px rgba(15, 31, 24, 0.05)",
         lift: "0 2px 4px rgba(15, 31, 24, 0.04), 0 16px 40px rgba(15, 31, 24, 0.08)",
         float: "0 28px 34px rgba(15, 79, 138, 0.08), 0 75px 63px rgba(15, 79, 138, 0.06), 0 180px 84px rgba(15, 79, 138, 0.04)",
-        ring: "0 0 0 3px rgba(0, 104, 56, 0.18)",
+        ring: "0 0 0 3px rgba(29, 78, 137, 0.18)",
       },
       backgroundImage: {
-        "hero-veil": "linear-gradient(180deg, rgba(5,53,29,0) 0%, rgba(5,53,29,0.65) 100%)",
+        "hero-veil": "linear-gradient(180deg, rgba(11,31,60,0) 0%, rgba(11,31,60,0.65) 100%)",
         "sand-gradient": "linear-gradient(180deg, #F6F5F3 0%, #EDEAE5 100%)",
-        "forest-gradient": "linear-gradient(180deg, #05351D 0%, #042716 100%)",
+        "forest-gradient": "linear-gradient(180deg, #0B1F3C 0%, #0A1220 100%)",
       },
       transitionTimingFunction: {
         "sierra-out": "cubic-bezier(0.22, 1, 0.36, 1)",

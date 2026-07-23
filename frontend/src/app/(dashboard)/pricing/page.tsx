@@ -204,7 +204,7 @@ export default function PricingPage() {
                     <span className="inline-flex items-center gap-1.5">
                       <span
                         className="inline-block h-2 w-2 rounded-full"
-                        style={{ background: dest.color ?? "#006838" }}
+                        style={{ background: dest.color ?? "#1D4E89" }}
                         aria-hidden="true"
                       />
                       {zoneLabel(dest)}
@@ -220,7 +220,7 @@ export default function PricingPage() {
                     <span className="inline-flex items-center gap-1.5">
                       <span
                         className="inline-block h-2 w-2 rounded-full"
-                        style={{ background: origin.color ?? "#006838" }}
+                        style={{ background: origin.color ?? "#1D4E89" }}
                         aria-hidden="true"
                       />
                       {zoneLabel(origin)}

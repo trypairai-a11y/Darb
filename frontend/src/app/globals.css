@@ -66,23 +66,27 @@
   --color-card: #FFFFFF;
   --color-border: #E4E0DC;       /* warm sand border */
 
-  /* Accents */
-  --color-primary: #006838;
-  --color-primary-hover: #00552E;
-  --color-forest-deep: #05351D;
+  /* Accents — brand navy + the yellow dot (darb-branding/index.html v1.0) */
+  --color-primary: #1D4E89;
+  --color-primary-hover: #163C6E;
+  --color-forest-deep: #0B1F3C;
+  --color-dot: #F5C518;
 }
 
-/* Dark mode is neutral graphite, not forest. The green-black version read as a
-   heavy, unfriendly wall of colour (client revision #7); the brand green now
-   appears only as an accent on top of a neutral surface. */
+/* Dark mode comes straight from the brand guidelines' own dark tokens. It was
+   forest-black, which the client called heavy and unfriendly (revision #7);
+   this is the navy-tinted surface the guidelines specify, and the primary
+   lightens to #5E93D6 because navy on navy has no contrast. */
 .dark {
-  --color-bg: #14161A;           /* neutral graphite */
-  --color-surface: #1A1D22;
-  --color-fg: #E8E9EA;           /* neutral off-white */
-  --color-secondary: #9AA0A6;
-  --color-muted: #6B7075;
-  --color-card: #1C1F24;
-  --color-border: #2C3036;
+  --color-bg: #0A1220;
+  --color-surface: #101722;
+  --color-fg: #EDEAE5;
+  --color-secondary: #A99E92;
+  --color-muted: #716F6C;
+  --color-card: #131B27;
+  --color-border: #232B37;
+  --color-primary: #5E93D6;
+  --color-primary-hover: #7EA9E3;
 }
 
 * {
@@ -165,14 +169,14 @@ html[dir="rtl"] i, html[lang="ar"] i {
 
 /* Dark-mode overrides kept for legacy pages that use raw gray classes */
 .dark .bg-white { background-color: var(--color-card) !important; }
-.dark .bg-gray-50 { background-color: #1C1F24 !important; }
-.dark .bg-gray-100 { background-color: #23272D !important; }
-.dark .border-gray-50 { border-color: #2C3036 !important; }
-.dark .border-gray-100 { border-color: #32373E !important; }
-.dark .border-gray-200 { border-color: #3A4047 !important; }
-.dark .text-gray-400 { color: #8B9096 !important; }
-.dark .text-gray-500 { color: #9AA0A6 !important; }
-.dark .text-gray-600 { color: #B0B5BB !important; }
+.dark .bg-gray-50 { background-color: #131B27 !important; }
+.dark .bg-gray-100 { background-color: #1B2432 !important; }
+.dark .border-gray-50 { border-color: #232B37 !important; }
+.dark .border-gray-100 { border-color: #2A3446 !important; }
+.dark .border-gray-200 { border-color: #313C51 !important; }
+.dark .text-gray-400 { color: #716F6C !important; }
+.dark .text-gray-500 { color: #A99E92 !important; }
+.dark .text-gray-600 { color: #B9AFA3 !important; }
 .dark .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.3) !important; }
 
 /* Scrollbar */
@@ -188,13 +192,13 @@ html[dir="rtl"] i, html[lang="ar"] i {
   border-radius: 3px;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background: #3A4047;
+  background: #313C51;
 }
 
 /* Skeleton shimmer - dark variant */
 .dark .skeleton,
 .dark .animate-pulse {
-  background: linear-gradient(90deg, #23272D 25%, #2C3036 50%, #23272D 75%) !important;
+  background: linear-gradient(90deg, #1B2432 25%, #232B37 50%, #1B2432 75%) !important;
   background-size: 200% 100%;
 }
 
