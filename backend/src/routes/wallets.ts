@@ -407,7 +407,9 @@ router.get("/remittances", rbac(...REMITTANCE_READ), async (req: Request, res: R
         skip,
         take: limit,
         orderBy: { createdAt: "desc" },
-        include: { driver: { select: { id: true, name: true, phone: true } } },
+        include: {
+          driver: { select: { id: true, name: true, phone: true, driverCode: true } },
+        },
       }),
       prisma.remittance.count({ where: { ...where, tenantId } }),
     ]);

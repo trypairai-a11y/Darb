@@ -12,19 +12,30 @@ interface StatCardProps {
 }
 
 export default function StatCard({ title, value, icon: Icon, trend, highlight, className, onClick }: StatCardProps) {
+  // A clickable card must be a real button: it is reachable by keyboard, it
+  // announces itself, and the drill-downs on /finance depend on it.
+  const Root = onClick ? "button" : "div";
   return (
-    <div
-      onClick={onClick}
+    <Root
+      {...(onClick ? { type: "button" as const, onClick } : {})}
       className={cn(
         "group bg-card border border-sand-200 dark:border-border rounded-2xl p-5 shadow-soft transition-all duration-400 ease-sierra-out hover:shadow-lift hover:-translate-y-[1px]",
         highlight && "ring-1 ring-red-300/60",
-        onClick && "cursor-pointer",
+        onClick && "cursor-pointer w-full text-start focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
         className
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] uppercase tracking-[0.14em] font-medium text-sand-600 mb-3 truncate">{title}</p>
+          {/* Titles wrap to two lines instead of truncating: "DRIVERS ON…" and
+              "CASH IN THE…" were unreadable in the founder cockpit (revision
+              #24). The title attribute still gives the full text on hover. */}
+          <p
+            title={title}
+            className="text-[11px] uppercase tracking-[0.14em] font-medium text-sand-600 mb-3 leading-[1.35] line-clamp-2 min-h-[2.05em]"
+          >
+            {title}
+          </p>
           <p className={cn(
             "font-display leading-none tracking-tight whitespace-nowrap",
             // Step down with the length of the value so it always fits the card width
@@ -44,6 +55,6 @@ export default function StatCard({ title, value, icon: Icon, trend, highlight, c
           </div>
         )}
       </div>
-    </div>
+    </Root>
   );
 }

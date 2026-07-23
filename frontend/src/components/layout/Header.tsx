@@ -4,6 +4,7 @@ import { LogOut, PanelLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSidebar } from "@/contexts/SidebarContext";
 import NotificationDropdown from "./NotificationDropdown";
+import CompanySwitcher from "./CompanySwitcher";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDateLong } from "@/i18n/format";
@@ -48,6 +49,7 @@ export default function Header() {
         </div>
       </div>
       <div className="flex items-center gap-2">
+        <CompanySwitcher />
         <ThemeToggle />
         <NotificationDropdown />
         <div className="hidden md:flex items-center gap-3 ms-2 ps-3 border-s border-sand-200 dark:border-border">

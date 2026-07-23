@@ -460,6 +460,8 @@ model Tenant {
   americanaStoreAssignments AmericanaStoreAssignment[]
   americanaDailyIngestions  AmericanaDailyIngestion[]
   sims                      Sim[]
+  // Revision 1 (#15/#27/#28) — commonly-owned company groupings.
+  ownerGroups               OwnerGroup[]
   // Darb 2.0 — delivery fulfillment (Slice A1)
   vendors                   Vendor[]
   vendorBranches            VendorBranch[]
@@ -492,15 +494,48 @@ model Company {
   platform     Platform
   licenseCount Int      @default(0)
   isActive     Boolean  @default(true)
+  // Revision 1 (#21) — a company row is either a delivery/courier company we
+  // subcontract to, or a merchant-side account. The Companies table mixed both
+  // with no way to tell them apart.
+  kind         String   @default("FLEET") // FLEET | VENDOR
+  // Revision 1 (#15/#27) — commonly-owned companies share an owner entity.
+  ownerGroupId String?
+  // Revision 1 (#20) — the internal Darb staff member who owns this account.
+  accountManagerId String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   tenant              Tenant                @relation(fields: [tenantId], references: [id])
+  ownerGroup          OwnerGroup?           @relation(fields: [ownerGroupId], references: [id])
+  accountManager      User?                 @relation("CompanyAccountManager", fields: [accountManagerId], references: [id])
   drivers             Driver[]
   vehicles            Vehicle[]
   recruitmentPipeline RecruitmentPipeline[]
   tickets             Ticket[]
 
+  @@index([tenantId])
+  @@index([tenantId, ownerGroupId])
+}
+
+// 2b. OwnerGroup — Revision 1 (#15/#27/#28). Several delivery companies are
+//     owned and run by the same people (e.g. Sidra + Marina + Nakheel). The
+//     group is the unit of login (one account reaches every company in it) and
+//     the unit of combined/averaged reporting.
+model OwnerGroup {
+  id           String   @id @default(uuid())
+  tenantId     String
+  name         String
+  contactName  String?
+  contactPhone String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant   Tenant         @relation(fields: [tenantId], references: [id])
+  fleets   FleetPartner[]
+  companies Company[]
+  users    User[]
+
+  @@unique([tenantId, name])
   @@index([tenantId])
 }
 
@@ -524,6 +559,14 @@ model User {
   // Darb 2.0 PRD — set for role=FLEET users; scopes the fleet portal
   // (fleetPartnerId comes from the JWT, never from the client).
   fleetPartnerId String?
+  // Revision 1 (#15/#27) — a FLEET login scoped to an owner group rather than a
+  // single partner. When set, the user may switch between every fleet in the
+  // group; fleetPartnerId is then the default/last-used partner, not a fence.
+  ownerGroupId String?
+  // Revision 1 (#9) — vendor portal users are created per branch with a role.
+  // branchId is null for vendor-wide roles (OWNER, FINANCE).
+  branchId     String?
+  vendorRole   String? // OWNER | FINANCE | ORDER_TRACKING
   isActive     Boolean   @default(true)
   lastLoginAt  DateTime?
   createdAt    DateTime  @default(now())
@@ -532,6 +575,9 @@ model User {
   tenant                Tenant               @relation(fields: [tenantId], references: [id])
   vendor                Vendor?              @relation(fields: [vendorId], references: [id])
   fleetPartner          FleetPartner?        @relation(fields: [fleetPartnerId], references: [id])
+  ownerGroup            OwnerGroup?          @relation(fields: [ownerGroupId], references: [id])
+  branch                VendorBranch?        @relation("BranchPortalUser", fields: [branchId], references: [id])
+  managedCompanies      Company[]            @relation("CompanyAccountManager")
   supervisedDrivers     Driver[]             @relation("DriverSupervisor")
   issuedCommands        DeviceCommand[]      @relation("CommandIssuer")
   acknowledgedAlerts    Alert[]              @relation("AlertAcknowledger")
@@ -557,6 +603,10 @@ model Driver {
   companyId          String
   name               String
   phone              String
+  // Revision 1 (#14) — the Darb-issued driver identifier ("DRB-0001"). Finance
+  // searches remittances by this, not by name. platformDriverId below is the
+  // inherited Keeta/Talabat id and is not unique to Darb.
+  driverCode         String?
   platform           Platform
   platformDriverId   String?
   utr                String?
@@ -652,6 +702,7 @@ model Driver {
   incidents                 Incident[]
   orderRatings              OrderRating[]
 
+  @@unique([tenantId, driverCode])
   @@index([tenantId])
   @@index([companyId])
   @@index([platform])
@@ -2739,10 +2790,12 @@ model VendorBranch {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  tenant Tenant          @relation(fields: [tenantId], references: [id])
-  vendor Vendor          @relation(fields: [vendorId], references: [id])
-  zone   DeliveryZone?   @relation(fields: [zoneId], references: [id])
-  orders DeliveryOrder[]
+  tenant      Tenant          @relation(fields: [tenantId], references: [id])
+  vendor      Vendor          @relation(fields: [vendorId], references: [id])
+  zone        DeliveryZone?   @relation(fields: [zoneId], references: [id])
+  orders      DeliveryOrder[]
+  // Revision 1 (#9) — portal users scoped to this branch.
+  portalUsers User[]          @relation("BranchPortalUser")
 
   @@unique([tenantId, foodicsBranchId])
   @@index([tenantId])
@@ -2761,6 +2814,10 @@ model DeliveryZone {
   bbox        Json // [minLng, minLat, maxLng, maxLat]
   centroidLat Decimal? @db.Decimal(10, 7)
   centroidLng Decimal? @db.Decimal(10, 7)
+  // Revision 1 (#8) — the polygon editor has always sent a colour; without a
+  // column to hold it every zone edit silently discarded it and the list dot
+  // fell back to Darb green, which read as "zone edits do not save".
+  color       String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -3195,15 +3252,20 @@ model FleetPartner {
   disciplineStatus     String   @default("OK") // OK | WARNED | THROTTLED | SUSPENDED | REMOVED
   disciplineNote       String?
   isActive             Boolean  @default(true)
+  // Revision 1 (#15/#27/#28) — Sidra, Marina and Nakheel are the same owner.
+  // One login reaches the whole group and reporting can be combined.
+  ownerGroupId         String?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
   tenant     Tenant                 @relation(fields: [tenantId], references: [id])
+  ownerGroup OwnerGroup?            @relation(fields: [ownerGroupId], references: [id])
   drivers    Driver[]
   users      User[]
   statements FleetPayoutStatement[]
 
   @@index([tenantId, isActive])
+  @@index([tenantId, ownerGroupId])
 }
 
 // D21. FleetPayoutStatement - monthly fleet payout (PRD §11: delivered

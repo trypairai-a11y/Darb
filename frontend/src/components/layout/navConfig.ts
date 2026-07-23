@@ -19,7 +19,7 @@ import {
   Store,
   Wallet,
   HandCoins,
-  Scale,
+  FileText,
   Settings,
   SlidersHorizontal,
   ClipboardList,
@@ -85,7 +85,10 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { i18n: "darbNav.financeOverview", path: "/finance", icon: Wallet },
       { i18n: "darbNav.remittances", path: "/finance/remittances", icon: HandCoins },
-      { i18n: "darbNav.adjustments", path: "/finance/adjustments", icon: Scale },
+      // Adjustments was removed at the client's request (revision #13). The
+      // /api/wallets adjustment endpoints stay: corrections are compensating
+      // transactions and the ledger is append-only.
+      { i18n: "darbNav.reports", path: "/finance/reports", icon: FileText },
     ],
   },
   {

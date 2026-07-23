@@ -72,14 +72,17 @@
   --color-forest-deep: #05351D;
 }
 
+/* Dark mode is neutral graphite, not forest. The green-black version read as a
+   heavy, unfriendly wall of colour (client revision #7); the brand green now
+   appears only as an accent on top of a neutral surface. */
 .dark {
-  --color-bg: #0B1410;           /* near-black forest */
-  --color-surface: #111A15;
-  --color-fg: #EDEAE5;           /* warm off-white */
-  --color-secondary: #A99E92;
-  --color-muted: #716F6C;
-  --color-card: #151F19;
-  --color-border: #26312B;
+  --color-bg: #14161A;           /* neutral graphite */
+  --color-surface: #1A1D22;
+  --color-fg: #E8E9EA;           /* neutral off-white */
+  --color-secondary: #9AA0A6;
+  --color-muted: #6B7075;
+  --color-card: #1C1F24;
+  --color-border: #2C3036;
 }
 
 * {
@@ -162,14 +165,14 @@ html[dir="rtl"] i, html[lang="ar"] i {
 
 /* Dark-mode overrides kept for legacy pages that use raw gray classes */
 .dark .bg-white { background-color: var(--color-card) !important; }
-.dark .bg-gray-50 { background-color: #151F19 !important; }
-.dark .bg-gray-100 { background-color: #1C2822 !important; }
-.dark .border-gray-50 { border-color: #26312B !important; }
-.dark .border-gray-100 { border-color: #2C3A32 !important; }
-.dark .border-gray-200 { border-color: #334539 !important; }
-.dark .text-gray-400 { color: #8E948D !important; }
-.dark .text-gray-500 { color: #A99E92 !important; }
-.dark .text-gray-600 { color: #B9AFA3 !important; }
+.dark .bg-gray-50 { background-color: #1C1F24 !important; }
+.dark .bg-gray-100 { background-color: #23272D !important; }
+.dark .border-gray-50 { border-color: #2C3036 !important; }
+.dark .border-gray-100 { border-color: #32373E !important; }
+.dark .border-gray-200 { border-color: #3A4047 !important; }
+.dark .text-gray-400 { color: #8B9096 !important; }
+.dark .text-gray-500 { color: #9AA0A6 !important; }
+.dark .text-gray-600 { color: #B0B5BB !important; }
 .dark .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.3) !important; }
 
 /* Scrollbar */
@@ -185,13 +188,13 @@ html[dir="rtl"] i, html[lang="ar"] i {
   border-radius: 3px;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background: #334539;
+  background: #3A4047;
 }
 
 /* Skeleton shimmer - dark variant */
 .dark .skeleton,
 .dark .animate-pulse {
-  background: linear-gradient(90deg, #1C2822 25%, #26312B 50%, #1C2822 75%) !important;
+  background: linear-gradient(90deg, #23272D 25%, #2C3036 50%, #23272D 75%) !important;
   background-size: 200% 100%;
 }
 

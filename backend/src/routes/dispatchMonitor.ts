@@ -36,7 +36,13 @@ type SessionRow = {
   lastGpsLat: unknown;
   lastGpsLng: unknown;
   startTime: Date;
-  driver: { id: string; name: string; phone: string | null; vehicleType: string | null };
+  driver: {
+    id: string;
+    name: string;
+    phone: string | null;
+    vehicleType: string | null;
+    driverCode: string | null;
+  };
 };
 
 /** Latest non-offline session per driver (a driver may have stale old rows). */
@@ -67,7 +73,9 @@ router.get("/positions", async (req: Request, res: Response) => {
     const sessions = (await prisma.courierOnlineSession.findMany({
       where: { tenantId, availability: { in: NON_OFFLINE } },
       include: {
-        driver: { select: { id: true, name: true, phone: true, vehicleType: true } },
+        driver: {
+          select: { id: true, name: true, phone: true, vehicleType: true, driverCode: true },
+        },
       },
     })) as unknown as SessionRow[];
 
@@ -91,6 +99,7 @@ router.get("/positions", async (req: Request, res: Response) => {
 
     const positions = unique.map((s) => ({
       driverId: s.driverId,
+      driverCode: s.driver.driverCode,
       name: s.driver.name,
       phone: s.driver.phone,
       vehicleType: s.driver.vehicleType,
@@ -98,6 +107,11 @@ router.get("/positions", async (req: Request, res: Response) => {
       lng: toNum(s.lastGpsLng),
       heading: null as null,
       at: s.lastGpsAt,
+      // The map keys marker colour off `availability`. This used to be sent as
+      // `status`, so every marker fell through to the OFFLINE grey regardless
+      // of the driver's real state (client revision #3). `status` is kept as an
+      // alias so nothing reading the old name breaks.
+      availability: s.availability,
       status: s.availability,
       hasActiveOrder: activeOrderByDriver.has(s.driverId),
       activeOrderId: activeOrderByDriver.get(s.driverId) ?? null,
@@ -140,7 +154,9 @@ router.get("/overview", async (req: Request, res: Response) => {
       prisma.courierOnlineSession.findMany({
         where: { tenantId, availability: { in: NON_OFFLINE } },
         include: {
-          driver: { select: { id: true, name: true, phone: true, vehicleType: true } },
+          driver: {
+            select: { id: true, name: true, phone: true, vehicleType: true, driverCode: true },
+          },
         },
       }) as unknown as Promise<SessionRow[]>,
       prisma.deliveryZone.findMany({

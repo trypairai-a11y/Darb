@@ -1013,6 +1013,15 @@ export interface Messages {
     faceReasonLowQuality: string;
   };
   settingsPage: {
+    typeCol: string;
+    accountManagerCol: string;
+    unassigned: string;
+    totalDrivers: string;
+    kindAll: string;
+    kindFleets: string;
+    kindVendors: string;
+    kindFleet: string;
+    kindVendor: string;
     title: string;
     tabCompanies: string;
     tabUsers: string;
@@ -1255,6 +1264,7 @@ export interface Messages {
     zoneSaved: string;
     zoneDeleted: string;
     noZones: string;
+    drawBoundaryFirst: string;
   };
   pricingPage: {
     title: string;
@@ -1271,6 +1281,16 @@ export interface Messages {
     unsavedChanges: string;
   };
   vendorsPage: {
+    portalRole: string;
+    roleOwner: string;
+    roleFinance: string;
+    roleOrderTracking: string;
+    roleHint: string;
+    branch: string;
+    selectBranch: string;
+    allBranches: string;
+    branchRequired: string;
+    noUsers: string;
     title: string;
     subtitle: string;
     newVendor: string;
@@ -1435,6 +1455,7 @@ export interface Messages {
     recordRemittance: string;
     driver: string;
     selectDriver: string;
+    searchByDriverId: string;
     heldBalance: string;
     amount: string;
     method: string;
@@ -1468,6 +1489,37 @@ export interface Messages {
     openRemittances: string;
     openAdjustments: string;
     openReports: string;
+    viewStatements: string;
+    viewRemittances: string;
+    viewLedger: string;
+  };
+  reports: {
+    title: string;
+    subtitle: string;
+    viewLedger: string;
+    viewVendorStatements: string;
+    viewRemittances: string;
+    viewReconciliation: string;
+    exportCsv: string;
+    from: string;
+    to: string;
+    entryType: string;
+    direction: string;
+    credit: string;
+    debit: string;
+    runningBalance: string;
+    vendor: string;
+    period: string;
+    codNet: string;
+    closingBalance: string;
+    runDate: string;
+    typePlatformRevenue: string;
+    typeFleetCost: string;
+    typeDriverCash: string;
+    typeVendorPayable: string;
+    noRows: string;
+    noStatements: string;
+    noRuns: string;
   };
   incidents: {
     sosAlert: string;
@@ -1504,6 +1556,55 @@ export interface Messages {
     error: string;
     pending: string;
   };
+  opsMap: {
+    byTask: string;
+    byCourier: string;
+    allStatuses: string;
+    irregularTask: string;
+    filterLargeOrder: string;
+    filterAlmostLate: string;
+    filterLate: string;
+    filterUnusualStop: string;
+    filterCourierIssue: string;
+    sortAcceptance: string;
+    sortSla: string;
+    accepted: string;
+    awaitingDriver: string;
+    totalTime: string;
+    minShort: string;
+    leftForDelivery: string;
+    large: string;
+    noDriverYet: string;
+    unknownVendor: string;
+    noTasks: string;
+    copyTask: string;
+    copyCourier: string;
+    copyIrregular: string;
+    copied: string;
+    copyFailed: string;
+    copyOrderNumber: string;
+    copyVendor: string;
+    copyBranch: string;
+    copyDriver: string;
+    copyDriverCode: string;
+    copyDriverPhone: string;
+    copyElapsed: string;
+    copySlaDeadline: string;
+    copyDropoff: string;
+    copyCoordinates: string;
+    copyVehicle: string;
+    copyLastFix: string;
+    searchCouriers: string;
+    noCouriers: string;
+    driverBusy: string;
+    driverIdle: string;
+    driverOnline: string;
+    driverOffline: string;
+    driverStale: string;
+    gpsBannerLead: string;
+    gpsBannerOthers: string;
+    gpsBannerTail: string;
+  };
   opsPages: {
     mapTitle: string;
     railTitle: string;
@@ -1526,6 +1627,8 @@ export interface Messages {
     acknowledged: string;
     call: string;
     allClear: string;
+    autoClearHint: string;
+    clearedSection: string;
     sosTitle: string;
     sosSubtitle: string;
     soundLocked: string;
@@ -1603,6 +1706,7 @@ export interface Messages {
     errorGeneric: string;
   };
   fleetPortal: {
+    switchCompany: string;
     navSection: string;
     navRoster: string;
     navScorecard: string;
@@ -1634,12 +1738,21 @@ export interface Messages {
     noStatements: string;
     disciplineBanner: string;
   };
+  period: {
+    today: string;
+    thisWeek: string;
+    thisMonth: string;
+    from: string;
+    to: string;
+  };
   cockpit: {
+    groupByOwner: string;
     navSection: string;
     navTitle: string;
     title: string;
     subtitle: string;
     activeOrders: string;
+    liveNow: string;
     deliveredToday: string;
     onTimeToday: string;
     feesToday: string;
@@ -2738,6 +2851,15 @@ export const en: Messages = {
     faceReasonLowQuality: "Image too dark / blurry",
   },
   settingsPage: {
+    typeCol: "Type",
+    accountManagerCol: "Account manager",
+    unassigned: "Unassigned",
+    totalDrivers: "Total drivers",
+    kindAll: "All",
+    kindFleets: "Fleets",
+    kindVendors: "Vendors",
+    kindFleet: "Fleet",
+    kindVendor: "Vendor",
     title: "Settings",
     tabCompanies: "Companies",
     tabUsers: "Users",
@@ -2979,6 +3101,7 @@ export const en: Messages = {
     deleteConfirmMessage: "Branches and pricing rows referencing this zone will stop resolving. This cannot be undone.",
     zoneSaved: "Zone saved",
     zoneDeleted: "Zone deleted",
+    drawBoundaryFirst: "Draw the zone boundary on the map before saving.",
     noZones: "No zones yet — draw the first one on the map.",
   },
   pricingPage: {
@@ -2996,6 +3119,16 @@ export const en: Messages = {
     unsavedChanges: "Unsaved changes",
   },
   vendorsPage: {
+    portalRole: "Portal role",
+    roleOwner: "Owner",
+    roleFinance: "Finance",
+    roleOrderTracking: "Order tracking",
+    roleHint: "Owner sees everything. Finance sees the wallet and statements. Order tracking sees orders for one branch only.",
+    branch: "Branch",
+    selectBranch: "Select a branch",
+    allBranches: "All branches",
+    branchRequired: "Pick the branch this login belongs to.",
+    noUsers: "No portal users yet.",
     title: "Vendors",
     subtitle: "Restaurants and merchants sending orders into the network.",
     newVendor: "New vendor",
@@ -3160,6 +3293,7 @@ export const en: Messages = {
     recordRemittance: "Record remittance",
     driver: "Driver",
     selectDriver: "Search for a driver",
+    searchByDriverId: "Search by driver ID",
     heldBalance: "Cash held",
     amount: "Amount (KD)",
     method: "Method",
@@ -3193,6 +3327,37 @@ export const en: Messages = {
     openRemittances: "Record and review driver cash hand-ins.",
     openAdjustments: "Correct wallet balances with an audit trail.",
     openReports: "Financial reports and exports.",
+    viewStatements: "View vendor statements",
+    viewRemittances: "View cash hand-ins",
+    viewLedger: "View fee ledger",
+  },
+  reports: {
+    title: "Financial reports",
+    subtitle: "Ledger, vendor statements, cash hand-ins and reconciliation, all exportable.",
+    viewLedger: "Ledger",
+    viewVendorStatements: "Vendor statements",
+    viewRemittances: "Cash hand-ins",
+    viewReconciliation: "Reconciliation",
+    exportCsv: "Export CSV",
+    from: "From",
+    to: "To",
+    entryType: "Type",
+    direction: "Direction",
+    credit: "Credit",
+    debit: "Debit",
+    runningBalance: "Running balance",
+    vendor: "Vendor",
+    period: "Period",
+    codNet: "COD net",
+    closingBalance: "Closing balance",
+    runDate: "Run date",
+    typePlatformRevenue: "Platform revenue",
+    typeFleetCost: "Fleet cost",
+    typeDriverCash: "Driver cash",
+    typeVendorPayable: "Vendor payable",
+    noRows: "No rows for this period.",
+    noStatements: "No vendor statements generated yet.",
+    noRuns: "No reconciliation runs recorded yet.",
   },
   incidents: {
     sosAlert: "SOS alert",
@@ -3229,6 +3394,55 @@ export const en: Messages = {
     error: "Connection error",
     pending: "Pending",
   },
+  opsMap: {
+    byTask: "By task",
+    byCourier: "By courier",
+    allStatuses: "All",
+    irregularTask: "Irregular task",
+    filterLargeOrder: "Large order",
+    filterAlmostLate: "Undelivered & almost late",
+    filterLate: "Undelivered & late",
+    filterUnusualStop: "Unusual stop",
+    filterCourierIssue: "Issue reported by courier",
+    sortAcceptance: "By acceptance time",
+    sortSla: "By time remaining",
+    accepted: "Accepted",
+    awaitingDriver: "Awaiting driver",
+    totalTime: "Total time",
+    minShort: "min",
+    leftForDelivery: "left for delivery",
+    large: "Large",
+    noDriverYet: "No driver yet",
+    unknownVendor: "Unknown vendor",
+    noTasks: "No tasks match these filters.",
+    copyTask: "Copy task info",
+    copyCourier: "Copy courier info",
+    copyIrregular: "One-click copy irregular info",
+    copied: "Copied to clipboard",
+    copyFailed: "Could not copy to clipboard",
+    copyOrderNumber: "Order",
+    copyVendor: "Vendor",
+    copyBranch: "Branch",
+    copyDriver: "Driver",
+    copyDriverCode: "Driver ID",
+    copyDriverPhone: "Driver phone",
+    copyElapsed: "Elapsed",
+    copySlaDeadline: "SLA deadline",
+    copyDropoff: "Dropoff",
+    copyCoordinates: "Coordinates",
+    copyVehicle: "Vehicle",
+    copyLastFix: "Last GPS fix",
+    searchCouriers: "Search by name or driver ID",
+    noCouriers: "No couriers match these filters.",
+    driverBusy: "Has order",
+    driverIdle: "Idle",
+    driverOnline: "Online",
+    driverOffline: "Offline",
+    driverStale: "GPS stale",
+    gpsBannerLead: "Rider",
+    gpsBannerOthers: "and {count} more",
+    gpsBannerTail: "has not uploaded a GPS location for a long time and cannot accept new orders. Prompt the rider to open GPS.",
+  },
   opsPages: {
     mapTitle: "Ops map",
     railTitle: "At-risk orders",
@@ -3251,6 +3465,8 @@ export const en: Messages = {
     acknowledged: "Acknowledged",
     call: "Call",
     allClear: "All clear — nothing needs attention.",
+    autoClearHint: "Alerts clear themselves the moment the problem resolves. Nothing to acknowledge.",
+    clearedSection: "Cleared",
     sosTitle: "SOS console",
     sosSubtitle: "Open incidents from the field — acknowledge fast, resolve with a note.",
     soundLocked: "Click anywhere to enable sound alerts.",
@@ -3328,6 +3544,7 @@ export const en: Messages = {
     errorGeneric: "Something went wrong. Pull to retry.",
   },
   fleetPortal: {
+    switchCompany: "Switch company",
     navSection: "Fleet portal",
     navRoster: "Roster",
     navScorecard: "Scorecard",
@@ -3359,12 +3576,21 @@ export const en: Messages = {
     noStatements: "No statements yet. They generate on the 1st of each month.",
     disciplineBanner: "Your fleet is under review. Contact Darb operations.",
   },
+  period: {
+    today: "Today",
+    thisWeek: "This week",
+    thisMonth: "This month",
+    from: "From",
+    to: "To",
+  },
   cockpit: {
+    groupByOwner: "Group by owner",
     navSection: "Cockpit",
     navTitle: "Founder cockpit",
     title: "Founder cockpit",
     subtitle: "Live operation, money and cash position.",
     activeOrders: "Active orders",
+    liveNow: "Live now",
     deliveredToday: "Delivered today",
     onTimeToday: "On-time today",
     feesToday: "Fees today",
@@ -4463,6 +4689,15 @@ export const ar: Messages = {
     faceReasonLowQuality: "الصورة مظلمة / ضبابية",
   },
   settingsPage: {
+    typeCol: "النوع",
+    accountManagerCol: "مدير الحساب",
+    unassigned: "غير معيّن",
+    totalDrivers: "إجمالي السائقين",
+    kindAll: "الكل",
+    kindFleets: "شركات التوصيل",
+    kindVendors: "التجار",
+    kindFleet: "شركة توصيل",
+    kindVendor: "تاجر",
     title: "الإعدادات",
     tabCompanies: "الشركات",
     tabUsers: "المستخدمون",
@@ -4704,6 +4939,7 @@ export const ar: Messages = {
     deleteConfirmMessage: "الفروع وصفوف التسعير المرتبطة بهذه المنطقة ستتوقف عن العمل. لا يمكن التراجع عن هذا الإجراء.",
     zoneSaved: "تم حفظ المنطقة",
     zoneDeleted: "تم حذف المنطقة",
+    drawBoundaryFirst: "ارسم حدود المنطقة على الخريطة قبل الحفظ.",
     noZones: "لا توجد مناطق بعد — ارسم المنطقة الأولى على الخريطة.",
   },
   pricingPage: {
@@ -4721,6 +4957,16 @@ export const ar: Messages = {
     unsavedChanges: "تغييرات غير محفوظة",
   },
   vendorsPage: {
+    portalRole: "دور البوابة",
+    roleOwner: "المالك",
+    roleFinance: "المالية",
+    roleOrderTracking: "متابعة الطلبات",
+    roleHint: "المالك يرى كل شيء. المالية ترى المحفظة والكشوف. متابعة الطلبات ترى طلبات فرع واحد فقط.",
+    branch: "الفرع",
+    selectBranch: "اختر فرعاً",
+    allBranches: "جميع الفروع",
+    branchRequired: "اختر الفرع الذي يتبع له هذا الحساب.",
+    noUsers: "لا يوجد مستخدمو بوابة بعد.",
     title: "المطاعم",
     subtitle: "المطاعم والمتاجر التي ترسل الطلبات إلى الشبكة.",
     newVendor: "مطعم جديد",
@@ -4885,6 +5131,7 @@ export const ar: Messages = {
     recordRemittance: "تسجيل توريد",
     driver: "السائق",
     selectDriver: "ابحث عن سائق",
+    searchByDriverId: "ابحث برقم السائق",
     heldBalance: "النقد المحتفظ به",
     amount: "المبلغ (د.ك)",
     method: "الطريقة",
@@ -4918,6 +5165,37 @@ export const ar: Messages = {
     openRemittances: "تسجيل ومراجعة النقد المسلَّم من السائقين.",
     openAdjustments: "تصحيح أرصدة المحافظ مع سجل تدقيق.",
     openReports: "التقارير المالية والتصدير.",
+    viewStatements: "عرض كشوف التجار",
+    viewRemittances: "عرض التوريدات النقدية",
+    viewLedger: "عرض دفتر الرسوم",
+  },
+  reports: {
+    title: "التقارير المالية",
+    subtitle: "دفتر الحسابات وكشوف التجار والتوريدات النقدية والمطابقة، جميعها قابلة للتصدير.",
+    viewLedger: "دفتر الحسابات",
+    viewVendorStatements: "كشوف التجار",
+    viewRemittances: "التوريدات النقدية",
+    viewReconciliation: "المطابقة",
+    exportCsv: "تصدير CSV",
+    from: "من",
+    to: "إلى",
+    entryType: "النوع",
+    direction: "الاتجاه",
+    credit: "دائن",
+    debit: "مدين",
+    runningBalance: "الرصيد الجاري",
+    vendor: "التاجر",
+    period: "الفترة",
+    codNet: "صافي الدفع عند الاستلام",
+    closingBalance: "الرصيد الختامي",
+    runDate: "تاريخ التشغيل",
+    typePlatformRevenue: "إيراد المنصة",
+    typeFleetCost: "تكلفة الأسطول",
+    typeDriverCash: "نقد السائق",
+    typeVendorPayable: "مستحقات التاجر",
+    noRows: "لا توجد صفوف لهذه الفترة.",
+    noStatements: "لم يتم إصدار كشوف للتجار بعد.",
+    noRuns: "لا توجد عمليات مطابقة مسجلة بعد.",
   },
   incidents: {
     sosAlert: "نداء استغاثة",
@@ -4954,6 +5232,55 @@ export const ar: Messages = {
     error: "خطأ في الاتصال",
     pending: "قيد الانتظار",
   },
+  opsMap: {
+    byTask: "حسب المهمة",
+    byCourier: "حسب المندوب",
+    allStatuses: "الكل",
+    irregularTask: "مهام غير اعتيادية",
+    filterLargeOrder: "طلب كبير",
+    filterAlmostLate: "غير مُسلَّم وقارب التأخير",
+    filterLate: "غير مُسلَّم ومتأخر",
+    filterUnusualStop: "توقف غير معتاد",
+    filterCourierIssue: "مشكلة أبلغ عنها المندوب",
+    sortAcceptance: "حسب وقت القبول",
+    sortSla: "حسب الوقت المتبقي",
+    accepted: "مقبول",
+    awaitingDriver: "بانتظار سائق",
+    totalTime: "الوقت الكلي",
+    minShort: "دقيقة",
+    leftForDelivery: "متبقٍ للتسليم",
+    large: "كبير",
+    noDriverYet: "لا يوجد سائق بعد",
+    unknownVendor: "تاجر غير معروف",
+    noTasks: "لا توجد مهام مطابقة لهذه الفلاتر.",
+    copyTask: "نسخ بيانات المهمة",
+    copyCourier: "نسخ بيانات المندوب",
+    copyIrregular: "نسخ البيانات غير الاعتيادية بنقرة",
+    copied: "تم النسخ إلى الحافظة",
+    copyFailed: "تعذّر النسخ إلى الحافظة",
+    copyOrderNumber: "الطلب",
+    copyVendor: "التاجر",
+    copyBranch: "الفرع",
+    copyDriver: "السائق",
+    copyDriverCode: "رقم السائق",
+    copyDriverPhone: "هاتف السائق",
+    copyElapsed: "الوقت المنقضي",
+    copySlaDeadline: "الموعد النهائي",
+    copyDropoff: "التسليم",
+    copyCoordinates: "الإحداثيات",
+    copyVehicle: "المركبة",
+    copyLastFix: "آخر تحديد موقع",
+    searchCouriers: "ابحث بالاسم أو رقم السائق",
+    noCouriers: "لا يوجد مندوبون مطابقون لهذه الفلاتر.",
+    driverBusy: "لديه طلب",
+    driverIdle: "متفرغ",
+    driverOnline: "متصل",
+    driverOffline: "غير متصل",
+    driverStale: "تتبّع منقطع",
+    gpsBannerLead: "المندوب",
+    gpsBannerOthers: "و{count} آخرين",
+    gpsBannerTail: "لم يرسل موقعه منذ فترة طويلة ولا يمكنه استقبال طلبات جديدة. نبّهه لتشغيل الموقع.",
+  },
   opsPages: {
     mapTitle: "خريطة العمليات",
     railTitle: "طلبات في خطر",
@@ -4976,6 +5303,8 @@ export const ar: Messages = {
     acknowledged: "تم التأكيد",
     call: "اتصال",
     allClear: "كل شيء على ما يرام — لا شيء يحتاج انتباهاً.",
+    autoClearHint: "تُزال التنبيهات تلقائياً بمجرد انتهاء المشكلة. لا حاجة لتأكيد الاستلام.",
+    clearedSection: "تمت المعالجة",
     sosTitle: "وحدة الاستغاثة",
     sosSubtitle: "بلاغات مفتوحة من الميدان — أكّد الاستلام بسرعة وأغلقها بملاحظة.",
     soundLocked: "انقر في أي مكان لتفعيل التنبيهات الصوتية.",
@@ -5053,6 +5382,7 @@ export const ar: Messages = {
     errorGeneric: "حدث خطأ ما. حاول مرة أخرى.",
   },
   fleetPortal: {
+    switchCompany: "تبديل الشركة",
     navSection: "بوابة الأسطول",
     navRoster: "السائقون",
     navScorecard: "الأداء",
@@ -5084,12 +5414,21 @@ export const ar: Messages = {
     noStatements: "لا توجد كشوف بعد. تصدر أول كل شهر.",
     disciplineBanner: "أسطولك قيد المراجعة. تواصل مع عمليات درب.",
   },
+  period: {
+    today: "اليوم",
+    thisWeek: "هذا الأسبوع",
+    thisMonth: "هذا الشهر",
+    from: "من",
+    to: "إلى",
+  },
   cockpit: {
+    groupByOwner: "تجميع حسب المالك",
     navSection: "غرفة القيادة",
     navTitle: "لوحة المؤسسين",
     title: "لوحة المؤسسين",
     subtitle: "التشغيل المباشر والأموال ووضع النقد.",
     activeOrders: "الطلبات النشطة",
+    liveNow: "الآن مباشرة",
     deliveredToday: "الموصلة اليوم",
     onTimeToday: "الالتزام بالوقت اليوم",
     feesToday: "رسوم اليوم",

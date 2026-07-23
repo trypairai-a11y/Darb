@@ -24,6 +24,11 @@ export type Tenant = $Result.DefaultSelection<Prisma.$TenantPayload>
  */
 export type Company = $Result.DefaultSelection<Prisma.$CompanyPayload>
 /**
+ * Model OwnerGroup
+ * 
+ */
+export type OwnerGroup = $Result.DefaultSelection<Prisma.$OwnerGroupPayload>
+/**
  * Model User
  * 
  */
@@ -1515,6 +1520,16 @@ export class PrismaClient<
   get company(): Prisma.CompanyDelegate<ExtArgs>;
 
   /**
+   * `prisma.ownerGroup`: Exposes CRUD operations for the **OwnerGroup** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more OwnerGroups
+    * const ownerGroups = await prisma.ownerGroup.findMany()
+    * ```
+    */
+  get ownerGroup(): Prisma.OwnerGroupDelegate<ExtArgs>;
+
+  /**
    * `prisma.user`: Exposes CRUD operations for the **User** model.
     * Example usage:
     * ```ts
@@ -2966,6 +2981,7 @@ export namespace Prisma {
   export const ModelName: {
     Tenant: 'Tenant',
     Company: 'Company',
+    OwnerGroup: 'OwnerGroup',
     User: 'User',
     Driver: 'Driver',
     DriverRestriction: 'DriverRestriction',
@@ -3082,7 +3098,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "tenant" | "company" | "user" | "driver" | "driverRestriction" | "driverInventory" | "recruitmentPipeline" | "vehicle" | "vehicleDriverAssignment" | "shift" | "attendanceRecord" | "orderLog" | "cashRecord" | "cashTransaction" | "pendingDuesLedger" | "vehicleInspection" | "maintenanceRecord" | "device" | "sim" | "capturedOrder" | "locationLog" | "appUsageLog" | "deviceCommand" | "aiScore" | "alert" | "aiDigest" | "auditLog" | "ticket" | "leaveRequest" | "talabatSession" | "talabatViolationEvent" | "talabatDelivery" | "keetaDailyMetrics" | "ingestRun" | "deliverooDailyMetrics" | "talabatDailyMetrics" | "platformSettings" | "platformInventory" | "americanaDailyOrders" | "americanaChain" | "americanaStore" | "americanaContract" | "americanaChainRate" | "driverBatchHistory" | "americanaStoreAssignment" | "americanaDailyIngestion" | "kpiDefinition" | "kpiRecord" | "notification" | "notificationDelivery" | "notificationRule" | "courierOnlineSession" | "violation" | "penalty" | "appeal" | "orderEvent" | "aiInsight" | "demandHeatmap" | "deliveryArea" | "courierAttendanceSlot" | "keetaAvailableShiftSlot" | "shiftComplianceConfig" | "partner" | "partnerBankAccount" | "incentiveTargetRound" | "incentiveGoal" | "incentiveTier" | "courierIncentivePayout" | "billing" | "taxInvoice" | "paymentWithdrawal" | "agentRunLog" | "agentToolCall" | "pendingAgentAction" | "agentAction" | "agentMemory" | "pinnedView" | "performanceSnapshot" | "metricEvent" | "chatThread" | "chatMessage" | "scheduledBriefing" | "vendor" | "vendorBranch" | "deliveryZone" | "zoneSurcharge" | "fulfillmentSettings" | "deliveryOrder" | "dispatchOffer" | "walletAccount" | "walletTransaction" | "walletEntry" | "remittance" | "walletReconciliationRun" | "incident" | "foodicsConnection" | "webhookEvent" | "apiKey" | "orderRating" | "vendorStatement" | "refund" | "fleetPartner" | "fleetPayoutStatement"
+      modelProps: "tenant" | "company" | "ownerGroup" | "user" | "driver" | "driverRestriction" | "driverInventory" | "recruitmentPipeline" | "vehicle" | "vehicleDriverAssignment" | "shift" | "attendanceRecord" | "orderLog" | "cashRecord" | "cashTransaction" | "pendingDuesLedger" | "vehicleInspection" | "maintenanceRecord" | "device" | "sim" | "capturedOrder" | "locationLog" | "appUsageLog" | "deviceCommand" | "aiScore" | "alert" | "aiDigest" | "auditLog" | "ticket" | "leaveRequest" | "talabatSession" | "talabatViolationEvent" | "talabatDelivery" | "keetaDailyMetrics" | "ingestRun" | "deliverooDailyMetrics" | "talabatDailyMetrics" | "platformSettings" | "platformInventory" | "americanaDailyOrders" | "americanaChain" | "americanaStore" | "americanaContract" | "americanaChainRate" | "driverBatchHistory" | "americanaStoreAssignment" | "americanaDailyIngestion" | "kpiDefinition" | "kpiRecord" | "notification" | "notificationDelivery" | "notificationRule" | "courierOnlineSession" | "violation" | "penalty" | "appeal" | "orderEvent" | "aiInsight" | "demandHeatmap" | "deliveryArea" | "courierAttendanceSlot" | "keetaAvailableShiftSlot" | "shiftComplianceConfig" | "partner" | "partnerBankAccount" | "incentiveTargetRound" | "incentiveGoal" | "incentiveTier" | "courierIncentivePayout" | "billing" | "taxInvoice" | "paymentWithdrawal" | "agentRunLog" | "agentToolCall" | "pendingAgentAction" | "agentAction" | "agentMemory" | "pinnedView" | "performanceSnapshot" | "metricEvent" | "chatThread" | "chatMessage" | "scheduledBriefing" | "vendor" | "vendorBranch" | "deliveryZone" | "zoneSurcharge" | "fulfillmentSettings" | "deliveryOrder" | "dispatchOffer" | "walletAccount" | "walletTransaction" | "walletEntry" | "remittance" | "walletReconciliationRun" | "incident" | "foodicsConnection" | "webhookEvent" | "apiKey" | "orderRating" | "vendorStatement" | "refund" | "fleetPartner" | "fleetPayoutStatement"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3223,6 +3239,76 @@ export namespace Prisma {
           count: {
             args: Prisma.CompanyCountArgs<ExtArgs>
             result: $Utils.Optional<CompanyCountAggregateOutputType> | number
+          }
+        }
+      }
+      OwnerGroup: {
+        payload: Prisma.$OwnerGroupPayload<ExtArgs>
+        fields: Prisma.OwnerGroupFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.OwnerGroupFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OwnerGroupPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.OwnerGroupFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OwnerGroupPayload>
+          }
+          findFirst: {
+            args: Prisma.OwnerGroupFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OwnerGroupPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.OwnerGroupFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OwnerGroupPayload>
+          }
+          findMany: {
+            args: Prisma.OwnerGroupFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OwnerGroupPayload>[]
+          }
+          create: {
+            args: Prisma.OwnerGroupCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OwnerGroupPayload>
+          }
+          createMany: {
+            args: Prisma.OwnerGroupCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.OwnerGroupCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OwnerGroupPayload>[]
+          }
+          delete: {
+            args: Prisma.OwnerGroupDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OwnerGroupPayload>
+          }
+          update: {
+            args: Prisma.OwnerGroupUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OwnerGroupPayload>
+          }
+          deleteMany: {
+            args: Prisma.OwnerGroupDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.OwnerGroupUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.OwnerGroupUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OwnerGroupPayload>
+          }
+          aggregate: {
+            args: Prisma.OwnerGroupAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateOwnerGroup>
+          }
+          groupBy: {
+            args: Prisma.OwnerGroupGroupByArgs<ExtArgs>
+            result: $Utils.Optional<OwnerGroupGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.OwnerGroupCountArgs<ExtArgs>
+            result: $Utils.Optional<OwnerGroupCountAggregateOutputType> | number
           }
         }
       }
@@ -10526,6 +10612,7 @@ export namespace Prisma {
     americanaStoreAssignments: number
     americanaDailyIngestions: number
     sims: number
+    ownerGroups: number
     vendors: number
     vendorBranches: number
     deliveryZones: number
@@ -10617,6 +10704,7 @@ export namespace Prisma {
     americanaStoreAssignments?: boolean | TenantCountOutputTypeCountAmericanaStoreAssignmentsArgs
     americanaDailyIngestions?: boolean | TenantCountOutputTypeCountAmericanaDailyIngestionsArgs
     sims?: boolean | TenantCountOutputTypeCountSimsArgs
+    ownerGroups?: boolean | TenantCountOutputTypeCountOwnerGroupsArgs
     vendors?: boolean | TenantCountOutputTypeCountVendorsArgs
     vendorBranches?: boolean | TenantCountOutputTypeCountVendorBranchesArgs
     deliveryZones?: boolean | TenantCountOutputTypeCountDeliveryZonesArgs
@@ -11135,6 +11223,13 @@ export namespace Prisma {
   /**
    * TenantCountOutputType without action
    */
+  export type TenantCountOutputTypeCountOwnerGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OwnerGroupWhereInput
+  }
+
+  /**
+   * TenantCountOutputType without action
+   */
   export type TenantCountOutputTypeCountVendorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: VendorWhereInput
   }
@@ -11325,10 +11420,60 @@ export namespace Prisma {
 
 
   /**
+   * Count Type OwnerGroupCountOutputType
+   */
+
+  export type OwnerGroupCountOutputType = {
+    fleets: number
+    companies: number
+    users: number
+  }
+
+  export type OwnerGroupCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    fleets?: boolean | OwnerGroupCountOutputTypeCountFleetsArgs
+    companies?: boolean | OwnerGroupCountOutputTypeCountCompaniesArgs
+    users?: boolean | OwnerGroupCountOutputTypeCountUsersArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * OwnerGroupCountOutputType without action
+   */
+  export type OwnerGroupCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OwnerGroupCountOutputType
+     */
+    select?: OwnerGroupCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * OwnerGroupCountOutputType without action
+   */
+  export type OwnerGroupCountOutputTypeCountFleetsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FleetPartnerWhereInput
+  }
+
+  /**
+   * OwnerGroupCountOutputType without action
+   */
+  export type OwnerGroupCountOutputTypeCountCompaniesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CompanyWhereInput
+  }
+
+  /**
+   * OwnerGroupCountOutputType without action
+   */
+  export type OwnerGroupCountOutputTypeCountUsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserWhereInput
+  }
+
+
+  /**
    * Count Type UserCountOutputType
    */
 
   export type UserCountOutputType = {
+    managedCompanies: number
     supervisedDrivers: number
     issuedCommands: number
     acknowledgedAlerts: number
@@ -11345,6 +11490,7 @@ export namespace Prisma {
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    managedCompanies?: boolean | UserCountOutputTypeCountManagedCompaniesArgs
     supervisedDrivers?: boolean | UserCountOutputTypeCountSupervisedDriversArgs
     issuedCommands?: boolean | UserCountOutputTypeCountIssuedCommandsArgs
     acknowledgedAlerts?: boolean | UserCountOutputTypeCountAcknowledgedAlertsArgs
@@ -11369,6 +11515,13 @@ export namespace Prisma {
      * Select specific fields to fetch from the UserCountOutputType
      */
     select?: UserCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountManagedCompaniesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CompanyWhereInput
   }
 
   /**
@@ -12679,10 +12832,12 @@ export namespace Prisma {
 
   export type VendorBranchCountOutputType = {
     orders: number
+    portalUsers: number
   }
 
   export type VendorBranchCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     orders?: boolean | VendorBranchCountOutputTypeCountOrdersArgs
+    portalUsers?: boolean | VendorBranchCountOutputTypeCountPortalUsersArgs
   }
 
   // Custom InputTypes
@@ -12701,6 +12856,13 @@ export namespace Prisma {
    */
   export type VendorBranchCountOutputTypeCountOrdersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DeliveryOrderWhereInput
+  }
+
+  /**
+   * VendorBranchCountOutputType without action
+   */
+  export type VendorBranchCountOutputTypeCountPortalUsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserWhereInput
   }
 
 
@@ -13262,6 +13424,7 @@ export namespace Prisma {
     americanaStoreAssignments?: boolean | Tenant$americanaStoreAssignmentsArgs<ExtArgs>
     americanaDailyIngestions?: boolean | Tenant$americanaDailyIngestionsArgs<ExtArgs>
     sims?: boolean | Tenant$simsArgs<ExtArgs>
+    ownerGroups?: boolean | Tenant$ownerGroupsArgs<ExtArgs>
     vendors?: boolean | Tenant$vendorsArgs<ExtArgs>
     vendorBranches?: boolean | Tenant$vendorBranchesArgs<ExtArgs>
     deliveryZones?: boolean | Tenant$deliveryZonesArgs<ExtArgs>
@@ -13390,6 +13553,7 @@ export namespace Prisma {
     americanaStoreAssignments?: boolean | Tenant$americanaStoreAssignmentsArgs<ExtArgs>
     americanaDailyIngestions?: boolean | Tenant$americanaDailyIngestionsArgs<ExtArgs>
     sims?: boolean | Tenant$simsArgs<ExtArgs>
+    ownerGroups?: boolean | Tenant$ownerGroupsArgs<ExtArgs>
     vendors?: boolean | Tenant$vendorsArgs<ExtArgs>
     vendorBranches?: boolean | Tenant$vendorBranchesArgs<ExtArgs>
     deliveryZones?: boolean | Tenant$deliveryZonesArgs<ExtArgs>
@@ -13487,6 +13651,7 @@ export namespace Prisma {
       americanaStoreAssignments: Prisma.$AmericanaStoreAssignmentPayload<ExtArgs>[]
       americanaDailyIngestions: Prisma.$AmericanaDailyIngestionPayload<ExtArgs>[]
       sims: Prisma.$SimPayload<ExtArgs>[]
+      ownerGroups: Prisma.$OwnerGroupPayload<ExtArgs>[]
       vendors: Prisma.$VendorPayload<ExtArgs>[]
       vendorBranches: Prisma.$VendorBranchPayload<ExtArgs>[]
       deliveryZones: Prisma.$DeliveryZonePayload<ExtArgs>[]
@@ -13957,6 +14122,7 @@ export namespace Prisma {
     americanaStoreAssignments<T extends Tenant$americanaStoreAssignmentsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$americanaStoreAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AmericanaStoreAssignmentPayload<ExtArgs>, T, "findMany"> | Null>
     americanaDailyIngestions<T extends Tenant$americanaDailyIngestionsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$americanaDailyIngestionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AmericanaDailyIngestionPayload<ExtArgs>, T, "findMany"> | Null>
     sims<T extends Tenant$simsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$simsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SimPayload<ExtArgs>, T, "findMany"> | Null>
+    ownerGroups<T extends Tenant$ownerGroupsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$ownerGroupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OwnerGroupPayload<ExtArgs>, T, "findMany"> | Null>
     vendors<T extends Tenant$vendorsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$vendorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorPayload<ExtArgs>, T, "findMany"> | Null>
     vendorBranches<T extends Tenant$vendorBranchesArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$vendorBranchesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorBranchPayload<ExtArgs>, T, "findMany"> | Null>
     deliveryZones<T extends Tenant$deliveryZonesArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$deliveryZonesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeliveryZonePayload<ExtArgs>, T, "findMany"> | Null>
@@ -15729,6 +15895,26 @@ export namespace Prisma {
   }
 
   /**
+   * Tenant.ownerGroups
+   */
+  export type Tenant$ownerGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OwnerGroup
+     */
+    select?: OwnerGroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OwnerGroupInclude<ExtArgs> | null
+    where?: OwnerGroupWhereInput
+    orderBy?: OwnerGroupOrderByWithRelationInput | OwnerGroupOrderByWithRelationInput[]
+    cursor?: OwnerGroupWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: OwnerGroupScalarFieldEnum | OwnerGroupScalarFieldEnum[]
+  }
+
+  /**
    * Tenant.vendors
    */
   export type Tenant$vendorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -16165,6 +16351,9 @@ export namespace Prisma {
     platform: $Enums.Platform | null
     licenseCount: number | null
     isActive: boolean | null
+    kind: string | null
+    ownerGroupId: string | null
+    accountManagerId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -16176,6 +16365,9 @@ export namespace Prisma {
     platform: $Enums.Platform | null
     licenseCount: number | null
     isActive: boolean | null
+    kind: string | null
+    ownerGroupId: string | null
+    accountManagerId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -16187,6 +16379,9 @@ export namespace Prisma {
     platform: number
     licenseCount: number
     isActive: number
+    kind: number
+    ownerGroupId: number
+    accountManagerId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -16208,6 +16403,9 @@ export namespace Prisma {
     platform?: true
     licenseCount?: true
     isActive?: true
+    kind?: true
+    ownerGroupId?: true
+    accountManagerId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -16219,6 +16417,9 @@ export namespace Prisma {
     platform?: true
     licenseCount?: true
     isActive?: true
+    kind?: true
+    ownerGroupId?: true
+    accountManagerId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -16230,6 +16431,9 @@ export namespace Prisma {
     platform?: true
     licenseCount?: true
     isActive?: true
+    kind?: true
+    ownerGroupId?: true
+    accountManagerId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -16328,6 +16532,9 @@ export namespace Prisma {
     platform: $Enums.Platform
     licenseCount: number
     isActive: boolean
+    kind: string
+    ownerGroupId: string | null
+    accountManagerId: string | null
     createdAt: Date
     updatedAt: Date
     _count: CompanyCountAggregateOutputType | null
@@ -16358,9 +16565,14 @@ export namespace Prisma {
     platform?: boolean
     licenseCount?: boolean
     isActive?: boolean
+    kind?: boolean
+    ownerGroupId?: boolean
+    accountManagerId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    ownerGroup?: boolean | Company$ownerGroupArgs<ExtArgs>
+    accountManager?: boolean | Company$accountManagerArgs<ExtArgs>
     drivers?: boolean | Company$driversArgs<ExtArgs>
     vehicles?: boolean | Company$vehiclesArgs<ExtArgs>
     recruitmentPipeline?: boolean | Company$recruitmentPipelineArgs<ExtArgs>
@@ -16375,9 +16587,14 @@ export namespace Prisma {
     platform?: boolean
     licenseCount?: boolean
     isActive?: boolean
+    kind?: boolean
+    ownerGroupId?: boolean
+    accountManagerId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    ownerGroup?: boolean | Company$ownerGroupArgs<ExtArgs>
+    accountManager?: boolean | Company$accountManagerArgs<ExtArgs>
   }, ExtArgs["result"]["company"]>
 
   export type CompanySelectScalar = {
@@ -16387,12 +16604,17 @@ export namespace Prisma {
     platform?: boolean
     licenseCount?: boolean
     isActive?: boolean
+    kind?: boolean
+    ownerGroupId?: boolean
+    accountManagerId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
   export type CompanyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    ownerGroup?: boolean | Company$ownerGroupArgs<ExtArgs>
+    accountManager?: boolean | Company$accountManagerArgs<ExtArgs>
     drivers?: boolean | Company$driversArgs<ExtArgs>
     vehicles?: boolean | Company$vehiclesArgs<ExtArgs>
     recruitmentPipeline?: boolean | Company$recruitmentPipelineArgs<ExtArgs>
@@ -16401,12 +16623,16 @@ export namespace Prisma {
   }
   export type CompanyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    ownerGroup?: boolean | Company$ownerGroupArgs<ExtArgs>
+    accountManager?: boolean | Company$accountManagerArgs<ExtArgs>
   }
 
   export type $CompanyPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Company"
     objects: {
       tenant: Prisma.$TenantPayload<ExtArgs>
+      ownerGroup: Prisma.$OwnerGroupPayload<ExtArgs> | null
+      accountManager: Prisma.$UserPayload<ExtArgs> | null
       drivers: Prisma.$DriverPayload<ExtArgs>[]
       vehicles: Prisma.$VehiclePayload<ExtArgs>[]
       recruitmentPipeline: Prisma.$RecruitmentPipelinePayload<ExtArgs>[]
@@ -16419,6 +16645,9 @@ export namespace Prisma {
       platform: $Enums.Platform
       licenseCount: number
       isActive: boolean
+      kind: string
+      ownerGroupId: string | null
+      accountManagerId: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["company"]>
@@ -16786,6 +17015,8 @@ export namespace Prisma {
   export interface Prisma__CompanyClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    ownerGroup<T extends Company$ownerGroupArgs<ExtArgs> = {}>(args?: Subset<T, Company$ownerGroupArgs<ExtArgs>>): Prisma__OwnerGroupClient<$Result.GetResult<Prisma.$OwnerGroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    accountManager<T extends Company$accountManagerArgs<ExtArgs> = {}>(args?: Subset<T, Company$accountManagerArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     drivers<T extends Company$driversArgs<ExtArgs> = {}>(args?: Subset<T, Company$driversArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DriverPayload<ExtArgs>, T, "findMany"> | Null>
     vehicles<T extends Company$vehiclesArgs<ExtArgs> = {}>(args?: Subset<T, Company$vehiclesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VehiclePayload<ExtArgs>, T, "findMany"> | Null>
     recruitmentPipeline<T extends Company$recruitmentPipelineArgs<ExtArgs> = {}>(args?: Subset<T, Company$recruitmentPipelineArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecruitmentPipelinePayload<ExtArgs>, T, "findMany"> | Null>
@@ -16825,6 +17056,9 @@ export namespace Prisma {
     readonly platform: FieldRef<"Company", 'Platform'>
     readonly licenseCount: FieldRef<"Company", 'Int'>
     readonly isActive: FieldRef<"Company", 'Boolean'>
+    readonly kind: FieldRef<"Company", 'String'>
+    readonly ownerGroupId: FieldRef<"Company", 'String'>
+    readonly accountManagerId: FieldRef<"Company", 'String'>
     readonly createdAt: FieldRef<"Company", 'DateTime'>
     readonly updatedAt: FieldRef<"Company", 'DateTime'>
   }
@@ -17145,6 +17379,36 @@ export namespace Prisma {
   }
 
   /**
+   * Company.ownerGroup
+   */
+  export type Company$ownerGroupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OwnerGroup
+     */
+    select?: OwnerGroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OwnerGroupInclude<ExtArgs> | null
+    where?: OwnerGroupWhereInput
+  }
+
+  /**
+   * Company.accountManager
+   */
+  export type Company$accountManagerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
    * Company.drivers
    */
   export type Company$driversArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -17240,6 +17504,1037 @@ export namespace Prisma {
 
 
   /**
+   * Model OwnerGroup
+   */
+
+  export type AggregateOwnerGroup = {
+    _count: OwnerGroupCountAggregateOutputType | null
+    _min: OwnerGroupMinAggregateOutputType | null
+    _max: OwnerGroupMaxAggregateOutputType | null
+  }
+
+  export type OwnerGroupMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    name: string | null
+    contactName: string | null
+    contactPhone: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type OwnerGroupMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    name: string | null
+    contactName: string | null
+    contactPhone: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type OwnerGroupCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    name: number
+    contactName: number
+    contactPhone: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type OwnerGroupMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    name?: true
+    contactName?: true
+    contactPhone?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type OwnerGroupMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    name?: true
+    contactName?: true
+    contactPhone?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type OwnerGroupCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    name?: true
+    contactName?: true
+    contactPhone?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type OwnerGroupAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which OwnerGroup to aggregate.
+     */
+    where?: OwnerGroupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OwnerGroups to fetch.
+     */
+    orderBy?: OwnerGroupOrderByWithRelationInput | OwnerGroupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: OwnerGroupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OwnerGroups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OwnerGroups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned OwnerGroups
+    **/
+    _count?: true | OwnerGroupCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: OwnerGroupMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: OwnerGroupMaxAggregateInputType
+  }
+
+  export type GetOwnerGroupAggregateType<T extends OwnerGroupAggregateArgs> = {
+        [P in keyof T & keyof AggregateOwnerGroup]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateOwnerGroup[P]>
+      : GetScalarType<T[P], AggregateOwnerGroup[P]>
+  }
+
+
+
+
+  export type OwnerGroupGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OwnerGroupWhereInput
+    orderBy?: OwnerGroupOrderByWithAggregationInput | OwnerGroupOrderByWithAggregationInput[]
+    by: OwnerGroupScalarFieldEnum[] | OwnerGroupScalarFieldEnum
+    having?: OwnerGroupScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: OwnerGroupCountAggregateInputType | true
+    _min?: OwnerGroupMinAggregateInputType
+    _max?: OwnerGroupMaxAggregateInputType
+  }
+
+  export type OwnerGroupGroupByOutputType = {
+    id: string
+    tenantId: string
+    name: string
+    contactName: string | null
+    contactPhone: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: OwnerGroupCountAggregateOutputType | null
+    _min: OwnerGroupMinAggregateOutputType | null
+    _max: OwnerGroupMaxAggregateOutputType | null
+  }
+
+  type GetOwnerGroupGroupByPayload<T extends OwnerGroupGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<OwnerGroupGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof OwnerGroupGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], OwnerGroupGroupByOutputType[P]>
+            : GetScalarType<T[P], OwnerGroupGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type OwnerGroupSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    name?: boolean
+    contactName?: boolean
+    contactPhone?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    fleets?: boolean | OwnerGroup$fleetsArgs<ExtArgs>
+    companies?: boolean | OwnerGroup$companiesArgs<ExtArgs>
+    users?: boolean | OwnerGroup$usersArgs<ExtArgs>
+    _count?: boolean | OwnerGroupCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["ownerGroup"]>
+
+  export type OwnerGroupSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    name?: boolean
+    contactName?: boolean
+    contactPhone?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["ownerGroup"]>
+
+  export type OwnerGroupSelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    name?: boolean
+    contactName?: boolean
+    contactPhone?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type OwnerGroupInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    fleets?: boolean | OwnerGroup$fleetsArgs<ExtArgs>
+    companies?: boolean | OwnerGroup$companiesArgs<ExtArgs>
+    users?: boolean | OwnerGroup$usersArgs<ExtArgs>
+    _count?: boolean | OwnerGroupCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type OwnerGroupIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }
+
+  export type $OwnerGroupPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "OwnerGroup"
+    objects: {
+      tenant: Prisma.$TenantPayload<ExtArgs>
+      fleets: Prisma.$FleetPartnerPayload<ExtArgs>[]
+      companies: Prisma.$CompanyPayload<ExtArgs>[]
+      users: Prisma.$UserPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      name: string
+      contactName: string | null
+      contactPhone: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["ownerGroup"]>
+    composites: {}
+  }
+
+  type OwnerGroupGetPayload<S extends boolean | null | undefined | OwnerGroupDefaultArgs> = $Result.GetResult<Prisma.$OwnerGroupPayload, S>
+
+  type OwnerGroupCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<OwnerGroupFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: OwnerGroupCountAggregateInputType | true
+    }
+
+  export interface OwnerGroupDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['OwnerGroup'], meta: { name: 'OwnerGroup' } }
+    /**
+     * Find zero or one OwnerGroup that matches the filter.
+     * @param {OwnerGroupFindUniqueArgs} args - Arguments to find a OwnerGroup
+     * @example
+     * // Get one OwnerGroup
+     * const ownerGroup = await prisma.ownerGroup.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends OwnerGroupFindUniqueArgs>(args: SelectSubset<T, OwnerGroupFindUniqueArgs<ExtArgs>>): Prisma__OwnerGroupClient<$Result.GetResult<Prisma.$OwnerGroupPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one OwnerGroup that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {OwnerGroupFindUniqueOrThrowArgs} args - Arguments to find a OwnerGroup
+     * @example
+     * // Get one OwnerGroup
+     * const ownerGroup = await prisma.ownerGroup.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends OwnerGroupFindUniqueOrThrowArgs>(args: SelectSubset<T, OwnerGroupFindUniqueOrThrowArgs<ExtArgs>>): Prisma__OwnerGroupClient<$Result.GetResult<Prisma.$OwnerGroupPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first OwnerGroup that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OwnerGroupFindFirstArgs} args - Arguments to find a OwnerGroup
+     * @example
+     * // Get one OwnerGroup
+     * const ownerGroup = await prisma.ownerGroup.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends OwnerGroupFindFirstArgs>(args?: SelectSubset<T, OwnerGroupFindFirstArgs<ExtArgs>>): Prisma__OwnerGroupClient<$Result.GetResult<Prisma.$OwnerGroupPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first OwnerGroup that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OwnerGroupFindFirstOrThrowArgs} args - Arguments to find a OwnerGroup
+     * @example
+     * // Get one OwnerGroup
+     * const ownerGroup = await prisma.ownerGroup.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends OwnerGroupFindFirstOrThrowArgs>(args?: SelectSubset<T, OwnerGroupFindFirstOrThrowArgs<ExtArgs>>): Prisma__OwnerGroupClient<$Result.GetResult<Prisma.$OwnerGroupPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more OwnerGroups that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OwnerGroupFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all OwnerGroups
+     * const ownerGroups = await prisma.ownerGroup.findMany()
+     * 
+     * // Get first 10 OwnerGroups
+     * const ownerGroups = await prisma.ownerGroup.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const ownerGroupWithIdOnly = await prisma.ownerGroup.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends OwnerGroupFindManyArgs>(args?: SelectSubset<T, OwnerGroupFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OwnerGroupPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a OwnerGroup.
+     * @param {OwnerGroupCreateArgs} args - Arguments to create a OwnerGroup.
+     * @example
+     * // Create one OwnerGroup
+     * const OwnerGroup = await prisma.ownerGroup.create({
+     *   data: {
+     *     // ... data to create a OwnerGroup
+     *   }
+     * })
+     * 
+     */
+    create<T extends OwnerGroupCreateArgs>(args: SelectSubset<T, OwnerGroupCreateArgs<ExtArgs>>): Prisma__OwnerGroupClient<$Result.GetResult<Prisma.$OwnerGroupPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many OwnerGroups.
+     * @param {OwnerGroupCreateManyArgs} args - Arguments to create many OwnerGroups.
+     * @example
+     * // Create many OwnerGroups
+     * const ownerGroup = await prisma.ownerGroup.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends OwnerGroupCreateManyArgs>(args?: SelectSubset<T, OwnerGroupCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many OwnerGroups and returns the data saved in the database.
+     * @param {OwnerGroupCreateManyAndReturnArgs} args - Arguments to create many OwnerGroups.
+     * @example
+     * // Create many OwnerGroups
+     * const ownerGroup = await prisma.ownerGroup.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many OwnerGroups and only return the `id`
+     * const ownerGroupWithIdOnly = await prisma.ownerGroup.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends OwnerGroupCreateManyAndReturnArgs>(args?: SelectSubset<T, OwnerGroupCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OwnerGroupPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a OwnerGroup.
+     * @param {OwnerGroupDeleteArgs} args - Arguments to delete one OwnerGroup.
+     * @example
+     * // Delete one OwnerGroup
+     * const OwnerGroup = await prisma.ownerGroup.delete({
+     *   where: {
+     *     // ... filter to delete one OwnerGroup
+     *   }
+     * })
+     * 
+     */
+    delete<T extends OwnerGroupDeleteArgs>(args: SelectSubset<T, OwnerGroupDeleteArgs<ExtArgs>>): Prisma__OwnerGroupClient<$Result.GetResult<Prisma.$OwnerGroupPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one OwnerGroup.
+     * @param {OwnerGroupUpdateArgs} args - Arguments to update one OwnerGroup.
+     * @example
+     * // Update one OwnerGroup
+     * const ownerGroup = await prisma.ownerGroup.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends OwnerGroupUpdateArgs>(args: SelectSubset<T, OwnerGroupUpdateArgs<ExtArgs>>): Prisma__OwnerGroupClient<$Result.GetResult<Prisma.$OwnerGroupPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more OwnerGroups.
+     * @param {OwnerGroupDeleteManyArgs} args - Arguments to filter OwnerGroups to delete.
+     * @example
+     * // Delete a few OwnerGroups
+     * const { count } = await prisma.ownerGroup.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends OwnerGroupDeleteManyArgs>(args?: SelectSubset<T, OwnerGroupDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more OwnerGroups.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OwnerGroupUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many OwnerGroups
+     * const ownerGroup = await prisma.ownerGroup.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends OwnerGroupUpdateManyArgs>(args: SelectSubset<T, OwnerGroupUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one OwnerGroup.
+     * @param {OwnerGroupUpsertArgs} args - Arguments to update or create a OwnerGroup.
+     * @example
+     * // Update or create a OwnerGroup
+     * const ownerGroup = await prisma.ownerGroup.upsert({
+     *   create: {
+     *     // ... data to create a OwnerGroup
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the OwnerGroup we want to update
+     *   }
+     * })
+     */
+    upsert<T extends OwnerGroupUpsertArgs>(args: SelectSubset<T, OwnerGroupUpsertArgs<ExtArgs>>): Prisma__OwnerGroupClient<$Result.GetResult<Prisma.$OwnerGroupPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of OwnerGroups.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OwnerGroupCountArgs} args - Arguments to filter OwnerGroups to count.
+     * @example
+     * // Count the number of OwnerGroups
+     * const count = await prisma.ownerGroup.count({
+     *   where: {
+     *     // ... the filter for the OwnerGroups we want to count
+     *   }
+     * })
+    **/
+    count<T extends OwnerGroupCountArgs>(
+      args?: Subset<T, OwnerGroupCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], OwnerGroupCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a OwnerGroup.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OwnerGroupAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends OwnerGroupAggregateArgs>(args: Subset<T, OwnerGroupAggregateArgs>): Prisma.PrismaPromise<GetOwnerGroupAggregateType<T>>
+
+    /**
+     * Group by OwnerGroup.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OwnerGroupGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends OwnerGroupGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: OwnerGroupGroupByArgs['orderBy'] }
+        : { orderBy?: OwnerGroupGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, OwnerGroupGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetOwnerGroupGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the OwnerGroup model
+   */
+  readonly fields: OwnerGroupFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for OwnerGroup.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__OwnerGroupClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    fleets<T extends OwnerGroup$fleetsArgs<ExtArgs> = {}>(args?: Subset<T, OwnerGroup$fleetsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetPartnerPayload<ExtArgs>, T, "findMany"> | Null>
+    companies<T extends OwnerGroup$companiesArgs<ExtArgs> = {}>(args?: Subset<T, OwnerGroup$companiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CompanyPayload<ExtArgs>, T, "findMany"> | Null>
+    users<T extends OwnerGroup$usersArgs<ExtArgs> = {}>(args?: Subset<T, OwnerGroup$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the OwnerGroup model
+   */ 
+  interface OwnerGroupFieldRefs {
+    readonly id: FieldRef<"OwnerGroup", 'String'>
+    readonly tenantId: FieldRef<"OwnerGroup", 'String'>
+    readonly name: FieldRef<"OwnerGroup", 'String'>
+    readonly contactName: FieldRef<"OwnerGroup", 'String'>
+    readonly contactPhone: FieldRef<"OwnerGroup", 'String'>
+    readonly createdAt: FieldRef<"OwnerGroup", 'DateTime'>
+    readonly updatedAt: FieldRef<"OwnerGroup", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * OwnerGroup findUnique
+   */
+  export type OwnerGroupFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OwnerGroup
+     */
+    select?: OwnerGroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OwnerGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which OwnerGroup to fetch.
+     */
+    where: OwnerGroupWhereUniqueInput
+  }
+
+  /**
+   * OwnerGroup findUniqueOrThrow
+   */
+  export type OwnerGroupFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OwnerGroup
+     */
+    select?: OwnerGroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OwnerGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which OwnerGroup to fetch.
+     */
+    where: OwnerGroupWhereUniqueInput
+  }
+
+  /**
+   * OwnerGroup findFirst
+   */
+  export type OwnerGroupFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OwnerGroup
+     */
+    select?: OwnerGroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OwnerGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which OwnerGroup to fetch.
+     */
+    where?: OwnerGroupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OwnerGroups to fetch.
+     */
+    orderBy?: OwnerGroupOrderByWithRelationInput | OwnerGroupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for OwnerGroups.
+     */
+    cursor?: OwnerGroupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OwnerGroups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OwnerGroups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OwnerGroups.
+     */
+    distinct?: OwnerGroupScalarFieldEnum | OwnerGroupScalarFieldEnum[]
+  }
+
+  /**
+   * OwnerGroup findFirstOrThrow
+   */
+  export type OwnerGroupFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OwnerGroup
+     */
+    select?: OwnerGroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OwnerGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which OwnerGroup to fetch.
+     */
+    where?: OwnerGroupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OwnerGroups to fetch.
+     */
+    orderBy?: OwnerGroupOrderByWithRelationInput | OwnerGroupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for OwnerGroups.
+     */
+    cursor?: OwnerGroupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OwnerGroups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OwnerGroups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OwnerGroups.
+     */
+    distinct?: OwnerGroupScalarFieldEnum | OwnerGroupScalarFieldEnum[]
+  }
+
+  /**
+   * OwnerGroup findMany
+   */
+  export type OwnerGroupFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OwnerGroup
+     */
+    select?: OwnerGroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OwnerGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which OwnerGroups to fetch.
+     */
+    where?: OwnerGroupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OwnerGroups to fetch.
+     */
+    orderBy?: OwnerGroupOrderByWithRelationInput | OwnerGroupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing OwnerGroups.
+     */
+    cursor?: OwnerGroupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OwnerGroups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OwnerGroups.
+     */
+    skip?: number
+    distinct?: OwnerGroupScalarFieldEnum | OwnerGroupScalarFieldEnum[]
+  }
+
+  /**
+   * OwnerGroup create
+   */
+  export type OwnerGroupCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OwnerGroup
+     */
+    select?: OwnerGroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OwnerGroupInclude<ExtArgs> | null
+    /**
+     * The data needed to create a OwnerGroup.
+     */
+    data: XOR<OwnerGroupCreateInput, OwnerGroupUncheckedCreateInput>
+  }
+
+  /**
+   * OwnerGroup createMany
+   */
+  export type OwnerGroupCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many OwnerGroups.
+     */
+    data: OwnerGroupCreateManyInput | OwnerGroupCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * OwnerGroup createManyAndReturn
+   */
+  export type OwnerGroupCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OwnerGroup
+     */
+    select?: OwnerGroupSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many OwnerGroups.
+     */
+    data: OwnerGroupCreateManyInput | OwnerGroupCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OwnerGroupIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * OwnerGroup update
+   */
+  export type OwnerGroupUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OwnerGroup
+     */
+    select?: OwnerGroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OwnerGroupInclude<ExtArgs> | null
+    /**
+     * The data needed to update a OwnerGroup.
+     */
+    data: XOR<OwnerGroupUpdateInput, OwnerGroupUncheckedUpdateInput>
+    /**
+     * Choose, which OwnerGroup to update.
+     */
+    where: OwnerGroupWhereUniqueInput
+  }
+
+  /**
+   * OwnerGroup updateMany
+   */
+  export type OwnerGroupUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update OwnerGroups.
+     */
+    data: XOR<OwnerGroupUpdateManyMutationInput, OwnerGroupUncheckedUpdateManyInput>
+    /**
+     * Filter which OwnerGroups to update
+     */
+    where?: OwnerGroupWhereInput
+  }
+
+  /**
+   * OwnerGroup upsert
+   */
+  export type OwnerGroupUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OwnerGroup
+     */
+    select?: OwnerGroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OwnerGroupInclude<ExtArgs> | null
+    /**
+     * The filter to search for the OwnerGroup to update in case it exists.
+     */
+    where: OwnerGroupWhereUniqueInput
+    /**
+     * In case the OwnerGroup found by the `where` argument doesn't exist, create a new OwnerGroup with this data.
+     */
+    create: XOR<OwnerGroupCreateInput, OwnerGroupUncheckedCreateInput>
+    /**
+     * In case the OwnerGroup was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<OwnerGroupUpdateInput, OwnerGroupUncheckedUpdateInput>
+  }
+
+  /**
+   * OwnerGroup delete
+   */
+  export type OwnerGroupDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OwnerGroup
+     */
+    select?: OwnerGroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OwnerGroupInclude<ExtArgs> | null
+    /**
+     * Filter which OwnerGroup to delete.
+     */
+    where: OwnerGroupWhereUniqueInput
+  }
+
+  /**
+   * OwnerGroup deleteMany
+   */
+  export type OwnerGroupDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which OwnerGroups to delete
+     */
+    where?: OwnerGroupWhereInput
+  }
+
+  /**
+   * OwnerGroup.fleets
+   */
+  export type OwnerGroup$fleetsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetPartner
+     */
+    select?: FleetPartnerSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetPartnerInclude<ExtArgs> | null
+    where?: FleetPartnerWhereInput
+    orderBy?: FleetPartnerOrderByWithRelationInput | FleetPartnerOrderByWithRelationInput[]
+    cursor?: FleetPartnerWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FleetPartnerScalarFieldEnum | FleetPartnerScalarFieldEnum[]
+  }
+
+  /**
+   * OwnerGroup.companies
+   */
+  export type OwnerGroup$companiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Company
+     */
+    select?: CompanySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CompanyInclude<ExtArgs> | null
+    where?: CompanyWhereInput
+    orderBy?: CompanyOrderByWithRelationInput | CompanyOrderByWithRelationInput[]
+    cursor?: CompanyWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CompanyScalarFieldEnum | CompanyScalarFieldEnum[]
+  }
+
+  /**
+   * OwnerGroup.users
+   */
+  export type OwnerGroup$usersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
+    cursor?: UserWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
+  }
+
+  /**
+   * OwnerGroup without action
+   */
+  export type OwnerGroupDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OwnerGroup
+     */
+    select?: OwnerGroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OwnerGroupInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model User
    */
 
@@ -17261,6 +18556,9 @@ export namespace Prisma {
     jobGrade: string | null
     vendorId: string | null
     fleetPartnerId: string | null
+    ownerGroupId: string | null
+    branchId: string | null
+    vendorRole: string | null
     isActive: boolean | null
     lastLoginAt: Date | null
     createdAt: Date | null
@@ -17279,6 +18577,9 @@ export namespace Prisma {
     jobGrade: string | null
     vendorId: string | null
     fleetPartnerId: string | null
+    ownerGroupId: string | null
+    branchId: string | null
+    vendorRole: string | null
     isActive: boolean | null
     lastLoginAt: Date | null
     createdAt: Date | null
@@ -17297,6 +18598,9 @@ export namespace Prisma {
     jobGrade: number
     vendorId: number
     fleetPartnerId: number
+    ownerGroupId: number
+    branchId: number
+    vendorRole: number
     isActive: number
     lastLoginAt: number
     createdAt: number
@@ -17317,6 +18621,9 @@ export namespace Prisma {
     jobGrade?: true
     vendorId?: true
     fleetPartnerId?: true
+    ownerGroupId?: true
+    branchId?: true
+    vendorRole?: true
     isActive?: true
     lastLoginAt?: true
     createdAt?: true
@@ -17335,6 +18642,9 @@ export namespace Prisma {
     jobGrade?: true
     vendorId?: true
     fleetPartnerId?: true
+    ownerGroupId?: true
+    branchId?: true
+    vendorRole?: true
     isActive?: true
     lastLoginAt?: true
     createdAt?: true
@@ -17353,6 +18663,9 @@ export namespace Prisma {
     jobGrade?: true
     vendorId?: true
     fleetPartnerId?: true
+    ownerGroupId?: true
+    branchId?: true
+    vendorRole?: true
     isActive?: true
     lastLoginAt?: true
     createdAt?: true
@@ -17444,6 +18757,9 @@ export namespace Prisma {
     jobGrade: string | null
     vendorId: string | null
     fleetPartnerId: string | null
+    ownerGroupId: string | null
+    branchId: string | null
+    vendorRole: string | null
     isActive: boolean
     lastLoginAt: Date | null
     createdAt: Date
@@ -17479,6 +18795,9 @@ export namespace Prisma {
     jobGrade?: boolean
     vendorId?: boolean
     fleetPartnerId?: boolean
+    ownerGroupId?: boolean
+    branchId?: boolean
+    vendorRole?: boolean
     isActive?: boolean
     lastLoginAt?: boolean
     createdAt?: boolean
@@ -17486,6 +18805,9 @@ export namespace Prisma {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     vendor?: boolean | User$vendorArgs<ExtArgs>
     fleetPartner?: boolean | User$fleetPartnerArgs<ExtArgs>
+    ownerGroup?: boolean | User$ownerGroupArgs<ExtArgs>
+    branch?: boolean | User$branchArgs<ExtArgs>
+    managedCompanies?: boolean | User$managedCompaniesArgs<ExtArgs>
     supervisedDrivers?: boolean | User$supervisedDriversArgs<ExtArgs>
     issuedCommands?: boolean | User$issuedCommandsArgs<ExtArgs>
     acknowledgedAlerts?: boolean | User$acknowledgedAlertsArgs<ExtArgs>
@@ -17514,6 +18836,9 @@ export namespace Prisma {
     jobGrade?: boolean
     vendorId?: boolean
     fleetPartnerId?: boolean
+    ownerGroupId?: boolean
+    branchId?: boolean
+    vendorRole?: boolean
     isActive?: boolean
     lastLoginAt?: boolean
     createdAt?: boolean
@@ -17521,6 +18846,8 @@ export namespace Prisma {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     vendor?: boolean | User$vendorArgs<ExtArgs>
     fleetPartner?: boolean | User$fleetPartnerArgs<ExtArgs>
+    ownerGroup?: boolean | User$ownerGroupArgs<ExtArgs>
+    branch?: boolean | User$branchArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
@@ -17535,6 +18862,9 @@ export namespace Prisma {
     jobGrade?: boolean
     vendorId?: boolean
     fleetPartnerId?: boolean
+    ownerGroupId?: boolean
+    branchId?: boolean
+    vendorRole?: boolean
     isActive?: boolean
     lastLoginAt?: boolean
     createdAt?: boolean
@@ -17545,6 +18875,9 @@ export namespace Prisma {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     vendor?: boolean | User$vendorArgs<ExtArgs>
     fleetPartner?: boolean | User$fleetPartnerArgs<ExtArgs>
+    ownerGroup?: boolean | User$ownerGroupArgs<ExtArgs>
+    branch?: boolean | User$branchArgs<ExtArgs>
+    managedCompanies?: boolean | User$managedCompaniesArgs<ExtArgs>
     supervisedDrivers?: boolean | User$supervisedDriversArgs<ExtArgs>
     issuedCommands?: boolean | User$issuedCommandsArgs<ExtArgs>
     acknowledgedAlerts?: boolean | User$acknowledgedAlertsArgs<ExtArgs>
@@ -17564,6 +18897,8 @@ export namespace Prisma {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     vendor?: boolean | User$vendorArgs<ExtArgs>
     fleetPartner?: boolean | User$fleetPartnerArgs<ExtArgs>
+    ownerGroup?: boolean | User$ownerGroupArgs<ExtArgs>
+    branch?: boolean | User$branchArgs<ExtArgs>
   }
 
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -17572,6 +18907,9 @@ export namespace Prisma {
       tenant: Prisma.$TenantPayload<ExtArgs>
       vendor: Prisma.$VendorPayload<ExtArgs> | null
       fleetPartner: Prisma.$FleetPartnerPayload<ExtArgs> | null
+      ownerGroup: Prisma.$OwnerGroupPayload<ExtArgs> | null
+      branch: Prisma.$VendorBranchPayload<ExtArgs> | null
+      managedCompanies: Prisma.$CompanyPayload<ExtArgs>[]
       supervisedDrivers: Prisma.$DriverPayload<ExtArgs>[]
       issuedCommands: Prisma.$DeviceCommandPayload<ExtArgs>[]
       acknowledgedAlerts: Prisma.$AlertPayload<ExtArgs>[]
@@ -17598,6 +18936,9 @@ export namespace Prisma {
       jobGrade: string | null
       vendorId: string | null
       fleetPartnerId: string | null
+      ownerGroupId: string | null
+      branchId: string | null
+      vendorRole: string | null
       isActive: boolean
       lastLoginAt: Date | null
       createdAt: Date
@@ -17969,6 +19310,9 @@ export namespace Prisma {
     tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     vendor<T extends User$vendorArgs<ExtArgs> = {}>(args?: Subset<T, User$vendorArgs<ExtArgs>>): Prisma__VendorClient<$Result.GetResult<Prisma.$VendorPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     fleetPartner<T extends User$fleetPartnerArgs<ExtArgs> = {}>(args?: Subset<T, User$fleetPartnerArgs<ExtArgs>>): Prisma__FleetPartnerClient<$Result.GetResult<Prisma.$FleetPartnerPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    ownerGroup<T extends User$ownerGroupArgs<ExtArgs> = {}>(args?: Subset<T, User$ownerGroupArgs<ExtArgs>>): Prisma__OwnerGroupClient<$Result.GetResult<Prisma.$OwnerGroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    branch<T extends User$branchArgs<ExtArgs> = {}>(args?: Subset<T, User$branchArgs<ExtArgs>>): Prisma__VendorBranchClient<$Result.GetResult<Prisma.$VendorBranchPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    managedCompanies<T extends User$managedCompaniesArgs<ExtArgs> = {}>(args?: Subset<T, User$managedCompaniesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CompanyPayload<ExtArgs>, T, "findMany"> | Null>
     supervisedDrivers<T extends User$supervisedDriversArgs<ExtArgs> = {}>(args?: Subset<T, User$supervisedDriversArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DriverPayload<ExtArgs>, T, "findMany"> | Null>
     issuedCommands<T extends User$issuedCommandsArgs<ExtArgs> = {}>(args?: Subset<T, User$issuedCommandsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeviceCommandPayload<ExtArgs>, T, "findMany"> | Null>
     acknowledgedAlerts<T extends User$acknowledgedAlertsArgs<ExtArgs> = {}>(args?: Subset<T, User$acknowledgedAlertsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AlertPayload<ExtArgs>, T, "findMany"> | Null>
@@ -18022,6 +19366,9 @@ export namespace Prisma {
     readonly jobGrade: FieldRef<"User", 'String'>
     readonly vendorId: FieldRef<"User", 'String'>
     readonly fleetPartnerId: FieldRef<"User", 'String'>
+    readonly ownerGroupId: FieldRef<"User", 'String'>
+    readonly branchId: FieldRef<"User", 'String'>
+    readonly vendorRole: FieldRef<"User", 'String'>
     readonly isActive: FieldRef<"User", 'Boolean'>
     readonly lastLoginAt: FieldRef<"User", 'DateTime'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
@@ -18374,6 +19721,56 @@ export namespace Prisma {
   }
 
   /**
+   * User.ownerGroup
+   */
+  export type User$ownerGroupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OwnerGroup
+     */
+    select?: OwnerGroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OwnerGroupInclude<ExtArgs> | null
+    where?: OwnerGroupWhereInput
+  }
+
+  /**
+   * User.branch
+   */
+  export type User$branchArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorBranch
+     */
+    select?: VendorBranchSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorBranchInclude<ExtArgs> | null
+    where?: VendorBranchWhereInput
+  }
+
+  /**
+   * User.managedCompanies
+   */
+  export type User$managedCompaniesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Company
+     */
+    select?: CompanySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CompanyInclude<ExtArgs> | null
+    where?: CompanyWhereInput
+    orderBy?: CompanyOrderByWithRelationInput | CompanyOrderByWithRelationInput[]
+    cursor?: CompanyWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CompanyScalarFieldEnum | CompanyScalarFieldEnum[]
+  }
+
+  /**
    * User.supervisedDrivers
    */
   export type User$supervisedDriversArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -18676,6 +20073,7 @@ export namespace Prisma {
     companyId: string | null
     name: string | null
     phone: string | null
+    driverCode: string | null
     platform: $Enums.Platform | null
     platformDriverId: string | null
     utr: string | null
@@ -18721,6 +20119,7 @@ export namespace Prisma {
     companyId: string | null
     name: string | null
     phone: string | null
+    driverCode: string | null
     platform: $Enums.Platform | null
     platformDriverId: string | null
     utr: string | null
@@ -18766,6 +20165,7 @@ export namespace Prisma {
     companyId: number
     name: number
     phone: number
+    driverCode: number
     platform: number
     platformDriverId: number
     utr: number
@@ -18823,6 +20223,7 @@ export namespace Prisma {
     companyId?: true
     name?: true
     phone?: true
+    driverCode?: true
     platform?: true
     platformDriverId?: true
     utr?: true
@@ -18868,6 +20269,7 @@ export namespace Prisma {
     companyId?: true
     name?: true
     phone?: true
+    driverCode?: true
     platform?: true
     platformDriverId?: true
     utr?: true
@@ -18913,6 +20315,7 @@ export namespace Prisma {
     companyId?: true
     name?: true
     phone?: true
+    driverCode?: true
     platform?: true
     platformDriverId?: true
     utr?: true
@@ -19045,6 +20448,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode: string | null
     platform: $Enums.Platform
     platformDriverId: string | null
     utr: string | null
@@ -19109,6 +20513,7 @@ export namespace Prisma {
     companyId?: boolean
     name?: boolean
     phone?: boolean
+    driverCode?: boolean
     platform?: boolean
     platformDriverId?: boolean
     utr?: boolean
@@ -19203,6 +20608,7 @@ export namespace Prisma {
     companyId?: boolean
     name?: boolean
     phone?: boolean
+    driverCode?: boolean
     platform?: boolean
     platformDriverId?: boolean
     utr?: boolean
@@ -19252,6 +20658,7 @@ export namespace Prisma {
     companyId?: boolean
     name?: boolean
     phone?: boolean
+    driverCode?: boolean
     platform?: boolean
     platformDriverId?: boolean
     utr?: boolean
@@ -19407,6 +20814,7 @@ export namespace Prisma {
       companyId: string
       name: string
       phone: string
+      driverCode: string | null
       platform: $Enums.Platform
       platformDriverId: string | null
       utr: string | null
@@ -19890,6 +21298,7 @@ export namespace Prisma {
     readonly companyId: FieldRef<"Driver", 'String'>
     readonly name: FieldRef<"Driver", 'String'>
     readonly phone: FieldRef<"Driver", 'String'>
+    readonly driverCode: FieldRef<"Driver", 'String'>
     readonly platform: FieldRef<"Driver", 'Platform'>
     readonly platformDriverId: FieldRef<"Driver", 'String'>
     readonly utr: FieldRef<"Driver", 'String'>
@@ -106784,6 +108193,7 @@ export namespace Prisma {
     vendor?: boolean | VendorDefaultArgs<ExtArgs>
     zone?: boolean | VendorBranch$zoneArgs<ExtArgs>
     orders?: boolean | VendorBranch$ordersArgs<ExtArgs>
+    portalUsers?: boolean | VendorBranch$portalUsersArgs<ExtArgs>
     _count?: boolean | VendorBranchCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["vendorBranch"]>
 
@@ -106829,6 +108239,7 @@ export namespace Prisma {
     vendor?: boolean | VendorDefaultArgs<ExtArgs>
     zone?: boolean | VendorBranch$zoneArgs<ExtArgs>
     orders?: boolean | VendorBranch$ordersArgs<ExtArgs>
+    portalUsers?: boolean | VendorBranch$portalUsersArgs<ExtArgs>
     _count?: boolean | VendorBranchCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type VendorBranchIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -106844,6 +108255,7 @@ export namespace Prisma {
       vendor: Prisma.$VendorPayload<ExtArgs>
       zone: Prisma.$DeliveryZonePayload<ExtArgs> | null
       orders: Prisma.$DeliveryOrderPayload<ExtArgs>[]
+      portalUsers: Prisma.$UserPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -107228,6 +108640,7 @@ export namespace Prisma {
     vendor<T extends VendorDefaultArgs<ExtArgs> = {}>(args?: Subset<T, VendorDefaultArgs<ExtArgs>>): Prisma__VendorClient<$Result.GetResult<Prisma.$VendorPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     zone<T extends VendorBranch$zoneArgs<ExtArgs> = {}>(args?: Subset<T, VendorBranch$zoneArgs<ExtArgs>>): Prisma__DeliveryZoneClient<$Result.GetResult<Prisma.$DeliveryZonePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     orders<T extends VendorBranch$ordersArgs<ExtArgs> = {}>(args?: Subset<T, VendorBranch$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeliveryOrderPayload<ExtArgs>, T, "findMany"> | Null>
+    portalUsers<T extends VendorBranch$portalUsersArgs<ExtArgs> = {}>(args?: Subset<T, VendorBranch$portalUsersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -107624,6 +109037,26 @@ export namespace Prisma {
   }
 
   /**
+   * VendorBranch.portalUsers
+   */
+  export type VendorBranch$portalUsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
+    cursor?: UserWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
+  }
+
+  /**
    * VendorBranch without action
    */
   export type VendorBranchDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -107668,6 +109101,7 @@ export namespace Prisma {
     nameAr: string | null
     centroidLat: Decimal | null
     centroidLng: Decimal | null
+    color: string | null
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -107681,6 +109115,7 @@ export namespace Prisma {
     nameAr: string | null
     centroidLat: Decimal | null
     centroidLng: Decimal | null
+    color: string | null
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -107696,6 +109131,7 @@ export namespace Prisma {
     bbox: number
     centroidLat: number
     centroidLng: number
+    color: number
     isActive: number
     createdAt: number
     updatedAt: number
@@ -107721,6 +109157,7 @@ export namespace Prisma {
     nameAr?: true
     centroidLat?: true
     centroidLng?: true
+    color?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -107734,6 +109171,7 @@ export namespace Prisma {
     nameAr?: true
     centroidLat?: true
     centroidLng?: true
+    color?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -107749,6 +109187,7 @@ export namespace Prisma {
     bbox?: true
     centroidLat?: true
     centroidLng?: true
+    color?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -107851,6 +109290,7 @@ export namespace Prisma {
     bbox: JsonValue
     centroidLat: Decimal | null
     centroidLng: Decimal | null
+    color: string | null
     isActive: boolean
     createdAt: Date
     updatedAt: Date
@@ -107885,6 +109325,7 @@ export namespace Prisma {
     bbox?: boolean
     centroidLat?: boolean
     centroidLng?: boolean
+    color?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -107907,6 +109348,7 @@ export namespace Prisma {
     bbox?: boolean
     centroidLat?: boolean
     centroidLng?: boolean
+    color?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -107923,6 +109365,7 @@ export namespace Prisma {
     bbox?: boolean
     centroidLat?: boolean
     centroidLng?: boolean
+    color?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -107961,6 +109404,7 @@ export namespace Prisma {
       bbox: Prisma.JsonValue
       centroidLat: Prisma.Decimal | null
       centroidLng: Prisma.Decimal | null
+      color: string | null
       isActive: boolean
       createdAt: Date
       updatedAt: Date
@@ -108372,6 +109816,7 @@ export namespace Prisma {
     readonly bbox: FieldRef<"DeliveryZone", 'Json'>
     readonly centroidLat: FieldRef<"DeliveryZone", 'Decimal'>
     readonly centroidLng: FieldRef<"DeliveryZone", 'Decimal'>
+    readonly color: FieldRef<"DeliveryZone", 'String'>
     readonly isActive: FieldRef<"DeliveryZone", 'Boolean'>
     readonly createdAt: FieldRef<"DeliveryZone", 'DateTime'>
     readonly updatedAt: FieldRef<"DeliveryZone", 'DateTime'>
@@ -125906,6 +127351,7 @@ export namespace Prisma {
     disciplineStatus: string | null
     disciplineNote: string | null
     isActive: boolean | null
+    ownerGroupId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -125922,6 +127368,7 @@ export namespace Prisma {
     disciplineStatus: string | null
     disciplineNote: string | null
     isActive: boolean | null
+    ownerGroupId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -125939,6 +127386,7 @@ export namespace Prisma {
     disciplineStatus: number
     disciplineNote: number
     isActive: number
+    ownerGroupId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -125967,6 +127415,7 @@ export namespace Prisma {
     disciplineStatus?: true
     disciplineNote?: true
     isActive?: true
+    ownerGroupId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -125983,6 +127432,7 @@ export namespace Prisma {
     disciplineStatus?: true
     disciplineNote?: true
     isActive?: true
+    ownerGroupId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -126000,6 +127450,7 @@ export namespace Prisma {
     disciplineStatus?: true
     disciplineNote?: true
     isActive?: true
+    ownerGroupId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -126104,6 +127555,7 @@ export namespace Prisma {
     disciplineStatus: string
     disciplineNote: string | null
     isActive: boolean
+    ownerGroupId: string | null
     createdAt: Date
     updatedAt: Date
     _count: FleetPartnerCountAggregateOutputType | null
@@ -126140,9 +127592,11 @@ export namespace Prisma {
     disciplineStatus?: boolean
     disciplineNote?: boolean
     isActive?: boolean
+    ownerGroupId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    ownerGroup?: boolean | FleetPartner$ownerGroupArgs<ExtArgs>
     drivers?: boolean | FleetPartner$driversArgs<ExtArgs>
     users?: boolean | FleetPartner$usersArgs<ExtArgs>
     statements?: boolean | FleetPartner$statementsArgs<ExtArgs>
@@ -126162,9 +127616,11 @@ export namespace Prisma {
     disciplineStatus?: boolean
     disciplineNote?: boolean
     isActive?: boolean
+    ownerGroupId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    ownerGroup?: boolean | FleetPartner$ownerGroupArgs<ExtArgs>
   }, ExtArgs["result"]["fleetPartner"]>
 
   export type FleetPartnerSelectScalar = {
@@ -126180,12 +127636,14 @@ export namespace Prisma {
     disciplineStatus?: boolean
     disciplineNote?: boolean
     isActive?: boolean
+    ownerGroupId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
   export type FleetPartnerInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    ownerGroup?: boolean | FleetPartner$ownerGroupArgs<ExtArgs>
     drivers?: boolean | FleetPartner$driversArgs<ExtArgs>
     users?: boolean | FleetPartner$usersArgs<ExtArgs>
     statements?: boolean | FleetPartner$statementsArgs<ExtArgs>
@@ -126193,12 +127651,14 @@ export namespace Prisma {
   }
   export type FleetPartnerIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    ownerGroup?: boolean | FleetPartner$ownerGroupArgs<ExtArgs>
   }
 
   export type $FleetPartnerPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "FleetPartner"
     objects: {
       tenant: Prisma.$TenantPayload<ExtArgs>
+      ownerGroup: Prisma.$OwnerGroupPayload<ExtArgs> | null
       drivers: Prisma.$DriverPayload<ExtArgs>[]
       users: Prisma.$UserPayload<ExtArgs>[]
       statements: Prisma.$FleetPayoutStatementPayload<ExtArgs>[]
@@ -126216,6 +127676,7 @@ export namespace Prisma {
       disciplineStatus: string
       disciplineNote: string | null
       isActive: boolean
+      ownerGroupId: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["fleetPartner"]>
@@ -126583,6 +128044,7 @@ export namespace Prisma {
   export interface Prisma__FleetPartnerClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    ownerGroup<T extends FleetPartner$ownerGroupArgs<ExtArgs> = {}>(args?: Subset<T, FleetPartner$ownerGroupArgs<ExtArgs>>): Prisma__OwnerGroupClient<$Result.GetResult<Prisma.$OwnerGroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     drivers<T extends FleetPartner$driversArgs<ExtArgs> = {}>(args?: Subset<T, FleetPartner$driversArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DriverPayload<ExtArgs>, T, "findMany"> | Null>
     users<T extends FleetPartner$usersArgs<ExtArgs> = {}>(args?: Subset<T, FleetPartner$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
     statements<T extends FleetPartner$statementsArgs<ExtArgs> = {}>(args?: Subset<T, FleetPartner$statementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetPayoutStatementPayload<ExtArgs>, T, "findMany"> | Null>
@@ -126627,6 +128089,7 @@ export namespace Prisma {
     readonly disciplineStatus: FieldRef<"FleetPartner", 'String'>
     readonly disciplineNote: FieldRef<"FleetPartner", 'String'>
     readonly isActive: FieldRef<"FleetPartner", 'Boolean'>
+    readonly ownerGroupId: FieldRef<"FleetPartner", 'String'>
     readonly createdAt: FieldRef<"FleetPartner", 'DateTime'>
     readonly updatedAt: FieldRef<"FleetPartner", 'DateTime'>
   }
@@ -126944,6 +128407,21 @@ export namespace Prisma {
      * Filter which FleetPartners to delete
      */
     where?: FleetPartnerWhereInput
+  }
+
+  /**
+   * FleetPartner.ownerGroup
+   */
+  export type FleetPartner$ownerGroupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OwnerGroup
+     */
+    select?: OwnerGroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OwnerGroupInclude<ExtArgs> | null
+    where?: OwnerGroupWhereInput
   }
 
   /**
@@ -128127,11 +129605,27 @@ export namespace Prisma {
     platform: 'platform',
     licenseCount: 'licenseCount',
     isActive: 'isActive',
+    kind: 'kind',
+    ownerGroupId: 'ownerGroupId',
+    accountManagerId: 'accountManagerId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
 
   export type CompanyScalarFieldEnum = (typeof CompanyScalarFieldEnum)[keyof typeof CompanyScalarFieldEnum]
+
+
+  export const OwnerGroupScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    name: 'name',
+    contactName: 'contactName',
+    contactPhone: 'contactPhone',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type OwnerGroupScalarFieldEnum = (typeof OwnerGroupScalarFieldEnum)[keyof typeof OwnerGroupScalarFieldEnum]
 
 
   export const UserScalarFieldEnum: {
@@ -128146,6 +129640,9 @@ export namespace Prisma {
     jobGrade: 'jobGrade',
     vendorId: 'vendorId',
     fleetPartnerId: 'fleetPartnerId',
+    ownerGroupId: 'ownerGroupId',
+    branchId: 'branchId',
+    vendorRole: 'vendorRole',
     isActive: 'isActive',
     lastLoginAt: 'lastLoginAt',
     createdAt: 'createdAt',
@@ -128161,6 +129658,7 @@ export namespace Prisma {
     companyId: 'companyId',
     name: 'name',
     phone: 'phone',
+    driverCode: 'driverCode',
     platform: 'platform',
     platformDriverId: 'platformDriverId',
     utr: 'utr',
@@ -129728,6 +131226,7 @@ export namespace Prisma {
     bbox: 'bbox',
     centroidLat: 'centroidLat',
     centroidLng: 'centroidLng',
+    color: 'color',
     isActive: 'isActive',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -130043,6 +131542,7 @@ export namespace Prisma {
     disciplineStatus: 'disciplineStatus',
     disciplineNote: 'disciplineNote',
     isActive: 'isActive',
+    ownerGroupId: 'ownerGroupId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -130129,10 +131629,24 @@ export namespace Prisma {
   export const CompanyOrderByRelevanceFieldEnum: {
     id: 'id',
     tenantId: 'tenantId',
-    name: 'name'
+    name: 'name',
+    kind: 'kind',
+    ownerGroupId: 'ownerGroupId',
+    accountManagerId: 'accountManagerId'
   };
 
   export type CompanyOrderByRelevanceFieldEnum = (typeof CompanyOrderByRelevanceFieldEnum)[keyof typeof CompanyOrderByRelevanceFieldEnum]
+
+
+  export const OwnerGroupOrderByRelevanceFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    name: 'name',
+    contactName: 'contactName',
+    contactPhone: 'contactPhone'
+  };
+
+  export type OwnerGroupOrderByRelevanceFieldEnum = (typeof OwnerGroupOrderByRelevanceFieldEnum)[keyof typeof OwnerGroupOrderByRelevanceFieldEnum]
 
 
   export const UserOrderByRelevanceFieldEnum: {
@@ -130144,7 +131658,10 @@ export namespace Prisma {
     name: 'name',
     jobGrade: 'jobGrade',
     vendorId: 'vendorId',
-    fleetPartnerId: 'fleetPartnerId'
+    fleetPartnerId: 'fleetPartnerId',
+    ownerGroupId: 'ownerGroupId',
+    branchId: 'branchId',
+    vendorRole: 'vendorRole'
   };
 
   export type UserOrderByRelevanceFieldEnum = (typeof UserOrderByRelevanceFieldEnum)[keyof typeof UserOrderByRelevanceFieldEnum]
@@ -130156,6 +131673,7 @@ export namespace Prisma {
     companyId: 'companyId',
     name: 'name',
     phone: 'phone',
+    driverCode: 'driverCode',
     platformDriverId: 'platformDriverId',
     utr: 'utr',
     zone: 'zone',
@@ -131178,7 +132696,8 @@ export namespace Prisma {
     tenantId: 'tenantId',
     code: 'code',
     name: 'name',
-    nameAr: 'nameAr'
+    nameAr: 'nameAr',
+    color: 'color'
   };
 
   export type DeliveryZoneOrderByRelevanceFieldEnum = (typeof DeliveryZoneOrderByRelevanceFieldEnum)[keyof typeof DeliveryZoneOrderByRelevanceFieldEnum]
@@ -131388,7 +132907,8 @@ export namespace Prisma {
     contactPhone: 'contactPhone',
     contactEmail: 'contactEmail',
     disciplineStatus: 'disciplineStatus',
-    disciplineNote: 'disciplineNote'
+    disciplineNote: 'disciplineNote',
+    ownerGroupId: 'ownerGroupId'
   };
 
   export type FleetPartnerOrderByRelevanceFieldEnum = (typeof FleetPartnerOrderByRelevanceFieldEnum)[keyof typeof FleetPartnerOrderByRelevanceFieldEnum]
@@ -132369,6 +133889,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentListRelationFilter
     americanaDailyIngestions?: AmericanaDailyIngestionListRelationFilter
     sims?: SimListRelationFilter
+    ownerGroups?: OwnerGroupListRelationFilter
     vendors?: VendorListRelationFilter
     vendorBranches?: VendorBranchListRelationFilter
     deliveryZones?: DeliveryZoneListRelationFilter
@@ -132476,6 +133997,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentOrderByRelationAggregateInput
     americanaDailyIngestions?: AmericanaDailyIngestionOrderByRelationAggregateInput
     sims?: SimOrderByRelationAggregateInput
+    ownerGroups?: OwnerGroupOrderByRelationAggregateInput
     vendors?: VendorOrderByRelationAggregateInput
     vendorBranches?: VendorBranchOrderByRelationAggregateInput
     deliveryZones?: DeliveryZoneOrderByRelationAggregateInput
@@ -132587,6 +134109,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentListRelationFilter
     americanaDailyIngestions?: AmericanaDailyIngestionListRelationFilter
     sims?: SimListRelationFilter
+    ownerGroups?: OwnerGroupListRelationFilter
     vendors?: VendorListRelationFilter
     vendorBranches?: VendorBranchListRelationFilter
     deliveryZones?: DeliveryZoneListRelationFilter
@@ -132661,9 +134184,14 @@ export namespace Prisma {
     platform?: EnumPlatformFilter<"Company"> | $Enums.Platform
     licenseCount?: IntFilter<"Company"> | number
     isActive?: BoolFilter<"Company"> | boolean
+    kind?: StringFilter<"Company"> | string
+    ownerGroupId?: StringNullableFilter<"Company"> | string | null
+    accountManagerId?: StringNullableFilter<"Company"> | string | null
     createdAt?: DateTimeFilter<"Company"> | Date | string
     updatedAt?: DateTimeFilter<"Company"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
+    ownerGroup?: XOR<OwnerGroupNullableRelationFilter, OwnerGroupWhereInput> | null
+    accountManager?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     drivers?: DriverListRelationFilter
     vehicles?: VehicleListRelationFilter
     recruitmentPipeline?: RecruitmentPipelineListRelationFilter
@@ -132677,9 +134205,14 @@ export namespace Prisma {
     platform?: SortOrder
     licenseCount?: SortOrder
     isActive?: SortOrder
+    kind?: SortOrder
+    ownerGroupId?: SortOrderInput | SortOrder
+    accountManagerId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     tenant?: TenantOrderByWithRelationInput
+    ownerGroup?: OwnerGroupOrderByWithRelationInput
+    accountManager?: UserOrderByWithRelationInput
     drivers?: DriverOrderByRelationAggregateInput
     vehicles?: VehicleOrderByRelationAggregateInput
     recruitmentPipeline?: RecruitmentPipelineOrderByRelationAggregateInput
@@ -132697,9 +134230,14 @@ export namespace Prisma {
     platform?: EnumPlatformFilter<"Company"> | $Enums.Platform
     licenseCount?: IntFilter<"Company"> | number
     isActive?: BoolFilter<"Company"> | boolean
+    kind?: StringFilter<"Company"> | string
+    ownerGroupId?: StringNullableFilter<"Company"> | string | null
+    accountManagerId?: StringNullableFilter<"Company"> | string | null
     createdAt?: DateTimeFilter<"Company"> | Date | string
     updatedAt?: DateTimeFilter<"Company"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
+    ownerGroup?: XOR<OwnerGroupNullableRelationFilter, OwnerGroupWhereInput> | null
+    accountManager?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     drivers?: DriverListRelationFilter
     vehicles?: VehicleListRelationFilter
     recruitmentPipeline?: RecruitmentPipelineListRelationFilter
@@ -132713,6 +134251,9 @@ export namespace Prisma {
     platform?: SortOrder
     licenseCount?: SortOrder
     isActive?: SortOrder
+    kind?: SortOrder
+    ownerGroupId?: SortOrderInput | SortOrder
+    accountManagerId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: CompanyCountOrderByAggregateInput
@@ -132732,8 +134273,87 @@ export namespace Prisma {
     platform?: EnumPlatformWithAggregatesFilter<"Company"> | $Enums.Platform
     licenseCount?: IntWithAggregatesFilter<"Company"> | number
     isActive?: BoolWithAggregatesFilter<"Company"> | boolean
+    kind?: StringWithAggregatesFilter<"Company"> | string
+    ownerGroupId?: StringNullableWithAggregatesFilter<"Company"> | string | null
+    accountManagerId?: StringNullableWithAggregatesFilter<"Company"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Company"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Company"> | Date | string
+  }
+
+  export type OwnerGroupWhereInput = {
+    AND?: OwnerGroupWhereInput | OwnerGroupWhereInput[]
+    OR?: OwnerGroupWhereInput[]
+    NOT?: OwnerGroupWhereInput | OwnerGroupWhereInput[]
+    id?: StringFilter<"OwnerGroup"> | string
+    tenantId?: StringFilter<"OwnerGroup"> | string
+    name?: StringFilter<"OwnerGroup"> | string
+    contactName?: StringNullableFilter<"OwnerGroup"> | string | null
+    contactPhone?: StringNullableFilter<"OwnerGroup"> | string | null
+    createdAt?: DateTimeFilter<"OwnerGroup"> | Date | string
+    updatedAt?: DateTimeFilter<"OwnerGroup"> | Date | string
+    tenant?: XOR<TenantRelationFilter, TenantWhereInput>
+    fleets?: FleetPartnerListRelationFilter
+    companies?: CompanyListRelationFilter
+    users?: UserListRelationFilter
+  }
+
+  export type OwnerGroupOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    name?: SortOrder
+    contactName?: SortOrderInput | SortOrder
+    contactPhone?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    tenant?: TenantOrderByWithRelationInput
+    fleets?: FleetPartnerOrderByRelationAggregateInput
+    companies?: CompanyOrderByRelationAggregateInput
+    users?: UserOrderByRelationAggregateInput
+    _relevance?: OwnerGroupOrderByRelevanceInput
+  }
+
+  export type OwnerGroupWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    tenantId_name?: OwnerGroupTenantIdNameCompoundUniqueInput
+    AND?: OwnerGroupWhereInput | OwnerGroupWhereInput[]
+    OR?: OwnerGroupWhereInput[]
+    NOT?: OwnerGroupWhereInput | OwnerGroupWhereInput[]
+    tenantId?: StringFilter<"OwnerGroup"> | string
+    name?: StringFilter<"OwnerGroup"> | string
+    contactName?: StringNullableFilter<"OwnerGroup"> | string | null
+    contactPhone?: StringNullableFilter<"OwnerGroup"> | string | null
+    createdAt?: DateTimeFilter<"OwnerGroup"> | Date | string
+    updatedAt?: DateTimeFilter<"OwnerGroup"> | Date | string
+    tenant?: XOR<TenantRelationFilter, TenantWhereInput>
+    fleets?: FleetPartnerListRelationFilter
+    companies?: CompanyListRelationFilter
+    users?: UserListRelationFilter
+  }, "id" | "tenantId_name">
+
+  export type OwnerGroupOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    name?: SortOrder
+    contactName?: SortOrderInput | SortOrder
+    contactPhone?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: OwnerGroupCountOrderByAggregateInput
+    _max?: OwnerGroupMaxOrderByAggregateInput
+    _min?: OwnerGroupMinOrderByAggregateInput
+  }
+
+  export type OwnerGroupScalarWhereWithAggregatesInput = {
+    AND?: OwnerGroupScalarWhereWithAggregatesInput | OwnerGroupScalarWhereWithAggregatesInput[]
+    OR?: OwnerGroupScalarWhereWithAggregatesInput[]
+    NOT?: OwnerGroupScalarWhereWithAggregatesInput | OwnerGroupScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"OwnerGroup"> | string
+    tenantId?: StringWithAggregatesFilter<"OwnerGroup"> | string
+    name?: StringWithAggregatesFilter<"OwnerGroup"> | string
+    contactName?: StringNullableWithAggregatesFilter<"OwnerGroup"> | string | null
+    contactPhone?: StringNullableWithAggregatesFilter<"OwnerGroup"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"OwnerGroup"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"OwnerGroup"> | Date | string
   }
 
   export type UserWhereInput = {
@@ -132751,6 +134371,9 @@ export namespace Prisma {
     jobGrade?: StringNullableFilter<"User"> | string | null
     vendorId?: StringNullableFilter<"User"> | string | null
     fleetPartnerId?: StringNullableFilter<"User"> | string | null
+    ownerGroupId?: StringNullableFilter<"User"> | string | null
+    branchId?: StringNullableFilter<"User"> | string | null
+    vendorRole?: StringNullableFilter<"User"> | string | null
     isActive?: BoolFilter<"User"> | boolean
     lastLoginAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -132758,6 +134381,9 @@ export namespace Prisma {
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     vendor?: XOR<VendorNullableRelationFilter, VendorWhereInput> | null
     fleetPartner?: XOR<FleetPartnerNullableRelationFilter, FleetPartnerWhereInput> | null
+    ownerGroup?: XOR<OwnerGroupNullableRelationFilter, OwnerGroupWhereInput> | null
+    branch?: XOR<VendorBranchNullableRelationFilter, VendorBranchWhereInput> | null
+    managedCompanies?: CompanyListRelationFilter
     supervisedDrivers?: DriverListRelationFilter
     issuedCommands?: DeviceCommandListRelationFilter
     acknowledgedAlerts?: AlertListRelationFilter
@@ -132785,6 +134411,9 @@ export namespace Prisma {
     jobGrade?: SortOrderInput | SortOrder
     vendorId?: SortOrderInput | SortOrder
     fleetPartnerId?: SortOrderInput | SortOrder
+    ownerGroupId?: SortOrderInput | SortOrder
+    branchId?: SortOrderInput | SortOrder
+    vendorRole?: SortOrderInput | SortOrder
     isActive?: SortOrder
     lastLoginAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -132792,6 +134421,9 @@ export namespace Prisma {
     tenant?: TenantOrderByWithRelationInput
     vendor?: VendorOrderByWithRelationInput
     fleetPartner?: FleetPartnerOrderByWithRelationInput
+    ownerGroup?: OwnerGroupOrderByWithRelationInput
+    branch?: VendorBranchOrderByWithRelationInput
+    managedCompanies?: CompanyOrderByRelationAggregateInput
     supervisedDrivers?: DriverOrderByRelationAggregateInput
     issuedCommands?: DeviceCommandOrderByRelationAggregateInput
     acknowledgedAlerts?: AlertOrderByRelationAggregateInput
@@ -132823,6 +134455,9 @@ export namespace Prisma {
     jobGrade?: StringNullableFilter<"User"> | string | null
     vendorId?: StringNullableFilter<"User"> | string | null
     fleetPartnerId?: StringNullableFilter<"User"> | string | null
+    ownerGroupId?: StringNullableFilter<"User"> | string | null
+    branchId?: StringNullableFilter<"User"> | string | null
+    vendorRole?: StringNullableFilter<"User"> | string | null
     isActive?: BoolFilter<"User"> | boolean
     lastLoginAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -132830,6 +134465,9 @@ export namespace Prisma {
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     vendor?: XOR<VendorNullableRelationFilter, VendorWhereInput> | null
     fleetPartner?: XOR<FleetPartnerNullableRelationFilter, FleetPartnerWhereInput> | null
+    ownerGroup?: XOR<OwnerGroupNullableRelationFilter, OwnerGroupWhereInput> | null
+    branch?: XOR<VendorBranchNullableRelationFilter, VendorBranchWhereInput> | null
+    managedCompanies?: CompanyListRelationFilter
     supervisedDrivers?: DriverListRelationFilter
     issuedCommands?: DeviceCommandListRelationFilter
     acknowledgedAlerts?: AlertListRelationFilter
@@ -132857,6 +134495,9 @@ export namespace Prisma {
     jobGrade?: SortOrderInput | SortOrder
     vendorId?: SortOrderInput | SortOrder
     fleetPartnerId?: SortOrderInput | SortOrder
+    ownerGroupId?: SortOrderInput | SortOrder
+    branchId?: SortOrderInput | SortOrder
+    vendorRole?: SortOrderInput | SortOrder
     isActive?: SortOrder
     lastLoginAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -132881,6 +134522,9 @@ export namespace Prisma {
     jobGrade?: StringNullableWithAggregatesFilter<"User"> | string | null
     vendorId?: StringNullableWithAggregatesFilter<"User"> | string | null
     fleetPartnerId?: StringNullableWithAggregatesFilter<"User"> | string | null
+    ownerGroupId?: StringNullableWithAggregatesFilter<"User"> | string | null
+    branchId?: StringNullableWithAggregatesFilter<"User"> | string | null
+    vendorRole?: StringNullableWithAggregatesFilter<"User"> | string | null
     isActive?: BoolWithAggregatesFilter<"User"> | boolean
     lastLoginAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -132896,6 +134540,7 @@ export namespace Prisma {
     companyId?: StringFilter<"Driver"> | string
     name?: StringFilter<"Driver"> | string
     phone?: StringFilter<"Driver"> | string
+    driverCode?: StringNullableFilter<"Driver"> | string | null
     platform?: EnumPlatformFilter<"Driver"> | $Enums.Platform
     platformDriverId?: StringNullableFilter<"Driver"> | string | null
     utr?: StringNullableFilter<"Driver"> | string | null
@@ -132989,6 +134634,7 @@ export namespace Prisma {
     companyId?: SortOrder
     name?: SortOrder
     phone?: SortOrder
+    driverCode?: SortOrderInput | SortOrder
     platform?: SortOrder
     platformDriverId?: SortOrderInput | SortOrder
     utr?: SortOrderInput | SortOrder
@@ -133079,6 +134725,7 @@ export namespace Prisma {
 
   export type DriverWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    tenantId_driverCode?: DriverTenantIdDriverCodeCompoundUniqueInput
     AND?: DriverWhereInput | DriverWhereInput[]
     OR?: DriverWhereInput[]
     NOT?: DriverWhereInput | DriverWhereInput[]
@@ -133086,6 +134733,7 @@ export namespace Prisma {
     companyId?: StringFilter<"Driver"> | string
     name?: StringFilter<"Driver"> | string
     phone?: StringFilter<"Driver"> | string
+    driverCode?: StringNullableFilter<"Driver"> | string | null
     platform?: EnumPlatformFilter<"Driver"> | $Enums.Platform
     platformDriverId?: StringNullableFilter<"Driver"> | string | null
     utr?: StringNullableFilter<"Driver"> | string | null
@@ -133171,7 +134819,7 @@ export namespace Prisma {
     remittances?: RemittanceListRelationFilter
     incidents?: IncidentListRelationFilter
     orderRatings?: OrderRatingListRelationFilter
-  }, "id">
+  }, "id" | "tenantId_driverCode">
 
   export type DriverOrderByWithAggregationInput = {
     id?: SortOrder
@@ -133179,6 +134827,7 @@ export namespace Prisma {
     companyId?: SortOrder
     name?: SortOrder
     phone?: SortOrder
+    driverCode?: SortOrderInput | SortOrder
     platform?: SortOrder
     platformDriverId?: SortOrderInput | SortOrder
     utr?: SortOrderInput | SortOrder
@@ -133232,6 +134881,7 @@ export namespace Prisma {
     companyId?: StringWithAggregatesFilter<"Driver"> | string
     name?: StringWithAggregatesFilter<"Driver"> | string
     phone?: StringWithAggregatesFilter<"Driver"> | string
+    driverCode?: StringNullableWithAggregatesFilter<"Driver"> | string | null
     platform?: EnumPlatformWithAggregatesFilter<"Driver"> | $Enums.Platform
     platformDriverId?: StringNullableWithAggregatesFilter<"Driver"> | string | null
     utr?: StringNullableWithAggregatesFilter<"Driver"> | string | null
@@ -141369,6 +143019,7 @@ export namespace Prisma {
     vendor?: XOR<VendorRelationFilter, VendorWhereInput>
     zone?: XOR<DeliveryZoneNullableRelationFilter, DeliveryZoneWhereInput> | null
     orders?: DeliveryOrderListRelationFilter
+    portalUsers?: UserListRelationFilter
   }
 
   export type VendorBranchOrderByWithRelationInput = {
@@ -141390,6 +143041,7 @@ export namespace Prisma {
     vendor?: VendorOrderByWithRelationInput
     zone?: DeliveryZoneOrderByWithRelationInput
     orders?: DeliveryOrderOrderByRelationAggregateInput
+    portalUsers?: UserOrderByRelationAggregateInput
     _relevance?: VendorBranchOrderByRelevanceInput
   }
 
@@ -141416,6 +143068,7 @@ export namespace Prisma {
     vendor?: XOR<VendorRelationFilter, VendorWhereInput>
     zone?: XOR<DeliveryZoneNullableRelationFilter, DeliveryZoneWhereInput> | null
     orders?: DeliveryOrderListRelationFilter
+    portalUsers?: UserListRelationFilter
   }, "id" | "tenantId_foodicsBranchId">
 
   export type VendorBranchOrderByWithAggregationInput = {
@@ -141473,6 +143126,7 @@ export namespace Prisma {
     bbox?: JsonFilter<"DeliveryZone">
     centroidLat?: DecimalNullableFilter<"DeliveryZone"> | Decimal | DecimalJsLike | number | string | null
     centroidLng?: DecimalNullableFilter<"DeliveryZone"> | Decimal | DecimalJsLike | number | string | null
+    color?: StringNullableFilter<"DeliveryZone"> | string | null
     isActive?: BoolFilter<"DeliveryZone"> | boolean
     createdAt?: DateTimeFilter<"DeliveryZone"> | Date | string
     updatedAt?: DateTimeFilter<"DeliveryZone"> | Date | string
@@ -141494,6 +143148,7 @@ export namespace Prisma {
     bbox?: SortOrder
     centroidLat?: SortOrderInput | SortOrder
     centroidLng?: SortOrderInput | SortOrder
+    color?: SortOrderInput | SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -141520,6 +143175,7 @@ export namespace Prisma {
     bbox?: JsonFilter<"DeliveryZone">
     centroidLat?: DecimalNullableFilter<"DeliveryZone"> | Decimal | DecimalJsLike | number | string | null
     centroidLng?: DecimalNullableFilter<"DeliveryZone"> | Decimal | DecimalJsLike | number | string | null
+    color?: StringNullableFilter<"DeliveryZone"> | string | null
     isActive?: BoolFilter<"DeliveryZone"> | boolean
     createdAt?: DateTimeFilter<"DeliveryZone"> | Date | string
     updatedAt?: DateTimeFilter<"DeliveryZone"> | Date | string
@@ -141541,6 +143197,7 @@ export namespace Prisma {
     bbox?: SortOrder
     centroidLat?: SortOrderInput | SortOrder
     centroidLng?: SortOrderInput | SortOrder
+    color?: SortOrderInput | SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -141564,6 +143221,7 @@ export namespace Prisma {
     bbox?: JsonWithAggregatesFilter<"DeliveryZone">
     centroidLat?: DecimalNullableWithAggregatesFilter<"DeliveryZone"> | Decimal | DecimalJsLike | number | string | null
     centroidLng?: DecimalNullableWithAggregatesFilter<"DeliveryZone"> | Decimal | DecimalJsLike | number | string | null
+    color?: StringNullableWithAggregatesFilter<"DeliveryZone"> | string | null
     isActive?: BoolWithAggregatesFilter<"DeliveryZone"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"DeliveryZone"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"DeliveryZone"> | Date | string
@@ -143179,9 +144837,11 @@ export namespace Prisma {
     disciplineStatus?: StringFilter<"FleetPartner"> | string
     disciplineNote?: StringNullableFilter<"FleetPartner"> | string | null
     isActive?: BoolFilter<"FleetPartner"> | boolean
+    ownerGroupId?: StringNullableFilter<"FleetPartner"> | string | null
     createdAt?: DateTimeFilter<"FleetPartner"> | Date | string
     updatedAt?: DateTimeFilter<"FleetPartner"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
+    ownerGroup?: XOR<OwnerGroupNullableRelationFilter, OwnerGroupWhereInput> | null
     drivers?: DriverListRelationFilter
     users?: UserListRelationFilter
     statements?: FleetPayoutStatementListRelationFilter
@@ -143200,9 +144860,11 @@ export namespace Prisma {
     disciplineStatus?: SortOrder
     disciplineNote?: SortOrderInput | SortOrder
     isActive?: SortOrder
+    ownerGroupId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     tenant?: TenantOrderByWithRelationInput
+    ownerGroup?: OwnerGroupOrderByWithRelationInput
     drivers?: DriverOrderByRelationAggregateInput
     users?: UserOrderByRelationAggregateInput
     statements?: FleetPayoutStatementOrderByRelationAggregateInput
@@ -143225,9 +144887,11 @@ export namespace Prisma {
     disciplineStatus?: StringFilter<"FleetPartner"> | string
     disciplineNote?: StringNullableFilter<"FleetPartner"> | string | null
     isActive?: BoolFilter<"FleetPartner"> | boolean
+    ownerGroupId?: StringNullableFilter<"FleetPartner"> | string | null
     createdAt?: DateTimeFilter<"FleetPartner"> | Date | string
     updatedAt?: DateTimeFilter<"FleetPartner"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
+    ownerGroup?: XOR<OwnerGroupNullableRelationFilter, OwnerGroupWhereInput> | null
     drivers?: DriverListRelationFilter
     users?: UserListRelationFilter
     statements?: FleetPayoutStatementListRelationFilter
@@ -143246,6 +144910,7 @@ export namespace Prisma {
     disciplineStatus?: SortOrder
     disciplineNote?: SortOrderInput | SortOrder
     isActive?: SortOrder
+    ownerGroupId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: FleetPartnerCountOrderByAggregateInput
@@ -143271,6 +144936,7 @@ export namespace Prisma {
     disciplineStatus?: StringWithAggregatesFilter<"FleetPartner"> | string
     disciplineNote?: StringNullableWithAggregatesFilter<"FleetPartner"> | string | null
     isActive?: BoolWithAggregatesFilter<"FleetPartner"> | boolean
+    ownerGroupId?: StringNullableWithAggregatesFilter<"FleetPartner"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"FleetPartner"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"FleetPartner"> | Date | string
   }
@@ -143457,6 +145123,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -143564,6 +145231,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -143671,6 +145339,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -143778,6 +145447,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -143857,9 +145527,12 @@ export namespace Prisma {
     platform: $Enums.Platform
     licenseCount?: number
     isActive?: boolean
+    kind?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutCompaniesInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutCompaniesInput
+    accountManager?: UserCreateNestedOneWithoutManagedCompaniesInput
     drivers?: DriverCreateNestedManyWithoutCompanyInput
     vehicles?: VehicleCreateNestedManyWithoutCompanyInput
     recruitmentPipeline?: RecruitmentPipelineCreateNestedManyWithoutAssignedCompanyInput
@@ -143873,6 +145546,9 @@ export namespace Prisma {
     platform: $Enums.Platform
     licenseCount?: number
     isActive?: boolean
+    kind?: string
+    ownerGroupId?: string | null
+    accountManagerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     drivers?: DriverUncheckedCreateNestedManyWithoutCompanyInput
@@ -143887,9 +145563,12 @@ export namespace Prisma {
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     licenseCount?: IntFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutCompaniesNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutCompaniesNestedInput
+    accountManager?: UserUpdateOneWithoutManagedCompaniesNestedInput
     drivers?: DriverUpdateManyWithoutCompanyNestedInput
     vehicles?: VehicleUpdateManyWithoutCompanyNestedInput
     recruitmentPipeline?: RecruitmentPipelineUpdateManyWithoutAssignedCompanyNestedInput
@@ -143903,6 +145582,9 @@ export namespace Prisma {
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     licenseCount?: IntFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    accountManagerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     drivers?: DriverUncheckedUpdateManyWithoutCompanyNestedInput
@@ -143918,6 +145600,9 @@ export namespace Prisma {
     platform: $Enums.Platform
     licenseCount?: number
     isActive?: boolean
+    kind?: string
+    ownerGroupId?: string | null
+    accountManagerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -143928,6 +145613,7 @@ export namespace Prisma {
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     licenseCount?: IntFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -143939,6 +145625,90 @@ export namespace Prisma {
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     licenseCount?: IntFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    accountManagerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OwnerGroupCreateInput = {
+    id?: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutOwnerGroupsInput
+    fleets?: FleetPartnerCreateNestedManyWithoutOwnerGroupInput
+    companies?: CompanyCreateNestedManyWithoutOwnerGroupInput
+    users?: UserCreateNestedManyWithoutOwnerGroupInput
+  }
+
+  export type OwnerGroupUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    fleets?: FleetPartnerUncheckedCreateNestedManyWithoutOwnerGroupInput
+    companies?: CompanyUncheckedCreateNestedManyWithoutOwnerGroupInput
+    users?: UserUncheckedCreateNestedManyWithoutOwnerGroupInput
+  }
+
+  export type OwnerGroupUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutOwnerGroupsNestedInput
+    fleets?: FleetPartnerUpdateManyWithoutOwnerGroupNestedInput
+    companies?: CompanyUpdateManyWithoutOwnerGroupNestedInput
+    users?: UserUpdateManyWithoutOwnerGroupNestedInput
+  }
+
+  export type OwnerGroupUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fleets?: FleetPartnerUncheckedUpdateManyWithoutOwnerGroupNestedInput
+    companies?: CompanyUncheckedUpdateManyWithoutOwnerGroupNestedInput
+    users?: UserUncheckedUpdateManyWithoutOwnerGroupNestedInput
+  }
+
+  export type OwnerGroupCreateManyInput = {
+    id?: string
+    tenantId: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OwnerGroupUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OwnerGroupUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -143952,6 +145722,7 @@ export namespace Prisma {
     role?: $Enums.UserRole
     isSuperAdmin?: boolean
     jobGrade?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -143959,6 +145730,9 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutUsersInput
     vendor?: VendorCreateNestedOneWithoutUsersInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
@@ -143986,10 +145760,14 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorId?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
@@ -144014,6 +145792,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -144021,6 +145800,9 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
     vendor?: VendorUpdateOneWithoutUsersNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
@@ -144048,10 +145830,14 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
@@ -144079,6 +145865,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorId?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -144094,6 +145883,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -144112,6 +145902,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -144122,6 +145915,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -144213,6 +146007,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -144300,6 +146095,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -144391,6 +146187,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -144480,6 +146277,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -144523,6 +146321,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -144566,6 +146365,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -153458,6 +155258,7 @@ export namespace Prisma {
     vendor: VendorCreateNestedOneWithoutBranchesInput
     zone?: DeliveryZoneCreateNestedOneWithoutBranchesInput
     orders?: DeliveryOrderCreateNestedManyWithoutBranchInput
+    portalUsers?: UserCreateNestedManyWithoutBranchInput
   }
 
   export type VendorBranchUncheckedCreateInput = {
@@ -153476,6 +155277,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     orders?: DeliveryOrderUncheckedCreateNestedManyWithoutBranchInput
+    portalUsers?: UserUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type VendorBranchUpdateInput = {
@@ -153494,6 +155296,7 @@ export namespace Prisma {
     vendor?: VendorUpdateOneRequiredWithoutBranchesNestedInput
     zone?: DeliveryZoneUpdateOneWithoutBranchesNestedInput
     orders?: DeliveryOrderUpdateManyWithoutBranchNestedInput
+    portalUsers?: UserUpdateManyWithoutBranchNestedInput
   }
 
   export type VendorBranchUncheckedUpdateInput = {
@@ -153512,6 +155315,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orders?: DeliveryOrderUncheckedUpdateManyWithoutBranchNestedInput
+    portalUsers?: UserUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type VendorBranchCreateManyInput = {
@@ -153571,6 +155375,7 @@ export namespace Prisma {
     bbox: JsonNullValueInput | InputJsonValue
     centroidLat?: Decimal | DecimalJsLike | number | string | null
     centroidLng?: Decimal | DecimalJsLike | number | string | null
+    color?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -153592,6 +155397,7 @@ export namespace Prisma {
     bbox: JsonNullValueInput | InputJsonValue
     centroidLat?: Decimal | DecimalJsLike | number | string | null
     centroidLng?: Decimal | DecimalJsLike | number | string | null
+    color?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -153611,6 +155417,7 @@ export namespace Prisma {
     bbox?: JsonNullValueInput | InputJsonValue
     centroidLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     centroidLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -153632,6 +155439,7 @@ export namespace Prisma {
     bbox?: JsonNullValueInput | InputJsonValue
     centroidLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     centroidLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -153652,6 +155460,7 @@ export namespace Prisma {
     bbox: JsonNullValueInput | InputJsonValue
     centroidLat?: Decimal | DecimalJsLike | number | string | null
     centroidLng?: Decimal | DecimalJsLike | number | string | null
+    color?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -153666,6 +155475,7 @@ export namespace Prisma {
     bbox?: JsonNullValueInput | InputJsonValue
     centroidLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     centroidLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -153681,6 +155491,7 @@ export namespace Prisma {
     bbox?: JsonNullValueInput | InputJsonValue
     centroidLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     centroidLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -155411,6 +157222,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutFleetPartnersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutFleetsInput
     drivers?: DriverCreateNestedManyWithoutFleetPartnerInput
     users?: UserCreateNestedManyWithoutFleetPartnerInput
     statements?: FleetPayoutStatementCreateNestedManyWithoutFleetInput
@@ -155429,6 +157241,7 @@ export namespace Prisma {
     disciplineStatus?: string
     disciplineNote?: string | null
     isActive?: boolean
+    ownerGroupId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     drivers?: DriverUncheckedCreateNestedManyWithoutFleetPartnerInput
@@ -155451,6 +157264,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutFleetPartnersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutFleetsNestedInput
     drivers?: DriverUpdateManyWithoutFleetPartnerNestedInput
     users?: UserUpdateManyWithoutFleetPartnerNestedInput
     statements?: FleetPayoutStatementUpdateManyWithoutFleetNestedInput
@@ -155469,6 +157283,7 @@ export namespace Prisma {
     disciplineStatus?: StringFieldUpdateOperationsInput | string
     disciplineNote?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     drivers?: DriverUncheckedUpdateManyWithoutFleetPartnerNestedInput
@@ -155489,6 +157304,7 @@ export namespace Prisma {
     disciplineStatus?: string
     disciplineNote?: string | null
     isActive?: boolean
+    ownerGroupId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -155522,6 +157338,7 @@ export namespace Prisma {
     disciplineStatus?: StringFieldUpdateOperationsInput | string
     disciplineNote?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -156176,6 +157993,12 @@ export namespace Prisma {
     none?: SimWhereInput
   }
 
+  export type OwnerGroupListRelationFilter = {
+    every?: OwnerGroupWhereInput
+    some?: OwnerGroupWhereInput
+    none?: OwnerGroupWhereInput
+  }
+
   export type VendorListRelationFilter = {
     every?: VendorWhereInput
     some?: VendorWhereInput
@@ -156576,6 +158399,10 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type OwnerGroupOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type VendorOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -156898,6 +158725,16 @@ export namespace Prisma {
     isNot?: TenantWhereInput
   }
 
+  export type OwnerGroupNullableRelationFilter = {
+    is?: OwnerGroupWhereInput | null
+    isNot?: OwnerGroupWhereInput | null
+  }
+
+  export type UserNullableRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
   export type CompanyOrderByRelevanceInput = {
     fields: CompanyOrderByRelevanceFieldEnum | CompanyOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -156911,6 +158748,9 @@ export namespace Prisma {
     platform?: SortOrder
     licenseCount?: SortOrder
     isActive?: SortOrder
+    kind?: SortOrder
+    ownerGroupId?: SortOrder
+    accountManagerId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -156926,6 +158766,9 @@ export namespace Prisma {
     platform?: SortOrder
     licenseCount?: SortOrder
     isActive?: SortOrder
+    kind?: SortOrder
+    ownerGroupId?: SortOrder
+    accountManagerId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -156937,6 +158780,9 @@ export namespace Prisma {
     platform?: SortOrder
     licenseCount?: SortOrder
     isActive?: SortOrder
+    kind?: SortOrder
+    ownerGroupId?: SortOrder
+    accountManagerId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -156971,6 +158817,47 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
+  export type OwnerGroupOrderByRelevanceInput = {
+    fields: OwnerGroupOrderByRelevanceFieldEnum | OwnerGroupOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type OwnerGroupTenantIdNameCompoundUniqueInput = {
+    tenantId: string
+    name: string
+  }
+
+  export type OwnerGroupCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    name?: SortOrder
+    contactName?: SortOrder
+    contactPhone?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type OwnerGroupMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    name?: SortOrder
+    contactName?: SortOrder
+    contactPhone?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type OwnerGroupMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    name?: SortOrder
+    contactName?: SortOrder
+    contactPhone?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
   export type EnumUserRoleFilter<$PrismaModel = never> = {
     equals?: $Enums.UserRole | EnumUserRoleFieldRefInput<$PrismaModel>
     in?: $Enums.UserRole[] | ListEnumUserRoleFieldRefInput<$PrismaModel>
@@ -156986,6 +158873,11 @@ export namespace Prisma {
   export type FleetPartnerNullableRelationFilter = {
     is?: FleetPartnerWhereInput | null
     isNot?: FleetPartnerWhereInput | null
+  }
+
+  export type VendorBranchNullableRelationFilter = {
+    is?: VendorBranchWhereInput | null
+    isNot?: VendorBranchWhereInput | null
   }
 
   export type DeviceCommandListRelationFilter = {
@@ -157016,6 +158908,9 @@ export namespace Prisma {
     jobGrade?: SortOrder
     vendorId?: SortOrder
     fleetPartnerId?: SortOrder
+    ownerGroupId?: SortOrder
+    branchId?: SortOrder
+    vendorRole?: SortOrder
     isActive?: SortOrder
     lastLoginAt?: SortOrder
     createdAt?: SortOrder
@@ -157034,6 +158929,9 @@ export namespace Prisma {
     jobGrade?: SortOrder
     vendorId?: SortOrder
     fleetPartnerId?: SortOrder
+    ownerGroupId?: SortOrder
+    branchId?: SortOrder
+    vendorRole?: SortOrder
     isActive?: SortOrder
     lastLoginAt?: SortOrder
     createdAt?: SortOrder
@@ -157052,6 +158950,9 @@ export namespace Prisma {
     jobGrade?: SortOrder
     vendorId?: SortOrder
     fleetPartnerId?: SortOrder
+    ownerGroupId?: SortOrder
+    branchId?: SortOrder
+    vendorRole?: SortOrder
     isActive?: SortOrder
     lastLoginAt?: SortOrder
     createdAt?: SortOrder
@@ -157096,11 +158997,6 @@ export namespace Prisma {
   export type CompanyRelationFilter = {
     is?: CompanyWhereInput
     isNot?: CompanyWhereInput
-  }
-
-  export type UserNullableRelationFilter = {
-    is?: UserWhereInput | null
-    isNot?: UserWhereInput | null
   }
 
   export type DriverInventoryListRelationFilter = {
@@ -157169,12 +159065,18 @@ export namespace Prisma {
     search: string
   }
 
+  export type DriverTenantIdDriverCodeCompoundUniqueInput = {
+    tenantId: string
+    driverCode: string
+  }
+
   export type DriverCountOrderByAggregateInput = {
     id?: SortOrder
     tenantId?: SortOrder
     companyId?: SortOrder
     name?: SortOrder
     phone?: SortOrder
+    driverCode?: SortOrder
     platform?: SortOrder
     platformDriverId?: SortOrder
     utr?: SortOrder
@@ -157225,6 +159127,7 @@ export namespace Prisma {
     companyId?: SortOrder
     name?: SortOrder
     phone?: SortOrder
+    driverCode?: SortOrder
     platform?: SortOrder
     platformDriverId?: SortOrder
     utr?: SortOrder
@@ -157270,6 +159173,7 @@ export namespace Prisma {
     companyId?: SortOrder
     name?: SortOrder
     phone?: SortOrder
+    driverCode?: SortOrder
     platform?: SortOrder
     platformDriverId?: SortOrder
     utr?: SortOrder
@@ -163368,6 +165272,7 @@ export namespace Prisma {
     bbox?: SortOrder
     centroidLat?: SortOrder
     centroidLng?: SortOrder
+    color?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -163386,6 +165291,7 @@ export namespace Prisma {
     nameAr?: SortOrder
     centroidLat?: SortOrder
     centroidLng?: SortOrder
+    color?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -163399,6 +165305,7 @@ export namespace Prisma {
     nameAr?: SortOrder
     centroidLat?: SortOrder
     centroidLng?: SortOrder
+    color?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -164659,6 +166566,7 @@ export namespace Prisma {
     disciplineStatus?: SortOrder
     disciplineNote?: SortOrder
     isActive?: SortOrder
+    ownerGroupId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -164680,6 +166588,7 @@ export namespace Prisma {
     disciplineStatus?: SortOrder
     disciplineNote?: SortOrder
     isActive?: SortOrder
+    ownerGroupId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -164696,6 +166605,7 @@ export namespace Prisma {
     disciplineStatus?: SortOrder
     disciplineNote?: SortOrder
     isActive?: SortOrder
+    ownerGroupId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -165266,6 +167176,13 @@ export namespace Prisma {
     connectOrCreate?: SimCreateOrConnectWithoutTenantInput | SimCreateOrConnectWithoutTenantInput[]
     createMany?: SimCreateManyTenantInputEnvelope
     connect?: SimWhereUniqueInput | SimWhereUniqueInput[]
+  }
+
+  export type OwnerGroupCreateNestedManyWithoutTenantInput = {
+    create?: XOR<OwnerGroupCreateWithoutTenantInput, OwnerGroupUncheckedCreateWithoutTenantInput> | OwnerGroupCreateWithoutTenantInput[] | OwnerGroupUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: OwnerGroupCreateOrConnectWithoutTenantInput | OwnerGroupCreateOrConnectWithoutTenantInput[]
+    createMany?: OwnerGroupCreateManyTenantInputEnvelope
+    connect?: OwnerGroupWhereUniqueInput | OwnerGroupWhereUniqueInput[]
   }
 
   export type VendorCreateNestedManyWithoutTenantInput = {
@@ -165894,6 +167811,13 @@ export namespace Prisma {
     connectOrCreate?: SimCreateOrConnectWithoutTenantInput | SimCreateOrConnectWithoutTenantInput[]
     createMany?: SimCreateManyTenantInputEnvelope
     connect?: SimWhereUniqueInput | SimWhereUniqueInput[]
+  }
+
+  export type OwnerGroupUncheckedCreateNestedManyWithoutTenantInput = {
+    create?: XOR<OwnerGroupCreateWithoutTenantInput, OwnerGroupUncheckedCreateWithoutTenantInput> | OwnerGroupCreateWithoutTenantInput[] | OwnerGroupUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: OwnerGroupCreateOrConnectWithoutTenantInput | OwnerGroupCreateOrConnectWithoutTenantInput[]
+    createMany?: OwnerGroupCreateManyTenantInputEnvelope
+    connect?: OwnerGroupWhereUniqueInput | OwnerGroupWhereUniqueInput[]
   }
 
   export type VendorUncheckedCreateNestedManyWithoutTenantInput = {
@@ -167045,6 +168969,20 @@ export namespace Prisma {
     update?: SimUpdateWithWhereUniqueWithoutTenantInput | SimUpdateWithWhereUniqueWithoutTenantInput[]
     updateMany?: SimUpdateManyWithWhereWithoutTenantInput | SimUpdateManyWithWhereWithoutTenantInput[]
     deleteMany?: SimScalarWhereInput | SimScalarWhereInput[]
+  }
+
+  export type OwnerGroupUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<OwnerGroupCreateWithoutTenantInput, OwnerGroupUncheckedCreateWithoutTenantInput> | OwnerGroupCreateWithoutTenantInput[] | OwnerGroupUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: OwnerGroupCreateOrConnectWithoutTenantInput | OwnerGroupCreateOrConnectWithoutTenantInput[]
+    upsert?: OwnerGroupUpsertWithWhereUniqueWithoutTenantInput | OwnerGroupUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: OwnerGroupCreateManyTenantInputEnvelope
+    set?: OwnerGroupWhereUniqueInput | OwnerGroupWhereUniqueInput[]
+    disconnect?: OwnerGroupWhereUniqueInput | OwnerGroupWhereUniqueInput[]
+    delete?: OwnerGroupWhereUniqueInput | OwnerGroupWhereUniqueInput[]
+    connect?: OwnerGroupWhereUniqueInput | OwnerGroupWhereUniqueInput[]
+    update?: OwnerGroupUpdateWithWhereUniqueWithoutTenantInput | OwnerGroupUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: OwnerGroupUpdateManyWithWhereWithoutTenantInput | OwnerGroupUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: OwnerGroupScalarWhereInput | OwnerGroupScalarWhereInput[]
   }
 
   export type VendorUpdateManyWithoutTenantNestedInput = {
@@ -168299,6 +170237,20 @@ export namespace Prisma {
     deleteMany?: SimScalarWhereInput | SimScalarWhereInput[]
   }
 
+  export type OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<OwnerGroupCreateWithoutTenantInput, OwnerGroupUncheckedCreateWithoutTenantInput> | OwnerGroupCreateWithoutTenantInput[] | OwnerGroupUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: OwnerGroupCreateOrConnectWithoutTenantInput | OwnerGroupCreateOrConnectWithoutTenantInput[]
+    upsert?: OwnerGroupUpsertWithWhereUniqueWithoutTenantInput | OwnerGroupUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: OwnerGroupCreateManyTenantInputEnvelope
+    set?: OwnerGroupWhereUniqueInput | OwnerGroupWhereUniqueInput[]
+    disconnect?: OwnerGroupWhereUniqueInput | OwnerGroupWhereUniqueInput[]
+    delete?: OwnerGroupWhereUniqueInput | OwnerGroupWhereUniqueInput[]
+    connect?: OwnerGroupWhereUniqueInput | OwnerGroupWhereUniqueInput[]
+    update?: OwnerGroupUpdateWithWhereUniqueWithoutTenantInput | OwnerGroupUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: OwnerGroupUpdateManyWithWhereWithoutTenantInput | OwnerGroupUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: OwnerGroupScalarWhereInput | OwnerGroupScalarWhereInput[]
+  }
+
   export type VendorUncheckedUpdateManyWithoutTenantNestedInput = {
     create?: XOR<VendorCreateWithoutTenantInput, VendorUncheckedCreateWithoutTenantInput> | VendorCreateWithoutTenantInput[] | VendorUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: VendorCreateOrConnectWithoutTenantInput | VendorCreateOrConnectWithoutTenantInput[]
@@ -168581,6 +170533,18 @@ export namespace Prisma {
     connect?: TenantWhereUniqueInput
   }
 
+  export type OwnerGroupCreateNestedOneWithoutCompaniesInput = {
+    create?: XOR<OwnerGroupCreateWithoutCompaniesInput, OwnerGroupUncheckedCreateWithoutCompaniesInput>
+    connectOrCreate?: OwnerGroupCreateOrConnectWithoutCompaniesInput
+    connect?: OwnerGroupWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutManagedCompaniesInput = {
+    create?: XOR<UserCreateWithoutManagedCompaniesInput, UserUncheckedCreateWithoutManagedCompaniesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutManagedCompaniesInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type DriverCreateNestedManyWithoutCompanyInput = {
     create?: XOR<DriverCreateWithoutCompanyInput, DriverUncheckedCreateWithoutCompanyInput> | DriverCreateWithoutCompanyInput[] | DriverUncheckedCreateWithoutCompanyInput[]
     connectOrCreate?: DriverCreateOrConnectWithoutCompanyInput | DriverCreateOrConnectWithoutCompanyInput[]
@@ -168655,6 +170619,26 @@ export namespace Prisma {
     upsert?: TenantUpsertWithoutCompaniesInput
     connect?: TenantWhereUniqueInput
     update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutCompaniesInput, TenantUpdateWithoutCompaniesInput>, TenantUncheckedUpdateWithoutCompaniesInput>
+  }
+
+  export type OwnerGroupUpdateOneWithoutCompaniesNestedInput = {
+    create?: XOR<OwnerGroupCreateWithoutCompaniesInput, OwnerGroupUncheckedCreateWithoutCompaniesInput>
+    connectOrCreate?: OwnerGroupCreateOrConnectWithoutCompaniesInput
+    upsert?: OwnerGroupUpsertWithoutCompaniesInput
+    disconnect?: OwnerGroupWhereInput | boolean
+    delete?: OwnerGroupWhereInput | boolean
+    connect?: OwnerGroupWhereUniqueInput
+    update?: XOR<XOR<OwnerGroupUpdateToOneWithWhereWithoutCompaniesInput, OwnerGroupUpdateWithoutCompaniesInput>, OwnerGroupUncheckedUpdateWithoutCompaniesInput>
+  }
+
+  export type UserUpdateOneWithoutManagedCompaniesNestedInput = {
+    create?: XOR<UserCreateWithoutManagedCompaniesInput, UserUncheckedCreateWithoutManagedCompaniesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutManagedCompaniesInput
+    upsert?: UserUpsertWithoutManagedCompaniesInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutManagedCompaniesInput, UserUpdateWithoutManagedCompaniesInput>, UserUncheckedUpdateWithoutManagedCompaniesInput>
   }
 
   export type DriverUpdateManyWithoutCompanyNestedInput = {
@@ -168769,6 +170753,146 @@ export namespace Prisma {
     deleteMany?: TicketScalarWhereInput | TicketScalarWhereInput[]
   }
 
+  export type TenantCreateNestedOneWithoutOwnerGroupsInput = {
+    create?: XOR<TenantCreateWithoutOwnerGroupsInput, TenantUncheckedCreateWithoutOwnerGroupsInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutOwnerGroupsInput
+    connect?: TenantWhereUniqueInput
+  }
+
+  export type FleetPartnerCreateNestedManyWithoutOwnerGroupInput = {
+    create?: XOR<FleetPartnerCreateWithoutOwnerGroupInput, FleetPartnerUncheckedCreateWithoutOwnerGroupInput> | FleetPartnerCreateWithoutOwnerGroupInput[] | FleetPartnerUncheckedCreateWithoutOwnerGroupInput[]
+    connectOrCreate?: FleetPartnerCreateOrConnectWithoutOwnerGroupInput | FleetPartnerCreateOrConnectWithoutOwnerGroupInput[]
+    createMany?: FleetPartnerCreateManyOwnerGroupInputEnvelope
+    connect?: FleetPartnerWhereUniqueInput | FleetPartnerWhereUniqueInput[]
+  }
+
+  export type CompanyCreateNestedManyWithoutOwnerGroupInput = {
+    create?: XOR<CompanyCreateWithoutOwnerGroupInput, CompanyUncheckedCreateWithoutOwnerGroupInput> | CompanyCreateWithoutOwnerGroupInput[] | CompanyUncheckedCreateWithoutOwnerGroupInput[]
+    connectOrCreate?: CompanyCreateOrConnectWithoutOwnerGroupInput | CompanyCreateOrConnectWithoutOwnerGroupInput[]
+    createMany?: CompanyCreateManyOwnerGroupInputEnvelope
+    connect?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
+  }
+
+  export type UserCreateNestedManyWithoutOwnerGroupInput = {
+    create?: XOR<UserCreateWithoutOwnerGroupInput, UserUncheckedCreateWithoutOwnerGroupInput> | UserCreateWithoutOwnerGroupInput[] | UserUncheckedCreateWithoutOwnerGroupInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutOwnerGroupInput | UserCreateOrConnectWithoutOwnerGroupInput[]
+    createMany?: UserCreateManyOwnerGroupInputEnvelope
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type FleetPartnerUncheckedCreateNestedManyWithoutOwnerGroupInput = {
+    create?: XOR<FleetPartnerCreateWithoutOwnerGroupInput, FleetPartnerUncheckedCreateWithoutOwnerGroupInput> | FleetPartnerCreateWithoutOwnerGroupInput[] | FleetPartnerUncheckedCreateWithoutOwnerGroupInput[]
+    connectOrCreate?: FleetPartnerCreateOrConnectWithoutOwnerGroupInput | FleetPartnerCreateOrConnectWithoutOwnerGroupInput[]
+    createMany?: FleetPartnerCreateManyOwnerGroupInputEnvelope
+    connect?: FleetPartnerWhereUniqueInput | FleetPartnerWhereUniqueInput[]
+  }
+
+  export type CompanyUncheckedCreateNestedManyWithoutOwnerGroupInput = {
+    create?: XOR<CompanyCreateWithoutOwnerGroupInput, CompanyUncheckedCreateWithoutOwnerGroupInput> | CompanyCreateWithoutOwnerGroupInput[] | CompanyUncheckedCreateWithoutOwnerGroupInput[]
+    connectOrCreate?: CompanyCreateOrConnectWithoutOwnerGroupInput | CompanyCreateOrConnectWithoutOwnerGroupInput[]
+    createMany?: CompanyCreateManyOwnerGroupInputEnvelope
+    connect?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
+  }
+
+  export type UserUncheckedCreateNestedManyWithoutOwnerGroupInput = {
+    create?: XOR<UserCreateWithoutOwnerGroupInput, UserUncheckedCreateWithoutOwnerGroupInput> | UserCreateWithoutOwnerGroupInput[] | UserUncheckedCreateWithoutOwnerGroupInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutOwnerGroupInput | UserCreateOrConnectWithoutOwnerGroupInput[]
+    createMany?: UserCreateManyOwnerGroupInputEnvelope
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type TenantUpdateOneRequiredWithoutOwnerGroupsNestedInput = {
+    create?: XOR<TenantCreateWithoutOwnerGroupsInput, TenantUncheckedCreateWithoutOwnerGroupsInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutOwnerGroupsInput
+    upsert?: TenantUpsertWithoutOwnerGroupsInput
+    connect?: TenantWhereUniqueInput
+    update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutOwnerGroupsInput, TenantUpdateWithoutOwnerGroupsInput>, TenantUncheckedUpdateWithoutOwnerGroupsInput>
+  }
+
+  export type FleetPartnerUpdateManyWithoutOwnerGroupNestedInput = {
+    create?: XOR<FleetPartnerCreateWithoutOwnerGroupInput, FleetPartnerUncheckedCreateWithoutOwnerGroupInput> | FleetPartnerCreateWithoutOwnerGroupInput[] | FleetPartnerUncheckedCreateWithoutOwnerGroupInput[]
+    connectOrCreate?: FleetPartnerCreateOrConnectWithoutOwnerGroupInput | FleetPartnerCreateOrConnectWithoutOwnerGroupInput[]
+    upsert?: FleetPartnerUpsertWithWhereUniqueWithoutOwnerGroupInput | FleetPartnerUpsertWithWhereUniqueWithoutOwnerGroupInput[]
+    createMany?: FleetPartnerCreateManyOwnerGroupInputEnvelope
+    set?: FleetPartnerWhereUniqueInput | FleetPartnerWhereUniqueInput[]
+    disconnect?: FleetPartnerWhereUniqueInput | FleetPartnerWhereUniqueInput[]
+    delete?: FleetPartnerWhereUniqueInput | FleetPartnerWhereUniqueInput[]
+    connect?: FleetPartnerWhereUniqueInput | FleetPartnerWhereUniqueInput[]
+    update?: FleetPartnerUpdateWithWhereUniqueWithoutOwnerGroupInput | FleetPartnerUpdateWithWhereUniqueWithoutOwnerGroupInput[]
+    updateMany?: FleetPartnerUpdateManyWithWhereWithoutOwnerGroupInput | FleetPartnerUpdateManyWithWhereWithoutOwnerGroupInput[]
+    deleteMany?: FleetPartnerScalarWhereInput | FleetPartnerScalarWhereInput[]
+  }
+
+  export type CompanyUpdateManyWithoutOwnerGroupNestedInput = {
+    create?: XOR<CompanyCreateWithoutOwnerGroupInput, CompanyUncheckedCreateWithoutOwnerGroupInput> | CompanyCreateWithoutOwnerGroupInput[] | CompanyUncheckedCreateWithoutOwnerGroupInput[]
+    connectOrCreate?: CompanyCreateOrConnectWithoutOwnerGroupInput | CompanyCreateOrConnectWithoutOwnerGroupInput[]
+    upsert?: CompanyUpsertWithWhereUniqueWithoutOwnerGroupInput | CompanyUpsertWithWhereUniqueWithoutOwnerGroupInput[]
+    createMany?: CompanyCreateManyOwnerGroupInputEnvelope
+    set?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
+    disconnect?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
+    delete?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
+    connect?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
+    update?: CompanyUpdateWithWhereUniqueWithoutOwnerGroupInput | CompanyUpdateWithWhereUniqueWithoutOwnerGroupInput[]
+    updateMany?: CompanyUpdateManyWithWhereWithoutOwnerGroupInput | CompanyUpdateManyWithWhereWithoutOwnerGroupInput[]
+    deleteMany?: CompanyScalarWhereInput | CompanyScalarWhereInput[]
+  }
+
+  export type UserUpdateManyWithoutOwnerGroupNestedInput = {
+    create?: XOR<UserCreateWithoutOwnerGroupInput, UserUncheckedCreateWithoutOwnerGroupInput> | UserCreateWithoutOwnerGroupInput[] | UserUncheckedCreateWithoutOwnerGroupInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutOwnerGroupInput | UserCreateOrConnectWithoutOwnerGroupInput[]
+    upsert?: UserUpsertWithWhereUniqueWithoutOwnerGroupInput | UserUpsertWithWhereUniqueWithoutOwnerGroupInput[]
+    createMany?: UserCreateManyOwnerGroupInputEnvelope
+    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    update?: UserUpdateWithWhereUniqueWithoutOwnerGroupInput | UserUpdateWithWhereUniqueWithoutOwnerGroupInput[]
+    updateMany?: UserUpdateManyWithWhereWithoutOwnerGroupInput | UserUpdateManyWithWhereWithoutOwnerGroupInput[]
+    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
+  }
+
+  export type FleetPartnerUncheckedUpdateManyWithoutOwnerGroupNestedInput = {
+    create?: XOR<FleetPartnerCreateWithoutOwnerGroupInput, FleetPartnerUncheckedCreateWithoutOwnerGroupInput> | FleetPartnerCreateWithoutOwnerGroupInput[] | FleetPartnerUncheckedCreateWithoutOwnerGroupInput[]
+    connectOrCreate?: FleetPartnerCreateOrConnectWithoutOwnerGroupInput | FleetPartnerCreateOrConnectWithoutOwnerGroupInput[]
+    upsert?: FleetPartnerUpsertWithWhereUniqueWithoutOwnerGroupInput | FleetPartnerUpsertWithWhereUniqueWithoutOwnerGroupInput[]
+    createMany?: FleetPartnerCreateManyOwnerGroupInputEnvelope
+    set?: FleetPartnerWhereUniqueInput | FleetPartnerWhereUniqueInput[]
+    disconnect?: FleetPartnerWhereUniqueInput | FleetPartnerWhereUniqueInput[]
+    delete?: FleetPartnerWhereUniqueInput | FleetPartnerWhereUniqueInput[]
+    connect?: FleetPartnerWhereUniqueInput | FleetPartnerWhereUniqueInput[]
+    update?: FleetPartnerUpdateWithWhereUniqueWithoutOwnerGroupInput | FleetPartnerUpdateWithWhereUniqueWithoutOwnerGroupInput[]
+    updateMany?: FleetPartnerUpdateManyWithWhereWithoutOwnerGroupInput | FleetPartnerUpdateManyWithWhereWithoutOwnerGroupInput[]
+    deleteMany?: FleetPartnerScalarWhereInput | FleetPartnerScalarWhereInput[]
+  }
+
+  export type CompanyUncheckedUpdateManyWithoutOwnerGroupNestedInput = {
+    create?: XOR<CompanyCreateWithoutOwnerGroupInput, CompanyUncheckedCreateWithoutOwnerGroupInput> | CompanyCreateWithoutOwnerGroupInput[] | CompanyUncheckedCreateWithoutOwnerGroupInput[]
+    connectOrCreate?: CompanyCreateOrConnectWithoutOwnerGroupInput | CompanyCreateOrConnectWithoutOwnerGroupInput[]
+    upsert?: CompanyUpsertWithWhereUniqueWithoutOwnerGroupInput | CompanyUpsertWithWhereUniqueWithoutOwnerGroupInput[]
+    createMany?: CompanyCreateManyOwnerGroupInputEnvelope
+    set?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
+    disconnect?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
+    delete?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
+    connect?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
+    update?: CompanyUpdateWithWhereUniqueWithoutOwnerGroupInput | CompanyUpdateWithWhereUniqueWithoutOwnerGroupInput[]
+    updateMany?: CompanyUpdateManyWithWhereWithoutOwnerGroupInput | CompanyUpdateManyWithWhereWithoutOwnerGroupInput[]
+    deleteMany?: CompanyScalarWhereInput | CompanyScalarWhereInput[]
+  }
+
+  export type UserUncheckedUpdateManyWithoutOwnerGroupNestedInput = {
+    create?: XOR<UserCreateWithoutOwnerGroupInput, UserUncheckedCreateWithoutOwnerGroupInput> | UserCreateWithoutOwnerGroupInput[] | UserUncheckedCreateWithoutOwnerGroupInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutOwnerGroupInput | UserCreateOrConnectWithoutOwnerGroupInput[]
+    upsert?: UserUpsertWithWhereUniqueWithoutOwnerGroupInput | UserUpsertWithWhereUniqueWithoutOwnerGroupInput[]
+    createMany?: UserCreateManyOwnerGroupInputEnvelope
+    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    update?: UserUpdateWithWhereUniqueWithoutOwnerGroupInput | UserUpdateWithWhereUniqueWithoutOwnerGroupInput[]
+    updateMany?: UserUpdateManyWithWhereWithoutOwnerGroupInput | UserUpdateManyWithWhereWithoutOwnerGroupInput[]
+    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
+  }
+
   export type TenantCreateNestedOneWithoutUsersInput = {
     create?: XOR<TenantCreateWithoutUsersInput, TenantUncheckedCreateWithoutUsersInput>
     connectOrCreate?: TenantCreateOrConnectWithoutUsersInput
@@ -168785,6 +170909,25 @@ export namespace Prisma {
     create?: XOR<FleetPartnerCreateWithoutUsersInput, FleetPartnerUncheckedCreateWithoutUsersInput>
     connectOrCreate?: FleetPartnerCreateOrConnectWithoutUsersInput
     connect?: FleetPartnerWhereUniqueInput
+  }
+
+  export type OwnerGroupCreateNestedOneWithoutUsersInput = {
+    create?: XOR<OwnerGroupCreateWithoutUsersInput, OwnerGroupUncheckedCreateWithoutUsersInput>
+    connectOrCreate?: OwnerGroupCreateOrConnectWithoutUsersInput
+    connect?: OwnerGroupWhereUniqueInput
+  }
+
+  export type VendorBranchCreateNestedOneWithoutPortalUsersInput = {
+    create?: XOR<VendorBranchCreateWithoutPortalUsersInput, VendorBranchUncheckedCreateWithoutPortalUsersInput>
+    connectOrCreate?: VendorBranchCreateOrConnectWithoutPortalUsersInput
+    connect?: VendorBranchWhereUniqueInput
+  }
+
+  export type CompanyCreateNestedManyWithoutAccountManagerInput = {
+    create?: XOR<CompanyCreateWithoutAccountManagerInput, CompanyUncheckedCreateWithoutAccountManagerInput> | CompanyCreateWithoutAccountManagerInput[] | CompanyUncheckedCreateWithoutAccountManagerInput[]
+    connectOrCreate?: CompanyCreateOrConnectWithoutAccountManagerInput | CompanyCreateOrConnectWithoutAccountManagerInput[]
+    createMany?: CompanyCreateManyAccountManagerInputEnvelope
+    connect?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
   }
 
   export type DriverCreateNestedManyWithoutSupervisorInput = {
@@ -168876,6 +171019,13 @@ export namespace Prisma {
     connectOrCreate?: ScheduledBriefingCreateOrConnectWithoutCreatorInput | ScheduledBriefingCreateOrConnectWithoutCreatorInput[]
     createMany?: ScheduledBriefingCreateManyCreatorInputEnvelope
     connect?: ScheduledBriefingWhereUniqueInput | ScheduledBriefingWhereUniqueInput[]
+  }
+
+  export type CompanyUncheckedCreateNestedManyWithoutAccountManagerInput = {
+    create?: XOR<CompanyCreateWithoutAccountManagerInput, CompanyUncheckedCreateWithoutAccountManagerInput> | CompanyCreateWithoutAccountManagerInput[] | CompanyUncheckedCreateWithoutAccountManagerInput[]
+    connectOrCreate?: CompanyCreateOrConnectWithoutAccountManagerInput | CompanyCreateOrConnectWithoutAccountManagerInput[]
+    createMany?: CompanyCreateManyAccountManagerInputEnvelope
+    connect?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
   }
 
   export type DriverUncheckedCreateNestedManyWithoutSupervisorInput = {
@@ -168999,6 +171149,40 @@ export namespace Prisma {
     delete?: FleetPartnerWhereInput | boolean
     connect?: FleetPartnerWhereUniqueInput
     update?: XOR<XOR<FleetPartnerUpdateToOneWithWhereWithoutUsersInput, FleetPartnerUpdateWithoutUsersInput>, FleetPartnerUncheckedUpdateWithoutUsersInput>
+  }
+
+  export type OwnerGroupUpdateOneWithoutUsersNestedInput = {
+    create?: XOR<OwnerGroupCreateWithoutUsersInput, OwnerGroupUncheckedCreateWithoutUsersInput>
+    connectOrCreate?: OwnerGroupCreateOrConnectWithoutUsersInput
+    upsert?: OwnerGroupUpsertWithoutUsersInput
+    disconnect?: OwnerGroupWhereInput | boolean
+    delete?: OwnerGroupWhereInput | boolean
+    connect?: OwnerGroupWhereUniqueInput
+    update?: XOR<XOR<OwnerGroupUpdateToOneWithWhereWithoutUsersInput, OwnerGroupUpdateWithoutUsersInput>, OwnerGroupUncheckedUpdateWithoutUsersInput>
+  }
+
+  export type VendorBranchUpdateOneWithoutPortalUsersNestedInput = {
+    create?: XOR<VendorBranchCreateWithoutPortalUsersInput, VendorBranchUncheckedCreateWithoutPortalUsersInput>
+    connectOrCreate?: VendorBranchCreateOrConnectWithoutPortalUsersInput
+    upsert?: VendorBranchUpsertWithoutPortalUsersInput
+    disconnect?: VendorBranchWhereInput | boolean
+    delete?: VendorBranchWhereInput | boolean
+    connect?: VendorBranchWhereUniqueInput
+    update?: XOR<XOR<VendorBranchUpdateToOneWithWhereWithoutPortalUsersInput, VendorBranchUpdateWithoutPortalUsersInput>, VendorBranchUncheckedUpdateWithoutPortalUsersInput>
+  }
+
+  export type CompanyUpdateManyWithoutAccountManagerNestedInput = {
+    create?: XOR<CompanyCreateWithoutAccountManagerInput, CompanyUncheckedCreateWithoutAccountManagerInput> | CompanyCreateWithoutAccountManagerInput[] | CompanyUncheckedCreateWithoutAccountManagerInput[]
+    connectOrCreate?: CompanyCreateOrConnectWithoutAccountManagerInput | CompanyCreateOrConnectWithoutAccountManagerInput[]
+    upsert?: CompanyUpsertWithWhereUniqueWithoutAccountManagerInput | CompanyUpsertWithWhereUniqueWithoutAccountManagerInput[]
+    createMany?: CompanyCreateManyAccountManagerInputEnvelope
+    set?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
+    disconnect?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
+    delete?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
+    connect?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
+    update?: CompanyUpdateWithWhereUniqueWithoutAccountManagerInput | CompanyUpdateWithWhereUniqueWithoutAccountManagerInput[]
+    updateMany?: CompanyUpdateManyWithWhereWithoutAccountManagerInput | CompanyUpdateManyWithWhereWithoutAccountManagerInput[]
+    deleteMany?: CompanyScalarWhereInput | CompanyScalarWhereInput[]
   }
 
   export type DriverUpdateManyWithoutSupervisorNestedInput = {
@@ -169181,6 +171365,20 @@ export namespace Prisma {
     update?: ScheduledBriefingUpdateWithWhereUniqueWithoutCreatorInput | ScheduledBriefingUpdateWithWhereUniqueWithoutCreatorInput[]
     updateMany?: ScheduledBriefingUpdateManyWithWhereWithoutCreatorInput | ScheduledBriefingUpdateManyWithWhereWithoutCreatorInput[]
     deleteMany?: ScheduledBriefingScalarWhereInput | ScheduledBriefingScalarWhereInput[]
+  }
+
+  export type CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput = {
+    create?: XOR<CompanyCreateWithoutAccountManagerInput, CompanyUncheckedCreateWithoutAccountManagerInput> | CompanyCreateWithoutAccountManagerInput[] | CompanyUncheckedCreateWithoutAccountManagerInput[]
+    connectOrCreate?: CompanyCreateOrConnectWithoutAccountManagerInput | CompanyCreateOrConnectWithoutAccountManagerInput[]
+    upsert?: CompanyUpsertWithWhereUniqueWithoutAccountManagerInput | CompanyUpsertWithWhereUniqueWithoutAccountManagerInput[]
+    createMany?: CompanyCreateManyAccountManagerInputEnvelope
+    set?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
+    disconnect?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
+    delete?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
+    connect?: CompanyWhereUniqueInput | CompanyWhereUniqueInput[]
+    update?: CompanyUpdateWithWhereUniqueWithoutAccountManagerInput | CompanyUpdateWithWhereUniqueWithoutAccountManagerInput[]
+    updateMany?: CompanyUpdateManyWithWhereWithoutAccountManagerInput | CompanyUpdateManyWithWhereWithoutAccountManagerInput[]
+    deleteMany?: CompanyScalarWhereInput | CompanyScalarWhereInput[]
   }
 
   export type DriverUncheckedUpdateManyWithoutSupervisorNestedInput = {
@@ -175792,11 +177990,25 @@ export namespace Prisma {
     connect?: DeliveryOrderWhereUniqueInput | DeliveryOrderWhereUniqueInput[]
   }
 
+  export type UserCreateNestedManyWithoutBranchInput = {
+    create?: XOR<UserCreateWithoutBranchInput, UserUncheckedCreateWithoutBranchInput> | UserCreateWithoutBranchInput[] | UserUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutBranchInput | UserCreateOrConnectWithoutBranchInput[]
+    createMany?: UserCreateManyBranchInputEnvelope
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
   export type DeliveryOrderUncheckedCreateNestedManyWithoutBranchInput = {
     create?: XOR<DeliveryOrderCreateWithoutBranchInput, DeliveryOrderUncheckedCreateWithoutBranchInput> | DeliveryOrderCreateWithoutBranchInput[] | DeliveryOrderUncheckedCreateWithoutBranchInput[]
     connectOrCreate?: DeliveryOrderCreateOrConnectWithoutBranchInput | DeliveryOrderCreateOrConnectWithoutBranchInput[]
     createMany?: DeliveryOrderCreateManyBranchInputEnvelope
     connect?: DeliveryOrderWhereUniqueInput | DeliveryOrderWhereUniqueInput[]
+  }
+
+  export type UserUncheckedCreateNestedManyWithoutBranchInput = {
+    create?: XOR<UserCreateWithoutBranchInput, UserUncheckedCreateWithoutBranchInput> | UserCreateWithoutBranchInput[] | UserUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutBranchInput | UserCreateOrConnectWithoutBranchInput[]
+    createMany?: UserCreateManyBranchInputEnvelope
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
   }
 
   export type TenantUpdateOneRequiredWithoutVendorBranchesNestedInput = {
@@ -175839,6 +178051,20 @@ export namespace Prisma {
     deleteMany?: DeliveryOrderScalarWhereInput | DeliveryOrderScalarWhereInput[]
   }
 
+  export type UserUpdateManyWithoutBranchNestedInput = {
+    create?: XOR<UserCreateWithoutBranchInput, UserUncheckedCreateWithoutBranchInput> | UserCreateWithoutBranchInput[] | UserUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutBranchInput | UserCreateOrConnectWithoutBranchInput[]
+    upsert?: UserUpsertWithWhereUniqueWithoutBranchInput | UserUpsertWithWhereUniqueWithoutBranchInput[]
+    createMany?: UserCreateManyBranchInputEnvelope
+    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    update?: UserUpdateWithWhereUniqueWithoutBranchInput | UserUpdateWithWhereUniqueWithoutBranchInput[]
+    updateMany?: UserUpdateManyWithWhereWithoutBranchInput | UserUpdateManyWithWhereWithoutBranchInput[]
+    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
+  }
+
   export type DeliveryOrderUncheckedUpdateManyWithoutBranchNestedInput = {
     create?: XOR<DeliveryOrderCreateWithoutBranchInput, DeliveryOrderUncheckedCreateWithoutBranchInput> | DeliveryOrderCreateWithoutBranchInput[] | DeliveryOrderUncheckedCreateWithoutBranchInput[]
     connectOrCreate?: DeliveryOrderCreateOrConnectWithoutBranchInput | DeliveryOrderCreateOrConnectWithoutBranchInput[]
@@ -175851,6 +178077,20 @@ export namespace Prisma {
     update?: DeliveryOrderUpdateWithWhereUniqueWithoutBranchInput | DeliveryOrderUpdateWithWhereUniqueWithoutBranchInput[]
     updateMany?: DeliveryOrderUpdateManyWithWhereWithoutBranchInput | DeliveryOrderUpdateManyWithWhereWithoutBranchInput[]
     deleteMany?: DeliveryOrderScalarWhereInput | DeliveryOrderScalarWhereInput[]
+  }
+
+  export type UserUncheckedUpdateManyWithoutBranchNestedInput = {
+    create?: XOR<UserCreateWithoutBranchInput, UserUncheckedCreateWithoutBranchInput> | UserCreateWithoutBranchInput[] | UserUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutBranchInput | UserCreateOrConnectWithoutBranchInput[]
+    upsert?: UserUpsertWithWhereUniqueWithoutBranchInput | UserUpsertWithWhereUniqueWithoutBranchInput[]
+    createMany?: UserCreateManyBranchInputEnvelope
+    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    update?: UserUpdateWithWhereUniqueWithoutBranchInput | UserUpdateWithWhereUniqueWithoutBranchInput[]
+    updateMany?: UserUpdateManyWithWhereWithoutBranchInput | UserUpdateManyWithWhereWithoutBranchInput[]
+    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
   }
 
   export type TenantCreateNestedOneWithoutDeliveryZonesInput = {
@@ -176871,6 +179111,12 @@ export namespace Prisma {
     connect?: TenantWhereUniqueInput
   }
 
+  export type OwnerGroupCreateNestedOneWithoutFleetsInput = {
+    create?: XOR<OwnerGroupCreateWithoutFleetsInput, OwnerGroupUncheckedCreateWithoutFleetsInput>
+    connectOrCreate?: OwnerGroupCreateOrConnectWithoutFleetsInput
+    connect?: OwnerGroupWhereUniqueInput
+  }
+
   export type DriverCreateNestedManyWithoutFleetPartnerInput = {
     create?: XOR<DriverCreateWithoutFleetPartnerInput, DriverUncheckedCreateWithoutFleetPartnerInput> | DriverCreateWithoutFleetPartnerInput[] | DriverUncheckedCreateWithoutFleetPartnerInput[]
     connectOrCreate?: DriverCreateOrConnectWithoutFleetPartnerInput | DriverCreateOrConnectWithoutFleetPartnerInput[]
@@ -176919,6 +179165,16 @@ export namespace Prisma {
     upsert?: TenantUpsertWithoutFleetPartnersInput
     connect?: TenantWhereUniqueInput
     update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutFleetPartnersInput, TenantUpdateWithoutFleetPartnersInput>, TenantUncheckedUpdateWithoutFleetPartnersInput>
+  }
+
+  export type OwnerGroupUpdateOneWithoutFleetsNestedInput = {
+    create?: XOR<OwnerGroupCreateWithoutFleetsInput, OwnerGroupUncheckedCreateWithoutFleetsInput>
+    connectOrCreate?: OwnerGroupCreateOrConnectWithoutFleetsInput
+    upsert?: OwnerGroupUpsertWithoutFleetsInput
+    disconnect?: OwnerGroupWhereInput | boolean
+    delete?: OwnerGroupWhereInput | boolean
+    connect?: OwnerGroupWhereUniqueInput
+    update?: XOR<XOR<OwnerGroupUpdateToOneWithWhereWithoutFleetsInput, OwnerGroupUpdateWithoutFleetsInput>, OwnerGroupUncheckedUpdateWithoutFleetsInput>
   }
 
   export type DriverUpdateManyWithoutFleetPartnerNestedInput = {
@@ -178373,8 +180629,11 @@ export namespace Prisma {
     platform: $Enums.Platform
     licenseCount?: number
     isActive?: boolean
+    kind?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutCompaniesInput
+    accountManager?: UserCreateNestedOneWithoutManagedCompaniesInput
     drivers?: DriverCreateNestedManyWithoutCompanyInput
     vehicles?: VehicleCreateNestedManyWithoutCompanyInput
     recruitmentPipeline?: RecruitmentPipelineCreateNestedManyWithoutAssignedCompanyInput
@@ -178387,6 +180646,9 @@ export namespace Prisma {
     platform: $Enums.Platform
     licenseCount?: number
     isActive?: boolean
+    kind?: string
+    ownerGroupId?: string | null
+    accountManagerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     drivers?: DriverUncheckedCreateNestedManyWithoutCompanyInput
@@ -178414,12 +180676,16 @@ export namespace Prisma {
     role?: $Enums.UserRole
     isSuperAdmin?: boolean
     jobGrade?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     vendor?: VendorCreateNestedOneWithoutUsersInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
@@ -178446,10 +180712,14 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorId?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
@@ -178479,6 +180749,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -178568,6 +180839,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -181482,6 +183754,40 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type OwnerGroupCreateWithoutTenantInput = {
+    id?: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    fleets?: FleetPartnerCreateNestedManyWithoutOwnerGroupInput
+    companies?: CompanyCreateNestedManyWithoutOwnerGroupInput
+    users?: UserCreateNestedManyWithoutOwnerGroupInput
+  }
+
+  export type OwnerGroupUncheckedCreateWithoutTenantInput = {
+    id?: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    fleets?: FleetPartnerUncheckedCreateNestedManyWithoutOwnerGroupInput
+    companies?: CompanyUncheckedCreateNestedManyWithoutOwnerGroupInput
+    users?: UserUncheckedCreateNestedManyWithoutOwnerGroupInput
+  }
+
+  export type OwnerGroupCreateOrConnectWithoutTenantInput = {
+    where: OwnerGroupWhereUniqueInput
+    create: XOR<OwnerGroupCreateWithoutTenantInput, OwnerGroupUncheckedCreateWithoutTenantInput>
+  }
+
+  export type OwnerGroupCreateManyTenantInputEnvelope = {
+    data: OwnerGroupCreateManyTenantInput | OwnerGroupCreateManyTenantInput[]
+    skipDuplicates?: boolean
+  }
+
   export type VendorCreateWithoutTenantInput = {
     id?: string
     name: string
@@ -181549,6 +183855,7 @@ export namespace Prisma {
     vendor: VendorCreateNestedOneWithoutBranchesInput
     zone?: DeliveryZoneCreateNestedOneWithoutBranchesInput
     orders?: DeliveryOrderCreateNestedManyWithoutBranchInput
+    portalUsers?: UserCreateNestedManyWithoutBranchInput
   }
 
   export type VendorBranchUncheckedCreateWithoutTenantInput = {
@@ -181566,6 +183873,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     orders?: DeliveryOrderUncheckedCreateNestedManyWithoutBranchInput
+    portalUsers?: UserUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type VendorBranchCreateOrConnectWithoutTenantInput = {
@@ -181587,6 +183895,7 @@ export namespace Prisma {
     bbox: JsonNullValueInput | InputJsonValue
     centroidLat?: Decimal | DecimalJsLike | number | string | null
     centroidLng?: Decimal | DecimalJsLike | number | string | null
+    color?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -181606,6 +183915,7 @@ export namespace Prisma {
     bbox: JsonNullValueInput | InputJsonValue
     centroidLat?: Decimal | DecimalJsLike | number | string | null
     centroidLng?: Decimal | DecimalJsLike | number | string | null
+    color?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -182237,6 +184547,7 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutFleetsInput
     drivers?: DriverCreateNestedManyWithoutFleetPartnerInput
     users?: UserCreateNestedManyWithoutFleetPartnerInput
     statements?: FleetPayoutStatementCreateNestedManyWithoutFleetInput
@@ -182254,6 +184565,7 @@ export namespace Prisma {
     disciplineStatus?: string
     disciplineNote?: string | null
     isActive?: boolean
+    ownerGroupId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     drivers?: DriverUncheckedCreateNestedManyWithoutFleetPartnerInput
@@ -182335,6 +184647,9 @@ export namespace Prisma {
     platform?: EnumPlatformFilter<"Company"> | $Enums.Platform
     licenseCount?: IntFilter<"Company"> | number
     isActive?: BoolFilter<"Company"> | boolean
+    kind?: StringFilter<"Company"> | string
+    ownerGroupId?: StringNullableFilter<"Company"> | string | null
+    accountManagerId?: StringNullableFilter<"Company"> | string | null
     createdAt?: DateTimeFilter<"Company"> | Date | string
     updatedAt?: DateTimeFilter<"Company"> | Date | string
   }
@@ -182370,6 +184685,9 @@ export namespace Prisma {
     jobGrade?: StringNullableFilter<"User"> | string | null
     vendorId?: StringNullableFilter<"User"> | string | null
     fleetPartnerId?: StringNullableFilter<"User"> | string | null
+    ownerGroupId?: StringNullableFilter<"User"> | string | null
+    branchId?: StringNullableFilter<"User"> | string | null
+    vendorRole?: StringNullableFilter<"User"> | string | null
     isActive?: BoolFilter<"User"> | boolean
     lastLoginAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -182401,6 +184719,7 @@ export namespace Prisma {
     companyId?: StringFilter<"Driver"> | string
     name?: StringFilter<"Driver"> | string
     phone?: StringFilter<"Driver"> | string
+    driverCode?: StringNullableFilter<"Driver"> | string | null
     platform?: EnumPlatformFilter<"Driver"> | $Enums.Platform
     platformDriverId?: StringNullableFilter<"Driver"> | string | null
     utr?: StringNullableFilter<"Driver"> | string | null
@@ -184819,6 +187138,35 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Sim"> | Date | string
   }
 
+  export type OwnerGroupUpsertWithWhereUniqueWithoutTenantInput = {
+    where: OwnerGroupWhereUniqueInput
+    update: XOR<OwnerGroupUpdateWithoutTenantInput, OwnerGroupUncheckedUpdateWithoutTenantInput>
+    create: XOR<OwnerGroupCreateWithoutTenantInput, OwnerGroupUncheckedCreateWithoutTenantInput>
+  }
+
+  export type OwnerGroupUpdateWithWhereUniqueWithoutTenantInput = {
+    where: OwnerGroupWhereUniqueInput
+    data: XOR<OwnerGroupUpdateWithoutTenantInput, OwnerGroupUncheckedUpdateWithoutTenantInput>
+  }
+
+  export type OwnerGroupUpdateManyWithWhereWithoutTenantInput = {
+    where: OwnerGroupScalarWhereInput
+    data: XOR<OwnerGroupUpdateManyMutationInput, OwnerGroupUncheckedUpdateManyWithoutTenantInput>
+  }
+
+  export type OwnerGroupScalarWhereInput = {
+    AND?: OwnerGroupScalarWhereInput | OwnerGroupScalarWhereInput[]
+    OR?: OwnerGroupScalarWhereInput[]
+    NOT?: OwnerGroupScalarWhereInput | OwnerGroupScalarWhereInput[]
+    id?: StringFilter<"OwnerGroup"> | string
+    tenantId?: StringFilter<"OwnerGroup"> | string
+    name?: StringFilter<"OwnerGroup"> | string
+    contactName?: StringNullableFilter<"OwnerGroup"> | string | null
+    contactPhone?: StringNullableFilter<"OwnerGroup"> | string | null
+    createdAt?: DateTimeFilter<"OwnerGroup"> | Date | string
+    updatedAt?: DateTimeFilter<"OwnerGroup"> | Date | string
+  }
+
   export type VendorUpsertWithWhereUniqueWithoutTenantInput = {
     where: VendorWhereUniqueInput
     update: XOR<VendorUpdateWithoutTenantInput, VendorUncheckedUpdateWithoutTenantInput>
@@ -184918,6 +187266,7 @@ export namespace Prisma {
     bbox?: JsonFilter<"DeliveryZone">
     centroidLat?: DecimalNullableFilter<"DeliveryZone"> | Decimal | DecimalJsLike | number | string | null
     centroidLng?: DecimalNullableFilter<"DeliveryZone"> | Decimal | DecimalJsLike | number | string | null
+    color?: StringNullableFilter<"DeliveryZone"> | string | null
     isActive?: BoolFilter<"DeliveryZone"> | boolean
     createdAt?: DateTimeFilter<"DeliveryZone"> | Date | string
     updatedAt?: DateTimeFilter<"DeliveryZone"> | Date | string
@@ -185484,6 +187833,7 @@ export namespace Prisma {
     disciplineStatus?: StringFilter<"FleetPartner"> | string
     disciplineNote?: StringNullableFilter<"FleetPartner"> | string | null
     isActive?: BoolFilter<"FleetPartner"> | boolean
+    ownerGroupId?: StringNullableFilter<"FleetPartner"> | string | null
     createdAt?: DateTimeFilter<"FleetPartner"> | Date | string
     updatedAt?: DateTimeFilter<"FleetPartner"> | Date | string
   }
@@ -185606,6 +187956,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -185712,6 +188063,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -185739,10 +188091,113 @@ export namespace Prisma {
     create: XOR<TenantCreateWithoutCompaniesInput, TenantUncheckedCreateWithoutCompaniesInput>
   }
 
+  export type OwnerGroupCreateWithoutCompaniesInput = {
+    id?: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutOwnerGroupsInput
+    fleets?: FleetPartnerCreateNestedManyWithoutOwnerGroupInput
+    users?: UserCreateNestedManyWithoutOwnerGroupInput
+  }
+
+  export type OwnerGroupUncheckedCreateWithoutCompaniesInput = {
+    id?: string
+    tenantId: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    fleets?: FleetPartnerUncheckedCreateNestedManyWithoutOwnerGroupInput
+    users?: UserUncheckedCreateNestedManyWithoutOwnerGroupInput
+  }
+
+  export type OwnerGroupCreateOrConnectWithoutCompaniesInput = {
+    where: OwnerGroupWhereUniqueInput
+    create: XOR<OwnerGroupCreateWithoutCompaniesInput, OwnerGroupUncheckedCreateWithoutCompaniesInput>
+  }
+
+  export type UserCreateWithoutManagedCompaniesInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    passwordHash: string
+    name: string
+    role?: $Enums.UserRole
+    isSuperAdmin?: boolean
+    jobGrade?: string | null
+    vendorRole?: string | null
+    isActive?: boolean
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutUsersInput
+    vendor?: VendorCreateNestedOneWithoutUsersInput
+    fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
+    issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
+    acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
+    reviewedLeaves?: LeaveRequestCreateNestedManyWithoutReviewedByInput
+    assignedTickets?: TicketCreateNestedManyWithoutAssignedToInput
+    submittedTickets?: TicketCreateNestedManyWithoutSubmitterUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    createdAmericanaRates?: AmericanaChainRateCreateNestedManyWithoutCreatedByUserInput
+    approvedAgentActions?: AgentActionCreateNestedManyWithoutApproverInput
+    pinnedViews?: PinnedViewCreateNestedManyWithoutUserInput
+    metricEvents?: MetricEventCreateNestedManyWithoutUserInput
+    chatThreads?: ChatThreadCreateNestedManyWithoutUserInput
+    scheduledBriefings?: ScheduledBriefingCreateNestedManyWithoutCreatorInput
+  }
+
+  export type UserUncheckedCreateWithoutManagedCompaniesInput = {
+    id?: string
+    tenantId: string
+    email: string
+    phone?: string | null
+    passwordHash: string
+    name: string
+    role?: $Enums.UserRole
+    isSuperAdmin?: boolean
+    jobGrade?: string | null
+    vendorId?: string | null
+    fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
+    isActive?: boolean
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
+    issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
+    acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
+    reviewedLeaves?: LeaveRequestUncheckedCreateNestedManyWithoutReviewedByInput
+    assignedTickets?: TicketUncheckedCreateNestedManyWithoutAssignedToInput
+    submittedTickets?: TicketUncheckedCreateNestedManyWithoutSubmitterUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    createdAmericanaRates?: AmericanaChainRateUncheckedCreateNestedManyWithoutCreatedByUserInput
+    approvedAgentActions?: AgentActionUncheckedCreateNestedManyWithoutApproverInput
+    pinnedViews?: PinnedViewUncheckedCreateNestedManyWithoutUserInput
+    metricEvents?: MetricEventUncheckedCreateNestedManyWithoutUserInput
+    chatThreads?: ChatThreadUncheckedCreateNestedManyWithoutUserInput
+    scheduledBriefings?: ScheduledBriefingUncheckedCreateNestedManyWithoutCreatorInput
+  }
+
+  export type UserCreateOrConnectWithoutManagedCompaniesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutManagedCompaniesInput, UserUncheckedCreateWithoutManagedCompaniesInput>
+  }
+
   export type DriverCreateWithoutCompanyInput = {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -185832,6 +188287,7 @@ export namespace Prisma {
     tenantId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -186180,6 +188636,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -186286,6 +188743,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -186306,6 +188764,120 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+  }
+
+  export type OwnerGroupUpsertWithoutCompaniesInput = {
+    update: XOR<OwnerGroupUpdateWithoutCompaniesInput, OwnerGroupUncheckedUpdateWithoutCompaniesInput>
+    create: XOR<OwnerGroupCreateWithoutCompaniesInput, OwnerGroupUncheckedCreateWithoutCompaniesInput>
+    where?: OwnerGroupWhereInput
+  }
+
+  export type OwnerGroupUpdateToOneWithWhereWithoutCompaniesInput = {
+    where?: OwnerGroupWhereInput
+    data: XOR<OwnerGroupUpdateWithoutCompaniesInput, OwnerGroupUncheckedUpdateWithoutCompaniesInput>
+  }
+
+  export type OwnerGroupUpdateWithoutCompaniesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutOwnerGroupsNestedInput
+    fleets?: FleetPartnerUpdateManyWithoutOwnerGroupNestedInput
+    users?: UserUpdateManyWithoutOwnerGroupNestedInput
+  }
+
+  export type OwnerGroupUncheckedUpdateWithoutCompaniesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fleets?: FleetPartnerUncheckedUpdateManyWithoutOwnerGroupNestedInput
+    users?: UserUncheckedUpdateManyWithoutOwnerGroupNestedInput
+  }
+
+  export type UserUpsertWithoutManagedCompaniesInput = {
+    update: XOR<UserUpdateWithoutManagedCompaniesInput, UserUncheckedUpdateWithoutManagedCompaniesInput>
+    create: XOR<UserCreateWithoutManagedCompaniesInput, UserUncheckedCreateWithoutManagedCompaniesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutManagedCompaniesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutManagedCompaniesInput, UserUncheckedUpdateWithoutManagedCompaniesInput>
+  }
+
+  export type UserUpdateWithoutManagedCompaniesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
+    jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    vendor?: VendorUpdateOneWithoutUsersNestedInput
+    fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
+    issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
+    acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
+    reviewedLeaves?: LeaveRequestUpdateManyWithoutReviewedByNestedInput
+    assignedTickets?: TicketUpdateManyWithoutAssignedToNestedInput
+    submittedTickets?: TicketUpdateManyWithoutSubmitterUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    createdAmericanaRates?: AmericanaChainRateUpdateManyWithoutCreatedByUserNestedInput
+    approvedAgentActions?: AgentActionUpdateManyWithoutApproverNestedInput
+    pinnedViews?: PinnedViewUpdateManyWithoutUserNestedInput
+    metricEvents?: MetricEventUpdateManyWithoutUserNestedInput
+    chatThreads?: ChatThreadUpdateManyWithoutUserNestedInput
+    scheduledBriefings?: ScheduledBriefingUpdateManyWithoutCreatorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutManagedCompaniesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
+    jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorId?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
+    issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
+    acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
+    reviewedLeaves?: LeaveRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+    assignedTickets?: TicketUncheckedUpdateManyWithoutAssignedToNestedInput
+    submittedTickets?: TicketUncheckedUpdateManyWithoutSubmitterUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    createdAmericanaRates?: AmericanaChainRateUncheckedUpdateManyWithoutCreatedByUserNestedInput
+    approvedAgentActions?: AgentActionUncheckedUpdateManyWithoutApproverNestedInput
+    pinnedViews?: PinnedViewUncheckedUpdateManyWithoutUserNestedInput
+    metricEvents?: MetricEventUncheckedUpdateManyWithoutUserNestedInput
+    chatThreads?: ChatThreadUncheckedUpdateManyWithoutUserNestedInput
+    scheduledBriefings?: ScheduledBriefingUncheckedUpdateManyWithoutCreatorNestedInput
   }
 
   export type DriverUpsertWithWhereUniqueWithoutCompanyInput = {
@@ -186370,6 +188942,670 @@ export namespace Prisma {
   export type TicketUpdateManyWithWhereWithoutCompanyInput = {
     where: TicketScalarWhereInput
     data: XOR<TicketUpdateManyMutationInput, TicketUncheckedUpdateManyWithoutCompanyInput>
+  }
+
+  export type TenantCreateWithoutOwnerGroupsInput = {
+    id?: string
+    name: string
+    subscriptionPlan?: $Enums.SubscriptionPlan
+    designPartner?: boolean
+    monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    companies?: CompanyCreateNestedManyWithoutTenantInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
+    shifts?: ShiftCreateNestedManyWithoutTenantInput
+    attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
+    orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
+    cashRecords?: CashRecordCreateNestedManyWithoutTenantInput
+    cashTransactions?: CashTransactionCreateNestedManyWithoutTenantInput
+    pendingDuesLedgers?: PendingDuesLedgerCreateNestedManyWithoutTenantInput
+    vehicleInspections?: VehicleInspectionCreateNestedManyWithoutTenantInput
+    maintenanceRecords?: MaintenanceRecordCreateNestedManyWithoutTenantInput
+    aiScores?: AiScoreCreateNestedManyWithoutTenantInput
+    alerts?: AlertCreateNestedManyWithoutTenantInput
+    aiDigests?: AiDigestCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogCreateNestedManyWithoutTenantInput
+    tickets?: TicketCreateNestedManyWithoutTenantInput
+    leaveRequests?: LeaveRequestCreateNestedManyWithoutTenantInput
+    recruitmentPipeline?: RecruitmentPipelineCreateNestedManyWithoutTenantInput
+    vehicles?: VehicleCreateNestedManyWithoutTenantInput
+    talabatSessions?: TalabatSessionCreateNestedManyWithoutTenantInput
+    talabatViolationEvents?: TalabatViolationEventCreateNestedManyWithoutTenantInput
+    talabatDailyMetrics?: TalabatDailyMetricsCreateNestedManyWithoutTenantInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsCreateNestedManyWithoutTenantInput
+    keetaDailyMetrics?: KeetaDailyMetricsCreateNestedManyWithoutTenantInput
+    americanaDailyOrders?: AmericanaDailyOrdersCreateNestedManyWithoutTenantInput
+    kpiDefinitions?: KpiDefinitionCreateNestedManyWithoutTenantInput
+    kpiRecords?: KpiRecordCreateNestedManyWithoutTenantInput
+    platformSettings?: PlatformSettingsCreateNestedManyWithoutTenantInput
+    platformInventory?: PlatformInventoryCreateNestedManyWithoutTenantInput
+    notifications?: NotificationCreateNestedManyWithoutTenantInput
+    notificationRules?: NotificationRuleCreateNestedManyWithoutTenantInput
+    notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
+    driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
+    courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
+    violations?: ViolationCreateNestedManyWithoutTenantInput
+    penalties?: PenaltyCreateNestedManyWithoutTenantInput
+    appeals?: AppealCreateNestedManyWithoutTenantInput
+    orderEvents?: OrderEventCreateNestedManyWithoutTenantInput
+    aiInsights?: AiInsightCreateNestedManyWithoutTenantInput
+    demandHeatmaps?: DemandHeatmapCreateNestedManyWithoutTenantInput
+    courierAttendanceSlots?: CourierAttendanceSlotCreateNestedManyWithoutTenantInput
+    shiftComplianceConfig?: ShiftComplianceConfigCreateNestedOneWithoutTenantInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotCreateNestedManyWithoutTenantInput
+    deliveryAreas?: DeliveryAreaCreateNestedManyWithoutTenantInput
+    partners?: PartnerCreateNestedManyWithoutTenantInput
+    incentiveTargetRounds?: IncentiveTargetRoundCreateNestedManyWithoutTenantInput
+    courierIncentivePayouts?: CourierIncentivePayoutCreateNestedManyWithoutTenantInput
+    billings?: BillingCreateNestedManyWithoutTenantInput
+    taxInvoices?: TaxInvoiceCreateNestedManyWithoutTenantInput
+    paymentWithdrawals?: PaymentWithdrawalCreateNestedManyWithoutTenantInput
+    agentRunLogs?: AgentRunLogCreateNestedManyWithoutTenantInput
+    pendingAgentActions?: PendingAgentActionCreateNestedManyWithoutTenantInput
+    agentActions?: AgentActionCreateNestedManyWithoutTenantInput
+    agentMemories?: AgentMemoryCreateNestedManyWithoutTenantInput
+    pinnedViews?: PinnedViewCreateNestedManyWithoutTenantInput
+    performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutTenantInput
+    metricEvents?: MetricEventCreateNestedManyWithoutTenantInput
+    chatThreads?: ChatThreadCreateNestedManyWithoutTenantInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutTenantInput
+    scheduledBriefings?: ScheduledBriefingCreateNestedManyWithoutTenantInput
+    ingestRuns?: IngestRunCreateNestedManyWithoutTenantInput
+    americanaChains?: AmericanaChainCreateNestedManyWithoutTenantInput
+    americanaStores?: AmericanaStoreCreateNestedManyWithoutTenantInput
+    americanaContracts?: AmericanaContractCreateNestedManyWithoutTenantInput
+    americanaChainRates?: AmericanaChainRateCreateNestedManyWithoutTenantInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
+    americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
+    sims?: SimCreateNestedManyWithoutTenantInput
+    vendors?: VendorCreateNestedManyWithoutTenantInput
+    vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
+    deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
+    zoneSurcharges?: ZoneSurchargeCreateNestedManyWithoutTenantInput
+    fulfillmentSettings?: FulfillmentSettingsCreateNestedOneWithoutTenantInput
+    deliveryOrders?: DeliveryOrderCreateNestedManyWithoutTenantInput
+    dispatchOffers?: DispatchOfferCreateNestedManyWithoutTenantInput
+    walletAccounts?: WalletAccountCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
+    walletEntries?: WalletEntryCreateNestedManyWithoutTenantInput
+    remittances?: RemittanceCreateNestedManyWithoutTenantInput
+    walletReconciliationRuns?: WalletReconciliationRunCreateNestedManyWithoutTenantInput
+    incidents?: IncidentCreateNestedManyWithoutTenantInput
+    foodicsConnections?: FoodicsConnectionCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
+    orderRatings?: OrderRatingCreateNestedManyWithoutTenantInput
+    vendorStatements?: VendorStatementCreateNestedManyWithoutTenantInput
+    refunds?: RefundCreateNestedManyWithoutTenantInput
+    fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
+    fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantUncheckedCreateWithoutOwnerGroupsInput = {
+    id?: string
+    name: string
+    subscriptionPlan?: $Enums.SubscriptionPlan
+    designPartner?: boolean
+    monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
+    shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
+    attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
+    orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
+    cashRecords?: CashRecordUncheckedCreateNestedManyWithoutTenantInput
+    cashTransactions?: CashTransactionUncheckedCreateNestedManyWithoutTenantInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedCreateNestedManyWithoutTenantInput
+    vehicleInspections?: VehicleInspectionUncheckedCreateNestedManyWithoutTenantInput
+    maintenanceRecords?: MaintenanceRecordUncheckedCreateNestedManyWithoutTenantInput
+    aiScores?: AiScoreUncheckedCreateNestedManyWithoutTenantInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutTenantInput
+    aiDigests?: AiDigestUncheckedCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutTenantInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutTenantInput
+    leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutTenantInput
+    recruitmentPipeline?: RecruitmentPipelineUncheckedCreateNestedManyWithoutTenantInput
+    vehicles?: VehicleUncheckedCreateNestedManyWithoutTenantInput
+    talabatSessions?: TalabatSessionUncheckedCreateNestedManyWithoutTenantInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedCreateNestedManyWithoutTenantInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedCreateNestedManyWithoutTenantInput
+    kpiDefinitions?: KpiDefinitionUncheckedCreateNestedManyWithoutTenantInput
+    kpiRecords?: KpiRecordUncheckedCreateNestedManyWithoutTenantInput
+    platformSettings?: PlatformSettingsUncheckedCreateNestedManyWithoutTenantInput
+    platformInventory?: PlatformInventoryUncheckedCreateNestedManyWithoutTenantInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutTenantInput
+    notificationRules?: NotificationRuleUncheckedCreateNestedManyWithoutTenantInput
+    notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
+    driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
+    violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
+    penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
+    appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
+    orderEvents?: OrderEventUncheckedCreateNestedManyWithoutTenantInput
+    aiInsights?: AiInsightUncheckedCreateNestedManyWithoutTenantInput
+    demandHeatmaps?: DemandHeatmapUncheckedCreateNestedManyWithoutTenantInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedCreateNestedManyWithoutTenantInput
+    shiftComplianceConfig?: ShiftComplianceConfigUncheckedCreateNestedOneWithoutTenantInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUncheckedCreateNestedManyWithoutTenantInput
+    deliveryAreas?: DeliveryAreaUncheckedCreateNestedManyWithoutTenantInput
+    partners?: PartnerUncheckedCreateNestedManyWithoutTenantInput
+    incentiveTargetRounds?: IncentiveTargetRoundUncheckedCreateNestedManyWithoutTenantInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedCreateNestedManyWithoutTenantInput
+    billings?: BillingUncheckedCreateNestedManyWithoutTenantInput
+    taxInvoices?: TaxInvoiceUncheckedCreateNestedManyWithoutTenantInput
+    paymentWithdrawals?: PaymentWithdrawalUncheckedCreateNestedManyWithoutTenantInput
+    agentRunLogs?: AgentRunLogUncheckedCreateNestedManyWithoutTenantInput
+    pendingAgentActions?: PendingAgentActionUncheckedCreateNestedManyWithoutTenantInput
+    agentActions?: AgentActionUncheckedCreateNestedManyWithoutTenantInput
+    agentMemories?: AgentMemoryUncheckedCreateNestedManyWithoutTenantInput
+    pinnedViews?: PinnedViewUncheckedCreateNestedManyWithoutTenantInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutTenantInput
+    metricEvents?: MetricEventUncheckedCreateNestedManyWithoutTenantInput
+    chatThreads?: ChatThreadUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    scheduledBriefings?: ScheduledBriefingUncheckedCreateNestedManyWithoutTenantInput
+    ingestRuns?: IngestRunUncheckedCreateNestedManyWithoutTenantInput
+    americanaChains?: AmericanaChainUncheckedCreateNestedManyWithoutTenantInput
+    americanaStores?: AmericanaStoreUncheckedCreateNestedManyWithoutTenantInput
+    americanaContracts?: AmericanaContractUncheckedCreateNestedManyWithoutTenantInput
+    americanaChainRates?: AmericanaChainRateUncheckedCreateNestedManyWithoutTenantInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
+    sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
+    vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
+    deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
+    zoneSurcharges?: ZoneSurchargeUncheckedCreateNestedManyWithoutTenantInput
+    fulfillmentSettings?: FulfillmentSettingsUncheckedCreateNestedOneWithoutTenantInput
+    deliveryOrders?: DeliveryOrderUncheckedCreateNestedManyWithoutTenantInput
+    dispatchOffers?: DispatchOfferUncheckedCreateNestedManyWithoutTenantInput
+    walletAccounts?: WalletAccountUncheckedCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
+    walletEntries?: WalletEntryUncheckedCreateNestedManyWithoutTenantInput
+    remittances?: RemittanceUncheckedCreateNestedManyWithoutTenantInput
+    walletReconciliationRuns?: WalletReconciliationRunUncheckedCreateNestedManyWithoutTenantInput
+    incidents?: IncidentUncheckedCreateNestedManyWithoutTenantInput
+    foodicsConnections?: FoodicsConnectionUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
+    orderRatings?: OrderRatingUncheckedCreateNestedManyWithoutTenantInput
+    vendorStatements?: VendorStatementUncheckedCreateNestedManyWithoutTenantInput
+    refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
+    fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantCreateOrConnectWithoutOwnerGroupsInput = {
+    where: TenantWhereUniqueInput
+    create: XOR<TenantCreateWithoutOwnerGroupsInput, TenantUncheckedCreateWithoutOwnerGroupsInput>
+  }
+
+  export type FleetPartnerCreateWithoutOwnerGroupInput = {
+    id?: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    contactEmail?: string | null
+    flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
+    minOnlineHoursPerDay?: number | null
+    minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
+    disciplineStatus?: string
+    disciplineNote?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutFleetPartnersInput
+    drivers?: DriverCreateNestedManyWithoutFleetPartnerInput
+    users?: UserCreateNestedManyWithoutFleetPartnerInput
+    statements?: FleetPayoutStatementCreateNestedManyWithoutFleetInput
+  }
+
+  export type FleetPartnerUncheckedCreateWithoutOwnerGroupInput = {
+    id?: string
+    tenantId: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    contactEmail?: string | null
+    flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
+    minOnlineHoursPerDay?: number | null
+    minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
+    disciplineStatus?: string
+    disciplineNote?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    drivers?: DriverUncheckedCreateNestedManyWithoutFleetPartnerInput
+    users?: UserUncheckedCreateNestedManyWithoutFleetPartnerInput
+    statements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutFleetInput
+  }
+
+  export type FleetPartnerCreateOrConnectWithoutOwnerGroupInput = {
+    where: FleetPartnerWhereUniqueInput
+    create: XOR<FleetPartnerCreateWithoutOwnerGroupInput, FleetPartnerUncheckedCreateWithoutOwnerGroupInput>
+  }
+
+  export type FleetPartnerCreateManyOwnerGroupInputEnvelope = {
+    data: FleetPartnerCreateManyOwnerGroupInput | FleetPartnerCreateManyOwnerGroupInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CompanyCreateWithoutOwnerGroupInput = {
+    id?: string
+    name: string
+    platform: $Enums.Platform
+    licenseCount?: number
+    isActive?: boolean
+    kind?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutCompaniesInput
+    accountManager?: UserCreateNestedOneWithoutManagedCompaniesInput
+    drivers?: DriverCreateNestedManyWithoutCompanyInput
+    vehicles?: VehicleCreateNestedManyWithoutCompanyInput
+    recruitmentPipeline?: RecruitmentPipelineCreateNestedManyWithoutAssignedCompanyInput
+    tickets?: TicketCreateNestedManyWithoutCompanyInput
+  }
+
+  export type CompanyUncheckedCreateWithoutOwnerGroupInput = {
+    id?: string
+    tenantId: string
+    name: string
+    platform: $Enums.Platform
+    licenseCount?: number
+    isActive?: boolean
+    kind?: string
+    accountManagerId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    drivers?: DriverUncheckedCreateNestedManyWithoutCompanyInput
+    vehicles?: VehicleUncheckedCreateNestedManyWithoutCompanyInput
+    recruitmentPipeline?: RecruitmentPipelineUncheckedCreateNestedManyWithoutAssignedCompanyInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutCompanyInput
+  }
+
+  export type CompanyCreateOrConnectWithoutOwnerGroupInput = {
+    where: CompanyWhereUniqueInput
+    create: XOR<CompanyCreateWithoutOwnerGroupInput, CompanyUncheckedCreateWithoutOwnerGroupInput>
+  }
+
+  export type CompanyCreateManyOwnerGroupInputEnvelope = {
+    data: CompanyCreateManyOwnerGroupInput | CompanyCreateManyOwnerGroupInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserCreateWithoutOwnerGroupInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    passwordHash: string
+    name: string
+    role?: $Enums.UserRole
+    isSuperAdmin?: boolean
+    jobGrade?: string | null
+    vendorRole?: string | null
+    isActive?: boolean
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutUsersInput
+    vendor?: VendorCreateNestedOneWithoutUsersInput
+    fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
+    supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
+    issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
+    acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
+    reviewedLeaves?: LeaveRequestCreateNestedManyWithoutReviewedByInput
+    assignedTickets?: TicketCreateNestedManyWithoutAssignedToInput
+    submittedTickets?: TicketCreateNestedManyWithoutSubmitterUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    createdAmericanaRates?: AmericanaChainRateCreateNestedManyWithoutCreatedByUserInput
+    approvedAgentActions?: AgentActionCreateNestedManyWithoutApproverInput
+    pinnedViews?: PinnedViewCreateNestedManyWithoutUserInput
+    metricEvents?: MetricEventCreateNestedManyWithoutUserInput
+    chatThreads?: ChatThreadCreateNestedManyWithoutUserInput
+    scheduledBriefings?: ScheduledBriefingCreateNestedManyWithoutCreatorInput
+  }
+
+  export type UserUncheckedCreateWithoutOwnerGroupInput = {
+    id?: string
+    tenantId: string
+    email: string
+    phone?: string | null
+    passwordHash: string
+    name: string
+    role?: $Enums.UserRole
+    isSuperAdmin?: boolean
+    jobGrade?: string | null
+    vendorId?: string | null
+    fleetPartnerId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
+    isActive?: boolean
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
+    supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
+    issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
+    acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
+    reviewedLeaves?: LeaveRequestUncheckedCreateNestedManyWithoutReviewedByInput
+    assignedTickets?: TicketUncheckedCreateNestedManyWithoutAssignedToInput
+    submittedTickets?: TicketUncheckedCreateNestedManyWithoutSubmitterUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    createdAmericanaRates?: AmericanaChainRateUncheckedCreateNestedManyWithoutCreatedByUserInput
+    approvedAgentActions?: AgentActionUncheckedCreateNestedManyWithoutApproverInput
+    pinnedViews?: PinnedViewUncheckedCreateNestedManyWithoutUserInput
+    metricEvents?: MetricEventUncheckedCreateNestedManyWithoutUserInput
+    chatThreads?: ChatThreadUncheckedCreateNestedManyWithoutUserInput
+    scheduledBriefings?: ScheduledBriefingUncheckedCreateNestedManyWithoutCreatorInput
+  }
+
+  export type UserCreateOrConnectWithoutOwnerGroupInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutOwnerGroupInput, UserUncheckedCreateWithoutOwnerGroupInput>
+  }
+
+  export type UserCreateManyOwnerGroupInputEnvelope = {
+    data: UserCreateManyOwnerGroupInput | UserCreateManyOwnerGroupInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TenantUpsertWithoutOwnerGroupsInput = {
+    update: XOR<TenantUpdateWithoutOwnerGroupsInput, TenantUncheckedUpdateWithoutOwnerGroupsInput>
+    create: XOR<TenantCreateWithoutOwnerGroupsInput, TenantUncheckedCreateWithoutOwnerGroupsInput>
+    where?: TenantWhereInput
+  }
+
+  export type TenantUpdateToOneWithWhereWithoutOwnerGroupsInput = {
+    where?: TenantWhereInput
+    data: XOR<TenantUpdateWithoutOwnerGroupsInput, TenantUncheckedUpdateWithoutOwnerGroupsInput>
+  }
+
+  export type TenantUpdateWithoutOwnerGroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    subscriptionPlan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+    designPartner?: BoolFieldUpdateOperationsInput | boolean
+    monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    companies?: CompanyUpdateManyWithoutTenantNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
+    shifts?: ShiftUpdateManyWithoutTenantNestedInput
+    attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
+    orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
+    cashRecords?: CashRecordUpdateManyWithoutTenantNestedInput
+    cashTransactions?: CashTransactionUpdateManyWithoutTenantNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUpdateManyWithoutTenantNestedInput
+    vehicleInspections?: VehicleInspectionUpdateManyWithoutTenantNestedInput
+    maintenanceRecords?: MaintenanceRecordUpdateManyWithoutTenantNestedInput
+    aiScores?: AiScoreUpdateManyWithoutTenantNestedInput
+    alerts?: AlertUpdateManyWithoutTenantNestedInput
+    aiDigests?: AiDigestUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutTenantNestedInput
+    tickets?: TicketUpdateManyWithoutTenantNestedInput
+    leaveRequests?: LeaveRequestUpdateManyWithoutTenantNestedInput
+    recruitmentPipeline?: RecruitmentPipelineUpdateManyWithoutTenantNestedInput
+    vehicles?: VehicleUpdateManyWithoutTenantNestedInput
+    talabatSessions?: TalabatSessionUpdateManyWithoutTenantNestedInput
+    talabatViolationEvents?: TalabatViolationEventUpdateManyWithoutTenantNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUpdateManyWithoutTenantNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUpdateManyWithoutTenantNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUpdateManyWithoutTenantNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUpdateManyWithoutTenantNestedInput
+    kpiDefinitions?: KpiDefinitionUpdateManyWithoutTenantNestedInput
+    kpiRecords?: KpiRecordUpdateManyWithoutTenantNestedInput
+    platformSettings?: PlatformSettingsUpdateManyWithoutTenantNestedInput
+    platformInventory?: PlatformInventoryUpdateManyWithoutTenantNestedInput
+    notifications?: NotificationUpdateManyWithoutTenantNestedInput
+    notificationRules?: NotificationRuleUpdateManyWithoutTenantNestedInput
+    notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
+    driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
+    violations?: ViolationUpdateManyWithoutTenantNestedInput
+    penalties?: PenaltyUpdateManyWithoutTenantNestedInput
+    appeals?: AppealUpdateManyWithoutTenantNestedInput
+    orderEvents?: OrderEventUpdateManyWithoutTenantNestedInput
+    aiInsights?: AiInsightUpdateManyWithoutTenantNestedInput
+    demandHeatmaps?: DemandHeatmapUpdateManyWithoutTenantNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUpdateManyWithoutTenantNestedInput
+    shiftComplianceConfig?: ShiftComplianceConfigUpdateOneWithoutTenantNestedInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUpdateManyWithoutTenantNestedInput
+    deliveryAreas?: DeliveryAreaUpdateManyWithoutTenantNestedInput
+    partners?: PartnerUpdateManyWithoutTenantNestedInput
+    incentiveTargetRounds?: IncentiveTargetRoundUpdateManyWithoutTenantNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUpdateManyWithoutTenantNestedInput
+    billings?: BillingUpdateManyWithoutTenantNestedInput
+    taxInvoices?: TaxInvoiceUpdateManyWithoutTenantNestedInput
+    paymentWithdrawals?: PaymentWithdrawalUpdateManyWithoutTenantNestedInput
+    agentRunLogs?: AgentRunLogUpdateManyWithoutTenantNestedInput
+    pendingAgentActions?: PendingAgentActionUpdateManyWithoutTenantNestedInput
+    agentActions?: AgentActionUpdateManyWithoutTenantNestedInput
+    agentMemories?: AgentMemoryUpdateManyWithoutTenantNestedInput
+    pinnedViews?: PinnedViewUpdateManyWithoutTenantNestedInput
+    performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutTenantNestedInput
+    metricEvents?: MetricEventUpdateManyWithoutTenantNestedInput
+    chatThreads?: ChatThreadUpdateManyWithoutTenantNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutTenantNestedInput
+    scheduledBriefings?: ScheduledBriefingUpdateManyWithoutTenantNestedInput
+    ingestRuns?: IngestRunUpdateManyWithoutTenantNestedInput
+    americanaChains?: AmericanaChainUpdateManyWithoutTenantNestedInput
+    americanaStores?: AmericanaStoreUpdateManyWithoutTenantNestedInput
+    americanaContracts?: AmericanaContractUpdateManyWithoutTenantNestedInput
+    americanaChainRates?: AmericanaChainRateUpdateManyWithoutTenantNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
+    sims?: SimUpdateManyWithoutTenantNestedInput
+    vendors?: VendorUpdateManyWithoutTenantNestedInput
+    vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
+    deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
+    zoneSurcharges?: ZoneSurchargeUpdateManyWithoutTenantNestedInput
+    fulfillmentSettings?: FulfillmentSettingsUpdateOneWithoutTenantNestedInput
+    deliveryOrders?: DeliveryOrderUpdateManyWithoutTenantNestedInput
+    dispatchOffers?: DispatchOfferUpdateManyWithoutTenantNestedInput
+    walletAccounts?: WalletAccountUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
+    walletEntries?: WalletEntryUpdateManyWithoutTenantNestedInput
+    remittances?: RemittanceUpdateManyWithoutTenantNestedInput
+    walletReconciliationRuns?: WalletReconciliationRunUpdateManyWithoutTenantNestedInput
+    incidents?: IncidentUpdateManyWithoutTenantNestedInput
+    foodicsConnections?: FoodicsConnectionUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
+    orderRatings?: OrderRatingUpdateManyWithoutTenantNestedInput
+    vendorStatements?: VendorStatementUpdateManyWithoutTenantNestedInput
+    refunds?: RefundUpdateManyWithoutTenantNestedInput
+    fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
+    fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+  }
+
+  export type TenantUncheckedUpdateWithoutOwnerGroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    subscriptionPlan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+    designPartner?: BoolFieldUpdateOperationsInput | boolean
+    monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
+    shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
+    attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
+    orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
+    cashRecords?: CashRecordUncheckedUpdateManyWithoutTenantNestedInput
+    cashTransactions?: CashTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleInspections?: VehicleInspectionUncheckedUpdateManyWithoutTenantNestedInput
+    maintenanceRecords?: MaintenanceRecordUncheckedUpdateManyWithoutTenantNestedInput
+    aiScores?: AiScoreUncheckedUpdateManyWithoutTenantNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutTenantNestedInput
+    aiDigests?: AiDigestUncheckedUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutTenantNestedInput
+    leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutTenantNestedInput
+    recruitmentPipeline?: RecruitmentPipelineUncheckedUpdateManyWithoutTenantNestedInput
+    vehicles?: VehicleUncheckedUpdateManyWithoutTenantNestedInput
+    talabatSessions?: TalabatSessionUncheckedUpdateManyWithoutTenantNestedInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedUpdateManyWithoutTenantNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedUpdateManyWithoutTenantNestedInput
+    kpiDefinitions?: KpiDefinitionUncheckedUpdateManyWithoutTenantNestedInput
+    kpiRecords?: KpiRecordUncheckedUpdateManyWithoutTenantNestedInput
+    platformSettings?: PlatformSettingsUncheckedUpdateManyWithoutTenantNestedInput
+    platformInventory?: PlatformInventoryUncheckedUpdateManyWithoutTenantNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutTenantNestedInput
+    notificationRules?: NotificationRuleUncheckedUpdateManyWithoutTenantNestedInput
+    notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
+    driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
+    violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
+    penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
+    appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
+    orderEvents?: OrderEventUncheckedUpdateManyWithoutTenantNestedInput
+    aiInsights?: AiInsightUncheckedUpdateManyWithoutTenantNestedInput
+    demandHeatmaps?: DemandHeatmapUncheckedUpdateManyWithoutTenantNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedUpdateManyWithoutTenantNestedInput
+    shiftComplianceConfig?: ShiftComplianceConfigUncheckedUpdateOneWithoutTenantNestedInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryAreas?: DeliveryAreaUncheckedUpdateManyWithoutTenantNestedInput
+    partners?: PartnerUncheckedUpdateManyWithoutTenantNestedInput
+    incentiveTargetRounds?: IncentiveTargetRoundUncheckedUpdateManyWithoutTenantNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedUpdateManyWithoutTenantNestedInput
+    billings?: BillingUncheckedUpdateManyWithoutTenantNestedInput
+    taxInvoices?: TaxInvoiceUncheckedUpdateManyWithoutTenantNestedInput
+    paymentWithdrawals?: PaymentWithdrawalUncheckedUpdateManyWithoutTenantNestedInput
+    agentRunLogs?: AgentRunLogUncheckedUpdateManyWithoutTenantNestedInput
+    pendingAgentActions?: PendingAgentActionUncheckedUpdateManyWithoutTenantNestedInput
+    agentActions?: AgentActionUncheckedUpdateManyWithoutTenantNestedInput
+    agentMemories?: AgentMemoryUncheckedUpdateManyWithoutTenantNestedInput
+    pinnedViews?: PinnedViewUncheckedUpdateManyWithoutTenantNestedInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutTenantNestedInput
+    metricEvents?: MetricEventUncheckedUpdateManyWithoutTenantNestedInput
+    chatThreads?: ChatThreadUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    scheduledBriefings?: ScheduledBriefingUncheckedUpdateManyWithoutTenantNestedInput
+    ingestRuns?: IngestRunUncheckedUpdateManyWithoutTenantNestedInput
+    americanaChains?: AmericanaChainUncheckedUpdateManyWithoutTenantNestedInput
+    americanaStores?: AmericanaStoreUncheckedUpdateManyWithoutTenantNestedInput
+    americanaContracts?: AmericanaContractUncheckedUpdateManyWithoutTenantNestedInput
+    americanaChainRates?: AmericanaChainRateUncheckedUpdateManyWithoutTenantNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
+    sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
+    vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
+    zoneSurcharges?: ZoneSurchargeUncheckedUpdateManyWithoutTenantNestedInput
+    fulfillmentSettings?: FulfillmentSettingsUncheckedUpdateOneWithoutTenantNestedInput
+    deliveryOrders?: DeliveryOrderUncheckedUpdateManyWithoutTenantNestedInput
+    dispatchOffers?: DispatchOfferUncheckedUpdateManyWithoutTenantNestedInput
+    walletAccounts?: WalletAccountUncheckedUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    walletEntries?: WalletEntryUncheckedUpdateManyWithoutTenantNestedInput
+    remittances?: RemittanceUncheckedUpdateManyWithoutTenantNestedInput
+    walletReconciliationRuns?: WalletReconciliationRunUncheckedUpdateManyWithoutTenantNestedInput
+    incidents?: IncidentUncheckedUpdateManyWithoutTenantNestedInput
+    foodicsConnections?: FoodicsConnectionUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
+    orderRatings?: OrderRatingUncheckedUpdateManyWithoutTenantNestedInput
+    vendorStatements?: VendorStatementUncheckedUpdateManyWithoutTenantNestedInput
+    refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+  }
+
+  export type FleetPartnerUpsertWithWhereUniqueWithoutOwnerGroupInput = {
+    where: FleetPartnerWhereUniqueInput
+    update: XOR<FleetPartnerUpdateWithoutOwnerGroupInput, FleetPartnerUncheckedUpdateWithoutOwnerGroupInput>
+    create: XOR<FleetPartnerCreateWithoutOwnerGroupInput, FleetPartnerUncheckedCreateWithoutOwnerGroupInput>
+  }
+
+  export type FleetPartnerUpdateWithWhereUniqueWithoutOwnerGroupInput = {
+    where: FleetPartnerWhereUniqueInput
+    data: XOR<FleetPartnerUpdateWithoutOwnerGroupInput, FleetPartnerUncheckedUpdateWithoutOwnerGroupInput>
+  }
+
+  export type FleetPartnerUpdateManyWithWhereWithoutOwnerGroupInput = {
+    where: FleetPartnerScalarWhereInput
+    data: XOR<FleetPartnerUpdateManyMutationInput, FleetPartnerUncheckedUpdateManyWithoutOwnerGroupInput>
+  }
+
+  export type CompanyUpsertWithWhereUniqueWithoutOwnerGroupInput = {
+    where: CompanyWhereUniqueInput
+    update: XOR<CompanyUpdateWithoutOwnerGroupInput, CompanyUncheckedUpdateWithoutOwnerGroupInput>
+    create: XOR<CompanyCreateWithoutOwnerGroupInput, CompanyUncheckedCreateWithoutOwnerGroupInput>
+  }
+
+  export type CompanyUpdateWithWhereUniqueWithoutOwnerGroupInput = {
+    where: CompanyWhereUniqueInput
+    data: XOR<CompanyUpdateWithoutOwnerGroupInput, CompanyUncheckedUpdateWithoutOwnerGroupInput>
+  }
+
+  export type CompanyUpdateManyWithWhereWithoutOwnerGroupInput = {
+    where: CompanyScalarWhereInput
+    data: XOR<CompanyUpdateManyMutationInput, CompanyUncheckedUpdateManyWithoutOwnerGroupInput>
+  }
+
+  export type UserUpsertWithWhereUniqueWithoutOwnerGroupInput = {
+    where: UserWhereUniqueInput
+    update: XOR<UserUpdateWithoutOwnerGroupInput, UserUncheckedUpdateWithoutOwnerGroupInput>
+    create: XOR<UserCreateWithoutOwnerGroupInput, UserUncheckedCreateWithoutOwnerGroupInput>
+  }
+
+  export type UserUpdateWithWhereUniqueWithoutOwnerGroupInput = {
+    where: UserWhereUniqueInput
+    data: XOR<UserUpdateWithoutOwnerGroupInput, UserUncheckedUpdateWithoutOwnerGroupInput>
+  }
+
+  export type UserUpdateManyWithWhereWithoutOwnerGroupInput = {
+    where: UserScalarWhereInput
+    data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutOwnerGroupInput>
   }
 
   export type TenantCreateWithoutUsersInput = {
@@ -186456,6 +189692,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -186562,6 +189799,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -186651,6 +189889,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutFleetPartnersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutFleetsInput
     drivers?: DriverCreateNestedManyWithoutFleetPartnerInput
     statements?: FleetPayoutStatementCreateNestedManyWithoutFleetInput
   }
@@ -186668,6 +189907,7 @@ export namespace Prisma {
     disciplineStatus?: string
     disciplineNote?: string | null
     isActive?: boolean
+    ownerGroupId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     drivers?: DriverUncheckedCreateNestedManyWithoutFleetPartnerInput
@@ -186679,10 +189919,125 @@ export namespace Prisma {
     create: XOR<FleetPartnerCreateWithoutUsersInput, FleetPartnerUncheckedCreateWithoutUsersInput>
   }
 
+  export type OwnerGroupCreateWithoutUsersInput = {
+    id?: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutOwnerGroupsInput
+    fleets?: FleetPartnerCreateNestedManyWithoutOwnerGroupInput
+    companies?: CompanyCreateNestedManyWithoutOwnerGroupInput
+  }
+
+  export type OwnerGroupUncheckedCreateWithoutUsersInput = {
+    id?: string
+    tenantId: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    fleets?: FleetPartnerUncheckedCreateNestedManyWithoutOwnerGroupInput
+    companies?: CompanyUncheckedCreateNestedManyWithoutOwnerGroupInput
+  }
+
+  export type OwnerGroupCreateOrConnectWithoutUsersInput = {
+    where: OwnerGroupWhereUniqueInput
+    create: XOR<OwnerGroupCreateWithoutUsersInput, OwnerGroupUncheckedCreateWithoutUsersInput>
+  }
+
+  export type VendorBranchCreateWithoutPortalUsersInput = {
+    id?: string
+    name: string
+    nameAr?: string | null
+    address?: string | null
+    phone?: string | null
+    lat?: Decimal | DecimalJsLike | number | string | null
+    lng?: Decimal | DecimalJsLike | number | string | null
+    foodicsBranchId?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutVendorBranchesInput
+    vendor: VendorCreateNestedOneWithoutBranchesInput
+    zone?: DeliveryZoneCreateNestedOneWithoutBranchesInput
+    orders?: DeliveryOrderCreateNestedManyWithoutBranchInput
+  }
+
+  export type VendorBranchUncheckedCreateWithoutPortalUsersInput = {
+    id?: string
+    tenantId: string
+    vendorId: string
+    name: string
+    nameAr?: string | null
+    address?: string | null
+    phone?: string | null
+    lat?: Decimal | DecimalJsLike | number | string | null
+    lng?: Decimal | DecimalJsLike | number | string | null
+    zoneId?: string | null
+    foodicsBranchId?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    orders?: DeliveryOrderUncheckedCreateNestedManyWithoutBranchInput
+  }
+
+  export type VendorBranchCreateOrConnectWithoutPortalUsersInput = {
+    where: VendorBranchWhereUniqueInput
+    create: XOR<VendorBranchCreateWithoutPortalUsersInput, VendorBranchUncheckedCreateWithoutPortalUsersInput>
+  }
+
+  export type CompanyCreateWithoutAccountManagerInput = {
+    id?: string
+    name: string
+    platform: $Enums.Platform
+    licenseCount?: number
+    isActive?: boolean
+    kind?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutCompaniesInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutCompaniesInput
+    drivers?: DriverCreateNestedManyWithoutCompanyInput
+    vehicles?: VehicleCreateNestedManyWithoutCompanyInput
+    recruitmentPipeline?: RecruitmentPipelineCreateNestedManyWithoutAssignedCompanyInput
+    tickets?: TicketCreateNestedManyWithoutCompanyInput
+  }
+
+  export type CompanyUncheckedCreateWithoutAccountManagerInput = {
+    id?: string
+    tenantId: string
+    name: string
+    platform: $Enums.Platform
+    licenseCount?: number
+    isActive?: boolean
+    kind?: string
+    ownerGroupId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    drivers?: DriverUncheckedCreateNestedManyWithoutCompanyInput
+    vehicles?: VehicleUncheckedCreateNestedManyWithoutCompanyInput
+    recruitmentPipeline?: RecruitmentPipelineUncheckedCreateNestedManyWithoutAssignedCompanyInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutCompanyInput
+  }
+
+  export type CompanyCreateOrConnectWithoutAccountManagerInput = {
+    where: CompanyWhereUniqueInput
+    create: XOR<CompanyCreateWithoutAccountManagerInput, CompanyUncheckedCreateWithoutAccountManagerInput>
+  }
+
+  export type CompanyCreateManyAccountManagerInputEnvelope = {
+    data: CompanyCreateManyAccountManagerInput | CompanyCreateManyAccountManagerInput[]
+    skipDuplicates?: boolean
+  }
+
   export type DriverCreateWithoutSupervisorInput = {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -186773,6 +190128,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -187486,6 +190842,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -187592,6 +190949,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -187693,6 +191051,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutFleetPartnersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutFleetsNestedInput
     drivers?: DriverUpdateManyWithoutFleetPartnerNestedInput
     statements?: FleetPayoutStatementUpdateManyWithoutFleetNestedInput
   }
@@ -187710,10 +191069,109 @@ export namespace Prisma {
     disciplineStatus?: StringFieldUpdateOperationsInput | string
     disciplineNote?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     drivers?: DriverUncheckedUpdateManyWithoutFleetPartnerNestedInput
     statements?: FleetPayoutStatementUncheckedUpdateManyWithoutFleetNestedInput
+  }
+
+  export type OwnerGroupUpsertWithoutUsersInput = {
+    update: XOR<OwnerGroupUpdateWithoutUsersInput, OwnerGroupUncheckedUpdateWithoutUsersInput>
+    create: XOR<OwnerGroupCreateWithoutUsersInput, OwnerGroupUncheckedCreateWithoutUsersInput>
+    where?: OwnerGroupWhereInput
+  }
+
+  export type OwnerGroupUpdateToOneWithWhereWithoutUsersInput = {
+    where?: OwnerGroupWhereInput
+    data: XOR<OwnerGroupUpdateWithoutUsersInput, OwnerGroupUncheckedUpdateWithoutUsersInput>
+  }
+
+  export type OwnerGroupUpdateWithoutUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutOwnerGroupsNestedInput
+    fleets?: FleetPartnerUpdateManyWithoutOwnerGroupNestedInput
+    companies?: CompanyUpdateManyWithoutOwnerGroupNestedInput
+  }
+
+  export type OwnerGroupUncheckedUpdateWithoutUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fleets?: FleetPartnerUncheckedUpdateManyWithoutOwnerGroupNestedInput
+    companies?: CompanyUncheckedUpdateManyWithoutOwnerGroupNestedInput
+  }
+
+  export type VendorBranchUpsertWithoutPortalUsersInput = {
+    update: XOR<VendorBranchUpdateWithoutPortalUsersInput, VendorBranchUncheckedUpdateWithoutPortalUsersInput>
+    create: XOR<VendorBranchCreateWithoutPortalUsersInput, VendorBranchUncheckedCreateWithoutPortalUsersInput>
+    where?: VendorBranchWhereInput
+  }
+
+  export type VendorBranchUpdateToOneWithWhereWithoutPortalUsersInput = {
+    where?: VendorBranchWhereInput
+    data: XOR<VendorBranchUpdateWithoutPortalUsersInput, VendorBranchUncheckedUpdateWithoutPortalUsersInput>
+  }
+
+  export type VendorBranchUpdateWithoutPortalUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    nameAr?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutVendorBranchesNestedInput
+    vendor?: VendorUpdateOneRequiredWithoutBranchesNestedInput
+    zone?: DeliveryZoneUpdateOneWithoutBranchesNestedInput
+    orders?: DeliveryOrderUpdateManyWithoutBranchNestedInput
+  }
+
+  export type VendorBranchUncheckedUpdateWithoutPortalUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    nameAr?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    zoneId?: NullableStringFieldUpdateOperationsInput | string | null
+    foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    orders?: DeliveryOrderUncheckedUpdateManyWithoutBranchNestedInput
+  }
+
+  export type CompanyUpsertWithWhereUniqueWithoutAccountManagerInput = {
+    where: CompanyWhereUniqueInput
+    update: XOR<CompanyUpdateWithoutAccountManagerInput, CompanyUncheckedUpdateWithoutAccountManagerInput>
+    create: XOR<CompanyCreateWithoutAccountManagerInput, CompanyUncheckedCreateWithoutAccountManagerInput>
+  }
+
+  export type CompanyUpdateWithWhereUniqueWithoutAccountManagerInput = {
+    where: CompanyWhereUniqueInput
+    data: XOR<CompanyUpdateWithoutAccountManagerInput, CompanyUncheckedUpdateWithoutAccountManagerInput>
+  }
+
+  export type CompanyUpdateManyWithWhereWithoutAccountManagerInput = {
+    where: CompanyScalarWhereInput
+    data: XOR<CompanyUpdateManyMutationInput, CompanyUncheckedUpdateManyWithoutAccountManagerInput>
   }
 
   export type DriverUpsertWithWhereUniqueWithoutSupervisorInput = {
@@ -188022,6 +191480,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -188128,6 +191587,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -188161,9 +191621,12 @@ export namespace Prisma {
     platform: $Enums.Platform
     licenseCount?: number
     isActive?: boolean
+    kind?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutCompaniesInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutCompaniesInput
+    accountManager?: UserCreateNestedOneWithoutManagedCompaniesInput
     vehicles?: VehicleCreateNestedManyWithoutCompanyInput
     recruitmentPipeline?: RecruitmentPipelineCreateNestedManyWithoutAssignedCompanyInput
     tickets?: TicketCreateNestedManyWithoutCompanyInput
@@ -188176,6 +191639,9 @@ export namespace Prisma {
     platform: $Enums.Platform
     licenseCount?: number
     isActive?: boolean
+    kind?: string
+    ownerGroupId?: string | null
+    accountManagerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     vehicles?: VehicleUncheckedCreateNestedManyWithoutCompanyInput
@@ -188197,6 +191663,7 @@ export namespace Prisma {
     role?: $Enums.UserRole
     isSuperAdmin?: boolean
     jobGrade?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -188204,6 +191671,9 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutUsersInput
     vendor?: VendorCreateNestedOneWithoutUsersInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
     issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
     reviewedLeaves?: LeaveRequestCreateNestedManyWithoutReviewedByInput
@@ -188230,10 +191700,14 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorId?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
     issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
     reviewedLeaves?: LeaveRequestUncheckedCreateNestedManyWithoutReviewedByInput
@@ -188268,6 +191742,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutFleetPartnersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutFleetsInput
     users?: UserCreateNestedManyWithoutFleetPartnerInput
     statements?: FleetPayoutStatementCreateNestedManyWithoutFleetInput
   }
@@ -188285,6 +191760,7 @@ export namespace Prisma {
     disciplineStatus?: string
     disciplineNote?: string | null
     isActive?: boolean
+    ownerGroupId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutFleetPartnerInput
@@ -190365,6 +193841,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -190471,6 +193948,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -190510,9 +193988,12 @@ export namespace Prisma {
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     licenseCount?: IntFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutCompaniesNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutCompaniesNestedInput
+    accountManager?: UserUpdateOneWithoutManagedCompaniesNestedInput
     vehicles?: VehicleUpdateManyWithoutCompanyNestedInput
     recruitmentPipeline?: RecruitmentPipelineUpdateManyWithoutAssignedCompanyNestedInput
     tickets?: TicketUpdateManyWithoutCompanyNestedInput
@@ -190525,6 +194006,9 @@ export namespace Prisma {
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     licenseCount?: IntFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    accountManagerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     vehicles?: VehicleUncheckedUpdateManyWithoutCompanyNestedInput
@@ -190552,6 +194036,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -190559,6 +194044,9 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
     vendor?: VendorUpdateOneWithoutUsersNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
     issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
     reviewedLeaves?: LeaveRequestUpdateManyWithoutReviewedByNestedInput
@@ -190585,10 +194073,14 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
     issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     reviewedLeaves?: LeaveRequestUncheckedUpdateManyWithoutReviewedByNestedInput
@@ -190629,6 +194121,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutFleetPartnersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutFleetsNestedInput
     users?: UserUpdateManyWithoutFleetPartnerNestedInput
     statements?: FleetPayoutStatementUpdateManyWithoutFleetNestedInput
   }
@@ -190646,6 +194139,7 @@ export namespace Prisma {
     disciplineStatus?: StringFieldUpdateOperationsInput | string
     disciplineNote?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutFleetPartnerNestedInput
@@ -191609,6 +195103,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -191715,6 +195210,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -191746,6 +195242,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -191836,6 +195333,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -192018,6 +195516,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -192124,6 +195623,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -192161,6 +195661,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -192251,6 +195752,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -192337,6 +195839,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -192427,6 +195930,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -192529,6 +196033,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -192619,6 +196124,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -192785,6 +196291,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -192891,6 +196398,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -192924,9 +196432,12 @@ export namespace Prisma {
     platform: $Enums.Platform
     licenseCount?: number
     isActive?: boolean
+    kind?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutCompaniesInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutCompaniesInput
+    accountManager?: UserCreateNestedOneWithoutManagedCompaniesInput
     drivers?: DriverCreateNestedManyWithoutCompanyInput
     vehicles?: VehicleCreateNestedManyWithoutCompanyInput
     tickets?: TicketCreateNestedManyWithoutCompanyInput
@@ -192939,6 +196450,9 @@ export namespace Prisma {
     platform: $Enums.Platform
     licenseCount?: number
     isActive?: boolean
+    kind?: string
+    ownerGroupId?: string | null
+    accountManagerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     drivers?: DriverUncheckedCreateNestedManyWithoutCompanyInput
@@ -193046,6 +196560,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -193152,6 +196667,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -193191,9 +196707,12 @@ export namespace Prisma {
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     licenseCount?: IntFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutCompaniesNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutCompaniesNestedInput
+    accountManager?: UserUpdateOneWithoutManagedCompaniesNestedInput
     drivers?: DriverUpdateManyWithoutCompanyNestedInput
     vehicles?: VehicleUpdateManyWithoutCompanyNestedInput
     tickets?: TicketUpdateManyWithoutCompanyNestedInput
@@ -193206,6 +196725,9 @@ export namespace Prisma {
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     licenseCount?: IntFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    accountManagerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     drivers?: DriverUncheckedUpdateManyWithoutCompanyNestedInput
@@ -193297,6 +196819,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -193403,6 +196926,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -193436,9 +196960,12 @@ export namespace Prisma {
     platform: $Enums.Platform
     licenseCount?: number
     isActive?: boolean
+    kind?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutCompaniesInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutCompaniesInput
+    accountManager?: UserCreateNestedOneWithoutManagedCompaniesInput
     drivers?: DriverCreateNestedManyWithoutCompanyInput
     recruitmentPipeline?: RecruitmentPipelineCreateNestedManyWithoutAssignedCompanyInput
     tickets?: TicketCreateNestedManyWithoutCompanyInput
@@ -193451,6 +196978,9 @@ export namespace Prisma {
     platform: $Enums.Platform
     licenseCount?: number
     isActive?: boolean
+    kind?: string
+    ownerGroupId?: string | null
+    accountManagerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     drivers?: DriverUncheckedCreateNestedManyWithoutCompanyInput
@@ -193467,6 +196997,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -193557,6 +197088,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -193987,6 +197519,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -194093,6 +197626,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -194132,9 +197666,12 @@ export namespace Prisma {
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     licenseCount?: IntFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutCompaniesNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutCompaniesNestedInput
+    accountManager?: UserUpdateOneWithoutManagedCompaniesNestedInput
     drivers?: DriverUpdateManyWithoutCompanyNestedInput
     recruitmentPipeline?: RecruitmentPipelineUpdateManyWithoutAssignedCompanyNestedInput
     tickets?: TicketUpdateManyWithoutCompanyNestedInput
@@ -194147,6 +197684,9 @@ export namespace Prisma {
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     licenseCount?: IntFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    accountManagerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     drivers?: DriverUncheckedUpdateManyWithoutCompanyNestedInput
@@ -194169,6 +197709,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -194259,6 +197800,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -194521,6 +198063,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -194627,6 +198170,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -194719,6 +198263,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -194809,6 +198354,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -194991,6 +198537,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -195097,6 +198644,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -195201,6 +198749,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -195291,6 +198840,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -195457,6 +199007,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -195563,6 +199114,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -195594,6 +199146,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -195684,6 +199237,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -196036,6 +199590,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -196142,6 +199697,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -196179,6 +199735,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -196269,6 +199826,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -196483,6 +200041,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -196589,6 +200148,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -196620,6 +200180,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -196710,6 +200271,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -196957,6 +200519,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -197063,6 +200626,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -197100,6 +200664,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -197190,6 +200755,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -197427,6 +200993,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -197533,6 +201100,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -197564,6 +201132,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -197654,6 +201223,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -197901,6 +201471,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -198007,6 +201578,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -198044,6 +201616,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -198134,6 +201707,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -198371,6 +201945,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -198477,6 +202052,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -198508,6 +202084,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -198598,6 +202175,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -198780,6 +202358,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -198886,6 +202465,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -198923,6 +202503,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -199013,6 +202594,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -199179,6 +202761,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -199285,6 +202868,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -199316,6 +202900,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -199406,6 +202991,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -199588,6 +203174,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -199694,6 +203281,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -199731,6 +203319,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -199821,6 +203410,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -199987,6 +203577,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -200093,6 +203684,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -200124,6 +203716,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -200214,6 +203807,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -200396,6 +203990,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -200502,6 +204097,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -200539,6 +204135,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -200629,6 +204226,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -200795,6 +204393,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -200901,6 +204500,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -200993,6 +204593,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -201083,6 +204684,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -201265,6 +204867,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -201371,6 +204974,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -201475,6 +205079,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -201565,6 +205170,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -201731,6 +205337,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -201837,6 +205444,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -201929,6 +205537,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -202019,6 +205628,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -202262,6 +205872,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -202368,6 +205979,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -202472,6 +206084,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -202562,6 +206175,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -202715,6 +206329,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -202805,6 +206420,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -203057,6 +206673,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -203147,6 +206764,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -203393,6 +207011,7 @@ export namespace Prisma {
     americanaChainRates?: AmericanaChainRateCreateNestedManyWithoutTenantInput
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -203499,6 +207118,7 @@ export namespace Prisma {
     americanaChainRates?: AmericanaChainRateUncheckedCreateNestedManyWithoutTenantInput
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -203530,6 +207150,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -203620,6 +207241,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -203851,6 +207473,7 @@ export namespace Prisma {
     americanaChainRates?: AmericanaChainRateUpdateManyWithoutTenantNestedInput
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -203957,6 +207580,7 @@ export namespace Prisma {
     americanaChainRates?: AmericanaChainRateUncheckedUpdateManyWithoutTenantNestedInput
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -203994,6 +207618,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -204084,6 +207709,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -204274,6 +207900,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -204364,6 +207991,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -204521,6 +208149,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -204611,6 +208240,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -204746,6 +208376,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -204836,6 +208467,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -204993,6 +208625,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -205083,6 +208716,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -205218,6 +208852,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -205308,6 +208943,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -205465,6 +209101,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -205555,6 +209192,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -205695,6 +209333,7 @@ export namespace Prisma {
     role?: $Enums.UserRole
     isSuperAdmin?: boolean
     jobGrade?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -205702,6 +209341,9 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutUsersInput
     vendor?: VendorCreateNestedOneWithoutUsersInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
     acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
     reviewedLeaves?: LeaveRequestCreateNestedManyWithoutReviewedByInput
@@ -205728,10 +209370,14 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorId?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
     acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
     reviewedLeaves?: LeaveRequestUncheckedCreateNestedManyWithoutReviewedByInput
@@ -205826,6 +209472,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -205833,6 +209480,9 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
     vendor?: VendorUpdateOneWithoutUsersNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
     acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
     reviewedLeaves?: LeaveRequestUpdateManyWithoutReviewedByNestedInput
@@ -205859,10 +209509,14 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
     acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     reviewedLeaves?: LeaveRequestUncheckedUpdateManyWithoutReviewedByNestedInput
@@ -205961,6 +209615,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -206067,6 +209722,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -206098,6 +209754,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -206188,6 +209845,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -206370,6 +210028,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -206476,6 +210135,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -206513,6 +210173,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -206603,6 +210264,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -206769,6 +210431,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -206875,6 +210538,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -206906,6 +210570,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -206996,6 +210661,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -207153,6 +210819,7 @@ export namespace Prisma {
     role?: $Enums.UserRole
     isSuperAdmin?: boolean
     jobGrade?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -207160,6 +210827,9 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutUsersInput
     vendor?: VendorCreateNestedOneWithoutUsersInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
     reviewedLeaves?: LeaveRequestCreateNestedManyWithoutReviewedByInput
@@ -207186,10 +210856,14 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorId?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
     reviewedLeaves?: LeaveRequestUncheckedCreateNestedManyWithoutReviewedByInput
@@ -207304,6 +210978,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -207410,6 +211085,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -207447,6 +211123,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -207537,6 +211214,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -207706,6 +211384,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -207713,6 +211392,9 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
     vendor?: VendorUpdateOneWithoutUsersNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
     reviewedLeaves?: LeaveRequestUpdateManyWithoutReviewedByNestedInput
@@ -207739,10 +211421,14 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
     reviewedLeaves?: LeaveRequestUncheckedUpdateManyWithoutReviewedByNestedInput
@@ -207841,6 +211527,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -207947,6 +211634,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -208069,6 +211757,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -208175,6 +211864,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -208281,6 +211971,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -208387,6 +212078,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -208509,6 +212201,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -208615,6 +212308,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -208721,6 +212415,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -208827,6 +212522,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -208858,6 +212554,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -208948,6 +212645,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -209044,6 +212742,7 @@ export namespace Prisma {
     role?: $Enums.UserRole
     isSuperAdmin?: boolean
     jobGrade?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -209051,6 +212750,9 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutUsersInput
     vendor?: VendorCreateNestedOneWithoutUsersInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
@@ -209077,10 +212779,14 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorId?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
@@ -209109,6 +212815,7 @@ export namespace Prisma {
     role?: $Enums.UserRole
     isSuperAdmin?: boolean
     jobGrade?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -209116,6 +212823,9 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutUsersInput
     vendor?: VendorCreateNestedOneWithoutUsersInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
@@ -209142,10 +212852,14 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorId?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
@@ -209171,9 +212885,12 @@ export namespace Prisma {
     platform: $Enums.Platform
     licenseCount?: number
     isActive?: boolean
+    kind?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutCompaniesInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutCompaniesInput
+    accountManager?: UserCreateNestedOneWithoutManagedCompaniesInput
     drivers?: DriverCreateNestedManyWithoutCompanyInput
     vehicles?: VehicleCreateNestedManyWithoutCompanyInput
     recruitmentPipeline?: RecruitmentPipelineCreateNestedManyWithoutAssignedCompanyInput
@@ -209186,6 +212903,9 @@ export namespace Prisma {
     platform: $Enums.Platform
     licenseCount?: number
     isActive?: boolean
+    kind?: string
+    ownerGroupId?: string | null
+    accountManagerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     drivers?: DriverUncheckedCreateNestedManyWithoutCompanyInput
@@ -209202,6 +212922,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -209292,6 +213013,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -209535,6 +213257,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -209641,6 +213364,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -209678,6 +213402,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -209768,6 +213493,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -209870,6 +213596,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -209877,6 +213604,9 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
     vendor?: VendorUpdateOneWithoutUsersNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
@@ -209903,10 +213633,14 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
@@ -209941,6 +213675,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -209948,6 +213683,9 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
     vendor?: VendorUpdateOneWithoutUsersNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
@@ -209974,10 +213712,14 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
@@ -210009,9 +213751,12 @@ export namespace Prisma {
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     licenseCount?: IntFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutCompaniesNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutCompaniesNestedInput
+    accountManager?: UserUpdateOneWithoutManagedCompaniesNestedInput
     drivers?: DriverUpdateManyWithoutCompanyNestedInput
     vehicles?: VehicleUpdateManyWithoutCompanyNestedInput
     recruitmentPipeline?: RecruitmentPipelineUpdateManyWithoutAssignedCompanyNestedInput
@@ -210024,6 +213769,9 @@ export namespace Prisma {
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     licenseCount?: IntFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    accountManagerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     drivers?: DriverUncheckedUpdateManyWithoutCompanyNestedInput
@@ -210046,6 +213794,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -210136,6 +213885,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -210369,6 +214119,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -210475,6 +214226,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -210506,6 +214258,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -210596,6 +214349,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -210692,6 +214446,7 @@ export namespace Prisma {
     role?: $Enums.UserRole
     isSuperAdmin?: boolean
     jobGrade?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -210699,6 +214454,9 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutUsersInput
     vendor?: VendorCreateNestedOneWithoutUsersInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
@@ -210725,10 +214483,14 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorId?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
@@ -210843,6 +214605,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -210949,6 +214712,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -210986,6 +214750,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -211076,6 +214841,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -211178,6 +214944,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -211185,6 +214952,9 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
     vendor?: VendorUpdateOneWithoutUsersNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
@@ -211211,10 +214981,14 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
@@ -211313,6 +215087,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -211419,6 +215194,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -211450,6 +215226,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -211540,6 +215317,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -211867,6 +215645,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -211973,6 +215752,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -212010,6 +215790,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -212100,6 +215881,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -212369,6 +216151,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -212475,6 +216258,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -212506,6 +216290,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -212596,6 +216381,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -212845,6 +216631,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -212951,6 +216738,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -212988,6 +216776,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -213078,6 +216867,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -213237,6 +217027,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -213327,6 +217118,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -213496,6 +217288,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -213586,6 +217379,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -213825,6 +217619,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -213931,6 +217726,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -213962,6 +217758,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -214052,6 +217849,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -214234,6 +218032,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -214340,6 +218139,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -214377,6 +218177,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -214467,6 +218268,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -214633,6 +218435,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -214739,6 +218542,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -214861,6 +218665,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -214967,6 +218772,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -215073,6 +218879,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -215179,6 +218986,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -215210,6 +219018,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -215300,6 +219109,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -215482,6 +219292,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -215588,6 +219399,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -215625,6 +219437,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -215715,6 +219528,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -215881,6 +219695,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -215987,6 +219802,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -216018,6 +219834,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -216108,6 +219925,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -216290,6 +220108,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -216396,6 +220215,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -216433,6 +220253,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -216523,6 +220344,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -216689,6 +220511,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -216795,6 +220618,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -216917,6 +220741,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -217023,6 +220848,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -217129,6 +220955,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -217235,6 +221062,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -217357,6 +221185,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -217463,6 +221292,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -217569,6 +221399,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -217675,6 +221506,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -217706,6 +221538,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -217796,6 +221629,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -218056,6 +221890,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -218162,6 +221997,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -218199,6 +222035,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -218289,6 +222126,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -218545,6 +222383,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -218651,6 +222490,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -218907,6 +222747,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -219013,6 +222854,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -219167,6 +223009,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -219273,6 +223116,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -219512,6 +223356,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -219618,6 +223463,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -219793,6 +223639,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -219899,6 +223746,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -220057,6 +223905,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -220163,6 +224012,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -220285,6 +224135,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -220391,6 +224242,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -220497,6 +224349,7 @@ export namespace Prisma {
     role?: $Enums.UserRole
     isSuperAdmin?: boolean
     jobGrade?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -220504,6 +224357,9 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutUsersInput
     vendor?: VendorCreateNestedOneWithoutUsersInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
@@ -220530,10 +224386,14 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorId?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
@@ -220648,6 +224508,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -220754,6 +224615,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -220878,6 +224740,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -220885,6 +224748,9 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
     vendor?: VendorUpdateOneWithoutUsersNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
@@ -220911,10 +224777,14 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
@@ -221013,6 +224883,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -221119,6 +224990,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -221150,6 +225022,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -221240,6 +225113,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -221422,6 +225296,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -221528,6 +225403,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -221565,6 +225441,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -221655,6 +225532,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -221821,6 +225699,7 @@ export namespace Prisma {
     americanaChainRates?: AmericanaChainRateCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -221927,6 +225806,7 @@ export namespace Prisma {
     americanaChainRates?: AmericanaChainRateUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -221958,6 +225838,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -222048,6 +225929,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -222277,6 +226159,7 @@ export namespace Prisma {
     americanaChainRates?: AmericanaChainRateUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -222383,6 +226266,7 @@ export namespace Prisma {
     americanaChainRates?: AmericanaChainRateUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -222420,6 +226304,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -222510,6 +226395,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -222729,6 +226615,7 @@ export namespace Prisma {
     americanaChainRates?: AmericanaChainRateCreateNestedManyWithoutTenantInput
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -222835,6 +226722,7 @@ export namespace Prisma {
     americanaChainRates?: AmericanaChainRateUncheckedCreateNestedManyWithoutTenantInput
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -222957,6 +226845,7 @@ export namespace Prisma {
     americanaChainRates?: AmericanaChainRateUpdateManyWithoutTenantNestedInput
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -223063,6 +226952,7 @@ export namespace Prisma {
     americanaChainRates?: AmericanaChainRateUncheckedUpdateManyWithoutTenantNestedInput
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -223169,6 +227059,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -223275,6 +227166,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -223433,6 +227325,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -223539,6 +227432,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -223661,6 +227555,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -223767,6 +227662,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -223798,6 +227694,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -223888,6 +227785,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -224105,6 +228003,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -224211,6 +228110,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -224248,6 +228148,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -224338,6 +228239,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -224545,6 +228447,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -224651,6 +228554,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -224687,6 +228591,7 @@ export namespace Prisma {
     role?: $Enums.UserRole
     isSuperAdmin?: boolean
     jobGrade?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -224694,6 +228599,9 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutUsersInput
     vendor?: VendorCreateNestedOneWithoutUsersInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
@@ -224720,10 +228628,14 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorId?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
@@ -224838,6 +228750,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -224944,6 +228857,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -224986,6 +228900,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -224993,6 +228908,9 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
     vendor?: VendorUpdateOneWithoutUsersNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
@@ -225019,10 +228937,14 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
@@ -225121,6 +229043,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -225227,6 +229150,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -225349,6 +229273,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -225455,6 +229380,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -225561,6 +229487,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -225667,6 +229594,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -225789,6 +229717,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -225895,6 +229824,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -226001,6 +229931,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -226107,6 +230038,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -226138,6 +230070,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -226228,6 +230161,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -226410,6 +230344,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -226516,6 +230451,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -226553,6 +230489,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -226643,6 +230580,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -226809,6 +230747,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -226915,6 +230854,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -226946,6 +230886,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -227036,6 +230977,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -227285,6 +231227,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -227391,6 +231334,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -227428,6 +231372,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -227518,6 +231463,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -227716,6 +231662,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -227822,6 +231769,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -227853,6 +231801,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -227943,6 +231892,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -228174,6 +232124,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -228280,6 +232231,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -228317,6 +232269,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -228407,6 +232360,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -228589,6 +232543,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -228695,6 +232650,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -228866,6 +232822,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -228972,6 +232929,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -229133,6 +233091,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -229239,6 +233198,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -229361,6 +233321,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -229467,6 +233428,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -229573,6 +233535,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -229679,6 +233642,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -229710,6 +233674,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -229800,6 +233765,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -229982,6 +233948,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -230088,6 +234055,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -230125,6 +234093,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -230215,6 +234184,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -230381,6 +234351,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -230487,6 +234458,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -230609,6 +234581,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -230715,6 +234688,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -230821,6 +234795,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -230927,6 +234902,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -231049,6 +235025,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -231155,6 +235132,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -231261,6 +235239,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -231367,6 +235346,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -231398,6 +235378,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -231488,6 +235469,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -231670,6 +235652,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -231776,6 +235759,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -231813,6 +235797,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -231903,6 +235888,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -232069,6 +236055,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -232175,6 +236162,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -232297,6 +236285,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -232403,6 +236392,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -232509,6 +236499,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -232615,6 +236606,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -232737,6 +236729,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -232843,6 +236836,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -232949,6 +236943,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -233055,6 +237050,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -233295,6 +237291,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -233401,6 +237398,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -233632,6 +237630,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -233738,6 +237737,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -233981,6 +237981,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -234087,6 +238088,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -234469,6 +238471,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -234575,6 +238578,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -234645,6 +238649,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -234735,6 +238740,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -234917,6 +238923,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -235023,6 +239030,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -235105,6 +239113,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -235195,6 +239204,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -235361,6 +239371,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -235467,6 +239478,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -235693,6 +239705,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -235799,6 +239812,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -235999,6 +240013,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -236105,6 +240120,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -236268,6 +240284,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -236374,6 +240391,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -236527,6 +240545,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -236633,6 +240652,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -236796,6 +240816,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -236902,6 +240923,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -237055,6 +241077,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -237161,6 +241184,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -237457,6 +241481,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -237563,6 +241588,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -237848,6 +241874,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -237954,6 +241981,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -238123,6 +242151,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -238229,6 +242258,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -238388,6 +242418,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -238494,6 +242525,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -238530,6 +242562,7 @@ export namespace Prisma {
     role?: $Enums.UserRole
     isSuperAdmin?: boolean
     jobGrade?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -238537,6 +242570,9 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutUsersInput
     vendor?: VendorCreateNestedOneWithoutUsersInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
@@ -238563,10 +242599,14 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorId?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
@@ -238772,6 +242812,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -238878,6 +242919,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -238920,6 +242962,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -238927,6 +242970,9 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
     vendor?: VendorUpdateOneWithoutUsersNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
@@ -238953,10 +242999,14 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
@@ -239124,6 +243174,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -239230,6 +243281,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -239399,6 +243451,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -239505,6 +243558,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -239664,6 +243718,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -239770,6 +243825,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -239806,6 +243862,7 @@ export namespace Prisma {
     role?: $Enums.UserRole
     isSuperAdmin?: boolean
     jobGrade?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -239813,6 +243870,9 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutUsersInput
     vendor?: VendorCreateNestedOneWithoutUsersInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
@@ -239839,10 +243899,14 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorId?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
@@ -239957,6 +244021,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -240063,6 +244128,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -240105,6 +244171,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -240112,6 +244179,9 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
     vendor?: VendorUpdateOneWithoutUsersNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
@@ -240138,10 +244208,14 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
@@ -240240,6 +244314,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -240346,6 +244421,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -240377,6 +244453,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -240467,6 +244544,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -240649,6 +244727,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -240755,6 +244834,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -240792,6 +244872,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -240882,6 +244963,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -241048,6 +245130,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -241154,6 +245237,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -241190,6 +245274,7 @@ export namespace Prisma {
     role?: $Enums.UserRole
     isSuperAdmin?: boolean
     jobGrade?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -241197,6 +245282,9 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutUsersInput
     vendor?: VendorCreateNestedOneWithoutUsersInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
@@ -241223,10 +245311,14 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorId?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
@@ -241341,6 +245433,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -241447,6 +245540,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -241489,6 +245583,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -241496,6 +245591,9 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
     vendor?: VendorUpdateOneWithoutUsersNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
@@ -241522,10 +245620,14 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
@@ -241624,6 +245726,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -241730,6 +245833,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -241766,6 +245870,7 @@ export namespace Prisma {
     role?: $Enums.UserRole
     isSuperAdmin?: boolean
     jobGrade?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -241773,6 +245878,9 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutUsersInput
     vendor?: VendorCreateNestedOneWithoutUsersInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
@@ -241799,10 +245907,14 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorId?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
@@ -242000,6 +246112,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -242106,6 +246219,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -242148,6 +246262,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -242155,6 +246270,9 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
     vendor?: VendorUpdateOneWithoutUsersNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
@@ -242181,10 +246299,14 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
@@ -242344,6 +246466,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -242450,6 +246573,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -242664,6 +246788,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -242770,6 +246895,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -242980,6 +247106,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -243086,6 +247213,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -243122,6 +247250,7 @@ export namespace Prisma {
     role?: $Enums.UserRole
     isSuperAdmin?: boolean
     jobGrade?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -243129,6 +247258,9 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutUsersInput
     vendor?: VendorCreateNestedOneWithoutUsersInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
@@ -243155,10 +247287,14 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorId?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
@@ -243311,6 +247447,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -243417,6 +247554,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -243459,6 +247597,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -243466,6 +247605,9 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
     vendor?: VendorUpdateOneWithoutUsersNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
@@ -243492,10 +247634,14 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
@@ -243611,6 +247757,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
     zoneSurcharges?: ZoneSurchargeCreateNestedManyWithoutTenantInput
@@ -243717,6 +247864,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
     zoneSurcharges?: ZoneSurchargeUncheckedCreateNestedManyWithoutTenantInput
@@ -243758,6 +247906,7 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutVendorBranchesInput
     zone?: DeliveryZoneCreateNestedOneWithoutBranchesInput
     orders?: DeliveryOrderCreateNestedManyWithoutBranchInput
+    portalUsers?: UserCreateNestedManyWithoutBranchInput
   }
 
   export type VendorBranchUncheckedCreateWithoutVendorInput = {
@@ -243775,6 +247924,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     orders?: DeliveryOrderUncheckedCreateNestedManyWithoutBranchInput
+    portalUsers?: UserUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type VendorBranchCreateOrConnectWithoutVendorInput = {
@@ -243796,12 +247946,16 @@ export namespace Prisma {
     role?: $Enums.UserRole
     isSuperAdmin?: boolean
     jobGrade?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
@@ -243828,10 +247982,14 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
@@ -244204,6 +248362,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
     zoneSurcharges?: ZoneSurchargeUpdateManyWithoutTenantNestedInput
@@ -244310,6 +248469,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
     zoneSurcharges?: ZoneSurchargeUncheckedUpdateManyWithoutTenantNestedInput
@@ -244547,6 +248707,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
     zoneSurcharges?: ZoneSurchargeCreateNestedManyWithoutTenantInput
@@ -244653,6 +248814,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
     zoneSurcharges?: ZoneSurchargeUncheckedCreateNestedManyWithoutTenantInput
@@ -244735,6 +248897,7 @@ export namespace Prisma {
     bbox: JsonNullValueInput | InputJsonValue
     centroidLat?: Decimal | DecimalJsLike | number | string | null
     centroidLng?: Decimal | DecimalJsLike | number | string | null
+    color?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -244755,6 +248918,7 @@ export namespace Prisma {
     bbox: JsonNullValueInput | InputJsonValue
     centroidLat?: Decimal | DecimalJsLike | number | string | null
     centroidLng?: Decimal | DecimalJsLike | number | string | null
+    color?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -244875,6 +249039,84 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type UserCreateWithoutBranchInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    passwordHash: string
+    name: string
+    role?: $Enums.UserRole
+    isSuperAdmin?: boolean
+    jobGrade?: string | null
+    vendorRole?: string | null
+    isActive?: boolean
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutUsersInput
+    vendor?: VendorCreateNestedOneWithoutUsersInput
+    fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
+    supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
+    issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
+    acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
+    reviewedLeaves?: LeaveRequestCreateNestedManyWithoutReviewedByInput
+    assignedTickets?: TicketCreateNestedManyWithoutAssignedToInput
+    submittedTickets?: TicketCreateNestedManyWithoutSubmitterUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    createdAmericanaRates?: AmericanaChainRateCreateNestedManyWithoutCreatedByUserInput
+    approvedAgentActions?: AgentActionCreateNestedManyWithoutApproverInput
+    pinnedViews?: PinnedViewCreateNestedManyWithoutUserInput
+    metricEvents?: MetricEventCreateNestedManyWithoutUserInput
+    chatThreads?: ChatThreadCreateNestedManyWithoutUserInput
+    scheduledBriefings?: ScheduledBriefingCreateNestedManyWithoutCreatorInput
+  }
+
+  export type UserUncheckedCreateWithoutBranchInput = {
+    id?: string
+    tenantId: string
+    email: string
+    phone?: string | null
+    passwordHash: string
+    name: string
+    role?: $Enums.UserRole
+    isSuperAdmin?: boolean
+    jobGrade?: string | null
+    vendorId?: string | null
+    fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    vendorRole?: string | null
+    isActive?: boolean
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
+    supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
+    issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
+    acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
+    reviewedLeaves?: LeaveRequestUncheckedCreateNestedManyWithoutReviewedByInput
+    assignedTickets?: TicketUncheckedCreateNestedManyWithoutAssignedToInput
+    submittedTickets?: TicketUncheckedCreateNestedManyWithoutSubmitterUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    createdAmericanaRates?: AmericanaChainRateUncheckedCreateNestedManyWithoutCreatedByUserInput
+    approvedAgentActions?: AgentActionUncheckedCreateNestedManyWithoutApproverInput
+    pinnedViews?: PinnedViewUncheckedCreateNestedManyWithoutUserInput
+    metricEvents?: MetricEventUncheckedCreateNestedManyWithoutUserInput
+    chatThreads?: ChatThreadUncheckedCreateNestedManyWithoutUserInput
+    scheduledBriefings?: ScheduledBriefingUncheckedCreateNestedManyWithoutCreatorInput
+  }
+
+  export type UserCreateOrConnectWithoutBranchInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutBranchInput, UserUncheckedCreateWithoutBranchInput>
+  }
+
+  export type UserCreateManyBranchInputEnvelope = {
+    data: UserCreateManyBranchInput | UserCreateManyBranchInput[]
+    skipDuplicates?: boolean
+  }
+
   export type TenantUpsertWithoutVendorBranchesInput = {
     update: XOR<TenantUpdateWithoutVendorBranchesInput, TenantUncheckedUpdateWithoutVendorBranchesInput>
     create: XOR<TenantCreateWithoutVendorBranchesInput, TenantUncheckedCreateWithoutVendorBranchesInput>
@@ -244971,6 +249213,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
     zoneSurcharges?: ZoneSurchargeUpdateManyWithoutTenantNestedInput
@@ -245077,6 +249320,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
     zoneSurcharges?: ZoneSurchargeUncheckedUpdateManyWithoutTenantNestedInput
@@ -245171,6 +249415,7 @@ export namespace Prisma {
     bbox?: JsonNullValueInput | InputJsonValue
     centroidLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     centroidLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -245191,6 +249436,7 @@ export namespace Prisma {
     bbox?: JsonNullValueInput | InputJsonValue
     centroidLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     centroidLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -245214,6 +249460,22 @@ export namespace Prisma {
   export type DeliveryOrderUpdateManyWithWhereWithoutBranchInput = {
     where: DeliveryOrderScalarWhereInput
     data: XOR<DeliveryOrderUpdateManyMutationInput, DeliveryOrderUncheckedUpdateManyWithoutBranchInput>
+  }
+
+  export type UserUpsertWithWhereUniqueWithoutBranchInput = {
+    where: UserWhereUniqueInput
+    update: XOR<UserUpdateWithoutBranchInput, UserUncheckedUpdateWithoutBranchInput>
+    create: XOR<UserCreateWithoutBranchInput, UserUncheckedCreateWithoutBranchInput>
+  }
+
+  export type UserUpdateWithWhereUniqueWithoutBranchInput = {
+    where: UserWhereUniqueInput
+    data: XOR<UserUpdateWithoutBranchInput, UserUncheckedUpdateWithoutBranchInput>
+  }
+
+  export type UserUpdateManyWithWhereWithoutBranchInput = {
+    where: UserScalarWhereInput
+    data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutBranchInput>
   }
 
   export type TenantCreateWithoutDeliveryZonesInput = {
@@ -245301,6 +249563,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     zoneSurcharges?: ZoneSurchargeCreateNestedManyWithoutTenantInput
@@ -245407,6 +249670,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     zoneSurcharges?: ZoneSurchargeUncheckedCreateNestedManyWithoutTenantInput
@@ -245448,6 +249712,7 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutVendorBranchesInput
     vendor: VendorCreateNestedOneWithoutBranchesInput
     orders?: DeliveryOrderCreateNestedManyWithoutBranchInput
+    portalUsers?: UserCreateNestedManyWithoutBranchInput
   }
 
   export type VendorBranchUncheckedCreateWithoutZoneInput = {
@@ -245465,6 +249730,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     orders?: DeliveryOrderUncheckedCreateNestedManyWithoutBranchInput
+    portalUsers?: UserUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type VendorBranchCreateOrConnectWithoutZoneInput = {
@@ -245841,6 +250107,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     zoneSurcharges?: ZoneSurchargeUpdateManyWithoutTenantNestedInput
@@ -245947,6 +250214,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     zoneSurcharges?: ZoneSurchargeUncheckedUpdateManyWithoutTenantNestedInput
@@ -246133,6 +250401,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -246239,6 +250508,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -246274,6 +250544,7 @@ export namespace Prisma {
     bbox: JsonNullValueInput | InputJsonValue
     centroidLat?: Decimal | DecimalJsLike | number | string | null
     centroidLng?: Decimal | DecimalJsLike | number | string | null
+    color?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -246294,6 +250565,7 @@ export namespace Prisma {
     bbox: JsonNullValueInput | InputJsonValue
     centroidLat?: Decimal | DecimalJsLike | number | string | null
     centroidLng?: Decimal | DecimalJsLike | number | string | null
+    color?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -246317,6 +250589,7 @@ export namespace Prisma {
     bbox: JsonNullValueInput | InputJsonValue
     centroidLat?: Decimal | DecimalJsLike | number | string | null
     centroidLng?: Decimal | DecimalJsLike | number | string | null
+    color?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -246337,6 +250610,7 @@ export namespace Prisma {
     bbox: JsonNullValueInput | InputJsonValue
     centroidLat?: Decimal | DecimalJsLike | number | string | null
     centroidLng?: Decimal | DecimalJsLike | number | string | null
+    color?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -246447,6 +250721,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -246553,6 +250828,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -246594,6 +250870,7 @@ export namespace Prisma {
     bbox?: JsonNullValueInput | InputJsonValue
     centroidLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     centroidLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -246614,6 +250891,7 @@ export namespace Prisma {
     bbox?: JsonNullValueInput | InputJsonValue
     centroidLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     centroidLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -246643,6 +250921,7 @@ export namespace Prisma {
     bbox?: JsonNullValueInput | InputJsonValue
     centroidLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     centroidLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -246663,6 +250942,7 @@ export namespace Prisma {
     bbox?: JsonNullValueInput | InputJsonValue
     centroidLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     centroidLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -246757,6 +251037,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -246863,6 +251144,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -246985,6 +251267,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -247091,6 +251374,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -247197,6 +251481,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -247303,6 +251588,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -247391,6 +251677,7 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutVendorBranchesInput
     vendor: VendorCreateNestedOneWithoutBranchesInput
     zone?: DeliveryZoneCreateNestedOneWithoutBranchesInput
+    portalUsers?: UserCreateNestedManyWithoutBranchInput
   }
 
   export type VendorBranchUncheckedCreateWithoutOrdersInput = {
@@ -247408,6 +251695,7 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    portalUsers?: UserUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type VendorBranchCreateOrConnectWithoutOrdersInput = {
@@ -247419,6 +251707,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -247509,6 +251798,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -247605,6 +251895,7 @@ export namespace Prisma {
     bbox: JsonNullValueInput | InputJsonValue
     centroidLat?: Decimal | DecimalJsLike | number | string | null
     centroidLng?: Decimal | DecimalJsLike | number | string | null
+    color?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -247625,6 +251916,7 @@ export namespace Prisma {
     bbox: JsonNullValueInput | InputJsonValue
     centroidLat?: Decimal | DecimalJsLike | number | string | null
     centroidLng?: Decimal | DecimalJsLike | number | string | null
+    color?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -247648,6 +251940,7 @@ export namespace Prisma {
     bbox: JsonNullValueInput | InputJsonValue
     centroidLat?: Decimal | DecimalJsLike | number | string | null
     centroidLng?: Decimal | DecimalJsLike | number | string | null
+    color?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -247668,6 +251961,7 @@ export namespace Prisma {
     bbox: JsonNullValueInput | InputJsonValue
     centroidLat?: Decimal | DecimalJsLike | number | string | null
     centroidLng?: Decimal | DecimalJsLike | number | string | null
+    color?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -247926,6 +252220,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -248032,6 +252327,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -248132,6 +252428,7 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutVendorBranchesNestedInput
     vendor?: VendorUpdateOneRequiredWithoutBranchesNestedInput
     zone?: DeliveryZoneUpdateOneWithoutBranchesNestedInput
+    portalUsers?: UserUpdateManyWithoutBranchNestedInput
   }
 
   export type VendorBranchUncheckedUpdateWithoutOrdersInput = {
@@ -248149,6 +252446,7 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    portalUsers?: UserUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type DriverUpsertWithoutDeliveryOrdersInput = {
@@ -248166,6 +252464,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -248256,6 +252555,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -248358,6 +252658,7 @@ export namespace Prisma {
     bbox?: JsonNullValueInput | InputJsonValue
     centroidLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     centroidLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -248378,6 +252679,7 @@ export namespace Prisma {
     bbox?: JsonNullValueInput | InputJsonValue
     centroidLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     centroidLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -248407,6 +252709,7 @@ export namespace Prisma {
     bbox?: JsonNullValueInput | InputJsonValue
     centroidLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     centroidLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -248427,6 +252730,7 @@ export namespace Prisma {
     bbox?: JsonNullValueInput | InputJsonValue
     centroidLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     centroidLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -248621,6 +252925,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -248727,6 +253032,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -248858,6 +253164,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -248948,6 +253255,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -249131,6 +253439,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -249237,6 +253546,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -249380,6 +253690,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -249470,6 +253781,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -249637,6 +253949,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -249743,6 +254056,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -249895,6 +254209,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -250001,6 +254316,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -250123,6 +254439,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -250229,6 +254546,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -250381,6 +254699,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -250487,6 +254806,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -250609,6 +254929,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -250715,6 +255036,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -250891,6 +255213,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -250997,6 +255320,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -251169,6 +255493,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -251275,6 +255600,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -251305,6 +255631,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -251395,6 +255722,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -251578,6 +255906,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -251684,6 +256013,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -251720,6 +256050,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -251810,6 +256141,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -251977,6 +256309,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -252083,6 +256416,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -252205,6 +256539,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -252311,6 +256646,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -252417,6 +256753,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -252523,6 +256860,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -252553,6 +256891,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -252643,6 +256982,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -252927,6 +257267,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -253033,6 +257374,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -253069,6 +257411,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -253159,6 +257502,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -253433,6 +257777,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -253539,6 +257884,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -253708,6 +258054,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -253814,6 +258161,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -253973,6 +258321,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -254079,6 +258428,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -254248,6 +258598,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -254354,6 +258705,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -254513,6 +258865,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -254619,6 +258972,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -254750,6 +259104,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -254840,6 +259195,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -255023,6 +259379,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -255129,6 +259486,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -255272,6 +259630,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -255362,6 +259721,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -255529,6 +259889,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -255635,6 +259996,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -255804,6 +260166,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -255910,6 +260273,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -256069,6 +260433,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -256175,6 +260540,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -256445,6 +260811,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -256551,6 +260918,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -256817,6 +261185,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -256923,6 +261292,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -256949,10 +261319,40 @@ export namespace Prisma {
     create: XOR<TenantCreateWithoutFleetPartnersInput, TenantUncheckedCreateWithoutFleetPartnersInput>
   }
 
+  export type OwnerGroupCreateWithoutFleetsInput = {
+    id?: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutOwnerGroupsInput
+    companies?: CompanyCreateNestedManyWithoutOwnerGroupInput
+    users?: UserCreateNestedManyWithoutOwnerGroupInput
+  }
+
+  export type OwnerGroupUncheckedCreateWithoutFleetsInput = {
+    id?: string
+    tenantId: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    companies?: CompanyUncheckedCreateNestedManyWithoutOwnerGroupInput
+    users?: UserUncheckedCreateNestedManyWithoutOwnerGroupInput
+  }
+
+  export type OwnerGroupCreateOrConnectWithoutFleetsInput = {
+    where: OwnerGroupWhereUniqueInput
+    create: XOR<OwnerGroupCreateWithoutFleetsInput, OwnerGroupUncheckedCreateWithoutFleetsInput>
+  }
+
   export type DriverCreateWithoutFleetPartnerInput = {
     id?: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -257043,6 +261443,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -257144,12 +261545,16 @@ export namespace Prisma {
     role?: $Enums.UserRole
     isSuperAdmin?: boolean
     jobGrade?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
     vendor?: VendorCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
@@ -257176,10 +261581,14 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
     supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
     issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
     acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
@@ -257339,6 +261748,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -257445,6 +261855,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -257464,6 +261875,41 @@ export namespace Prisma {
     vendorStatements?: VendorStatementUncheckedUpdateManyWithoutTenantNestedInput
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+  }
+
+  export type OwnerGroupUpsertWithoutFleetsInput = {
+    update: XOR<OwnerGroupUpdateWithoutFleetsInput, OwnerGroupUncheckedUpdateWithoutFleetsInput>
+    create: XOR<OwnerGroupCreateWithoutFleetsInput, OwnerGroupUncheckedCreateWithoutFleetsInput>
+    where?: OwnerGroupWhereInput
+  }
+
+  export type OwnerGroupUpdateToOneWithWhereWithoutFleetsInput = {
+    where?: OwnerGroupWhereInput
+    data: XOR<OwnerGroupUpdateWithoutFleetsInput, OwnerGroupUncheckedUpdateWithoutFleetsInput>
+  }
+
+  export type OwnerGroupUpdateWithoutFleetsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutOwnerGroupsNestedInput
+    companies?: CompanyUpdateManyWithoutOwnerGroupNestedInput
+    users?: UserUpdateManyWithoutOwnerGroupNestedInput
+  }
+
+  export type OwnerGroupUncheckedUpdateWithoutFleetsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    companies?: CompanyUncheckedUpdateManyWithoutOwnerGroupNestedInput
+    users?: UserUncheckedUpdateManyWithoutOwnerGroupNestedInput
   }
 
   export type DriverUpsertWithWhereUniqueWithoutFleetPartnerInput = {
@@ -257599,6 +262045,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
     sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
     vendors?: VendorCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
@@ -257705,6 +262152,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
     sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
     vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
     vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
     deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
@@ -257746,6 +262194,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutFleetPartnersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutFleetsInput
     drivers?: DriverCreateNestedManyWithoutFleetPartnerInput
     users?: UserCreateNestedManyWithoutFleetPartnerInput
   }
@@ -257763,6 +262212,7 @@ export namespace Prisma {
     disciplineStatus?: string
     disciplineNote?: string | null
     isActive?: boolean
+    ownerGroupId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     drivers?: DriverUncheckedCreateNestedManyWithoutFleetPartnerInput
@@ -257870,6 +262320,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
     sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
     vendors?: VendorUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
@@ -257976,6 +262427,7 @@ export namespace Prisma {
     americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
     americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
     sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
     deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
@@ -258023,6 +262475,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutFleetPartnersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutFleetsNestedInput
     drivers?: DriverUpdateManyWithoutFleetPartnerNestedInput
     users?: UserUpdateManyWithoutFleetPartnerNestedInput
   }
@@ -258040,6 +262493,7 @@ export namespace Prisma {
     disciplineStatus?: StringFieldUpdateOperationsInput | string
     disciplineNote?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     drivers?: DriverUncheckedUpdateManyWithoutFleetPartnerNestedInput
@@ -258052,6 +262506,9 @@ export namespace Prisma {
     platform: $Enums.Platform
     licenseCount?: number
     isActive?: boolean
+    kind?: string
+    ownerGroupId?: string | null
+    accountManagerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -258067,6 +262524,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorId?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -258078,6 +262538,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -259153,6 +263614,15 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type OwnerGroupCreateManyTenantInput = {
+    id?: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type VendorCreateManyTenantInput = {
     id?: string
     name: string
@@ -259192,6 +263662,7 @@ export namespace Prisma {
     bbox: JsonNullValueInput | InputJsonValue
     centroidLat?: Decimal | DecimalJsLike | number | string | null
     centroidLng?: Decimal | DecimalJsLike | number | string | null
+    color?: string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -259411,6 +263882,7 @@ export namespace Prisma {
     disciplineStatus?: string
     disciplineNote?: string | null
     isActive?: boolean
+    ownerGroupId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -259435,8 +263907,11 @@ export namespace Prisma {
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     licenseCount?: IntFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownerGroup?: OwnerGroupUpdateOneWithoutCompaniesNestedInput
+    accountManager?: UserUpdateOneWithoutManagedCompaniesNestedInput
     drivers?: DriverUpdateManyWithoutCompanyNestedInput
     vehicles?: VehicleUpdateManyWithoutCompanyNestedInput
     recruitmentPipeline?: RecruitmentPipelineUpdateManyWithoutAssignedCompanyNestedInput
@@ -259449,6 +263924,9 @@ export namespace Prisma {
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     licenseCount?: IntFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    accountManagerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     drivers?: DriverUncheckedUpdateManyWithoutCompanyNestedInput
@@ -259463,6 +263941,9 @@ export namespace Prisma {
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     licenseCount?: IntFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    accountManagerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -259476,12 +263957,16 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     vendor?: VendorUpdateOneWithoutUsersNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
@@ -259508,10 +263993,14 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
@@ -259538,6 +264027,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -259548,6 +264040,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -259637,6 +264130,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -259725,6 +264219,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -262944,6 +267439,39 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type OwnerGroupUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fleets?: FleetPartnerUpdateManyWithoutOwnerGroupNestedInput
+    companies?: CompanyUpdateManyWithoutOwnerGroupNestedInput
+    users?: UserUpdateManyWithoutOwnerGroupNestedInput
+  }
+
+  export type OwnerGroupUncheckedUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fleets?: FleetPartnerUncheckedUpdateManyWithoutOwnerGroupNestedInput
+    companies?: CompanyUncheckedUpdateManyWithoutOwnerGroupNestedInput
+    users?: UserUncheckedUpdateManyWithoutOwnerGroupNestedInput
+  }
+
+  export type OwnerGroupUncheckedUpdateManyWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type VendorUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -263015,6 +267543,7 @@ export namespace Prisma {
     vendor?: VendorUpdateOneRequiredWithoutBranchesNestedInput
     zone?: DeliveryZoneUpdateOneWithoutBranchesNestedInput
     orders?: DeliveryOrderUpdateManyWithoutBranchNestedInput
+    portalUsers?: UserUpdateManyWithoutBranchNestedInput
   }
 
   export type VendorBranchUncheckedUpdateWithoutTenantInput = {
@@ -263032,6 +267561,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orders?: DeliveryOrderUncheckedUpdateManyWithoutBranchNestedInput
+    portalUsers?: UserUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type VendorBranchUncheckedUpdateManyWithoutTenantInput = {
@@ -263059,6 +267589,7 @@ export namespace Prisma {
     bbox?: JsonNullValueInput | InputJsonValue
     centroidLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     centroidLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -263078,6 +267609,7 @@ export namespace Prisma {
     bbox?: JsonNullValueInput | InputJsonValue
     centroidLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     centroidLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -263097,6 +267629,7 @@ export namespace Prisma {
     bbox?: JsonNullValueInput | InputJsonValue
     centroidLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     centroidLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -263734,6 +268267,7 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownerGroup?: OwnerGroupUpdateOneWithoutFleetsNestedInput
     drivers?: DriverUpdateManyWithoutFleetPartnerNestedInput
     users?: UserUpdateManyWithoutFleetPartnerNestedInput
     statements?: FleetPayoutStatementUpdateManyWithoutFleetNestedInput
@@ -263751,6 +268285,7 @@ export namespace Prisma {
     disciplineStatus?: StringFieldUpdateOperationsInput | string
     disciplineNote?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     drivers?: DriverUncheckedUpdateManyWithoutFleetPartnerNestedInput
@@ -263770,6 +268305,7 @@ export namespace Prisma {
     disciplineStatus?: StringFieldUpdateOperationsInput | string
     disciplineNote?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -263821,6 +268357,7 @@ export namespace Prisma {
     tenantId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -263923,6 +268460,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -264012,6 +268550,7 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -264100,6 +268639,7 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -264328,12 +268868,268 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type FleetPartnerCreateManyOwnerGroupInput = {
+    id?: string
+    tenantId: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    contactEmail?: string | null
+    flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
+    minOnlineHoursPerDay?: number | null
+    minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
+    disciplineStatus?: string
+    disciplineNote?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type CompanyCreateManyOwnerGroupInput = {
+    id?: string
+    tenantId: string
+    name: string
+    platform: $Enums.Platform
+    licenseCount?: number
+    isActive?: boolean
+    kind?: string
+    accountManagerId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserCreateManyOwnerGroupInput = {
+    id?: string
+    tenantId: string
+    email: string
+    phone?: string | null
+    passwordHash: string
+    name: string
+    role?: $Enums.UserRole
+    isSuperAdmin?: boolean
+    jobGrade?: string | null
+    vendorId?: string | null
+    fleetPartnerId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
+    isActive?: boolean
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FleetPartnerUpdateWithoutOwnerGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
+    minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
+    disciplineStatus?: StringFieldUpdateOperationsInput | string
+    disciplineNote?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutFleetPartnersNestedInput
+    drivers?: DriverUpdateManyWithoutFleetPartnerNestedInput
+    users?: UserUpdateManyWithoutFleetPartnerNestedInput
+    statements?: FleetPayoutStatementUpdateManyWithoutFleetNestedInput
+  }
+
+  export type FleetPartnerUncheckedUpdateWithoutOwnerGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
+    minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
+    disciplineStatus?: StringFieldUpdateOperationsInput | string
+    disciplineNote?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    drivers?: DriverUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    users?: UserUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    statements?: FleetPayoutStatementUncheckedUpdateManyWithoutFleetNestedInput
+  }
+
+  export type FleetPartnerUncheckedUpdateManyWithoutOwnerGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
+    minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
+    disciplineStatus?: StringFieldUpdateOperationsInput | string
+    disciplineNote?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CompanyUpdateWithoutOwnerGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
+    licenseCount?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutCompaniesNestedInput
+    accountManager?: UserUpdateOneWithoutManagedCompaniesNestedInput
+    drivers?: DriverUpdateManyWithoutCompanyNestedInput
+    vehicles?: VehicleUpdateManyWithoutCompanyNestedInput
+    recruitmentPipeline?: RecruitmentPipelineUpdateManyWithoutAssignedCompanyNestedInput
+    tickets?: TicketUpdateManyWithoutCompanyNestedInput
+  }
+
+  export type CompanyUncheckedUpdateWithoutOwnerGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
+    licenseCount?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
+    accountManagerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    drivers?: DriverUncheckedUpdateManyWithoutCompanyNestedInput
+    vehicles?: VehicleUncheckedUpdateManyWithoutCompanyNestedInput
+    recruitmentPipeline?: RecruitmentPipelineUncheckedUpdateManyWithoutAssignedCompanyNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutCompanyNestedInput
+  }
+
+  export type CompanyUncheckedUpdateManyWithoutOwnerGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
+    licenseCount?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
+    accountManagerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUpdateWithoutOwnerGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
+    jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    vendor?: VendorUpdateOneWithoutUsersNestedInput
+    fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
+    supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
+    issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
+    acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
+    reviewedLeaves?: LeaveRequestUpdateManyWithoutReviewedByNestedInput
+    assignedTickets?: TicketUpdateManyWithoutAssignedToNestedInput
+    submittedTickets?: TicketUpdateManyWithoutSubmitterUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    createdAmericanaRates?: AmericanaChainRateUpdateManyWithoutCreatedByUserNestedInput
+    approvedAgentActions?: AgentActionUpdateManyWithoutApproverNestedInput
+    pinnedViews?: PinnedViewUpdateManyWithoutUserNestedInput
+    metricEvents?: MetricEventUpdateManyWithoutUserNestedInput
+    chatThreads?: ChatThreadUpdateManyWithoutUserNestedInput
+    scheduledBriefings?: ScheduledBriefingUpdateManyWithoutCreatorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutOwnerGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
+    jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorId?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
+    supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
+    issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
+    acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
+    reviewedLeaves?: LeaveRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+    assignedTickets?: TicketUncheckedUpdateManyWithoutAssignedToNestedInput
+    submittedTickets?: TicketUncheckedUpdateManyWithoutSubmitterUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    createdAmericanaRates?: AmericanaChainRateUncheckedUpdateManyWithoutCreatedByUserNestedInput
+    approvedAgentActions?: AgentActionUncheckedUpdateManyWithoutApproverNestedInput
+    pinnedViews?: PinnedViewUncheckedUpdateManyWithoutUserNestedInput
+    metricEvents?: MetricEventUncheckedUpdateManyWithoutUserNestedInput
+    chatThreads?: ChatThreadUncheckedUpdateManyWithoutUserNestedInput
+    scheduledBriefings?: ScheduledBriefingUncheckedUpdateManyWithoutCreatorNestedInput
+  }
+
+  export type UserUncheckedUpdateManyWithoutOwnerGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
+    jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorId?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CompanyCreateManyAccountManagerInput = {
+    id?: string
+    tenantId: string
+    name: string
+    platform: $Enums.Platform
+    licenseCount?: number
+    isActive?: boolean
+    kind?: string
+    ownerGroupId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type DriverCreateManySupervisorInput = {
     id?: string
     tenantId: string
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -264572,10 +269368,58 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type CompanyUpdateWithoutAccountManagerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
+    licenseCount?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutCompaniesNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutCompaniesNestedInput
+    drivers?: DriverUpdateManyWithoutCompanyNestedInput
+    vehicles?: VehicleUpdateManyWithoutCompanyNestedInput
+    recruitmentPipeline?: RecruitmentPipelineUpdateManyWithoutAssignedCompanyNestedInput
+    tickets?: TicketUpdateManyWithoutCompanyNestedInput
+  }
+
+  export type CompanyUncheckedUpdateWithoutAccountManagerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
+    licenseCount?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    drivers?: DriverUncheckedUpdateManyWithoutCompanyNestedInput
+    vehicles?: VehicleUncheckedUpdateManyWithoutCompanyNestedInput
+    recruitmentPipeline?: RecruitmentPipelineUncheckedUpdateManyWithoutAssignedCompanyNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutCompanyNestedInput
+  }
+
+  export type CompanyUncheckedUpdateManyWithoutAccountManagerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
+    licenseCount?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    kind?: StringFieldUpdateOperationsInput | string
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type DriverUpdateWithoutSupervisorInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -264666,6 +269510,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -264754,6 +269599,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -270661,6 +275507,9 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -270769,6 +275618,7 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutVendorBranchesNestedInput
     zone?: DeliveryZoneUpdateOneWithoutBranchesNestedInput
     orders?: DeliveryOrderUpdateManyWithoutBranchNestedInput
+    portalUsers?: UserUpdateManyWithoutBranchNestedInput
   }
 
   export type VendorBranchUncheckedUpdateWithoutVendorInput = {
@@ -270786,6 +275636,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orders?: DeliveryOrderUncheckedUpdateManyWithoutBranchNestedInput
+    portalUsers?: UserUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type VendorBranchUncheckedUpdateManyWithoutVendorInput = {
@@ -270813,12 +275664,16 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
@@ -270845,10 +275700,14 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
@@ -270875,6 +275734,9 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -271194,6 +276056,26 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type UserCreateManyBranchInput = {
+    id?: string
+    tenantId: string
+    email: string
+    phone?: string | null
+    passwordHash: string
+    name: string
+    role?: $Enums.UserRole
+    isSuperAdmin?: boolean
+    jobGrade?: string | null
+    vendorId?: string | null
+    fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    vendorRole?: string | null
+    isActive?: boolean
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type DeliveryOrderUpdateWithoutBranchInput = {
     id?: StringFieldUpdateOperationsInput | string
     orderNumber?: StringFieldUpdateOperationsInput | string
@@ -271330,6 +276212,94 @@ export namespace Prisma {
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUpdateWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
+    jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    vendor?: VendorUpdateOneWithoutUsersNestedInput
+    fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
+    supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
+    issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
+    acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
+    reviewedLeaves?: LeaveRequestUpdateManyWithoutReviewedByNestedInput
+    assignedTickets?: TicketUpdateManyWithoutAssignedToNestedInput
+    submittedTickets?: TicketUpdateManyWithoutSubmitterUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    createdAmericanaRates?: AmericanaChainRateUpdateManyWithoutCreatedByUserNestedInput
+    approvedAgentActions?: AgentActionUpdateManyWithoutApproverNestedInput
+    pinnedViews?: PinnedViewUpdateManyWithoutUserNestedInput
+    metricEvents?: MetricEventUpdateManyWithoutUserNestedInput
+    chatThreads?: ChatThreadUpdateManyWithoutUserNestedInput
+    scheduledBriefings?: ScheduledBriefingUpdateManyWithoutCreatorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
+    jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorId?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
+    supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
+    issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
+    acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
+    reviewedLeaves?: LeaveRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+    assignedTickets?: TicketUncheckedUpdateManyWithoutAssignedToNestedInput
+    submittedTickets?: TicketUncheckedUpdateManyWithoutSubmitterUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    createdAmericanaRates?: AmericanaChainRateUncheckedUpdateManyWithoutCreatedByUserNestedInput
+    approvedAgentActions?: AgentActionUncheckedUpdateManyWithoutApproverNestedInput
+    pinnedViews?: PinnedViewUncheckedUpdateManyWithoutUserNestedInput
+    metricEvents?: MetricEventUncheckedUpdateManyWithoutUserNestedInput
+    chatThreads?: ChatThreadUncheckedUpdateManyWithoutUserNestedInput
+    scheduledBriefings?: ScheduledBriefingUncheckedUpdateManyWithoutCreatorNestedInput
+  }
+
+  export type UserUncheckedUpdateManyWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
+    jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorId?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -271471,6 +276441,7 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutVendorBranchesNestedInput
     vendor?: VendorUpdateOneRequiredWithoutBranchesNestedInput
     orders?: DeliveryOrderUpdateManyWithoutBranchNestedInput
+    portalUsers?: UserUpdateManyWithoutBranchNestedInput
   }
 
   export type VendorBranchUncheckedUpdateWithoutZoneInput = {
@@ -271488,6 +276459,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orders?: DeliveryOrderUncheckedUpdateManyWithoutBranchNestedInput
+    portalUsers?: UserUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type VendorBranchUncheckedUpdateManyWithoutZoneInput = {
@@ -272070,6 +277042,7 @@ export namespace Prisma {
     companyId: string
     name: string
     phone: string
+    driverCode?: string | null
     platform: $Enums.Platform
     platformDriverId?: string | null
     utr?: string | null
@@ -272119,6 +277092,9 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -272143,6 +277119,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -272233,6 +277210,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -272321,6 +277299,7 @@ export namespace Prisma {
     companyId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
     platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
     utr?: NullableStringFieldUpdateOperationsInput | string | null
@@ -272368,12 +277347,16 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
     vendor?: VendorUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
@@ -272400,10 +277383,14 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
     supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
     issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
     acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
@@ -272430,6 +277417,9 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -272491,6 +277481,10 @@ export namespace Prisma {
      * @deprecated Use CompanyCountOutputTypeDefaultArgs instead
      */
     export type CompanyCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = CompanyCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use OwnerGroupCountOutputTypeDefaultArgs instead
+     */
+    export type OwnerGroupCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = OwnerGroupCountOutputTypeDefaultArgs<ExtArgs>
     /**
      * @deprecated Use UserCountOutputTypeDefaultArgs instead
      */
@@ -272603,6 +277597,10 @@ export namespace Prisma {
      * @deprecated Use CompanyDefaultArgs instead
      */
     export type CompanyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = CompanyDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use OwnerGroupDefaultArgs instead
+     */
+    export type OwnerGroupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = OwnerGroupDefaultArgs<ExtArgs>
     /**
      * @deprecated Use UserDefaultArgs instead
      */

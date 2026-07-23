@@ -86,12 +86,29 @@ const updateBranchSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-const createVendorUserSchema = z.object({
-  email: z.string().email("Valid email required"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  phone: z.string().optional(),
-});
+/**
+ * Portal user roles (client revision #9). A restaurant wants a login per
+ * branch so each branch tracks its own orders, plus separate owner and
+ * finance logins:
+ *   OWNER          — everything, all branches
+ *   FINANCE        — wallet and statements, all branches
+ *   ORDER_TRACKING — orders only, and only for its own branch
+ */
+const VENDOR_ROLES = ["OWNER", "FINANCE", "ORDER_TRACKING"] as const;
+
+const createVendorUserSchema = z
+  .object({
+    email: z.string().email("Valid email required"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    phone: z.string().optional(),
+    vendorRole: z.enum(VENDOR_ROLES).default("OWNER"),
+    branchId: z.string().uuid().nullish(),
+  })
+  .refine((v) => v.vendorRole !== "ORDER_TRACKING" || !!v.branchId, {
+    message: "An order-tracking user must be tied to a branch",
+    path: ["branchId"],
+  });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -175,13 +192,34 @@ router.get("/", async (req: Request, res: Response) => {
       prisma.vendor.count({ where: { ...where, tenantId } }),
     ]);
 
+    // Revision #10 — the vendor list carries the wallet balance, signed, so
+    // ops can see who is in credit and who owes without opening each vendor.
+    // One grouped query rather than N+1; the nightly netting in
+    // /api/cron/daily is what moves these numbers day to day.
+    const accounts = rows.length
+      ? await prisma.walletAccount.findMany({
+          where: {
+            tenantId,
+            ownerKey: { in: rows.map((v: any) => `VENDOR:${v.id}`) },
+          },
+          select: { ownerKey: true, balanceKwd: true },
+        })
+      : [];
+    const balanceByVendorId = new Map(
+      accounts.map((a) => [a.ownerKey.replace("VENDOR:", ""), a.balanceKwd]),
+    );
+
     const data = rows.map((v: any) => {
       const { _count, foodicsConnection, ...vendor } = v;
+      const balance = balanceByVendorId.get(v.id);
       return {
         ...vendor,
         branchCount: _count?.branches ?? 0,
         // Tolerate absence of a FoodicsConnection row.
         foodicsConnected: foodicsConnection?.status === "CONNECTED",
+        // null (not "0.000") when the vendor has no wallet account yet — the
+        // table renders that as n/a rather than a misleading zero balance.
+        walletBalanceKwd: balance != null ? balance.toFixed(3) : null,
       };
     });
 
@@ -435,6 +473,34 @@ router.delete(
 /**
  * @swagger
  * /api/vendors/{id}/users:
+ *   get:
+ *     tags: [Vendors]
+ *     summary: List this vendor's portal users with their role and branch
+ */
+router.get("/:id/users", async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const vendor = await findTenantVendor(tenantId, req.params.id);
+    if (!vendor) { res.status(404).json({ error: "Vendor not found" }); return; }
+
+    const users = await prisma.user.findMany({
+      where: { tenantId, vendorId: vendor.id, role: "VENDOR" },
+      orderBy: { createdAt: "asc" },
+      select: {
+        id: true, email: true, name: true, phone: true,
+        vendorRole: true, branchId: true, isActive: true, createdAt: true,
+        branch: { select: { id: true, name: true } },
+      },
+    });
+    res.json(users);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/vendors/{id}/users:
  *   post:
  *     tags: [Vendors]
  *     summary: Create a VENDOR-role portal user for this vendor (ADMIN only)
@@ -449,9 +515,19 @@ router.post(
       const vendor = await findTenantVendor(tenantId, req.params.id);
       if (!vendor) { res.status(404).json({ error: "Vendor not found" }); return; }
 
-      const { email, password, name, phone } = req.body;
+      const { email, password, name, phone, vendorRole, branchId } = req.body;
       const existing = await prisma.user.findUnique({ where: { email } });
       if (existing) { res.status(400).json({ error: "Email already registered" }); return; }
+
+      // A branch-scoped login must point at a branch of THIS vendor, or the
+      // portal fence would be scoping one merchant's user to another's branch.
+      if (branchId) {
+        const branch = await prisma.vendorBranch.findFirst({
+          where: { id: branchId, tenantId, vendorId: vendor.id },
+          select: { id: true },
+        });
+        if (!branch) { res.status(400).json({ error: "Branch does not belong to this vendor" }); return; }
+      }
 
       // Same hashing helper + cost as AuthService.register (bcryptjs, 12).
       const passwordHash = await bcrypt.hash(password, 12);
@@ -464,10 +540,15 @@ router.post(
           phone,
           role: "VENDOR",
           vendorId: vendor.id,
+          vendorRole,
+          // Owner and finance are vendor-wide, so they carry no branch even if
+          // one was posted.
+          branchId: vendorRole === "ORDER_TRACKING" ? branchId : null,
         },
         select: {
           id: true, email: true, name: true, phone: true, role: true,
-          tenantId: true, vendorId: true, isActive: true, createdAt: true,
+          tenantId: true, vendorId: true, vendorRole: true, branchId: true,
+          isActive: true, createdAt: true,
         },
       });
       res.status(201).json(user);

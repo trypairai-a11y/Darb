@@ -10,8 +10,15 @@ export interface JwtPayload {
   // Darb 2.0 — set for role=VENDOR users; scopes the vendor portal.
   // Sourced from the User row at sign time, never from the client.
   vendorId?: string;
+  // Revision #9 — the vendor portal sub-role and, for ORDER_TRACKING, the one
+  // branch this login may see. Both come from the User row at sign time.
+  vendorRole?: string;
+  branchId?: string;
   // Darb 2.0 PRD — set for role=FLEET users; scopes the fleet portal.
   fleetPartnerId?: string;
+  // Revision #15/#27 — a FLEET login that reaches every partner in its owner
+  // group rather than a single one.
+  ownerGroupId?: string;
 }
 
 declare global {

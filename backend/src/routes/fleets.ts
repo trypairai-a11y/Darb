@@ -95,7 +95,12 @@ router.get("/", rbac(...READ), async (req: Request, res: Response) => {
         orderBy: { createdAt: "asc" },
         skip,
         take: limit,
-        include: { _count: { select: { drivers: true, users: true } } },
+        include: {
+          _count: { select: { drivers: true, users: true } },
+          // Revision #28 — the owner entity, so the table can group commonly
+          // owned fleets and report them combined instead of one row each.
+          ownerGroup: { select: { id: true, name: true } },
+        },
       }),
       prisma.fleetPartner.count({ where }),
     ]);

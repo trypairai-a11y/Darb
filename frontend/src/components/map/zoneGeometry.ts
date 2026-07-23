@@ -4,17 +4,32 @@
 // which computes fitBounds) import from here instead.
 import type { DeliveryZone } from "@/types/darb";
 
-/** Fallback palette cycled when a zone has no explicit color. */
+/**
+ * Fallback palette cycled when a zone has no explicit color.
+ *
+ * Muted and low-chroma on purpose (client revision #1): the previous set was
+ * fully saturated purple/blue/teal/orange/magenta/green, which read as clashing
+ * against a street map. These sit close to the desaturated tones a Google Maps
+ * or Waze overlay uses, so eight zones on screen at once still stay legible
+ * without shouting.
+ */
 export const ZONE_PALETTE = [
-  "#006838",
-  "#2563eb",
-  "#d97706",
-  "#7c3aed",
-  "#db2777",
-  "#0d9488",
-  "#b45309",
-  "#4f46e5",
+  "#3D6B52", // muted forest
+  "#4A6B8A", // slate blue
+  "#8A6A45", // clay brown
+  "#6B5B7B", // dusty violet
+  "#8A5A63", // muted rose
+  "#4F7A75", // deep teal
+  "#7A6B4A", // olive
+  "#5A6478", // steel
 ];
+
+/**
+ * Shared boundary stroke for every zone polygon. Thin and near-neutral so the
+ * street map stays readable underneath; the zone's own colour carries in the
+ * fill instead of a bright outline.
+ */
+export const ZONE_BOUNDARY_COLOR = "#3C4043";
 
 /** GeoJSON rings are [lng,lat]; Leaflet wants [lat,lng]. */
 export function zoneRingLatLngs(zone: DeliveryZone): [number, number][] {

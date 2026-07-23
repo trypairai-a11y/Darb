@@ -12,7 +12,7 @@ import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
 import LiveMap from "@/components/map/LiveMap";
-import { zoneRingLatLngs } from "@/components/map/zoneGeometry";
+import { zoneColor, zoneRingLatLngs } from "@/components/map/zoneGeometry";
 import { zonesApi, unwrapList } from "@/lib/darbApi";
 import type { DeliveryZone, GeoJsonPolygon } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -67,6 +67,14 @@ export default function ZonesPage() {
   });
   const zones = useMemo(() => unwrapList<DeliveryZone>(data), [data]);
 
+  // The list dot used to hardcode a green fallback while the map fell back to
+  // the palette, so a zone's swatch and its polygon disagreed. Both resolve
+  // through zoneColor now.
+  const colorById = useMemo(
+    () => Object.fromEntries(zones.map((z, i) => [z.id, zoneColor(z, i)])),
+    [zones]
+  );
+
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["darb", "zones"] });
 
   const deleteMutation = useMutation({
@@ -98,7 +106,8 @@ export default function ZonesPage() {
             code: zone.code,
             name: zone.name,
             nameAr: zone.nameAr ?? "",
-            color: zone.color ?? "#006838",
+            // Show the colour the map is actually drawing, not a green default.
+            color: zone.color ?? colorById[zone.id] ?? "#006838",
             isActive: zone.isActive !== false,
             ring: ring ?? zone.polygon?.coordinates?.[0] ?? null,
           }
@@ -113,17 +122,29 @@ export default function ZonesPage() {
   }
 
   async function handleSave() {
-    if (!form || !form.code.trim() || !form.name.trim() || !form.ring || form.ring.length < 4) return;
+    if (!form || !form.code.trim() || !form.name.trim()) return;
+
+    const hasRing = !!form.ring && form.ring.length >= 4;
+    // A new zone has nothing to save without a drawn boundary. An existing one
+    // can be renamed or recoloured on its own, so a missing ring only blocks
+    // creation — it used to return silently here for both, which is what read
+    // as "zone edits do not save".
+    if (!form.id && !hasRing) {
+      toast.error(t("zonesPage.drawBoundaryFirst"));
+      return;
+    }
+
     setSaving(true);
-    const polygon: GeoJsonPolygon = { type: "Polygon", coordinates: [form.ring] };
-    const body = {
+    const body: Partial<DeliveryZone> = {
       code: form.code.trim(),
       name: form.name.trim(),
       nameAr: form.nameAr.trim() || null,
       color: form.color,
       isActive: form.isActive,
-      polygon,
-    } as Partial<DeliveryZone>;
+    };
+    if (hasRing) {
+      body.polygon = { type: "Polygon", coordinates: [form.ring!] } as GeoJsonPolygon;
+    }
     try {
       if (form.id) {
         await zonesApi.update(form.id, body);
@@ -132,9 +153,12 @@ export default function ZonesPage() {
       }
       toast.success(t("zonesPage.zoneSaved"));
       setForm(null);
-      invalidate();
-    } catch {
-      toast.error(t("toast.failedSave"));
+      await invalidate();
+    } catch (err) {
+      const msg =
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+        t("toast.failedSave");
+      toast.error(msg);
     } finally {
       setSaving(false);
     }
@@ -154,7 +178,7 @@ export default function ZonesPage() {
         <span className="inline-flex items-center gap-2">
           <span
             className="inline-block h-2.5 w-2.5 rounded-full"
-            style={{ background: row.color ?? "#006838" }}
+            style={{ background: colorById[row.id] ?? "#006838" }}
             aria-hidden="true"
           />
           <span className="font-mono text-xs">{v}</span>
@@ -385,7 +409,7 @@ export default function ZonesPage() {
               </button>
               <button
                 type="submit"
-                disabled={saving || !form.ring || form.ring.length < 4}
+                disabled={saving || (!form.id && (!form.ring || form.ring.length < 4))}
                 className="btn-primary px-5 h-10 disabled:opacity-50"
               >
                 {saving ? t("common.processing") : t("zonesPage.saveZone")}

@@ -4,7 +4,7 @@ import { memo } from "react";
 import { Polygon, Tooltip } from "react-leaflet";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { DeliveryZone } from "@/types/darb";
-import { zoneColor, zoneRingLatLngs } from "./zoneGeometry";
+import { ZONE_BOUNDARY_COLOR, zoneColor, zoneRingLatLngs } from "./zoneGeometry";
 
 // Re-exported for callers already importing them from here. Pages that need
 // only the geometry should import "./zoneGeometry" directly — this module
@@ -42,11 +42,15 @@ const ZoneShape = memo(function ZoneShape({
     <Polygon
       positions={positions}
       pathOptions={{
-        color,
-        weight: selected ? 3 : 2,
+        // Revision #1: a thin neutral hairline for every boundary, with the
+        // zone's own colour carried in the fill. Selection is the only state
+        // that borrows the zone colour for the stroke, so the selected zone
+        // still stands out without every zone competing for attention.
+        color: selected ? color : ZONE_BOUNDARY_COLOR,
+        weight: selected ? 2.5 : 1.25,
         fillColor: color,
-        fillOpacity: selected ? Math.min(fillOpacity + 0.15, 0.6) : fillOpacity,
-        opacity: zone.isActive === false ? 0.4 : 1,
+        fillOpacity: selected ? Math.min(fillOpacity + 0.12, 0.45) : fillOpacity,
+        opacity: zone.isActive === false ? 0.35 : selected ? 1 : 0.7,
         dashArray: zone.isActive === false ? "6 6" : undefined,
       }}
       eventHandlers={onZoneClick ? { click: () => onZoneClick(zone.id) } : undefined}

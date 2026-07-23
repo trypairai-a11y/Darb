@@ -42,8 +42,6 @@ const createZoneSchema = z.object({
   code: z.string().trim().min(1).max(32),
   name: z.string().trim().min(1).max(100),
   nameAr: z.string().trim().max(100).nullish(),
-  // Accepted for the polygon editor's forward-compatibility; DeliveryZone has
-  // no color column yet, so it is currently ignored server-side.
   color: z.string().trim().max(32).nullish(),
   polygon: polygonSchema,
   isActive: z.boolean().optional(),
@@ -576,6 +574,7 @@ router.post(
           code: body.code,
           name: body.name,
           nameAr: body.nameAr ?? null,
+          color: body.color ?? null,
           polygon: normalized.value.polygon as any,
           bbox: normalized.value.bbox as any,
           centroidLat: normalized.value.centroidLat,
@@ -626,6 +625,7 @@ router.put(
       if (body.code !== undefined) data.code = body.code;
       if (body.name !== undefined) data.name = body.name;
       if (body.nameAr !== undefined) data.nameAr = body.nameAr;
+      if (body.color !== undefined) data.color = body.color;
       if (body.isActive !== undefined) data.isActive = body.isActive;
       if (body.polygon !== undefined) {
         const normalized = normalizePolygon(body.polygon);
@@ -648,9 +648,11 @@ router.put(
         return;
       }
 
-      // Fresh polygons ⇒ every branch's zone assignment may have changed.
+      // Fresh polygons ⇒ every branch's zone assignment may have changed. A
+      // metadata-only edit (name, colour, active flag) cannot move a branch, so
+      // it skips the rezone sweep entirely.
       invalidateZoneCache(tenantId);
-      const rezonedBranches = await rezoneBranches(tenantId);
+      const rezonedBranches = body.polygon !== undefined ? await rezoneBranches(tenantId) : 0;
 
       const zone = await prisma.deliveryZone.findFirst({
         where: { id: req.params.id, tenantId },

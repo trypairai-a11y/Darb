@@ -14,13 +14,14 @@ import { useToast } from "@/components/shared/Toast";
 import { vendorsApi, unwrapList } from "@/lib/darbApi";
 import type { Vendor } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
+import { formatKwd } from "@/i18n/format";
 import { useRole } from "@/hooks/useRole";
 import { cn } from "@/lib/cn";
 
 const EMPTY_FORM = { name: "", nameAr: "", code: "", phone: "", requiresCarOnly: false };
 
 export default function VendorsPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const toast = useToast();
   const { canManageSettings } = useRole();
@@ -119,6 +120,27 @@ export default function VendorsPage() {
           {v ?? row._count?.branches ?? row.branches?.length ?? 0}
         </span>
       ),
+    },
+    {
+      // Revision #10 — signed wallet credit, recalculated by the nightly
+      // netting run. Green means Darb owes the vendor, red the reverse.
+      key: "walletBalanceKwd",
+      label: t("vendorsPage.wallet"),
+      render: (v: string | null | undefined) => {
+        if (v == null) return <span className="text-sand-400">n/a</span>;
+        const amount = Number(v);
+        return (
+          <span
+            dir="ltr"
+            className={cn(
+              "tabular-nums font-medium",
+              amount > 0 ? "text-green-700" : amount < 0 ? "text-red-600" : "text-sand-700"
+            )}
+          >
+            {formatKwd(v, locale)}
+          </span>
+        );
+      },
     },
     {
       key: "isPaused",

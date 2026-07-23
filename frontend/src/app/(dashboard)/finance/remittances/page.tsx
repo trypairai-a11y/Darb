@@ -19,6 +19,8 @@ import { formatDateTime, formatKwd } from "@/i18n/format";
 interface DriverOption {
   id: string;
   name: string;
+  /** Darb-issued driver ID ("DRB-0001") — the primary remittance search key. */
+  driverCode: string | null;
 }
 
 const METHODS: RemittanceMethod[] = ["CASH", "BANK_TRANSFER", "AL_MUZAINI"];
@@ -44,8 +46,17 @@ export default function RemittancesPage() {
     staleTime: 120_000,
   });
   const drivers: DriverOption[] = useMemo(() => {
-    const list = unwrapList<{ id: string; name?: string; fullName?: string }>(driversQuery.data);
-    return list.map((d) => ({ id: d.id, name: d.name ?? d.fullName ?? d.id }));
+    const list = unwrapList<{
+      id: string;
+      name?: string;
+      fullName?: string;
+      driverCode?: string | null;
+    }>(driversQuery.data);
+    return list.map((d) => ({
+      id: d.id,
+      name: d.name ?? d.fullName ?? d.id,
+      driverCode: d.driverCode ?? null,
+    }));
   }, [driversQuery.data]);
 
   // Paged: one wallet account per driver means the selected driver is usually
@@ -113,9 +124,18 @@ export default function RemittancesPage() {
       key: "driver",
       label: t("wallet.driver"),
       sortable: false,
-      render: (v: Remittance["driver"], row: Remittance) => (
-        <span dir="auto">{v?.name ?? drivers.find((d) => d.id === row.driverId)?.name ?? row.driverId}</span>
-      ),
+      render: (v: Remittance["driver"], row: Remittance) => {
+        const fallback = drivers.find((d) => d.id === row.driverId);
+        const code = v?.driverCode ?? fallback?.driverCode;
+        return (
+          <span dir="auto" className="inline-flex items-center gap-2">
+            <span dir="ltr" className="font-mono text-xs text-sand-600">
+              {code ?? "n/a"}
+            </span>
+            <span>{v?.name ?? fallback?.name ?? row.driverId}</span>
+          </span>
+        );
+      },
     },
     {
       key: "amountKwd",
@@ -178,8 +198,12 @@ export default function RemittancesPage() {
               key: "driverId",
               label: t("wallet.driver"),
               type: "driver-search",
-              placeholder: t("wallet.selectDriver"),
-              options: drivers.map((d) => ({ value: d.id, label: d.name })),
+              placeholder: t("wallet.searchByDriverId"),
+              options: drivers.map((d) => ({
+                value: d.id,
+                label: d.name,
+                code: d.driverCode,
+              })),
             },
           ]}
           values={filters}
@@ -187,7 +211,10 @@ export default function RemittancesPage() {
         />
 
         {driverId && (
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2 text-sm flex-wrap">
+            <span dir="ltr" className="font-mono text-xs text-sand-600">
+              {drivers.find((d) => d.id === driverId)?.driverCode ?? "n/a"}
+            </span>
             <span className="text-sand-600">{t("wallet.heldBalance")}:</span>
             <span dir="ltr" className="font-medium tabular-nums text-sand-900">
               {heldBalance != null ? formatKwd(heldBalance, locale) : "—"}

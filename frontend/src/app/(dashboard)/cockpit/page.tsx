@@ -3,13 +3,13 @@
 // with live operation KPIs, money position, fleet/cash rows, threshold
 // alerts, zone on-time and fleet partner tables. Refreshes every 30s.
 import Link from "next/link";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Banknote,
   CheckCheck,
   Download,
   Gauge,
-  HandCoins,
   Landmark,
   PackageCheck,
   Percent,
@@ -20,6 +20,8 @@ import {
   Wallet,
 } from "lucide-react";
 import StatCard from "@/components/shared/StatCard";
+import PeriodPicker, { DEFAULT_PERIOD, type Period } from "@/components/shared/PeriodPicker";
+import { groupFleetsByOwner } from "@/components/darb/fleetGrouping";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
@@ -40,9 +42,17 @@ export default function CockpitPage() {
   const { t, locale } = useI18n();
   const { role } = useRole();
 
+  // Revision #26 — the period drives every "today"-scoped figure. The live
+  // tiles below (active orders, drivers online/busy, cash in the field, hub
+  // cash) are a snapshot of right now and deliberately ignore it, so they are
+  // labelled as such rather than silently contradicting the selected range.
+  const [period, setPeriod] = useState<Period>(DEFAULT_PERIOD);
+  const [groupByOwner, setGroupByOwner] = useState(true);
+  const isToday = period.preset === "today";
+
   const summaryQuery = useQuery({
-    queryKey: ["darb", "cockpit", "summary"],
-    queryFn: () => cockpitApi.summary(),
+    queryKey: ["darb", "cockpit", "summary", period.from, period.to],
+    queryFn: () => cockpitApi.summary({ from: period.from, to: period.to }),
     refetchInterval: 30_000,
     enabled: role === "ADMIN",
   });
@@ -65,6 +75,29 @@ export default function CockpitPage() {
   }
 
   const s = summaryQuery.data;
+
+  // Grouping off still routes through groupFleetsByOwner, which returns
+  // single-member groups, so the table renders one uniform shape either way.
+  const fleetRows = groupByOwner
+    ? groupFleetsByOwner(s.fleet.fleets)
+    : s.fleet.fleets.map((f) => ({
+        key: f.fleetPartnerId,
+        name: f.name,
+        isGroup: false,
+        members: [f],
+        driversOnline: f.driversOnline,
+        minDriversOnline: f.minDriversOnline,
+        deliveredToday: f.deliveredToday,
+        disciplineStatus: f.disciplineStatus,
+      }));
+
+  const periodLabel = isToday
+    ? t("period.today")
+    : period.preset === "week"
+      ? t("period.thisWeek")
+      : period.preset === "month"
+        ? t("period.thisMonth")
+        : `${period.from} to ${period.to}`;
 
   function exportCsv() {
     downloadCsv(
@@ -99,14 +132,17 @@ export default function CockpitPage() {
             </span>
           </p>
         </div>
-        <button
-          type="button"
-          onClick={exportCsv}
-          className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors"
-        >
-          <Download size={12} aria-hidden="true" />
-          {t("cockpit.exportCsv")}
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <PeriodPicker value={period} onChange={setPeriod} />
+          <button
+            type="button"
+            onClick={exportCsv}
+            className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors"
+          >
+            <Download size={12} aria-hidden="true" />
+            {t("cockpit.exportCsv")}
+          </button>
+        </div>
       </div>
 
       {/* Operation row */}
@@ -115,41 +151,45 @@ export default function CockpitPage() {
           title={t("cockpit.activeOrders")}
           value={formatNumber(s.orders.activeNow, locale)}
           icon={PackageCheck}
+          trend={t("cockpit.liveNow")}
         />
         <StatCard
           title={t("cockpit.deliveredToday")}
           value={formatNumber(s.orders.deliveredToday, locale)}
           icon={CheckCheck}
+          trend={periodLabel}
         />
         <StatCard
           title={t("cockpit.onTimeToday")}
           value={pct(s.orders.onTimeRateToday, locale)}
           icon={Timer}
+          trend={periodLabel}
         />
       </div>
 
       {/* Money row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           title={t("cockpit.feesToday")}
           value={formatKwd(s.money.feesTodayKwd, locale)}
           icon={Wallet}
+          trend={periodLabel}
         />
         <StatCard
           title={t("cockpit.fleetCostToday")}
           value={formatKwd(s.money.fleetCostTodayKwd, locale)}
           icon={Truck}
+          trend={periodLabel}
         />
         <StatCard
           title={t("cockpit.netMarginToday")}
           value={formatKwd(s.money.netMarginTodayKwd, locale)}
           icon={Percent}
+          trend={periodLabel}
         />
-        <StatCard
-          title={t("cockpit.tipsToday")}
-          value={formatKwd(s.money.tipsTodayKwd, locale)}
-          icon={HandCoins}
-        />
+        {/* Tips Today was removed at the client's request (revision #25). The
+            API still returns tipsTodayKwd: drivers keep 100% of tips and
+            finance reports on them, this surface just does not show it. */}
       </div>
 
       {/* Fleet + cash row */}
@@ -158,26 +198,31 @@ export default function CockpitPage() {
           title={t("cockpit.driversOnline")}
           value={formatNumber(s.fleet.driversOnlineNow, locale)}
           icon={Users}
+          trend={t("cockpit.liveNow")}
         />
         <StatCard
           title={t("cockpit.driversBusy")}
           value={formatNumber(s.fleet.driversBusyNow, locale)}
           icon={Gauge}
+          trend={t("cockpit.liveNow")}
         />
         <StatCard
           title={t("cockpit.cashInField")}
           value={formatKwd(s.cash.driverCashInFieldKwd, locale)}
           icon={Banknote}
+          trend={t("cockpit.liveNow")}
         />
         <StatCard
           title={t("cockpit.depositedToday")}
           value={formatKwd(s.cash.depositedTodayKwd, locale)}
           icon={PiggyBank}
+          trend={periodLabel}
         />
         <StatCard
           title={t("cockpit.clearingBalance")}
           value={formatKwd(s.cash.clearingBalanceKwd, locale)}
           icon={Landmark}
+          trend={t("cockpit.liveNow")}
         />
       </div>
 
@@ -244,18 +289,37 @@ export default function CockpitPage() {
         />
       </section>
 
-      {/* Fleets */}
+      {/* Fleets — commonly-owned partners roll up into one row (revision #28),
+          with their individual fleets listed underneath. */}
       <section className="space-y-3">
-        <h2 className="text-sm font-medium text-sand-900">{t("cockpit.fleetsTitle")}</h2>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h2 className="text-sm font-medium text-sand-900">{t("cockpit.fleetsTitle")}</h2>
+          <label className="inline-flex items-center gap-2 text-xs text-sand-600 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={groupByOwner}
+              onChange={(e) => setGroupByOwner(e.target.checked)}
+              className="h-3.5 w-3.5 rounded border-sand-400 text-primary focus:ring-primary/30"
+            />
+            {t("cockpit.groupByOwner")}
+          </label>
+        </div>
         <DataTable
           columns={[
             {
               key: "name",
               label: t("cockpit.fleetName"),
-              render: (value: string) => (
-                <Link href="/fleets" className="text-primary hover:underline" dir="auto">
-                  {value}
-                </Link>
+              render: (value: string, row: { isGroup: boolean; members: { fleetPartnerId: string; name: string }[] }) => (
+                <div className="min-w-0">
+                  <Link href="/fleets" className="text-primary hover:underline" dir="auto">
+                    {value}
+                  </Link>
+                  {row.isGroup && (
+                    <p className="text-xs text-sand-600 truncate" dir="auto">
+                      {row.members.map((m) => m.name).join(", ")}
+                    </p>
+                  )}
+                </div>
               ),
             },
             {
@@ -274,8 +338,8 @@ export default function CockpitPage() {
               render: (value: string) => <StatusBadge status={value} />,
             },
           ]}
-          data={s.fleet.fleets}
-          rowKey="fleetPartnerId"
+          data={fleetRows}
+          rowKey="key"
           emptyMessage={t("errors.noData")}
         />
       </section>

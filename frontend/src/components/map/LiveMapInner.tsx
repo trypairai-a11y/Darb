@@ -121,9 +121,16 @@ export default function LiveMapInner({
       style={{ height: "100%", width: "100%" }}
       scrollWheelZoom
     >
+      {/* Revision #1: CARTO Positron instead of raw OpenStreetMap raster. Same
+          OSM data, but a muted low-contrast style (soft greys, quiet roads,
+          restrained labels) closer to Google Maps or Waze, so zone fills and
+          driver pins read as the foreground. Free, no API key, but the
+          attribution is required by the licence. */}
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+        subdomains="abcd"
+        maxZoom={20}
       />
 
       {zones && zones.length > 0 && (

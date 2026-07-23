@@ -7,6 +7,12 @@ import { useI18n } from "@/i18n/I18nProvider";
 interface FilterOption {
   value: string;
   label: string;
+  /**
+   * Secondary identifier shown alongside the label and matched by the
+   * driver-search filter. Finance searches drivers by their Darb driver ID
+   * ("DRB-0001"), not by name (revision #14).
+   */
+  code?: string | null;
 }
 
 interface Filter {
@@ -143,14 +149,21 @@ function DriverSearchFilter({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const suggestions = query.trim().length === 0
-    ? []
-    : (filter.options || []).filter((o) =>
-        o.label.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, 10);
+  // Code matches rank above name matches so typing a driver ID lands on the
+  // exact driver first even when the digits also appear inside a name.
+  const suggestions = (() => {
+    const q = query.trim().toLowerCase();
+    if (q.length === 0) return [];
+    const options = filter.options || [];
+    const byCode = options.filter((o) => (o.code ?? "").toLowerCase().includes(q));
+    const byName = options.filter(
+      (o) => !byCode.includes(o) && o.label.toLowerCase().includes(q)
+    );
+    return [...byCode, ...byName].slice(0, 10);
+  })();
 
   function select(opt: FilterOption) {
-    setQuery(opt.label);
+    setQuery(opt.code ? `${opt.code} ${opt.label}` : opt.label);
     onChange(opt.value);
     setOpen(false);
   }
@@ -187,9 +200,14 @@ function DriverSearchFilter({
               key={opt.value}
               type="button"
               onClick={() => select(opt)}
-              className="w-full px-3 py-2 text-sm text-start hover:bg-sand-100 transition-colors"
+              className="w-full px-3 py-2 text-sm text-start hover:bg-sand-100 transition-colors flex items-center gap-2"
             >
-              {opt.label}
+              {opt.code && (
+                <span dir="ltr" className="font-mono text-xs text-sand-600 shrink-0">
+                  {opt.code}
+                </span>
+              )}
+              <span className="truncate" dir="auto">{opt.label}</span>
             </button>
           ))}
         </div>

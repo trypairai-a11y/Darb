@@ -5,18 +5,13 @@
 import { memo, useMemo } from "react";
 import { Marker, Tooltip } from "react-leaflet";
 import L from "leaflet";
-import type { DriverPosition } from "@/types/darb";
-
-const AVAILABILITY_COLORS: Record<string, string> = {
-  ONLINE: "#16a34a",
-  BUSY: "#d97706",
-  OFFLINE: "#9ca3af",
-};
-
-const STALE_COLOR = "#9ca3af";
+import { driverMapStatus, type DriverPosition } from "@/types/darb";
+// Colours live in a Leaflet-free module so the ops panel can share them
+// without dragging react-leaflet (and `window`) into the server bundle.
+import { DRIVER_STATUS_COLORS } from "./driverStatus";
 
 function buildIcon(d: DriverPosition, selected: boolean): L.DivIcon {
-  const color = d.stale ? STALE_COLOR : AVAILABILITY_COLORS[d.availability ?? "OFFLINE"] ?? STALE_COLOR;
+  const color = DRIVER_STATUS_COLORS[driverMapStatus(d)];
   const heading = typeof d.heading === "number" && Number.isFinite(d.heading) ? d.heading : null;
   const ring = selected
     ? `<div style="position:absolute;inset:0;border-radius:9999px;border:2px solid ${color};opacity:.5;"></div>`

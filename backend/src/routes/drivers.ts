@@ -90,9 +90,11 @@ router.get("/", async (req: Request, res: Response) => {
     }
     if (search) {
       where.OR = [
+        // driverCode first: finance searches by the Darb driver ID
+        // ("DRB-0001"), which is the standard for remittances (revision #14).
+        { driverCode: { contains: search as string, mode: "insensitive" } },
         { name: { contains: search as string, mode: "insensitive" } },
         { platformDriverId: { contains: search as string, mode: "insensitive" } },
-
         { phone: { contains: search as string } },
       ];
     }

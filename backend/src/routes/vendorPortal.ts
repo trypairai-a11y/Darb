@@ -1,4 +1,4 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
@@ -39,6 +39,37 @@ const DELIVERY_ORDER_STATUSES = [
 ] as const;
 
 const pauseSchema = z.object({ paused: z.boolean() });
+
+/**
+ * Portal sub-role fences (client revision #9).
+ *
+ * OWNER is the default and behaves exactly as the portal always did, so every
+ * pre-existing vendor login keeps working unchanged. The other two narrow it:
+ *   FINANCE        — money only; no order list, no order creation
+ *   ORDER_TRACKING — orders for its own branch only; no money, no settings
+ */
+type VendorRole = "OWNER" | "FINANCE" | "ORDER_TRACKING";
+
+function vendorRoleOf(req: Request): VendorRole {
+  const role = req.user?.vendorRole;
+  return role === "FINANCE" || role === "ORDER_TRACKING" ? role : "OWNER";
+}
+
+/** The branch an ORDER_TRACKING login is pinned to; null for vendor-wide roles. */
+function scopedBranchId(req: Request): string | null {
+  return vendorRoleOf(req) === "ORDER_TRACKING" ? (req.user?.branchId ?? null) : null;
+}
+
+/** Guard a route to a set of portal sub-roles. */
+function requireVendorRole(...allowed: VendorRole[]) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!allowed.includes(vendorRoleOf(req))) {
+      res.status(403).json({ error: "Not permitted for this portal role" });
+      return;
+    }
+    next();
+  };
+}
 
 /** KWD amount: number or "1.250"-style string, ≤3 decimal places. */
 const kwdAmountSchema = z
@@ -129,6 +160,9 @@ router.get("/orders", async (req: Request, res: Response) => {
     const { tenantId, vendorId } = req.user!;
 
     const where: any = { tenantId, vendorId: vendorId! };
+    // A branch-scoped login only ever sees its own branch's orders.
+    const branchId = scopedBranchId(req);
+    if (branchId) where.branchId = branchId;
     if (typeof req.query.status === "string" && req.query.status.length > 0) {
       const statuses = req.query.status
         .split(",")
@@ -169,8 +203,14 @@ router.get("/orders", async (req: Request, res: Response) => {
 router.get("/orders/:id", async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId } = req.user!;
+    const branchId = scopedBranchId(req);
     const order = await prisma.deliveryOrder.findFirst({
-      where: { id: req.params.id, tenantId, vendorId: vendorId! },
+      where: {
+        id: req.params.id,
+        tenantId,
+        vendorId: vendorId!,
+        ...(branchId ? { branchId } : {}),
+      },
       include: {
         branch: { select: { id: true, name: true, address: true, phone: true } },
         driver: { select: { id: true, name: true, phone: true } },
@@ -204,6 +244,7 @@ router.get("/orders/:id", async (req: Request, res: Response) => {
  */
 router.post(
   "/orders",
+  requireVendorRole("OWNER", "ORDER_TRACKING"),
   validateBody(vendorCreateOrderSchema),
   async (req: Request, res: Response) => {
     try {
@@ -243,6 +284,7 @@ router.post(
  */
 router.post(
   "/orders/:id/cancel",
+  requireVendorRole("OWNER", "ORDER_TRACKING"),
   validateBody(vendorCancelSchema),
   async (req: Request, res: Response) => {
     try {
@@ -297,6 +339,7 @@ router.post(
  */
 router.post(
   "/pause",
+  requireVendorRole("OWNER"),
   validateBody(pauseSchema),
   async (req: Request, res: Response) => {
     try {
@@ -331,7 +374,7 @@ router.post(
  *     tags: [Vendor Portal]
  *     summary: Vendor wallet balance (KWD, 3dp string)
  */
-router.get("/wallet", async (req: Request, res: Response) => {
+router.get("/wallet", requireVendorRole("OWNER", "FINANCE"), async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId } = req.user!;
     const [account, vendor] = await Promise.all([
@@ -370,7 +413,7 @@ router.get("/wallet", async (req: Request, res: Response) => {
  *         schema: { type: string, example: "2026-07" }
  *         description: Restrict to a calendar month (YYYY-MM)
  */
-router.get("/wallet/entries", async (req: Request, res: Response) => {
+router.get("/wallet/entries", requireVendorRole("OWNER", "FINANCE"), async (req: Request, res: Response) => {
   try {
     const { skip, limit, page } = getPagination(req);
     const { tenantId, vendorId } = req.user!;
@@ -607,7 +650,7 @@ router.get("/refunds", async (req: Request, res: Response) => {
  *     tags: [Vendor Portal]
  *     summary: The vendor's monthly netting statements
  */
-router.get("/statements", async (req: Request, res: Response) => {
+router.get("/statements", requireVendorRole("OWNER", "FINANCE"), async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId } = req.user!;
     const rows = await prisma.vendorStatement.findMany({

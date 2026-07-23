@@ -4,8 +4,9 @@
 // plus link cards into remittances / adjustments / reports.
 import Link from "next/link";
 import { useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { HandCoins, Scale, FileText, Wallet, Truck, Store } from "lucide-react";
+import { HandCoins, FileText, Wallet, Truck, Store } from "lucide-react";
 import StatCard from "@/components/shared/StatCard";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
@@ -23,6 +24,7 @@ function sumBalances(accounts: WalletAccount[], ownerType: WalletAccount["ownerT
 
 export default function FinanceOverviewPage() {
   const { t, locale } = useI18n();
+  const router = useRouter();
 
   // These feed totals, so they must not stop at the server's 100-row clamp —
   // with ~1 wallet account per driver, page 1 is all drivers and no platform
@@ -77,13 +79,7 @@ export default function FinanceOverviewPage() {
       desc: t("wallet.openRemittances"),
     },
     {
-      href: "/finance/adjustments",
-      icon: Scale,
-      title: t("darbNav.adjustments"),
-      desc: t("wallet.openAdjustments"),
-    },
-    {
-      href: "/reports",
+      href: "/finance/reports",
       icon: FileText,
       title: t("darbNav.reports"),
       desc: t("wallet.openReports"),
@@ -97,25 +93,33 @@ export default function FinanceOverviewPage() {
         <p className="text-sm text-sand-600 mt-1">{t("wallet.subtitle")}</p>
       </div>
 
+      {/* Each card drills into the detail behind its number — they used to be
+          inert, which read as "the three buttons on top do not work". */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           title={t("wallet.vendorPayables")}
           value={formatKwd(vendorPayables, locale)}
           icon={Store}
+          trend={t("wallet.viewStatements")}
+          onClick={() => router.push("/finance/reports?view=vendor-statements")}
         />
         <StatCard
           title={t("wallet.driverCash")}
           value={formatKwd(driverCash, locale)}
           icon={Truck}
+          trend={t("wallet.viewRemittances")}
+          onClick={() => router.push("/finance/remittances")}
         />
         <StatCard
           title={t("wallet.feesToday")}
-          value={entriesQuery.isError ? "—" : formatKwd(feesToday, locale)}
+          value={entriesQuery.isError ? "n/a" : formatKwd(feesToday, locale)}
           icon={Wallet}
+          trend={t("wallet.viewLedger")}
+          onClick={() => router.push("/finance/reports?view=ledger&type=PLATFORM_REVENUE")}
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {links.map((link) => (
           <Link
             key={link.href}

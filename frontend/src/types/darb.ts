@@ -125,6 +125,11 @@ export interface Vendor {
   /** Flat count returned by the vendors list endpoint. */
   branchCount?: number;
   foodicsConnected?: boolean;
+  /**
+   * Signed wallet balance as a 3dp string, or null when the vendor has no
+   * wallet account yet. Positive means Darb owes the vendor.
+   */
+  walletBalanceKwd?: string | null;
   _count?: { branches?: number; orders?: number; users?: number };
 }
 
@@ -142,11 +147,23 @@ export interface VendorBranch {
   isActive?: boolean;
 }
 
+/**
+ * Vendor portal sub-role (client revision #9). OWNER is vendor-wide and is
+ * what every pre-existing portal user is treated as.
+ */
+export type VendorPortalRole = "OWNER" | "FINANCE" | "ORDER_TRACKING";
+
 export interface VendorUser {
   id: string;
   name: string;
   email: string;
+  phone?: string | null;
   role: "VENDOR";
+  vendorRole?: VendorPortalRole | null;
+  /** Set only for ORDER_TRACKING logins — the one branch they may see. */
+  branchId?: string | null;
+  branch?: { id: string; name: string } | null;
+  isActive?: boolean;
   createdAt?: string;
 }
 
@@ -272,7 +289,7 @@ export interface Remittance {
   note?: string | null;
   receivedById?: string | null;
   createdAt: string;
-  driver?: { id: string; name: string } | null;
+  driver?: { id: string; name: string; phone?: string | null; driverCode?: string | null } | null;
   receivedBy?: { id: string; name: string } | null;
 }
 
@@ -330,10 +347,30 @@ export interface DriverPosition {
   at: string;
   availability?: DriverAvailability;
   name?: string | null;
+  /** Darb-issued driver code ("DRB-0001"), for search and copy-to-clipboard. */
+  driverCode?: string | null;
   phone?: string | null;
   vehicleType?: string | null;
+  /** True while the driver is on an ASSIGNED or PICKED_UP order. */
+  hasActiveOrder?: boolean;
+  activeOrderId?: string | null;
   /** Computed client-side at store flush: now - at > 60s. */
   stale?: boolean;
+}
+
+/**
+ * The status buckets ops filters and colours drivers by (client revision #3).
+ * Derived, not stored: "idle" is an online driver with no active order, and
+ * "stale" outranks everything because a driver we cannot see is the problem
+ * worth surfacing first.
+ */
+export type DriverMapStatus = "busy" | "idle" | "online" | "offline" | "stale";
+
+export function driverMapStatus(d: DriverPosition): DriverMapStatus {
+  if (d.stale) return "stale";
+  if (d.availability === "OFFLINE") return "offline";
+  if (d.hasActiveOrder || d.availability === "BUSY") return "busy";
+  return "idle";
 }
 
 // ── SSE events (plan §A7) ────────────────────────────────────────────────
@@ -449,9 +486,29 @@ export interface ZoneLoad {
   avgSlaRemainingSec?: number;
 }
 
+/**
+ * A driver who has not moved for >3 minutes while on an active job.
+ *
+ * This is NOT a DeliveryOrder: /api/dispatch/overview builds a flat row per
+ * stalled driver. It used to be typed as DeliveryOrder here, so the alerts
+ * page read `driver.name`, `status` and `updatedAt` off it and silently got
+ * undefined for all three.
+ */
+export interface StalledDriver {
+  driverId: string | null;
+  driverName: string | null;
+  driverPhone: string | null;
+  orderId: string;
+  orderNumber: string;
+  orderStatus: DeliveryOrderStatus | string;
+  lastPointAt: string;
+  movedMeters: number;
+  spanSec: number;
+}
+
 export interface DispatchOverview {
   jeopardy?: DeliveryOrder[];
-  stalled?: DeliveryOrder[];
+  stalled?: StalledDriver[];
   gpsStale?: DriverPosition[];
   zoneLoads?: ZoneLoad[];
 }
@@ -509,11 +566,15 @@ export interface VendorStatementRow {
   refundsKwd: string;
   closingBalanceKwd: string;
   status: "FINAL" | "PAID";
+  // Present on the finance-wide list (/api/wallets/vendor-statements), absent
+  // on the vendor portal's own statements, which are implicitly self-scoped.
+  vendor?: { id: string; name: string; code: string } | null;
 }
 
 export interface FleetProfile {
   id: string;
   name: string;
+  ownerGroup?: { id: string; name: string } | null;
   contactName: string | null;
   contactPhone: string | null;
   contactEmail: string | null;
@@ -610,6 +671,9 @@ export interface CockpitSummary {
       driversOnline: number;
       minDriversOnline: number | null;
       deliveredToday: number;
+      /** Owner entity, when several fleets share one (revision #28). */
+      ownerGroupId?: string | null;
+      ownerGroupName?: string | null;
     }>;
   };
   cash: {

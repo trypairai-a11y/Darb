@@ -19,6 +19,7 @@ import type {
   Vendor,
   VendorBranch,
   VendorUser,
+  VendorPortalRole,
   VendorWallet,
   WalletAccount,
   WalletAdjustment,
@@ -145,8 +146,17 @@ export const vendorsApi = {
     put<VendorBranch>(`/api/vendors/branches/${branchId}`, body),
   removeBranch: (_vendorId: string, branchId: string) =>
     del<{ success?: boolean }>(`/api/vendors/branches/${branchId}`),
-  createUser: (vendorId: string, body: { name: string; email: string; password: string }) =>
-    post<VendorUser>(`/api/vendors/${vendorId}/users`, body),
+  users: (vendorId: string) => get<VendorUser[]>(`/api/vendors/${vendorId}/users`),
+  createUser: (
+    vendorId: string,
+    body: {
+      name: string;
+      email: string;
+      password: string;
+      vendorRole: VendorPortalRole;
+      branchId?: string | null;
+    }
+  ) => post<VendorUser>(`/api/vendors/${vendorId}/users`, body),
   wallet: (vendorId: string, params?: Params) =>
     get<VendorWallet>(`/api/vendors/${vendorId}/wallet`, params),
 };
@@ -193,6 +203,11 @@ export const walletsApi = {
   reconciliation: (params?: Params) =>
     get<WalletReconciliationRun[] | Paginated<WalletReconciliationRun>>(
       "/api/wallets/reconciliation",
+      params
+    ),
+  vendorStatements: (params?: Params) =>
+    get<Paginated<VendorStatementRow> | VendorStatementRow[]>(
+      "/api/wallets/vendor-statements",
       params
     ),
 };
@@ -286,7 +301,9 @@ export const fleetsApi = {
 // ── /api/cockpit (ADMIN-only founder summary) ────────────────────────────
 
 export const cockpitApi = {
-  summary: () => get<CockpitSummary>("/api/cockpit/summary"),
+  /** `from`/`to` are YYYY-MM-DD; omitted, the API scopes to today. */
+  summary: (params?: { from?: string; to?: string }) =>
+    get<CockpitSummary>("/api/cockpit/summary", params),
 };
 
 // ── /api/foodics ─────────────────────────────────────────────────────────

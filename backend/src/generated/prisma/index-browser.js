@@ -146,6 +146,19 @@ exports.Prisma.CompanyScalarFieldEnum = {
   platform: 'platform',
   licenseCount: 'licenseCount',
   isActive: 'isActive',
+  kind: 'kind',
+  ownerGroupId: 'ownerGroupId',
+  accountManagerId: 'accountManagerId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OwnerGroupScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  contactName: 'contactName',
+  contactPhone: 'contactPhone',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -162,6 +175,9 @@ exports.Prisma.UserScalarFieldEnum = {
   jobGrade: 'jobGrade',
   vendorId: 'vendorId',
   fleetPartnerId: 'fleetPartnerId',
+  ownerGroupId: 'ownerGroupId',
+  branchId: 'branchId',
+  vendorRole: 'vendorRole',
   isActive: 'isActive',
   lastLoginAt: 'lastLoginAt',
   createdAt: 'createdAt',
@@ -174,6 +190,7 @@ exports.Prisma.DriverScalarFieldEnum = {
   companyId: 'companyId',
   name: 'name',
   phone: 'phone',
+  driverCode: 'driverCode',
   platform: 'platform',
   platformDriverId: 'platformDriverId',
   utr: 'utr',
@@ -1498,6 +1515,7 @@ exports.Prisma.DeliveryZoneScalarFieldEnum = {
   bbox: 'bbox',
   centroidLat: 'centroidLat',
   centroidLng: 'centroidLng',
+  color: 'color',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -1762,6 +1780,7 @@ exports.Prisma.FleetPartnerScalarFieldEnum = {
   disciplineStatus: 'disciplineStatus',
   disciplineNote: 'disciplineNote',
   isActive: 'isActive',
+  ownerGroupId: 'ownerGroupId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -1821,7 +1840,18 @@ exports.Prisma.TenantOrderByRelevanceFieldEnum = {
 exports.Prisma.CompanyOrderByRelevanceFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
-  name: 'name'
+  name: 'name',
+  kind: 'kind',
+  ownerGroupId: 'ownerGroupId',
+  accountManagerId: 'accountManagerId'
+};
+
+exports.Prisma.OwnerGroupOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  contactName: 'contactName',
+  contactPhone: 'contactPhone'
 };
 
 exports.Prisma.UserOrderByRelevanceFieldEnum = {
@@ -1833,7 +1863,10 @@ exports.Prisma.UserOrderByRelevanceFieldEnum = {
   name: 'name',
   jobGrade: 'jobGrade',
   vendorId: 'vendorId',
-  fleetPartnerId: 'fleetPartnerId'
+  fleetPartnerId: 'fleetPartnerId',
+  ownerGroupId: 'ownerGroupId',
+  branchId: 'branchId',
+  vendorRole: 'vendorRole'
 };
 
 exports.Prisma.DriverOrderByRelevanceFieldEnum = {
@@ -1842,6 +1875,7 @@ exports.Prisma.DriverOrderByRelevanceFieldEnum = {
   companyId: 'companyId',
   name: 'name',
   phone: 'phone',
+  driverCode: 'driverCode',
   platformDriverId: 'platformDriverId',
   utr: 'utr',
   zone: 'zone',
@@ -2621,7 +2655,8 @@ exports.Prisma.DeliveryZoneOrderByRelevanceFieldEnum = {
   tenantId: 'tenantId',
   code: 'code',
   name: 'name',
-  nameAr: 'nameAr'
+  nameAr: 'nameAr',
+  color: 'color'
 };
 
 exports.Prisma.ZoneSurchargeOrderByRelevanceFieldEnum = {
@@ -2780,7 +2815,8 @@ exports.Prisma.FleetPartnerOrderByRelevanceFieldEnum = {
   contactPhone: 'contactPhone',
   contactEmail: 'contactEmail',
   disciplineStatus: 'disciplineStatus',
-  disciplineNote: 'disciplineNote'
+  disciplineNote: 'disciplineNote',
+  ownerGroupId: 'ownerGroupId'
 };
 
 exports.Prisma.FleetPayoutStatementOrderByRelevanceFieldEnum = {
@@ -3237,6 +3273,7 @@ exports.WebhookEventStatus = exports.$Enums.WebhookEventStatus = {
 exports.Prisma.ModelName = {
   Tenant: 'Tenant',
   Company: 'Company',
+  OwnerGroup: 'OwnerGroup',
   User: 'User',
   Driver: 'Driver',
   DriverRestriction: 'DriverRestriction',

@@ -1,51 +1,57 @@
 "use client";
 // Darb 2.0 — /ops/alerts: stalled drivers (>3min stationary on an active job)
 // and GPS-stale drivers, both from GET /api/dispatch/overview. 30s polling +
-// refetch on driver.* SSE. Acknowledge is a local triage marker (dims the
-// row for this session); call links go straight to the driver's phone.
-import { useMemo, useState } from "react";
+// refetch on driver.* SSE.
+//
+// There is no Acknowledge button (client revision #29). Both lists are derived
+// live from the dispatch overview, so an alert leaves the list the moment the
+// underlying problem resolves itself: a driver whose GPS starts reporting
+// again simply stops appearing in gpsStale. Clearing was never something a
+// person needed to confirm, and a manual acknowledge only hid rows that were
+// still broken. What did get lost with it is the record that something had
+// been wrong, so entries that disappear drop into a "cleared" list below with
+// the time they recovered.
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, Check, Phone, SatelliteDish } from "lucide-react";
+import { AlertTriangle, Check, ChevronDown, Phone, SatelliteDish } from "lucide-react";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import OrderStatusBadge from "@/components/darb/OrderStatusBadge";
 import { useDarbEvents } from "@/hooks/useDarbEvents";
 import { dispatchApi } from "@/lib/darbApi";
-import type { DeliveryOrder, DriverPosition } from "@/types/darb";
+import type { DriverPosition, StalledDriver } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
-import { formatRelativeTime } from "@/i18n/format";
+import { formatRelativeTime, formatTime } from "@/i18n/format";
 import { cn } from "@/lib/cn";
 
+interface ClearedEntry {
+  key: string;
+  driverName: string;
+  kind: "stalled" | "gps";
+  clearedAt: number;
+}
+
+/** Keep the cleared list to the last few hours so it stays a glance, not a log. */
+const CLEARED_TTL_MS = 4 * 60 * 60_000;
+
 interface AlertRowProps {
-  id: string;
   driverName: string;
   driverPhone?: string | null;
   orderNumber?: string | null;
   orderStatus?: string | null;
   lastSeen?: string | null;
-  acked: boolean;
-  onAck: () => void;
 }
 
 function AlertRow({
-  id,
   driverName,
   driverPhone,
   orderNumber,
   orderStatus,
   lastSeen,
-  acked,
-  onAck,
 }: AlertRowProps) {
   const { t, locale } = useI18n();
   return (
-    <li
-      key={id}
-      className={cn(
-        "flex items-center gap-3 px-4 py-3 rounded-xl border bg-white transition-opacity",
-        acked ? "border-sand-200 opacity-50" : "border-amber-200"
-      )}
-    >
+    <li className="flex items-center gap-3 px-4 py-3 rounded-xl border border-amber-200 bg-white">
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-sand-900 truncate" dir="auto">
           {driverName}
@@ -73,28 +79,15 @@ function AlertRow({
           {t("opsPages.call")}
         </a>
       )}
-      <button
-        type="button"
-        onClick={onAck}
-        disabled={acked}
-        className={cn(
-          "inline-flex items-center gap-1.5 px-3 h-8 rounded-pill text-xs font-medium transition-colors",
-          acked
-            ? "bg-sand-100 text-sand-500"
-            : "bg-sand-100 text-sand-800 hover:bg-sand-200"
-        )}
-      >
-        <Check size={12} aria-hidden="true" />
-        {acked ? t("opsPages.acknowledged") : t("incidents.acknowledge")}
-      </button>
     </li>
   );
 }
 
 export default function OpsAlertsPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const queryClient = useQueryClient();
-  const [acked, setAcked] = useState<Set<string>>(new Set());
+  const [cleared, setCleared] = useState<ClearedEntry[]>([]);
+  const [showCleared, setShowCleared] = useState(false);
 
   const overviewQuery = useQuery({
     queryKey: ["darb", "dispatch", "overview"],
@@ -114,7 +107,7 @@ export default function OpsAlertsPage() {
     },
   });
 
-  const stalled = useMemo<DeliveryOrder[]>(
+  const stalled = useMemo<StalledDriver[]>(
     () => overviewQuery.data?.stalled ?? [],
     [overviewQuery.data?.stalled]
   );
@@ -123,9 +116,47 @@ export default function OpsAlertsPage() {
     [overviewQuery.data?.gpsStale]
   );
 
-  function ack(id: string) {
-    setAcked((prev) => new Set(prev).add(id));
-  }
+  // Diff each refresh against the previous one: anything that left the list
+  // resolved itself, which is the whole point of dropping Acknowledge.
+  const previous = useRef<Map<string, ClearedEntry> | null>(null);
+  useEffect(() => {
+    if (!overviewQuery.data) return;
+    const current = new Map<string, ClearedEntry>();
+    for (const o of stalled) {
+      const key = `stalled:${o.orderId}`;
+      current.set(key, {
+        key,
+        driverName: o.driverName ?? o.driverId ?? "n/a",
+        kind: "stalled",
+        clearedAt: 0,
+      });
+    }
+    for (const p of gpsStale) {
+      const key = `gps:${p.driverId}`;
+      current.set(key, {
+        key,
+        driverName: p.name ?? p.driverId,
+        kind: "gps",
+        clearedAt: 0,
+      });
+    }
+
+    const prev = previous.current;
+    previous.current = current;
+    if (!prev) return; // first snapshot establishes the baseline, clears nothing
+
+    const now = Date.now();
+    const gone = Array.from(prev.values())
+      .filter((entry) => !current.has(entry.key))
+      .map((entry) => ({ ...entry, clearedAt: now }));
+    if (gone.length === 0) return;
+
+    setCleared((old) =>
+      [...gone, ...old.filter((e) => !gone.some((g) => g.key === e.key))]
+        .filter((e) => now - e.clearedAt < CLEARED_TTL_MS)
+        .slice(0, 50)
+    );
+  }, [overviewQuery.data, stalled, gpsStale]);
 
   if (overviewQuery.isLoading) return <PageSkeleton statCards={0} tableRows={6} tableCols={4} />;
   if (overviewQuery.error) {
@@ -146,6 +177,7 @@ export default function OpsAlertsPage() {
       <div>
         <h1 className="font-display text-display-sm text-sand-900">{t("opsPages.alertsTitle")}</h1>
         <p className="text-sm text-sand-600 mt-1">{t("opsPages.alertsSubtitle")}</p>
+        <p className="text-xs text-sand-500 mt-1.5">{t("opsPages.autoClearHint")}</p>
       </div>
 
       {allClear && (
@@ -166,15 +198,12 @@ export default function OpsAlertsPage() {
           <ul className="space-y-2">
             {stalled.map((o) => (
               <AlertRow
-                key={o.id}
-                id={o.id}
-                driverName={o.driver?.name ?? o.driverId ?? "—"}
-                driverPhone={o.driver?.phone}
+                key={o.orderId}
+                driverName={o.driverName ?? o.driverId ?? "n/a"}
+                driverPhone={o.driverPhone}
                 orderNumber={o.orderNumber}
-                orderStatus={o.status}
-                lastSeen={o.updatedAt}
-                acked={acked.has(`stalled:${o.id}`)}
-                onAck={() => ack(`stalled:${o.id}`)}
+                orderStatus={o.orderStatus}
+                lastSeen={o.lastPointAt}
               />
             ))}
           </ul>
@@ -194,15 +223,55 @@ export default function OpsAlertsPage() {
             {gpsStale.map((p) => (
               <AlertRow
                 key={p.driverId}
-                id={p.driverId}
                 driverName={p.name ?? p.driverId}
                 driverPhone={p.phone}
                 lastSeen={p.at}
-                acked={acked.has(`gps:${p.driverId}`)}
-                onAck={() => ack(`gps:${p.driverId}`)}
               />
             ))}
           </ul>
+        </section>
+      )}
+
+      {/* Cleared — the record that replaces the acknowledge trail */}
+      {cleared.length > 0 && (
+        <section>
+          <button
+            type="button"
+            onClick={() => setShowCleared((v) => !v)}
+            aria-expanded={showCleared}
+            className="flex items-center gap-2 text-sm font-medium text-sand-700 hover:text-sand-900 transition-colors"
+          >
+            <Check size={15} className="text-green-600" aria-hidden="true" />
+            {t("opsPages.clearedSection")}
+            <span className="text-xs text-sand-500 tabular-nums">({cleared.length})</span>
+            <ChevronDown
+              size={14}
+              aria-hidden="true"
+              className={cn("transition-transform", showCleared && "rotate-180")}
+            />
+          </button>
+          {showCleared && (
+            <ul className="mt-3 space-y-2">
+              {cleared.map((entry) => (
+                <li
+                  key={`${entry.key}-${entry.clearedAt}`}
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-sand-200 bg-sand-50"
+                >
+                  <span className="min-w-0 flex-1 text-sm text-sand-700 truncate" dir="auto">
+                    {entry.driverName}
+                  </span>
+                  <span className="text-xs text-sand-500">
+                    {entry.kind === "gps"
+                      ? t("opsPages.gpsStaleSection")
+                      : t("opsPages.stalledSection")}
+                  </span>
+                  <span dir="ltr" className="text-xs text-sand-500 tabular-nums">
+                    {formatTime(new Date(entry.clearedAt).toISOString(), locale)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       )}
     </div>

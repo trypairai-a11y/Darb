@@ -141,17 +141,22 @@ describe("Companies route integration tests", () => {
       );
     });
 
-    it("returns 400 when platform is missing", async () => {
+    // Client revision #16 removed the Platform column and the platform picker
+    // from the Add Company form. The column stays on the model for the legacy
+    // platform reports, so creation defaults it instead of demanding it.
+    it("defaults the platform when it is omitted", async () => {
+      const prisma = getMockPrisma();
+      prisma.company.create.mockResolvedValueOnce({ id: "c-noplat", name: "NoPlat Co" });
+
       const res = await request(app)
         .post("/api/companies")
         .send({ name: "NoPlat Co" });
 
-      expect(res.status).toBe(400);
-      expect(res.body).toHaveProperty("error", "Validation failed");
-      expect(res.body.details).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ field: "platform" }),
-        ])
+      expect(res.status).toBe(201);
+      expect(prisma.company.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ name: "NoPlat Co", platform: "KEETA" }),
+        })
       );
     });
 

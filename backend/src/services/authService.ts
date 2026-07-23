@@ -60,7 +60,10 @@ export class AuthService {
       role: user.role,
       email: user.email,
       ...(user.vendorId ? { vendorId: user.vendorId } : {}),
+      ...(user.vendorRole ? { vendorRole: user.vendorRole } : {}),
+      ...(user.branchId ? { branchId: user.branchId } : {}),
       ...(user.fleetPartnerId ? { fleetPartnerId: user.fleetPartnerId } : {}),
+      ...(user.ownerGroupId ? { ownerGroupId: user.ownerGroupId } : {}),
     };
 
     const accessToken = this.generateAccessToken(payload);
@@ -72,7 +75,10 @@ export class AuthService {
       user: {
         id: user.id, email: user.email, name: user.name, role: user.role, tenantId: user.tenantId,
         vendorId: user.vendorId,
+        vendorRole: user.vendorRole,
+        branchId: user.branchId,
         fleetPartnerId: user.fleetPartnerId,
+        ownerGroupId: user.ownerGroupId,
         ...(user.vendorId && user.vendor ? { vendor: user.vendor } : {}),
       },
     };
@@ -105,7 +111,10 @@ export class AuthService {
       role: user.role,
       email: user.email,
       ...(user.vendorId ? { vendorId: user.vendorId } : {}),
+      ...(user.vendorRole ? { vendorRole: user.vendorRole } : {}),
+      ...(user.branchId ? { branchId: user.branchId } : {}),
       ...(user.fleetPartnerId ? { fleetPartnerId: user.fleetPartnerId } : {}),
+      ...(user.ownerGroupId ? { ownerGroupId: user.ownerGroupId } : {}),
     };
 
     return {
@@ -114,7 +123,10 @@ export class AuthService {
       user: {
         id: user.id, email: user.email, name: user.name, role: user.role, tenantId: user.tenantId,
         vendorId: user.vendorId,
+        vendorRole: user.vendorRole,
+        branchId: user.branchId,
         fleetPartnerId: user.fleetPartnerId,
+        ownerGroupId: user.ownerGroupId,
         ...(user.vendorId && user.vendor ? { vendor: user.vendor } : {}),
       },
     };
@@ -131,7 +143,10 @@ export class AuthService {
       role: user.role,
       email: user.email,
       ...(user.vendorId ? { vendorId: user.vendorId } : {}),
+      ...(user.vendorRole ? { vendorRole: user.vendorRole } : {}),
+      ...(user.branchId ? { branchId: user.branchId } : {}),
       ...(user.fleetPartnerId ? { fleetPartnerId: user.fleetPartnerId } : {}),
+      ...(user.ownerGroupId ? { ownerGroupId: user.ownerGroupId } : {}),
     };
 
     return { accessToken: this.generateAccessToken(payload) };
@@ -175,7 +190,10 @@ export class AuthService {
       role: user.role,
       email: user.email,
       ...(user.vendorId ? { vendorId: user.vendorId } : {}),
+      ...(user.vendorRole ? { vendorRole: user.vendorRole } : {}),
+      ...(user.branchId ? { branchId: user.branchId } : {}),
       ...(user.fleetPartnerId ? { fleetPartnerId: user.fleetPartnerId } : {}),
+      ...(user.ownerGroupId ? { ownerGroupId: user.ownerGroupId } : {}),
     };
 
     const accessToken = this.generateAccessToken(payload);

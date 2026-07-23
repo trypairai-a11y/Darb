@@ -37,7 +37,7 @@ export default function Sidebar() {
         "flex items-center gap-3 px-3 py-2 rounded-pill text-sm font-medium transition-all duration-250 ease-sierra-out mb-0.5",
         isActive(item.path)
           ? "bg-primary text-white shadow-soft"
-          : "text-white/70 hover:bg-white/5 hover:text-white"
+          : "text-sand-700 dark:text-secondary hover:bg-sand-100 dark:hover:bg-white/5 hover:text-sand-900 dark:hover:text-foreground"
       )}
     >
       <item.icon size={18} aria-hidden="true" />
@@ -45,29 +45,38 @@ export default function Sidebar() {
     </Link>
   );
 
+  // Revision #7: the rail used to be a solid forest-green block, which the
+  // client read as heavy and unfriendly. It is now the same light surface as
+  // the rest of the shell, with Darb green kept for the active item only.
   return (
     <aside
       className={cn(
-        "fixed top-0 h-screen bg-forest-900 text-white/85 z-40 flex flex-col transition-all duration-250 ease-sierra-out",
-        dir === "rtl" ? "right-0 border-l border-white/5" : "left-0 border-r border-white/5",
+        "fixed top-0 h-screen bg-surface text-foreground z-40 flex flex-col transition-all duration-250 ease-sierra-out",
+        dir === "rtl"
+          ? "right-0 border-l border-sand-200 dark:border-border"
+          : "left-0 border-r border-sand-200 dark:border-border",
         !open
           ? dir === "rtl" ? "translate-x-full w-60" : "-translate-x-full w-60"
           : collapsed ? "w-16" : "w-60"
       )}
     >
       {/* Logo + Collapse */}
-      <div className={cn("h-16 flex items-center border-b border-white/5", collapsed ? "justify-center px-2" : "px-5 justify-between")}>
-        {!collapsed ? (
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center font-display text-lg text-white">D</div>
-            <span className="font-medium tracking-tight text-white">Darb</span>
-          </div>
-        ) : (
-          <div className="h-8 w-8 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center font-display text-lg text-white">D</div>
+      <div
+        className={cn(
+          "h-16 flex items-center border-b border-sand-200 dark:border-border",
+          collapsed ? "justify-center px-2" : "px-5 justify-between"
         )}
+      >
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center font-display text-lg text-white">
+            D
+          </div>
+          {!collapsed && <span className="font-medium tracking-tight text-sand-900 dark:text-foreground">Darb</span>}
+        </div>
         <button
           onClick={() => setOpen(false)}
-          className="p-1.5 rounded-lg text-white/60 hover:bg-white/5 hover:text-white transition-colors"
+          className="p-1.5 rounded-lg text-sand-500 hover:bg-sand-100 dark:hover:bg-white/5 hover:text-sand-800 dark:hover:text-foreground transition-colors"
+          aria-label={t("common.close")}
         >
           <PanelLeftClose size={18} />
         </button>
@@ -77,7 +86,7 @@ export default function Sidebar() {
         {visibleSections.map((section, sectionIdx) => (
           <div key={section.key} className={cn(sectionIdx > 0 && "mt-6")}>
             {!collapsed && (
-              <div className="px-3 mb-2 text-[11px] font-medium text-white/40 uppercase tracking-[0.18em]">
+              <div className="px-3 mb-2 text-[11px] font-medium text-sand-500 uppercase tracking-[0.18em]">
                 {t(section.i18n)}
               </div>
             )}
@@ -86,7 +95,7 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="border-t border-white/5 p-2">
+      <div className="border-t border-sand-200 dark:border-border p-2">
         <LanguageSwitcher collapsed={collapsed} />
       </div>
     </aside>

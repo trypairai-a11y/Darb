@@ -40,6 +40,10 @@ export interface CockpitSummary {
       driversOnline: number;
       minDriversOnline: number | null;
       deliveredToday: number;
+      // Revision #28 — commonly-owned fleets carry their owner entity so the
+      // table can roll them up instead of showing three unrelated-looking rows.
+      ownerGroupId: string | null;
+      ownerGroupName: string | null;
     }>;
   };
   cash: {
@@ -56,8 +60,25 @@ function startOfToday(): Date {
   return d;
 }
 
-export async function getCockpitSummary(tenantId: string): Promise<CockpitSummary> {
-  const today = startOfToday();
+/**
+ * The reporting window for the period-scoped tiles (client revision #26).
+ * Defaults to "today onwards", which is exactly the behaviour this service had
+ * before the date picker existed.
+ */
+export interface CockpitRange {
+  from?: Date;
+  to?: Date;
+}
+
+export async function getCockpitSummary(
+  tenantId: string,
+  range: CockpitRange = {},
+): Promise<CockpitSummary> {
+  const today = range.from ?? startOfToday();
+  // A period filter is `>= from` when open-ended, `>= from AND <= to` when the
+  // user picked a closed range. Live tiles (active orders, drivers online,
+  // cash in the field) deliberately ignore it: they are a snapshot of now.
+  const period = range.to ? { gte: today, lte: range.to } : { gte: today };
 
   const [
     activeByStatus,
@@ -81,7 +102,7 @@ export async function getCockpitSummary(tenantId: string): Promise<CockpitSummar
       _count: { _all: true },
     }),
     prisma.deliveryOrder.findMany({
-      where: { tenantId, status: "DELIVERED", deliveredAt: { gte: today } },
+      where: { tenantId, status: "DELIVERED", deliveredAt: period },
       select: {
         deliveredAt: true,
         slaDeadline: true,
@@ -91,7 +112,7 @@ export async function getCockpitSummary(tenantId: string): Promise<CockpitSummar
       },
     }),
     prisma.deliveryOrder.count({
-      where: { tenantId, status: "CANCELLED", cancelledAt: { gte: today } },
+      where: { tenantId, status: "CANCELLED", cancelledAt: period },
     }),
     prisma.deliveryOrder.count({ where: { tenantId, status: "NO_DRIVER" } }),
     prisma.deliveryZone.findMany({
@@ -99,11 +120,11 @@ export async function getCockpitSummary(tenantId: string): Promise<CockpitSummar
       select: { id: true, code: true, name: true },
     }),
     prisma.deliveryOrder.aggregate({
-      where: { tenantId, status: "DELIVERED", deliveredAt: { gte: today } },
+      where: { tenantId, status: "DELIVERED", deliveredAt: period },
       _sum: { deliveryFeeKwd: true },
     }),
     prisma.deliveryOrder.aggregate({
-      where: { tenantId, status: "DELIVERED", deliveredAt: { gte: today }, tipKwd: { not: null } },
+      where: { tenantId, status: "DELIVERED", deliveredAt: period, tipKwd: { not: null } },
       _sum: { tipKwd: true },
     }),
     prisma.courierOnlineSession.findMany({
@@ -112,14 +133,21 @@ export async function getCockpitSummary(tenantId: string): Promise<CockpitSummar
     }),
     prisma.fleetPartner.findMany({
       where: { tenantId },
-      select: { id: true, name: true, disciplineStatus: true, minDriversOnline: true, flatFeePerOrderKwd: true },
+      select: {
+        id: true,
+        name: true,
+        disciplineStatus: true,
+        minDriversOnline: true,
+        flatFeePerOrderKwd: true,
+        ownerGroup: { select: { id: true, name: true } },
+      },
     }),
     prisma.walletAccount.aggregate({
       where: { tenantId, ownerType: "DRIVER_CASH" },
       _sum: { balanceKwd: true },
     }),
     prisma.remittance.aggregate({
-      where: { tenantId, createdAt: { gte: today } },
+      where: { tenantId, createdAt: period },
       _sum: { amountKwd: true },
     }),
     prisma.walletAccount.findFirst({
@@ -279,6 +307,8 @@ export async function getCockpitSummary(tenantId: string): Promise<CockpitSummar
             ? Object.values(commitments).reduce((s, n) => s + n, 0)
             : null,
           deliveredToday: deliveredByFleet.get(f.id) ?? 0,
+          ownerGroupId: f.ownerGroup?.id ?? null,
+          ownerGroupName: f.ownerGroup?.name ?? null,
         };
       }),
     },

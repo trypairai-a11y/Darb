@@ -33,6 +33,7 @@ import { generateFleetStatements } from "../services/fleetService";
 import { applyFleetDiscipline } from "../services/fleetDiscipline";
 import { computeAllTenantTiers, snapshotAllTenants } from "../services/performanceService";
 import { prisma } from "../config";
+import { refreshDemoData } from "../services/demoRefreshService";
 
 const router = Router();
 
@@ -128,6 +129,9 @@ router.get("/dispatch-sweep", async (req: Request, res: Response) => {
  *      per tenant (reuses the BullMQ worker's pure tick processor).
  *   2. Monthly netting — on the 1st of the month (or ?netting=1 to force),
  *      generate vendor statements for the closed month, per tenant.
+ *   3. Demo refresh — only when DEMO_REFRESH_ENABLED=true. Keeps the review
+ *      environment showing a working day (client revisions #5/#6): every
+ *      surface is scoped to today, so a day-old seed reads as empty tabs.
  * Later build phases append legs here (performance tiers, fleet discipline,
  * founder digest) instead of adding new cron entries.
  */
@@ -185,6 +189,16 @@ router.get("/daily", async (req: Request, res: Response) => {
         }
       }
       out.netting = { statements, fleetStatements, errors, periodStart: period.start };
+    }
+
+    // Demo data refresh — no-ops unless DEMO_REFRESH_ENABLED=true, so a real
+    // tenant can never have synthetic orders written into it.
+    try {
+      const demo = await refreshDemoData();
+      if (!demo.skipped) out.demo = demo;
+    } catch (err) {
+      logger.error({ err }, "cron daily: demo refresh failed");
+      out.demo = { error: true };
     }
 
     out.durationMs = Date.now() - startedAt;

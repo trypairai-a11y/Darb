@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useApiGet } from "@/hooks/useApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/cn";
-import PlatformBadge from "@/components/shared/PlatformBadge";
 import { Plus, X, Shield, UserX, UserCheck, Loader2, Bell, Check } from "lucide-react";
 import api from "@/lib/api";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -18,14 +17,8 @@ const ROLE_COLORS: Record<string, string> = {
   VIEWER: "bg-gray-100 text-gray-500",
 };
 
-const JOB_GRADES = ["Team Leader", "Supervisor", "Senior Supervisor", "Area Manager"] as const;
-
-const GRADE_COLORS: Record<string, string> = {
-  "Team Leader": "bg-sky-50 text-sky-600",
-  "Supervisor": "bg-violet-50 text-violet-600",
-  "Senior Supervisor": "bg-indigo-50 text-indigo-600",
-  "Area Manager": "bg-rose-50 text-rose-600",
-};
+/** Roles that can own a company as its Darb account manager (revision #20). */
+const INTERNAL_ROLES = ["ADMIN", "OPS_MANAGER", "SUPERVISOR"];
 
 type Tab = "companies" | "users" | "notifications" | "profile";
 
@@ -75,15 +68,6 @@ function UsersTab() {
     }
   }
 
-  async function handleGradeChange(userId: string, grade: string) {
-    try {
-      await api.put(`/api/users/${userId}`, { jobGrade: grade });
-      refetch();
-    } catch (err: any) {
-      console.error(err);
-    }
-  }
-
   return (
     <div>
       <div className="flex justify-end mb-4">
@@ -100,7 +84,6 @@ function UsersTab() {
               <th className="text-left text-xs font-medium text-secondary px-5 py-3">Name</th>
               <th className="text-left text-xs font-medium text-secondary px-5 py-3">Email</th>
               <th className="text-left text-xs font-medium text-secondary px-5 py-3">Role</th>
-              <th className="text-left text-xs font-medium text-secondary px-5 py-3">Job Grade</th>
               <th className="text-left text-xs font-medium text-secondary px-5 py-3">Status</th>
               <th className="text-left text-xs font-medium text-secondary px-5 py-3">Last Login</th>
               <th className="text-right text-xs font-medium text-secondary px-5 py-3">Actions</th>
@@ -125,33 +108,6 @@ function UsersTab() {
                   <span className={cn("px-2 py-0.5 rounded-md text-xs font-medium sr-only", ROLE_COLORS[u.role])}>
                     {u.role.replace("_", " ")}
                   </span>
-                </td>
-                <td className="px-5 py-3">
-                  {u.role === "SUPERVISOR" ? (
-                    <>
-                      <select
-                        value={u.jobGrade || ""}
-                        onChange={(e) => handleGradeChange(u.id, e.target.value)}
-                        className={cn(
-                          "appearance-none px-2 py-0.5 rounded-md text-xs font-medium border-0 cursor-pointer focus:outline-none",
-                          u.jobGrade ? GRADE_COLORS[u.jobGrade] : "text-secondary"
-                        )}
-                        style={{ backgroundColor: "transparent" }}
-                      >
-                        <option value="">— Select Grade</option>
-                        {JOB_GRADES.map((g) => (
-                          <option key={g} value={g}>{g}</option>
-                        ))}
-                      </select>
-                      {u.jobGrade && (
-                        <span className={cn("px-2 py-0.5 rounded-md text-xs font-medium sr-only", GRADE_COLORS[u.jobGrade])}>
-                          {u.jobGrade}
-                        </span>
-                      )}
-                    </>
-                  ) : (
-                    <span className="text-xs text-secondary">—</span>
-                  )}
                 </td>
                 <td className="px-5 py-3">
                   <span className={cn("px-2 py-0.5 rounded-md text-xs font-medium",
@@ -179,7 +135,7 @@ function UsersTab() {
             ))}
             {users.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-5 py-8 text-center text-sm text-secondary">No users found</td>
+                <td colSpan={6} className="px-5 py-8 text-center text-sm text-secondary">No users found</td>
               </tr>
             )}
           </tbody>
@@ -419,13 +375,47 @@ export default function SettingsPage() {
     profile: t("settingsPage.tabProfile"),
   };
   const { data: companiesData, refetch: refetchCompanies } = useApiGet<any>("/api/companies?limit=50");
+  // Internal staff only — a VENDOR or FLEET portal login can never be an
+  // account manager (revision #20), and the API enforces the same rule.
+  const { data: staffData } = useApiGet<any>("/api/users?limit=100");
   const [showAddCompany, setShowAddCompany] = useState(false);
-  const [newCompany, setNewCompany] = useState({ name: "", platform: "KEETA", licenseCount: 1 });
+  const [newCompany, setNewCompany] = useState({ name: "", kind: "FLEET" });
+  const [kindFilter, setKindFilter] = useState<"ALL" | "FLEET" | "VENDOR">("ALL");
 
   // Profile form
   const [profileForm, setProfileForm] = useState({ name: user?.name || "", email: user?.email || "" });
 
-  const companies = companiesData?.data || [];
+  const allCompanies = companiesData?.data || [];
+  const companies =
+    kindFilter === "ALL"
+      ? allCompanies
+      : allCompanies.filter((c: any) => (c.kind ?? "FLEET") === kindFilter);
+
+  const staff = (staffData?.data || []).filter((u: any) => INTERNAL_ROLES.includes(u.role));
+
+  // Revision #17 — the running total across every company, not per row.
+  const totalDrivers = allCompanies.reduce(
+    (sum: number, c: any) => sum + (c._count?.drivers || 0),
+    0
+  );
+
+  const handleAssignManager = async (companyId: string, accountManagerId: string) => {
+    try {
+      await api.put(`/api/companies/${companyId}`, { accountManagerId });
+      refetchCompanies();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleChangeKind = async (companyId: string, kind: string) => {
+    try {
+      await api.put(`/api/companies/${companyId}`, { kind });
+      refetchCompanies();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleAddCompany = async () => {
     try {
@@ -464,7 +454,30 @@ export default function SettingsPage() {
 
       {tab === "companies" && (
         <div>
-          <div className="flex justify-end mb-4">
+          <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
+            <div className="flex items-center gap-4 flex-wrap">
+              {/* Revision #21 — switch the table between vendors and fleets. */}
+              <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">
+                {(["ALL", "FLEET", "VENDOR"] as const).map((key) => (
+                  <button key={key} onClick={() => setKindFilter(key)}
+                    className={cn(
+                      "px-3 py-1.5 text-xs font-medium rounded-lg transition-colors",
+                      kindFilter === key ? "bg-white text-foreground shadow-sm" : "text-secondary hover:text-foreground"
+                    )}>
+                    {key === "ALL"
+                      ? t("settingsPage.kindAll")
+                      : key === "FLEET"
+                        ? t("settingsPage.kindFleets")
+                        : t("settingsPage.kindVendors")}
+                  </button>
+                ))}
+              </div>
+              {/* Revision #17 — total drivers across all companies. */}
+              <div className="text-sm">
+                <span className="text-secondary">{t("settingsPage.totalDrivers")}: </span>
+                <span className="font-semibold tabular-nums" dir="ltr">{totalDrivers}</span>
+              </div>
+            </div>
             <button onClick={() => setShowAddCompany(true)}
               className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-hover transition-colors">
               <Plus size={16} /> {t("settingsPage.addCompany")}
@@ -475,8 +488,8 @@ export default function SettingsPage() {
               <thead>
                 <tr className="border-b border-gray-50">
                   <th className="text-start text-xs font-medium text-secondary px-5 py-3">{t("settingsPage.name")}</th>
-                  <th className="text-start text-xs font-medium text-secondary px-5 py-3">{t("table.platform")}</th>
-                  <th className="text-start text-xs font-medium text-secondary px-5 py-3">{t("settingsPage.licensesCol")}</th>
+                  <th className="text-start text-xs font-medium text-secondary px-5 py-3">{t("settingsPage.typeCol")}</th>
+                  <th className="text-start text-xs font-medium text-secondary px-5 py-3">{t("settingsPage.accountManagerCol")}</th>
                   <th className="text-start text-xs font-medium text-secondary px-5 py-3">{t("companies.drivers")}</th>
                   <th className="text-start text-xs font-medium text-secondary px-5 py-3">{t("table.status")}</th>
                 </tr>
@@ -484,10 +497,42 @@ export default function SettingsPage() {
               <tbody>
                 {companies.map((company: any) => (
                   <tr key={company.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-25">
-                    <td className="px-5 py-3 text-sm font-medium">{company.name}</td>
-                    <td className="px-5 py-3"><PlatformBadge platform={company.platform} /></td>
-                    <td className="px-5 py-3 text-sm text-secondary">{company.licenseCount}</td>
-                    <td className="px-5 py-3 text-sm text-secondary">{company._count?.drivers || 0}</td>
+                    <td className="px-5 py-3 text-sm font-medium">
+                      {company.name}
+                      {company.ownerGroup && (
+                        <span className="block text-xs text-secondary">{company.ownerGroup.name}</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3">
+                      <select
+                        value={company.kind ?? "FLEET"}
+                        onChange={(e) => handleChangeKind(company.id, e.target.value)}
+                        aria-label={t("settingsPage.typeCol")}
+                        className={cn(
+                          "appearance-none px-2 py-0.5 rounded-md text-xs font-medium border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20",
+                          (company.kind ?? "FLEET") === "VENDOR"
+                            ? "bg-blue-50 text-blue-600"
+                            : "bg-green-50 text-green-600"
+                        )}
+                      >
+                        <option value="FLEET">{t("settingsPage.kindFleet")}</option>
+                        <option value="VENDOR">{t("settingsPage.kindVendor")}</option>
+                      </select>
+                    </td>
+                    <td className="px-5 py-3">
+                      <select
+                        value={company.accountManager?.id ?? ""}
+                        onChange={(e) => handleAssignManager(company.id, e.target.value)}
+                        aria-label={t("settingsPage.accountManagerCol")}
+                        className="appearance-none px-2 py-0.5 rounded-md text-xs border-0 bg-transparent cursor-pointer text-secondary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      >
+                        <option value="">{t("settingsPage.unassigned")}</option>
+                        {staff.map((u: any) => (
+                          <option key={u.id} value={u.id}>{u.name}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-5 py-3 text-sm text-secondary tabular-nums">{company._count?.drivers || 0}</td>
                     <td className="px-5 py-3">
                       <span className={cn("px-2 py-0.5 rounded-md text-xs font-medium",
                         company.isActive ? "bg-green-50 text-green-600" : "bg-gray-100 text-gray-500")}>
@@ -514,10 +559,11 @@ export default function SettingsPage() {
                       className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-secondary mb-1.5">{t("table.platform")}</label>
-                    <select value={newCompany.platform} onChange={(e) => setNewCompany({ ...newCompany, platform: e.target.value })}
+                    <label className="block text-xs font-medium text-secondary mb-1.5">{t("settingsPage.typeCol")}</label>
+                    <select value={newCompany.kind} onChange={(e) => setNewCompany({ ...newCompany, kind: e.target.value })}
                       className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20">
-                      {["KEETA", "TALABAT", "DELIVEROO", "AMERICANA"].map((p) => <option key={p} value={p}>{p}</option>)}
+                      <option value="FLEET">{t("settingsPage.kindFleet")}</option>
+                      <option value="VENDOR">{t("settingsPage.kindVendor")}</option>
                     </select>
                   </div>
                   <button onClick={handleAddCompany}

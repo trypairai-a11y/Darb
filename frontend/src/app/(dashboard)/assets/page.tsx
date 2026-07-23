@@ -14,10 +14,14 @@ import AddPlatformEquipmentModal from "@/components/shared/AddPlatformEquipmentM
 
 type Tab = "vehicles" | "sims" | "devices" | "platformEquipment";
 
+/**
+ * V1 scope (client revision #23): Darb is the mediator and owns no vehicles,
+ * SIMs or devices, so only platform equipment is shown. The other tabs, their
+ * modals and their API routes are deliberately left in place for the V2 asset
+ * tracker the client asked us to keep on the backlog — flip this array back to
+ * re-enable them.
+ */
 const TABS: { key: Tab; label: string; icon: typeof Car }[] = [
-  { key: "vehicles", label: "Vehicles", icon: Car },
-  { key: "sims", label: "SIMs", icon: CreditCard },
-  { key: "devices", label: "Devices", icon: Smartphone },
   { key: "platformEquipment", label: "Platform Equipment", icon: Boxes },
 ];
 
@@ -147,7 +151,7 @@ function licenseStatus(expiry?: string | null) {
 }
 
 export default function GlobalAssetsPage() {
-  const [tab, setTab] = useState<Tab>("vehicles");
+  const [tab, setTab] = useState<Tab>("platformEquipment");
   const [query, setQuery] = useState("");
   const [addModalOpen, setAddModalOpen] = useState(false);
 
@@ -555,8 +559,6 @@ export default function GlobalAssetsPage() {
     })(),
   };
 
-  const totalAssets = totals.vehicles + totals.sims + totals.devices + totals.equipment;
-
   return (
     <div className="space-y-6 w-full max-w-none">
       {/* Header */}
@@ -568,33 +570,18 @@ export default function GlobalAssetsPage() {
           <div>
             <h1 className="text-xl font-semibold">Assets</h1>
             <p className="text-xs text-secondary">
-              Vehicles, SIMs, devices and company-issued equipment across all platforms.
+              Platform-issued equipment stock across all platforms.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <p className="text-xs font-medium text-secondary mb-1">Vehicles</p>
-          <p className="text-2xl font-semibold">{totals.vehicles}</p>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <p className="text-xs font-medium text-secondary mb-1">SIMs</p>
-          <p className="text-2xl font-semibold">{totals.sims}</p>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <p className="text-xs font-medium text-secondary mb-1">Devices</p>
-          <p className="text-2xl font-semibold">{totals.devices}</p>
-        </div>
+      {/* Stat cards — "Total assets" went with the other tabs: a rollup over a
+          single category is just that category. */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
           <p className="text-xs font-medium text-secondary mb-1">Platform equipment</p>
           <p className="text-2xl font-semibold">{totals.equipment}</p>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <p className="text-xs font-medium text-secondary mb-1">Total assets</p>
-          <p className="text-2xl font-semibold">{totalAssets}</p>
         </div>
       </div>
 

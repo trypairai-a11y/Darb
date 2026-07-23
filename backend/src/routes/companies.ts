@@ -15,7 +15,16 @@ const DESTRUCTIVE = ["ADMIN"];
 
 const companySchema = z.object({
   name: z.string().min(1, "Company name is required").max(200),
-  platform: z.enum(["TALABAT", "KEETA", "DELIVEROO", "AMERICANA"]),
+  // Platform is no longer collected in the UI (revision #16 removed the column
+  // and the picker). It stays on the model for the legacy platform reports, so
+  // creation defaults it rather than demanding it.
+  platform: z.enum(["TALABAT", "KEETA", "DELIVEROO", "AMERICANA"]).optional(),
+  // Revision #21 — vendor/fleet classification.
+  kind: z.enum(["FLEET", "VENDOR"]).optional(),
+  // Revision #20 — the assigned internal Darb account manager.
+  accountManagerId: z.string().uuid().nullish(),
+  // Revision #15/#27 — commonly-owned company grouping.
+  ownerGroupId: z.string().uuid().nullish(),
   contactPerson: z.string().max(200).optional(),
   contactPhone: z.string().max(20).optional(),
   contactEmail: z.string().email().max(200).optional(),
@@ -48,12 +57,17 @@ router.get("/", async (req: Request, res: Response) => {
     const tenantId = req.user!.tenantId;
     const where: any = { tenantId };
     if (req.query.platform) where.platform = req.query.platform;
+    if (req.query.kind) where.kind = req.query.kind;
 
     const [data, total] = await Promise.all([
       prisma.company.findMany({
         where, skip, take: limit,
         orderBy: { name: "asc" },
-        include: { _count: { select: { drivers: true } } },
+        include: {
+          _count: { select: { drivers: true } },
+          accountManager: { select: { id: true, name: true } },
+          ownerGroup: { select: { id: true, name: true } },
+        },
       }),
       prisma.company.count({ where }),
     ]);
@@ -121,7 +135,11 @@ router.get("/:id", async (req: Request, res: Response) => {
 router.post("/", rbac(...MUTATORS), validateBody(companySchema.passthrough()), async (req: Request, res: Response) => {
   try {
     const company = await prisma.company.create({
-      data: { ...req.body, tenantId: req.user!.tenantId },
+      data: {
+        ...req.body,
+        platform: req.body.platform ?? "KEETA",
+        tenantId: req.user!.tenantId,
+      },
     });
     res.status(201).json(company);
   } catch (err: any) {
@@ -148,12 +166,35 @@ router.post("/", rbac(...MUTATORS), validateBody(companySchema.passthrough()), a
  */
 router.put("/:id", rbac(...MUTATORS), async (req: Request, res: Response) => {
   try {
-    const { name, platform, licenseCount, isActive } = req.body ?? {};
+    const { name, platform, licenseCount, isActive, kind, accountManagerId, ownerGroupId } =
+      req.body ?? {};
     const data: Record<string, unknown> = {};
     if (name !== undefined) data.name = name;
     if (platform !== undefined) data.platform = platform;
     if (licenseCount !== undefined) data.licenseCount = licenseCount;
     if (isActive !== undefined) data.isActive = isActive;
+    if (kind !== undefined) data.kind = kind;
+    // Empty string from a cleared <select> means "unassign", not "skip".
+    if (accountManagerId !== undefined) {
+      if (accountManagerId) {
+        // The account manager is internal Darb staff. A VENDOR or FLEET portal
+        // account must never end up owning a company record.
+        const manager = await prisma.user.findFirst({
+          where: {
+            id: accountManagerId,
+            tenantId: req.user!.tenantId,
+            role: { notIn: ["VENDOR", "FLEET"] },
+          },
+          select: { id: true },
+        });
+        if (!manager) {
+          res.status(400).json({ error: "Account manager must be an internal Darb user" });
+          return;
+        }
+      }
+      data.accountManagerId = accountManagerId || null;
+    }
+    if (ownerGroupId !== undefined) data.ownerGroupId = ownerGroupId || null;
     const company = await prisma.company.updateMany({
       where: { id: req.params.id, tenantId: req.user!.tenantId },
       data,

@@ -14,7 +14,13 @@ import { useToast } from "@/components/shared/Toast";
 import WalletLedgerTable from "@/components/darb/WalletLedgerTable";
 import LiveMap from "@/components/map/LiveMap";
 import { vendorsApi, foodicsApi, unwrapList } from "@/lib/darbApi";
-import type { Vendor, VendorBranch, WalletEntry } from "@/types/darb";
+import type {
+  Vendor,
+  VendorBranch,
+  VendorPortalRole,
+  VendorUser,
+  WalletEntry,
+} from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd, formatDateTime } from "@/i18n/format";
 import { cn } from "@/lib/cn";
@@ -690,96 +696,214 @@ function WalletTab({ vendorId }: { vendorId: string }) {
 function UsersTab({ vendorId }: { vendorId: string }) {
   const { t } = useI18n();
   const toast = useToast();
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const queryClient = useQueryClient();
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    vendorRole: "OWNER" as VendorPortalRole,
+    branchId: "",
+  });
   const [saving, setSaving] = useState(false);
-  const [created, setCreated] = useState<string[]>([]);
+
+  const usersQuery = useQuery({
+    queryKey: ["darb", "vendor", vendorId, "users"],
+    queryFn: () => vendorsApi.users(vendorId),
+  });
+  const users = useMemo(() => unwrapList<VendorUser>(usersQuery.data), [usersQuery.data]);
+
+  // Branch options come from the same source as the Branches tab.
+  const branchesQuery = useQuery({
+    queryKey: ["darb", "vendor", vendorId, "branches"],
+    queryFn: () => vendorsApi.listBranches(vendorId),
+  });
+  const branches = useMemo(() => unwrapList<VendorBranch>(branchesQuery.data), [branchesQuery.data]);
+
+  // Only an order-tracking login is pinned to one branch; owner and finance
+  // are vendor-wide, so the branch picker is irrelevant for them.
+  const needsBranch = form.vendorRole === "ORDER_TRACKING";
+
+  const roleLabel = (role: VendorPortalRole | null | undefined) =>
+    role === "FINANCE"
+      ? t("vendorsPage.roleFinance")
+      : role === "ORDER_TRACKING"
+        ? t("vendorsPage.roleOrderTracking")
+        : t("vendorsPage.roleOwner");
 
   async function handleCreate() {
     if (!form.name.trim() || !form.email.trim() || !form.password) return;
+    if (needsBranch && !form.branchId) {
+      toast.error(t("vendorsPage.branchRequired"));
+      return;
+    }
     setSaving(true);
     try {
-      const user = await vendorsApi.createUser(vendorId, {
+      await vendorsApi.createUser(vendorId, {
         name: form.name.trim(),
         email: form.email.trim(),
         password: form.password,
+        vendorRole: form.vendorRole,
+        branchId: needsBranch ? form.branchId : null,
       });
       toast.success(t("vendorsPage.userCreated"));
-      setCreated((prev) => [...prev, user?.email ?? form.email.trim()]);
-      setForm({ name: "", email: "", password: "" });
-    } catch {
-      toast.error(t("toast.failedSave"));
+      setForm({ name: "", email: "", password: "", vendorRole: "OWNER", branchId: "" });
+      await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", vendorId, "users"] });
+    } catch (err) {
+      const msg =
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+        t("toast.failedSave");
+      toast.error(msg);
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <div className="bg-card border border-sand-200 rounded-2xl shadow-soft p-6 max-w-xl space-y-5">
+    <div className="space-y-6">
+      {/* Existing users — the tab used to be a bare create form with no way to
+          see who already had access. */}
       <div>
-        <h2 className="font-medium text-sand-900">{t("vendorsPage.createUser")}</h2>
-        <p className="text-xs text-sand-600 mt-1">{t("vendorsPage.usersHint")}</p>
+        <h2 className="font-medium text-sand-900 mb-3">{t("vendorsPage.users")}</h2>
+        <DataTable
+          columns={[
+            { key: "name", label: t("vendorsPage.userName") },
+            {
+              key: "email",
+              label: t("vendorsPage.userEmail"),
+              render: (v: string) => (
+                <span dir="ltr" className="font-mono text-xs">
+                  {v}
+                </span>
+              ),
+            },
+            {
+              key: "vendorRole",
+              label: t("vendorsPage.portalRole"),
+              render: (v: VendorPortalRole | null) => (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-pill text-[11px] font-medium bg-sand-100 text-sand-700">
+                  {roleLabel(v)}
+                </span>
+              ),
+            },
+            {
+              key: "branch",
+              label: t("vendorsPage.branch"),
+              sortable: false,
+              render: (v: VendorUser["branch"]) =>
+                v ? (
+                  <span dir="auto">{v.name}</span>
+                ) : (
+                  <span className="text-sand-500">{t("vendorsPage.allBranches")}</span>
+                ),
+            },
+          ]}
+          data={users}
+          loading={usersQuery.isLoading}
+          emptyMessage={t("vendorsPage.noUsers")}
+        />
       </div>
-      <form
-        className="space-y-4"
-        onSubmit={(e) => {
-          e.preventDefault();
-          void handleCreate();
-        }}
-      >
+
+      {/* Create */}
+      <div className="bg-card border border-sand-200 rounded-2xl shadow-soft p-6 max-w-xl space-y-5">
         <div>
-          <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
-            {t("vendorsPage.userName")}
-          </label>
-          <input
-            type="text"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-            required
-          />
+          <h2 className="font-medium text-sand-900">{t("vendorsPage.createUser")}</h2>
+          <p className="text-xs text-sand-600 mt-1">{t("vendorsPage.usersHint")}</p>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleCreate();
+          }}
+        >
           <div>
             <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
-              {t("vendorsPage.userEmail")}
+              {t("vendorsPage.userName")}
             </label>
             <input
-              type="email"
-              dir="ltr"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
               required
             />
           </div>
-          <div>
-            <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
-              {t("vendorsPage.userPassword")}
-            </label>
-            <input
-              type="password"
-              dir="ltr"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-              required
-              minLength={8}
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
+                {t("vendorsPage.userEmail")}
+              </label>
+              <input
+                type="email"
+                dir="ltr"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
+                {t("vendorsPage.userPassword")}
+              </label>
+              <input
+                type="password"
+                dir="ltr"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                required
+                minLength={8}
+              />
+            </div>
           </div>
-        </div>
-        <button type="submit" disabled={saving} className="btn-primary px-5 h-10 disabled:opacity-50">
-          {saving ? t("common.processing") : t("vendorsPage.createUser")}
-        </button>
-      </form>
-      {created.length > 0 && (
-        <ul className="text-xs text-sand-700 space-y-1">
-          {created.map((email) => (
-            <li key={email} dir="ltr" className="font-mono">
-              ✓ {email}
-            </li>
-          ))}
-        </ul>
-      )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
+                {t("vendorsPage.portalRole")}
+              </label>
+              <select
+                value={form.vendorRole}
+                onChange={(e) =>
+                  setForm({ ...form, vendorRole: e.target.value as VendorPortalRole })
+                }
+                className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="OWNER">{t("vendorsPage.roleOwner")}</option>
+                <option value="FINANCE">{t("vendorsPage.roleFinance")}</option>
+                <option value="ORDER_TRACKING">{t("vendorsPage.roleOrderTracking")}</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
+                {t("vendorsPage.branch")}
+              </label>
+              <select
+                value={form.branchId}
+                onChange={(e) => setForm({ ...form, branchId: e.target.value })}
+                disabled={!needsBranch}
+                className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-sand-100 disabled:text-sand-500"
+              >
+                <option value="">
+                  {needsBranch ? t("vendorsPage.selectBranch") : t("vendorsPage.allBranches")}
+                </option>
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <p className="text-xs text-sand-600">{t("vendorsPage.roleHint")}</p>
+
+          <button type="submit" disabled={saving} className="btn-primary px-5 h-10 disabled:opacity-50">
+            {saving ? t("common.processing") : t("vendorsPage.createUser")}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
