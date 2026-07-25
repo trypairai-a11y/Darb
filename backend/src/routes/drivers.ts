@@ -254,6 +254,109 @@ router.get("/summary", async (req: Request, res: Response) => {
   }
 });
 
+// Shifts — driver online sessions for a Kuwait-local day. A "shift" is one
+// CourierOnlineSession: startTime = driver went online, endTime = went offline
+// (null = still online now). Registered before the "/:id" routes so "/shifts"
+// is not swallowed as an id. Read-only; SUPERVISOR+ reach it via tenantScope.
+router.get("/shifts", async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+
+    // Kuwait is UTC+3, no DST. Treat ?date=YYYY-MM-DD as that calendar day in
+    // Kuwait local time; default to "today" in Kuwait.
+    const KUWAIT_OFFSET_MS = 3 * 60 * 60 * 1000;
+    const rawDate = String(req.query.date || "").trim();
+    const dateStr = /^\d{4}-\d{2}-\d{2}$/.test(rawDate)
+      ? rawDate
+      : new Date(Date.now() + KUWAIT_OFFSET_MS).toISOString().slice(0, 10);
+    const dayStart = new Date(`${dateStr}T00:00:00.000+03:00`);
+    const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+    const now = new Date();
+
+    const [sessions, onlineNow] = await Promise.all([
+      prisma.courierOnlineSession.findMany({
+        where: { tenantId, startTime: { gte: dayStart, lt: dayEnd } },
+        orderBy: { startTime: "asc" },
+        select: {
+          id: true,
+          driverId: true,
+          startTime: true,
+          endTime: true,
+          isOnline: true,
+          availability: true,
+          area: true,
+          driver: { select: { name: true, phone: true } },
+        },
+      }),
+      // Live count of drivers currently online, independent of the viewed day.
+      prisma.courierOnlineSession.count({
+        where: { tenantId, isOnline: true, endTime: null },
+      }),
+    ]);
+
+    const byDriver = new Map<string, any>();
+    for (const s of sessions) {
+      const end = s.endTime ?? now;
+      const durationMinutes = Math.max(0, Math.round((end.getTime() - s.startTime.getTime()) / 60000));
+      let entry = byDriver.get(s.driverId);
+      if (!entry) {
+        entry = {
+          driverId: s.driverId,
+          name: s.driver?.name ?? "n/a",
+          phone: s.driver?.phone ?? null,
+          sessions: [] as any[],
+          totalMinutes: 0,
+          firstStart: s.startTime,
+          lastEnd: s.endTime ?? null,
+          onlineNow: false,
+        };
+        byDriver.set(s.driverId, entry);
+      }
+      const stillOnline = s.endTime == null && s.isOnline;
+      entry.sessions.push({
+        id: s.id,
+        startTime: toIso(s.startTime),
+        endTime: toIso(s.endTime),
+        durationMinutes,
+        area: s.area ?? null,
+        isOnline: stillOnline,
+        availability: s.availability,
+      });
+      entry.totalMinutes += durationMinutes;
+      if (s.startTime < entry.firstStart) entry.firstStart = s.startTime;
+      if (stillOnline) {
+        entry.onlineNow = true;
+        entry.lastEnd = null;
+      } else if (entry.lastEnd !== null && s.endTime && new Date(entry.lastEnd) < s.endTime) {
+        entry.lastEnd = s.endTime;
+      }
+    }
+
+    const drivers = Array.from(byDriver.values())
+      .map((d) => ({
+        ...d,
+        firstStart: toIso(d.firstStart),
+        lastEnd: toIso(d.lastEnd),
+      }))
+      // Online drivers first, then most hours worked.
+      .sort((a, b) => Number(b.onlineNow) - Number(a.onlineNow) || b.totalMinutes - a.totalMinutes);
+
+    const totalMinutes = drivers.reduce((sum, d) => sum + d.totalMinutes, 0);
+
+    res.json({
+      date: dateStr,
+      summary: {
+        onlineNow,
+        driversOnShift: drivers.length,
+        totalHours: Math.round((totalMinutes / 60) * 10) / 10,
+      },
+      drivers,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get("/export", async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;

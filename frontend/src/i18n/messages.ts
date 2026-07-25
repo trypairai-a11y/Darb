@@ -1241,6 +1241,24 @@ export interface Messages {
     fleetAssets: string;
     fleetAssetsDesc: string;
     zoneLoad: string;
+    shifts: string;
+  };
+  shiftsPage: {
+    title: string;
+    subtitle: string;
+    onlineNow: string;
+    driversOnShift: string;
+    totalHours: string;
+    date: string;
+    driver: string;
+    start: string;
+    finish: string;
+    duration: string;
+    area: string;
+    sessions: string;
+    onlineNowBadge: string;
+    noShifts: string;
+    stillOnline: string;
   };
   zonesPage: {
     title: string;
@@ -3079,6 +3097,24 @@ export const en: Messages = {
     fleetAssets: "Assets",
     fleetAssetsDesc: "Vehicles, phones, SIMs and equipment.",
     zoneLoad: "Zone load",
+    shifts: "Shifts",
+  },
+  shiftsPage: {
+    title: "Shifts",
+    subtitle: "When each driver started and finished, live from the driver app.",
+    onlineNow: "Online now",
+    driversOnShift: "Drivers on shift",
+    totalHours: "Total hours",
+    date: "Date",
+    driver: "Driver",
+    start: "Start",
+    finish: "Finish",
+    duration: "Duration",
+    area: "Area",
+    sessions: "Sessions",
+    onlineNowBadge: "Online now",
+    noShifts: "No shifts on this day.",
+    stillOnline: "Online now",
   },
   zonesPage: {
     title: "Delivery zones",
@@ -4917,6 +4953,24 @@ export const ar: Messages = {
     fleetAssets: "الأصول",
     fleetAssetsDesc: "المركبات والهواتف وشرائح الاتصال والمعدات.",
     zoneLoad: "حِمل المناطق",
+    shifts: "الورديات",
+  },
+  shiftsPage: {
+    title: "الورديات",
+    subtitle: "متى بدأ كل سائق ومتى أنهى، مباشرة من تطبيق السائق.",
+    onlineNow: "متصل الآن",
+    driversOnShift: "سائقون في الوردية",
+    totalHours: "إجمالي الساعات",
+    date: "التاريخ",
+    driver: "السائق",
+    start: "البداية",
+    finish: "النهاية",
+    duration: "المدة",
+    area: "المنطقة",
+    sessions: "الجلسات",
+    onlineNowBadge: "متصل الآن",
+    noShifts: "لا توجد ورديات في هذا اليوم.",
+    stillOnline: "متصل الآن",
   },
   zonesPage: {
     title: "مناطق التوصيل",
