@@ -21,9 +21,7 @@ import {
   Settings,
   Gauge,
   ClipboardList,
-  PlusCircle,
-  BarChart3,
-  Megaphone,
+  TrendingUp,
   Truck,
   Users,
 } from "lucide-react";
@@ -94,15 +92,26 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    // Same cut as the staff rail, six entries down to four. "New order" was an
+    // action masquerading as a place and the orders board already has the
+    // button; Analytics and Campaigns both answer "how do I sell more", so
+    // they are two tabs of Grow.
     key: "vendor",
-    i18n: "darbNav.vendor",
     roles: ["VENDOR"],
     items: [
-      { i18n: "darbNav.vendorOrders", path: "/vendor", icon: ClipboardList },
-      { i18n: "darbNav.vendorNewOrder", path: "/vendor/orders/new", icon: PlusCircle },
+      {
+        i18n: "darbNav.vendorOrders",
+        path: "/vendor",
+        icon: ClipboardList,
+        owns: ["/vendor/orders/new"],
+      },
       { i18n: "darbNav.vendorWallet", path: "/vendor/wallet", icon: Wallet },
-      { i18n: "vendorExtra.navAnalytics", path: "/vendor/analytics", icon: BarChart3 },
-      { i18n: "vendorExtra.navCampaigns", path: "/vendor/campaigns", icon: Megaphone },
+      {
+        i18n: "simple.grow",
+        path: "/vendor/analytics",
+        icon: TrendingUp,
+        owns: ["/vendor/campaigns"],
+      },
       { i18n: "darbNav.vendorSettings", path: "/vendor/settings", icon: Settings },
     ],
   },

@@ -1282,6 +1282,10 @@ export interface Messages {
     setupEquipment: string;
     setupEquipmentDesc: string;
     backToSetup: string;
+    grow: string;
+    growSubtitle: string;
+    growNumbers: string;
+    growMessages: string;
   };
   shiftsPage: {
     title: string;
@@ -3172,6 +3176,10 @@ export const en: Messages = {
     setupEquipment: "Equipment",
     setupEquipmentDesc: "Bags and devices handed out to drivers.",
     backToSetup: "Back to Setup",
+    grow: "Grow",
+    growSubtitle: "How your orders are doing, and how to bring customers back.",
+    growNumbers: "Numbers",
+    growMessages: "Messages",
   },
   shiftsPage: {
     title: "Shifts",
@@ -5062,6 +5070,10 @@ export const ar: Messages = {
     setupEquipment: "المعدات",
     setupEquipmentDesc: "الحقائب والأجهزة المسلَّمة للمندوبين.",
     backToSetup: "رجوع إلى الإعداد",
+    grow: "النمو",
+    growSubtitle: "كيف تسير طلباتك، وكيف تُعيد العملاء إليك.",
+    growNumbers: "الأرقام",
+    growMessages: "الرسائل",
   },
   shiftsPage: {
     title: "الورديات",
