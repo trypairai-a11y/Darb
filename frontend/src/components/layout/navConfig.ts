@@ -108,9 +108,11 @@ export const NAV_SECTIONS: NavSection[] = [
       { i18n: "darbNav.vendorWallet", path: "/vendor/wallet", icon: Wallet },
       {
         i18n: "simple.grow",
-        path: "/vendor/analytics",
+        // Not /vendor/analytics: blockers match that segment and killed the
+        // page chunk. See the redirect left behind at the old path.
+        path: "/vendor/grow",
         icon: TrendingUp,
-        owns: ["/vendor/campaigns"],
+        owns: ["/vendor/analytics", "/vendor/campaigns"],
       },
       { i18n: "darbNav.vendorSettings", path: "/vendor/settings", icon: Settings },
     ],

@@ -3,5 +3,5 @@
 import { redirect } from "next/navigation";
 
 export default function VendorCampaignsRedirect() {
-  redirect("/vendor/analytics?tab=messages");
+  redirect("/vendor/grow?tab=messages");
 }
