@@ -13,15 +13,40 @@ Darb 2.0 (PRD DARB2-PRD-001 v3.0) is a zone-based delivery and growth platform f
 
 ## Surfaces (PRD §5)
 
-| Surface | Where | Users |
-|---|---|---|
-| Ops / rider support | `/ops`, `/orders` + OrderOpsPanel | SUPERVISOR+ |
-| Merchant portal | `/vendor/*` (orders, analytics, campaigns, wallet) | VENDOR role, fenced |
-| Fleet portal | `/fleet-portal/*` (roster, scorecard, payouts) | FLEET role, fenced |
-| Owner cockpit | `/cockpit` | ADMIN |
-| Network config | `/zones`, `/pricing`, `/vendors`, `/fleets` | OPS_MANAGER+ |
-| Customer tracking | `/track/[token]` — public, token is the credential | end customer |
-| Driver app | `mobile/` (offers, POD PIN/photo, cash, SOS, points) | drivers |
+The staff rail is five items with no section headings, and the merchant rail is
+four (revision #31). Most of what used to be separate rail entries turned out to
+be one dataset viewed several ways, so they are segments and tabs now. The old
+routes all still resolve as redirects into the merged screen with the right
+tab preselected, so bookmarks and notification links keep working.
+
+| Surface | Rail item | Where | Users |
+|---|---|---|---|
+| Live control room | Live | `/ops` — segments `?view=orders\|drivers\|problems\|areas`, map follows the open segment | SUPERVISOR+ |
+| Order console | Orders | `/orders` + OrderOpsPanel | SUPERVISOR+ |
+| Money | Money | `/finance` — tabs `?tab=cash\|ledger\|vendor-statements\|reconciliation` | ACCOUNTANT+ |
+| Network + system config | Setup | `/setup` hub → `/zones`, `/pricing`, `/vendors`, `/fleets`, `/settings`, `/assets` | OPS_MANAGER+ |
+| Owner cockpit | Today | `/cockpit` | ADMIN |
+| Merchant portal | (own rail) | `/vendor/*`: orders, wallet, `/vendor/grow` (Numbers + Messages), settings | VENDOR role, fenced |
+| Fleet portal | (own rail) | `/fleet-portal/*` (roster, scorecard, payouts) | FLEET role, fenced |
+| Customer tracking | n/a | `/track/[token]` — public, token is the credential | end customer |
+| Driver app | n/a | `mobile/` (offers, POD PIN/photo, cash, SOS, points) | drivers |
+
+Redirects left behind: `/ops/sos|jeopardy|alerts|zones` → `/ops?view=…`,
+`/finance/remittances|reports` → `/finance?tab=…` (forwarding `view` and
+`type`), `/vendor/analytics|campaigns` → `/vendor/grow?tab=…`.
+
+**An emergency is never a rail item.** `(dashboard)/ops/layout.tsx` floats
+`IncidentAlertBanner` over every ops surface for the oldest un-acknowledged
+incident; the red Emergency tile in the Live rail opens the full console over
+the map. Nothing about SOS requires navigating to it.
+
+**Do not name a route segment `analytics`** (or `ads`, `pixel`, `banner`).
+Next emits the page bundle to `_next/static/chunks/app/(dashboard)/<route>/page-<hash>.js`,
+and ad/tracker blockers match those segments, so the chunk is blocked and the
+screen renders blank with a `ChunkLoadError` while the server happily serves it
+200. This bit `/vendor/analytics` in production; it is `/vendor/grow` now.
+Backend endpoints are fine (`/api/vendor/analytics` was probed and reaches the
+server), it is only the static chunk path that is at risk.
 
 ## Key backend routes
 
