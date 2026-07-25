@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 // Persona handles (PRD §5 surfaces): each free-tier domain lands its audience
 // on the right surface. Only the ROOT path redirects — deep links, assets and
 // the API proxy are untouched, so one app serves every handle.
+// darb-hq is deliberately absent: it is the staff handle, and staff land by
+// role (app/page.tsx) rather than everyone being dropped on the cockpit.
 const HANDLE_LANDING: Record<string, string> = {
-  "darb-hq.vercel.app": "/cockpit",
   "darb-ops.vercel.app": "/ops",
   "darb-merchant.vercel.app": "/vendor",
   "darb-fleet.vercel.app": "/fleet-portal",

@@ -11,6 +11,8 @@ import AssignDriversModal from "@/components/shared/AssignDriversModal";
 import AddSimModal from "@/components/shared/AddSimModal";
 import AddDeviceModal from "@/components/shared/AddDeviceModal";
 import AddPlatformEquipmentModal from "@/components/shared/AddPlatformEquipmentModal";
+import BackToSetup from "@/components/shared/BackToSetup";
+import { useI18n } from "@/i18n/I18nProvider";
 
 type Tab = "vehicles" | "sims" | "devices" | "platformEquipment";
 
@@ -151,6 +153,7 @@ function licenseStatus(expiry?: string | null) {
 }
 
 export default function GlobalAssetsPage() {
+  const { t } = useI18n();
   const [tab, setTab] = useState<Tab>("platformEquipment");
   const [query, setQuery] = useState("");
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -561,6 +564,7 @@ export default function GlobalAssetsPage() {
 
   return (
     <div className="space-y-6 w-full max-w-none">
+      <BackToSetup />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -568,10 +572,10 @@ export default function GlobalAssetsPage() {
             <Package size={20} />
           </div>
           <div>
-            <h1 className="text-xl font-semibold">Assets</h1>
-            <p className="text-xs text-secondary">
-              Platform-issued equipment stock across all platforms.
-            </p>
+            <h1 className="font-display text-display-sm text-sand-900">
+              {t("simple.setupEquipment")}
+            </h1>
+            <p className="text-sm text-sand-600 mt-1">{t("simple.setupEquipmentDesc")}</p>
           </div>
         </div>
       </div>

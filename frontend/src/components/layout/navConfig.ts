@@ -1,34 +1,30 @@
-// Darb 2.0 — declarative navigation config, rebuilt from the PRD
-// (DARB2-PRD-001 v3.0, §5 System Architecture).
+// Darb 2.0 — declarative navigation config.
+//
+// Revision #31 cut the staff rail from sixteen items across five headings down
+// to five items and no heading at all. The removed entries were not separate
+// systems: /ops, /ops/jeopardy, /ops/alerts and /ops/zones all read the same
+// dispatch overview, so they are now four segments of one Live screen; the
+// three finance pages are one Money screen; and the six set-up-once config
+// pages sit behind the /setup hub. Every old URL still resolves, so nothing
+// that was bookmarked or linked breaks.
 //
 // The Sidebar renders from this structure. Sections are gated either by
 // `minRole` (hierarchy gate via useRole().hasRole — VENDOR and FLEET never
 // pass) or by `roles` (exact-match gate — the only way portal roles see
-// anything). The legacy Darb 1.0 platform trees were deleted in the PRD
-// rebuild; this file intentionally has no kill-switches left.
+// anything). A section with no `i18n` renders no heading.
 import type { LucideIcon } from "lucide-react";
 import type { UserRole } from "@/hooks/useRole";
 import {
-  Map,
-  AlertTriangle,
-  BellRing,
-  Siren,
+  Radio,
   Briefcase,
-  Hexagon,
-  Coins,
-  Store,
   Wallet,
-  HandCoins,
-  FileText,
   Settings,
-  SlidersHorizontal,
-  ClipboardList,
-  Clock,
-  PlusCircle,
-  Truck,
   Gauge,
+  ClipboardList,
+  PlusCircle,
   BarChart3,
   Megaphone,
+  Truck,
   Users,
 } from "lucide-react";
 
@@ -37,12 +33,20 @@ export interface NavItem {
   i18n: string;
   path: string;
   icon: LucideIcon;
+  /**
+   * Extra paths this item owns. They do not render as their own rows: they
+   * exist so the item stays highlighted while the user is on a page the rail
+   * no longer lists (a Setup child, a merged ops route).
+   */
+  owns?: string[];
+  /** Hierarchy gate applied to this item alone, on top of the section gate. */
+  minRole?: UserRole;
 }
 
 export interface NavSection {
   key: string;
-  /** i18n key for the section heading. */
-  i18n: string;
+  /** i18n key for the section heading. Omit to render no heading. */
+  i18n?: string;
   /**
    * Hierarchy gate: visible to users whose role is at least this privileged
    * (checked with useRole().hasRole). VENDOR and FLEET are outside the
@@ -56,57 +60,38 @@ export interface NavSection {
 
 export const NAV_SECTIONS: NavSection[] = [
   {
-    key: "operations",
-    i18n: "darbNav.operations",
-    minRole: "SUPERVISOR",
+    // No heading: at five items a heading is noise. The per-item minRole
+    // values are exactly the section gates the old five-section rail used, so
+    // who sees what has not changed.
+    key: "staff",
+    minRole: "VIEWER",
     items: [
-      { i18n: "darbNav.opsMap", path: "/ops", icon: Map },
-      { i18n: "darbNav.sos", path: "/ops/sos", icon: Siren },
-      { i18n: "darbNav.orders", path: "/orders", icon: Briefcase },
-      { i18n: "darbNav.shifts", path: "/shifts", icon: Clock },
-      { i18n: "darbNav.jeopardy", path: "/ops/jeopardy", icon: AlertTriangle },
-      { i18n: "darbNav.alerts", path: "/ops/alerts", icon: BellRing },
-      { i18n: "darbNav.zoneLoad", path: "/ops/zones", icon: Hexagon },
+      { i18n: "simple.today", path: "/cockpit", icon: Gauge, minRole: "ADMIN" },
+      {
+        i18n: "simple.live",
+        path: "/ops",
+        icon: Radio,
+        minRole: "SUPERVISOR",
+        // The four merged ops routes redirect into /ops?view=…, but a user can
+        // still be mid-redirect on one of them.
+        owns: ["/ops/sos", "/ops/jeopardy", "/ops/alerts", "/ops/zones"],
+      },
+      { i18n: "simple.orders", path: "/orders", icon: Briefcase, minRole: "SUPERVISOR" },
+      {
+        i18n: "simple.money",
+        path: "/finance",
+        icon: Wallet,
+        minRole: "ACCOUNTANT",
+        owns: ["/finance/remittances", "/finance/reports"],
+      },
+      {
+        i18n: "simple.setup",
+        path: "/setup",
+        icon: Settings,
+        minRole: "OPS_MANAGER",
+        owns: ["/zones", "/pricing", "/vendors", "/fleets", "/settings", "/assets"],
+      },
     ],
-  },
-  {
-    key: "network",
-    i18n: "darbNav.network",
-    minRole: "OPS_MANAGER",
-    items: [
-      { i18n: "darbNav.zones", path: "/zones", icon: Hexagon },
-      { i18n: "darbNav.pricing", path: "/pricing", icon: Coins },
-      { i18n: "darbNav.vendors", path: "/vendors", icon: Store },
-      { i18n: "darbNav.fleet", path: "/fleets", icon: Truck },
-    ],
-  },
-  {
-    key: "finance",
-    i18n: "darbNav.finance",
-    minRole: "ACCOUNTANT",
-    items: [
-      { i18n: "darbNav.financeOverview", path: "/finance", icon: Wallet },
-      { i18n: "darbNav.remittances", path: "/finance/remittances", icon: HandCoins },
-      // Adjustments was removed at the client's request (revision #13). The
-      // /api/wallets adjustment endpoints stay: corrections are compensating
-      // transactions and the ledger is append-only.
-      { i18n: "darbNav.reports", path: "/finance/reports", icon: FileText },
-    ],
-  },
-  {
-    key: "system",
-    i18n: "darbNav.system",
-    minRole: "OPS_MANAGER",
-    items: [
-      { i18n: "nav.settings", path: "/settings", icon: Settings },
-      { i18n: "nav.assets", path: "/assets", icon: SlidersHorizontal },
-    ],
-  },
-  {
-    key: "cockpit",
-    i18n: "cockpit.navSection",
-    minRole: "ADMIN",
-    items: [{ i18n: "cockpit.navTitle", path: "/cockpit", icon: Gauge }],
   },
   {
     key: "vendor",
@@ -128,22 +113,29 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { i18n: "fleetPortal.navRoster", path: "/fleet-portal", icon: Users },
       { i18n: "fleetPortal.navScorecard", path: "/fleet-portal/scorecard", icon: Gauge },
-      { i18n: "fleetPortal.navPayouts", path: "/fleet-portal/payouts", icon: Wallet },
+      { i18n: "fleetPortal.navPayouts", path: "/fleet-portal/payouts", icon: Truck },
     ],
   },
 ];
 
 /**
- * Longest-prefix active matching: "/ops" must not light up while the user is
- * on "/ops/jeopardy" (which has its own nav item). An item is active when it
- * matches the pathname AND no other configured path matches more specifically.
+ * Longest-prefix active matching, now across each item's `owns` list too, so
+ * Setup stays lit while the user is on /pricing and Live stays lit on a merged
+ * ops route. An item is active when one of its paths matches the pathname AND
+ * no other configured path matches more specifically.
  */
 export function buildIsActive(sections: NavSection[], pathname: string) {
-  const allPaths: string[] = [];
+  const owner = new Map<string, string>(); // candidate path -> owning item.path
   for (const section of sections) {
-    for (const item of section.items) allPaths.push(item.path);
+    for (const item of section.items) {
+      owner.set(item.path, item.path);
+      for (const extra of item.owns ?? []) owner.set(extra, item.path);
+    }
   }
   const matches = (p: string) => pathname === p || pathname.startsWith(`${p}/`);
-  const best = allPaths.filter(matches).sort((a, b) => b.length - a.length)[0];
-  return (path: string) => matches(path) && (best === undefined || best === path);
+  const best = Array.from(owner.keys())
+    .filter(matches)
+    .sort((a, b) => b.length - a.length)[0];
+  const activePath = best === undefined ? undefined : owner.get(best);
+  return (path: string) => activePath === path;
 }

@@ -13,6 +13,7 @@ import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
 import { vendorsApi, unwrapList } from "@/lib/darbApi";
 import type { Vendor } from "@/types/darb";
+import BackToSetup from "@/components/shared/BackToSetup";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd } from "@/i18n/format";
 import { useRole } from "@/hooks/useRole";
@@ -173,6 +174,7 @@ export default function VendorsPage() {
 
   return (
     <div className="space-y-6">
+      <BackToSetup />
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="font-display text-display-sm text-sand-900">{t("vendorsPage.title")}</h1>

@@ -1,20 +1,38 @@
 "use client";
-// Darb 2.0 — /finance: wallet overview. StatCards aggregated from
-// /api/wallets/accounts (vendor payables, driver cash-on-hand, fees today)
-// plus link cards into remittances / adjustments / reports.
-import Link from "next/link";
-import { useMemo } from "react";
-import { useRouter } from "next/navigation";
+// Darb 2.0 — /finance: the Money screen.
+//
+// This used to be three pages, and the middle one was not really a page at
+// all: an overview of three stat cards whose only other content was two link
+// cards pointing at the other two. Revision #31 folded all of it into one
+// screen. The stat cards stayed (they are the answer to "where do we stand"),
+// the link cards went, and the four report views plus cash hand-ins are now a
+// single row of tabs instead of two stacked tab strips on two routes.
+//
+// The old routes redirect in here, so every bookmark and deep link still
+// lands on the right tab.
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { HandCoins, FileText, Wallet, Truck, Store } from "lucide-react";
+import { Truck, Store, Wallet } from "lucide-react";
 import StatCard from "@/components/shared/StatCard";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
+import RemittancesPanel from "@/components/finance/RemittancesPanel";
+import ReportsPanel, { type ReportView } from "@/components/finance/ReportsPanel";
 import { walletsApi, fetchAllPages } from "@/lib/darbApi";
 import type { WalletAccount, WalletEntry } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd } from "@/i18n/format";
-import { DirectionalIcon } from "@/i18n/directionalIcon";
+import { cn } from "@/lib/cn";
+
+/** One flat strip. "cash" is the hand-in desk; the rest are read-only reports. */
+type Tab = "cash" | ReportView;
+
+const TABS: Tab[] = ["cash", "ledger", "vendor-statements", "reconciliation"];
+
+function isTab(value: string | null): value is Tab {
+  return TABS.includes(value as Tab);
+}
 
 function sumBalances(accounts: WalletAccount[], ownerType: WalletAccount["ownerType"]): number {
   return accounts
@@ -22,9 +40,17 @@ function sumBalances(accounts: WalletAccount[], ownerType: WalletAccount["ownerT
     .reduce((sum, a) => sum + (Number(a.balanceKwd) || 0), 0);
 }
 
-export default function FinanceOverviewPage() {
+function MoneyScreen() {
   const { t, locale } = useI18n();
-  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [tab, setTab] = useState<Tab>(() => {
+    const requested = searchParams.get("tab");
+    return isTab(requested) ? requested : "cash";
+  });
+  // Deep links from the stat cards and from the old /finance/reports URL can
+  // pre-filter the ledger by entry type.
+  const [ledgerType, setLedgerType] = useState(() => searchParams.get("type") ?? "");
 
   // These feed totals, so they must not stop at the server's 100-row clamp —
   // with ~1 wallet account per driver, page 1 is all drivers and no platform
@@ -59,6 +85,19 @@ export default function FinanceOverviewPage() {
     [entriesQuery.data]
   );
 
+  const tabLabels: Record<Tab, string> = {
+    cash: t("simple.moneyCash"),
+    ledger: t("reports.viewLedger"),
+    "vendor-statements": t("reports.viewVendorStatements"),
+    reconciliation: t("reports.viewReconciliation"),
+  };
+
+  /** Jump straight to the detail behind a number, the way the cards always did. */
+  function openTab(next: Tab, type = "") {
+    setLedgerType(type);
+    setTab(next);
+  }
+
   if (accountsQuery.isLoading) return <PageSkeleton statCards={3} tableRows={3} tableCols={3} />;
   if (accountsQuery.error) {
     return (
@@ -71,21 +110,6 @@ export default function FinanceOverviewPage() {
     );
   }
 
-  const links = [
-    {
-      href: "/finance/remittances",
-      icon: HandCoins,
-      title: t("darbNav.remittances"),
-      desc: t("wallet.openRemittances"),
-    },
-    {
-      href: "/finance/reports",
-      icon: FileText,
-      title: t("darbNav.reports"),
-      desc: t("wallet.openReports"),
-    },
-  ];
-
   return (
     <div className="space-y-6">
       <div>
@@ -93,55 +117,61 @@ export default function FinanceOverviewPage() {
         <p className="text-sm text-sand-600 mt-1">{t("wallet.subtitle")}</p>
       </div>
 
-      {/* Each card drills into the detail behind its number — they used to be
-          inert, which read as "the three buttons on top do not work". */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           title={t("wallet.vendorPayables")}
           value={formatKwd(vendorPayables, locale)}
           icon={Store}
           trend={t("wallet.viewStatements")}
-          onClick={() => router.push("/finance/reports?view=vendor-statements")}
+          onClick={() => openTab("vendor-statements")}
         />
         <StatCard
           title={t("wallet.driverCash")}
           value={formatKwd(driverCash, locale)}
           icon={Truck}
           trend={t("wallet.viewRemittances")}
-          onClick={() => router.push("/finance/remittances")}
+          onClick={() => openTab("cash")}
         />
         <StatCard
           title={t("wallet.feesToday")}
           value={entriesQuery.isError ? "n/a" : formatKwd(feesToday, locale)}
           icon={Wallet}
           trend={t("wallet.viewLedger")}
-          onClick={() => router.push("/finance/reports?view=ledger&type=PLATFORM_REVENUE")}
+          onClick={() => openTab("ledger", "PLATFORM_REVENUE")}
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {links.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className="group bg-card border border-sand-200 rounded-2xl p-5 shadow-soft transition-all duration-400 ease-sierra-out hover:shadow-lift hover:-translate-y-[1px]"
+      <div className="flex gap-1 bg-sand-100 rounded-pill p-1 w-fit flex-wrap">
+        {TABS.map((key) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setTab(key)}
+            className={cn(
+              "px-4 h-9 text-sm font-medium rounded-pill transition-colors",
+              tab === key ? "bg-white text-sand-900 shadow-soft" : "text-sand-600 hover:text-sand-900"
+            )}
           >
-            <div className="flex items-start justify-between gap-3">
-              <div className="h-9 w-9 rounded-pill bg-sand-100 flex items-center justify-center text-sand-700 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                <link.icon size={16} aria-hidden="true" />
-              </div>
-              <DirectionalIcon
-                kind="arrow-forward"
-                size={15}
-                className="text-sand-400 group-hover:text-primary transition-colors"
-                aria-hidden="true"
-              />
-            </div>
-            <p className="font-medium text-sand-900 mt-3">{link.title}</p>
-            <p className="text-xs text-sand-600 mt-1">{link.desc}</p>
-          </Link>
+            {tabLabels[key]}
+          </button>
         ))}
       </div>
+
+      {tab === "cash" ? (
+        <RemittancesPanel />
+      ) : (
+        // Remounting on a type change is deliberate: it reseeds the panel's
+        // own filter state from the deep link.
+        <ReportsPanel key={`${tab}:${ledgerType}`} view={tab} initialType={ledgerType} />
+      )}
     </div>
+  );
+}
+
+export default function FinancePage() {
+  return (
+    <Suspense fallback={<PageSkeleton statCards={3} tableRows={3} tableCols={3} />}>
+      <MoneyScreen />
+    </Suspense>
   );
 }

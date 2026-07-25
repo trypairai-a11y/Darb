@@ -1243,6 +1243,46 @@ export interface Messages {
     zoneLoad: string;
     shifts: string;
   };
+  /**
+   * Plain-language surface (revision #31). The staff rail was 16 items across
+   * five headings; it is now five items and no headings, and the words are the
+   * ones a dispatcher or an accountant would actually say. `darbNav` is kept
+   * intact because the vendor and fleet portals still read from it.
+   */
+  simple: {
+    today: string;
+    live: string;
+    orders: string;
+    money: string;
+    setup: string;
+    segOrders: string;
+    segDrivers: string;
+    segProblems: string;
+    segAreas: string;
+    runningLate: string;
+    stuck: string;
+    noGps: string;
+    emergency: string;
+    emergencyShow: string;
+    emergencyHide: string;
+    moneyCash: string;
+    moneyReports: string;
+    setupTitle: string;
+    setupSubtitle: string;
+    setupAreas: string;
+    setupAreasDesc: string;
+    setupPrices: string;
+    setupPricesDesc: string;
+    setupShops: string;
+    setupShopsDesc: string;
+    setupCompanies: string;
+    setupCompaniesDesc: string;
+    setupPeople: string;
+    setupPeopleDesc: string;
+    setupEquipment: string;
+    setupEquipmentDesc: string;
+    backToSetup: string;
+  };
   shiftsPage: {
     title: string;
     subtitle: string;
@@ -3099,6 +3139,40 @@ export const en: Messages = {
     zoneLoad: "Zone load",
     shifts: "Shifts",
   },
+  simple: {
+    today: "Today",
+    live: "Live",
+    orders: "Orders",
+    money: "Money",
+    setup: "Setup",
+    segOrders: "Orders",
+    segDrivers: "Drivers",
+    segProblems: "Problems",
+    segAreas: "Areas",
+    runningLate: "Running late",
+    stuck: "Stuck",
+    noGps: "No GPS",
+    emergency: "Emergency",
+    emergencyShow: "Show",
+    emergencyHide: "Hide",
+    moneyCash: "Cash handed in",
+    moneyReports: "Reports",
+    setupTitle: "Setup",
+    setupSubtitle: "Everything you set once, in one place.",
+    setupAreas: "Areas we deliver to",
+    setupAreasDesc: "Draw and name the parts of Kuwait Darb covers.",
+    setupPrices: "Delivery prices",
+    setupPricesDesc: "The flat fee inside an area and the extra between areas.",
+    setupShops: "Shops",
+    setupShopsDesc: "The merchants who send us orders.",
+    setupCompanies: "Delivery companies",
+    setupCompaniesDesc: "The partners who supply the drivers.",
+    setupPeople: "People and access",
+    setupPeopleDesc: "Who can log in to Darb and what they are allowed to do.",
+    setupEquipment: "Equipment",
+    setupEquipmentDesc: "Bags and devices handed out to drivers.",
+    backToSetup: "Back to Setup",
+  },
   shiftsPage: {
     title: "Shifts",
     subtitle: "When each driver started and finished, live from the driver app.",
@@ -3117,8 +3191,8 @@ export const en: Messages = {
     stillOnline: "Online now",
   },
   zonesPage: {
-    title: "Delivery zones",
-    subtitle: "Draw and manage the zones that price and gate every delivery.",
+    title: "Areas we deliver to",
+    subtitle: "Draw and name the parts of Kuwait Darb covers. Areas set the price and the reach of every delivery.",
     newZone: "New zone",
     editZone: "Edit zone",
     editPolygon: "Edit polygon",
@@ -3141,8 +3215,8 @@ export const en: Messages = {
     noZones: "No zones yet — draw the first one on the map.",
   },
   pricingPage: {
-    title: "Pricing",
-    subtitle: "Flat intra-zone fee plus a surcharge for every zone pair.",
+    title: "Delivery prices",
+    subtitle: "One flat fee inside an area, plus an extra for each pair of areas.",
     intraZoneFee: "Intra-zone flat fee",
     intraZoneFeeHint: "Base delivery fee when pickup and dropoff are in the same zone (KD).",
     surchargeMatrix: "Zone-to-zone surcharges",
@@ -3310,10 +3384,10 @@ export const en: Messages = {
     noOrders: "No delivery orders match these filters.",
   },
   wallet: {
-    title: "Finance",
-    subtitle: "Wallet balances, cash flow and settlement across the network.",
-    vendorPayables: "Vendor payables",
-    driverCash: "Driver cash on hand",
+    title: "Money",
+    subtitle: "What we hold, what we owe and what came in.",
+    vendorPayables: "Owed to shops",
+    driverCash: "Cash with drivers",
     feesToday: "Fees today",
     account: "Account",
     balance: "Balance",
@@ -3324,8 +3398,8 @@ export const en: Messages = {
     credit: "Credit",
     runningBalance: "Balance",
     noEntries: "No wallet entries yet.",
-    remittancesTitle: "Remittances",
-    remittancesSubtitle: "Record cash handed in by drivers.",
+    remittancesTitle: "Cash handed in",
+    remittancesSubtitle: "Record the cash a driver hands back at the end of a shift.",
     recordRemittance: "Record remittance",
     driver: "Driver",
     selectDriver: "Search for a driver",
@@ -3363,7 +3437,7 @@ export const en: Messages = {
     openRemittances: "Record and review driver cash hand-ins.",
     openAdjustments: "Correct wallet balances with an audit trail.",
     openReports: "Financial reports and exports.",
-    viewStatements: "View vendor statements",
+    viewStatements: "View shop statements",
     viewRemittances: "View cash hand-ins",
     viewLedger: "View fee ledger",
   },
@@ -3371,9 +3445,9 @@ export const en: Messages = {
     title: "Financial reports",
     subtitle: "Ledger, vendor statements, cash hand-ins and reconciliation, all exportable.",
     viewLedger: "Ledger",
-    viewVendorStatements: "Vendor statements",
+    viewVendorStatements: "Shop statements",
     viewRemittances: "Cash hand-ins",
-    viewReconciliation: "Reconciliation",
+    viewReconciliation: "Nightly checks",
     exportCsv: "Export CSV",
     from: "From",
     to: "To",
@@ -3382,7 +3456,7 @@ export const en: Messages = {
     credit: "Credit",
     debit: "Debit",
     runningBalance: "Running balance",
-    vendor: "Vendor",
+    vendor: "Shop",
     period: "Period",
     codNet: "COD net",
     closingBalance: "Closing balance",
@@ -3392,7 +3466,7 @@ export const en: Messages = {
     typeDriverCash: "Driver cash",
     typeVendorPayable: "Vendor payable",
     noRows: "No rows for this period.",
-    noStatements: "No vendor statements generated yet.",
+    noStatements: "No shop statements yet.",
     noRuns: "No reconciliation runs recorded yet.",
   },
   incidents: {
@@ -3480,19 +3554,19 @@ export const en: Messages = {
     gpsBannerTail: "has not uploaded a GPS location for a long time and cannot accept new orders. Prompt the rider to open GPS.",
   },
   opsPages: {
-    mapTitle: "Ops map",
+    mapTitle: "Live",
     railTitle: "At-risk orders",
     railEmpty: "No orders in jeopardy — all on track.",
     stalled: "Stalled",
     gpsStale: "GPS stale",
-    sosBadge: "SOS",
+    sosBadge: "Emergency",
     activeOrders: "Active orders",
     onlineDrivers: "Online drivers",
     jeopardyTitle: "Jeopardy",
-    jeopardySubtitle: "Active orders sorted by SLA runway — tightest first.",
+    jeopardySubtitle: "Live orders with the least time left, tightest first.",
     route: "Route",
     alertsTitle: "Alerts",
-    alertsSubtitle: "Stalled drivers and GPS dropouts on active jobs.",
+    alertsSubtitle: "Orders running late, drivers who stopped moving and phones that lost signal.",
     stalledSection: "Stalled drivers",
     stalledHint: "Stationary for more than 3 minutes on an active job.",
     gpsStaleSection: "Stale GPS",
@@ -3500,11 +3574,11 @@ export const en: Messages = {
     lastSeen: "Last seen",
     acknowledged: "Acknowledged",
     call: "Call",
-    allClear: "All clear — nothing needs attention.",
+    allClear: "All clear. Nothing needs attention.",
     autoClearHint: "Alerts clear themselves the moment the problem resolves. Nothing to acknowledge.",
     clearedSection: "Cleared",
-    sosTitle: "SOS console",
-    sosSubtitle: "Open incidents from the field — acknowledge fast, resolve with a note.",
+    sosTitle: "Emergency",
+    sosSubtitle: "Open reports from the field. Answer fast, close with a note.",
     soundLocked: "Click anywhere to enable sound alerts.",
     muteAlerts: "Mute alerts",
     unmuteAlerts: "Unmute alerts",
@@ -3518,7 +3592,7 @@ export const en: Messages = {
     photos: "Photos",
     category: "Category",
     zonesTitle: "Zone load",
-    zonesSubtitle: "Where the pressure is — active orders vs drivers per zone.",
+    zonesSubtitle: "Where the pressure is: live orders against drivers in each area.",
     zone: "Zone",
     loadRatio: "Load ratio",
     avgSla: "Avg SLA left",
@@ -3622,9 +3696,9 @@ export const en: Messages = {
   cockpit: {
     groupByOwner: "Group by owner",
     navSection: "Cockpit",
-    navTitle: "Founder cockpit",
-    title: "Founder cockpit",
-    subtitle: "Live operation, money and cash position.",
+    navTitle: "Today",
+    title: "Today",
+    subtitle: "How the business is doing right now.",
     activeOrders: "Active orders",
     liveNow: "Live now",
     deliveredToday: "Delivered today",
@@ -3648,7 +3722,7 @@ export const en: Messages = {
     fleetCommitted: "Committed",
     fleetDelivered: "Delivered today",
     fleetDiscipline: "Discipline",
-    alertsTitle: "Threshold alerts",
+    alertsTitle: "Needs attention",
     noAlerts: "All clear. No thresholds breached.",
     exportCsv: "Export CSV",
     refreshed: "Refreshed",
@@ -4955,6 +5029,40 @@ export const ar: Messages = {
     zoneLoad: "حِمل المناطق",
     shifts: "الورديات",
   },
+  simple: {
+    today: "اليوم",
+    live: "المباشر",
+    orders: "الطلبات",
+    money: "المال",
+    setup: "الإعداد",
+    segOrders: "الطلبات",
+    segDrivers: "المندوبون",
+    segProblems: "المشاكل",
+    segAreas: "المناطق",
+    runningLate: "متأخرة",
+    stuck: "متوقفون",
+    noGps: "بدون موقع",
+    emergency: "طوارئ",
+    emergencyShow: "عرض",
+    emergencyHide: "إخفاء",
+    moneyCash: "نقد مستلم",
+    moneyReports: "التقارير",
+    setupTitle: "الإعداد",
+    setupSubtitle: "كل ما تضبطه مرة واحدة، في مكان واحد.",
+    setupAreas: "مناطق التوصيل",
+    setupAreasDesc: "ارسم وسمِّ المناطق التي تغطيها دَرب.",
+    setupPrices: "أسعار التوصيل",
+    setupPricesDesc: "السعر الثابت داخل المنطقة والإضافة بين المناطق.",
+    setupShops: "المتاجر",
+    setupShopsDesc: "المحلات التي ترسل إلينا الطلبات.",
+    setupCompanies: "شركات التوصيل",
+    setupCompaniesDesc: "الشركاء الذين يوفرون المندوبين.",
+    setupPeople: "المستخدمون والصلاحيات",
+    setupPeopleDesc: "من يستطيع الدخول إلى دَرب وما المسموح له به.",
+    setupEquipment: "المعدات",
+    setupEquipmentDesc: "الحقائب والأجهزة المسلَّمة للمندوبين.",
+    backToSetup: "رجوع إلى الإعداد",
+  },
   shiftsPage: {
     title: "الورديات",
     subtitle: "متى بدأ كل سائق ومتى أنهى، مباشرة من تطبيق السائق.",
@@ -4974,7 +5082,7 @@ export const ar: Messages = {
   },
   zonesPage: {
     title: "مناطق التوصيل",
-    subtitle: "ارسم وأدر المناطق التي تحدد تسعير كل طلب ونطاق خدمته.",
+    subtitle: "ارسم وسمِّ المناطق التي تغطيها دَرب. المنطقة تحدد سعر كل طلب ونطاق خدمته.",
     newZone: "منطقة جديدة",
     editZone: "تعديل المنطقة",
     editPolygon: "تعديل الحدود",
@@ -4997,8 +5105,8 @@ export const ar: Messages = {
     noZones: "لا توجد مناطق بعد — ارسم المنطقة الأولى على الخريطة.",
   },
   pricingPage: {
-    title: "التسعير",
-    subtitle: "رسم ثابت داخل المنطقة مع رسم إضافي لكل زوج من المناطق.",
+    title: "أسعار التوصيل",
+    subtitle: "سعر ثابت واحد داخل المنطقة، مع إضافة لكل زوج من المناطق.",
     intraZoneFee: "الرسم الثابت داخل المنطقة",
     intraZoneFeeHint: "رسم التوصيل الأساسي عندما يكون الاستلام والتسليم في نفس المنطقة (د.ك).",
     surchargeMatrix: "الرسوم الإضافية بين المناطق",
@@ -5166,10 +5274,10 @@ export const ar: Messages = {
     noOrders: "لا توجد طلبات توصيل مطابقة لهذه الفلاتر.",
   },
   wallet: {
-    title: "المالية",
-    subtitle: "أرصدة المحافظ والتدفق النقدي والتسويات عبر الشبكة.",
-    vendorPayables: "مستحقات المطاعم",
-    driverCash: "النقد بحوزة السائقين",
+    title: "المال",
+    subtitle: "ما نملكه وما علينا وما دخل اليوم.",
+    vendorPayables: "مستحقات المتاجر",
+    driverCash: "النقد لدى المندوبين",
     feesToday: "رسوم اليوم",
     account: "الحساب",
     balance: "الرصيد",
@@ -5180,8 +5288,8 @@ export const ar: Messages = {
     credit: "دائن",
     runningBalance: "الرصيد",
     noEntries: "لا توجد قيود في المحفظة بعد.",
-    remittancesTitle: "التوريدات النقدية",
-    remittancesSubtitle: "تسجيل النقد المسلَّم من السائقين.",
+    remittancesTitle: "النقد المستلم",
+    remittancesSubtitle: "سجّل النقد الذي يسلّمه المندوب في نهاية الوردية.",
     recordRemittance: "تسجيل توريد",
     driver: "السائق",
     selectDriver: "ابحث عن سائق",
@@ -5219,7 +5327,7 @@ export const ar: Messages = {
     openRemittances: "تسجيل ومراجعة النقد المسلَّم من السائقين.",
     openAdjustments: "تصحيح أرصدة المحافظ مع سجل تدقيق.",
     openReports: "التقارير المالية والتصدير.",
-    viewStatements: "عرض كشوف التجار",
+    viewStatements: "عرض كشوف المتاجر",
     viewRemittances: "عرض التوريدات النقدية",
     viewLedger: "عرض دفتر الرسوم",
   },
@@ -5227,9 +5335,9 @@ export const ar: Messages = {
     title: "التقارير المالية",
     subtitle: "دفتر الحسابات وكشوف التجار والتوريدات النقدية والمطابقة، جميعها قابلة للتصدير.",
     viewLedger: "دفتر الحسابات",
-    viewVendorStatements: "كشوف التجار",
-    viewRemittances: "التوريدات النقدية",
-    viewReconciliation: "المطابقة",
+    viewVendorStatements: "كشوف المتاجر",
+    viewRemittances: "النقد المستلم",
+    viewReconciliation: "المطابقة الليلية",
     exportCsv: "تصدير CSV",
     from: "من",
     to: "إلى",
@@ -5238,7 +5346,7 @@ export const ar: Messages = {
     credit: "دائن",
     debit: "مدين",
     runningBalance: "الرصيد الجاري",
-    vendor: "التاجر",
+    vendor: "المتجر",
     period: "الفترة",
     codNet: "صافي الدفع عند الاستلام",
     closingBalance: "الرصيد الختامي",
@@ -5248,7 +5356,7 @@ export const ar: Messages = {
     typeDriverCash: "نقد السائق",
     typeVendorPayable: "مستحقات التاجر",
     noRows: "لا توجد صفوف لهذه الفترة.",
-    noStatements: "لم يتم إصدار كشوف للتجار بعد.",
+    noStatements: "لا توجد كشوف متاجر بعد.",
     noRuns: "لا توجد عمليات مطابقة مسجلة بعد.",
   },
   incidents: {
@@ -5336,19 +5444,19 @@ export const ar: Messages = {
     gpsBannerTail: "لم يرسل موقعه منذ فترة طويلة ولا يمكنه استقبال طلبات جديدة. نبّهه لتشغيل الموقع.",
   },
   opsPages: {
-    mapTitle: "خريطة العمليات",
+    mapTitle: "المباشر",
     railTitle: "طلبات في خطر",
     railEmpty: "لا توجد طلبات في خطر — كل شيء على المسار.",
     stalled: "متوقف",
     gpsStale: "GPS منقطع",
-    sosBadge: "استغاثة",
+    sosBadge: "طوارئ",
     activeOrders: "الطلبات النشطة",
     onlineDrivers: "السائقون المتصلون",
     jeopardyTitle: "الطلبات الحرجة",
-    jeopardySubtitle: "الطلبات النشطة مرتبة حسب المهلة المتبقية — الأضيق أولاً.",
+    jeopardySubtitle: "الطلبات المباشرة الأقل وقتاً متبقياً، الأضيق أولاً.",
     route: "المسار",
     alertsTitle: "التنبيهات",
-    alertsSubtitle: "سائقون متوقفون وانقطاعات GPS أثناء مهام نشطة.",
+    alertsSubtitle: "طلبات متأخرة، ومندوبون توقفوا عن الحركة، وأجهزة فقدت الإشارة.",
     stalledSection: "سائقون متوقفون",
     stalledHint: "متوقف لأكثر من ٣ دقائق أثناء مهمة نشطة.",
     gpsStaleSection: "GPS منقطع",
@@ -5356,11 +5464,11 @@ export const ar: Messages = {
     lastSeen: "آخر ظهور",
     acknowledged: "تم التأكيد",
     call: "اتصال",
-    allClear: "كل شيء على ما يرام — لا شيء يحتاج انتباهاً.",
+    allClear: "كل شيء على ما يرام. لا شيء يحتاج انتباهاً.",
     autoClearHint: "تُزال التنبيهات تلقائياً بمجرد انتهاء المشكلة. لا حاجة لتأكيد الاستلام.",
     clearedSection: "تمت المعالجة",
-    sosTitle: "وحدة الاستغاثة",
-    sosSubtitle: "بلاغات مفتوحة من الميدان — أكّد الاستلام بسرعة وأغلقها بملاحظة.",
+    sosTitle: "طوارئ",
+    sosSubtitle: "بلاغات مفتوحة من الميدان. استجب بسرعة وأغلقها بملاحظة.",
     soundLocked: "انقر في أي مكان لتفعيل التنبيهات الصوتية.",
     muteAlerts: "كتم التنبيهات",
     unmuteAlerts: "إلغاء كتم التنبيهات",
@@ -5374,7 +5482,7 @@ export const ar: Messages = {
     photos: "الصور",
     category: "التصنيف",
     zonesTitle: "حِمل المناطق",
-    zonesSubtitle: "أين الضغط — الطلبات النشطة مقابل السائقين لكل منطقة.",
+    zonesSubtitle: "أين الضغط: الطلبات المباشرة مقابل المندوبين في كل منطقة.",
     zone: "المنطقة",
     loadRatio: "نسبة الحِمل",
     avgSla: "متوسط المهلة المتبقية",
@@ -5478,9 +5586,9 @@ export const ar: Messages = {
   cockpit: {
     groupByOwner: "تجميع حسب المالك",
     navSection: "غرفة القيادة",
-    navTitle: "لوحة المؤسسين",
-    title: "لوحة المؤسسين",
-    subtitle: "التشغيل المباشر والأموال ووضع النقد.",
+    navTitle: "اليوم",
+    title: "اليوم",
+    subtitle: "كيف تسير الأعمال الآن.",
     activeOrders: "الطلبات النشطة",
     liveNow: "الآن مباشرة",
     deliveredToday: "الموصلة اليوم",
@@ -5504,7 +5612,7 @@ export const ar: Messages = {
     fleetCommitted: "متعاقد عليه",
     fleetDelivered: "موصلة اليوم",
     fleetDiscipline: "الانضباط",
-    alertsTitle: "تنبيهات الحدود",
+    alertsTitle: "يحتاج انتباهاً",
     noAlerts: "كل شيء سليم. لا تجاوزات.",
     exportCsv: "تصدير CSV",
     refreshed: "آخر تحديث",

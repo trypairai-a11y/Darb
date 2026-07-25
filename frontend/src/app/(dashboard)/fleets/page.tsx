@@ -13,6 +13,7 @@ import SlidePanel from "@/components/shared/SlidePanel";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { fleetsApi, unwrapList } from "@/lib/darbApi";
 import type { FleetProfile, FleetStatementRow } from "@/types/darb";
+import BackToSetup from "@/components/shared/BackToSetup";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd, formatNumber, formatPercent, localeTag } from "@/i18n/format";
 import type { Locale } from "@/i18n/messages";
@@ -150,9 +151,12 @@ export default function FleetsPage() {
 
   return (
     <div className="space-y-6">
+      <BackToSetup />
       <div>
-        <h1 className="font-display text-display-sm text-sand-900">{t("cockpit.fleetsTitle")}</h1>
-        <p className="text-sm text-sand-600 mt-1">{t("darbNav.fleet")}</p>
+        <h1 className="font-display text-display-sm text-sand-900">
+          {t("simple.setupCompanies")}
+        </h1>
+        <p className="text-sm text-sand-600 mt-1">{t("simple.setupCompaniesDesc")}</p>
       </div>
 
       <DataTable

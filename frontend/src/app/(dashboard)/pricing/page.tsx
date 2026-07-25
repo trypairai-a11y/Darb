@@ -10,6 +10,7 @@ import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
 import { zonesApi, unwrapList } from "@/lib/darbApi";
 import type { DeliveryZone, FulfillmentSettings, ZoneSurcharge } from "@/types/darb";
+import BackToSetup from "@/components/shared/BackToSetup";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 
@@ -137,6 +138,7 @@ export default function PricingPage() {
 
   return (
     <div className="space-y-6">
+      <BackToSetup />
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="font-display text-display-sm text-sand-900">{t("pricingPage.title")}</h1>

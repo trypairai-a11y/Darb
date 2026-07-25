@@ -216,7 +216,7 @@ export async function getCockpitSummary(
     alerts.push({
       kind: "NO_DRIVER_BACKLOG",
       severity: "HIGH",
-      message: `${noDriverNow} order(s) stuck in NO_DRIVER — assign manually or add fleet supply.`,
+      message: `${noDriverNow} order(s) have no driver. Assign one by hand or add fleet supply.`,
     });
   }
   const onTimeRate = withSla.length > 0 ? onTimeCount / withSla.length : null;
@@ -224,7 +224,7 @@ export async function getCockpitSummary(
     alerts.push({
       kind: "ON_TIME_BELOW_TARGET",
       severity: "HIGH",
-      message: `On-time today is ${(onTimeRate * 100).toFixed(0)}% — below the ~90% expansion gate.`,
+      message: `On-time today is ${(onTimeRate * 100).toFixed(0)}%, below the 90% target.`,
     });
   }
   for (const fleet of fleets) {
@@ -252,7 +252,7 @@ export async function getCockpitSummary(
       alerts.push({
         kind: "DRIVERS_NEAR_CASH_CEILING",
         severity: "MEDIUM",
-        message: `${highCash} driver(s) at 80%+ of the cash ceiling — hub deposits due.`,
+        message: `${highCash} driver(s) are at 80% or more of the cash limit. Hub deposits are due.`,
       });
     }
   }
@@ -260,7 +260,7 @@ export async function getCockpitSummary(
     alerts.push({
       kind: "RECONCILIATION_MISMATCH",
       severity: "HIGH",
-      message: `Nightly ledger self-check found a mismatch on ${lastRecon.runDate?.toISOString().slice(0, 10) ?? "the last run"} — finance must investigate.`,
+      message: `The nightly ledger check found a mismatch on ${lastRecon.runDate?.toISOString().slice(0, 10) ?? "the last run"}. Finance needs to look into it.`,
     });
   }
 

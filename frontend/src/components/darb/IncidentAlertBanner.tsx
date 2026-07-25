@@ -45,7 +45,7 @@ export default function IncidentAlertBanner({
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold leading-tight">
-          {t("incidents.sosAlert")} — {t(TYPE_I18N[incident.type] ?? "incidents.other")}
+          {t("incidents.sosAlert")}: {t(TYPE_I18N[incident.type] ?? "incidents.other")}
         </p>
         <p className="text-xs text-white/85 truncate" dir="auto">
           {incident.driver?.name && <span>{incident.driver.name} · </span>}

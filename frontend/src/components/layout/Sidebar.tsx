@@ -26,7 +26,14 @@ export default function Sidebar() {
     return true;
   };
 
-  const visibleSections = NAV_SECTIONS.filter(sectionVisible);
+  // Items carry their own minRole on top of the section gate, which is how the
+  // single staff section reproduces the old five-section role split.
+  const visibleSections = NAV_SECTIONS.filter(sectionVisible)
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => !item.minRole || hasRole(item.minRole)),
+    }))
+    .filter((section) => section.items.length > 0);
   const isActive = buildIsActive(visibleSections, pathname);
 
   const renderItem = (item: NavItem) => (
@@ -34,7 +41,8 @@ export default function Sidebar() {
       key={item.path}
       href={item.path}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-pill text-sm font-medium transition-all duration-250 ease-sierra-out mb-0.5",
+        // Roomier than the old sixteen-row rail could afford.
+        "flex items-center gap-3 px-3.5 py-2.5 rounded-pill text-[15px] font-medium transition-all duration-250 ease-sierra-out mb-1",
         isActive(item.path)
           ? "bg-primary text-white shadow-soft"
           : "text-sand-700 dark:text-secondary hover:bg-sand-100 dark:hover:bg-white/5 hover:text-sand-900 dark:hover:text-foreground"
@@ -85,7 +93,7 @@ export default function Sidebar() {
       <nav className="flex-1 overflow-y-auto py-4 px-2">
         {visibleSections.map((section, sectionIdx) => (
           <div key={section.key} className={cn(sectionIdx > 0 && "mt-6")}>
-            {!collapsed && (
+            {!collapsed && section.i18n && (
               <div className="px-3 mb-2 text-[11px] font-medium text-sand-500 uppercase tracking-[0.18em]">
                 {t(section.i18n)}
               </div>

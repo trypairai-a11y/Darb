@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/cn";
 import { Plus, X, Shield, UserX, UserCheck, Loader2, Bell, Check } from "lucide-react";
 import api from "@/lib/api";
+import BackToSetup from "@/components/shared/BackToSetup";
 import { useI18n } from "@/i18n/I18nProvider";
 
 const ROLES = ["ADMIN", "OPS_MANAGER", "SUPERVISOR", "ACCOUNTANT", "VIEWER"] as const;
@@ -437,7 +438,11 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6 w-full max-w-none">
-      <h1 className="text-xl font-semibold">{t("settingsPage.title")}</h1>
+      <BackToSetup />
+      <div>
+        <h1 className="font-display text-display-sm text-sand-900">{t("simple.setupPeople")}</h1>
+        <p className="text-sm text-sand-600 mt-1">{t("simple.setupPeopleDesc")}</p>
+      </div>
 
       {/* Tabs */}
       <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">

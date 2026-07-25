@@ -1,18 +1,25 @@
 "use client";
-// Darb 2.0 — /ops: the live control room.
+// Darb 2.0 — /ops: the Live screen, the whole live control room.
 //
-// Rebuilt against the Keeta dashboard the client supplied as the reference
+// Built against the Keeta dashboard the client supplied as the reference
 // design (revision #2): a split panel with the work list on the left and the
-// map on the right. The left panel carries a status dropdown with a total
-// count, By task / By courier tabs, the "irregular task" quick-filter tags,
-// and a scrollable list; the map carries a GPS alert banner across the top.
+// map on the right.
+//
+// Revision #31 folded four rail entries into this one screen. /ops/jeopardy,
+// /ops/alerts and /ops/zones were separate pages that each called the same
+// GET /api/dispatch/overview this page already calls and then showed one slice
+// of the answer; they are now the Problems and Areas segments, and the map
+// follows whichever segment is open. /ops/sos is not a segment: an emergency
+// should find you, so it raises a red bar over the map the moment one is open.
+// The four old routes redirect in here with ?view=, so nothing that linked to
+// them breaks.
 //
 // Realtime is unchanged: driver positions flow SSE → driverPositionStore
 // (bootstrap from GET /api/dispatch/positions on mount and on every SSE
 // reconnect); order lists refetch on a debounce when order.* events land,
 // with interval fallbacks while the stream is down.
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, SatelliteDish, Siren } from "lucide-react";
 import LiveMap from "@/components/map/LiveMap";
@@ -23,6 +30,10 @@ import OpsAlertBanner from "@/components/ops/OpsAlertBanner";
 import OpsCourierList from "@/components/ops/OpsCourierList";
 import OpsFilterChips from "@/components/ops/OpsFilterChips";
 import OpsTaskList from "@/components/ops/OpsTaskList";
+import ProblemsList from "@/components/ops/ProblemsList";
+import AreasPanel from "@/components/ops/AreasPanel";
+import EmergencyPanel from "@/components/ops/EmergencyPanel";
+import { buildZoneLoadRows, zoneFillOpacity } from "@/components/ops/areaLoad";
 import {
   ACTIVE_STATUSES,
   countQuickFilter,
@@ -47,11 +58,24 @@ import { copyText, formatCopyBlock } from "@/lib/clipboard";
 import { deliveryOrdersApi, dispatchApi, incidentsApi, unwrapList, zonesApi } from "@/lib/darbApi";
 import { driverMapStatus, type DriverMapStatus } from "@/types/darb";
 import type { DeliveryOrder, DeliveryZone, DriverPosition, Incident } from "@/types/darb";
+import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useRole } from "@/hooks/useRole";
 import { cn } from "@/lib/cn";
 
-type PanelTab = "task" | "courier";
+/** The four things you can be looking at. "task" and "courier" keep their
+ *  original names so the existing filter/marker branches read unchanged. */
+type PanelTab = "task" | "courier" | "problems" | "areas";
+
+const PANEL_TABS: PanelTab[] = ["task", "courier", "problems", "areas"];
+
+/** ?view= values the redirected routes arrive with. */
+const VIEW_TO_TAB: Record<string, PanelTab> = {
+  orders: "task",
+  drivers: "courier",
+  problems: "problems",
+  areas: "areas",
+};
 
 /** Status labels for the dropdown, matching OrderStatusBadge's namespace. */
 const STATUS_I18N_KEY: Record<(typeof ACTIVE_STATUSES)[number], string> = {
@@ -60,6 +84,13 @@ const STATUS_I18N_KEY: Record<(typeof ACTIVE_STATUSES)[number], string> = {
   NO_DRIVER: "darbOrderStatus.noDriver",
   ASSIGNED: "darbOrderStatus.assigned",
   PICKED_UP: "darbOrderStatus.pickedUp",
+};
+
+const SEGMENT_I18N: Record<PanelTab, string> = {
+  task: "simple.segOrders",
+  courier: "simple.segDrivers",
+  problems: "simple.segProblems",
+  areas: "simple.segAreas",
 };
 
 /** Labels for the copy-irregular block, kept beside the chips' own labels. */
@@ -71,9 +102,10 @@ const QUICK_FILTER_I18N: Record<QuickFilter, string> = {
   courierIssue: "opsMap.filterCourierIssue",
 };
 
-export default function OpsMapPage() {
-  const { t } = useI18n();
+function OpsLiveScreen() {
+  const { t, locale } = useI18n();
   const { canEdit } = useRole();
+  const searchParams = useSearchParams();
   const toast = useToast();
   const queryClient = useQueryClient();
   const now = useSlaTick();
@@ -81,7 +113,12 @@ export default function OpsMapPage() {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
-  const [tab, setTab] = useState<PanelTab>("task");
+  const [tab, setTab] = useState<PanelTab>(
+    () => VIEW_TO_TAB[searchParams.get("view") ?? ""] ?? "task"
+  );
+  const [emergencyOpen, setEmergencyOpen] = useState(
+    () => searchParams.get("view") === "emergency"
+  );
   const [statusFilter, setStatusFilter] = useState("");
   const [quickFilters, setQuickFilters] = useState<QuickFilter[]>([]);
   const [sort, setSort] = useState<OrderSort>("acceptance");
@@ -183,6 +220,8 @@ export default function OpsMapPage() {
   const overview = overviewQuery.data;
   const stalled = useMemo(() => overview?.stalled ?? [], [overview?.stalled]);
   const gpsStale = useMemo<DriverPosition[]>(() => overview?.gpsStale ?? [], [overview?.gpsStale]);
+  const jeopardy = useMemo<DeliveryOrder[]>(() => overview?.jeopardy ?? [], [overview?.jeopardy]);
+  const problemCount = jeopardy.length + stalled.length + gpsStale.length;
 
   /** Signals the order rows do not carry, folded in for the quick filters. */
   const signals = useMemo<OrderSignals>(
@@ -241,6 +280,22 @@ export default function OpsMapPage() {
   );
 
   const mapDrivers = tab === "courier" ? visibleDrivers : positions;
+
+  // Computed here rather than inside AreasPanel because the map needs the same
+  // numbers to shade the polygons.
+  const zoneRows = useMemo(
+    () =>
+      buildZoneLoadRows({
+        zones,
+        zoneLoads: overview?.zoneLoads,
+        activeOrders,
+        positions,
+        now,
+        locale,
+      }),
+    [zones, overview?.zoneLoads, activeOrders, positions, now, locale]
+  );
+  const areaFill = useMemo(() => zoneFillOpacity(zoneRows), [zoneRows]);
 
   const fitBounds = useMemo<[number, number][] | null>(() => {
     if (tab === "courier" && selectedDriverId) {
@@ -374,8 +429,9 @@ export default function OpsMapPage() {
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-center">
-            <Link
-              href="/ops/alerts"
+            <button
+              type="button"
+              onClick={() => setTab("problems")}
               className="rounded-xl bg-sand-100/70 hover:bg-sand-100 px-2 py-2 transition-colors"
             >
               <span className="flex items-center justify-center gap-1 text-amber-600">
@@ -383,9 +439,10 @@ export default function OpsMapPage() {
                 <span className="text-sm font-semibold tabular-nums">{stalled.length}</span>
               </span>
               <span className="block text-[10px] text-sand-600 mt-0.5">{t("opsPages.stalled")}</span>
-            </Link>
-            <Link
-              href="/ops/alerts"
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("problems")}
               className="rounded-xl bg-sand-100/70 hover:bg-sand-100 px-2 py-2 transition-colors"
             >
               <span className="flex items-center justify-center gap-1 text-sand-700">
@@ -393,9 +450,10 @@ export default function OpsMapPage() {
                 <span className="text-sm font-semibold tabular-nums">{gpsStale.length}</span>
               </span>
               <span className="block text-[10px] text-sand-600 mt-0.5">{t("opsPages.gpsStale")}</span>
-            </Link>
-            <Link
-              href="/ops/sos"
+            </button>
+            <button
+              type="button"
+              onClick={() => setEmergencyOpen(true)}
               className={cn(
                 "rounded-xl px-2 py-2 transition-colors",
                 openIncidents.length > 0
@@ -413,24 +471,27 @@ export default function OpsMapPage() {
                 <span className="text-sm font-semibold tabular-nums">{openIncidents.length}</span>
               </span>
               <span className="block text-[10px] text-sand-600 mt-0.5">{t("opsPages.sosBadge")}</span>
-            </Link>
+            </button>
           </div>
 
-          {/* Tabs */}
+          {/* Segments. The map follows whichever one is open. */}
           <div className="flex gap-1 bg-sand-100 rounded-pill p-1">
-            {(["task", "courier"] as PanelTab[]).map((key) => (
+            {PANEL_TABS.map((key) => (
               <button
                 key={key}
                 type="button"
                 onClick={() => setTab(key)}
                 className={cn(
-                  "flex-1 h-8 text-xs font-medium rounded-pill transition-colors",
+                  "flex-1 h-8 text-[11px] font-medium rounded-pill transition-colors",
                   tab === key
                     ? "bg-white text-sand-900 shadow-soft"
                     : "text-sand-600 hover:text-sand-900"
                 )}
               >
-                {key === "task" ? t("opsMap.byTask") : t("opsMap.byCourier")}
+                {t(SEGMENT_I18N[key])}
+                {key === "problems" && problemCount > 0 && (
+                  <span className="ms-1 text-red-600 tabular-nums">{problemCount}</span>
+                )}
               </button>
             ))}
           </div>
@@ -504,6 +565,18 @@ export default function OpsMapPage() {
               onSelect={setSelectedId}
               onCopy={copyOrder}
             />
+          ) : tab === "problems" ? (
+            <ProblemsList
+              jeopardy={jeopardy}
+              stalled={stalled}
+              gpsStale={gpsStale}
+              now={now}
+              onSelectOrder={setSelectedId}
+              selectedOrderId={selectedId}
+              ready={!!overview}
+            />
+          ) : tab === "areas" ? (
+            <AreasPanel rows={zoneRows} />
           ) : (
             <OpsCourierList
               drivers={visibleDrivers}
@@ -522,11 +595,19 @@ export default function OpsMapPage() {
 
       {/* ── Map ── */}
       <div className="relative flex-1 min-w-0">
-        <OpsAlertBanner gpsStale={gpsStale} onCopy={copyIrregular} />
+        {/* An emergency is the one thing you never navigate to, and the ops
+            layout already floats IncidentAlertBanner over every surface for
+            exactly that. The way in to the full console is the red Emergency
+            tile in the rail, which is why there is no second red bar here. */}
+        {!emergencyOpen && <OpsAlertBanner gpsStale={gpsStale} onCopy={copyIrregular} />}
+
         <LiveMap
           height="100%"
           zones={zones}
+          // Areas turns the polygons into a choropleth; every other segment
+          // keeps them as a faint backdrop.
           zoneFillOpacity={0.06}
+          zoneFillOpacityById={tab === "areas" ? areaFill : undefined}
           drivers={mapDrivers}
           selectedDriverId={selectedDriverId ?? selectedOrder?.driverId ?? null}
           onDriverClick={(id) => {
@@ -536,6 +617,12 @@ export default function OpsMapPage() {
           orders={orderMarkers}
           fitBounds={fitBounds}
         />
+
+        {emergencyOpen && (
+          <div className="absolute inset-0 z-[1001] bg-sand-50 overflow-y-auto p-6">
+            <EmergencyPanel onClose={() => setEmergencyOpen(false)} />
+          </div>
+        )}
       </div>
 
       <OrderOpsPanel
@@ -545,5 +632,13 @@ export default function OpsMapPage() {
         canEdit={canEdit}
       />
     </div>
+  );
+}
+
+export default function OpsLivePage() {
+  return (
+    <Suspense fallback={<PageSkeleton statCards={0} tableRows={8} tableCols={5} />}>
+      <OpsLiveScreen />
+    </Suspense>
   );
 }
