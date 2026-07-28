@@ -30,6 +30,11 @@ import type {
   ZoneSurcharge,
   VendorAnalytics,
   RefundRow,
+  DeliveryPlan,
+  DeliveryPlanKmTier,
+  DeliveryPlanType,
+  DeliveryPlanZoneRate,
+  StatementDetail,
   VendorStatementRow,
   FleetProfile,
   FleetDriverRow,
@@ -212,6 +217,27 @@ export const walletsApi = {
       "/api/wallets/vendor-statements",
       params
     ),
+  /** Revision 4 (#4) — every transaction behind one shop's statement period. */
+  statementTransactions: (statementId: string) =>
+    get<StatementDetail>(`/api/wallets/vendor-statements/${statementId}/transactions`),
+};
+
+// ── /api/delivery-plans (revision 4 #7) ──────────────────────────────────
+
+export const deliveryPlansApi = {
+  list: (params?: Params) =>
+    get<Paginated<DeliveryPlan> | DeliveryPlan[]>("/api/delivery-plans", params),
+  getById: (id: string) => get<DeliveryPlan>(`/api/delivery-plans/${id}`),
+  create: (body: { name: string; type: DeliveryPlanType }) =>
+    post<DeliveryPlan>("/api/delivery-plans", body),
+  update: (id: string, body: { name?: string; isActive?: boolean }) =>
+    put<DeliveryPlan>(`/api/delivery-plans/${id}`, body),
+  /** Rates are replaced wholesale — a plan is never half-priced. */
+  putRates: (
+    id: string,
+    body: { zoneRates?: DeliveryPlanZoneRate[]; kmTiers?: DeliveryPlanKmTier[] }
+  ) => put<DeliveryPlan>(`/api/delivery-plans/${id}/rates`, body),
+  remove: (id: string) => del<void>(`/api/delivery-plans/${id}`),
 };
 
 // ── /api/incidents ───────────────────────────────────────────────────────

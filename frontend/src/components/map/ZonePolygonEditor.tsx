@@ -6,6 +6,12 @@
 //   dblclick / right-click a handle → remove vertex
 //   click first handle (≥3 vertices) or "Close polygon" → emit GeoJSON ring
 //   Escape / Cancel  → onCancel
+//
+// Revision 4 (#6): the client asked for zones to be drawn "same as the Google
+// Earth measure feature" — pinpoints, with the line appearing as you go. The
+// pinpoints and the connecting line were already here; what was missing is the
+// part that makes the tool feel like measuring: a rubber band from the last
+// point to the cursor, and a running perimeter. Both are added below.
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CircleMarker, Polygon, Polyline, useMapEvents } from "react-leaflet";
@@ -30,6 +36,10 @@ export default function ZonePolygonEditor({
   onCancel,
 }: ZonePolygonEditorProps) {
   const [vertices, setVertices] = useState<LatLngPair[]>(initialRing ?? []);
+  // Where the cursor is, so the in-progress edge can follow it. Null until the
+  // pointer enters the map, and cleared on leave so no stale band is left
+  // hanging off the last vertex.
+  const [cursor, setCursor] = useState<LatLngPair | null>(null);
   const draggingRef = useRef<number | null>(null);
   const controlRef = useRef<HTMLDivElement | null>(null);
 
@@ -50,10 +60,16 @@ export default function ZonePolygonEditor({
     },
     mousemove(e) {
       const i = draggingRef.current;
-      if (i == null) return;
+      if (i == null) {
+        setCursor([e.latlng.lat, e.latlng.lng]);
+        return;
+      }
       setVertices((v) =>
         v.map((p, idx) => (idx === i ? ([e.latlng.lat, e.latlng.lng] as LatLngPair) : p))
       );
+    },
+    mouseout() {
+      setCursor(null);
     },
     mouseup() {
       endDrag();
@@ -132,6 +148,17 @@ export default function ZonePolygonEditor({
   };
 
   const closed = vertices.length >= 3;
+
+  // The rubber band: last placed point → cursor, while the shape is still
+  // open. Once the polygon closes there is no "next" point to preview, so it
+  // stops. Non-interactive, or it would swallow the click that places a vertex.
+  const rubberBand =
+    !closed && cursor && vertices.length > 0
+      ? ([vertices[vertices.length - 1], cursor] as LatLngPair[])
+      : null;
+
+  const perimeterKm = measurePerimeterKm(vertices, closed);
+
   const midpoints: { edge: number; point: LatLngPair }[] = [];
   if (vertices.length >= 2) {
     const edgeCount = closed ? vertices.length : vertices.length - 1;
@@ -156,6 +183,19 @@ export default function ZonePolygonEditor({
             pathOptions={{ color, weight: 2, dashArray: "5 5", interactive: false }}
           />
         )
+      )}
+
+      {rubberBand && (
+        <Polyline
+          positions={rubberBand}
+          pathOptions={{
+            color,
+            weight: 1.5,
+            dashArray: "3 6",
+            opacity: 0.7,
+            interactive: false,
+          }}
+        />
       )}
 
       {/* Midpoint insert handles */}
@@ -213,6 +253,7 @@ export default function ZonePolygonEditor({
       <EditorControls
         controlRef={controlRef}
         vertexCount={vertices.length}
+        perimeterKm={perimeterKm}
         onUndo={() => setVertices((v) => v.slice(0, -1))}
         onComplete={complete}
         onCancel={onCancel}
@@ -221,15 +262,42 @@ export default function ZonePolygonEditor({
   );
 }
 
+/**
+ * Great-circle length of the drawn path in kilometres, closing the loop once
+ * the polygon has enough vertices to be one. Duplicated here rather than
+ * imported from the backend's utils/geo: this is a readout for a human placing
+ * pins, not a number anything is priced on.
+ */
+function measurePerimeterKm(vertices: LatLngPair[], closed: boolean): number {
+  if (vertices.length < 2) return 0;
+  const R = 6371; // km
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const legs = closed ? vertices.length : vertices.length - 1;
+  let total = 0;
+  for (let i = 0; i < legs; i++) {
+    const [lat1, lng1] = vertices[i];
+    const [lat2, lng2] = vertices[(i + 1) % vertices.length];
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+    total += R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+  return total;
+}
+
 function EditorControls({
   controlRef,
   vertexCount,
+  perimeterKm,
   onUndo,
   onComplete,
   onCancel,
 }: {
   controlRef: React.RefObject<HTMLDivElement>;
   vertexCount: number;
+  perimeterKm: number;
   onUndo: () => void;
   onComplete: () => void;
   onCancel: () => void;
@@ -244,6 +312,11 @@ function EditorControls({
       <span className="text-xs text-sand-700 whitespace-nowrap">
         {vertexCount === 0 ? t("zonesPage.drawHint") : `${vertexCount} ${t("zonesPage.vertices")}`}
       </span>
+      {perimeterKm > 0 && (
+        <span dir="ltr" className="text-xs text-sand-600 tabular-nums whitespace-nowrap">
+          {perimeterKm.toFixed(2)} km
+        </span>
+      )}
       <button
         type="button"
         onClick={onUndo}

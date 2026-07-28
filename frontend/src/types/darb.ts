@@ -119,6 +119,17 @@ export interface Vendor {
   requiresCarOnly: boolean;
   isPaused: boolean;
   isActive: boolean;
+  /**
+   * Revision 4 (#7) — the named price list this merchant is quoted on. Null
+   * falls through to the tenant-wide flat fee plus surcharge grid.
+   */
+  deliveryPlanId?: string | null;
+  deliveryPlan?: {
+    id: string;
+    name: string;
+    type: "ZONE" | "KM";
+    isActive: boolean;
+  } | null;
   createdAt?: string;
   updatedAt?: string;
   branches?: VendorBranch[];
@@ -571,6 +582,40 @@ export interface VendorStatementRow {
   vendor?: { id: string; name: string; code: string } | null;
 }
 
+/**
+ * Revision 4 (#4) — one line of the detailed report behind a statement row.
+ * A DELIVERY row is an order; REFUND and PAYOUT are the two other things that
+ * move a shop's balance in a period. `entries` are the double-entry postings
+ * behind the row, for anyone reconciling against the ledger.
+ */
+export interface StatementTransaction {
+  kind: "DELIVERY" | "REFUND" | "PAYOUT";
+  date: string | null;
+  orderId: string | null;
+  orderNumber: string | null;
+  reference: string | null;
+  paymentMethod: string | null;
+  orderTotalKwd: string | null;
+  deliveryFeeKwd: string | null;
+  codNetKwd: string;
+  entries: {
+    id: string;
+    transactionType: string;
+    account: string | null;
+    direction: "DEBIT" | "CREDIT";
+    amountKwd: string;
+    runningBalanceKwd: string;
+    createdAt: string;
+  }[];
+}
+
+export interface StatementDetail {
+  statement: VendorStatementRow & {
+    vendor?: { id: string; name: string; code: string } | null;
+  };
+  rows: StatementTransaction[];
+}
+
 export interface FleetProfile {
   id: string;
   name: string;
@@ -682,4 +727,38 @@ export interface CockpitSummary {
     clearingBalanceKwd: string;
   };
   alerts: Array<{ kind: string; severity: "HIGH" | "MEDIUM"; message: string }>;
+}
+
+/* ── Delivery plans (revision 4 #7) ── */
+
+export type DeliveryPlanType = "ZONE" | "KM";
+
+/** One cell of a by-zone plan's grid. Absent pair = unserviceable. */
+export interface DeliveryPlanZoneRate {
+  originZoneId: string;
+  destZoneId: string;
+  feeKwd: string;
+}
+
+/**
+ * One band of a by-kilometre plan. `maxKm` null is the open-ended top band
+ * ("14+ km"); `feeKwd` null marks the band unserviceable.
+ */
+export interface DeliveryPlanKmTier {
+  id?: string;
+  sortOrder?: number;
+  maxKm: number | null;
+  feeKwd: string | null;
+}
+
+export interface DeliveryPlan {
+  id: string;
+  name: string;
+  type: DeliveryPlanType;
+  isActive: boolean;
+  vendorCount: number;
+  zoneRates: DeliveryPlanZoneRate[];
+  kmTiers: DeliveryPlanKmTier[];
+  createdAt?: string;
+  updatedAt?: string;
 }

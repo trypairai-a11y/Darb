@@ -6,11 +6,14 @@
 // acceptable on this staff-only page).
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Download } from "lucide-react";
+import api from "@/lib/api";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import SlidePanel from "@/components/shared/SlidePanel";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { useToast } from "@/components/shared/Toast";
 import { fleetsApi, unwrapList } from "@/lib/darbApi";
 import type { FleetProfile, FleetStatementRow } from "@/types/darb";
 import BackToSetup from "@/components/shared/BackToSetup";
@@ -129,6 +132,33 @@ function ScorecardPanel({ fleet }: { fleet: FleetRow }) {
 export default function FleetsPage() {
   const { t, locale } = useI18n();
   const [selected, setSelected] = useState<FleetRow | null>(null);
+  const [downloading, setDownloading] = useState(false);
+  const toast = useToast();
+
+  /**
+   * Revision 4 (#10). The client asked for the detail to be in the download.
+   * The old client-side CSV could only ever carry the five list columns —
+   * the scorecard and the payout history are separate queries the table never
+   * makes. So the workbook is built server-side and streamed: three sheets,
+   * with rates as real percentages and money as real numbers so Excel sorts
+   * and sums them instead of treating them as text.
+   */
+  async function downloadWorkbook() {
+    setDownloading(true);
+    try {
+      const res = await api.get("/api/fleets/export.xlsx", { responseType: "blob" });
+      const url = URL.createObjectURL(res.data as Blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `fleets-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error(t("toast.failedSave"));
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   const fleetsQuery = useQuery({
     queryKey: ["darb", "fleets"],
@@ -152,11 +182,22 @@ export default function FleetsPage() {
   return (
     <div className="space-y-6">
       <BackToSetup />
-      <div>
-        <h1 className="font-display text-display-sm text-sand-900">
-          {t("simple.setupCompanies")}
-        </h1>
-        <p className="text-sm text-sand-600 mt-1">{t("simple.setupCompaniesDesc")}</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="font-display text-display-sm text-sand-900">
+            {t("simple.setupCompanies")}
+          </h1>
+          <p className="text-sm text-sand-600 mt-1">{t("simple.setupCompaniesDesc")}</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => void downloadWorkbook()}
+          disabled={downloading || fleets.length === 0}
+          className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors disabled:opacity-50"
+        >
+          <Download size={12} aria-hidden="true" />
+          {downloading ? t("common.processing") : t("fleetPortal.exportExcel")}
+        </button>
       </div>
 
       <DataTable
@@ -197,7 +238,6 @@ export default function FleetsPage() {
         ]}
         data={fleets}
         onRowClick={(row: FleetRow) => setSelected(row)}
-        exportFilename="fleets"
         emptyMessage={t("errors.noData")}
       />
 

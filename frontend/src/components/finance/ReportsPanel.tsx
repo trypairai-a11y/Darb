@@ -16,8 +16,16 @@ import FilterBar from "@/components/shared/FilterBar";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import StatementDetailPanel, {
+  exportStatementCsv,
+} from "@/components/finance/StatementDetailPanel";
 import { walletsApi, unwrapList, fetchAllPages } from "@/lib/darbApi";
-import type { VendorStatementRow, WalletEntry, WalletReconciliationRun } from "@/types/darb";
+import type {
+  StatementTransaction,
+  VendorStatementRow,
+  WalletEntry,
+  WalletReconciliationRun,
+} from "@/types/darb";
 import { downloadCsv } from "@/lib/csv";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDateTime, formatKwd } from "@/i18n/format";
@@ -45,6 +53,9 @@ export default function ReportsPanel({ view, initialType = "" }: ReportsPanelPro
     dateFrom: monthStart(),
     type: initialType,
   });
+  // Revision 4 (#4) — the row a user drilled into, if any.
+  const [openStatement, setOpenStatement] = useState<VendorStatementRow | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   const dateFrom = filters.dateFrom || monthStart();
   const dateTo = filters.dateTo || "";
@@ -207,23 +218,7 @@ export default function ReportsPanel({ view, initialType = "" }: ReportsPanelPro
       return;
     }
     if (view === "vendor-statements") {
-      downloadCsv(
-        "vendor-statements",
-        [
-          t("reports.vendor"),
-          t("reports.period"),
-          t("reports.codNet"),
-          t("reports.closingBalance"),
-          t("table.status"),
-        ],
-        statements.map((s) => [
-          s.vendor?.name ?? "n/a",
-          `${s.periodStart.slice(0, 10)} to ${s.periodEnd.slice(0, 10)}`,
-          s.codNetKwd,
-          s.closingBalanceKwd,
-          s.status,
-        ])
-      );
+      void exportStatementsPerShop();
       return;
     }
     downloadCsv(
@@ -232,6 +227,41 @@ export default function ReportsPanel({ view, initialType = "" }: ReportsPanelPro
       runs.map((r) => [r.runDate, r.status])
     );
   }
+
+  /**
+   * Revision 4 (#5). The old export was one flat file with a summary row per
+   * shop per period, which is not a statement anybody can send to a merchant.
+   * Now each listed statement is fetched and written as its own detailed file,
+   * matching the drill-in report exactly — the client's "same concept".
+   *
+   * Sequential on purpose: a browser fires a download per file, and twenty
+   * parallel ones trip pop-up blocking.
+   */
+  async function exportStatementsPerShop() {
+    setExporting(true);
+    try {
+      for (const statement of statements) {
+        try {
+          const detail = await walletsApi.statementTransactions(statement.id);
+          exportStatementCsv(statement, detail.rows as StatementTransaction[], exportLabels);
+        } catch {
+          // One shop failing must not cost the caller the other nineteen.
+        }
+      }
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  const exportLabels = {
+    date: t("wallet.date"),
+    order: t("reports.orderNumber"),
+    type: t("reports.entryType"),
+    reference: t("reports.reference"),
+    total: t("reports.orderTotal"),
+    fee: t("reports.deliveryFee"),
+    codNet: t("reports.codNet"),
+  };
 
   const rowCount =
     view === "ledger" ? ledger.length : view === "vendor-statements" ? statements.length : runs.length;
@@ -242,11 +272,11 @@ export default function ReportsPanel({ view, initialType = "" }: ReportsPanelPro
         <button
           type="button"
           onClick={handleExport}
-          disabled={rowCount === 0}
+          disabled={rowCount === 0 || exporting}
           className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors disabled:opacity-50"
         >
           <Download size={12} aria-hidden="true" />
-          {t("reports.exportCsv")}
+          {exporting ? t("common.processing") : t("reports.exportCsv")}
         </button>
       </div>
 
@@ -287,16 +317,23 @@ export default function ReportsPanel({ view, initialType = "" }: ReportsPanelPro
       ) : view === "ledger" ? (
         <DataTable columns={ledgerColumns} data={ledger} emptyMessage={t("reports.noRows")} />
       ) : view === "vendor-statements" ? (
-        <DataTable
-          columns={statementColumns}
-          data={statements}
-          emptyMessage={
-            <span className="inline-flex items-center gap-2">
-              <FileText size={14} aria-hidden="true" />
-              {t("reports.noStatements")}
-            </span>
-          }
-        />
+        <>
+          <DataTable
+            columns={statementColumns}
+            data={statements}
+            onRowClick={(row) => setOpenStatement(row as VendorStatementRow)}
+            emptyMessage={
+              <span className="inline-flex items-center gap-2">
+                <FileText size={14} aria-hidden="true" />
+                {t("reports.noStatements")}
+              </span>
+            }
+          />
+          <StatementDetailPanel
+            statement={openStatement}
+            onClose={() => setOpenStatement(null)}
+          />
+        </>
       ) : (
         <DataTable
           columns={reconciliationColumns}

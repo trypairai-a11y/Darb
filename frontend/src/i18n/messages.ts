@@ -1013,6 +1013,7 @@ export interface Messages {
     faceReasonLowQuality: string;
   };
   settingsPage: {
+    phonePlaceholder: string;
     typeCol: string;
     accountManagerCol: string;
     unassigned: string;
@@ -1328,7 +1329,37 @@ export interface Messages {
     noZones: string;
     drawBoundaryFirst: string;
   };
+  plansPage: {
+    title: string;
+    subtitle: string;
+    newPlan: string;
+    noPlans: string;
+    planName: string;
+    planNamePlaceholder: string;
+    planType: string;
+    vendorsOn: string;
+    typeZone: string;
+    typeKm: string;
+    typeZoneHint: string;
+    typeKmHint: string;
+    typeLockedHint: string;
+    createAndEdit: string;
+    created: string;
+    deleted: string;
+    deletePlan: string;
+    deleteConfirm: string;
+    zoneEditorHint: string;
+    kmEditorHint: string;
+    upToKm: string;
+    priceKwd: string;
+    andAbove: string;
+    notServed: string;
+    addTier: string;
+    tierOrderHint: string;
+  };
   pricingPage: {
+    defaultPricing: string;
+    defaultPricingHint: string;
     title: string;
     subtitle: string;
     intraZoneFee: string;
@@ -1343,6 +1374,9 @@ export interface Messages {
     unsavedChanges: string;
   };
   vendorsPage: {
+    deliveryPlan: string;
+    deliveryPlanDefault: string;
+    deliveryPlanHint: string;
     portalRole: string;
     roleOwner: string;
     roleFinance: string;
@@ -1556,6 +1590,17 @@ export interface Messages {
     viewLedger: string;
   };
   reports: {
+    statementDetail: string;
+    orderNumber: string;
+    reference: string;
+    orderTotal: string;
+    deliveryFee: string;
+    openingBalance: string;
+    prepaidFees: string;
+    refunds: string;
+    kindDelivery: string;
+    kindRefund: string;
+    kindPayout: string;
     title: string;
     subtitle: string;
     viewLedger: string;
@@ -1777,6 +1822,7 @@ export interface Messages {
     historySubtitle: string;
   };
   fleetPortal: {
+    exportExcel: string;
     switchCompany: string;
     navSection: string;
     navRoster: string;
@@ -2922,6 +2968,7 @@ export const en: Messages = {
     faceReasonLowQuality: "Image too dark / blurry",
   },
   settingsPage: {
+    phonePlaceholder: "+965 xxxx xxxx",
     typeCol: "Type",
     accountManagerCol: "Account manager",
     unassigned: "Unassigned",
@@ -3231,7 +3278,37 @@ export const en: Messages = {
     drawBoundaryFirst: "Draw the zone boundary on the map before saving.",
     noZones: "No zones yet — draw the first one on the map.",
   },
+  plansPage: {
+    title: "Delivery plans",
+    subtitle: "Named price lists you assign to a merchant from its profile.",
+    newPlan: "New plan",
+    noPlans: "No plans yet. Every merchant is on the default pricing below.",
+    planName: "Plan name",
+    planNamePlaceholder: "Pharmacy standard",
+    planType: "Priced by",
+    vendorsOn: "Merchants",
+    typeZone: "Zone",
+    typeKm: "Kilometre",
+    typeZoneHint: "A flat fee within a zone, plus a price for each zone to zone pair.",
+    typeKmHint: "Price bands by driving distance from Google Maps, not the route the driver took.",
+    typeLockedHint: "A plan is one or the other, and this cannot be changed later. Create a second plan instead.",
+    createAndEdit: "Create and set prices",
+    created: "Plan created",
+    deleted: "Plan deleted",
+    deletePlan: "Delete plan",
+    deleteConfirm: "This cannot be undone. Merchants on this plan must be moved to another one first.",
+    zoneEditorHint: "One price per origin and destination pair. Leave a cell blank to say you do not deliver it.",
+    kmEditorHint: "Bands are read top to bottom. Leave the last distance blank for 'and above', and leave a price blank to say you do not deliver that far.",
+    upToKm: "Up to (km)",
+    priceKwd: "Price (KD)",
+    andAbove: "and above",
+    notServed: "not served",
+    addTier: "Add band",
+    tierOrderHint: "Distance is measured from Google Maps routing, fixed when the order is priced.",
+  },
   pricingPage: {
+    defaultPricing: "Default pricing",
+    defaultPricingHint: "What a merchant is charged when no delivery plan is assigned to it.",
     title: "Delivery prices",
     subtitle: "One flat fee inside an area, plus an extra for each pair of areas.",
     intraZoneFee: "Intra-zone flat fee",
@@ -3246,6 +3323,9 @@ export const en: Messages = {
     unsavedChanges: "Unsaved changes",
   },
   vendorsPage: {
+    deliveryPlan: "Delivery plan",
+    deliveryPlanDefault: "Default pricing",
+    deliveryPlanHint: "The price list this merchant is quoted on. Default pricing uses the tenant-wide flat fee and surcharge grid.",
     portalRole: "Portal role",
     roleOwner: "Owner",
     roleFinance: "Finance",
@@ -3459,6 +3539,17 @@ export const en: Messages = {
     viewLedger: "View fee ledger",
   },
   reports: {
+    statementDetail: "Statement detail",
+    orderNumber: "Order",
+    reference: "Reference",
+    orderTotal: "Order total",
+    deliveryFee: "Delivery fee",
+    openingBalance: "Opening balance",
+    prepaidFees: "Prepaid fees",
+    refunds: "Refunds",
+    kindDelivery: "Delivery",
+    kindRefund: "Refund",
+    kindPayout: "Payout",
     title: "Financial reports",
     subtitle: "Ledger, vendor statements, cash hand-ins and reconciliation, all exportable.",
     viewLedger: "Ledger",
@@ -3680,6 +3771,7 @@ export const en: Messages = {
     historySubtitle: "Every hand-in recorded, newest first.",
   },
   fleetPortal: {
+    exportExcel: "Export Excel",
     switchCompany: "Switch company",
     navSection: "Fleet portal",
     navRoster: "Roster",
@@ -4825,6 +4917,7 @@ export const ar: Messages = {
     faceReasonLowQuality: "الصورة مظلمة / ضبابية",
   },
   settingsPage: {
+    phonePlaceholder: "+965 xxxx xxxx",
     typeCol: "النوع",
     accountManagerCol: "مدير الحساب",
     unassigned: "غير معيّن",
@@ -5134,7 +5227,37 @@ export const ar: Messages = {
     drawBoundaryFirst: "ارسم حدود المنطقة على الخريطة قبل الحفظ.",
     noZones: "لا توجد مناطق بعد — ارسم المنطقة الأولى على الخريطة.",
   },
+  plansPage: {
+    title: "خطط التوصيل",
+    subtitle: "قوائم أسعار مسمّاة تُخصّصها للتاجر من ملفه.",
+    newPlan: "خطة جديدة",
+    noPlans: "لا توجد خطط بعد. كل التجار على التسعير الافتراضي أدناه.",
+    planName: "اسم الخطة",
+    planNamePlaceholder: "صيدليات قياسي",
+    planType: "التسعير حسب",
+    vendorsOn: "التجار",
+    typeZone: "المنطقة",
+    typeKm: "الكيلومتر",
+    typeZoneHint: "رسوم ثابتة داخل المنطقة، مع سعر لكل زوج من منطقة إلى منطقة.",
+    typeKmHint: "شرائح سعرية حسب مسافة القيادة من خرائط جوجل، لا حسب مسار السائق.",
+    typeLockedHint: "الخطة إما هذه أو تلك، ولا يمكن تغييرها لاحقاً. أنشئ خطة ثانية بدلاً من ذلك.",
+    createAndEdit: "إنشاء وتحديد الأسعار",
+    created: "تم إنشاء الخطة",
+    deleted: "تم حذف الخطة",
+    deletePlan: "حذف الخطة",
+    deleteConfirm: "لا يمكن التراجع عن هذا. يجب نقل التجار على هذه الخطة إلى خطة أخرى أولاً.",
+    zoneEditorHint: "سعر واحد لكل زوج مصدر ووجهة. اترك الخانة فارغة للإشارة إلى أنك لا توصّل إليها.",
+    kmEditorHint: "تُقرأ الشرائح من الأعلى إلى الأسفل. اترك آخر مسافة فارغة لتعني «وما فوق»، واترك السعر فارغاً لتعني أنك لا توصّل هذه المسافة.",
+    upToKm: "حتى (كم)",
+    priceKwd: "السعر (د.ك)",
+    andAbove: "وما فوق",
+    notServed: "غير مخدومة",
+    addTier: "إضافة شريحة",
+    tierOrderHint: "تُقاس المسافة من مسار خرائط جوجل، وتُثبّت عند تسعير الطلب.",
+  },
   pricingPage: {
+    defaultPricing: "التسعير الافتراضي",
+    defaultPricingHint: "ما يُحتسب على التاجر عندما لا تكون هناك خطة توصيل مخصّصة له.",
     title: "أسعار التوصيل",
     subtitle: "سعر ثابت واحد داخل المنطقة، مع إضافة لكل زوج من المناطق.",
     intraZoneFee: "الرسم الثابت داخل المنطقة",
@@ -5149,6 +5272,9 @@ export const ar: Messages = {
     unsavedChanges: "تغييرات غير محفوظة",
   },
   vendorsPage: {
+    deliveryPlan: "خطة التوصيل",
+    deliveryPlanDefault: "التسعير الافتراضي",
+    deliveryPlanHint: "قائمة الأسعار التي يُسعّر بها هذا التاجر. التسعير الافتراضي يستخدم الرسوم الثابتة وجدول الإضافات العام.",
     portalRole: "دور البوابة",
     roleOwner: "المالك",
     roleFinance: "المالية",
@@ -5362,6 +5488,17 @@ export const ar: Messages = {
     viewLedger: "عرض دفتر الرسوم",
   },
   reports: {
+    statementDetail: "تفاصيل كشف الحساب",
+    orderNumber: "الطلب",
+    reference: "المرجع",
+    orderTotal: "إجمالي الطلب",
+    deliveryFee: "رسوم التوصيل",
+    openingBalance: "الرصيد الافتتاحي",
+    prepaidFees: "رسوم مدفوعة مسبقاً",
+    refunds: "المبالغ المستردة",
+    kindDelivery: "توصيل",
+    kindRefund: "استرداد",
+    kindPayout: "تحويل",
     title: "التقارير المالية",
     subtitle: "دفتر الحسابات وكشوف التجار والتوريدات النقدية والمطابقة، جميعها قابلة للتصدير.",
     viewLedger: "دفتر الحسابات",
@@ -5583,6 +5720,7 @@ export const ar: Messages = {
     historySubtitle: "كل عمليات التسليم المسجّلة، الأحدث أولاً.",
   },
   fleetPortal: {
+    exportExcel: "تصدير Excel",
     switchCompany: "تبديل الشركة",
     navSection: "بوابة الأسطول",
     navRoster: "السائقون",

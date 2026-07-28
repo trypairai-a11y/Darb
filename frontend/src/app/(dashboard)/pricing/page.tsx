@@ -1,13 +1,22 @@
 "use client";
-// Darb 2.0 — /pricing: intra-zone flat fee + zones×zones surcharge matrix.
-// Empty cell = unserviceable pair (no ZoneSurcharge row). Single Save pushes
-// PUT /api/zones/surcharges + PUT /api/zones/settings.
+// Darb 2.0 — /pricing.
+//
+// Two things live here since revision 4 (#7). Delivery plans are the named,
+// reusable price lists a merchant is assigned to, by zone or by kilometre.
+// Below them is the original tenant-wide rate card: an intra-zone flat fee
+// plus a zones×zones surcharge matrix, empty cell = unserviceable pair.
+//
+// The tenant-wide card is not legacy. It is what prices every vendor that has
+// no plan assigned, which is what lets merchants move onto plans one at a time
+// instead of on a flag day. It is second on the page because plans are what
+// somebody comes here to edit now.
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Save } from "lucide-react";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
+import DeliveryPlansPanel from "@/components/pricing/DeliveryPlansPanel";
 import { zonesApi, unwrapList } from "@/lib/darbApi";
 import type { DeliveryZone, FulfillmentSettings, ZoneSurcharge } from "@/types/darb";
 import BackToSetup from "@/components/shared/BackToSetup";
@@ -160,6 +169,13 @@ export default function PricingPage() {
             {saving ? t("common.processing") : t("pricingPage.save")}
           </button>
         </div>
+      </div>
+
+      <DeliveryPlansPanel />
+
+      <div className="pt-2">
+        <h2 className="font-medium text-sand-900">{t("pricingPage.defaultPricing")}</h2>
+        <p className="text-xs text-sand-600 mt-1">{t("pricingPage.defaultPricingHint")}</p>
       </div>
 
       {/* Intra-zone flat fee */}

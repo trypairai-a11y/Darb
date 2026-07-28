@@ -13,8 +13,9 @@ import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
 import WalletLedgerTable from "@/components/darb/WalletLedgerTable";
 import LiveMap from "@/components/map/LiveMap";
-import { vendorsApi, foodicsApi, unwrapList } from "@/lib/darbApi";
+import { vendorsApi, foodicsApi, deliveryPlansApi, unwrapList } from "@/lib/darbApi";
 import type {
+  DeliveryPlan,
   Vendor,
   VendorBranch,
   VendorPortalRole,
@@ -155,16 +156,26 @@ function ProfileTab({ vendor, onSaved }: { vendor: Vendor; onSaved: () => void }
     name: vendor.name,
     nameAr: vendor.nameAr ?? "",
     phone: vendor.phone ?? "",
+    // Revision 4 (#7) — empty means no plan, which prices this merchant on the
+    // tenant-wide default rather than leaving it unpriced.
+    deliveryPlanId: vendor.deliveryPlanId ?? "",
     requiresCarOnly: !!vendor.requiresCarOnly,
     isActive: vendor.isActive !== false,
   });
   const [saving, setSaving] = useState(false);
+
+  const plansQuery = useQuery({
+    queryKey: ["darb", "delivery-plans"],
+    queryFn: () => deliveryPlansApi.list({ limit: 100 }),
+  });
+  const plans = useMemo(() => unwrapList<DeliveryPlan>(plansQuery.data), [plansQuery.data]);
 
   useEffect(() => {
     setForm({
       name: vendor.name,
       nameAr: vendor.nameAr ?? "",
       phone: vendor.phone ?? "",
+      deliveryPlanId: vendor.deliveryPlanId ?? "",
       requiresCarOnly: !!vendor.requiresCarOnly,
       isActive: vendor.isActive !== false,
     });
@@ -177,6 +188,7 @@ function ProfileTab({ vendor, onSaved }: { vendor: Vendor; onSaved: () => void }
         name: form.name.trim(),
         nameAr: form.nameAr.trim() || null,
         phone: form.phone.trim() || null,
+        deliveryPlanId: form.deliveryPlanId || null,
         requiresCarOnly: form.requiresCarOnly,
         isActive: form.isActive,
       });
@@ -233,6 +245,26 @@ function ProfileTab({ vendor, onSaved }: { vendor: Vendor; onSaved: () => void }
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
             className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
+            {t("vendorsPage.deliveryPlan")}
+          </label>
+          <select
+            value={form.deliveryPlanId}
+            onChange={(e) => setForm({ ...form, deliveryPlanId: e.target.value })}
+            className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="">{t("vendorsPage.deliveryPlanDefault")}</option>
+            {plans
+              .filter((p) => p.isActive || p.id === form.deliveryPlanId)
+              .map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} · {p.type === "KM" ? t("plansPage.typeKm") : t("plansPage.typeZone")}
+                </option>
+              ))}
+          </select>
+          <p className="text-xs text-sand-600 mt-2">{t("vendorsPage.deliveryPlanHint")}</p>
         </div>
         <div className="flex items-center gap-6">
           <label className="flex items-center gap-2 text-sm text-sand-800 cursor-pointer">
