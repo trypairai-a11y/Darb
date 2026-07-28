@@ -32,6 +32,12 @@ enum UserRole {
   VIEWER
   VENDOR
   FLEET
+  // Revision 4 (#11) — staff who own a set of merchants and want the
+  // violation notifications for them.
+  ACCOUNT_MANAGER
+  // Revision 4 (#3) — the cash desk login. Fenced to the hand-in portal and
+  // nothing else, the same way FLEET is fenced to /api/fleet.
+  CASH_COLLECTOR
 }
 
 enum DriverStatus {
@@ -484,6 +490,12 @@ model Tenant {
   refunds                   Refund[]
   fleetPartners             FleetPartner[]
   fleetPayoutStatements     FleetPayoutStatement[]
+  // Revision 4 — delivery plans (#7), invites and per-surface access (#12).
+  deliveryPlans             DeliveryPlan[]
+  distanceCacheEntries      DistanceCache[]
+  userInvites               UserInvite[]
+  userSurfacePermissions    UserSurfacePermission[]
+  accountManagerVendors     AccountManagerVendor[]
 }
 
 // 2. Company
@@ -572,26 +584,31 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  tenant                Tenant               @relation(fields: [tenantId], references: [id])
-  vendor                Vendor?              @relation(fields: [vendorId], references: [id])
-  fleetPartner          FleetPartner?        @relation(fields: [fleetPartnerId], references: [id])
-  ownerGroup            OwnerGroup?          @relation(fields: [ownerGroupId], references: [id])
-  branch                VendorBranch?        @relation("BranchPortalUser", fields: [branchId], references: [id])
-  managedCompanies      Company[]            @relation("CompanyAccountManager")
-  supervisedDrivers     Driver[]             @relation("DriverSupervisor")
-  issuedCommands        DeviceCommand[]      @relation("CommandIssuer")
-  acknowledgedAlerts    Alert[]              @relation("AlertAcknowledger")
-  reviewedLeaves        LeaveRequest[]       @relation("LeaveReviewer")
-  assignedTickets       Ticket[]             @relation("TicketAssignee")
-  submittedTickets      Ticket[]             @relation("TicketSubmitterUser")
+  tenant                Tenant                  @relation(fields: [tenantId], references: [id])
+  vendor                Vendor?                 @relation(fields: [vendorId], references: [id])
+  fleetPartner          FleetPartner?           @relation(fields: [fleetPartnerId], references: [id])
+  ownerGroup            OwnerGroup?             @relation(fields: [ownerGroupId], references: [id])
+  branch                VendorBranch?           @relation("BranchPortalUser", fields: [branchId], references: [id])
+  managedCompanies      Company[]               @relation("CompanyAccountManager")
+  supervisedDrivers     Driver[]                @relation("DriverSupervisor")
+  issuedCommands        DeviceCommand[]         @relation("CommandIssuer")
+  acknowledgedAlerts    Alert[]                 @relation("AlertAcknowledger")
+  reviewedLeaves        LeaveRequest[]          @relation("LeaveReviewer")
+  assignedTickets       Ticket[]                @relation("TicketAssignee")
+  submittedTickets      Ticket[]                @relation("TicketSubmitterUser")
   notifications         Notification[]
-  createdAmericanaRates AmericanaChainRate[] @relation("AmericanaChainRateCreator")
-  approvedAgentActions  AgentAction[]        @relation("AgentActionApprover")
-  pinnedViews           PinnedView[]         @relation("PinnedViewOwner")
-  metricEvents          MetricEvent[]        @relation("MetricEventActor")
+  createdAmericanaRates AmericanaChainRate[]    @relation("AmericanaChainRateCreator")
+  approvedAgentActions  AgentAction[]           @relation("AgentActionApprover")
+  pinnedViews           PinnedView[]            @relation("PinnedViewOwner")
+  metricEvents          MetricEvent[]           @relation("MetricEventActor")
   // Phase 4 Wave 1 — chat ownership + briefing authorship.
-  chatThreads           ChatThread[]         @relation("ChatThreadOwner")
-  scheduledBriefings    ScheduledBriefing[]  @relation("ScheduledBriefingCreator")
+  chatThreads           ChatThread[]            @relation("ChatThreadOwner")
+  scheduledBriefings    ScheduledBriefing[]     @relation("ScheduledBriefingCreator")
+  // Revision 4 (#12) — self-service password on invite, per-surface access,
+  // and the merchants an account manager owns.
+  invites               UserInvite[]
+  surfacePermissions    UserSurfacePermission[]
+  managedVendors        AccountManagerVendor[]
 
   @@index([tenantId])
 }
@@ -2755,11 +2772,15 @@ model Vendor {
   // (negative VENDOR_PAYABLE balance) reaches the cap, new orders are
   // REJECTED (VENDOR_CREDIT_CAP) until settled.
   creditCapKwd    Decimal? @db.Decimal(10, 3)
+  // Revision 4 (#7) — the delivery plan this merchant is priced on. NULL
+  // falls through to FulfillmentSettings + ZoneSurcharge, which is how every
+  // vendor is priced until a plan is assigned.
+  deliveryPlanId  String?
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  tenant            Tenant             @relation(fields: [tenantId], references: [id])
+  tenant            Tenant                 @relation(fields: [tenantId], references: [id])
   branches          VendorBranch[]
   users             User[]
   orders            DeliveryOrder[]
@@ -2767,6 +2788,8 @@ model Vendor {
   apiKeys           ApiKey[]
   statements        VendorStatement[]
   refunds           Refund[]
+  deliveryPlan      DeliveryPlan?          @relation(fields: [deliveryPlanId], references: [id])
+  accountManagers   AccountManagerVendor[]
 
   @@unique([tenantId, code])
   @@index([tenantId, isActive])
@@ -2822,12 +2845,14 @@ model DeliveryZone {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  tenant           Tenant          @relation(fields: [tenantId], references: [id])
+  tenant           Tenant                 @relation(fields: [tenantId], references: [id])
   branches         VendorBranch[]
-  originSurcharges ZoneSurcharge[] @relation("SurchargeOrigin")
-  destSurcharges   ZoneSurcharge[] @relation("SurchargeDest")
-  pickupOrders     DeliveryOrder[] @relation("OrderPickupZone")
-  dropoffOrders    DeliveryOrder[] @relation("OrderDropoffZone")
+  originSurcharges ZoneSurcharge[]        @relation("SurchargeOrigin")
+  destSurcharges   ZoneSurcharge[]        @relation("SurchargeDest")
+  pickupOrders     DeliveryOrder[]        @relation("OrderPickupZone")
+  dropoffOrders    DeliveryOrder[]        @relation("OrderDropoffZone")
+  planOriginRates  DeliveryPlanZoneRate[] @relation("PlanRateOrigin")
+  planDestRates    DeliveryPlanZoneRate[] @relation("PlanRateDest")
 
   @@unique([tenantId, code])
   @@index([tenantId, isActive])
@@ -2850,6 +2875,100 @@ model ZoneSurcharge {
 
   @@unique([tenantId, originZoneId, destZoneId])
   @@index([tenantId])
+}
+
+// ─── Revision 4 (#7): delivery plans ────────────────────────────────────────
+//
+// A plan is a named, reusable price list that a merchant is assigned to. It is
+// deliberately one thing or the other: a plan prices by zone OR by kilometre,
+// never both, because a plan that could do either is a plan nobody can read off
+// a screen and say what a delivery costs.
+//
+// ZoneSurcharge above is not extended in place — it is tenant-wide and every
+// vendor shares it. Plans need per-plan rates, and the two have to coexist
+// while vendors migrate onto plans one at a time.
+
+enum DeliveryPlanType {
+  ZONE
+  KM
+}
+
+model DeliveryPlan {
+  id        String           @id @default(uuid())
+  tenantId  String
+  name      String // client-facing, e.g. "Pharmacy standard"
+  type      DeliveryPlanType
+  isActive  Boolean          @default(true)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  tenant    Tenant                 @relation(fields: [tenantId], references: [id])
+  zoneRates DeliveryPlanZoneRate[]
+  kmTiers   DeliveryPlanKmTier[]
+  vendors   Vendor[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId, isActive])
+}
+
+// One cell of a by-zone plan's grid. originZoneId == destZoneId is the
+// intra-zone flat fee. A missing row for a cross-zone pair means the pair is
+// unserviceable — the same absence-is-meaningful rule ZoneSurcharge uses, which
+// is what lets the pricing UI express "unserviceable" as an empty cell.
+model DeliveryPlanZoneRate {
+  id           String   @id @default(uuid())
+  tenantId     String
+  planId       String
+  originZoneId String
+  destZoneId   String
+  feeKwd       Decimal  @db.Decimal(10, 3)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  plan       DeliveryPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  originZone DeliveryZone @relation("PlanRateOrigin", fields: [originZoneId], references: [id])
+  destZone   DeliveryZone @relation("PlanRateDest", fields: [destZoneId], references: [id])
+
+  @@unique([planId, originZoneId, destZoneId])
+  @@index([tenantId])
+}
+
+// One band of a by-kilometre plan, ordered by maxKm ascending. The last tier
+// carries maxKm = NULL, meaning "and above" — that is what makes "14+ km" a
+// row rather than a special case in the pricing code. feeKwd = NULL marks the
+// band unserviceable, mirroring the blank cell in the by-zone grid.
+model DeliveryPlanKmTier {
+  id        String   @id @default(uuid())
+  tenantId  String
+  planId    String
+  sortOrder Int      @default(0)
+  maxKm     Decimal? @db.Decimal(6, 2)
+  feeKwd    Decimal? @db.Decimal(10, 3)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  plan DeliveryPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId, sortOrder])
+  @@index([tenantId])
+}
+
+// Google Distance Matrix results, keyed on coordinates rounded to 4dp (~11 m).
+// Repeat orders from one branch to one building are the common case, so the
+// cache absorbs most of the traffic and the API bill stays small.
+model DistanceCache {
+  id        String   @id @default(uuid())
+  tenantId  String
+  originKey String // "lat,lng" rounded to 4dp
+  destKey   String
+  km        Decimal  @db.Decimal(8, 3)
+  source    String // google | straight-line
+  fetchedAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, originKey, destKey])
+  @@index([fetchedAt])
 }
 
 // D5. FulfillmentSettings - one row per tenant; dispatch + pricing knobs
@@ -2880,58 +2999,63 @@ model FulfillmentSettings {
 //     supervisor manual). Coarse status FSM; granular milestones live in
 //     OrderEvent rows keyed by this id.
 model DeliveryOrder {
-  id              String              @id @default(uuid())
-  tenantId        String
-  orderNumber     String // "DRB-{vendorCode}-{seq}"
-  source          DeliveryOrderSource
-  foodicsOrderId  String?
-  vendorId        String
-  branchId        String
-  status          DeliveryOrderStatus @default(CREATED)
-  paymentMethod   PaymentMethod       @default(COD)
-  orderTotalKwd   Decimal             @db.Decimal(10, 3)
-  deliveryFeeKwd  Decimal?            @db.Decimal(10, 3)
-  customerName    String?
-  customerPhone   String?
-  dropoffAddress  String?
-  dropoffLat      Decimal?            @db.Decimal(10, 7)
-  dropoffLng      Decimal?            @db.Decimal(10, 7)
-  pickupZoneId    String?
-  dropoffZoneId   String?
-  driverId        String?
-  offerRound      Int                 @default(0)
-  requiresCarOnly Boolean             @default(false)
-  rejectionReason String? // OUT_OF_ZONE_DROPOFF | UNSERVICEABLE_PAIR | NO_COORDINATES | BRANCH_UNZONED | VENDOR_PAUSED | VENDOR_CREDIT_CAP
-  cancelReason    String?
-  failureReason   String?
-  proofPhotoUrl   String?
-  podPin          String? // 4-digit PIN generated at creation
-  codCollectedKwd Decimal?            @db.Decimal(10, 3)
-  slaDeadline     DateTime?
+  id                 String              @id @default(uuid())
+  tenantId           String
+  orderNumber        String // "DRB-{vendorCode}-{seq}"
+  source             DeliveryOrderSource
+  foodicsOrderId     String?
+  vendorId           String
+  branchId           String
+  status             DeliveryOrderStatus @default(CREATED)
+  paymentMethod      PaymentMethod       @default(COD)
+  orderTotalKwd      Decimal             @db.Decimal(10, 3)
+  deliveryFeeKwd     Decimal?            @db.Decimal(10, 3)
+  customerName       String?
+  customerPhone      String?
+  dropoffAddress     String?
+  dropoffLat         Decimal?            @db.Decimal(10, 7)
+  dropoffLng         Decimal?            @db.Decimal(10, 7)
+  pickupZoneId       String?
+  dropoffZoneId      String?
+  driverId           String?
+  offerRound         Int                 @default(0)
+  // Revision 4 (#1) — NO_DRIVER is no longer a dead end. exhaustDispatch
+  // stamps these, the sweep reads them, and the retry rounds they drive
+  // search without a radius cap so the nearest driver anywhere wins.
+  redispatchAttempts Int                 @default(0)
+  nextRedispatchAt   DateTime?
+  requiresCarOnly    Boolean             @default(false)
+  rejectionReason    String? // OUT_OF_ZONE_DROPOFF | UNSERVICEABLE_PAIR | NO_COORDINATES | BRANCH_UNZONED | VENDOR_PAUSED | VENDOR_CREDIT_CAP
+  cancelReason       String?
+  failureReason      String?
+  proofPhotoUrl      String?
+  podPin             String? // 4-digit PIN generated at creation
+  codCollectedKwd    Decimal?            @db.Decimal(10, 3)
+  slaDeadline        DateTime?
   // PRD §6 scheduling: NULL = immediate. Scheduled orders persist as CREATED
   // and are advanced to DISPATCHING by the cron sweep near the due time.
-  scheduledAt     DateTime?
+  scheduledAt        DateTime?
   // PRD §6 return-to-merchant: set on the FAILED→RETURNED transition.
-  returnedAt      DateTime?
+  returnedAt         DateTime?
   // PRD §8 auto-batching: set at accept time when the driver won a batched
   // offer (one pickup, multiple drops). NULL for single-order trips.
-  batchId         String?
+  batchId            String?
   // PRD §11 tips: customer tip via the tracking link; driver keeps 100%.
-  tipKwd          Decimal?            @db.Decimal(10, 3)
+  tipKwd             Decimal?            @db.Decimal(10, 3)
   // PRD §12 tracking link credential: 128-bit random, the only auth for the
   // public /api/track surface. NULL only on pre-PRD historical rows.
-  trackingToken   String?             @unique
+  trackingToken      String?             @unique
   // PRD §2 partner intake idempotency: the merchant system's own order id.
-  externalRef     String?
+  externalRef        String?
   // PRD §11 refunds: set when a full-order refund is PROCESSED.
-  refundedAt      DateTime?
-  assignedAt      DateTime?
-  pickedUpAt      DateTime?
-  deliveredAt     DateTime?
-  cancelledAt     DateTime?
-  metadata        Json?
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  refundedAt         DateTime?
+  assignedAt         DateTime?
+  pickedUpAt         DateTime?
+  deliveredAt        DateTime?
+  cancelledAt        DateTime?
+  metadata           Json?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 
   tenant      Tenant          @relation(fields: [tenantId], references: [id])
   vendor      Vendor          @relation(fields: [vendorId], references: [id])
@@ -2954,6 +3078,8 @@ model DeliveryOrder {
   @@index([tenantId, slaDeadline])
   @@index([tenantId, status, scheduledAt])
   @@index([tenantId, batchId])
+  // The sweep's retry leg selects on exactly this pair.
+  @@index([status, nextRedispatchAt])
 }
 
 // D7. DispatchOffer - one serialized 15s offer to one driver per round
@@ -3291,4 +3417,82 @@ model FleetPayoutStatement {
 
   @@unique([tenantId, fleetPartnerId, periodStart])
   @@index([tenantId, periodStart])
+}
+
+// ─── Revision 4 (#12): invites, per-surface access, account managers ─────────
+
+// An invite is the only way a staff account gets its first password. The admin
+// never types one — they type a name, an email and a role, and the person on
+// the other end chooses their own credential. Only the sha256 of the token is
+// stored, so a database read cannot be replayed as an invite.
+model UserInvite {
+  id        String    @id @default(uuid())
+  tenantId  String
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, userId])
+  @@index([expiresAt])
+}
+
+enum PermissionLevel {
+  NONE
+  VIEW
+  EDIT
+}
+
+// The staff surfaces a per-user grant can talk about. These are the rail
+// entries, not API routes: the client asked "what he can view or change", and
+// what a person can name is a screen.
+enum AppSurface {
+  LIVE
+  ORDERS
+  MONEY
+  SETUP
+  TODAY
+  CASH_DESK
+  PEOPLE
+}
+
+// A per-user override of the role default. Absence of a row means "inherit the
+// role", which is what lets this ship with no backfill: every existing user has
+// no rows and therefore behaves exactly as before.
+model UserSurfacePermission {
+  id        String          @id @default(uuid())
+  tenantId  String
+  userId    String
+  surface   AppSurface
+  level     PermissionLevel
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, surface])
+  @@index([tenantId])
+}
+
+// Which merchants an ACCOUNT_MANAGER owns. User.managedCompanies already
+// exists but points at Company, the legacy multi-platform client model, which
+// is not the Darb merchant — hence a separate join rather than a reuse.
+model AccountManagerVendor {
+  id        String   @id @default(uuid())
+  tenantId  String
+  userId    String
+  vendorId  String
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, vendorId])
+  @@index([tenantId, vendorId])
 }

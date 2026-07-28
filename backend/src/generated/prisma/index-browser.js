@@ -1483,6 +1483,7 @@ exports.Prisma.VendorScalarFieldEnum = {
   requiresCarOnly: 'requiresCarOnly',
   isPaused: 'isPaused',
   creditCapKwd: 'creditCapKwd',
+  deliveryPlanId: 'deliveryPlanId',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -1531,6 +1532,48 @@ exports.Prisma.ZoneSurchargeScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.DeliveryPlanScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  type: 'type',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DeliveryPlanZoneRateScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  planId: 'planId',
+  originZoneId: 'originZoneId',
+  destZoneId: 'destZoneId',
+  feeKwd: 'feeKwd',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DeliveryPlanKmTierScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  planId: 'planId',
+  sortOrder: 'sortOrder',
+  maxKm: 'maxKm',
+  feeKwd: 'feeKwd',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DistanceCacheScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  originKey: 'originKey',
+  destKey: 'destKey',
+  km: 'km',
+  source: 'source',
+  fetchedAt: 'fetchedAt'
+};
+
 exports.Prisma.FulfillmentSettingsScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -1571,6 +1614,8 @@ exports.Prisma.DeliveryOrderScalarFieldEnum = {
   dropoffZoneId: 'dropoffZoneId',
   driverId: 'driverId',
   offerRound: 'offerRound',
+  redispatchAttempts: 'redispatchAttempts',
+  nextRedispatchAt: 'nextRedispatchAt',
   requiresCarOnly: 'requiresCarOnly',
   rejectionReason: 'rejectionReason',
   cancelReason: 'cancelReason',
@@ -1798,6 +1843,34 @@ exports.Prisma.FleetPayoutStatementScalarFieldEnum = {
   payoutTxId: 'payoutTxId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UserInviteScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  userId: 'userId',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.UserSurfacePermissionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  userId: 'userId',
+  surface: 'surface',
+  level: 'level',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AccountManagerVendorScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  userId: 'userId',
+  vendorId: 'vendorId',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -2635,7 +2708,8 @@ exports.Prisma.VendorOrderByRelevanceFieldEnum = {
   name: 'name',
   nameAr: 'nameAr',
   code: 'code',
-  phone: 'phone'
+  phone: 'phone',
+  deliveryPlanId: 'deliveryPlanId'
 };
 
 exports.Prisma.VendorBranchOrderByRelevanceFieldEnum = {
@@ -2664,6 +2738,34 @@ exports.Prisma.ZoneSurchargeOrderByRelevanceFieldEnum = {
   tenantId: 'tenantId',
   originZoneId: 'originZoneId',
   destZoneId: 'destZoneId'
+};
+
+exports.Prisma.DeliveryPlanOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name'
+};
+
+exports.Prisma.DeliveryPlanZoneRateOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  planId: 'planId',
+  originZoneId: 'originZoneId',
+  destZoneId: 'destZoneId'
+};
+
+exports.Prisma.DeliveryPlanKmTierOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  planId: 'planId'
+};
+
+exports.Prisma.DistanceCacheOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  originKey: 'originKey',
+  destKey: 'destKey',
+  source: 'source'
 };
 
 exports.Prisma.FulfillmentSettingsOrderByRelevanceFieldEnum = {
@@ -2826,6 +2928,26 @@ exports.Prisma.FleetPayoutStatementOrderByRelevanceFieldEnum = {
   status: 'status',
   payoutTxId: 'payoutTxId'
 };
+
+exports.Prisma.UserInviteOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  userId: 'userId',
+  tokenHash: 'tokenHash'
+};
+
+exports.Prisma.UserSurfacePermissionOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  userId: 'userId'
+};
+
+exports.Prisma.AccountManagerVendorOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  userId: 'userId',
+  vendorId: 'vendorId'
+};
 exports.SubscriptionPlan = exports.$Enums.SubscriptionPlan = {
   FREE: 'FREE',
   PRO: 'PRO',
@@ -2853,7 +2975,9 @@ exports.UserRole = exports.$Enums.UserRole = {
   ACCOUNTANT: 'ACCOUNTANT',
   VIEWER: 'VIEWER',
   VENDOR: 'VENDOR',
-  FLEET: 'FLEET'
+  FLEET: 'FLEET',
+  ACCOUNT_MANAGER: 'ACCOUNT_MANAGER',
+  CASH_COLLECTOR: 'CASH_COLLECTOR'
 };
 
 exports.VehicleType = exports.$Enums.VehicleType = {
@@ -3192,6 +3316,11 @@ exports.WithdrawalStatus = exports.$Enums.WithdrawalStatus = {
   FAILED: 'FAILED'
 };
 
+exports.DeliveryPlanType = exports.$Enums.DeliveryPlanType = {
+  ZONE: 'ZONE',
+  KM: 'KM'
+};
+
 exports.DeliveryOrderSource = exports.$Enums.DeliveryOrderSource = {
   FOODICS: 'FOODICS',
   VENDOR_PORTAL: 'VENDOR_PORTAL',
@@ -3268,6 +3397,22 @@ exports.WebhookEventStatus = exports.$Enums.WebhookEventStatus = {
   RECEIVED: 'RECEIVED',
   PROCESSED: 'PROCESSED',
   FAILED: 'FAILED'
+};
+
+exports.AppSurface = exports.$Enums.AppSurface = {
+  LIVE: 'LIVE',
+  ORDERS: 'ORDERS',
+  MONEY: 'MONEY',
+  SETUP: 'SETUP',
+  TODAY: 'TODAY',
+  CASH_DESK: 'CASH_DESK',
+  PEOPLE: 'PEOPLE'
+};
+
+exports.PermissionLevel = exports.$Enums.PermissionLevel = {
+  NONE: 'NONE',
+  VIEW: 'VIEW',
+  EDIT: 'EDIT'
 };
 
 exports.Prisma.ModelName = {
@@ -3358,6 +3503,10 @@ exports.Prisma.ModelName = {
   VendorBranch: 'VendorBranch',
   DeliveryZone: 'DeliveryZone',
   ZoneSurcharge: 'ZoneSurcharge',
+  DeliveryPlan: 'DeliveryPlan',
+  DeliveryPlanZoneRate: 'DeliveryPlanZoneRate',
+  DeliveryPlanKmTier: 'DeliveryPlanKmTier',
+  DistanceCache: 'DistanceCache',
   FulfillmentSettings: 'FulfillmentSettings',
   DeliveryOrder: 'DeliveryOrder',
   DispatchOffer: 'DispatchOffer',
@@ -3374,7 +3523,10 @@ exports.Prisma.ModelName = {
   VendorStatement: 'VendorStatement',
   Refund: 'Refund',
   FleetPartner: 'FleetPartner',
-  FleetPayoutStatement: 'FleetPayoutStatement'
+  FleetPayoutStatement: 'FleetPayoutStatement',
+  UserInvite: 'UserInvite',
+  UserSurfacePermission: 'UserSurfacePermission',
+  AccountManagerVendor: 'AccountManagerVendor'
 };
 
 /**

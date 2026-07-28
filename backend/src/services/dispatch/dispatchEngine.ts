@@ -7,7 +7,10 @@
  * expiry advance to the next round (dispatch-next); acceptance runs the
  * status-guarded DISPATCHING→ASSIGNED transition. Round exhaustion (or an
  * empty candidate pool) transitions to NO_DRIVER + supervisor Notification +
- * SSE order.dispatch_exhausted.
+ * SSE order.dispatch_exhausted. Revision 4 (#1): that is a pause rather than a
+ * terminus — the sweep returns the order to DISPATCHING on a backoff, and the
+ * retry rounds search without a radius cap so the nearest driver anywhere gets
+ * the offer. No human has to touch a NO_DRIVER order for it to be delivered.
  *
  * Concurrency model: every offer/order mutation is a status-guarded
  * updateMany — count===0 means the other side of the race (accept-vs-expire,
@@ -129,7 +132,13 @@ export function effectiveRadiusKm(
     "searchRadiusKm" | "radiusWidenAfterRounds" | "radiusWidenFactor" | "maxSearchRadiusKm"
   >,
   round: number,
+  opts?: { uncapped?: boolean },
 ): number {
+  // Revision 4 (#1): once an order has already exhausted a full set of capped
+  // rounds, the cap is the thing keeping it undelivered. Retry rounds search
+  // without one, so the nearest online driver anywhere wins the offer rather
+  // than the order sitting at NO_DRIVER because everyone is 16 km away.
+  if (opts?.uncapped) return Number.POSITIVE_INFINITY;
   const widenings =
     settings.radiusWidenAfterRounds > 0
       ? Math.floor(Math.max(0, round) / settings.radiusWidenAfterRounds)
@@ -139,6 +148,28 @@ export function effectiveRadiusKm(
     settings.maxSearchRadiusKm,
   );
 }
+
+// ─── Revision 4 (#1): redispatch backoff ────────────────────────────────────
+
+/**
+ * Delay before a NO_DRIVER order is offered again, by how many times it has
+ * already been round-exhausted. Short at first because the usual cause is a
+ * momentary gap in coverage, then settling at ten minutes forever — an order
+ * is never abandoned, it just stops asking so often.
+ */
+const REDISPATCH_BACKOFF_SEC = [60, 120, 300, 600] as const;
+
+export function redispatchDelaySec(attempts: number): number {
+  const i = Math.min(Math.max(0, attempts - 1), REDISPATCH_BACKOFF_SEC.length - 1);
+  return REDISPATCH_BACKOFF_SEC[i];
+}
+
+/**
+ * Offer round a retry restarts from. Non-zero so the radius is already at its
+ * widest on the first retry offer; the uncapped flag then removes the ceiling
+ * entirely, and this only decides how the round counts against maxOfferRounds.
+ */
+const RETRY_ROUND_BASE = 0;
 
 type SessionWithDriver = {
   driverId: string;
@@ -248,7 +279,10 @@ export async function selectCandidates(
 
     const distanceKm = haversineMeters(pickupLat, pickupLng, lat, lng) / 1000;
     // PRD §8 auto-widen: the radius grows with the order's offer round.
-    if (distanceKm > effectiveRadiusKm(settings, order.offerRound)) continue;
+    // Revision 4 (#1): an order that has already been through a full set of
+    // rounds searches without a ceiling, so distance only ranks candidates.
+    const uncapped = ((order as { redispatchAttempts?: number }).redispatchAttempts ?? 0) > 0;
+    if (distanceKm > effectiveRadiusKm(settings, order.offerRound, { uncapped })) continue;
 
     prelim.push({
       driverId: driver.id,
@@ -447,6 +481,12 @@ async function notifySupervisorsDispatchExhausted(order: DeliveryOrder): Promise
 }
 
 async function exhaustDispatch(order: DeliveryOrder, reason: string): Promise<void> {
+  // Revision 4 (#1): NO_DRIVER is a pause, not a terminus. Stamp the retry
+  // clock in the same transaction as the transition so the sweep can never see
+  // an exhausted order without a due time and leave it parked forever.
+  const attempts = ((order as { redispatchAttempts?: number }).redispatchAttempts ?? 0) + 1;
+  const nextRedispatchAt = new Date(Date.now() + redispatchDelaySec(attempts) * 1000);
+
   try {
     const { tx } = await prisma.$transaction(async (trx) => {
       await transitionOrder(trx, {
@@ -460,7 +500,13 @@ async function exhaustDispatch(order: DeliveryOrder, reason: string): Promise<vo
           vendorId: order.vendorId,
           reason,
           offerRound: order.offerRound,
+          redispatchAttempts: attempts,
+          nextRedispatchAt: nextRedispatchAt.toISOString(),
         },
+      });
+      await trx.deliveryOrder.updateMany({
+        where: { id: order.id, tenantId: order.tenantId, status: "NO_DRIVER" },
+        data: { redispatchAttempts: attempts, nextRedispatchAt },
       });
       return { tx: trx };
     });
@@ -469,7 +515,51 @@ async function exhaustDispatch(order: DeliveryOrder, reason: string): Promise<vo
     if (err instanceof OrderStateConflictError) return; // cancelled/assigned concurrently
     throw err;
   }
-  await notifySupervisorsDispatchExhausted(order);
+  // Only the first exhaustion is worth waking a supervisor for. After that the
+  // retries are doing the work and a notification per attempt is just noise.
+  if (attempts === 1) await notifySupervisorsDispatchExhausted(order);
+}
+
+/**
+ * Revision 4 (#1): return one round-exhausted order to DISPATCHING.
+ *
+ * Status-guarded like every other transition here, so an order cancelled or
+ * manually assigned since the selector ran simply loses the race and is left
+ * alone. Clearing nextRedispatchAt before the transition means a failure
+ * partway through re-arms on the next tick rather than spinning.
+ */
+async function retryExhaustedOrder(order: { id: string; tenantId: string }): Promise<boolean> {
+  const claimed = await prisma.deliveryOrder.updateMany({
+    where: {
+      id: order.id,
+      tenantId: order.tenantId,
+      status: "NO_DRIVER",
+      nextRedispatchAt: { not: null },
+    },
+    data: { nextRedispatchAt: null, offerRound: RETRY_ROUND_BASE },
+  });
+  if (claimed.count === 0) return false; // another sweep or a human got there first
+
+  try {
+    const { tx } = await prisma.$transaction(async (trx) => {
+      await transitionOrder(trx, {
+        orderId: order.id,
+        tenantId: order.tenantId,
+        from: "NO_DRIVER",
+        to: "DISPATCHING",
+        actor: SYSTEM_ACTOR,
+        eventMeta: { reason: "AUTO_REDISPATCH" },
+      });
+      return { tx: trx };
+    });
+    flushOrderEvents(tx);
+  } catch (err) {
+    if (err instanceof OrderStateConflictError) return false;
+    throw err;
+  }
+
+  await dispatchNext(order.tenantId, order.id);
+  return true;
 }
 
 // ─── Dispatch rounds ────────────────────────────────────────────────────────
@@ -850,7 +940,13 @@ const SWEEP_BUDGET_MS = 40_000;
  */
 export async function sweepDispatch(
   opts: { limit?: number; budgetMs?: number; now?: Date } = {},
-): Promise<{ expired: number; advanced: number; wedged: number; truncated: boolean }> {
+): Promise<{
+  expired: number;
+  advanced: number;
+  wedged: number;
+  retried: number;
+  truncated: boolean;
+}> {
   const { limit = 100, budgetMs = SWEEP_BUDGET_MS, now = new Date() } = opts;
   const startedAt = Date.now();
   const outOfBudget = () => Date.now() - startedAt > budgetMs;
@@ -907,17 +1003,58 @@ export async function sweepDispatch(
     }
   }
 
+  // ── Leg 3: retry orders that ran out of offer rounds ──────────────────────
+  // Revision 4 (#1). Before this leg an order that exhausted its rounds sat at
+  // NO_DRIVER until a supervisor noticed — which is how an order ends up with
+  // an SLA measured in days. Now the sweep keeps offering it on a backoff,
+  // and those retry rounds search without a radius cap.
+  // eslint-disable-next-line no-prisma-without-tenant -- cron-internal: cross-tenant by design; retryExhaustedOrder re-filters every write on the row's own tenantId.
+  const exhaustedOrders = await prisma.deliveryOrder.findMany({
+    where: { status: "NO_DRIVER", nextRedispatchAt: { lte: now } },
+    select: { id: true, tenantId: true },
+    orderBy: { nextRedispatchAt: "asc" }, // longest-overdue customer first
+    take: limit,
+  });
+
+  let retried = 0;
+  for (const order of exhaustedOrders) {
+    if (outOfBudget()) {
+      truncated = true;
+      break;
+    }
+    try {
+      if (await retryExhaustedOrder(order)) retried += 1;
+    } catch (err) {
+      // The claim already cleared nextRedispatchAt, so a throw here would park
+      // the order for good. Re-arm it on the shortest backoff instead.
+      logger.warn({ err, orderId: order.id }, "sweepDispatch: redispatch failed");
+      await prisma.deliveryOrder
+        .updateMany({
+          where: { id: order.id, tenantId: order.tenantId, status: "NO_DRIVER" },
+          data: { nextRedispatchAt: new Date(Date.now() + REDISPATCH_BACKOFF_SEC[0] * 1000) },
+        })
+        .catch(() => {});
+    }
+  }
+  if (exhaustedOrders.length === limit) truncated = true;
+
   if (truncated) {
     logger.warn(
-      { limit, dueFound: due.length, wedgedFound: wedgedOrders.length, advanced },
+      { limit, dueFound: due.length, wedgedFound: wedgedOrders.length, advanced, retried },
       "sweepDispatch: hit the per-run cap — backlog remains, next tick continues",
     );
   }
   logger.info(
-    { expired, advanced, wedged: wedgedOrders.length, durationMs: Date.now() - startedAt },
+    {
+      expired,
+      advanced,
+      wedged: wedgedOrders.length,
+      retried,
+      durationMs: Date.now() - startedAt,
+    },
     "dispatch sweep",
   );
-  return { expired, advanced, wedged: wedgedOrders.length, truncated };
+  return { expired, advanced, wedged: wedgedOrders.length, retried, truncated };
 }
 
 // ─── Accept / decline ───────────────────────────────────────────────────────

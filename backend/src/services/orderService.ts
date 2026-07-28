@@ -778,6 +778,12 @@ export async function redispatchOrder(args: {
         actor,
         eventMeta: { ...baseEventMeta(order), redispatch: true },
       });
+      // Revision 4 (#1): a human kick resets the automatic retry clock, so the
+      // sweep does not fire a second dispatch a minute later on top of this one.
+      await trx.deliveryOrder.updateMany({
+        where: { id: orderId, tenantId },
+        data: { nextRedispatchAt: null },
+      });
     } else {
       // Already DISPATCHING — record the manual kick in the timeline.
       await trx.orderEvent.create({

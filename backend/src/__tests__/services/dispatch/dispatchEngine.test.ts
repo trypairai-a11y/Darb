@@ -246,6 +246,16 @@ describe("selectCandidates", () => {
     expect(candidates.map((c: any) => c.driverId)).toEqual(["drv-in"]);
   });
 
+  test("revision 4 (#1): a retried order reaches the far driver the cap excluded", async () => {
+    // Same 10 km driver as the test above, and the only one online. On the
+    // first pass through dispatch he is out of range and the order exhausts;
+    // on a retry he is the nearest driver there is, so he gets the offer.
+    prime({ order: { redispatchAttempts: 1 }, sessions: [mkSession("drv-out", 0.09)] });
+
+    const candidates = await selectCandidates(TENANT, ORDER_ID);
+    expect(candidates.map((c: any) => c.driverId)).toEqual(["drv-out"]);
+  });
+
   test("inactive driver excluded; pushless driver NOT excluded", async () => {
     prime({
       sessions: [
@@ -491,6 +501,27 @@ describe("declineOffer", () => {
     expect(declined[0][0].payload).toMatchObject({ offerId: "off-1", reason: "too far" });
   });
 
+  // Revision 4 (#2) asked for "if the order is rejected from the driver it
+  // should be sent to another driver automatically". It already is — this
+  // pins that, so the behaviour cannot be refactored away unnoticed.
+  test("revision 4 (#2): a rejected order goes straight back out, no human step", async () => {
+    prisma.dispatchOffer.updateMany.mockResolvedValue({ count: 1 });
+    prisma.dispatchOffer.findFirst.mockResolvedValue({
+      id: "off-1",
+      tenantId: TENANT,
+      orderId: ORDER_ID,
+      driverId: "drv-a",
+      round: 0,
+    });
+
+    await declineOffer({ tenantId: TENANT, offerId: "off-1", driverId: "drv-a" });
+
+    // No NO_DRIVER transition, no supervisor notification, no manual queue —
+    // just the next round.
+    expect(enqueueDispatchNext).toHaveBeenCalledWith(ORDER_ID, TENANT);
+    expect(prisma.notification.createMany).not.toHaveBeenCalled();
+  });
+
   test("late decline (already expired) is an idempotent no-op", async () => {
     prisma.dispatchOffer.updateMany.mockResolvedValue({ count: 0 });
 
@@ -521,12 +552,24 @@ describe("sweepDispatch", () => {
   const dueOffer = (id: string) => ({ id });
   const wedged = (id: string) => ({ id, tenantId: TENANT });
 
+  // Legs 2 and 3 both read deliveryOrder.findMany, so the stub routes on the
+  // selector's status rather than call order — otherwise every leg-2 fixture
+  // would silently become a leg-3 fixture too.
+  let wedgedRows: unknown[] = [];
+  let exhaustedRows: unknown[] = [];
+  const setWedged = (rows: unknown[]) => { wedgedRows = rows; };
+  const setExhausted = (rows: unknown[]) => { exhaustedRows = rows; };
+
   beforeEach(() => {
     // runDispatchRound bails immediately on a non-DISPATCHING order, so
     // deliveryOrder.findFirst call count == number of orders advanced.
     prisma.deliveryOrder.findFirst.mockResolvedValue({ ...BASE_ORDER, status: "CANCELLED" });
     prisma.dispatchOffer.findMany.mockResolvedValue([]);
-    prisma.deliveryOrder.findMany.mockResolvedValue([]);
+    wedgedRows = [];
+    exhaustedRows = [];
+    prisma.deliveryOrder.findMany.mockImplementation(async (q: any) =>
+      q?.where?.status === "NO_DRIVER" ? exhaustedRows : wedgedRows,
+    );
   });
 
   test("idle: nothing due and nothing wedged", async () => {
@@ -561,7 +604,7 @@ describe("sweepDispatch", () => {
     // order sits in DISPATCHING with zero DispatchOffer rows. Leg 1 finds
     // nothing; leg 2 must still pick it up.
     prisma.dispatchOffer.findMany.mockResolvedValue([]);
-    prisma.deliveryOrder.findMany.mockResolvedValue([wedged("ord-never-offered")]);
+    setWedged([wedged("ord-never-offered")]);
 
     const result = await sweepDispatch({ now: NOW });
 
@@ -573,7 +616,7 @@ describe("sweepDispatch", () => {
     // Its only offer is already EXPIRED, so leg 1 cannot see it. Leg 2 can,
     // because the order is still DISPATCHING with no live offer.
     prisma.dispatchOffer.findMany.mockResolvedValue([]);
-    prisma.deliveryOrder.findMany.mockResolvedValue([wedged("ord-stranded")]);
+    setWedged([wedged("ord-stranded")]);
 
     const result = await sweepDispatch({ now: NOW });
 
@@ -586,7 +629,7 @@ describe("sweepDispatch", () => {
       .mockResolvedValueOnce({ id: "off-1", tenantId: TENANT, orderId: "ord-a", round: 0, driverId: "d1" })
       .mockResolvedValueOnce({ id: "off-2", tenantId: TENANT, orderId: "ord-b", round: 0, driverId: "d2" });
     prisma.dispatchOffer.updateMany.mockResolvedValue({ count: 1 });
-    prisma.deliveryOrder.findMany.mockResolvedValue([wedged("ord-a"), wedged("ord-b")]);
+    setWedged([wedged("ord-a"), wedged("ord-b")]);
 
     const result = await sweepDispatch({ now: NOW });
 
@@ -600,7 +643,7 @@ describe("sweepDispatch", () => {
       id: "off-1", tenantId: TENANT, orderId: "ord-a", round: 0, driverId: "d1",
     });
     prisma.dispatchOffer.updateMany.mockResolvedValue({ count: 1 });
-    prisma.deliveryOrder.findMany.mockResolvedValue([wedged("ord-a")]);
+    setWedged([wedged("ord-a")]);
 
     await sweepDispatch({ now: NOW });
 
@@ -622,7 +665,7 @@ describe("sweepDispatch", () => {
   });
 
   test("a throwing dispatchNext does not abort the batch and is retried next tick", async () => {
-    prisma.deliveryOrder.findMany.mockResolvedValue([wedged("ord-a"), wedged("ord-b")]);
+    setWedged([wedged("ord-a"), wedged("ord-b")]);
     prisma.deliveryOrder.findFirst
       .mockRejectedValueOnce(new Error("db blip"))
       .mockResolvedValueOnce({ ...BASE_ORDER, status: "CANCELLED" });
@@ -648,7 +691,7 @@ describe("sweepDispatch", () => {
   });
 
   test("reports truncated when the per-run cap is hit, so a backlog is visible", async () => {
-    prisma.deliveryOrder.findMany.mockResolvedValue([wedged("o1"), wedged("o2")]);
+    setWedged([wedged("o1"), wedged("o2")]);
 
     const result = await sweepDispatch({ now: NOW, limit: 2 });
 
@@ -656,12 +699,90 @@ describe("sweepDispatch", () => {
   });
 
   test("stops advancing when the wall-clock budget is spent rather than being killed", async () => {
-    prisma.deliveryOrder.findMany.mockResolvedValue([wedged("o1"), wedged("o2"), wedged("o3")]);
+    setWedged([wedged("o1"), wedged("o2"), wedged("o3")]);
 
     const result = await sweepDispatch({ now: NOW, budgetMs: -1 });
 
     expect(result.advanced).toBe(0);
     expect(result.truncated).toBe(true);
+  });
+
+  // ── Leg 3: revision 4 (#1), NO_DRIVER is a pause not a terminus ───────────
+  //
+  // The client's screenshot was an order sitting at No Driver with an SLA of
+  // -7051 minutes. Nothing in the platform was ever going to pick it up. These
+  // tests defend the property that fixes it: an exhausted order is offered
+  // again on its own schedule, without anyone touching it.
+
+  test("leg 3 selects only NO_DRIVER orders whose retry is due", async () => {
+    await sweepDispatch({ now: NOW, limit: 25 });
+
+    const leg3 = prisma.deliveryOrder.findMany.mock.calls.find(
+      (c: any) => c[0]?.where?.status === "NO_DRIVER",
+    );
+    expect(leg3[0].where).toEqual({ status: "NO_DRIVER", nextRedispatchAt: { lte: NOW } });
+    // Longest-overdue customer first.
+    expect(leg3[0].orderBy).toEqual({ nextRedispatchAt: "asc" });
+    expect(leg3[0].take).toBe(25);
+  });
+
+  test("returns a due exhausted order to DISPATCHING and re-offers it", async () => {
+    setExhausted([{ id: "ord-stuck", tenantId: TENANT }]);
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 1 });
+
+    const result = await sweepDispatch({ now: NOW });
+
+    expect(result.retried).toBe(1);
+    // The claim clears the due stamp so two concurrent sweeps cannot both win.
+    const claim = prisma.deliveryOrder.updateMany.mock.calls[0][0];
+    expect(claim.where).toMatchObject({ id: "ord-stuck", status: "NO_DRIVER" });
+    expect(claim.data.nextRedispatchAt).toBeNull();
+    // And it went on to actually dispatch, rather than just flipping status.
+    expect(prisma.deliveryOrder.findFirst).toHaveBeenCalled();
+  });
+
+  test("an order claimed by someone else in the meantime is left alone", async () => {
+    setExhausted([{ id: "ord-stuck", tenantId: TENANT }]);
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 0 }); // assigned/cancelled first
+
+    const result = await sweepDispatch({ now: NOW });
+
+    expect(result.retried).toBe(0);
+    expect(prisma.orderEvent.create).not.toHaveBeenCalled();
+  });
+
+  test("a failed retry re-arms rather than parking the order forever", async () => {
+    setExhausted([{ id: "ord-stuck", tenantId: TENANT }]);
+    prisma.deliveryOrder.updateMany
+      .mockResolvedValueOnce({ count: 1 }) // the claim succeeds...
+      .mockRejectedValueOnce(new Error("db blip")) // ...the transition does not
+      .mockResolvedValue({ count: 1 }); // the re-arm
+
+    const result = await sweepDispatch({ now: NOW });
+
+    expect(result.retried).toBe(0);
+    // Last write puts a due time back, otherwise the cleared claim would have
+    // made this order invisible to every future sweep.
+    const rearm = prisma.deliveryOrder.updateMany.mock.calls.at(-1)[0];
+    expect(rearm.data.nextRedispatchAt).toBeInstanceOf(Date);
+  });
+});
+
+// ─── Redispatch backoff (revision 4 #1) ─────────────────────────────────────
+
+describe("redispatchDelaySec", () => {
+  const { redispatchDelaySec } = require("../../../services/dispatch/dispatchEngine");
+
+  test("starts short, because the usual cause is a momentary coverage gap", () => {
+    expect(redispatchDelaySec(1)).toBe(60);
+    expect(redispatchDelaySec(2)).toBe(120);
+    expect(redispatchDelaySec(3)).toBe(300);
+  });
+
+  test("settles at ten minutes and never gives up", () => {
+    expect(redispatchDelaySec(4)).toBe(600);
+    expect(redispatchDelaySec(50)).toBe(600);
+    expect(redispatchDelaySec(9999)).toBe(600);
   });
 });
 
@@ -695,6 +816,11 @@ describe("effectiveRadiusKm", () => {
 
   test("negative rounds are clamped to the base radius", () => {
     expect(effectiveRadiusKm(S, -2)).toBe(8);
+  });
+
+  test("uncapped ignores the ceiling, so a retry can reach any driver", () => {
+    expect(effectiveRadiusKm(S, 0, { uncapped: true })).toBe(Number.POSITIVE_INFINITY);
+    expect(effectiveRadiusKm(S, 12, { uncapped: true })).toBe(Number.POSITIVE_INFINITY);
   });
 });
 
