@@ -92,7 +92,7 @@ function ScorecardPanel({ fleet }: { fleet: FleetRow }) {
           className="ms-auto inline-flex items-center gap-1.5 px-3 h-8 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors disabled:opacity-50"
         >
           <Download size={12} aria-hidden="true" />
-          {downloading ? t("common.processing") : t("fleetPortal.exportExcel")}
+          {downloading ? t("common.processing") : t("fleetPortal.exportThisCompany")}
         </button>
       </div>
 

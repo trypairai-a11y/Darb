@@ -1833,6 +1833,12 @@ export interface Messages {
   };
   fleetPortal: {
     exportExcel: string;
+    /**
+     * The detail panel's own download. Both buttons on /fleets said "Export
+     * Excel", so the one inside the panel read as a second copy of the page
+     * button rather than "this company's scorecard and payouts".
+     */
+    exportThisCompany: string;
     switchCompany: string;
     navSection: string;
     navRoster: string;
@@ -3806,6 +3812,7 @@ export const en: Messages = {
   },
   fleetPortal: {
     exportExcel: "Export Excel",
+    exportThisCompany: "Export this company",
     switchCompany: "Switch company",
     navSection: "Fleet portal",
     navRoster: "Roster",
@@ -5765,6 +5772,7 @@ export const ar: Messages = {
   },
   fleetPortal: {
     exportExcel: "تصدير Excel",
+    exportThisCompany: "تصدير هذه الشركة",
     switchCompany: "تبديل الشركة",
     navSection: "بوابة الأسطول",
     navRoster: "السائقون",

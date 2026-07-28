@@ -77,6 +77,48 @@ function parseRange(req: Request): { from: Date; to: Date } {
   return { from, to };
 }
 
+/** Slugged the same way the client names the file, so both agree. */
+function slugifyName(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "fleet";
+}
+
+function today(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/** Excel rejects []:*?/\ in a sheet name and truncates past 31 characters. */
+function sheetNameFor(name: string): string {
+  return name.replace(/[[\]:*?/\\]/g, " ").trim().slice(0, 31) || "Fleet";
+}
+
+/** A bold band that separates the blocks of a single-fleet sheet. */
+function section(sheet: ExcelJS.Worksheet, title: string) {
+  const row = sheet.addRow([title]);
+  row.font = { bold: true };
+}
+
+/** Label in column A, value in column B, with the value's own number format. */
+function pair(
+  sheet: ExcelJS.Worksheet,
+  label: string,
+  value: string | number,
+  numFmt?: string,
+) {
+  const row = sheet.addRow([label, value]);
+  // "n/a" is text: a percent format on it renders as a stray % sign.
+  if (numFmt && typeof value === "number") row.getCell(2).numFmt = numFmt;
+}
+
+async function sendWorkbook(res: Response, workbook: ExcelJS.Workbook, filename: string) {
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  );
+  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+  await workbook.xlsx.write(res);
+  res.end();
+}
+
 /**
  * @swagger
  * /api/fleets:
@@ -158,10 +200,12 @@ router.post("/", rbac(...MUTATE), validateBody(createFleetSchema), async (req: R
  *       a 3dp format, so Excel sorts and sums them instead of treating them as
  *       text.
  *
- *       `?fleetId=` narrows all three sheets to one partner. The detail panel
- *       on /fleets shows a scorecard and a payout history that exist nowhere
- *       else on screen, and an ops manager reviewing a single company should
- *       not have to download every company to get them.
+ *       `?fleetId=` returns a different shape: one sheet that is the detail
+ *       panel top to bottom (company, performance scorecard, payout
+ *       statements). Narrowing the three sheets instead put the fleet list
+ *       first, which is what the screen behind the panel already shows, so the
+ *       download read as the main-page report with the two sections the panel
+ *       exists for hidden on tabs.
  */
 router.get("/export.xlsx", rbac(...READ), async (req: Request, res: Response) => {
   try {
@@ -199,6 +243,82 @@ router.get("/export.xlsx", rbac(...READ), async (req: Request, res: Response) =>
 
     const PCT = "0.0%";
     const KWD = "#,##0.000";
+
+    // One partner: the workbook is the detail panel, not a one-row copy of the
+    // list. Three sheets meant the file opened on "Fleets" — the same five
+    // columns as the screen behind the panel — and the scorecard and payout
+    // history sat on tabs nobody looked at, so the download read as "this is
+    // the main page report" and the two sections the panel exists for looked
+    // undownloadable. One sheet, laid out top to bottom the way the panel is.
+    if (fleetId) {
+      const f = fleets[0];
+      const s = scorecards[0];
+      const sheet = workbook.addWorksheet(sheetNameFor(f.name));
+      sheet.columns = [
+        { key: "label", width: 26 },
+        { key: "value", width: 22 },
+        { key: "c", width: 20 },
+        { key: "d", width: 18 },
+        { key: "e", width: 14 },
+      ];
+
+      const title = sheet.addRow([f.name]);
+      title.font = { bold: true, size: 14 };
+      sheet.addRow([
+        "Period covered",
+        `${range.from.toISOString().slice(0, 10)} to ${range.to.toISOString().slice(0, 10)}`,
+      ]);
+      sheet.addRow([]);
+
+      section(sheet, "COMPANY");
+      pair(sheet, "Discipline", f.disciplineStatus);
+      pair(sheet, "Fee per order (KD)", Number(f.flatFeePerOrderKwd), KWD);
+      pair(sheet, "Roster", f._count.drivers);
+      pair(sheet, "Portal users", f._count.users);
+      pair(sheet, "Status", f.isActive ? "Active" : "Inactive");
+      sheet.addRow([]);
+
+      section(sheet, "PERFORMANCE SCORECARD");
+      // "n/a" rather than 0: a fleet with no orders has no on-time rate, and a
+      // zero there would read as a failing one.
+      pair(sheet, "On-time rate", s?.onTimeRate ?? "n/a", PCT);
+      pair(sheet, "Acceptance rate", s?.acceptanceRate ?? "n/a", PCT);
+      pair(sheet, "Utilisation", s?.utilisation ?? "n/a", PCT);
+      pair(sheet, "Delivered orders", s?.deliveredOrders ?? 0);
+      pair(sheet, "Online hours", s?.onlineHours ?? 0, "0.0");
+      pair(sheet, "Contracted hours", s?.contractedHours ?? "n/a", "0.0");
+      pair(sheet, "Rating", s?.avgRating ?? "n/a", "0.00");
+      pair(sheet, "Ratings counted", s?.ratingCount ?? 0);
+      sheet.addRow([]);
+
+      section(sheet, "PAYOUT STATEMENTS");
+      const head = sheet.addRow([
+        "Period",
+        "Delivered orders",
+        "Fee per order (KD)",
+        "Total (KD)",
+        "Status",
+      ]);
+      head.font = { bold: true };
+      if (f.statements.length === 0) {
+        sheet.addRow(["No statements yet"]);
+      } else {
+        for (const st of f.statements) {
+          const row = sheet.addRow([
+            st.periodStart.toISOString().slice(0, 7), // YYYY-MM
+            st.deliveredOrders,
+            Number(st.feePerOrderKwd),
+            Number(st.totalKwd),
+            st.status,
+          ]);
+          row.getCell(3).numFmt = KWD;
+          row.getCell(4).numFmt = KWD;
+        }
+      }
+
+      await sendWorkbook(res, workbook, `${slugifyName(f.name)}-${today()}.xlsx`);
+      return;
+    }
 
     const summary = workbook.addWorksheet("Fleets");
     summary.columns = [
@@ -272,17 +392,7 @@ router.get("/export.xlsx", rbac(...READ), async (req: Request, res: Response) =>
       sheet.views = [{ state: "frozen", ySplit: 1 }];
     }
 
-    const slug = fleetId
-      ? (fleets[0].name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "fleet")
-      : "fleets";
-    const filename = `${slug}-${new Date().toISOString().slice(0, 10)}.xlsx`;
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    );
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-    await workbook.xlsx.write(res);
-    res.end();
+    await sendWorkbook(res, workbook, `fleets-${today()}.xlsx`);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
