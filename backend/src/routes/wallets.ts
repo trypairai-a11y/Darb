@@ -8,6 +8,7 @@
 
 import { Router, Request, Response } from "express";
 import { z } from "zod";
+import ExcelJS from "exceljs";
 import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
@@ -582,27 +583,18 @@ router.get("/vendor-statements", rbac(...FINANCE_READ), async (req: Request, res
 });
 
 /**
- * @swagger
- * /api/wallets/vendor-statements/{id}/transactions:
- *   get:
- *     tags: [Wallets]
- *     summary: Every transaction behind one shop's statement period
- *     description: >
- *       Revision 4 (#4). The statement list answers "what do we owe this shop";
- *       this answers "why". One row per order delivered in the period, plus the
- *       refunds and the payout, each carrying the ledger postings behind it.
+ * Revision 4 (#4) / revision 5 (#2). The rows behind one statement, shared by
+ * the on-screen drill-in and the Excel export so the download can never
+ * disagree with the screen it was opened from.
+ *
+ * Returns null when the statement is not this tenant's.
  */
-router.get(
-  "/vendor-statements/:id/transactions",
-  rbac(...FINANCE_READ),
-  async (req: Request, res: Response) => {
-    try {
-      const tenantId = req.user!.tenantId;
+async function loadStatementDetail(tenantId: string, statementId: string) {
       const statement = await prisma.vendorStatement.findFirst({
-        where: { id: req.params.id, tenantId },
+        where: { id: statementId, tenantId },
         include: { vendor: { select: { id: true, name: true, code: true } } },
       });
-      if (!statement) { res.status(404).json({ error: "Statement not found" }); return; }
+      if (!statement) return null;
 
       const period = {
         gte: statement.periodStart,
@@ -726,7 +718,8 @@ router.get(
           : []),
       ].sort((a, b) => new Date(a.date ?? 0).getTime() - new Date(b.date ?? 0).getTime());
 
-      res.json({
+      return {
+        raw: statement,
         statement: {
           id: statement.id,
           vendor: statement.vendor,
@@ -740,7 +733,225 @@ router.get(
           status: statement.status,
         },
         rows,
-      });
+      };
+}
+
+/**
+ * @swagger
+ * /api/wallets/vendor-statements/{id}/transactions:
+ *   get:
+ *     tags: [Wallets]
+ *     summary: Every transaction behind one shop's statement period
+ *     description: >
+ *       Revision 4 (#4). The statement list answers "what do we owe this shop";
+ *       this answers "why". One row per order delivered in the period, plus the
+ *       refunds and the payout, each carrying the ledger postings behind it.
+ */
+router.get(
+  "/vendor-statements/:id/transactions",
+  rbac(...FINANCE_READ),
+  async (req: Request, res: Response) => {
+    try {
+      const detail = await loadStatementDetail(req.user!.tenantId, req.params.id);
+      if (!detail) { res.status(404).json({ error: "Statement not found" }); return; }
+      res.json({ statement: detail.statement, rows: detail.rows });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+// ─── Revision 5 (#2): the shop statement as a real workbook ─────────────────
+
+type StatementRow = NonNullable<Awaited<ReturnType<typeof loadStatementDetail>>>["rows"][number];
+
+/**
+ * The three columns the client asked for, per transaction.
+ *
+ * These are not a new calculation — they are the double-entry postings the
+ * ledger already makes, written the way a merchant reads their account:
+ *
+ *   walletCredit  what went INTO the shop's wallet. A cash order puts the order
+ *                 amount in (the fee is not the shop's money and never was); a
+ *                 card order puts in nothing, because Darb collected nothing on
+ *                 the shop's behalf.
+ *   deliveryFee   what Darb charges, always negative, on every order whichever
+ *                 way the customer paid.
+ *   (the caller runs these two into a balance.)
+ *
+ * postCodSettlement credits VENDOR_PAYABLE by exactly (total − fee) and
+ * postPrepaidSettlement debits it by the fee, so the two columns below sum to
+ * the same movement the ledger booked. If they ever stop agreeing, the ledger
+ * is right and this is wrong.
+ */
+function walletColumns(row: StatementRow): { credit: number; fee: number } {
+  if (row.kind === "DELIVERY") {
+    return {
+      credit: row.paymentMethod === "COD" ? Number(row.orderTotalKwd ?? 0) : 0,
+      fee: -Number(row.deliveryFeeKwd ?? 0),
+    };
+  }
+  // A refund reverses money out of the wallet and a payout empties it; both are
+  // already signed on codNetKwd, and neither carries a delivery fee.
+  return { credit: Number(row.codNetKwd ?? 0), fee: 0 };
+}
+
+const KWD_FMT = "#,##0.000";
+
+/** Excel forbids : \ / ? * [ ] in sheet names and caps them at 31 characters. */
+function sheetName(code: string | null | undefined, periodStart: Date): string {
+  const base = `${code ?? "shop"} ${periodStart.toISOString().slice(0, 7)}`;
+  return base.replace(/[:\\/?*[\]]/g, "-").slice(0, 31);
+}
+
+async function writeStatementSheet(
+  workbook: ExcelJS.Workbook,
+  detail: NonNullable<Awaited<ReturnType<typeof loadStatementDetail>>>,
+) {
+  const { statement, rows } = detail;
+  const sheet = workbook.addWorksheet(sheetName(statement.vendor?.code, statement.periodStart));
+
+  sheet.columns = [
+    { header: "Date", key: "date", width: 12 },
+    { header: "Order", key: "order", width: 20 },
+    { header: "Type", key: "type", width: 12 },
+    { header: "Payment", key: "payment", width: 10 },
+    { header: "Reference", key: "reference", width: 26 },
+    { header: "Order total (KD)", key: "total", width: 17, style: { numFmt: KWD_FMT } },
+    { header: "Wallet credit (KD)", key: "credit", width: 18, style: { numFmt: KWD_FMT } },
+    { header: "Delivery fee (KD)", key: "fee", width: 17, style: { numFmt: KWD_FMT } },
+    { header: "Wallet balance (KD)", key: "balance", width: 19, style: { numFmt: KWD_FMT } },
+  ];
+
+  // The period does not start at zero. It starts wherever the shop's wallet
+  // stood when the last statement closed, and the client asked for "the current
+  // full balance of the account", not a balance since the first of the month.
+  const opening = Number(statement.openingBalanceKwd);
+  sheet.addRow({
+    date: statement.periodStart.toISOString().slice(0, 10),
+    order: "n/a",
+    type: "Opening balance",
+    payment: "n/a",
+    reference: "n/a",
+    balance: opening,
+  });
+
+  let running = opening;
+  let creditTotal = 0;
+  let feeTotal = 0;
+  for (const row of rows) {
+    const { credit, fee } = walletColumns(row);
+    running += credit + fee;
+    creditTotal += credit;
+    feeTotal += fee;
+    sheet.addRow({
+      date: row.date ? new Date(row.date).toISOString().slice(0, 10) : "n/a",
+      order: row.orderNumber ?? "n/a",
+      type: row.kind === "DELIVERY" ? "Delivery" : row.kind === "REFUND" ? "Refund" : "Payout",
+      payment: row.paymentMethod === "COD" ? "Cash" : row.paymentMethod ? "Card" : "n/a",
+      reference: row.reference ?? "n/a",
+      total: row.orderTotalKwd == null ? "n/a" : Number(row.orderTotalKwd),
+      credit,
+      fee,
+      balance: running,
+    });
+  }
+
+  const totals = sheet.addRow({
+    type: "Totals",
+    credit: creditTotal,
+    fee: feeTotal,
+    balance: running,
+  });
+  totals.font = { bold: true };
+  totals.border = { top: { style: "thin" } };
+
+  // The statement's own closing figure, so the workbook foots to the number on
+  // the list row rather than being a second opinion about it.
+  const closing = sheet.addRow({
+    type: "Net balance",
+    balance: Number(statement.closingBalanceKwd),
+  });
+  closing.font = { bold: true };
+
+  sheet.getRow(1).font = { bold: true };
+  sheet.views = [{ state: "frozen", ySplit: 1 }];
+}
+
+/**
+ * @swagger
+ * /api/wallets/vendor-statements/export.xlsx:
+ *   get:
+ *     tags: [Wallets]
+ *     summary: Shop statements as an Excel workbook, one sheet per statement
+ *     description: >
+ *       Revision 5 (#2). The CSV carried the order columns but not the wallet:
+ *       "the Excel sheet should be complete with the order amount, the fee that
+ *       is deducted, and the current full balance of the account for each
+ *       transaction". Three money columns per row — wallet credit, delivery fee
+ *       as a negative, and the running balance — opened from the shop's real
+ *       opening balance and footed to the statement's net.
+ *
+ *       `?id=` exports one statement. Without it the same vendorId/status
+ *       filters as the list apply and each statement gets its own sheet.
+ */
+router.get(
+  "/vendor-statements/export.xlsx",
+  rbac(...FINANCE_READ),
+  async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.user!.tenantId;
+
+      let ids: string[];
+      if (typeof req.query.id === "string") {
+        ids = [req.query.id];
+      } else {
+        const where: any = { tenantId };
+        if (typeof req.query.vendorId === "string") where.vendorId = req.query.vendorId;
+        if (typeof req.query.status === "string") where.status = req.query.status;
+        const found = await prisma.vendorStatement.findMany({
+          where,
+          orderBy: [{ periodStart: "desc" }, { createdAt: "desc" }],
+          // A finance user exporting "everything" wants this month's shops, not
+          // three years of them, and a workbook per shop per month gets slow
+          // long before it gets useful.
+          take: 60,
+          select: { id: true },
+        });
+        ids = found.map((s) => s.id);
+      }
+
+      const details = (
+        await Promise.all(ids.map((id) => loadStatementDetail(tenantId, id)))
+      ).filter((d): d is NonNullable<typeof d> => d !== null);
+
+      // An id that resolves to nothing is a wrong id or another tenant's. Say
+      // so rather than handing back an empty workbook that reads as "this shop
+      // had no activity".
+      if (details.length === 0) {
+        res.status(404).json({ error: "No statements found" });
+        return;
+      }
+
+      const workbook = new ExcelJS.Workbook();
+      workbook.creator = "Darb";
+      workbook.created = new Date();
+      for (const detail of details) await writeStatementSheet(workbook, detail);
+
+      const single = details.length === 1 ? details[0].statement : null;
+      const slug = single
+        ? `statement-${single.vendor?.code ?? "shop"}-${single.periodStart
+            .toISOString()
+            .slice(0, 7)}`.replace(/[^A-Za-z0-9-]/g, "-")
+        : `shop-statements-${new Date().toISOString().slice(0, 10)}`;
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      );
+      res.setHeader("Content-Disposition", `attachment; filename="${slug}.xlsx"`);
+      await workbook.xlsx.write(res);
+      res.end();
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }

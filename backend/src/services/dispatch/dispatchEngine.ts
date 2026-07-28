@@ -64,10 +64,26 @@ export interface Candidate {
   distanceKm: number;
   etaMin: number;
   activeOrders: number;
+  /**
+   * Revision 5 (#1). Minutes this driver is still expected to spend on the
+   * delivery he is already carrying before he can start this one. 0 for a free
+   * driver, which is every candidate the engine used to produce. A positive
+   * value is the delay the customer's ETA has to absorb, and acceptOffer
+   * pushes slaDeadline out by exactly this much.
+   */
+  finishingInMin: number;
 }
 
 /** Average courier speed used for the ETA estimate (plan §A3). */
 const AVG_SPEED_KMH = 30;
+
+/**
+ * Revision 5 (#1). Minutes allowed for the drop itself once a driver reaches
+ * the customer — park, hand over, collect cash, POD. Added to the projected
+ * travel time so "about to finish" means about to be free, not about to
+ * arrive.
+ */
+const HANDOVER_MIN = 3;
 
 const SUPERVISOR_ROLES = ["ADMIN", "OPS_MANAGER", "SUPERVISOR"] as const;
 
@@ -82,6 +98,7 @@ export interface DispatchSettings {
   batchingEnabled: boolean;
   batchMaxDropKm: number;
   batchMaxOrders: number;
+  finishingSoonMinutes: number;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -118,6 +135,7 @@ async function getDispatchSettings(tenantId: string): Promise<DispatchSettings> 
     batchingEnabled: row?.batchingEnabled ?? true,
     batchMaxDropKm: row?.batchMaxDropKm ?? 1.5,
     batchMaxOrders: row?.batchMaxOrders ?? 2,
+    finishingSoonMinutes: row?.finishingSoonMinutes ?? 10,
   };
 }
 
@@ -220,6 +238,23 @@ function latestSessionPerDriver(sessions: SessionWithDriver[]): SessionWithDrive
  *
  * Sort: distance asc; tiebreak longest-idle (most time since the driver's
  * last DELIVERED order; drivers with none rank first among ties).
+ *
+ * Revision 5 (#1) — every order must be served. Filter 4 used to end the story
+ * for a busy driver, which is how an order reaches NO_DRIVER while six couriers
+ * are two minutes from finishing their drop. Busy drivers now form a RESERVE
+ * tier instead of disappearing:
+ *
+ *   - one active order, already PICKED_UP (he is on the last leg — a driver who
+ *     has not collected yet is not "about to finish"),
+ *   - projected minutes to finish it ≤ FulfillmentSettings.finishingSoonMinutes,
+ *   - measured from where he will actually be when free (his current drop-off),
+ *     not from where he is now, because that is the distance that decides who
+ *     is really nearest to the new pickup.
+ *
+ * The reserve tier ranks strictly below every free driver, so nobody waits on a
+ * busy courier while an idle one is in range. Within the tier the soonest to
+ * finish wins and distance breaks ties. `finishingInMin` rides on the candidate
+ * so acceptOffer can push the customer's ETA out by the wait.
  */
 export async function selectCandidates(
   tenantId: string,
@@ -266,8 +301,11 @@ export async function selectCandidates(
   })) as unknown as SessionWithDriver[];
 
   // JS-side re-check of freshness/coords (mocked stores and clock drift), then
-  // driver status + vehicle constraint + radius.
-  const prelim: Array<Candidate & { lastGpsAt: Date; throttled: boolean }> = [];
+  // driver status + vehicle constraint. The radius is applied further down,
+  // once it is known whether a driver is free (measured from where he is) or
+  // finishing a drop (measured from where he will be).
+  type Prelim = Candidate & { lastGpsAt: Date; throttled: boolean; lat: number; lng: number };
+  const prelim: Prelim[] = [];
   for (const session of latestSessionPerDriver(sessions)) {
     const { driver } = session;
     if (!driver || driver.status !== "ACTIVE") continue;
@@ -278,12 +316,6 @@ export async function selectCandidates(
     if (!session.lastGpsAt || session.lastGpsAt.getTime() <= staleCutoff.getTime()) continue;
 
     const distanceKm = haversineMeters(pickupLat, pickupLng, lat, lng) / 1000;
-    // PRD §8 auto-widen: the radius grows with the order's offer round.
-    // Revision 4 (#1): an order that has already been through a full set of
-    // rounds searches without a ceiling, so distance only ranks candidates.
-    const uncapped = ((order as { redispatchAttempts?: number }).redispatchAttempts ?? 0) > 0;
-    if (distanceKm > effectiveRadiusKm(settings, order.offerRound, { uncapped })) continue;
-
     prelim.push({
       driverId: driver.id,
       name: driver.name,
@@ -291,7 +323,10 @@ export async function selectCandidates(
       distanceKm,
       etaMin: Math.ceil((distanceKm / AVG_SPEED_KMH) * 60),
       activeOrders: 0,
+      finishingInMin: 0,
       lastGpsAt: session.lastGpsAt,
+      lat,
+      lng,
       throttled:
         driver.throttledUntil != null && driver.throttledUntil.getTime() > Date.now(),
     });
@@ -300,7 +335,9 @@ export async function selectCandidates(
 
   const driverIds = prelim.map((c) => c.driverId);
 
-  // Busy drivers + open/prior offers, one query each.
+  // Busy drivers + open/prior offers, one query each. The busy query carries
+  // the drop coordinates now: for a driver on his last leg they are both how
+  // long he still needs and where he will be standing when he is free.
   const [busyOrders, offerRows] = await Promise.all([
     prisma.deliveryOrder.findMany({
       where: {
@@ -308,7 +345,7 @@ export async function selectCandidates(
         driverId: { in: driverIds },
         status: { in: ["ASSIGNED", "PICKED_UP"] },
       },
-      select: { driverId: true },
+      select: { driverId: true, status: true, dropoffLat: true, dropoffLng: true },
     }),
     prisma.dispatchOffer.findMany({
       where: {
@@ -320,10 +357,17 @@ export async function selectCandidates(
     }),
   ]);
 
+  type BusyLeg = { status: string; dropoffLat: number | null; dropoffLng: number | null };
   const activeCountByDriver = new Map<string, number>();
+  const legByDriver = new Map<string, BusyLeg>();
   for (const row of busyOrders) {
     if (!row.driverId) continue;
     activeCountByDriver.set(row.driverId, (activeCountByDriver.get(row.driverId) ?? 0) + 1);
+    legByDriver.set(row.driverId, {
+      status: row.status,
+      dropoffLat: toNum(row.dropoffLat),
+      dropoffLng: toNum(row.dropoffLng),
+    });
   }
   const excludedByOffer = new Set<string>();
   for (const row of offerRows) {
@@ -333,10 +377,39 @@ export async function selectCandidates(
     }
   }
 
+  // PRD §8 auto-widen: the radius grows with the order's offer round.
+  // Revision 4 (#1): an order that has already been through a full set of
+  // rounds searches without a ceiling, so distance only ranks candidates.
+  const uncapped = ((order as { redispatchAttempts?: number }).redispatchAttempts ?? 0) > 0;
+  const radiusKm = effectiveRadiusKm(settings, order.offerRound, { uncapped });
+
   let filtered = prelim.filter((c) => {
-    c.activeOrders = activeCountByDriver.get(c.driverId) ?? 0;
-    if (c.activeOrders > 0) return false;
     if (excludedByOffer.has(c.driverId)) return false;
+    c.activeOrders = activeCountByDriver.get(c.driverId) ?? 0;
+
+    if (c.activeOrders === 0) return c.distanceKm <= radiusKm;
+
+    // ── Revision 5 (#1): the reserve tier ──────────────────────────────────
+    if (settings.finishingSoonMinutes <= 0) return false;
+    // Two live orders is a batch mid-flight, not a driver about to be free.
+    if (c.activeOrders > 1) return false;
+    const leg = legByDriver.get(c.driverId);
+    // Still to collect from the merchant: the whole delivery is ahead of him.
+    if (!leg || leg.status !== "PICKED_UP") return false;
+    if (leg.dropoffLat == null || leg.dropoffLng == null) return false;
+
+    const toDropKm = haversineMeters(c.lat, c.lng, leg.dropoffLat, leg.dropoffLng) / 1000;
+    const finishingInMin = Math.ceil((toDropKm / AVG_SPEED_KMH) * 60) + HANDOVER_MIN;
+    if (finishingInMin > settings.finishingSoonMinutes) return false;
+
+    // From his drop-off onward: that is where the next trip actually starts.
+    const fromDropKm =
+      haversineMeters(pickupLat, pickupLng, leg.dropoffLat, leg.dropoffLng) / 1000;
+    if (fromDropKm > radiusKm) return false;
+
+    c.finishingInMin = finishingInMin;
+    c.distanceKm = fromDropKm;
+    c.etaMin = finishingInMin + Math.ceil((fromDropKm / AVG_SPEED_KMH) * 60);
     return true;
   });
   if (filtered.length === 0) return [];
@@ -374,6 +447,17 @@ export async function selectCandidates(
     // PRD §9 discipline: throttled drivers rank after every non-throttled
     // candidate regardless of distance.
     if (a.throttled !== b.throttled) return a.throttled ? 1 : -1;
+    // Revision 5 (#1): a driver who is free beats one who is merely close to
+    // being free, however near he is. The reserve tier is the answer to "there
+    // is nobody", not a way to load a courier who is still working.
+    const aBusy = a.finishingInMin > 0;
+    const bBusy = b.finishingInMin > 0;
+    if (aBusy !== bBusy) return aBusy ? 1 : -1;
+    if (aBusy) {
+      // Soonest free wins; distance to the new pickup breaks the tie.
+      if (a.finishingInMin !== b.finishingInMin) return a.finishingInMin - b.finishingInMin;
+      return a.distanceKm - b.distanceKm;
+    }
     if (a.distanceKm !== b.distanceKm) return a.distanceKm - b.distanceKm;
     const aLast = lastDeliveredByDriver.get(a.driverId) ?? -Infinity;
     const bLast = lastDeliveredByDriver.get(b.driverId) ?? -Infinity;
@@ -381,7 +465,9 @@ export async function selectCandidates(
   });
 
   const limit = opts?.limit;
-  const ranked = filtered.map(({ lastGpsAt: _drop, throttled: _t, ...candidate }) => candidate);
+  const ranked = filtered.map(
+    ({ lastGpsAt: _drop, throttled: _t, lat: _lat, lng: _lng, ...candidate }) => candidate,
+  );
   return typeof limit === "number" && limit > 0 ? ranked.slice(0, limit) : ranked;
 }
 
@@ -1081,6 +1167,61 @@ export async function sweepDispatch(
 // ─── Accept / decline ───────────────────────────────────────────────────────
 
 /**
+ * Revision 5 (#1): "adjust the ETA accordingly".
+ *
+ * When the winning driver is still carrying a delivery, the customer's promise
+ * has to absorb the time he spends finishing it. Recomputed here rather than
+ * carried over from the offer because the offer may have been sitting for a
+ * few seconds and the driver may already be at the door — what matters is the
+ * delay that is still ahead at the moment the order becomes his.
+ *
+ * Runs inside the accept transaction. Returns the minutes added, 0 when the
+ * driver is free (the ordinary case) or when the order carries no deadline to
+ * move. The deadline is only ever pushed out, never pulled in: an SLA that
+ * shortens itself because a driver happened to be nearby is not a promise
+ * anybody made.
+ */
+async function extendEtaForBusyDriver(
+  trx: Prisma.TransactionClient,
+  tenantId: string,
+  order: { id: string; slaDeadline: Date | null },
+  driverId: string,
+): Promise<number> {
+  if (!order.slaDeadline) return 0;
+
+  const leg = await trx.deliveryOrder.findFirst({
+    where: { tenantId, driverId, status: "PICKED_UP", id: { not: order.id } },
+    select: { dropoffLat: true, dropoffLng: true },
+  });
+  if (!leg) return 0;
+
+  const session = await trx.courierOnlineSession.findFirst({
+    where: { tenantId, driverId, availability: { not: "OFFLINE" } },
+    orderBy: { lastGpsAt: "desc" },
+    select: { lastGpsLat: true, lastGpsLng: true },
+  });
+
+  const dropLat = toNum(leg.dropoffLat);
+  const dropLng = toNum(leg.dropoffLng);
+  const gpsLat = toNum(session?.lastGpsLat);
+  const gpsLng = toNum(session?.lastGpsLng);
+
+  // No way to measure the remaining leg: still push the deadline by the
+  // hand-over allowance, because the delay is real even when unmeasurable.
+  const addedMin =
+    dropLat == null || dropLng == null || gpsLat == null || gpsLng == null
+      ? HANDOVER_MIN
+      : Math.ceil((haversineMeters(gpsLat, gpsLng, dropLat, dropLng) / 1000 / AVG_SPEED_KMH) * 60) +
+        HANDOVER_MIN;
+
+  await trx.deliveryOrder.updateMany({
+    where: { id: order.id, tenantId },
+    data: { slaDeadline: new Date(order.slaDeadline.getTime() + addedMin * 60_000) },
+  });
+  return addedMin;
+}
+
+/**
  * Driver accepts an offer. Single winner via the guarded updateMany
  * (OFFERED + unexpired + this driver) — count 0 ⇒ OfferGoneError (410).
  * Then DISPATCHING→ASSIGNED (sets driverId/assignedAt) in the SAME
@@ -1095,7 +1236,12 @@ export async function acceptOffer(args: {
   const { tenantId, offerId, driverId } = args;
   const now = new Date();
 
-  let committed: { tx: object; order: DeliveryOrder; siblingOrders: string[] };
+  let committed: {
+    tx: object;
+    order: DeliveryOrder;
+    siblingOrders: string[];
+    etaExtendedMin: number;
+  };
   try {
     committed = await prisma.$transaction(async (trx) => {
       const won = await trx.dispatchOffer.updateMany({
@@ -1180,11 +1326,17 @@ export async function acceptOffer(args: {
       // as the ASSIGNED transition so the flag can't disagree with the order).
       await markDriverBusy(trx, tenantId, driverId);
 
+      // Revision 5 (#1): the winner may be a reserve-tier driver still finishing
+      // a drop. Move the promise before anyone reads it — the tracking page is
+      // live the moment this commits.
+      const etaExtendedMin = await extendEtaForBusyDriver(trx, tenantId, order, driverId);
+
       const fresh = await trx.deliveryOrder.findFirst({ where: { id: order.id, tenantId } });
       return {
         tx: trx,
         order: fresh ?? ({ ...order, status: "ASSIGNED", driverId, assignedAt: now } as DeliveryOrder),
         siblingOrders,
+        etaExtendedMin,
       };
     });
   } catch (err) {
@@ -1200,6 +1352,10 @@ export async function acceptOffer(args: {
     vendorId: committed.order.vendorId,
     offerId,
     driverId,
+    // Non-zero means the order went to a driver still finishing another drop
+    // and the promise moved with it — ops should see the reason, not just a
+    // deadline that changed on its own.
+    ...(committed.etaExtendedMin > 0 ? { etaExtendedMin: committed.etaExtendedMin } : {}),
   });
   void enqueueFoodicsWriteback(committed.order.id, "ASSIGNED").catch((err) =>
     logger.warn({ err, orderId: committed.order.id }, "foodics writeback enqueue failed"),

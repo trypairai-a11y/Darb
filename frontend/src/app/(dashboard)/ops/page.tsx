@@ -519,18 +519,15 @@ function OpsLiveScreen() {
               </div>
 
               <div>
+                {/* Revision 5 (#8): the copy link that used to sit opposite this
+                    warning is gone — "no need for this message". The banner
+                    keeps its copy button, which is where anybody who wants the
+                    list actually reaches for it. */}
                 <div className="flex items-center justify-between gap-2 mb-1.5">
                   <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-red-600">
                     <AlertTriangle size={11} aria-hidden="true" />
                     {t("opsMap.irregularTask")}
                   </span>
-                  <button
-                    type="button"
-                    onClick={copyIrregular}
-                    className="text-[11px] font-medium text-primary hover:underline"
-                  >
-                    {t("opsMap.copyIrregular")}
-                  </button>
                 </div>
                 <OpsFilterChips
                   counts={quickCounts}

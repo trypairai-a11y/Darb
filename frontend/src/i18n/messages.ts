@@ -1357,6 +1357,9 @@ export interface Messages {
     notServed: string;
     addTier: string;
     tierOrderHint: string;
+    planIntraZoneHint: string;
+    inheritsVendorPlan: string;
+    branchPlan: string;
   };
   pricingPage: {
     defaultPricing: string;
@@ -1619,6 +1622,10 @@ export interface Messages {
     vendor: string;
     period: string;
     codNet: string;
+    // Revision 5 (#2) — the shop statement's three money columns.
+    walletCredit: string;
+    walletBalance: string;
+    exportExcel: string;
     closingBalance: string;
     netBalance: string;
     totals: string;
@@ -3262,7 +3269,9 @@ export const en: Messages = {
     subtitle: "Draw and name the parts of Kuwait Darb covers. Areas set the price and the reach of every delivery.",
     newZone: "New zone",
     editZone: "Edit zone",
-    editPolygon: "Edit polygon",
+    // Revision 5 (#3): pressing this draws a new boundary over the old one
+    // rather than opening the old one for corner-dragging, so it says so.
+    editPolygon: "Redraw boundary",
     deleteZone: "Delete zone",
     code: "Code",
     nameEn: "Name (English)",
@@ -3309,6 +3318,10 @@ export const en: Messages = {
     notServed: "not served",
     addTier: "Add band",
     tierOrderHint: "Distance is measured from Google Maps routing, fixed when the order is priced.",
+    planIntraZoneHint:
+      "Charged when pickup and drop-off are in the same zone. Belongs to this plan only. Leave blank to price same-zone deliveries from the grid instead.",
+    inheritsVendorPlan: "Inherits the shop plan",
+    branchPlan: "Pricing plan",
   },
   pricingPage: {
     defaultPricing: "Default pricing",
@@ -3571,6 +3584,9 @@ export const en: Messages = {
     vendor: "Shop",
     period: "Period",
     codNet: "COD net",
+    walletCredit: "Wallet credit",
+    walletBalance: "Wallet balance",
+    exportExcel: "Export Excel",
     closingBalance: "Closing balance",
     netBalance: "Net balance",
     totals: "Totals",
@@ -3595,9 +3611,18 @@ export const en: Messages = {
   },
   darbOrderStatus: {
     created: "Created",
-    rejected: "Rejected",
+    // Revision 5 (#1) terminology. This status is intake refusing an order it
+    // cannot price or serve (out of zone, unserviceable pair, paused merchant,
+    // credit cap) and a supervisor fixes it and re-enters the pipeline. It was
+    // never a driver saying no, and calling it "Rejected" had the client
+    // reading a driver decline into it. A driver decline parks nothing: the
+    // order goes straight back out to the next courier.
+    rejected: "Needs review",
     dispatching: "Dispatching",
-    noDriver: "No driver",
+    // Revision 5 (#1). NO_DRIVER has not been a dead end since revision 4 — the
+    // sweep keeps offering it on a backoff, uncapped by radius. "No driver"
+    // read as "somebody go and fix this"; the order is being worked.
+    noDriver: "Retrying",
     assigned: "Assigned",
     pickedUp: "Picked up",
     delivered: "Delivered",
@@ -3641,7 +3666,10 @@ export const en: Messages = {
     noTasks: "No tasks match these filters.",
     copyTask: "Copy task info",
     copyCourier: "Copy courier info",
-    copyIrregular: "One-click copy irregular info",
+    // Revision 5 (#8). The client asked for this message to go. The GPS banner
+    // still needs a label on its copy button, so the key survives as a plain
+    // verb rather than the sentence that was on screen.
+    copyIrregular: "Copy",
     copied: "Copied to clipboard",
     copyFailed: "Could not copy to clipboard",
     copyOrderNumber: "Order",
@@ -5214,7 +5242,7 @@ export const ar: Messages = {
     subtitle: "ارسم وسمِّ المناطق التي تغطيها دَرب. المنطقة تحدد سعر كل طلب ونطاق خدمته.",
     newZone: "منطقة جديدة",
     editZone: "تعديل المنطقة",
-    editPolygon: "تعديل الحدود",
+    editPolygon: "إعادة رسم الحدود",
     deleteZone: "حذف المنطقة",
     code: "الرمز",
     nameEn: "الاسم (إنجليزي)",
@@ -5261,6 +5289,10 @@ export const ar: Messages = {
     notServed: "غير مخدومة",
     addTier: "إضافة شريحة",
     tierOrderHint: "تُقاس المسافة من مسار خرائط جوجل، وتُثبّت عند تسعير الطلب.",
+    planIntraZoneHint:
+      "تُحتسب عندما يكون الاستلام والتسليم في المنطقة نفسها. تخص هذه الخطة وحدها. اتركها فارغة لتسعير التوصيل داخل المنطقة من الجدول.",
+    inheritsVendorPlan: "يتبع خطة المتجر",
+    branchPlan: "خطة التسعير",
   },
   pricingPage: {
     defaultPricing: "التسعير الافتراضي",
@@ -5523,6 +5555,9 @@ export const ar: Messages = {
     vendor: "المتجر",
     period: "الفترة",
     codNet: "صافي الدفع عند الاستلام",
+    walletCredit: "المضاف للمحفظة",
+    walletBalance: "رصيد المحفظة",
+    exportExcel: "تصدير إكسل",
     closingBalance: "الرصيد الختامي",
     netBalance: "صافي الرصيد",
     totals: "الإجماليات",
@@ -5547,9 +5582,9 @@ export const ar: Messages = {
   },
   darbOrderStatus: {
     created: "جديد",
-    rejected: "مرفوض",
+    rejected: "بحاجة لمراجعة",
     dispatching: "جارٍ الإسناد",
-    noDriver: "لا يوجد سائق",
+    noDriver: "إعادة المحاولة",
     assigned: "مُسند",
     pickedUp: "تم الاستلام",
     delivered: "تم التسليم",
@@ -5593,7 +5628,7 @@ export const ar: Messages = {
     noTasks: "لا توجد مهام مطابقة لهذه الفلاتر.",
     copyTask: "نسخ بيانات المهمة",
     copyCourier: "نسخ بيانات المندوب",
-    copyIrregular: "نسخ البيانات غير الاعتيادية بنقرة",
+    copyIrregular: "نسخ",
     copied: "تم النسخ إلى الحافظة",
     copyFailed: "تعذّر النسخ إلى الحافظة",
     copyOrderNumber: "الطلب",

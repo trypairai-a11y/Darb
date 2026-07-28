@@ -1501,6 +1501,7 @@ exports.Prisma.VendorBranchScalarFieldEnum = {
   lat: 'lat',
   lng: 'lng',
   zoneId: 'zoneId',
+  deliveryPlanId: 'deliveryPlanId',
   foodicsBranchId: 'foodicsBranchId',
   isActive: 'isActive',
   createdAt: 'createdAt',
@@ -1538,6 +1539,7 @@ exports.Prisma.DeliveryPlanScalarFieldEnum = {
   tenantId: 'tenantId',
   name: 'name',
   type: 'type',
+  intraZoneFeeKwd: 'intraZoneFeeKwd',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -1590,6 +1592,7 @@ exports.Prisma.FulfillmentSettingsScalarFieldEnum = {
   batchingEnabled: 'batchingEnabled',
   batchMaxDropKm: 'batchMaxDropKm',
   batchMaxOrders: 'batchMaxOrders',
+  finishingSoonMinutes: 'finishingSoonMinutes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -2725,6 +2728,7 @@ exports.Prisma.VendorBranchOrderByRelevanceFieldEnum = {
   address: 'address',
   phone: 'phone',
   zoneId: 'zoneId',
+  deliveryPlanId: 'deliveryPlanId',
   foodicsBranchId: 'foodicsBranchId'
 };
 

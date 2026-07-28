@@ -230,8 +230,12 @@ export const deliveryPlansApi = {
   getById: (id: string) => get<DeliveryPlan>(`/api/delivery-plans/${id}`),
   create: (body: { name: string; type: DeliveryPlanType }) =>
     post<DeliveryPlan>("/api/delivery-plans", body),
-  update: (id: string, body: { name?: string; isActive?: boolean }) =>
-    put<DeliveryPlan>(`/api/delivery-plans/${id}`, body),
+  update: (
+    id: string,
+    // Revision 5 (#7): null clears the plan's own intra-zone fee and puts it
+    // back on the grid's diagonal.
+    body: { name?: string; isActive?: boolean; intraZoneFeeKwd?: string | null }
+  ) => put<DeliveryPlan>(`/api/delivery-plans/${id}`, body),
   /** Rates are replaced wholesale — a plan is never half-priced. */
   putRates: (
     id: string,

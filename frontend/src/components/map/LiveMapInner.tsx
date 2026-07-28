@@ -26,6 +26,12 @@ export interface SingleMarker {
 export interface EditorConfig {
   /** Existing polygon to edit, as [lat, lng] pairs (unclosed). */
   initialRing?: [number, number][] | null;
+  /**
+   * Revision 5 (#3). The shape being replaced, drawn faint and untouchable so
+   * the operator can trace over it. Not the same thing as initialRing: this one
+   * is a picture, not a starting point.
+   */
+  ghostRing?: [number, number][] | null;
   color?: string;
   /** Receives a closed GeoJSON ring: [lng, lat] pairs, first === last. */
   onComplete: (ring: number[][]) => void;
@@ -167,6 +173,7 @@ export default function LiveMapInner({
       {editor ? (
         <ZonePolygonEditor
           initialRing={editor.initialRing ?? null}
+          ghostRing={editor.ghostRing ?? null}
           color={editor.color}
           onComplete={editor.onComplete}
           onCancel={editor.onCancel}

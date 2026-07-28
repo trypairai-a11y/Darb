@@ -326,6 +326,8 @@ function PlanRatesEditor({
 
   const [cells, setCells] = useState<Record<string, string>>({});
   const [tiers, setTiers] = useState<DeliveryPlanKmTier[]>([]);
+  // Revision 5 (#7) — this plan's own intra-zone flat fee.
+  const [intraFee, setIntraFee] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -336,6 +338,7 @@ function PlanRatesEditor({
         next[keyOf(rate.originZoneId, rate.destZoneId)] = toFixed3(rate.feeKwd);
       }
       setCells(next);
+      setIntraFee(plan.intraZoneFeeKwd == null ? "" : toFixed3(plan.intraZoneFeeKwd));
     } else {
       setTiers(
         plan.kmTiers?.length
@@ -358,6 +361,15 @@ function PlanRatesEditor({
     setSaving(true);
     try {
       if (plan.type === "ZONE") {
+        // Revision 5 (#7): the flat fee is part of the plan, so it saves with
+        // it. Blank clears it, which drops same-zone pricing back onto the
+        // grid's diagonal rather than leaving a stale number behind.
+        await deliveryPlansApi.update(plan.id, {
+          intraZoneFeeKwd:
+            intraFee !== "" && Number.isFinite(Number(intraFee))
+              ? Number(intraFee).toFixed(3)
+              : null,
+        });
         const zoneRates: DeliveryPlanZoneRate[] = [];
         for (const origin of zones) {
           for (const dest of zones) {
@@ -407,6 +419,38 @@ function PlanRatesEditor({
         {plan.type === "ZONE" ? t("plansPage.zoneEditorHint") : t("plansPage.kmEditorHint")}
       </p>
 
+      {/* Revision 5 (#7): "whenever we create a plan, the intra-zone flat fee
+          will be with each plan". It used to be one tenant-wide number every
+          zone plan shared. It sits above the grid because it is the price most
+          deliveries actually pay. */}
+      {plan.type === "ZONE" && (
+        <div className="rounded-xl border border-sand-200 bg-sand-50/60 p-4">
+          <label className="block text-xs font-medium text-sand-700 uppercase tracking-wide mb-1.5">
+            {t("pricingPage.intraZoneFee")}
+          </label>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-sand-600">KD</span>
+            <input
+              type="number"
+              step="0.001"
+              min="0"
+              dir="ltr"
+              value={intraFee}
+              placeholder="—"
+              onChange={(e) => setIntraFee(e.target.value)}
+              onBlur={(e) => {
+                const raw = e.target.value;
+                if (raw !== "" && Number.isFinite(Number(raw))) {
+                  setIntraFee(Number(raw).toFixed(3));
+                }
+              }}
+              className="w-32 px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-sand-400"
+            />
+          </div>
+          <p className="text-xs text-sand-600 mt-2">{t("plansPage.planIntraZoneHint")}</p>
+        </div>
+      )}
+
       {plan.type === "ZONE" ? (
         <div className="overflow-auto max-h-[520px] border border-sand-200 rounded-xl" dir="ltr">
           <table className="border-collapse min-w-max">
@@ -432,6 +476,18 @@ function PlanRatesEditor({
                     {zoneLabel(origin)}
                   </th>
                   {zones.map((dest) => {
+                    // Revision 5 (#7): same-zone is the flat fee above, not a
+                    // cell. Two inputs for one price is how they drift apart.
+                    if (origin.id === dest.id) {
+                      return (
+                        <td
+                          key={dest.id}
+                          className="border-b border-sand-200 bg-sand-100/60 px-2 py-1.5 text-center text-xs text-sand-500 select-none tabular-nums"
+                        >
+                          {intraFee !== "" ? intraFee : t("pricingPage.sameZone")}
+                        </td>
+                      );
+                    }
                     const k = keyOf(origin.id, dest.id);
                     return (
                       <td key={dest.id} className="border-b border-sand-200 px-1.5 py-1">
@@ -452,10 +508,7 @@ function PlanRatesEditor({
                             }
                           }}
                           aria-label={`${zoneLabel(origin)} → ${zoneLabel(dest)}`}
-                          className={cn(
-                            "w-[84px] px-2 h-8 rounded-lg border text-xs text-end tabular-nums bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-sand-400",
-                            origin.id === dest.id ? "border-primary/40" : "border-sand-200"
-                          )}
+                          className="w-[84px] px-2 h-8 rounded-lg border border-sand-200 text-xs text-end tabular-nums bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-sand-400"
                         />
                       </td>
                     );

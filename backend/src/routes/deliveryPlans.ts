@@ -54,6 +54,9 @@ const createPlanSchema = z.object({
 const updatePlanSchema = z.object({
   name: z.string().trim().min(1).max(80).optional(),
   isActive: z.boolean().optional(),
+  // Revision 5 (#7). Null clears it, which puts the plan back on its grid's
+  // diagonal — the only way to express "this plan has no flat fee of its own".
+  intraZoneFeeKwd: money.nullable().optional(),
 });
 
 const ratesSchema = z.object({
@@ -72,6 +75,9 @@ function serialisePlan(plan: any) {
     name: plan.name,
     type: plan.type,
     isActive: plan.isActive,
+    // Revision 5 (#7) — the plan's own intra-zone flat fee. Null means it has
+    // none and same-zone deliveries fall through to the grid's diagonal.
+    intraZoneFeeKwd: kwd(plan.intraZoneFeeKwd),
     vendorCount: plan._count?.vendors ?? 0,
     zoneRates: (plan.zoneRates ?? []).map((r: any) => ({
       originZoneId: r.originZoneId,
@@ -189,6 +195,14 @@ router.put(
         data: {
           ...(body.name !== undefined ? { name: body.name } : {}),
           ...(body.isActive !== undefined ? { isActive: body.isActive } : {}),
+          ...(body.intraZoneFeeKwd !== undefined
+            ? {
+                intraZoneFeeKwd:
+                  body.intraZoneFeeKwd == null
+                    ? null
+                    : new Prisma.Decimal(String(body.intraZoneFeeKwd)),
+              }
+            : {}),
         },
       });
       if (updated.count === 0) return res.status(404).json({ error: "Delivery plan not found" });

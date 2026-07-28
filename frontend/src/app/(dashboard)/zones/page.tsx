@@ -94,6 +94,11 @@ export default function ZonesPage() {
     setDrawing({ zone: null });
   }
 
+  /**
+   * Revision 5 (#3). Identical to startDrawNew apart from which zone the
+   * finished ring lands on: redrawing a boundary is drawing a boundary. The old
+   * shape is only a ghost to trace, and nothing is written until Save.
+   */
   function startEditPolygon(zone: DeliveryZone) {
     setForm(null);
     setDrawing({ zone });
@@ -168,7 +173,13 @@ export default function ZonesPage() {
   const selectedZone = zones.find((z) => z.id === selectedZoneId) ?? null;
   const fitBounds = selectedZone ? zoneRingLatLngs(selectedZone) : null;
 
-  const editorInitialRing = drawing?.zone ? zoneToUnclosedLatLngRing(drawing.zone) : null;
+  // Revision 5 (#3). Edit used to hand the existing ring to the editor as a
+  // starting shape and let staff drag its corners, which is the flow that kept
+  // snapping back. The client's own answer was to stop editing shapes and start
+  // drawing them: Edit is now a fresh draw with the old boundary shown faint
+  // underneath to trace. Nothing is destroyed until the redraw is saved, and
+  // Cancel leaves the zone exactly as it was.
+  const editorGhostRing = drawing?.zone ? zoneToUnclosedLatLngRing(drawing.zone) : null;
   const mapZones = drawing?.zone ? zones.filter((z) => z.id !== drawing.zone?.id) : zones;
 
   const columns = [
@@ -302,7 +313,8 @@ export default function ZonesPage() {
             editor={
               drawing
                 ? {
-                    initialRing: editorInitialRing,
+                    initialRing: null,
+                    ghostRing: editorGhostRing,
                     color: drawing.zone?.color ?? "#1D4E89",
                     onComplete: handleEditorComplete,
                     onCancel: () => setDrawing(null),

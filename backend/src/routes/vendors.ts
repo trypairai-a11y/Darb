@@ -75,6 +75,9 @@ const createBranchSchema = z.object({
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
   foodicsBranchId: z.string().nullable().optional(),
+  // Revision 5 (#6). Null means "inherit the vendor's plan", which is what a
+  // branch does unless somebody deliberately says otherwise.
+  deliveryPlanId: z.string().uuid().nullable().optional(),
   isActive: z.boolean().optional(),
 });
 
@@ -86,6 +89,7 @@ const updateBranchSchema = z.object({
   lat: z.number().min(-90).max(90).optional(),
   lng: z.number().min(-180).max(180).optional(),
   foodicsBranchId: z.string().nullable().optional(),
+  deliveryPlanId: z.string().uuid().nullable().optional(),
   isActive: z.boolean().optional(),
 });
 
@@ -116,6 +120,24 @@ const createVendorUserSchema = z
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const fmtKwd = (v: unknown) => Number(v ?? 0).toFixed(3);
+
+/**
+ * Revision 5 (#6). The deliveryPlanId foreign key points at DeliveryPlan.id,
+ * which carries no tenant in it — so on its own it would happily accept
+ * another tenant's plan id and silently price a branch off someone else's rate
+ * card. undefined (field absent) and null (explicitly cleared) both pass.
+ */
+async function planBelongsToTenant(
+  tenantId: string,
+  planId: string | null | undefined
+): Promise<boolean> {
+  if (planId == null) return true;
+  const plan = await prisma.deliveryPlan.findFirst({
+    where: { id: planId, tenantId },
+    select: { id: true },
+  });
+  return plan !== null;
+}
 
 /**
  * Inline point-in-polygon zone resolution (bbox prefilter → exact turf test).
@@ -369,7 +391,12 @@ router.get("/:id/branches", async (req: Request, res: Response) => {
     const branches = await prisma.vendorBranch.findMany({
       where: { tenantId, vendorId: vendor.id },
       orderBy: { name: "asc" },
-      include: { zone: { select: { id: true, code: true, name: true } } },
+      include: {
+        zone: { select: { id: true, code: true, name: true } },
+        // Revision 5 (#6): the Branches tab shows which price list each branch
+        // is on, so the name has to come with the row.
+        deliveryPlan: { select: { id: true, name: true, type: true } },
+      },
     });
     res.json(branches);
   } catch (err: any) {
@@ -396,6 +423,10 @@ router.post(
 
       const { lat, lng, ...rest } = req.body;
       const zoneId = await resolveZoneIdInline(tenantId, lat, lng);
+      if (!(await planBelongsToTenant(tenantId, rest.deliveryPlanId))) {
+        res.status(400).json({ error: "Delivery plan not found" });
+        return;
+      }
 
       const branch = await prisma.vendorBranch.create({
         data: { tenantId, vendorId: vendor.id, lat, lng, zoneId, ...rest },
@@ -431,6 +462,10 @@ router.put(
       if (!branch) { res.status(404).json({ error: "Branch not found" }); return; }
 
       const data: any = { ...req.body };
+      if (!(await planBelongsToTenant(tenantId, req.body.deliveryPlanId))) {
+        res.status(400).json({ error: "Delivery plan not found" });
+        return;
+      }
       if (req.body.lat !== undefined || req.body.lng !== undefined) {
         const lat = req.body.lat ?? (branch.lat === null ? null : Number(branch.lat));
         const lng = req.body.lng ?? (branch.lng === null ? null : Number(branch.lng));

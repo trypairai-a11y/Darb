@@ -38,6 +38,9 @@ interface BranchFormState {
   phone: string;
   lat: string;
   lng: string;
+  // Revision 5 (#6). "" means inherit the shop's plan, which is what a branch
+  // does unless somebody deliberately puts it on a different price list.
+  deliveryPlanId: string;
 }
 
 export default function VendorDetailPage() {
@@ -313,6 +316,17 @@ function BranchesTab({ vendorId }: { vendorId: string }) {
   });
   const branches = useMemo(() => unwrapList<VendorBranch>(branchesQuery.data), [branchesQuery.data]);
 
+  // Revision 5 (#6). The client's own words: the pricing plan is "better kept
+  // with the branches" than as a tab of its own, so the plan list loads here.
+  const plansQuery = useQuery({
+    queryKey: ["darb", "delivery-plans"],
+    queryFn: () => deliveryPlansApi.list({ limit: 100 }),
+  });
+  const plans = useMemo(
+    () => unwrapList<DeliveryPlan>(plansQuery.data).filter((p) => p.isActive !== false),
+    [plansQuery.data]
+  );
+
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: ["darb", "vendor", vendorId, "branches"] });
 
@@ -329,6 +343,8 @@ function BranchesTab({ vendorId }: { vendorId: string }) {
       phone: form.phone.trim() || null,
       lat: Number(form.lat),
       lng: Number(form.lng),
+      // Empty means inherit, and the API reads null as exactly that.
+      deliveryPlanId: form.deliveryPlanId || null,
     } as Partial<VendorBranch>;
     try {
       if (form.id) {
@@ -402,6 +418,21 @@ function BranchesTab({ vendorId }: { vendorId: string }) {
         ),
     },
     {
+      // Revision 5 (#6). Which price list this branch quotes on, sitting with
+      // the branch rather than behind a tab of its own.
+      key: "deliveryPlan",
+      label: t("plansPage.branchPlan"),
+      sortable: false,
+      render: (plan: VendorBranch["deliveryPlan"]) =>
+        plan ? (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-pill text-[11px] font-medium bg-navy-50 text-navy-700">
+            <span dir="auto">{plan.name}</span>
+          </span>
+        ) : (
+          <span className="text-xs text-sand-500">{t("plansPage.inheritsVendorPlan")}</span>
+        ),
+    },
+    {
       key: "lat",
       label: `${t("vendorsPage.latitude")} / ${t("vendorsPage.longitude")}`,
       sortable: false,
@@ -428,6 +459,7 @@ function BranchesTab({ vendorId }: { vendorId: string }) {
                 phone: row.phone ?? "",
                 lat: String(row.lat ?? ""),
                 lng: String(row.lng ?? ""),
+                deliveryPlanId: row.deliveryPlanId ?? "",
               });
             }}
             className="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-sand-100 transition-colors"
@@ -457,7 +489,15 @@ function BranchesTab({ vendorId }: { vendorId: string }) {
         <button
           type="button"
           onClick={() =>
-            setForm({ id: null, name: "", address: "", phone: "", lat: "", lng: "" })
+            setForm({
+              id: null,
+              name: "",
+              address: "",
+              phone: "",
+              lat: "",
+              lng: "",
+              deliveryPlanId: "",
+            })
           }
           className="btn-primary inline-flex items-center gap-2 px-4 h-10"
         >
@@ -523,6 +563,29 @@ function BranchesTab({ vendorId }: { vendorId: string }) {
                 className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
+            {/* Revision 5 (#6). The client first asked for a Pricing Plan tab,
+                then said it is better kept with the branches. It is here rather
+                than on the vendor profile because a chain can price its airport
+                branch differently from its city ones, and because assigning it
+                next to the zone and the pin is where the thought occurs. */}
+            <div>
+              <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
+                {t("plansPage.branchPlan")}
+              </label>
+              <select
+                value={form.deliveryPlanId}
+                onChange={(e) => setForm({ ...form, deliveryPlanId: e.target.value })}
+                className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="">{t("plansPage.inheritsVendorPlan")}</option>
+                {plans.map((plan) => (
+                  <option key={plan.id} value={plan.id}>
+                    {plan.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">

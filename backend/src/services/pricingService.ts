@@ -1,11 +1,12 @@
 /**
- * Delivery pricing service — Darb 2.0 (§A4), revision 4 (#7).
+ * Delivery pricing service — Darb 2.0 (§A4), revision 4 (#7), revision 5 (#6/#7).
  *
- * A vendor is priced by its assigned DeliveryPlan. A plan is either by zone or
- * by kilometre, never both, because a price list a person cannot read off a
- * screen is a price list nobody trusts.
+ * A delivery is priced by a DeliveryPlan: the branch's own if it has one, else
+ * the vendor's. A plan is either by zone or by kilometre, never both, because a
+ * price list a person cannot read off a screen is a price list nobody trusts.
  *
- *   by zone → intra-zone fee + zone-to-zone surcharge, per plan
+ *   by zone → the plan's own intra-zone flat fee within a zone, else the
+ *             plan's origin→destination rate cell
  *   by km   → the first tier whose maxKm covers the routing distance
  *
  * Vendors with no plan keep the original tenant-wide pricing:
@@ -66,16 +67,23 @@ function toNum(v: unknown): number | null {
 }
 
 /**
- * The plan a delivery is priced on, resolved from the branch's vendor. Null
- * means "no plan assigned" and the caller falls back to FulfillmentSettings.
+ * The plan a delivery is priced on. Null means "no plan assigned" and the
+ * caller falls back to FulfillmentSettings.
+ *
+ * Revision 5 (#6): the branch's own plan wins, then the vendor's. The client
+ * asked for plan assignment to live with the branches rather than as its own
+ * tab, and a chain whose airport branch prices differently from its city ones
+ * is the reason that is worth having. A branch with no plan of its own keeps
+ * inheriting the vendor's, which is what every branch does today — this reads
+ * one extra column, it does not reprice anybody.
  */
 async function resolvePlan(tenantId: string, branchId?: string) {
   if (!branchId) return null;
   const branch = await prisma.vendorBranch.findFirst({
     where: { id: branchId, tenantId },
-    select: { vendor: { select: { deliveryPlanId: true } } },
+    select: { deliveryPlanId: true, vendor: { select: { deliveryPlanId: true } } },
   });
-  const planId = branch?.vendor?.deliveryPlanId;
+  const planId = branch?.deliveryPlanId ?? branch?.vendor?.deliveryPlanId;
   if (!planId) return null;
 
   const plan = await prisma.deliveryPlan.findFirst({
@@ -218,6 +226,21 @@ export async function quoteDelivery(
 
   // ── 3b. By-zone plan ─────────────────────────────────────────────────────
   if (plan?.type === "ZONE") {
+    // Revision 5 (#7): the intra-zone flat fee belongs to the plan. A delivery
+    // that starts and ends in the same zone is priced by the plan's own flat
+    // fee, not by a single tenant-wide number every plan had to share.
+    //
+    // A plan written before this column has no fee of its own, so the diagonal
+    // of its grid still answers — that is where the value used to be kept, and
+    // those plans keep quoting exactly what they quoted yesterday.
+    if (pickupZone.id === dropoffZone.id && plan.intraZoneFeeKwd != null) {
+      return {
+        ok: true,
+        ...base,
+        feeKwd: new Prisma.Decimal(plan.intraZoneFeeKwd as unknown as Prisma.Decimal.Value),
+        planId: plan.id,
+      };
+    }
     const rate = await prisma.deliveryPlanZoneRate.findFirst({
       where: { planId: plan.id, originZoneId: pickupZone.id, destZoneId: dropoffZone.id },
       select: { feeKwd: true },

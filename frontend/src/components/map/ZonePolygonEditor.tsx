@@ -19,6 +19,15 @@
 // Operators read it as "the tool only gives me three pinpoints". A new ring is
 // open until they close it, however many points that takes; only an existing
 // ring opened for editing starts closed.
+//
+// Revision 5 (#3): /zones no longer opens an existing shape for vertex dragging
+// at all. Two rounds of "the corner snaps back when I move it" later, the
+// client asked for the simpler thing outright — "for the edit function, it
+// should be the same as creating a new zone, so when you press Edit you should
+// draw a new line". Edit now starts on a blank canvas with the old boundary as
+// a ghost to trace, which removes the dragging bug by removing the dragging.
+// initialRing and the handle behaviour stay because they are still the right
+// tool if a caller wants them.
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CircleMarker, Polygon, Polyline, useMapEvents } from "react-leaflet";
@@ -30,6 +39,12 @@ type LatLngPair = [number, number];
 interface ZonePolygonEditorProps {
   /** Existing ring to edit as [lat, lng] pairs (unclosed). */
   initialRing?: LatLngPair[] | null;
+  /**
+   * Revision 5 (#3). The shape this drawing replaces, painted faint and
+   * non-interactive underneath. Editing a zone starts from a blank canvas now,
+   * so this is the only thing left of the old boundary while you redraw it.
+   */
+  ghostRing?: LatLngPair[] | null;
   color?: string;
   /** Receives a closed GeoJSON ring: [lng, lat] pairs, first === last. */
   onComplete: (ring: number[][]) => void;
@@ -38,6 +53,7 @@ interface ZonePolygonEditorProps {
 
 export default function ZonePolygonEditor({
   initialRing,
+  ghostRing,
   color = "#1D4E89",
   onComplete,
   onCancel,
@@ -185,6 +201,23 @@ export default function ZonePolygonEditor({
 
   return (
     <>
+      {/* The boundary being replaced. Non-interactive on purpose: a click that
+          lands on it must place a vertex, not select the old shape. */}
+      {ghostRing && ghostRing.length >= 3 && (
+        <Polygon
+          positions={ghostRing}
+          pathOptions={{
+            color,
+            weight: 1.5,
+            opacity: 0.35,
+            dashArray: "4 6",
+            fillColor: color,
+            fillOpacity: 0.05,
+            interactive: false,
+          }}
+        />
+      )}
+
       {isClosed ? (
         <Polygon
           positions={vertices}

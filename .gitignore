@@ -78,3 +78,14 @@ backend/.vercel-backend-env
 backend/seed-prod.sh
 backend/prisma/seed-*.ts
 backend/.env.local.secrets
+
+# iCloud Drive sync artifacts. It duplicates files as "name 2.ts" / "name.d 3.ts"
+# when two machines touch the same path. They are never source: they broke the
+# backend typecheck once (a truncated copy of generated Prisma types) and five
+# of them were committed by a `git add -A` before anyone noticed.
+* [0-9].ts
+* [0-9].tsx
+* [0-9].js
+* [0-9].json
+* [0-9].node
+*.d [0-9].ts

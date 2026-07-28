@@ -16,17 +16,16 @@ import FilterBar from "@/components/shared/FilterBar";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import StatementDetailPanel, {
-  exportStatementCsv,
-} from "@/components/finance/StatementDetailPanel";
+import StatementDetailPanel from "@/components/finance/StatementDetailPanel";
+import { useToast } from "@/components/shared/Toast";
 import { walletsApi, unwrapList, fetchAllPages } from "@/lib/darbApi";
 import type {
-  StatementTransaction,
   VendorStatementRow,
   WalletEntry,
   WalletReconciliationRun,
 } from "@/types/darb";
 import { downloadCsv } from "@/lib/csv";
+import { downloadBlob } from "@/utils/downloadBlob";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDateTime, formatKwd } from "@/i18n/format";
 import { cn } from "@/lib/cn";
@@ -48,6 +47,7 @@ interface ReportsPanelProps {
 
 export default function ReportsPanel({ view, initialType = "" }: ReportsPanelProps) {
   const { t, locale } = useI18n();
+  const toast = useToast();
 
   const [filters, setFilters] = useState<Record<string, string>>({
     dateFrom: monthStart(),
@@ -229,44 +229,27 @@ export default function ReportsPanel({ view, initialType = "" }: ReportsPanelPro
   }
 
   /**
-   * Revision 4 (#5). The old export was one flat file with a summary row per
-   * shop per period, which is not a statement anybody can send to a merchant.
-   * Now each listed statement is fetched and written as its own detailed file,
-   * matching the drill-in report exactly — the client's "same concept".
+   * Revision 4 (#5) then revision 5 (#2). This used to fetch each statement and
+   * write its own CSV in the browser — one download per shop, and none of them
+   * carried the wallet columns the client reads the statement for.
    *
-   * Sequential on purpose: a browser fires a download per file, and twenty
-   * parallel ones trip pop-up blocking.
+   * It is one workbook from the server now, a sheet per shop, built by the same
+   * code that answers the drill-in. Downloading twenty files to open twenty
+   * times was never the ask; "the Excel" was.
    */
   async function exportStatementsPerShop() {
     setExporting(true);
     try {
-      for (const statement of statements) {
-        try {
-          const detail = await walletsApi.statementTransactions(statement.id);
-          exportStatementCsv(statement, detail.rows as StatementTransaction[], exportLabels);
-        } catch {
-          // One shop failing must not cost the caller the other nineteen.
-        }
-      }
+      await downloadBlob(
+        "/api/wallets/vendor-statements/export.xlsx",
+        `shop-statements-${new Date().toISOString().split("T")[0]}.xlsx`
+      );
+    } catch {
+      toast.error(t("toast.failedSave"));
     } finally {
       setExporting(false);
     }
   }
-
-  const exportLabels = {
-    date: t("wallet.date"),
-    order: t("reports.orderNumber"),
-    type: t("reports.entryType"),
-    reference: t("reports.reference"),
-    total: t("reports.orderTotal"),
-    fee: t("reports.deliveryFee"),
-    codNet: t("reports.codNet"),
-    totals: t("reports.totals"),
-    openingBalance: t("reports.openingBalance"),
-    prepaidFees: t("reports.prepaidFees"),
-    refunds: t("reports.refunds"),
-    netBalance: t("reports.netBalance"),
-  };
 
   const rowCount =
     view === "ledger" ? ledger.length : view === "vendor-statements" ? statements.length : runs.length;
@@ -281,7 +264,11 @@ export default function ReportsPanel({ view, initialType = "" }: ReportsPanelPro
           className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors disabled:opacity-50"
         >
           <Download size={12} aria-hidden="true" />
-          {exporting ? t("common.processing") : t("reports.exportCsv")}
+          {exporting
+            ? t("common.processing")
+            : view === "vendor-statements"
+              ? t("reports.exportExcel")
+              : t("reports.exportCsv")}
         </button>
       </div>
 

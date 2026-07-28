@@ -17,7 +17,7 @@ import SlidePanel from "@/components/shared/SlidePanel";
 import ErrorState from "@/components/shared/ErrorState";
 import { walletsApi } from "@/lib/darbApi";
 import type { StatementTransaction, VendorStatementRow } from "@/types/darb";
-import { downloadCsv } from "@/lib/csv";
+import { downloadBlob } from "@/utils/downloadBlob";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd } from "@/i18n/format";
 import { cn } from "@/lib/cn";
@@ -34,78 +34,67 @@ function fileSlug(statement: VendorStatementRow): string {
   return `statement-${code}-${statement.periodStart.slice(0, 7)}`.replace(/[^A-Za-z0-9-]/g, "-");
 }
 
-/** Column sums for the drill-in. Nulls (a payout has no order total) count as 0. */
-function sumRows(rows: StatementTransaction[]) {
-  const add = (acc: number, v: string | null | undefined) => acc + Number(v ?? 0);
+/**
+ * Revision 5 (#2) — the three columns a merchant reads their account in, the
+ * same ones the workbook writes. Kept in step with the backend's
+ * `walletColumns` in routes/wallets.ts; both restate the postings the ledger
+ * already made rather than recalculating anything.
+ *
+ *   credit  cash order → the order amount (the fee was never the shop's money);
+ *           card order → nothing, because Darb collected nothing for them.
+ *   fee     always negative, on every order, however the customer paid.
+ */
+function walletColumns(row: StatementTransaction): { credit: number; fee: number } {
+  if (row.kind === "DELIVERY") {
+    return {
+      credit: row.paymentMethod === "COD" ? Number(row.orderTotalKwd ?? 0) : 0,
+      fee: -Number(row.deliveryFeeKwd ?? 0),
+    };
+  }
+  return { credit: Number(row.codNetKwd ?? 0), fee: 0 };
+}
+
+/**
+ * Rows with the running wallet balance carried through them. It opens at the
+ * shop's real opening balance, not at zero — "the current full balance of the
+ * account", which is a balance the previous month handed over.
+ */
+function withRunningBalance(rows: StatementTransaction[], openingKwd: string) {
+  let running = Number(openingKwd);
+  const priced = rows.map((row) => {
+    const { credit, fee } = walletColumns(row);
+    running += credit + fee;
+    return { row, credit, fee, balance: running };
+  });
   return {
-    orderTotal: rows.reduce((acc, r) => add(acc, r.orderTotalKwd), 0).toFixed(3),
-    deliveryFee: rows.reduce((acc, r) => add(acc, r.deliveryFeeKwd), 0).toFixed(3),
-    codNet: rows.reduce((acc, r) => add(acc, r.codNetKwd), 0).toFixed(3),
+    priced,
+    totals: {
+      orderTotal: rows.reduce((acc, r) => acc + Number(r.orderTotalKwd ?? 0), 0).toFixed(3),
+      credit: priced.reduce((acc, p) => acc + p.credit, 0).toFixed(3),
+      fee: priced.reduce((acc, p) => acc + p.fee, 0).toFixed(3),
+      balance: running.toFixed(3),
+    },
   };
 }
 
 /**
- * Revision 4 (#5) — one shop's detailed statement as CSV. Exported here rather
- * than from the list so the file matches what is on screen: the client asked
- * for the download to follow "the same concept" as the report.
- *
- * The file carries the same footing as the panel: a totals line, then the
- * opening/closing block. A statement that lands in a merchant's inbox without
- * the net balance on it is a list of orders, not a statement.
+ * Revision 4 (#5), rebuilt for revision 5 (#2). This used to assemble a CSV in
+ * the browser. It downloads the server's workbook now, because the three
+ * columns the client reads a statement for — what went into the wallet, the fee
+ * that came out, and the balance after it — are the ledger's own numbers, and
+ * the place that knows them is the place that posted them.
  */
-export function exportStatementCsv(
-  statement: VendorStatementRow,
-  rows: StatementTransaction[],
-  labels: {
-    date: string;
-    order: string;
-    type: string;
-    total: string;
-    fee: string;
-    codNet: string;
-    reference: string;
-    totals: string;
-    openingBalance: string;
-    prepaidFees: string;
-    refunds: string;
-    netBalance: string;
-  }
-) {
-  const totals = sumRows(rows);
-  downloadCsv(
-    fileSlug(statement),
-    [
-      labels.date,
-      labels.order,
-      labels.type,
-      labels.reference,
-      labels.total,
-      labels.fee,
-      labels.codNet,
-    ],
-    [
-      ...rows.map((r) => [
-        r.date ? r.date.slice(0, 10) : "n/a",
-        r.orderNumber ?? "n/a",
-        r.kind,
-        r.reference ?? "n/a",
-        r.orderTotalKwd ?? "n/a",
-        r.deliveryFeeKwd ?? "n/a",
-        r.codNetKwd,
-      ]),
-      ["", "", "", labels.totals, totals.orderTotal, totals.deliveryFee, totals.codNet],
-      ["", "", "", labels.openingBalance, "", "", statement.openingBalanceKwd],
-      ["", "", "", labels.codNet, "", "", statement.codNetKwd],
-      ["", "", "", labels.prepaidFees, "", "", statement.prepaidFeesKwd],
-      ["", "", "", labels.refunds, "", "", statement.refundsKwd],
-      ["", "", "", labels.netBalance, "", "", statement.closingBalanceKwd],
-    ]
+export async function exportStatementXlsx(statement: VendorStatementRow) {
+  await downloadBlob(
+    `/api/wallets/vendor-statements/export.xlsx?id=${encodeURIComponent(statement.id)}`,
+    `${fileSlug(statement)}.xlsx`
   );
 }
 
 export default function StatementDetailPanel({ statement, onClose }: StatementDetailPanelProps) {
   const { t, locale } = useI18n();
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   const detailQuery = useQuery({
     queryKey: ["darb", "statement-transactions", statement?.id],
@@ -114,7 +103,10 @@ export default function StatementDetailPanel({ statement, onClose }: StatementDe
   });
 
   const rows = useMemo(() => detailQuery.data?.rows ?? [], [detailQuery.data]);
-  const totals = useMemo(() => sumRows(rows), [rows]);
+  const { priced, totals } = useMemo(
+    () => withRunningBalance(rows, statement?.openingBalanceKwd ?? "0"),
+    [rows, statement?.openingBalanceKwd]
+  );
 
   const kindLabel = (kind: StatementTransaction["kind"]) =>
     kind === "REFUND"
@@ -162,27 +154,15 @@ export default function StatementDetailPanel({ statement, onClose }: StatementDe
             </div>
             <button
               type="button"
-              disabled={rows.length === 0}
-              onClick={() =>
-                exportStatementCsv(statement, rows, {
-                  date: t("wallet.date"),
-                  order: t("reports.orderNumber"),
-                  type: t("reports.entryType"),
-                  reference: t("reports.reference"),
-                  total: t("reports.orderTotal"),
-                  fee: t("reports.deliveryFee"),
-                  codNet: t("reports.codNet"),
-                  totals: t("reports.totals"),
-                  openingBalance: t("reports.openingBalance"),
-                  prepaidFees: t("reports.prepaidFees"),
-                  refunds: t("reports.refunds"),
-                  netBalance: t("reports.netBalance"),
-                })
-              }
+              disabled={rows.length === 0 || exporting}
+              onClick={() => {
+                setExporting(true);
+                void exportStatementXlsx(statement).finally(() => setExporting(false));
+              }}
               className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors disabled:opacity-50"
             >
               <Download size={12} aria-hidden="true" />
-              {t("reports.exportCsv")}
+              {exporting ? t("common.processing") : t("reports.exportExcel")}
             </button>
           </div>
 
@@ -206,15 +186,18 @@ export default function StatementDetailPanel({ statement, onClose }: StatementDe
                       {t("reports.orderTotal")}
                     </th>
                     <th className="text-end text-xs font-medium text-sand-600 py-2">
+                      {t("reports.walletCredit")}
+                    </th>
+                    <th className="text-end text-xs font-medium text-sand-600 py-2">
                       {t("reports.deliveryFee")}
                     </th>
                     <th className="text-end text-xs font-medium text-sand-600 py-2">
-                      {t("reports.codNet")}
+                      {t("reports.walletBalance")}
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((row, i) => {
+                  {priced.map(({ row, credit, fee, balance }, i) => {
                     const key = `${row.kind}-${row.orderId ?? i}`;
                     const open = expanded === key;
                     const expandable = row.entries.length > 0;
@@ -263,12 +246,19 @@ export default function StatementDetailPanel({ statement, onClose }: StatementDe
                               : formatKwd(row.orderTotalKwd, locale)}
                           </td>
                           <td dir="ltr" className="py-2 text-end tabular-nums">
-                            {row.deliveryFeeKwd == null
-                              ? "n/a"
-                              : formatKwd(row.deliveryFeeKwd, locale)}
+                            {formatKwd(credit.toFixed(3), locale)}
+                          </td>
+                          <td
+                            dir="ltr"
+                            className={cn(
+                              "py-2 text-end tabular-nums",
+                              fee < 0 && "text-red-600"
+                            )}
+                          >
+                            {formatKwd(fee.toFixed(3), locale)}
                           </td>
                           <td dir="ltr" className="py-2 text-end tabular-nums font-medium">
-                            {formatKwd(row.codNetKwd, locale)}
+                            {formatKwd(balance.toFixed(3), locale)}
                           </td>
                         </tr>
                         {open &&
@@ -287,6 +277,7 @@ export default function StatementDetailPanel({ statement, onClose }: StatementDe
                               <td dir="ltr" className="py-1.5 text-end tabular-nums text-sand-600">
                                 {formatKwd(e.amountKwd, locale)}
                               </td>
+                              <td />
                               <td dir="ltr" className="py-1.5 text-end tabular-nums text-sand-600">
                                 {formatKwd(e.runningBalanceKwd, locale)}
                               </td>
@@ -306,13 +297,16 @@ export default function StatementDetailPanel({ statement, onClose }: StatementDe
                       {formatKwd(totals.orderTotal, locale)}
                     </td>
                     <td dir="ltr" className="py-2.5 text-end tabular-nums font-medium text-sand-900">
-                      {formatKwd(totals.deliveryFee, locale)}
+                      {formatKwd(totals.credit, locale)}
+                    </td>
+                    <td dir="ltr" className="py-2.5 text-end tabular-nums font-medium text-red-600">
+                      {formatKwd(totals.fee, locale)}
                     </td>
                     <td
                       dir="ltr"
                       className="py-2.5 text-end tabular-nums font-semibold text-sand-900"
                     >
-                      {formatKwd(totals.codNet, locale)}
+                      {formatKwd(totals.balance, locale)}
                     </td>
                   </tr>
                 </tfoot>

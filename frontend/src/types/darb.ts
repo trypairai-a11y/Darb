@@ -155,6 +155,9 @@ export interface VendorBranch {
   zoneId?: string | null;
   foodicsBranchId?: string | null;
   zone?: Pick<DeliveryZone, "id" | "code" | "name" | "nameAr"> | null;
+  // Revision 5 (#6) — the branch's own price list. Null inherits the vendor's.
+  deliveryPlanId?: string | null;
+  deliveryPlan?: { id: string; name: string; type: DeliveryPlanType } | null;
   isActive?: boolean;
 }
 
@@ -756,6 +759,9 @@ export interface DeliveryPlan {
   name: string;
   type: DeliveryPlanType;
   isActive: boolean;
+  // Revision 5 (#7) — this plan's own intra-zone flat fee. Null means it has
+  // none and same-zone deliveries price off the grid's diagonal instead.
+  intraZoneFeeKwd?: string | null;
   vendorCount: number;
   zoneRates: DeliveryPlanZoneRate[];
   kmTiers: DeliveryPlanKmTier[];

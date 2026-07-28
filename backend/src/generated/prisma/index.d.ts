@@ -13662,12 +13662,14 @@ export namespace Prisma {
     zoneRates: number
     kmTiers: number
     vendors: number
+    branches: number
   }
 
   export type DeliveryPlanCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     zoneRates?: boolean | DeliveryPlanCountOutputTypeCountZoneRatesArgs
     kmTiers?: boolean | DeliveryPlanCountOutputTypeCountKmTiersArgs
     vendors?: boolean | DeliveryPlanCountOutputTypeCountVendorsArgs
+    branches?: boolean | DeliveryPlanCountOutputTypeCountBranchesArgs
   }
 
   // Custom InputTypes
@@ -13700,6 +13702,13 @@ export namespace Prisma {
    */
   export type DeliveryPlanCountOutputTypeCountVendorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: VendorWhereInput
+  }
+
+  /**
+   * DeliveryPlanCountOutputType without action
+   */
+  export type DeliveryPlanCountOutputTypeCountBranchesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VendorBranchWhereInput
   }
 
 
@@ -108979,6 +108988,7 @@ export namespace Prisma {
     lat: Decimal | null
     lng: Decimal | null
     zoneId: string | null
+    deliveryPlanId: string | null
     foodicsBranchId: string | null
     isActive: boolean | null
     createdAt: Date | null
@@ -108996,6 +109006,7 @@ export namespace Prisma {
     lat: Decimal | null
     lng: Decimal | null
     zoneId: string | null
+    deliveryPlanId: string | null
     foodicsBranchId: string | null
     isActive: boolean | null
     createdAt: Date | null
@@ -109013,6 +109024,7 @@ export namespace Prisma {
     lat: number
     lng: number
     zoneId: number
+    deliveryPlanId: number
     foodicsBranchId: number
     isActive: number
     createdAt: number
@@ -109042,6 +109054,7 @@ export namespace Prisma {
     lat?: true
     lng?: true
     zoneId?: true
+    deliveryPlanId?: true
     foodicsBranchId?: true
     isActive?: true
     createdAt?: true
@@ -109059,6 +109072,7 @@ export namespace Prisma {
     lat?: true
     lng?: true
     zoneId?: true
+    deliveryPlanId?: true
     foodicsBranchId?: true
     isActive?: true
     createdAt?: true
@@ -109076,6 +109090,7 @@ export namespace Prisma {
     lat?: true
     lng?: true
     zoneId?: true
+    deliveryPlanId?: true
     foodicsBranchId?: true
     isActive?: true
     createdAt?: true
@@ -109180,6 +109195,7 @@ export namespace Prisma {
     lat: Decimal | null
     lng: Decimal | null
     zoneId: string | null
+    deliveryPlanId: string | null
     foodicsBranchId: string | null
     isActive: boolean
     createdAt: Date
@@ -109216,6 +109232,7 @@ export namespace Prisma {
     lat?: boolean
     lng?: boolean
     zoneId?: boolean
+    deliveryPlanId?: boolean
     foodicsBranchId?: boolean
     isActive?: boolean
     createdAt?: boolean
@@ -109223,6 +109240,7 @@ export namespace Prisma {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     vendor?: boolean | VendorDefaultArgs<ExtArgs>
     zone?: boolean | VendorBranch$zoneArgs<ExtArgs>
+    deliveryPlan?: boolean | VendorBranch$deliveryPlanArgs<ExtArgs>
     orders?: boolean | VendorBranch$ordersArgs<ExtArgs>
     portalUsers?: boolean | VendorBranch$portalUsersArgs<ExtArgs>
     _count?: boolean | VendorBranchCountOutputTypeDefaultArgs<ExtArgs>
@@ -109239,6 +109257,7 @@ export namespace Prisma {
     lat?: boolean
     lng?: boolean
     zoneId?: boolean
+    deliveryPlanId?: boolean
     foodicsBranchId?: boolean
     isActive?: boolean
     createdAt?: boolean
@@ -109246,6 +109265,7 @@ export namespace Prisma {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     vendor?: boolean | VendorDefaultArgs<ExtArgs>
     zone?: boolean | VendorBranch$zoneArgs<ExtArgs>
+    deliveryPlan?: boolean | VendorBranch$deliveryPlanArgs<ExtArgs>
   }, ExtArgs["result"]["vendorBranch"]>
 
   export type VendorBranchSelectScalar = {
@@ -109259,6 +109279,7 @@ export namespace Prisma {
     lat?: boolean
     lng?: boolean
     zoneId?: boolean
+    deliveryPlanId?: boolean
     foodicsBranchId?: boolean
     isActive?: boolean
     createdAt?: boolean
@@ -109269,6 +109290,7 @@ export namespace Prisma {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     vendor?: boolean | VendorDefaultArgs<ExtArgs>
     zone?: boolean | VendorBranch$zoneArgs<ExtArgs>
+    deliveryPlan?: boolean | VendorBranch$deliveryPlanArgs<ExtArgs>
     orders?: boolean | VendorBranch$ordersArgs<ExtArgs>
     portalUsers?: boolean | VendorBranch$portalUsersArgs<ExtArgs>
     _count?: boolean | VendorBranchCountOutputTypeDefaultArgs<ExtArgs>
@@ -109277,6 +109299,7 @@ export namespace Prisma {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     vendor?: boolean | VendorDefaultArgs<ExtArgs>
     zone?: boolean | VendorBranch$zoneArgs<ExtArgs>
+    deliveryPlan?: boolean | VendorBranch$deliveryPlanArgs<ExtArgs>
   }
 
   export type $VendorBranchPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -109285,6 +109308,7 @@ export namespace Prisma {
       tenant: Prisma.$TenantPayload<ExtArgs>
       vendor: Prisma.$VendorPayload<ExtArgs>
       zone: Prisma.$DeliveryZonePayload<ExtArgs> | null
+      deliveryPlan: Prisma.$DeliveryPlanPayload<ExtArgs> | null
       orders: Prisma.$DeliveryOrderPayload<ExtArgs>[]
       portalUsers: Prisma.$UserPayload<ExtArgs>[]
     }
@@ -109299,6 +109323,7 @@ export namespace Prisma {
       lat: Prisma.Decimal | null
       lng: Prisma.Decimal | null
       zoneId: string | null
+      deliveryPlanId: string | null
       foodicsBranchId: string | null
       isActive: boolean
       createdAt: Date
@@ -109670,6 +109695,7 @@ export namespace Prisma {
     tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     vendor<T extends VendorDefaultArgs<ExtArgs> = {}>(args?: Subset<T, VendorDefaultArgs<ExtArgs>>): Prisma__VendorClient<$Result.GetResult<Prisma.$VendorPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     zone<T extends VendorBranch$zoneArgs<ExtArgs> = {}>(args?: Subset<T, VendorBranch$zoneArgs<ExtArgs>>): Prisma__DeliveryZoneClient<$Result.GetResult<Prisma.$DeliveryZonePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    deliveryPlan<T extends VendorBranch$deliveryPlanArgs<ExtArgs> = {}>(args?: Subset<T, VendorBranch$deliveryPlanArgs<ExtArgs>>): Prisma__DeliveryPlanClient<$Result.GetResult<Prisma.$DeliveryPlanPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     orders<T extends VendorBranch$ordersArgs<ExtArgs> = {}>(args?: Subset<T, VendorBranch$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeliveryOrderPayload<ExtArgs>, T, "findMany"> | Null>
     portalUsers<T extends VendorBranch$portalUsersArgs<ExtArgs> = {}>(args?: Subset<T, VendorBranch$portalUsersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
     /**
@@ -109711,6 +109737,7 @@ export namespace Prisma {
     readonly lat: FieldRef<"VendorBranch", 'Decimal'>
     readonly lng: FieldRef<"VendorBranch", 'Decimal'>
     readonly zoneId: FieldRef<"VendorBranch", 'String'>
+    readonly deliveryPlanId: FieldRef<"VendorBranch", 'String'>
     readonly foodicsBranchId: FieldRef<"VendorBranch", 'String'>
     readonly isActive: FieldRef<"VendorBranch", 'Boolean'>
     readonly createdAt: FieldRef<"VendorBranch", 'DateTime'>
@@ -110045,6 +110072,21 @@ export namespace Prisma {
      */
     include?: DeliveryZoneInclude<ExtArgs> | null
     where?: DeliveryZoneWhereInput
+  }
+
+  /**
+   * VendorBranch.deliveryPlan
+   */
+  export type VendorBranch$deliveryPlanArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeliveryPlan
+     */
+    select?: DeliveryPlanSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeliveryPlanInclude<ExtArgs> | null
+    where?: DeliveryPlanWhereInput
   }
 
   /**
@@ -112340,8 +112382,18 @@ export namespace Prisma {
 
   export type AggregateDeliveryPlan = {
     _count: DeliveryPlanCountAggregateOutputType | null
+    _avg: DeliveryPlanAvgAggregateOutputType | null
+    _sum: DeliveryPlanSumAggregateOutputType | null
     _min: DeliveryPlanMinAggregateOutputType | null
     _max: DeliveryPlanMaxAggregateOutputType | null
+  }
+
+  export type DeliveryPlanAvgAggregateOutputType = {
+    intraZoneFeeKwd: Decimal | null
+  }
+
+  export type DeliveryPlanSumAggregateOutputType = {
+    intraZoneFeeKwd: Decimal | null
   }
 
   export type DeliveryPlanMinAggregateOutputType = {
@@ -112349,6 +112401,7 @@ export namespace Prisma {
     tenantId: string | null
     name: string | null
     type: $Enums.DeliveryPlanType | null
+    intraZoneFeeKwd: Decimal | null
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -112359,6 +112412,7 @@ export namespace Prisma {
     tenantId: string | null
     name: string | null
     type: $Enums.DeliveryPlanType | null
+    intraZoneFeeKwd: Decimal | null
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -112369,6 +112423,7 @@ export namespace Prisma {
     tenantId: number
     name: number
     type: number
+    intraZoneFeeKwd: number
     isActive: number
     createdAt: number
     updatedAt: number
@@ -112376,11 +112431,20 @@ export namespace Prisma {
   }
 
 
+  export type DeliveryPlanAvgAggregateInputType = {
+    intraZoneFeeKwd?: true
+  }
+
+  export type DeliveryPlanSumAggregateInputType = {
+    intraZoneFeeKwd?: true
+  }
+
   export type DeliveryPlanMinAggregateInputType = {
     id?: true
     tenantId?: true
     name?: true
     type?: true
+    intraZoneFeeKwd?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -112391,6 +112455,7 @@ export namespace Prisma {
     tenantId?: true
     name?: true
     type?: true
+    intraZoneFeeKwd?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -112401,6 +112466,7 @@ export namespace Prisma {
     tenantId?: true
     name?: true
     type?: true
+    intraZoneFeeKwd?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -112445,6 +112511,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: DeliveryPlanAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: DeliveryPlanSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: DeliveryPlanMinAggregateInputType
@@ -112475,6 +112553,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: DeliveryPlanCountAggregateInputType | true
+    _avg?: DeliveryPlanAvgAggregateInputType
+    _sum?: DeliveryPlanSumAggregateInputType
     _min?: DeliveryPlanMinAggregateInputType
     _max?: DeliveryPlanMaxAggregateInputType
   }
@@ -112484,10 +112564,13 @@ export namespace Prisma {
     tenantId: string
     name: string
     type: $Enums.DeliveryPlanType
+    intraZoneFeeKwd: Decimal | null
     isActive: boolean
     createdAt: Date
     updatedAt: Date
     _count: DeliveryPlanCountAggregateOutputType | null
+    _avg: DeliveryPlanAvgAggregateOutputType | null
+    _sum: DeliveryPlanSumAggregateOutputType | null
     _min: DeliveryPlanMinAggregateOutputType | null
     _max: DeliveryPlanMaxAggregateOutputType | null
   }
@@ -112511,6 +112594,7 @@ export namespace Prisma {
     tenantId?: boolean
     name?: boolean
     type?: boolean
+    intraZoneFeeKwd?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -112518,6 +112602,7 @@ export namespace Prisma {
     zoneRates?: boolean | DeliveryPlan$zoneRatesArgs<ExtArgs>
     kmTiers?: boolean | DeliveryPlan$kmTiersArgs<ExtArgs>
     vendors?: boolean | DeliveryPlan$vendorsArgs<ExtArgs>
+    branches?: boolean | DeliveryPlan$branchesArgs<ExtArgs>
     _count?: boolean | DeliveryPlanCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["deliveryPlan"]>
 
@@ -112526,6 +112611,7 @@ export namespace Prisma {
     tenantId?: boolean
     name?: boolean
     type?: boolean
+    intraZoneFeeKwd?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -112537,6 +112623,7 @@ export namespace Prisma {
     tenantId?: boolean
     name?: boolean
     type?: boolean
+    intraZoneFeeKwd?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -112547,6 +112634,7 @@ export namespace Prisma {
     zoneRates?: boolean | DeliveryPlan$zoneRatesArgs<ExtArgs>
     kmTiers?: boolean | DeliveryPlan$kmTiersArgs<ExtArgs>
     vendors?: boolean | DeliveryPlan$vendorsArgs<ExtArgs>
+    branches?: boolean | DeliveryPlan$branchesArgs<ExtArgs>
     _count?: boolean | DeliveryPlanCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type DeliveryPlanIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -112560,12 +112648,14 @@ export namespace Prisma {
       zoneRates: Prisma.$DeliveryPlanZoneRatePayload<ExtArgs>[]
       kmTiers: Prisma.$DeliveryPlanKmTierPayload<ExtArgs>[]
       vendors: Prisma.$VendorPayload<ExtArgs>[]
+      branches: Prisma.$VendorBranchPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       tenantId: string
       name: string
       type: $Enums.DeliveryPlanType
+      intraZoneFeeKwd: Prisma.Decimal | null
       isActive: boolean
       createdAt: Date
       updatedAt: Date
@@ -112937,6 +113027,7 @@ export namespace Prisma {
     zoneRates<T extends DeliveryPlan$zoneRatesArgs<ExtArgs> = {}>(args?: Subset<T, DeliveryPlan$zoneRatesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeliveryPlanZoneRatePayload<ExtArgs>, T, "findMany"> | Null>
     kmTiers<T extends DeliveryPlan$kmTiersArgs<ExtArgs> = {}>(args?: Subset<T, DeliveryPlan$kmTiersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeliveryPlanKmTierPayload<ExtArgs>, T, "findMany"> | Null>
     vendors<T extends DeliveryPlan$vendorsArgs<ExtArgs> = {}>(args?: Subset<T, DeliveryPlan$vendorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorPayload<ExtArgs>, T, "findMany"> | Null>
+    branches<T extends DeliveryPlan$branchesArgs<ExtArgs> = {}>(args?: Subset<T, DeliveryPlan$branchesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorBranchPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -112970,6 +113061,7 @@ export namespace Prisma {
     readonly tenantId: FieldRef<"DeliveryPlan", 'String'>
     readonly name: FieldRef<"DeliveryPlan", 'String'>
     readonly type: FieldRef<"DeliveryPlan", 'DeliveryPlanType'>
+    readonly intraZoneFeeKwd: FieldRef<"DeliveryPlan", 'Decimal'>
     readonly isActive: FieldRef<"DeliveryPlan", 'Boolean'>
     readonly createdAt: FieldRef<"DeliveryPlan", 'DateTime'>
     readonly updatedAt: FieldRef<"DeliveryPlan", 'DateTime'>
@@ -113348,6 +113440,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: VendorScalarFieldEnum | VendorScalarFieldEnum[]
+  }
+
+  /**
+   * DeliveryPlan.branches
+   */
+  export type DeliveryPlan$branchesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorBranch
+     */
+    select?: VendorBranchSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorBranchInclude<ExtArgs> | null
+    where?: VendorBranchWhereInput
+    orderBy?: VendorBranchOrderByWithRelationInput | VendorBranchOrderByWithRelationInput[]
+    cursor?: VendorBranchWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: VendorBranchScalarFieldEnum | VendorBranchScalarFieldEnum[]
   }
 
   /**
@@ -116406,6 +116518,7 @@ export namespace Prisma {
     maxSearchRadiusKm: number | null
     batchMaxDropKm: number | null
     batchMaxOrders: number | null
+    finishingSoonMinutes: number | null
   }
 
   export type FulfillmentSettingsSumAggregateOutputType = {
@@ -116420,6 +116533,7 @@ export namespace Prisma {
     maxSearchRadiusKm: number | null
     batchMaxDropKm: number | null
     batchMaxOrders: number | null
+    finishingSoonMinutes: number | null
   }
 
   export type FulfillmentSettingsMinAggregateOutputType = {
@@ -116437,6 +116551,7 @@ export namespace Prisma {
     batchingEnabled: boolean | null
     batchMaxDropKm: number | null
     batchMaxOrders: number | null
+    finishingSoonMinutes: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -116456,6 +116571,7 @@ export namespace Prisma {
     batchingEnabled: boolean | null
     batchMaxDropKm: number | null
     batchMaxOrders: number | null
+    finishingSoonMinutes: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -116475,6 +116591,7 @@ export namespace Prisma {
     batchingEnabled: number
     batchMaxDropKm: number
     batchMaxOrders: number
+    finishingSoonMinutes: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -116493,6 +116610,7 @@ export namespace Prisma {
     maxSearchRadiusKm?: true
     batchMaxDropKm?: true
     batchMaxOrders?: true
+    finishingSoonMinutes?: true
   }
 
   export type FulfillmentSettingsSumAggregateInputType = {
@@ -116507,6 +116625,7 @@ export namespace Prisma {
     maxSearchRadiusKm?: true
     batchMaxDropKm?: true
     batchMaxOrders?: true
+    finishingSoonMinutes?: true
   }
 
   export type FulfillmentSettingsMinAggregateInputType = {
@@ -116524,6 +116643,7 @@ export namespace Prisma {
     batchingEnabled?: true
     batchMaxDropKm?: true
     batchMaxOrders?: true
+    finishingSoonMinutes?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -116543,6 +116663,7 @@ export namespace Prisma {
     batchingEnabled?: true
     batchMaxDropKm?: true
     batchMaxOrders?: true
+    finishingSoonMinutes?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -116562,6 +116683,7 @@ export namespace Prisma {
     batchingEnabled?: true
     batchMaxDropKm?: true
     batchMaxOrders?: true
+    finishingSoonMinutes?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -116668,6 +116790,7 @@ export namespace Prisma {
     batchingEnabled: boolean
     batchMaxDropKm: number
     batchMaxOrders: number
+    finishingSoonMinutes: number
     createdAt: Date
     updatedAt: Date
     _count: FulfillmentSettingsCountAggregateOutputType | null
@@ -116706,6 +116829,7 @@ export namespace Prisma {
     batchingEnabled?: boolean
     batchMaxDropKm?: boolean
     batchMaxOrders?: boolean
+    finishingSoonMinutes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
@@ -116726,6 +116850,7 @@ export namespace Prisma {
     batchingEnabled?: boolean
     batchMaxDropKm?: boolean
     batchMaxOrders?: boolean
+    finishingSoonMinutes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
@@ -116746,6 +116871,7 @@ export namespace Prisma {
     batchingEnabled?: boolean
     batchMaxDropKm?: boolean
     batchMaxOrders?: boolean
+    finishingSoonMinutes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -116777,6 +116903,7 @@ export namespace Prisma {
       batchingEnabled: boolean
       batchMaxDropKm: number
       batchMaxOrders: number
+      finishingSoonMinutes: number
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["fulfillmentSettings"]>
@@ -117187,6 +117314,7 @@ export namespace Prisma {
     readonly batchingEnabled: FieldRef<"FulfillmentSettings", 'Boolean'>
     readonly batchMaxDropKm: FieldRef<"FulfillmentSettings", 'Float'>
     readonly batchMaxOrders: FieldRef<"FulfillmentSettings", 'Int'>
+    readonly finishingSoonMinutes: FieldRef<"FulfillmentSettings", 'Int'>
     readonly createdAt: FieldRef<"FulfillmentSettings", 'DateTime'>
     readonly updatedAt: FieldRef<"FulfillmentSettings", 'DateTime'>
   }
@@ -139235,6 +139363,7 @@ export namespace Prisma {
     lat: 'lat',
     lng: 'lng',
     zoneId: 'zoneId',
+    deliveryPlanId: 'deliveryPlanId',
     foodicsBranchId: 'foodicsBranchId',
     isActive: 'isActive',
     createdAt: 'createdAt',
@@ -139281,6 +139410,7 @@ export namespace Prisma {
     tenantId: 'tenantId',
     name: 'name',
     type: 'type',
+    intraZoneFeeKwd: 'intraZoneFeeKwd',
     isActive: 'isActive',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -139345,6 +139475,7 @@ export namespace Prisma {
     batchingEnabled: 'batchingEnabled',
     batchMaxDropKm: 'batchMaxDropKm',
     batchMaxOrders: 'batchMaxOrders',
+    finishingSoonMinutes: 'finishingSoonMinutes',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -140810,6 +140941,7 @@ export namespace Prisma {
     address: 'address',
     phone: 'phone',
     zoneId: 'zoneId',
+    deliveryPlanId: 'deliveryPlanId',
     foodicsBranchId: 'foodicsBranchId'
   };
 
@@ -151273,6 +151405,7 @@ export namespace Prisma {
     lat?: DecimalNullableFilter<"VendorBranch"> | Decimal | DecimalJsLike | number | string | null
     lng?: DecimalNullableFilter<"VendorBranch"> | Decimal | DecimalJsLike | number | string | null
     zoneId?: StringNullableFilter<"VendorBranch"> | string | null
+    deliveryPlanId?: StringNullableFilter<"VendorBranch"> | string | null
     foodicsBranchId?: StringNullableFilter<"VendorBranch"> | string | null
     isActive?: BoolFilter<"VendorBranch"> | boolean
     createdAt?: DateTimeFilter<"VendorBranch"> | Date | string
@@ -151280,6 +151413,7 @@ export namespace Prisma {
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     vendor?: XOR<VendorRelationFilter, VendorWhereInput>
     zone?: XOR<DeliveryZoneNullableRelationFilter, DeliveryZoneWhereInput> | null
+    deliveryPlan?: XOR<DeliveryPlanNullableRelationFilter, DeliveryPlanWhereInput> | null
     orders?: DeliveryOrderListRelationFilter
     portalUsers?: UserListRelationFilter
   }
@@ -151295,6 +151429,7 @@ export namespace Prisma {
     lat?: SortOrderInput | SortOrder
     lng?: SortOrderInput | SortOrder
     zoneId?: SortOrderInput | SortOrder
+    deliveryPlanId?: SortOrderInput | SortOrder
     foodicsBranchId?: SortOrderInput | SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
@@ -151302,6 +151437,7 @@ export namespace Prisma {
     tenant?: TenantOrderByWithRelationInput
     vendor?: VendorOrderByWithRelationInput
     zone?: DeliveryZoneOrderByWithRelationInput
+    deliveryPlan?: DeliveryPlanOrderByWithRelationInput
     orders?: DeliveryOrderOrderByRelationAggregateInput
     portalUsers?: UserOrderByRelationAggregateInput
     _relevance?: VendorBranchOrderByRelevanceInput
@@ -151322,6 +151458,7 @@ export namespace Prisma {
     lat?: DecimalNullableFilter<"VendorBranch"> | Decimal | DecimalJsLike | number | string | null
     lng?: DecimalNullableFilter<"VendorBranch"> | Decimal | DecimalJsLike | number | string | null
     zoneId?: StringNullableFilter<"VendorBranch"> | string | null
+    deliveryPlanId?: StringNullableFilter<"VendorBranch"> | string | null
     foodicsBranchId?: StringNullableFilter<"VendorBranch"> | string | null
     isActive?: BoolFilter<"VendorBranch"> | boolean
     createdAt?: DateTimeFilter<"VendorBranch"> | Date | string
@@ -151329,6 +151466,7 @@ export namespace Prisma {
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     vendor?: XOR<VendorRelationFilter, VendorWhereInput>
     zone?: XOR<DeliveryZoneNullableRelationFilter, DeliveryZoneWhereInput> | null
+    deliveryPlan?: XOR<DeliveryPlanNullableRelationFilter, DeliveryPlanWhereInput> | null
     orders?: DeliveryOrderListRelationFilter
     portalUsers?: UserListRelationFilter
   }, "id" | "tenantId_foodicsBranchId">
@@ -151344,6 +151482,7 @@ export namespace Prisma {
     lat?: SortOrderInput | SortOrder
     lng?: SortOrderInput | SortOrder
     zoneId?: SortOrderInput | SortOrder
+    deliveryPlanId?: SortOrderInput | SortOrder
     foodicsBranchId?: SortOrderInput | SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
@@ -151369,6 +151508,7 @@ export namespace Prisma {
     lat?: DecimalNullableWithAggregatesFilter<"VendorBranch"> | Decimal | DecimalJsLike | number | string | null
     lng?: DecimalNullableWithAggregatesFilter<"VendorBranch"> | Decimal | DecimalJsLike | number | string | null
     zoneId?: StringNullableWithAggregatesFilter<"VendorBranch"> | string | null
+    deliveryPlanId?: StringNullableWithAggregatesFilter<"VendorBranch"> | string | null
     foodicsBranchId?: StringNullableWithAggregatesFilter<"VendorBranch"> | string | null
     isActive?: BoolWithAggregatesFilter<"VendorBranch"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"VendorBranch"> | Date | string
@@ -151578,6 +151718,7 @@ export namespace Prisma {
     tenantId?: StringFilter<"DeliveryPlan"> | string
     name?: StringFilter<"DeliveryPlan"> | string
     type?: EnumDeliveryPlanTypeFilter<"DeliveryPlan"> | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: DecimalNullableFilter<"DeliveryPlan"> | Decimal | DecimalJsLike | number | string | null
     isActive?: BoolFilter<"DeliveryPlan"> | boolean
     createdAt?: DateTimeFilter<"DeliveryPlan"> | Date | string
     updatedAt?: DateTimeFilter<"DeliveryPlan"> | Date | string
@@ -151585,6 +151726,7 @@ export namespace Prisma {
     zoneRates?: DeliveryPlanZoneRateListRelationFilter
     kmTiers?: DeliveryPlanKmTierListRelationFilter
     vendors?: VendorListRelationFilter
+    branches?: VendorBranchListRelationFilter
   }
 
   export type DeliveryPlanOrderByWithRelationInput = {
@@ -151592,6 +151734,7 @@ export namespace Prisma {
     tenantId?: SortOrder
     name?: SortOrder
     type?: SortOrder
+    intraZoneFeeKwd?: SortOrderInput | SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -151599,6 +151742,7 @@ export namespace Prisma {
     zoneRates?: DeliveryPlanZoneRateOrderByRelationAggregateInput
     kmTiers?: DeliveryPlanKmTierOrderByRelationAggregateInput
     vendors?: VendorOrderByRelationAggregateInput
+    branches?: VendorBranchOrderByRelationAggregateInput
     _relevance?: DeliveryPlanOrderByRelevanceInput
   }
 
@@ -151611,6 +151755,7 @@ export namespace Prisma {
     tenantId?: StringFilter<"DeliveryPlan"> | string
     name?: StringFilter<"DeliveryPlan"> | string
     type?: EnumDeliveryPlanTypeFilter<"DeliveryPlan"> | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: DecimalNullableFilter<"DeliveryPlan"> | Decimal | DecimalJsLike | number | string | null
     isActive?: BoolFilter<"DeliveryPlan"> | boolean
     createdAt?: DateTimeFilter<"DeliveryPlan"> | Date | string
     updatedAt?: DateTimeFilter<"DeliveryPlan"> | Date | string
@@ -151618,6 +151763,7 @@ export namespace Prisma {
     zoneRates?: DeliveryPlanZoneRateListRelationFilter
     kmTiers?: DeliveryPlanKmTierListRelationFilter
     vendors?: VendorListRelationFilter
+    branches?: VendorBranchListRelationFilter
   }, "id" | "tenantId_name">
 
   export type DeliveryPlanOrderByWithAggregationInput = {
@@ -151625,12 +151771,15 @@ export namespace Prisma {
     tenantId?: SortOrder
     name?: SortOrder
     type?: SortOrder
+    intraZoneFeeKwd?: SortOrderInput | SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: DeliveryPlanCountOrderByAggregateInput
+    _avg?: DeliveryPlanAvgOrderByAggregateInput
     _max?: DeliveryPlanMaxOrderByAggregateInput
     _min?: DeliveryPlanMinOrderByAggregateInput
+    _sum?: DeliveryPlanSumOrderByAggregateInput
   }
 
   export type DeliveryPlanScalarWhereWithAggregatesInput = {
@@ -151641,6 +151790,7 @@ export namespace Prisma {
     tenantId?: StringWithAggregatesFilter<"DeliveryPlan"> | string
     name?: StringWithAggregatesFilter<"DeliveryPlan"> | string
     type?: EnumDeliveryPlanTypeWithAggregatesFilter<"DeliveryPlan"> | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: DecimalNullableWithAggregatesFilter<"DeliveryPlan"> | Decimal | DecimalJsLike | number | string | null
     isActive?: BoolWithAggregatesFilter<"DeliveryPlan"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"DeliveryPlan"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"DeliveryPlan"> | Date | string
@@ -151886,6 +152036,7 @@ export namespace Prisma {
     batchingEnabled?: BoolFilter<"FulfillmentSettings"> | boolean
     batchMaxDropKm?: FloatFilter<"FulfillmentSettings"> | number
     batchMaxOrders?: IntFilter<"FulfillmentSettings"> | number
+    finishingSoonMinutes?: IntFilter<"FulfillmentSettings"> | number
     createdAt?: DateTimeFilter<"FulfillmentSettings"> | Date | string
     updatedAt?: DateTimeFilter<"FulfillmentSettings"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
@@ -151906,6 +152057,7 @@ export namespace Prisma {
     batchingEnabled?: SortOrder
     batchMaxDropKm?: SortOrder
     batchMaxOrders?: SortOrder
+    finishingSoonMinutes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     tenant?: TenantOrderByWithRelationInput
@@ -151930,6 +152082,7 @@ export namespace Prisma {
     batchingEnabled?: BoolFilter<"FulfillmentSettings"> | boolean
     batchMaxDropKm?: FloatFilter<"FulfillmentSettings"> | number
     batchMaxOrders?: IntFilter<"FulfillmentSettings"> | number
+    finishingSoonMinutes?: IntFilter<"FulfillmentSettings"> | number
     createdAt?: DateTimeFilter<"FulfillmentSettings"> | Date | string
     updatedAt?: DateTimeFilter<"FulfillmentSettings"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
@@ -151950,6 +152103,7 @@ export namespace Prisma {
     batchingEnabled?: SortOrder
     batchMaxDropKm?: SortOrder
     batchMaxOrders?: SortOrder
+    finishingSoonMinutes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: FulfillmentSettingsCountOrderByAggregateInput
@@ -151977,6 +152131,7 @@ export namespace Prisma {
     batchingEnabled?: BoolWithAggregatesFilter<"FulfillmentSettings"> | boolean
     batchMaxDropKm?: FloatWithAggregatesFilter<"FulfillmentSettings"> | number
     batchMaxOrders?: IntWithAggregatesFilter<"FulfillmentSettings"> | number
+    finishingSoonMinutes?: IntWithAggregatesFilter<"FulfillmentSettings"> | number
     createdAt?: DateTimeWithAggregatesFilter<"FulfillmentSettings"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"FulfillmentSettings"> | Date | string
   }
@@ -164084,6 +164239,7 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutVendorBranchesInput
     vendor: VendorCreateNestedOneWithoutBranchesInput
     zone?: DeliveryZoneCreateNestedOneWithoutBranchesInput
+    deliveryPlan?: DeliveryPlanCreateNestedOneWithoutBranchesInput
     orders?: DeliveryOrderCreateNestedManyWithoutBranchInput
     portalUsers?: UserCreateNestedManyWithoutBranchInput
   }
@@ -164099,6 +164255,7 @@ export namespace Prisma {
     lat?: Decimal | DecimalJsLike | number | string | null
     lng?: Decimal | DecimalJsLike | number | string | null
     zoneId?: string | null
+    deliveryPlanId?: string | null
     foodicsBranchId?: string | null
     isActive?: boolean
     createdAt?: Date | string
@@ -164122,6 +164279,7 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutVendorBranchesNestedInput
     vendor?: VendorUpdateOneRequiredWithoutBranchesNestedInput
     zone?: DeliveryZoneUpdateOneWithoutBranchesNestedInput
+    deliveryPlan?: DeliveryPlanUpdateOneWithoutBranchesNestedInput
     orders?: DeliveryOrderUpdateManyWithoutBranchNestedInput
     portalUsers?: UserUpdateManyWithoutBranchNestedInput
   }
@@ -164137,6 +164295,7 @@ export namespace Prisma {
     lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     zoneId?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -164156,6 +164315,7 @@ export namespace Prisma {
     lat?: Decimal | DecimalJsLike | number | string | null
     lng?: Decimal | DecimalJsLike | number | string | null
     zoneId?: string | null
+    deliveryPlanId?: string | null
     foodicsBranchId?: string | null
     isActive?: boolean
     createdAt?: Date | string
@@ -164187,6 +164347,7 @@ export namespace Prisma {
     lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     zoneId?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -164403,6 +164564,7 @@ export namespace Prisma {
     id?: string
     name: string
     type: $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: Decimal | DecimalJsLike | number | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -164410,6 +164572,7 @@ export namespace Prisma {
     zoneRates?: DeliveryPlanZoneRateCreateNestedManyWithoutPlanInput
     kmTiers?: DeliveryPlanKmTierCreateNestedManyWithoutPlanInput
     vendors?: VendorCreateNestedManyWithoutDeliveryPlanInput
+    branches?: VendorBranchCreateNestedManyWithoutDeliveryPlanInput
   }
 
   export type DeliveryPlanUncheckedCreateInput = {
@@ -164417,18 +164580,21 @@ export namespace Prisma {
     tenantId: string
     name: string
     type: $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: Decimal | DecimalJsLike | number | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     zoneRates?: DeliveryPlanZoneRateUncheckedCreateNestedManyWithoutPlanInput
     kmTiers?: DeliveryPlanKmTierUncheckedCreateNestedManyWithoutPlanInput
     vendors?: VendorUncheckedCreateNestedManyWithoutDeliveryPlanInput
+    branches?: VendorBranchUncheckedCreateNestedManyWithoutDeliveryPlanInput
   }
 
   export type DeliveryPlanUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumDeliveryPlanTypeFieldUpdateOperationsInput | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -164436,6 +164602,7 @@ export namespace Prisma {
     zoneRates?: DeliveryPlanZoneRateUpdateManyWithoutPlanNestedInput
     kmTiers?: DeliveryPlanKmTierUpdateManyWithoutPlanNestedInput
     vendors?: VendorUpdateManyWithoutDeliveryPlanNestedInput
+    branches?: VendorBranchUpdateManyWithoutDeliveryPlanNestedInput
   }
 
   export type DeliveryPlanUncheckedUpdateInput = {
@@ -164443,12 +164610,14 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumDeliveryPlanTypeFieldUpdateOperationsInput | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     zoneRates?: DeliveryPlanZoneRateUncheckedUpdateManyWithoutPlanNestedInput
     kmTiers?: DeliveryPlanKmTierUncheckedUpdateManyWithoutPlanNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutDeliveryPlanNestedInput
+    branches?: VendorBranchUncheckedUpdateManyWithoutDeliveryPlanNestedInput
   }
 
   export type DeliveryPlanCreateManyInput = {
@@ -164456,6 +164625,7 @@ export namespace Prisma {
     tenantId: string
     name: string
     type: $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: Decimal | DecimalJsLike | number | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -164465,6 +164635,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumDeliveryPlanTypeFieldUpdateOperationsInput | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -164475,6 +164646,7 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumDeliveryPlanTypeFieldUpdateOperationsInput | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -164713,6 +164885,7 @@ export namespace Prisma {
     batchingEnabled?: boolean
     batchMaxDropKm?: number
     batchMaxOrders?: number
+    finishingSoonMinutes?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutFulfillmentSettingsInput
@@ -164733,6 +164906,7 @@ export namespace Prisma {
     batchingEnabled?: boolean
     batchMaxDropKm?: number
     batchMaxOrders?: number
+    finishingSoonMinutes?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -164751,6 +164925,7 @@ export namespace Prisma {
     batchingEnabled?: BoolFieldUpdateOperationsInput | boolean
     batchMaxDropKm?: FloatFieldUpdateOperationsInput | number
     batchMaxOrders?: IntFieldUpdateOperationsInput | number
+    finishingSoonMinutes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutFulfillmentSettingsNestedInput
@@ -164771,6 +164946,7 @@ export namespace Prisma {
     batchingEnabled?: BoolFieldUpdateOperationsInput | boolean
     batchMaxDropKm?: FloatFieldUpdateOperationsInput | number
     batchMaxOrders?: IntFieldUpdateOperationsInput | number
+    finishingSoonMinutes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -164790,6 +164966,7 @@ export namespace Prisma {
     batchingEnabled?: boolean
     batchMaxDropKm?: number
     batchMaxOrders?: number
+    finishingSoonMinutes?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -164808,6 +164985,7 @@ export namespace Prisma {
     batchingEnabled?: BoolFieldUpdateOperationsInput | boolean
     batchMaxDropKm?: FloatFieldUpdateOperationsInput | number
     batchMaxOrders?: IntFieldUpdateOperationsInput | number
+    finishingSoonMinutes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -164827,6 +165005,7 @@ export namespace Prisma {
     batchingEnabled?: BoolFieldUpdateOperationsInput | boolean
     batchMaxDropKm?: FloatFieldUpdateOperationsInput | number
     batchMaxOrders?: IntFieldUpdateOperationsInput | number
+    finishingSoonMinutes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -174583,6 +174762,7 @@ export namespace Prisma {
     lat?: SortOrder
     lng?: SortOrder
     zoneId?: SortOrder
+    deliveryPlanId?: SortOrder
     foodicsBranchId?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
@@ -174605,6 +174785,7 @@ export namespace Prisma {
     lat?: SortOrder
     lng?: SortOrder
     zoneId?: SortOrder
+    deliveryPlanId?: SortOrder
     foodicsBranchId?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
@@ -174622,6 +174803,7 @@ export namespace Prisma {
     lat?: SortOrder
     lng?: SortOrder
     zoneId?: SortOrder
+    deliveryPlanId?: SortOrder
     foodicsBranchId?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
@@ -174796,9 +174978,14 @@ export namespace Prisma {
     tenantId?: SortOrder
     name?: SortOrder
     type?: SortOrder
+    intraZoneFeeKwd?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type DeliveryPlanAvgOrderByAggregateInput = {
+    intraZoneFeeKwd?: SortOrder
   }
 
   export type DeliveryPlanMaxOrderByAggregateInput = {
@@ -174806,6 +174993,7 @@ export namespace Prisma {
     tenantId?: SortOrder
     name?: SortOrder
     type?: SortOrder
+    intraZoneFeeKwd?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -174816,9 +175004,14 @@ export namespace Prisma {
     tenantId?: SortOrder
     name?: SortOrder
     type?: SortOrder
+    intraZoneFeeKwd?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type DeliveryPlanSumOrderByAggregateInput = {
+    intraZoneFeeKwd?: SortOrder
   }
 
   export type EnumDeliveryPlanTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -175011,6 +175204,7 @@ export namespace Prisma {
     batchingEnabled?: SortOrder
     batchMaxDropKm?: SortOrder
     batchMaxOrders?: SortOrder
+    finishingSoonMinutes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -175027,6 +175221,7 @@ export namespace Prisma {
     maxSearchRadiusKm?: SortOrder
     batchMaxDropKm?: SortOrder
     batchMaxOrders?: SortOrder
+    finishingSoonMinutes?: SortOrder
   }
 
   export type FulfillmentSettingsMaxOrderByAggregateInput = {
@@ -175044,6 +175239,7 @@ export namespace Prisma {
     batchingEnabled?: SortOrder
     batchMaxDropKm?: SortOrder
     batchMaxOrders?: SortOrder
+    finishingSoonMinutes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -175063,6 +175259,7 @@ export namespace Prisma {
     batchingEnabled?: SortOrder
     batchMaxDropKm?: SortOrder
     batchMaxOrders?: SortOrder
+    finishingSoonMinutes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -175079,6 +175276,7 @@ export namespace Prisma {
     maxSearchRadiusKm?: SortOrder
     batchMaxDropKm?: SortOrder
     batchMaxOrders?: SortOrder
+    finishingSoonMinutes?: SortOrder
   }
 
   export type EnumDeliveryOrderSourceFilter<$PrismaModel = never> = {
@@ -188146,6 +188344,12 @@ export namespace Prisma {
     connect?: DeliveryZoneWhereUniqueInput
   }
 
+  export type DeliveryPlanCreateNestedOneWithoutBranchesInput = {
+    create?: XOR<DeliveryPlanCreateWithoutBranchesInput, DeliveryPlanUncheckedCreateWithoutBranchesInput>
+    connectOrCreate?: DeliveryPlanCreateOrConnectWithoutBranchesInput
+    connect?: DeliveryPlanWhereUniqueInput
+  }
+
   export type DeliveryOrderCreateNestedManyWithoutBranchInput = {
     create?: XOR<DeliveryOrderCreateWithoutBranchInput, DeliveryOrderUncheckedCreateWithoutBranchInput> | DeliveryOrderCreateWithoutBranchInput[] | DeliveryOrderUncheckedCreateWithoutBranchInput[]
     connectOrCreate?: DeliveryOrderCreateOrConnectWithoutBranchInput | DeliveryOrderCreateOrConnectWithoutBranchInput[]
@@ -188198,6 +188402,16 @@ export namespace Prisma {
     delete?: DeliveryZoneWhereInput | boolean
     connect?: DeliveryZoneWhereUniqueInput
     update?: XOR<XOR<DeliveryZoneUpdateToOneWithWhereWithoutBranchesInput, DeliveryZoneUpdateWithoutBranchesInput>, DeliveryZoneUncheckedUpdateWithoutBranchesInput>
+  }
+
+  export type DeliveryPlanUpdateOneWithoutBranchesNestedInput = {
+    create?: XOR<DeliveryPlanCreateWithoutBranchesInput, DeliveryPlanUncheckedCreateWithoutBranchesInput>
+    connectOrCreate?: DeliveryPlanCreateOrConnectWithoutBranchesInput
+    upsert?: DeliveryPlanUpsertWithoutBranchesInput
+    disconnect?: DeliveryPlanWhereInput | boolean
+    delete?: DeliveryPlanWhereInput | boolean
+    connect?: DeliveryPlanWhereUniqueInput
+    update?: XOR<XOR<DeliveryPlanUpdateToOneWithWhereWithoutBranchesInput, DeliveryPlanUpdateWithoutBranchesInput>, DeliveryPlanUncheckedUpdateWithoutBranchesInput>
   }
 
   export type DeliveryOrderUpdateManyWithoutBranchNestedInput = {
@@ -188633,6 +188847,13 @@ export namespace Prisma {
     connect?: VendorWhereUniqueInput | VendorWhereUniqueInput[]
   }
 
+  export type VendorBranchCreateNestedManyWithoutDeliveryPlanInput = {
+    create?: XOR<VendorBranchCreateWithoutDeliveryPlanInput, VendorBranchUncheckedCreateWithoutDeliveryPlanInput> | VendorBranchCreateWithoutDeliveryPlanInput[] | VendorBranchUncheckedCreateWithoutDeliveryPlanInput[]
+    connectOrCreate?: VendorBranchCreateOrConnectWithoutDeliveryPlanInput | VendorBranchCreateOrConnectWithoutDeliveryPlanInput[]
+    createMany?: VendorBranchCreateManyDeliveryPlanInputEnvelope
+    connect?: VendorBranchWhereUniqueInput | VendorBranchWhereUniqueInput[]
+  }
+
   export type DeliveryPlanZoneRateUncheckedCreateNestedManyWithoutPlanInput = {
     create?: XOR<DeliveryPlanZoneRateCreateWithoutPlanInput, DeliveryPlanZoneRateUncheckedCreateWithoutPlanInput> | DeliveryPlanZoneRateCreateWithoutPlanInput[] | DeliveryPlanZoneRateUncheckedCreateWithoutPlanInput[]
     connectOrCreate?: DeliveryPlanZoneRateCreateOrConnectWithoutPlanInput | DeliveryPlanZoneRateCreateOrConnectWithoutPlanInput[]
@@ -188652,6 +188873,13 @@ export namespace Prisma {
     connectOrCreate?: VendorCreateOrConnectWithoutDeliveryPlanInput | VendorCreateOrConnectWithoutDeliveryPlanInput[]
     createMany?: VendorCreateManyDeliveryPlanInputEnvelope
     connect?: VendorWhereUniqueInput | VendorWhereUniqueInput[]
+  }
+
+  export type VendorBranchUncheckedCreateNestedManyWithoutDeliveryPlanInput = {
+    create?: XOR<VendorBranchCreateWithoutDeliveryPlanInput, VendorBranchUncheckedCreateWithoutDeliveryPlanInput> | VendorBranchCreateWithoutDeliveryPlanInput[] | VendorBranchUncheckedCreateWithoutDeliveryPlanInput[]
+    connectOrCreate?: VendorBranchCreateOrConnectWithoutDeliveryPlanInput | VendorBranchCreateOrConnectWithoutDeliveryPlanInput[]
+    createMany?: VendorBranchCreateManyDeliveryPlanInputEnvelope
+    connect?: VendorBranchWhereUniqueInput | VendorBranchWhereUniqueInput[]
   }
 
   export type EnumDeliveryPlanTypeFieldUpdateOperationsInput = {
@@ -188708,6 +188936,20 @@ export namespace Prisma {
     deleteMany?: VendorScalarWhereInput | VendorScalarWhereInput[]
   }
 
+  export type VendorBranchUpdateManyWithoutDeliveryPlanNestedInput = {
+    create?: XOR<VendorBranchCreateWithoutDeliveryPlanInput, VendorBranchUncheckedCreateWithoutDeliveryPlanInput> | VendorBranchCreateWithoutDeliveryPlanInput[] | VendorBranchUncheckedCreateWithoutDeliveryPlanInput[]
+    connectOrCreate?: VendorBranchCreateOrConnectWithoutDeliveryPlanInput | VendorBranchCreateOrConnectWithoutDeliveryPlanInput[]
+    upsert?: VendorBranchUpsertWithWhereUniqueWithoutDeliveryPlanInput | VendorBranchUpsertWithWhereUniqueWithoutDeliveryPlanInput[]
+    createMany?: VendorBranchCreateManyDeliveryPlanInputEnvelope
+    set?: VendorBranchWhereUniqueInput | VendorBranchWhereUniqueInput[]
+    disconnect?: VendorBranchWhereUniqueInput | VendorBranchWhereUniqueInput[]
+    delete?: VendorBranchWhereUniqueInput | VendorBranchWhereUniqueInput[]
+    connect?: VendorBranchWhereUniqueInput | VendorBranchWhereUniqueInput[]
+    update?: VendorBranchUpdateWithWhereUniqueWithoutDeliveryPlanInput | VendorBranchUpdateWithWhereUniqueWithoutDeliveryPlanInput[]
+    updateMany?: VendorBranchUpdateManyWithWhereWithoutDeliveryPlanInput | VendorBranchUpdateManyWithWhereWithoutDeliveryPlanInput[]
+    deleteMany?: VendorBranchScalarWhereInput | VendorBranchScalarWhereInput[]
+  }
+
   export type DeliveryPlanZoneRateUncheckedUpdateManyWithoutPlanNestedInput = {
     create?: XOR<DeliveryPlanZoneRateCreateWithoutPlanInput, DeliveryPlanZoneRateUncheckedCreateWithoutPlanInput> | DeliveryPlanZoneRateCreateWithoutPlanInput[] | DeliveryPlanZoneRateUncheckedCreateWithoutPlanInput[]
     connectOrCreate?: DeliveryPlanZoneRateCreateOrConnectWithoutPlanInput | DeliveryPlanZoneRateCreateOrConnectWithoutPlanInput[]
@@ -188748,6 +188990,20 @@ export namespace Prisma {
     update?: VendorUpdateWithWhereUniqueWithoutDeliveryPlanInput | VendorUpdateWithWhereUniqueWithoutDeliveryPlanInput[]
     updateMany?: VendorUpdateManyWithWhereWithoutDeliveryPlanInput | VendorUpdateManyWithWhereWithoutDeliveryPlanInput[]
     deleteMany?: VendorScalarWhereInput | VendorScalarWhereInput[]
+  }
+
+  export type VendorBranchUncheckedUpdateManyWithoutDeliveryPlanNestedInput = {
+    create?: XOR<VendorBranchCreateWithoutDeliveryPlanInput, VendorBranchUncheckedCreateWithoutDeliveryPlanInput> | VendorBranchCreateWithoutDeliveryPlanInput[] | VendorBranchUncheckedCreateWithoutDeliveryPlanInput[]
+    connectOrCreate?: VendorBranchCreateOrConnectWithoutDeliveryPlanInput | VendorBranchCreateOrConnectWithoutDeliveryPlanInput[]
+    upsert?: VendorBranchUpsertWithWhereUniqueWithoutDeliveryPlanInput | VendorBranchUpsertWithWhereUniqueWithoutDeliveryPlanInput[]
+    createMany?: VendorBranchCreateManyDeliveryPlanInputEnvelope
+    set?: VendorBranchWhereUniqueInput | VendorBranchWhereUniqueInput[]
+    disconnect?: VendorBranchWhereUniqueInput | VendorBranchWhereUniqueInput[]
+    delete?: VendorBranchWhereUniqueInput | VendorBranchWhereUniqueInput[]
+    connect?: VendorBranchWhereUniqueInput | VendorBranchWhereUniqueInput[]
+    update?: VendorBranchUpdateWithWhereUniqueWithoutDeliveryPlanInput | VendorBranchUpdateWithWhereUniqueWithoutDeliveryPlanInput[]
+    updateMany?: VendorBranchUpdateManyWithWhereWithoutDeliveryPlanInput | VendorBranchUpdateManyWithWhereWithoutDeliveryPlanInput[]
+    deleteMany?: VendorBranchScalarWhereInput | VendorBranchScalarWhereInput[]
   }
 
   export type DeliveryPlanCreateNestedOneWithoutZoneRatesInput = {
@@ -194467,6 +194723,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     vendor: VendorCreateNestedOneWithoutBranchesInput
     zone?: DeliveryZoneCreateNestedOneWithoutBranchesInput
+    deliveryPlan?: DeliveryPlanCreateNestedOneWithoutBranchesInput
     orders?: DeliveryOrderCreateNestedManyWithoutBranchInput
     portalUsers?: UserCreateNestedManyWithoutBranchInput
   }
@@ -194481,6 +194738,7 @@ export namespace Prisma {
     lat?: Decimal | DecimalJsLike | number | string | null
     lng?: Decimal | DecimalJsLike | number | string | null
     zoneId?: string | null
+    deliveryPlanId?: string | null
     foodicsBranchId?: string | null
     isActive?: boolean
     createdAt?: Date | string
@@ -194595,6 +194853,7 @@ export namespace Prisma {
     batchingEnabled?: boolean
     batchMaxDropKm?: number
     batchMaxOrders?: number
+    finishingSoonMinutes?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -194613,6 +194872,7 @@ export namespace Prisma {
     batchingEnabled?: boolean
     batchMaxDropKm?: number
     batchMaxOrders?: number
+    finishingSoonMinutes?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -195246,24 +195506,28 @@ export namespace Prisma {
     id?: string
     name: string
     type: $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: Decimal | DecimalJsLike | number | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     zoneRates?: DeliveryPlanZoneRateCreateNestedManyWithoutPlanInput
     kmTiers?: DeliveryPlanKmTierCreateNestedManyWithoutPlanInput
     vendors?: VendorCreateNestedManyWithoutDeliveryPlanInput
+    branches?: VendorBranchCreateNestedManyWithoutDeliveryPlanInput
   }
 
   export type DeliveryPlanUncheckedCreateWithoutTenantInput = {
     id?: string
     name: string
     type: $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: Decimal | DecimalJsLike | number | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     zoneRates?: DeliveryPlanZoneRateUncheckedCreateNestedManyWithoutPlanInput
     kmTiers?: DeliveryPlanKmTierUncheckedCreateNestedManyWithoutPlanInput
     vendors?: VendorUncheckedCreateNestedManyWithoutDeliveryPlanInput
+    branches?: VendorBranchUncheckedCreateNestedManyWithoutDeliveryPlanInput
   }
 
   export type DeliveryPlanCreateOrConnectWithoutTenantInput = {
@@ -197996,6 +198260,7 @@ export namespace Prisma {
     lat?: DecimalNullableFilter<"VendorBranch"> | Decimal | DecimalJsLike | number | string | null
     lng?: DecimalNullableFilter<"VendorBranch"> | Decimal | DecimalJsLike | number | string | null
     zoneId?: StringNullableFilter<"VendorBranch"> | string | null
+    deliveryPlanId?: StringNullableFilter<"VendorBranch"> | string | null
     foodicsBranchId?: StringNullableFilter<"VendorBranch"> | string | null
     isActive?: BoolFilter<"VendorBranch"> | boolean
     createdAt?: DateTimeFilter<"VendorBranch"> | Date | string
@@ -198091,6 +198356,7 @@ export namespace Prisma {
     batchingEnabled?: BoolFieldUpdateOperationsInput | boolean
     batchMaxDropKm?: FloatFieldUpdateOperationsInput | number
     batchMaxOrders?: IntFieldUpdateOperationsInput | number
+    finishingSoonMinutes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -198109,6 +198375,7 @@ export namespace Prisma {
     batchingEnabled?: BoolFieldUpdateOperationsInput | boolean
     batchMaxDropKm?: FloatFieldUpdateOperationsInput | number
     batchMaxOrders?: IntFieldUpdateOperationsInput | number
+    finishingSoonMinutes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -198663,6 +198930,7 @@ export namespace Prisma {
     tenantId?: StringFilter<"DeliveryPlan"> | string
     name?: StringFilter<"DeliveryPlan"> | string
     type?: EnumDeliveryPlanTypeFilter<"DeliveryPlan"> | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: DecimalNullableFilter<"DeliveryPlan"> | Decimal | DecimalJsLike | number | string | null
     isActive?: BoolFilter<"DeliveryPlan"> | boolean
     createdAt?: DateTimeFilter<"DeliveryPlan"> | Date | string
     updatedAt?: DateTimeFilter<"DeliveryPlan"> | Date | string
@@ -200945,6 +201213,7 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutVendorBranchesInput
     vendor: VendorCreateNestedOneWithoutBranchesInput
     zone?: DeliveryZoneCreateNestedOneWithoutBranchesInput
+    deliveryPlan?: DeliveryPlanCreateNestedOneWithoutBranchesInput
     orders?: DeliveryOrderCreateNestedManyWithoutBranchInput
   }
 
@@ -200959,6 +201228,7 @@ export namespace Prisma {
     lat?: Decimal | DecimalJsLike | number | string | null
     lng?: Decimal | DecimalJsLike | number | string | null
     zoneId?: string | null
+    deliveryPlanId?: string | null
     foodicsBranchId?: string | null
     isActive?: boolean
     createdAt?: Date | string
@@ -202213,6 +202483,7 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutVendorBranchesNestedInput
     vendor?: VendorUpdateOneRequiredWithoutBranchesNestedInput
     zone?: DeliveryZoneUpdateOneWithoutBranchesNestedInput
+    deliveryPlan?: DeliveryPlanUpdateOneWithoutBranchesNestedInput
     orders?: DeliveryOrderUpdateManyWithoutBranchNestedInput
   }
 
@@ -202227,6 +202498,7 @@ export namespace Prisma {
     lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     zoneId?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -260559,6 +260831,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutVendorBranchesInput
     zone?: DeliveryZoneCreateNestedOneWithoutBranchesInput
+    deliveryPlan?: DeliveryPlanCreateNestedOneWithoutBranchesInput
     orders?: DeliveryOrderCreateNestedManyWithoutBranchInput
     portalUsers?: UserCreateNestedManyWithoutBranchInput
   }
@@ -260573,6 +260846,7 @@ export namespace Prisma {
     lat?: Decimal | DecimalJsLike | number | string | null
     lng?: Decimal | DecimalJsLike | number | string | null
     zoneId?: string | null
+    deliveryPlanId?: string | null
     foodicsBranchId?: string | null
     isActive?: boolean
     createdAt?: Date | string
@@ -260934,12 +261208,14 @@ export namespace Prisma {
     id?: string
     name: string
     type: $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: Decimal | DecimalJsLike | number | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutDeliveryPlansInput
     zoneRates?: DeliveryPlanZoneRateCreateNestedManyWithoutPlanInput
     kmTiers?: DeliveryPlanKmTierCreateNestedManyWithoutPlanInput
+    branches?: VendorBranchCreateNestedManyWithoutDeliveryPlanInput
   }
 
   export type DeliveryPlanUncheckedCreateWithoutVendorsInput = {
@@ -260947,11 +261223,13 @@ export namespace Prisma {
     tenantId: string
     name: string
     type: $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: Decimal | DecimalJsLike | number | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     zoneRates?: DeliveryPlanZoneRateUncheckedCreateNestedManyWithoutPlanInput
     kmTiers?: DeliveryPlanKmTierUncheckedCreateNestedManyWithoutPlanInput
+    branches?: VendorBranchUncheckedCreateNestedManyWithoutDeliveryPlanInput
   }
 
   export type DeliveryPlanCreateOrConnectWithoutVendorsInput = {
@@ -261364,12 +261642,14 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumDeliveryPlanTypeFieldUpdateOperationsInput | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutDeliveryPlansNestedInput
     zoneRates?: DeliveryPlanZoneRateUpdateManyWithoutPlanNestedInput
     kmTiers?: DeliveryPlanKmTierUpdateManyWithoutPlanNestedInput
+    branches?: VendorBranchUpdateManyWithoutDeliveryPlanNestedInput
   }
 
   export type DeliveryPlanUncheckedUpdateWithoutVendorsInput = {
@@ -261377,11 +261657,13 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumDeliveryPlanTypeFieldUpdateOperationsInput | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     zoneRates?: DeliveryPlanZoneRateUncheckedUpdateManyWithoutPlanNestedInput
     kmTiers?: DeliveryPlanKmTierUncheckedUpdateManyWithoutPlanNestedInput
+    branches?: VendorBranchUncheckedUpdateManyWithoutDeliveryPlanNestedInput
   }
 
   export type AccountManagerVendorUpsertWithWhereUniqueWithoutVendorInput = {
@@ -261727,6 +262009,39 @@ export namespace Prisma {
   export type DeliveryZoneCreateOrConnectWithoutBranchesInput = {
     where: DeliveryZoneWhereUniqueInput
     create: XOR<DeliveryZoneCreateWithoutBranchesInput, DeliveryZoneUncheckedCreateWithoutBranchesInput>
+  }
+
+  export type DeliveryPlanCreateWithoutBranchesInput = {
+    id?: string
+    name: string
+    type: $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutDeliveryPlansInput
+    zoneRates?: DeliveryPlanZoneRateCreateNestedManyWithoutPlanInput
+    kmTiers?: DeliveryPlanKmTierCreateNestedManyWithoutPlanInput
+    vendors?: VendorCreateNestedManyWithoutDeliveryPlanInput
+  }
+
+  export type DeliveryPlanUncheckedCreateWithoutBranchesInput = {
+    id?: string
+    tenantId: string
+    name: string
+    type: $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    zoneRates?: DeliveryPlanZoneRateUncheckedCreateNestedManyWithoutPlanInput
+    kmTiers?: DeliveryPlanKmTierUncheckedCreateNestedManyWithoutPlanInput
+    vendors?: VendorUncheckedCreateNestedManyWithoutDeliveryPlanInput
+  }
+
+  export type DeliveryPlanCreateOrConnectWithoutBranchesInput = {
+    where: DeliveryPlanWhereUniqueInput
+    create: XOR<DeliveryPlanCreateWithoutBranchesInput, DeliveryPlanUncheckedCreateWithoutBranchesInput>
   }
 
   export type DeliveryOrderCreateWithoutBranchInput = {
@@ -262270,6 +262585,45 @@ export namespace Prisma {
     planDestRates?: DeliveryPlanZoneRateUncheckedUpdateManyWithoutDestZoneNestedInput
   }
 
+  export type DeliveryPlanUpsertWithoutBranchesInput = {
+    update: XOR<DeliveryPlanUpdateWithoutBranchesInput, DeliveryPlanUncheckedUpdateWithoutBranchesInput>
+    create: XOR<DeliveryPlanCreateWithoutBranchesInput, DeliveryPlanUncheckedCreateWithoutBranchesInput>
+    where?: DeliveryPlanWhereInput
+  }
+
+  export type DeliveryPlanUpdateToOneWithWhereWithoutBranchesInput = {
+    where?: DeliveryPlanWhereInput
+    data: XOR<DeliveryPlanUpdateWithoutBranchesInput, DeliveryPlanUncheckedUpdateWithoutBranchesInput>
+  }
+
+  export type DeliveryPlanUpdateWithoutBranchesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumDeliveryPlanTypeFieldUpdateOperationsInput | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutDeliveryPlansNestedInput
+    zoneRates?: DeliveryPlanZoneRateUpdateManyWithoutPlanNestedInput
+    kmTiers?: DeliveryPlanKmTierUpdateManyWithoutPlanNestedInput
+    vendors?: VendorUpdateManyWithoutDeliveryPlanNestedInput
+  }
+
+  export type DeliveryPlanUncheckedUpdateWithoutBranchesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumDeliveryPlanTypeFieldUpdateOperationsInput | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    zoneRates?: DeliveryPlanZoneRateUncheckedUpdateManyWithoutPlanNestedInput
+    kmTiers?: DeliveryPlanKmTierUncheckedUpdateManyWithoutPlanNestedInput
+    vendors?: VendorUncheckedUpdateManyWithoutDeliveryPlanNestedInput
+  }
+
   export type DeliveryOrderUpsertWithWhereUniqueWithoutBranchInput = {
     where: DeliveryOrderWhereUniqueInput
     update: XOR<DeliveryOrderUpdateWithoutBranchInput, DeliveryOrderUncheckedUpdateWithoutBranchInput>
@@ -262545,6 +262899,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutVendorBranchesInput
     vendor: VendorCreateNestedOneWithoutBranchesInput
+    deliveryPlan?: DeliveryPlanCreateNestedOneWithoutBranchesInput
     orders?: DeliveryOrderCreateNestedManyWithoutBranchInput
     portalUsers?: UserCreateNestedManyWithoutBranchInput
   }
@@ -262559,6 +262914,7 @@ export namespace Prisma {
     phone?: string | null
     lat?: Decimal | DecimalJsLike | number | string | null
     lng?: Decimal | DecimalJsLike | number | string | null
+    deliveryPlanId?: string | null
     foodicsBranchId?: string | null
     isActive?: boolean
     createdAt?: Date | string
@@ -264291,6 +264647,54 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type VendorBranchCreateWithoutDeliveryPlanInput = {
+    id?: string
+    name: string
+    nameAr?: string | null
+    address?: string | null
+    phone?: string | null
+    lat?: Decimal | DecimalJsLike | number | string | null
+    lng?: Decimal | DecimalJsLike | number | string | null
+    foodicsBranchId?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutVendorBranchesInput
+    vendor: VendorCreateNestedOneWithoutBranchesInput
+    zone?: DeliveryZoneCreateNestedOneWithoutBranchesInput
+    orders?: DeliveryOrderCreateNestedManyWithoutBranchInput
+    portalUsers?: UserCreateNestedManyWithoutBranchInput
+  }
+
+  export type VendorBranchUncheckedCreateWithoutDeliveryPlanInput = {
+    id?: string
+    tenantId: string
+    vendorId: string
+    name: string
+    nameAr?: string | null
+    address?: string | null
+    phone?: string | null
+    lat?: Decimal | DecimalJsLike | number | string | null
+    lng?: Decimal | DecimalJsLike | number | string | null
+    zoneId?: string | null
+    foodicsBranchId?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    orders?: DeliveryOrderUncheckedCreateNestedManyWithoutBranchInput
+    portalUsers?: UserUncheckedCreateNestedManyWithoutBranchInput
+  }
+
+  export type VendorBranchCreateOrConnectWithoutDeliveryPlanInput = {
+    where: VendorBranchWhereUniqueInput
+    create: XOR<VendorBranchCreateWithoutDeliveryPlanInput, VendorBranchUncheckedCreateWithoutDeliveryPlanInput>
+  }
+
+  export type VendorBranchCreateManyDeliveryPlanInputEnvelope = {
+    data: VendorBranchCreateManyDeliveryPlanInput | VendorBranchCreateManyDeliveryPlanInput[]
+    skipDuplicates?: boolean
+  }
+
   export type TenantUpsertWithoutDeliveryPlansInput = {
     update: XOR<TenantUpdateWithoutDeliveryPlansInput, TenantUncheckedUpdateWithoutDeliveryPlansInput>
     create: XOR<TenantCreateWithoutDeliveryPlansInput, TenantUncheckedCreateWithoutDeliveryPlansInput>
@@ -264588,16 +264992,34 @@ export namespace Prisma {
     data: XOR<VendorUpdateManyMutationInput, VendorUncheckedUpdateManyWithoutDeliveryPlanInput>
   }
 
+  export type VendorBranchUpsertWithWhereUniqueWithoutDeliveryPlanInput = {
+    where: VendorBranchWhereUniqueInput
+    update: XOR<VendorBranchUpdateWithoutDeliveryPlanInput, VendorBranchUncheckedUpdateWithoutDeliveryPlanInput>
+    create: XOR<VendorBranchCreateWithoutDeliveryPlanInput, VendorBranchUncheckedCreateWithoutDeliveryPlanInput>
+  }
+
+  export type VendorBranchUpdateWithWhereUniqueWithoutDeliveryPlanInput = {
+    where: VendorBranchWhereUniqueInput
+    data: XOR<VendorBranchUpdateWithoutDeliveryPlanInput, VendorBranchUncheckedUpdateWithoutDeliveryPlanInput>
+  }
+
+  export type VendorBranchUpdateManyWithWhereWithoutDeliveryPlanInput = {
+    where: VendorBranchScalarWhereInput
+    data: XOR<VendorBranchUpdateManyMutationInput, VendorBranchUncheckedUpdateManyWithoutDeliveryPlanInput>
+  }
+
   export type DeliveryPlanCreateWithoutZoneRatesInput = {
     id?: string
     name: string
     type: $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: Decimal | DecimalJsLike | number | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutDeliveryPlansInput
     kmTiers?: DeliveryPlanKmTierCreateNestedManyWithoutPlanInput
     vendors?: VendorCreateNestedManyWithoutDeliveryPlanInput
+    branches?: VendorBranchCreateNestedManyWithoutDeliveryPlanInput
   }
 
   export type DeliveryPlanUncheckedCreateWithoutZoneRatesInput = {
@@ -264605,11 +265027,13 @@ export namespace Prisma {
     tenantId: string
     name: string
     type: $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: Decimal | DecimalJsLike | number | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     kmTiers?: DeliveryPlanKmTierUncheckedCreateNestedManyWithoutPlanInput
     vendors?: VendorUncheckedCreateNestedManyWithoutDeliveryPlanInput
+    branches?: VendorBranchUncheckedCreateNestedManyWithoutDeliveryPlanInput
   }
 
   export type DeliveryPlanCreateOrConnectWithoutZoneRatesInput = {
@@ -264730,12 +265154,14 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumDeliveryPlanTypeFieldUpdateOperationsInput | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutDeliveryPlansNestedInput
     kmTiers?: DeliveryPlanKmTierUpdateManyWithoutPlanNestedInput
     vendors?: VendorUpdateManyWithoutDeliveryPlanNestedInput
+    branches?: VendorBranchUpdateManyWithoutDeliveryPlanNestedInput
   }
 
   export type DeliveryPlanUncheckedUpdateWithoutZoneRatesInput = {
@@ -264743,11 +265169,13 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumDeliveryPlanTypeFieldUpdateOperationsInput | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     kmTiers?: DeliveryPlanKmTierUncheckedUpdateManyWithoutPlanNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutDeliveryPlanNestedInput
+    branches?: VendorBranchUncheckedUpdateManyWithoutDeliveryPlanNestedInput
   }
 
   export type DeliveryZoneUpsertWithoutPlanOriginRatesInput = {
@@ -264864,12 +265292,14 @@ export namespace Prisma {
     id?: string
     name: string
     type: $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: Decimal | DecimalJsLike | number | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutDeliveryPlansInput
     zoneRates?: DeliveryPlanZoneRateCreateNestedManyWithoutPlanInput
     vendors?: VendorCreateNestedManyWithoutDeliveryPlanInput
+    branches?: VendorBranchCreateNestedManyWithoutDeliveryPlanInput
   }
 
   export type DeliveryPlanUncheckedCreateWithoutKmTiersInput = {
@@ -264877,11 +265307,13 @@ export namespace Prisma {
     tenantId: string
     name: string
     type: $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: Decimal | DecimalJsLike | number | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     zoneRates?: DeliveryPlanZoneRateUncheckedCreateNestedManyWithoutPlanInput
     vendors?: VendorUncheckedCreateNestedManyWithoutDeliveryPlanInput
+    branches?: VendorBranchUncheckedCreateNestedManyWithoutDeliveryPlanInput
   }
 
   export type DeliveryPlanCreateOrConnectWithoutKmTiersInput = {
@@ -264904,12 +265336,14 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumDeliveryPlanTypeFieldUpdateOperationsInput | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutDeliveryPlansNestedInput
     zoneRates?: DeliveryPlanZoneRateUpdateManyWithoutPlanNestedInput
     vendors?: VendorUpdateManyWithoutDeliveryPlanNestedInput
+    branches?: VendorBranchUpdateManyWithoutDeliveryPlanNestedInput
   }
 
   export type DeliveryPlanUncheckedUpdateWithoutKmTiersInput = {
@@ -264917,11 +265351,13 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumDeliveryPlanTypeFieldUpdateOperationsInput | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     zoneRates?: DeliveryPlanZoneRateUncheckedUpdateManyWithoutPlanNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutDeliveryPlanNestedInput
+    branches?: VendorBranchUncheckedUpdateManyWithoutDeliveryPlanNestedInput
   }
 
   export type TenantCreateWithoutDistanceCacheEntriesInput = {
@@ -266147,6 +266583,7 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutVendorBranchesInput
     vendor: VendorCreateNestedOneWithoutBranchesInput
     zone?: DeliveryZoneCreateNestedOneWithoutBranchesInput
+    deliveryPlan?: DeliveryPlanCreateNestedOneWithoutBranchesInput
     portalUsers?: UserCreateNestedManyWithoutBranchInput
   }
 
@@ -266161,6 +266598,7 @@ export namespace Prisma {
     lat?: Decimal | DecimalJsLike | number | string | null
     lng?: Decimal | DecimalJsLike | number | string | null
     zoneId?: string | null
+    deliveryPlanId?: string | null
     foodicsBranchId?: string | null
     isActive?: boolean
     createdAt?: Date | string
@@ -266920,6 +267358,7 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutVendorBranchesNestedInput
     vendor?: VendorUpdateOneRequiredWithoutBranchesNestedInput
     zone?: DeliveryZoneUpdateOneWithoutBranchesNestedInput
+    deliveryPlan?: DeliveryPlanUpdateOneWithoutBranchesNestedInput
     portalUsers?: UserUpdateManyWithoutBranchNestedInput
   }
 
@@ -266934,6 +267373,7 @@ export namespace Prisma {
     lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     zoneId?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -280491,6 +280931,7 @@ export namespace Prisma {
     lat?: Decimal | DecimalJsLike | number | string | null
     lng?: Decimal | DecimalJsLike | number | string | null
     zoneId?: string | null
+    deliveryPlanId?: string | null
     foodicsBranchId?: string | null
     isActive?: boolean
     createdAt?: Date | string
@@ -280751,6 +281192,7 @@ export namespace Prisma {
     id?: string
     name: string
     type: $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: Decimal | DecimalJsLike | number | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -284445,6 +284887,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     vendor?: VendorUpdateOneRequiredWithoutBranchesNestedInput
     zone?: DeliveryZoneUpdateOneWithoutBranchesNestedInput
+    deliveryPlan?: DeliveryPlanUpdateOneWithoutBranchesNestedInput
     orders?: DeliveryOrderUpdateManyWithoutBranchNestedInput
     portalUsers?: UserUpdateManyWithoutBranchNestedInput
   }
@@ -284459,6 +284902,7 @@ export namespace Prisma {
     lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     zoneId?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -284477,6 +284921,7 @@ export namespace Prisma {
     lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     zoneId?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -285269,30 +285714,35 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumDeliveryPlanTypeFieldUpdateOperationsInput | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     zoneRates?: DeliveryPlanZoneRateUpdateManyWithoutPlanNestedInput
     kmTiers?: DeliveryPlanKmTierUpdateManyWithoutPlanNestedInput
     vendors?: VendorUpdateManyWithoutDeliveryPlanNestedInput
+    branches?: VendorBranchUpdateManyWithoutDeliveryPlanNestedInput
   }
 
   export type DeliveryPlanUncheckedUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumDeliveryPlanTypeFieldUpdateOperationsInput | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     zoneRates?: DeliveryPlanZoneRateUncheckedUpdateManyWithoutPlanNestedInput
     kmTiers?: DeliveryPlanKmTierUncheckedUpdateManyWithoutPlanNestedInput
     vendors?: VendorUncheckedUpdateManyWithoutDeliveryPlanNestedInput
+    branches?: VendorBranchUncheckedUpdateManyWithoutDeliveryPlanNestedInput
   }
 
   export type DeliveryPlanUncheckedUpdateManyWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumDeliveryPlanTypeFieldUpdateOperationsInput | $Enums.DeliveryPlanType
+    intraZoneFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -292652,6 +293102,7 @@ export namespace Prisma {
     lat?: Decimal | DecimalJsLike | number | string | null
     lng?: Decimal | DecimalJsLike | number | string | null
     zoneId?: string | null
+    deliveryPlanId?: string | null
     foodicsBranchId?: string | null
     isActive?: boolean
     createdAt?: Date | string
@@ -292788,6 +293239,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutVendorBranchesNestedInput
     zone?: DeliveryZoneUpdateOneWithoutBranchesNestedInput
+    deliveryPlan?: DeliveryPlanUpdateOneWithoutBranchesNestedInput
     orders?: DeliveryOrderUpdateManyWithoutBranchNestedInput
     portalUsers?: UserUpdateManyWithoutBranchNestedInput
   }
@@ -292802,6 +293254,7 @@ export namespace Prisma {
     lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     zoneId?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -292820,6 +293273,7 @@ export namespace Prisma {
     lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     zoneId?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -293532,6 +293986,7 @@ export namespace Prisma {
     phone?: string | null
     lat?: Decimal | DecimalJsLike | number | string | null
     lng?: Decimal | DecimalJsLike | number | string | null
+    deliveryPlanId?: string | null
     foodicsBranchId?: string | null
     isActive?: boolean
     createdAt?: Date | string
@@ -293682,6 +294137,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutVendorBranchesNestedInput
     vendor?: VendorUpdateOneRequiredWithoutBranchesNestedInput
+    deliveryPlan?: DeliveryPlanUpdateOneWithoutBranchesNestedInput
     orders?: DeliveryOrderUpdateManyWithoutBranchNestedInput
     portalUsers?: UserUpdateManyWithoutBranchNestedInput
   }
@@ -293696,6 +294152,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -293714,6 +294171,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -294161,6 +294619,23 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type VendorBranchCreateManyDeliveryPlanInput = {
+    id?: string
+    tenantId: string
+    vendorId: string
+    name: string
+    nameAr?: string | null
+    address?: string | null
+    phone?: string | null
+    lat?: Decimal | DecimalJsLike | number | string | null
+    lng?: Decimal | DecimalJsLike | number | string | null
+    zoneId?: string | null
+    foodicsBranchId?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type DeliveryPlanZoneRateUpdateWithoutPlanInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
@@ -294277,6 +294752,61 @@ export namespace Prisma {
     requiresCarOnly?: BoolFieldUpdateOperationsInput | boolean
     isPaused?: BoolFieldUpdateOperationsInput | boolean
     creditCapKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VendorBranchUpdateWithoutDeliveryPlanInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    nameAr?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutVendorBranchesNestedInput
+    vendor?: VendorUpdateOneRequiredWithoutBranchesNestedInput
+    zone?: DeliveryZoneUpdateOneWithoutBranchesNestedInput
+    orders?: DeliveryOrderUpdateManyWithoutBranchNestedInput
+    portalUsers?: UserUpdateManyWithoutBranchNestedInput
+  }
+
+  export type VendorBranchUncheckedUpdateWithoutDeliveryPlanInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    nameAr?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    zoneId?: NullableStringFieldUpdateOperationsInput | string | null
+    foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    orders?: DeliveryOrderUncheckedUpdateManyWithoutBranchNestedInput
+    portalUsers?: UserUncheckedUpdateManyWithoutBranchNestedInput
+  }
+
+  export type VendorBranchUncheckedUpdateManyWithoutDeliveryPlanInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    nameAr?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    zoneId?: NullableStringFieldUpdateOperationsInput | string | null
+    foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

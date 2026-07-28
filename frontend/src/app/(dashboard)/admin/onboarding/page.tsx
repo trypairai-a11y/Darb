@@ -1,9 +1,19 @@
 "use client";
-// Phase 2 Wave 5 — /admin/onboarding 5-step wizard.
+// Phase 2 Wave 5 — /admin/onboarding wizard.
 //
 // REQ-gtm-onboarding. UI-SPEC §3.4.
 //
-// State machine: { step: 1..5, tenantId?, jobId?, completedSteps: number[] }
+// Was five steps. Two of them existed only to pull data out of competitor
+// aggregators: step 3 asked a founder to type in Keeta, Talabat, Deliveroo and
+// Americana portal usernames and passwords, and step 4 ("Backwash") replayed
+// history from them. That was the pre-rebuild product. Darb is the only
+// platform in scope now (PRD §1), so onboarding a fleet is: create the tenant,
+// import its couriers, hand over the report.
+//
+// The step components and their API wrappers are left in place, unimported —
+// same call the PRD rebuild made with the aggregator Prisma models.
+//
+// State machine: { step: 1..3, tenantId?, completedSteps: number[] }
 // Renders OnboardingStepper + the step component for the current step.
 //
 // Super-admin gated server-side (every /api/admin/* call). Frontend uses
@@ -16,26 +26,21 @@ import Link from "next/link";
 import OnboardingStepper from "@/components/admin/OnboardingStepper";
 import TenantInfoStep from "@/components/admin/onboarding/TenantInfoStep";
 import CourierImportStep from "@/components/admin/onboarding/CourierImportStep";
-import PlatformCredentialsStep from "@/components/admin/onboarding/PlatformCredentialsStep";
-import BackwashStep from "@/components/admin/onboarding/BackwashStep";
 import ReportPreview from "@/components/admin/onboarding/ReportPreview";
 import SuperAdminGuard from "@/components/admin/SuperAdminGuard";
 
-type StepNum = 1 | 2 | 3 | 4 | 5;
+type StepNum = 1 | 2 | 3;
 
 interface WizardState {
   step: StepNum;
   tenantId?: string;
   tenantName?: string;
-  jobId?: string;
   completedSteps: number[];
 }
 
 const STEPPER_STEPS = [
   { key: "tenant", label: "Tenant" },
   { key: "couriers", label: "Couriers" },
-  { key: "platforms", label: "Platforms" },
-  { key: "backwash", label: "Backwash" },
   { key: "report", label: "Report" },
 ];
 
@@ -101,18 +106,6 @@ export default function AdminOnboardingPage() {
             />
           )}
           {state.step === 3 && state.tenantId && (
-            <PlatformCredentialsStep
-              tenantId={state.tenantId}
-              onNext={() => advance(4)}
-            />
-          )}
-          {state.step === 4 && state.tenantId && (
-            <BackwashStep
-              tenantId={state.tenantId}
-              onComplete={(jobId) => advance(5, { jobId })}
-            />
-          )}
-          {state.step === 5 && state.tenantId && (
             <ReportPreview
               tenantId={state.tenantId}
               onComplete={() =>

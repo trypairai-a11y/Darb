@@ -2818,15 +2818,21 @@ model VendorBranch {
   lat             Decimal? @db.Decimal(10, 7)
   lng             Decimal? @db.Decimal(10, 7)
   zoneId          String?
+  // Revision 5 (#6). The client asked for pricing plan assignment to sit with
+  // the branches rather than as its own tab, so a branch may carry its own
+  // plan. NULL inherits the vendor's plan, which is what every existing branch
+  // does — this ships with no backfill and no repricing.
+  deliveryPlanId  String?
   foodicsBranchId String?
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  tenant      Tenant          @relation(fields: [tenantId], references: [id])
-  vendor      Vendor          @relation(fields: [vendorId], references: [id])
-  zone        DeliveryZone?   @relation(fields: [zoneId], references: [id])
-  orders      DeliveryOrder[]
+  tenant       Tenant          @relation(fields: [tenantId], references: [id])
+  vendor       Vendor          @relation(fields: [vendorId], references: [id])
+  zone         DeliveryZone?   @relation(fields: [zoneId], references: [id])
+  deliveryPlan DeliveryPlan?   @relation(fields: [deliveryPlanId], references: [id])
+  orders       DeliveryOrder[]
   // Revision 1 (#9) — portal users scoped to this branch.
   portalUsers User[]          @relation("BranchPortalUser")
 
@@ -2908,6 +2914,12 @@ model DeliveryPlan {
   tenantId  String
   name      String // client-facing, e.g. "Pharmacy standard"
   type      DeliveryPlanType
+  // Revision 5 (#7). The intra-zone flat fee belongs to the plan, not to the
+  // tenant: "whenever we create a plan, the intra-zone flat fee will be with
+  // each plan". NULL on a by-zone plan falls back to the origin==dest cell of
+  // the grid, which is where the value used to live, so plans written before
+  // this column keep pricing exactly as they did.
+  intraZoneFeeKwd Decimal? @db.Decimal(10, 3)
   isActive  Boolean          @default(true)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
@@ -2916,6 +2928,7 @@ model DeliveryPlan {
   zoneRates DeliveryPlanZoneRate[]
   kmTiers   DeliveryPlanKmTier[]
   vendors   Vendor[]
+  branches  VendorBranch[]
 
   @@unique([tenantId, name])
   @@index([tenantId, isActive])
@@ -2999,6 +3012,12 @@ model FulfillmentSettings {
   batchingEnabled        Boolean  @default(true)
   batchMaxDropKm         Float    @default(1.5)
   batchMaxOrders         Int      @default(2)
+  // Revision 5 (#1): every order must be served. When nobody is free, the
+  // offer goes to the nearest driver who is about to finish the drop he is
+  // already on. "About to finish" is this many minutes of projected remaining
+  // travel; 0 disables the reserve tier and restores the old free-drivers-only
+  // behaviour.
+  finishingSoonMinutes   Int      @default(10)
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 
