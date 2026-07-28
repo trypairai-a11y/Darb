@@ -61,7 +61,7 @@ server), it is only the static chunk path that is at risk.
 - `/api/wallets` — ledger, remittances, vendor statements, refunds processing. `/vendor-statements/:id/transactions` is the per-order detail behind one statement (revision 4 #4).
 - `/api/delivery-plans` — named by-zone / by-km price lists (revision 4 #7). Rates are replaced wholesale, never per cell.
 - `/api/users/:id/permissions` + `/api/users/:id/invite` + public `/api/auth/set-password` — per-surface access and self-service passwords (revision 4 #12).
-- `/api/fleets/export.xlsx` — three-sheet workbook: fleets, scorecards, payouts (revision 4 #10).
+- `/api/fleets/export.xlsx` — three-sheet workbook: fleets, scorecards, payouts (revision 4 #10). `?fleetId=` narrows all three sheets to one partner; that is what the Export button inside the `/fleets` detail panel calls, since the scorecard and payout history render nowhere else.
 - `/api/webhooks/foodics/:secret` + `/api/webhooks/twilio-whatsapp` — public inbound.
 - `/api/cron/dispatch-sweep` + `/api/cron/daily` — Bearer CRON_SECRET, fail-closed. **Vercel Hobby only allows daily crons**, so dispatch needs an external minute-level ticker in production (see Deployment notes).
 
