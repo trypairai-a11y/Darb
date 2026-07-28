@@ -12,6 +12,13 @@
 // pinpoints and the connecting line were already here; what was missing is the
 // part that makes the tool feel like measuring: a rubber band from the last
 // point to the cursor, and a running perimeter. Both are added below.
+//
+// Follow-up: that first cut also treated "3 vertices" as "closed", so the third
+// click snapped the shape into a filled triangle, killed the rubber band, and
+// dropped a midpoint handle onto the closing edge that ate the next map click.
+// Operators read it as "the tool only gives me three pinpoints". A new ring is
+// open until they close it, however many points that takes; only an existing
+// ring opened for editing starts closed.
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CircleMarker, Polygon, Polyline, useMapEvents } from "react-leaflet";
@@ -36,6 +43,11 @@ export default function ZonePolygonEditor({
   onCancel,
 }: ZonePolygonEditorProps) {
   const [vertices, setVertices] = useState<LatLngPair[]>(initialRing ?? []);
+  // "Has enough vertices to be a polygon" is not the same thing as "the
+  // operator is done drawing". Only an existing zone opened for editing starts
+  // closed; a new one stays open, taking points, until Close polygon or a click
+  // on the first handle ends it.
+  const isClosed = Boolean(initialRing && initialRing.length >= 3);
   // Where the cursor is, so the in-progress edge can follow it. Null until the
   // pointer enters the map, and cleared on leave so no stale band is left
   // hanging off the last vertex.
@@ -147,21 +159,23 @@ export default function ZonePolygonEditor({
     map.dragging.disable();
   };
 
-  const closed = vertices.length >= 3;
+  const closeable = vertices.length >= 3;
 
   // The rubber band: last placed point → cursor, while the shape is still
   // open. Once the polygon closes there is no "next" point to preview, so it
   // stops. Non-interactive, or it would swallow the click that places a vertex.
   const rubberBand =
-    !closed && cursor && vertices.length > 0
+    !isClosed && cursor && vertices.length > 0
       ? ([vertices[vertices.length - 1], cursor] as LatLngPair[])
       : null;
 
-  const perimeterKm = measurePerimeterKm(vertices, closed);
+  const perimeterKm = measurePerimeterKm(vertices, isClosed);
 
   const midpoints: { edge: number; point: LatLngPair }[] = [];
   if (vertices.length >= 2) {
-    const edgeCount = closed ? vertices.length : vertices.length - 1;
+    // While drawing there is no closing edge yet, so no handle sits on it. That
+    // handle used to appear at vertex 3 and swallow the next map click.
+    const edgeCount = isClosed ? vertices.length : vertices.length - 1;
     for (let i = 0; i < edgeCount; i++) {
       const a = vertices[i];
       const b = vertices[(i + 1) % vertices.length];
@@ -171,7 +185,7 @@ export default function ZonePolygonEditor({
 
   return (
     <>
-      {closed ? (
+      {isClosed ? (
         <Polygon
           positions={vertices}
           pathOptions={{ color, weight: 2, fillColor: color, fillOpacity: 0.12, interactive: false }}
@@ -219,7 +233,9 @@ export default function ZonePolygonEditor({
         <CircleMarker
           key={`v-${i}`}
           center={p}
-          radius={6}
+          // The first handle grows once it is a live close target, so the way
+          // out of the drawing loop is visible on the map itself.
+          radius={i === 0 && closeable && !isClosed ? 9 : 6}
           pathOptions={{
             color: "#ffffff",
             weight: 2,
@@ -253,6 +269,7 @@ export default function ZonePolygonEditor({
       <EditorControls
         controlRef={controlRef}
         vertexCount={vertices.length}
+        closeable={closeable && !isClosed}
         perimeterKm={perimeterKm}
         onUndo={() => setVertices((v) => v.slice(0, -1))}
         onComplete={complete}
@@ -290,6 +307,7 @@ function measurePerimeterKm(vertices: LatLngPair[], closed: boolean): number {
 function EditorControls({
   controlRef,
   vertexCount,
+  closeable,
   perimeterKm,
   onUndo,
   onComplete,
@@ -297,6 +315,7 @@ function EditorControls({
 }: {
   controlRef: React.RefObject<HTMLDivElement>;
   vertexCount: number;
+  closeable: boolean;
   perimeterKm: number;
   onUndo: () => void;
   onComplete: () => void;
@@ -312,6 +331,11 @@ function EditorControls({
       <span className="text-xs text-sand-700 whitespace-nowrap">
         {vertexCount === 0 ? t("zonesPage.drawHint") : `${vertexCount} ${t("zonesPage.vertices")}`}
       </span>
+      {closeable && (
+        <span className="text-xs text-sand-600 whitespace-nowrap">
+          {t("zonesPage.closeHint")}
+        </span>
+      )}
       {perimeterKm > 0 && (
         <span dir="ltr" className="text-xs text-sand-600 tabular-nums whitespace-nowrap">
           {perimeterKm.toFixed(2)} km

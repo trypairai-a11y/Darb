@@ -1318,6 +1318,7 @@ export interface Messages {
     color: string;
     active: string;
     drawHint: string;
+    closeHint: string;
     closePolygon: string;
     undoVertex: string;
     vertices: string;
@@ -3269,6 +3270,7 @@ export const en: Messages = {
     color: "Color",
     active: "Active",
     drawHint: "Click the map to add points",
+    closeHint: "Keep adding points, then click the first point to close",
     closePolygon: "Close polygon",
     undoVertex: "Undo",
     vertices: "points",
@@ -5220,6 +5222,7 @@ export const ar: Messages = {
     color: "اللون",
     active: "مفعّلة",
     drawHint: "انقر على الخريطة لإضافة نقاط",
+    closeHint: "تابع إضافة النقاط ثم انقر على النقطة الأولى للإغلاق",
     closePolygon: "إغلاق المضلع",
     undoVertex: "تراجع",
     vertices: "نقاط",
