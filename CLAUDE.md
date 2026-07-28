@@ -98,7 +98,7 @@ Seeded portal logins: `fleet@darb.demo / fleet1234` (FLEET). Vendor users are cr
 
 ## Deployment notes
 
-- Deploy: `vercel --prod --yes` from backend/ and frontend/ (node 20: `export PATH="/opt/homebrew/opt/node@20/bin:$PATH"`). After a frontend deploy: `vercel alias set <new-host> frontend-ebon-nine-34.vercel.app`.
+- Deploy: `vercel --prod --yes` from backend/ and frontend/ (node 20: `export PATH="/opt/homebrew/opt/node@20/bin:$PATH"`). No alias step: `darbkw.vercel.app` / `pair-darb.vercel.app` (frontend) and `pair-darb-api.vercel.app` (backend) are project domains and auto-track every prod deploy.
 - Backend prod env needs: DATABASE_URL, DATABASE_URL_UNPOOLED, CRON_SECRET, PUBLIC_TRACKING_BASE_URL, JWT secrets; TWILIO_ACCOUNT_SID/AUTH_TOKEN/WHATSAPP_FROM activate real WhatsApp (stub-warns until set).
 - **Dispatch on Vercel Hobby:** vercel.json crons are daily only. `/api/cron/dispatch-sweep` must be hit every minute by an external ticker (cron-job.org or similar, `Authorization: Bearer $CRON_SECRET`) or offers expire only daily. Upgrading to Vercel Pro and setting the cron back to `* * * * *` is the clean fix.
 - The BullMQ workers + in-process schedulers only run in the `app.listen` block (non-Vercel hosts); on Vercel the two cron endpoints are the only background drivers.
