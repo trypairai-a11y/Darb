@@ -102,18 +102,22 @@ export default function AddDriverModal({ platform, onClose, onSuccess }: AddDriv
     }
   }
 
+  // Items ops created themselves have no seeded row, so read through a default.
   function toggleInventory(key: string) {
-    setInventory((prev) => ({
-      ...prev,
-      [key]: { ...prev[key], issued: !prev[key].issued, quantity: !prev[key].issued ? 1 : 0 },
-    }));
+    setInventory((prev) => {
+      const current = prev[key] || { issued: false, quantity: 0 };
+      return {
+        ...prev,
+        [key]: { issued: !current.issued, quantity: !current.issued ? 1 : 0 },
+      };
+    });
   }
 
   function updateQuantity(key: string, qty: number) {
-    setInventory((prev) => ({
-      ...prev,
-      [key]: { ...prev[key], quantity: Math.max(0, qty) },
-    }));
+    setInventory((prev) => {
+      const current = prev[key] || { issued: false, quantity: 0 };
+      return { ...prev, [key]: { ...current, quantity: Math.max(0, qty) } };
+    });
   }
 
   const canGoStep2 = form.name && form.phone && form.platform && form.companyId;
@@ -140,7 +144,7 @@ export default function AddDriverModal({ platform, onClose, onSuccess }: AddDriv
         vehicleType: form.vehicleType,
         companyId: form.companyId,
         hireDate: new Date().toISOString(),
-        inventory: inventoryItems.length > 0 ? inventoryItems : undefined,
+        inventory: issuedItems.length > 0 ? issuedItems : undefined,
       });
       onSuccess();
     } catch (err: any) {

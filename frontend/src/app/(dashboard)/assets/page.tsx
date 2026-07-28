@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useApiGet } from "@/hooks/useApi";
 import { cn } from "@/lib/cn";
 import DataTable from "@/components/shared/DataTable";
-import { Car, Smartphone, Package, Search, Boxes, CreditCard, Plus } from "lucide-react";
+import { Car, Smartphone, Package, Search, Boxes, CreditCard, Plus, Trash2, Loader2 } from "lucide-react";
 import api from "@/lib/api";
 import { useToast } from "@/components/shared/Toast";
 import AddVehicleModal from "@/components/shared/AddVehicleModal";
@@ -96,6 +96,8 @@ export default function GlobalAssetsPage() {
   const toast = useToast();
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [assignVehicle, setAssignVehicle] = useState<any | null>(null);
+  const [removeItem, setRemoveItem] = useState<any | null>(null);
+  const [removing, setRemoving] = useState(false);
 
   const { data: vehiclesData, loading: vLoading, refetch: refetchVehicles } = useApiGet<any>(
     tab === "vehicles" ? "/api/vehicles?limit=500" : null
@@ -127,6 +129,24 @@ export default function GlobalAssetsPage() {
       refetchVehicles();
     } finally {
       setPendingId(null);
+    }
+  }
+
+  async function handleRemoveItem() {
+    if (!removeItem) return;
+    setRemoving(true);
+    try {
+      await api.delete(
+        `/api/platform-settings/${removeItem.platform || "DARB"}/inventory/${removeItem.itemType}`
+      );
+      toast.success("Item removed");
+      setRemoveItem(null);
+      refetchEquipment();
+      refetchEquipmentCount();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || "Failed to remove item");
+    } finally {
+      setRemoving(false);
     }
   }
 
@@ -471,6 +491,29 @@ export default function GlobalAssetsPage() {
       label: "Min stock",
       render: (v: any) => <span className="tabular-nums text-sm text-secondary">{v ?? 0}</span>,
     },
+    {
+      // Ops can create item types now, so a typo needs a way out. Only offered
+      // for saved rows: the placeholder pools have nothing to delete.
+      key: "actions",
+      label: "",
+      sortable: false,
+      render: (_: any, r: any) =>
+        apiEquipment.length === 0 ? (
+          <span className="text-xs text-secondary">n/a</span>
+        ) : (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setRemoveItem(r);
+            }}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50"
+            title="Remove this item"
+          >
+            <Trash2 size={14} />
+          </button>
+        ),
+    },
   ];
 
   const totals = {
@@ -641,6 +684,43 @@ export default function GlobalAssetsPage() {
           existing={equipmentExisting}
           bootstrap={equipmentBootstrap}
         />
+      )}
+
+      {removeItem && (
+        <div
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => !removing && setRemoveItem(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-lg w-full max-w-md p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold">
+              Remove {itemDisplayName(removeItem.itemType, removeItem.label)}?
+            </h2>
+            <p className="text-sm text-secondary mt-2">
+              The stock pool is deleted. Kit already issued to drivers stays on their
+              records.
+            </p>
+            <div className="flex items-center justify-end gap-3 mt-6">
+              <button
+                onClick={() => setRemoveItem(null)}
+                disabled={removing}
+                className="px-4 py-2 text-sm font-medium text-secondary hover:text-foreground"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRemoveItem}
+                disabled={removing}
+                className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+              >
+                {removing && <Loader2 size={14} className="animate-spin" />}
+                {removing ? "Removing…" : "Remove"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {assignVehicle && (
