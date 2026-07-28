@@ -147,7 +147,7 @@ function OpsLiveScreen() {
 
   const zonesQuery = useQuery({
     queryKey: ["darb", "zones"],
-    queryFn: () => zonesApi.list(),
+    queryFn: () => zonesApi.listAll(),
     staleTime: 5 * 60_000,
   });
   const zones = useMemo(() => unwrapList<DeliveryZone>(zonesQuery.data), [zonesQuery.data]);

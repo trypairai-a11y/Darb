@@ -28,6 +28,11 @@ prisma.vendorBranch = prisma.vendorBranch ?? {};
 for (const fn of ["findFirst", "findMany"]) {
   prisma.vendorBranch[fn] = prisma.vendorBranch[fn] ?? jest.fn();
 }
+// The ops "order needs review" fan-out reads users and writes notifications.
+prisma.user = prisma.user ?? {};
+prisma.user.findMany = prisma.user.findMany ?? jest.fn();
+prisma.notification = prisma.notification ?? {};
+prisma.notification.createMany = prisma.notification.createMany ?? jest.fn();
 
 jest.mock("../../services/pricingService", () => ({
   quoteDelivery: jest.fn(),
@@ -238,6 +243,55 @@ describe("createDeliveryOrder", () => {
     const eventData = prisma.orderEvent.create.mock.calls[0][0].data;
     expect(eventData.action).toBe("order.rejected");
     expect(eventData.description).toContain(reason);
+  });
+
+  // "Any order that comes in, we're in the picture" — a refused order has to
+  // reach ops, not wait to be noticed in the Needs review list.
+  test("a refused order notifies every active ops user", async () => {
+    prisma.vendor.findFirst.mockResolvedValue(VENDOR);
+    prisma.vendorBranch.findFirst.mockResolvedValue({ id: "b-1" });
+    quoteDelivery.mockResolvedValue({ ok: false, reason: "OUT_OF_ZONE_DROPOFF" });
+    prisma.deliveryOrder.findFirst.mockResolvedValue(null);
+    prisma.deliveryOrder.create.mockImplementation(async ({ data }: any) => ({
+      id: "ord-r",
+      ...data,
+    }));
+    prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+    prisma.user.findMany.mockResolvedValue([{ id: "u-1" }, { id: "u-2" }]);
+    prisma.notification.createMany.mockResolvedValue({ count: 2 });
+
+    await createDeliveryOrder(CREATE_INPUT);
+
+    const roles = prisma.user.findMany.mock.calls[0][0].where.role.in;
+    expect(roles).toEqual(expect.arrayContaining(["ADMIN", "OPS_MANAGER", "SUPERVISOR"]));
+
+    const rows = prisma.notification.createMany.mock.calls[0][0].data;
+    expect(rows).toHaveLength(2);
+    expect(rows[0].type).toBe("ORDER_NEEDS_REVIEW");
+    expect(rows[0].severity).toBe("HIGH");
+    expect(rows[0].category).toBe("OPS_TODO");
+    // The message names the fix, not just the enum.
+    expect(rows[0].message).toContain("outside every delivery zone");
+    expect(rows[0].bodyAr).toBeTruthy();
+    expect(rows[0].metadata.reason).toBe("OUT_OF_ZONE_DROPOFF");
+  });
+
+  test("a notification failure never costs us the REJECTED row", async () => {
+    prisma.vendor.findFirst.mockResolvedValue(VENDOR);
+    prisma.vendorBranch.findFirst.mockResolvedValue({ id: "b-1" });
+    quoteDelivery.mockResolvedValue({ ok: false, reason: "OUT_OF_ZONE_DROPOFF" });
+    prisma.deliveryOrder.findFirst.mockResolvedValue(null);
+    prisma.deliveryOrder.create.mockImplementation(async ({ data }: any) => ({
+      id: "ord-r",
+      ...data,
+    }));
+    prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+    prisma.user.findMany.mockRejectedValue(new Error("db down"));
+
+    const order = await createDeliveryOrder(CREATE_INPUT);
+
+    expect(order.status).toBe("REJECTED");
+    expect(order.rejectionReason).toBe("OUT_OF_ZONE_DROPOFF");
   });
 
   test("unknown vendor throws (caller error, nothing persisted)", async () => {

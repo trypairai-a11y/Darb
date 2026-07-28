@@ -1358,6 +1358,14 @@ export interface Messages {
     addTier: string;
     tierOrderHint: string;
     planIntraZoneHint: string;
+    unpricedPairs: string;
+    unpricedPairsHint: string;
+    fillByDistance: string;
+    fillByDistanceHint: string;
+    fillBase: string;
+    fillPerKm: string;
+    fillBlanks: string;
+    filledCells: string;
     inheritsVendorPlan: string;
     branchPlan: string;
   };
@@ -3326,6 +3334,16 @@ export const en: Messages = {
     tierOrderHint: "Distance is measured from Google Maps routing, fixed when the order is priced.",
     planIntraZoneHint:
       "Charged when pickup and drop-off are in the same zone. Belongs to this plan only. Leave blank to price same-zone deliveries from the grid instead.",
+    unpricedPairs: "{count} zone pairs have no price",
+    unpricedPairsHint:
+      "Orders to those pairs are refused at intake and land in Needs review. Fill every cell you serve, and leave blank only what you genuinely will not deliver.",
+    fillByDistance: "Fill the blanks by distance",
+    fillByDistanceHint:
+      "Prices every empty cell as base plus the rate per kilometre between the two zone centres, rounded to the nearest 250 fils. Cells you already typed are left alone, and nothing is saved until you press Save.",
+    fillBase: "Base (KD)",
+    fillPerKm: "Per km (KD)",
+    fillBlanks: "Fill blanks",
+    filledCells: "{count} cells filled. Review them, then save.",
     inheritsVendorPlan: "Inherits the shop plan",
     branchPlan: "Pricing plan",
   },
@@ -5298,6 +5316,16 @@ export const ar: Messages = {
     tierOrderHint: "تُقاس المسافة من مسار خرائط جوجل، وتُثبّت عند تسعير الطلب.",
     planIntraZoneHint:
       "تُحتسب عندما يكون الاستلام والتسليم في المنطقة نفسها. تخص هذه الخطة وحدها. اتركها فارغة لتسعير التوصيل داخل المنطقة من الجدول.",
+    unpricedPairs: "{count} من أزواج المناطق بلا سعر",
+    unpricedPairsHint:
+      "الطلبات إلى هذه الأزواج تُرفض عند الاستلام وتظهر في قائمة تحتاج مراجعة. أدخل سعرا لكل زوج تخدمه، واترك الفارغ لما لن توصّل إليه فعلا.",
+    fillByDistance: "تعبئة الفراغات حسب المسافة",
+    fillByDistanceHint:
+      "يحسب سعر كل خانة فارغة كسعر أساسي زائد سعر الكيلومتر بين مركزي المنطقتين، مقرّبا لأقرب 250 فلسا. الخانات التي أدخلتها بنفسك لا تتغير، ولا يُحفظ شيء حتى تضغط حفظ.",
+    fillBase: "الأساسي (د.ك)",
+    fillPerKm: "لكل كم (د.ك)",
+    fillBlanks: "تعبئة الفراغات",
+    filledCells: "تمت تعبئة {count} خانة. راجعها ثم احفظ.",
     inheritsVendorPlan: "يتبع خطة المتجر",
     branchPlan: "خطة التسعير",
   },

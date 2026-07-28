@@ -427,6 +427,40 @@ describe("quoteDelivery with a delivery plan", () => {
     expect(result.distanceSource).toBe("straight-line");
   });
 
+  // The point of the whole change: a km-priced merchant is never refused an
+  // order because the map has a gap. The tiers answer for any pin, so a drop
+  // in no zone at all is priced exactly like a drop in one.
+  test("by-km plan: a dropoff outside every zone is still priced", async () => {
+    primeKmPlan();
+    drivingDistanceKm.mockResolvedValue({ km: 13.2, source: "google" });
+
+    const result = await quoteDelivery(TENANT, {
+      branchId: "branch-1",
+      dropoff: OUTSIDE_ALL,
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.feeKwd.toFixed(3)).toBe("2.000");
+    // No zone to name, and the flag says why rather than leaving a bare null.
+    expect(result.dropoffZoneId).toBeNull();
+    expect(result.dropoffZone).toBeNull();
+    expect(result.outOfZone).toBe(true);
+    expect(result.pickupZoneId).toBe("zone-a");
+  });
+
+  test("by-zone plan: a dropoff outside every zone has no cell to read", async () => {
+    primeBranchOnPlan({ id: "plan-z", type: "ZONE", kmTiers: [] });
+
+    const result = await quoteDelivery(TENANT, {
+      branchId: "branch-1",
+      dropoff: OUTSIDE_ALL,
+    });
+
+    // Still a supervisor's call: a grid cannot price a zone that is not drawn.
+    expect(result).toEqual({ ok: false, reason: "OUT_OF_ZONE_DROPOFF" });
+    expect(prisma.deliveryPlanZoneRate.findFirst).not.toHaveBeenCalled();
+  });
+
   test("by-km plan: a dropoff given only as a zone has no distance to price", async () => {
     primeKmPlan();
 

@@ -116,6 +116,30 @@ async function del<T>(url: string): Promise<T> {
 
 export const zonesApi = {
   list: (params?: Params) => get<DeliveryZone[] | Paginated<DeliveryZone>>("/api/zones", params),
+  /**
+   * Every zone, not the first page of them.
+   *
+   * /api/zones paginates at 20 by default and caps at 100, and the surcharge
+   * matrix editor sends the complete grid on save — the endpoint deletes any
+   * pair absent from the body. Those two facts together mean a partial zone
+   * list is not a display bug, it is silent deletion of the prices for every
+   * zone that fell off the page. So this pages to the end, and callers that
+   * build a grid must use it rather than list().
+   */
+  listAll: async (): Promise<DeliveryZone[]> => {
+    const out: DeliveryZone[] = [];
+    for (let page = 1; page <= 50; page++) {
+      const res = await get<DeliveryZone[] | Paginated<DeliveryZone>>("/api/zones", {
+        page,
+        limit: 100,
+      });
+      const batch = unwrapList<DeliveryZone>(res);
+      out.push(...batch);
+      const total = (res as Paginated<DeliveryZone>)?.pagination?.total;
+      if (Array.isArray(res) || batch.length === 0 || (total != null && out.length >= total)) break;
+    }
+    return out;
+  },
   getById: (id: string) => get<DeliveryZone>(`/api/zones/${id}`),
   create: (body: Partial<DeliveryZone>) => post<DeliveryZone>("/api/zones", body),
   update: (id: string, body: Partial<DeliveryZone>) => put<DeliveryZone>(`/api/zones/${id}`, body),

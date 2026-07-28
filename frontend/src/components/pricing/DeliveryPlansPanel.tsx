@@ -14,7 +14,7 @@
 // grid already taught this team.
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Save, Trash2 } from "lucide-react";
+import { Plus, Save, Trash2, Wand2 } from "lucide-react";
 import SlidePanel from "@/components/shared/SlidePanel";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import { useToast } from "@/components/shared/Toast";
@@ -30,6 +30,27 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 
 const keyOf = (originId: string, destId: string) => `${originId}:${destId}`;
+
+/**
+ * Straight-line kilometres between two zone centres. Null when either zone
+ * has no centroid, which is the signal to leave that cell alone rather than
+ * price it off a guess.
+ */
+function haversineKm(a: DeliveryZone, b: DeliveryZone): number | null {
+  const lat1 = Number(a.centroidLat);
+  const lng1 = Number(a.centroidLng);
+  const lat2 = Number(b.centroidLat);
+  const lng2 = Number(b.centroidLng);
+  if (![lat1, lng1, lat2, lng2].every(Number.isFinite)) return null;
+  const R = 6371;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
 
 function toFixed3(value: unknown): string {
   const n = Number(value);
@@ -54,7 +75,7 @@ export default function DeliveryPlansPanel() {
   });
   const plans = useMemo(() => unwrapList<DeliveryPlan>(plansQuery.data), [plansQuery.data]);
 
-  const zonesQuery = useQuery({ queryKey: ["darb", "zones"], queryFn: () => zonesApi.list() });
+  const zonesQuery = useQuery({ queryKey: ["darb", "zones"], queryFn: () => zonesApi.listAll() });
   const zones = useMemo(
     () => unwrapList<DeliveryZone>(zonesQuery.data).filter((z) => z.isActive !== false),
     [zonesQuery.data]
@@ -329,6 +350,9 @@ function PlanRatesEditor({
   // Revision 5 (#7) — this plan's own intra-zone flat fee.
   const [intraFee, setIntraFee] = useState("");
   const [saving, setSaving] = useState(false);
+  // Bulk-fill knobs. Defaults are a plain starting point, not a house rate.
+  const [fillBase, setFillBase] = useState("1.000");
+  const [fillPerKm, setFillPerKm] = useState("0.100");
 
   useEffect(() => {
     if (!plan) return;
@@ -355,6 +379,59 @@ function PlanRatesEditor({
   }, [plan]);
 
   const zoneLabel = (z: DeliveryZone) => (locale === "ar" && z.nameAr ? z.nameAr : z.name);
+
+  // Counted here rather than read off the plan so it moves as cells are typed.
+  // A blank still means unserviceable, but an unserviceable pair should be a
+  // decision somebody made, not one they never noticed making.
+  const unpriced = useMemo(() => {
+    if (!plan || plan.type !== "ZONE") return 0;
+    let blank = 0;
+    for (const origin of zones) {
+      for (const dest of zones) {
+        if (origin.id === dest.id) continue;
+        const raw = cells[keyOf(origin.id, dest.id)];
+        if (raw == null || raw === "" || !Number.isFinite(Number(raw))) blank += 1;
+      }
+    }
+    return blank;
+  }, [plan, zones, cells]);
+
+  /**
+   * Fill every blank cell from the distance between the two zones.
+   *
+   * Kuwait is 29 zones, so a by-zone grid is 812 cells. Nobody types 812
+   * numbers, and the cells they give up on are the ones that refuse orders
+   * later. This lays down a defensible starting price everywhere — base fare
+   * plus a per-kilometre rate on the straight line between zone centres,
+   * rounded to the nearest 250 fils the way the rest of the rate card is —
+   * and leaves it on screen for review. Nothing is saved until Save is
+   * pressed, and a cell somebody already typed is never touched.
+   */
+  function fillBlanksByDistance() {
+    const base = Number(fillBase);
+    const perKm = Number(fillPerKm);
+    if (!Number.isFinite(base) || !Number.isFinite(perKm)) return;
+
+    setCells((prev) => {
+      const next = { ...prev };
+      let filled = 0;
+      for (const origin of zones) {
+        for (const dest of zones) {
+          if (origin.id === dest.id) continue;
+          const k = keyOf(origin.id, dest.id);
+          const cur = next[k];
+          if (cur != null && cur !== "" && Number.isFinite(Number(cur))) continue;
+          const km = haversineKm(origin, dest);
+          if (km == null) continue;
+          const raw = base + perKm * km;
+          next[k] = (Math.round(raw * 4) / 4).toFixed(3); // nearest 250 fils
+          filled += 1;
+        }
+      }
+      if (filled > 0) toast.success(t("plansPage.filledCells").replace("{count}", String(filled)));
+      return next;
+    });
+  }
 
   async function handleSave() {
     if (!plan) return;
@@ -448,6 +525,63 @@ function PlanRatesEditor({
             />
           </div>
           <p className="text-xs text-sand-600 mt-2">{t("plansPage.planIntraZoneHint")}</p>
+        </div>
+      )}
+
+      {/* A plan with blank cells refuses those orders at intake, and the person
+          who finds out is a supervisor staring at a Needs review row days
+          later. Say it here, while the grid is open. */}
+      {plan.type === "ZONE" && unpriced > 0 && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50/70 px-4 py-3">
+          <p className="text-sm font-medium text-amber-900">
+            {t("plansPage.unpricedPairs").replace("{count}", String(unpriced))}
+          </p>
+          <p className="text-xs text-amber-800 mt-1">{t("plansPage.unpricedPairsHint")}</p>
+
+          <div className="mt-3 pt-3 border-t border-amber-300/70">
+            <p className="text-xs font-medium text-amber-900 mb-2">
+              {t("plansPage.fillByDistance")}
+            </p>
+            <div className="flex items-end gap-2 flex-wrap">
+              <label className="block">
+                <span className="block text-[11px] text-amber-800 mb-1">
+                  {t("plansPage.fillBase")}
+                </span>
+                <input
+                  type="number"
+                  step="0.001"
+                  min="0"
+                  dir="ltr"
+                  value={fillBase}
+                  onChange={(e) => setFillBase(e.target.value)}
+                  className="w-24 px-2 h-9 rounded-lg bg-white border border-amber-300 text-xs tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/20"
+                />
+              </label>
+              <label className="block">
+                <span className="block text-[11px] text-amber-800 mb-1">
+                  {t("plansPage.fillPerKm")}
+                </span>
+                <input
+                  type="number"
+                  step="0.001"
+                  min="0"
+                  dir="ltr"
+                  value={fillPerKm}
+                  onChange={(e) => setFillPerKm(e.target.value)}
+                  className="w-24 px-2 h-9 rounded-lg bg-white border border-amber-300 text-xs tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/20"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={fillBlanksByDistance}
+                className="inline-flex items-center gap-1.5 px-3 h-9 rounded-pill bg-amber-900 text-white text-xs font-medium hover:bg-amber-800 transition-colors"
+              >
+                <Wand2 size={13} aria-hidden="true" />
+                {t("plansPage.fillBlanks")}
+              </button>
+            </div>
+            <p className="text-[11px] text-amber-800 mt-2">{t("plansPage.fillByDistanceHint")}</p>
+          </div>
         </div>
       )}
 

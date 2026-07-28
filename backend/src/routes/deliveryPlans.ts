@@ -69,12 +69,38 @@ const ratesSchema = z.object({
 const kwd = (v: Prisma.Decimal | null | undefined) =>
   v == null ? null : new Prisma.Decimal(v as unknown as Prisma.Decimal.Value).toFixed(3);
 
-function serialisePlan(plan: any) {
+/**
+ * How many origin→destination pairs this plan leaves unpriced.
+ *
+ * A blank cell has always meant "unserviceable", and that is still true — but
+ * the client's rule is that a plan should not be in use with its conditions
+ * half set: if Khiran is a zone we have, the plan has to say what a delivery
+ * there costs. A count the editor can show turns an invisible omission into a
+ * number somebody has to look at before merchants ride on it.
+ *
+ * The diagonal is excluded: same-zone is the plan's flat fee, not a cell.
+ * Returns null for by-km plans, whose tiers cover every distance by shape.
+ */
+function unpricedPairs(plan: any, zoneCount: number): number | null {
+  if (plan.type !== "ZONE") return null;
+  if (!plan.zoneRates) return null; // list endpoint does not load the grid
+  const priced = new Set(
+    (plan.zoneRates as Array<{ originZoneId: string; destZoneId: string }>)
+      .filter((r) => r.originZoneId !== r.destZoneId)
+      .map((r) => `${r.originZoneId}:${r.destZoneId}`),
+  );
+  return Math.max(0, zoneCount * (zoneCount - 1) - priced.size);
+}
+
+function serialisePlan(plan: any, zoneCount = 0) {
   return {
     id: plan.id,
     name: plan.name,
     type: plan.type,
     isActive: plan.isActive,
+    // Revision 5 (#8) — blanks are visible now instead of only showing up as a
+    // refused order weeks later.
+    unpricedPairs: unpricedPairs(plan, zoneCount),
     // Revision 5 (#7) — the plan's own intra-zone flat fee. Null means it has
     // none and same-zone deliveries fall through to the grid's diagonal.
     intraZoneFeeKwd: kwd(plan.intraZoneFeeKwd),
@@ -133,16 +159,19 @@ router.get("/", async (req: Request, res: Response) => {
  */
 router.get("/:id", async (req: Request, res: Response) => {
   try {
-    const plan = await prisma.deliveryPlan.findFirst({
-      where: { id: req.params.id, tenantId: req.user!.tenantId },
-      include: {
-        zoneRates: true,
-        kmTiers: { orderBy: { sortOrder: "asc" } },
-        _count: { select: { vendors: true } },
-      },
-    });
+    const [plan, zoneCount] = await Promise.all([
+      prisma.deliveryPlan.findFirst({
+        where: { id: req.params.id, tenantId: req.user!.tenantId },
+        include: {
+          zoneRates: true,
+          kmTiers: { orderBy: { sortOrder: "asc" } },
+          _count: { select: { vendors: true } },
+        },
+      }),
+      prisma.deliveryZone.count({ where: { tenantId: req.user!.tenantId, isActive: true } }),
+    ]);
     if (!plan) return res.status(404).json({ error: "Delivery plan not found" });
-    return res.json(serialisePlan(plan));
+    return res.json(serialisePlan(plan, zoneCount));
   } catch (error) {
     return res.status(500).json({ error: "Failed to load delivery plan" });
   }
@@ -207,15 +236,18 @@ router.put(
       });
       if (updated.count === 0) return res.status(404).json({ error: "Delivery plan not found" });
 
-      const plan = await prisma.deliveryPlan.findFirst({
-        where: { id: req.params.id, tenantId: req.user!.tenantId },
-        include: {
-          zoneRates: true,
-          kmTiers: { orderBy: { sortOrder: "asc" } },
-          _count: { select: { vendors: true } },
-        },
-      });
-      return res.json(serialisePlan(plan));
+      const [plan, zoneCount] = await Promise.all([
+        prisma.deliveryPlan.findFirst({
+          where: { id: req.params.id, tenantId: req.user!.tenantId },
+          include: {
+            zoneRates: true,
+            kmTiers: { orderBy: { sortOrder: "asc" } },
+            _count: { select: { vendors: true } },
+          },
+        }),
+        prisma.deliveryZone.count({ where: { tenantId: req.user!.tenantId, isActive: true } }),
+      ]);
+      return res.json(serialisePlan(plan, zoneCount));
     } catch (error: any) {
       if (error?.code === "P2002") {
         return res.status(409).json({ error: "A plan with that name already exists" });
@@ -284,15 +316,18 @@ router.put(
         }
       });
 
-      const fresh = await prisma.deliveryPlan.findFirst({
-        where: { id: plan.id, tenantId: req.user!.tenantId },
-        include: {
-          zoneRates: true,
-          kmTiers: { orderBy: { sortOrder: "asc" } },
-          _count: { select: { vendors: true } },
-        },
-      });
-      return res.json(serialisePlan(fresh));
+      const [fresh, zoneCount] = await Promise.all([
+        prisma.deliveryPlan.findFirst({
+          where: { id: plan.id, tenantId: req.user!.tenantId },
+          include: {
+            zoneRates: true,
+            kmTiers: { orderBy: { sortOrder: "asc" } },
+            _count: { select: { vendors: true } },
+          },
+        }),
+        prisma.deliveryZone.count({ where: { tenantId: req.user!.tenantId, isActive: true } }),
+      ]);
+      return res.json(serialisePlan(fresh, zoneCount));
     } catch (error) {
       return res.status(500).json({ error: "Failed to save plan rates" });
     }

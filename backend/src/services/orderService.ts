@@ -45,6 +45,100 @@ export const SLA_PROMISE_MINUTES = 45;
  */
 export const SCHEDULE_LEAD_MINUTES = 15;
 
+/**
+ * Who hears about an order intake refused. Same three roles the dispatch
+ * exhaustion notice goes to — the people who can actually do something about
+ * an order sitting outside the pipeline.
+ */
+const OPS_ROLES = ["ADMIN", "OPS_MANAGER", "SUPERVISOR"] as const;
+
+/**
+ * One line per rejection reason, phrased as the thing to go and do. A
+ * notification that only restates the enum teaches the reader nothing they
+ * could not see on the row itself.
+ */
+const REJECTION_ACTIONS: Record<string, { en: string; ar: string }> = {
+  OUT_OF_ZONE_DROPOFF: {
+    en: "The drop is outside every delivery zone. Draw a zone that covers it and price the pair, or handle this order manually.",
+    ar: "موقع التسليم خارج جميع مناطق التوصيل. أضف منطقة تغطيه وحدد سعرها، أو تعامل مع الطلب يدويا.",
+  },
+  UNSERVICEABLE_PAIR: {
+    en: "The delivery plan has no price for this zone pair. Fill the cell in the plan, then re-enter the order.",
+    ar: "خطة التوصيل لا تحتوي على سعر لهذا الزوج من المناطق. أضف السعر في الخطة ثم أعد إدخال الطلب.",
+  },
+  NO_COORDINATES: {
+    en: "The order arrived without a map pin. Add the dropoff location to release it.",
+    ar: "وصل الطلب بدون موقع على الخريطة. أضف موقع التسليم لتحريره.",
+  },
+  BRANCH_UNZONED: {
+    en: "The pickup branch sits in no zone. Zone the branch to release its orders.",
+    ar: "فرع الاستلام غير مرتبط بأي منطقة. حدد منطقة الفرع لتحرير طلباته.",
+  },
+  VENDOR_PAUSED: {
+    en: "The merchant is paused. Un-pause it to resume intake.",
+    ar: "التاجر متوقف مؤقتا. أعد تفعيله لاستئناف استقبال الطلبات.",
+  },
+  VENDOR_CREDIT_CAP: {
+    en: "The merchant is at its credit cap. Settle the outstanding balance to resume intake.",
+    ar: "التاجر وصل إلى حد الائتمان. سدد الرصيد المستحق لاستئناف استقبال الطلبات.",
+  },
+};
+
+const FALLBACK_ACTION = {
+  en: "Review the order and release it manually.",
+  ar: "راجع الطلب وحرره يدويا.",
+};
+
+/**
+ * Tell ops an order was refused at intake. Before this, a refused order landed
+ * in the Needs review list and waited for somebody to happen to look — the
+ * client's ask was "any order that comes in, we're in the picture".
+ *
+ * Best-effort by design: a notification that fails must never cost us the
+ * REJECTED row itself, which is the actual record of what happened.
+ */
+async function notifyOpsOrderRejected(
+  order: DeliveryOrder,
+  reason: string,
+  vendorName?: string | null,
+): Promise<void> {
+  try {
+    const users = await prisma.user.findMany({
+      where: { tenantId: order.tenantId, role: { in: [...OPS_ROLES] }, isActive: true },
+      select: { id: true },
+    });
+    if (users.length === 0) return;
+
+    const action = REJECTION_ACTIONS[reason] ?? FALLBACK_ACTION;
+    const from = vendorName ? ` from ${vendorName}` : "";
+    const fromAr = vendorName ? ` من ${vendorName}` : "";
+    await prisma.notification.createMany({
+      data: users.map((user) => ({
+        tenantId: order.tenantId,
+        userId: user.id,
+        title: "Order needs review",
+        message: `Order ${order.orderNumber}${from} could not be priced. ${action.en}`,
+        titleAr: "طلب يحتاج مراجعة",
+        bodyAr: `تعذر تسعير الطلب ${order.orderNumber}${fromAr}. ${action.ar}`,
+        type: "ORDER_NEEDS_REVIEW",
+        severity: "HIGH",
+        sourceId: order.id,
+        category: "OPS_TODO",
+        metadata: {
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          vendorId: order.vendorId,
+          reason,
+          dropoffLat: order.dropoffLat == null ? null : Number(order.dropoffLat),
+          dropoffLng: order.dropoffLng == null ? null : Number(order.dropoffLng),
+        } as Prisma.InputJsonValue,
+      })),
+    });
+  } catch (err) {
+    logger.warn({ err, orderId: order.id, reason }, "order-rejected ops notification failed");
+  }
+}
+
 /** Domain error for lookups — routes map to HTTP 404. */
 export class OrderNotFoundError extends Error {
   constructor(orderId: string) {
@@ -205,7 +299,7 @@ export async function createDeliveryOrder(input: CreateOrderInput): Promise<Deli
 
   const vendor = await prisma.vendor.findFirst({
     where: { id: input.vendorId, tenantId },
-    select: { id: true, code: true, isPaused: true, requiresCarOnly: true },
+    select: { id: true, code: true, name: true, isPaused: true, requiresCarOnly: true },
   });
   if (!vendor) throw new Error(`Vendor ${input.vendorId} not found`);
 
@@ -285,6 +379,8 @@ export async function createDeliveryOrder(input: CreateOrderInput): Promise<Deli
       status: "REJECTED",
       reason,
     });
+    // Ops hears about it now rather than on the next glance at the queue.
+    await notifyOpsOrderRejected(order, reason, vendor.name);
     return order;
   };
 

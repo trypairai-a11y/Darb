@@ -37,10 +37,16 @@ export type QuoteResult =
   | {
       ok: true;
       pickupZoneId: string;
-      dropoffZoneId: string;
+      /**
+       * Null when the pin fell outside every zone polygon and the plan priced
+       * it anyway (by-kilometre plans, which measure rather than look up).
+       */
+      dropoffZoneId: string | null;
       feeKwd: Prisma.Decimal;
       pickupZone: ResolvedZone;
-      dropoffZone: ResolvedZone;
+      dropoffZone: ResolvedZone | null;
+      /** True when the drop is outside every zone but was still priced. */
+      outOfZone?: boolean;
       /** Set only for by-kilometre plans. */
       distanceKm?: number;
       distanceSource?: DistanceSource;
@@ -123,8 +129,12 @@ function feeForDistance(
  * Pickup zone: `branchId` → VendorBranch.zoneId (BRANCH_UNZONED when the
  * branch is missing/unzoned), or an explicit `pickupZoneId`. Dropoff zone:
  * `dropoff.zoneId` directly, or lat/lng resolved point-in-polygon (no
- * coordinates AND no zoneId → NO_COORDINATES; resolved to nothing →
- * OUT_OF_ZONE_DROPOFF).
+ * coordinates AND no zoneId → NO_COORDINATES).
+ *
+ * A pin that resolves to no zone only rejects on the paths that need a zone to
+ * find a price — by-zone plans and the tenant-wide fallback. A by-kilometre
+ * plan prices it from the distance and returns `outOfZone: true` with a null
+ * dropoffZoneId.
  *
  * Throws when a plan-less vendor has no FulfillmentSettings for the tenant —
  * that is a configuration error, not a quotable rejection (routes map it to
@@ -159,6 +169,14 @@ export async function quoteDelivery(
   const pickupZone = toResolvedZone(pickupZoneRow);
 
   // ── 2. Dropoff zone ───────────────────────────────────────────────────────
+  //
+  // A pin that lands outside every polygon is NOT a rejection here any more.
+  // Only a by-zone plan needs a zone to read a price off; a by-kilometre plan
+  // measures the trip and never looks the zone up. Rejecting both alike meant
+  // a km-priced merchant was refused an order it had a perfectly good price
+  // for, purely because the map has gaps. So the miss is carried down as
+  // `dropoffZone = null` and only turned into OUT_OF_ZONE_DROPOFF at 3b, where
+  // it actually matters.
   const dropoff = input.dropoff ?? {};
   let dropoffZone: ResolvedZone | null = null;
 
@@ -167,6 +185,8 @@ export async function quoteDelivery(
       where: { id: dropoff.zoneId, tenantId, isActive: true },
       select: { id: true, code: true, name: true, nameAr: true },
     });
+    // An explicit zone id that resolves to nothing is a bad reference, not a
+    // map gap: there is no pin to measure, so nothing downstream can price it.
     if (!row) return { ok: false, reason: "OUT_OF_ZONE_DROPOFF" };
     dropoffZone = toResolvedZone(row);
   } else if (
@@ -176,22 +196,24 @@ export async function quoteDelivery(
     Number.isFinite(dropoff.lng)
   ) {
     dropoffZone = await resolveZone(tenantId, dropoff.lat, dropoff.lng);
-    if (!dropoffZone) return { ok: false, reason: "OUT_OF_ZONE_DROPOFF" };
   } else {
     return { ok: false, reason: "NO_COORDINATES" };
   }
 
   const base = {
     pickupZoneId: pickupZone.id,
-    dropoffZoneId: dropoffZone.id,
+    dropoffZoneId: dropoffZone?.id ?? null,
     pickupZone,
     dropoffZone,
+    ...(dropoffZone ? {} : { outOfZone: true }),
   };
 
   // ── 3. Fee (Prisma.Decimal arithmetic only) ──────────────────────────────
   const plan = await resolvePlan(tenantId, input.branchId);
 
   // ── 3a. By-kilometre plan ────────────────────────────────────────────────
+  // Zone-independent by construction: the tiers answer for any pin on earth,
+  // so an uncovered drop is priced exactly like a covered one.
   if (plan?.type === "KM") {
     const branch = await prisma.vendorBranch.findFirst({
       where: { id: input.branchId!, tenantId },
@@ -225,6 +247,11 @@ export async function quoteDelivery(
   }
 
   // ── 3b. By-zone plan ─────────────────────────────────────────────────────
+  // From here down a zone is genuinely required: the price is a cell in a
+  // grid, and there is no row to read for a pin that is in no zone. Draw the
+  // zone and the plan prices it; until then it is a supervisor's call.
+  if (!dropoffZone) return { ok: false, reason: "OUT_OF_ZONE_DROPOFF" };
+
   if (plan?.type === "ZONE") {
     // Revision 5 (#7): the intra-zone flat fee belongs to the plan. A delivery
     // that starts and ends in the same zone is priced by the plan's own flat

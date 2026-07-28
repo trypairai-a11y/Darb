@@ -64,7 +64,7 @@ export default function ZonesPage() {
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["darb", "zones"],
-    queryFn: () => zonesApi.list(),
+    queryFn: () => zonesApi.listAll(),
   });
   const zones = useMemo(() => unwrapList<DeliveryZone>(data), [data]);
 

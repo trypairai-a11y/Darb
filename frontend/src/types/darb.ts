@@ -762,6 +762,9 @@ export interface DeliveryPlan {
   // Revision 5 (#7) — this plan's own intra-zone flat fee. Null means it has
   // none and same-zone deliveries price off the grid's diagonal instead.
   intraZoneFeeKwd?: string | null;
+  // Origin→destination pairs this plan leaves blank. Null on by-km plans and
+  // on the list endpoint, which does not load the grid.
+  unpricedPairs?: number | null;
   vendorCount: number;
   zoneRates: DeliveryPlanZoneRate[];
   kmTiers: DeliveryPlanKmTier[];

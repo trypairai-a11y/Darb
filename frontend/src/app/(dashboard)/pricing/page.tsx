@@ -37,7 +37,7 @@ export default function PricingPage() {
   const toast = useToast();
   const queryClient = useQueryClient();
 
-  const zonesQuery = useQuery({ queryKey: ["darb", "zones"], queryFn: () => zonesApi.list() });
+  const zonesQuery = useQuery({ queryKey: ["darb", "zones"], queryFn: () => zonesApi.listAll() });
   const surchargesQuery = useQuery({
     queryKey: ["darb", "surcharges"],
     queryFn: () => zonesApi.getSurcharges(),
