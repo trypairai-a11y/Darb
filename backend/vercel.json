@@ -18,7 +18,6 @@
   "crons": [
     {
       "path": "/api/cron/dispatch-sweep",
-      "_comment": "Vercel Hobby permits daily crons only. Dispatch needs a minute-level tick, so this daily run is a floor, not the driver: an external ticker must hit this endpoint every minute (see CLAUDE.md, Deployment notes). On Vercel Pro, change this to '* * * * *' and drop the external ticker.",
       "schedule": "0 3 * * *"
     },
     {
