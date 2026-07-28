@@ -1767,6 +1767,15 @@ export interface Messages {
     loading: string;
     errorGeneric: string;
   };
+  cashDesk: {
+    navSection: string;
+    navRecord: string;
+    navHistory: string;
+    title: string;
+    subtitle: string;
+    historyTitle: string;
+    historySubtitle: string;
+  };
   fleetPortal: {
     switchCompany: string;
     navSection: string;
@@ -3661,6 +3670,15 @@ export const en: Messages = {
     loading: "Loading your order…",
     errorGeneric: "Something went wrong. Pull to retry.",
   },
+  cashDesk: {
+    navSection: "Cash desk",
+    navRecord: "Record hand-in",
+    navHistory: "History",
+    title: "Cash handed in",
+    subtitle: "Record the cash a driver hands in at the end of a shift.",
+    historyTitle: "Hand-in history",
+    historySubtitle: "Every hand-in recorded, newest first.",
+  },
   fleetPortal: {
     switchCompany: "Switch company",
     navSection: "Fleet portal",
@@ -5554,6 +5572,15 @@ export const ar: Messages = {
     notFoundBody: "رابط التتبع غير صالح أو منتهي.",
     loading: "جارٍ تحميل طلبك…",
     errorGeneric: "حدث خطأ ما. حاول مرة أخرى.",
+  },
+  cashDesk: {
+    navSection: "مكتب النقد",
+    navRecord: "تسجيل تسليم",
+    navHistory: "السجل",
+    title: "النقد المسلّم",
+    subtitle: "سجّل النقد الذي يسلّمه السائق في نهاية الدوام.",
+    historyTitle: "سجل التسليم",
+    historySubtitle: "كل عمليات التسليم المسجّلة، الأحدث أولاً.",
   },
   fleetPortal: {
     switchCompany: "تبديل الشركة",

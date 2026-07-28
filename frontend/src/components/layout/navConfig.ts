@@ -24,6 +24,8 @@ import {
   TrendingUp,
   Truck,
   Users,
+  HandCoins,
+  History,
 } from "lucide-react";
 
 export interface NavItem {
@@ -80,6 +82,8 @@ export const NAV_SECTIONS: NavSection[] = [
         path: "/finance",
         icon: Wallet,
         minRole: "ACCOUNTANT",
+        // /finance/remittances now forwards to the cash desk, but a user can
+        // still be mid-redirect on it.
         owns: ["/finance/remittances", "/finance/reports"],
       },
       {
@@ -115,6 +119,18 @@ export const NAV_SECTIONS: NavSection[] = [
         owns: ["/vendor/analytics", "/vendor/campaigns"],
       },
       { i18n: "darbNav.vendorSettings", path: "/vendor/settings", icon: Settings },
+    ],
+  },
+  {
+    // Revision 4 (#3) — the cash desk is a portal, not a rail item on the
+    // staff side. A CASH_COLLECTOR sees these two entries and nothing else;
+    // ADMIN can still reach the same routes to inspect them.
+    key: "cashDesk",
+    i18n: "cashDesk.navSection",
+    roles: ["CASH_COLLECTOR"],
+    items: [
+      { i18n: "cashDesk.navRecord", path: "/cash-desk", icon: HandCoins },
+      { i18n: "cashDesk.navHistory", path: "/cash-desk/history", icon: History },
     ],
   },
   {

@@ -1,7 +1,8 @@
-// Merged into the Money screen (revision #31). Kept as a redirect so
-// bookmarks, notification links and the old stat-card deep links still work.
+// Merged into the Money screen (revision #31), then split back out into its
+// own portal (revision 4 #3). Two moves, one surviving bookmark: this now
+// forwards straight to the cash desk rather than through /finance?tab=cash.
 import { redirect } from "next/navigation";
 
 export default function RemittancesRedirect() {
-  redirect("/finance?tab=cash");
+  redirect("/cash-desk");
 }

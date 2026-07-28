@@ -1,8 +1,14 @@
 "use client";
-// The "Cash handed in" tab of the Money screen. Driver search → shows current
-// held cash → amount/method/note form → POST /api/wallets/remittances; history
-// table below. Lifted out of the old /finance/remittances page verbatim, minus
-// its page header: the Money screen carries the title now.
+// The cash desk. Driver search → shows current held cash → amount/method/note
+// form → POST /api/wallets/remittances, with the hand-in history beside it.
+//
+// Revision 4 (#3) moved this out of the Money screen and into its own fenced
+// portal, because the person taking cash off a driver at the end of a shift is
+// not the person reading the ledger. It kept the two-part shape it has always
+// had; `view` just decides which part a route shows.
+//
+// Both views mount the same queries, so switching between them is instant and
+// a hand-in recorded on one is already in the other.
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { HandCoins } from "lucide-react";
@@ -26,7 +32,14 @@ interface DriverOption {
 
 const METHODS: RemittanceMethod[] = ["CASH", "BANK_TRANSFER", "AL_MUZAINI"];
 
-export default function RemittancesPanel() {
+export type CashDeskView = "record" | "history" | "both";
+
+interface CashDeskPanelProps {
+  /** Which half of the desk this route shows. */
+  view?: CashDeskView;
+}
+
+export default function CashDeskPanel({ view = "both" }: CashDeskPanelProps) {
   const { t, locale } = useI18n();
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -179,9 +192,13 @@ export default function RemittancesPanel() {
     );
   }
 
+  const showRecord = view === "record" || view === "both";
+  const showHistory = view === "history" || view === "both";
+
   return (
     <div className="space-y-6">
       {/* Record form */}
+      {showRecord && (
       <div className="bg-card border border-sand-200 rounded-2xl shadow-soft p-6 space-y-4 max-w-2xl">
         <h2 className="font-medium text-sand-900 flex items-center gap-2">
           <HandCoins size={16} aria-hidden="true" className="text-primary" />
@@ -279,10 +296,35 @@ export default function RemittancesPanel() {
           </div>
         </form>
       </div>
+      )}
 
       {/* History */}
+      {showHistory && (
       <div>
         <h2 className="font-medium text-sand-900 mb-3">{t("wallet.history")}</h2>
+        {/* On the history route the driver picker has no form to sit in, so it
+            moves up here and becomes the filter it already effectively was. */}
+        {!showRecord && (
+          <div className="mb-4">
+            <FilterBar
+              filters={[
+                {
+                  key: "driverId",
+                  label: t("wallet.driver"),
+                  type: "driver-search",
+                  placeholder: t("wallet.searchByDriverId"),
+                  options: drivers.map((d) => ({
+                    value: d.id,
+                    label: d.name,
+                    code: d.driverCode,
+                  })),
+                },
+              ]}
+              values={filters}
+              onChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
+            />
+          </div>
+        )}
         <DataTable
           columns={columns}
           data={history}
@@ -291,6 +333,7 @@ export default function RemittancesPanel() {
           emptyMessage={t("errors.noData")}
         />
       </div>
+      )}
     </div>
   );
 }

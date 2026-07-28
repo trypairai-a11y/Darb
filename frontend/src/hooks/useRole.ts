@@ -5,10 +5,33 @@ import { useAuth } from "@/contexts/AuthContext";
 // staff hierarchy: they are valid UserRoles but never appear in ROLE_ORDER,
 // so hasRole() always returns false for them and every minRole-gated
 // surface stays hidden from them.
-export type UserRole = "ADMIN" | "OPS_MANAGER" | "SUPERVISOR" | "ACCOUNTANT" | "VIEWER" | "VENDOR" | "FLEET";
+export type UserRole =
+  | "ADMIN"
+  | "OPS_MANAGER"
+  | "SUPERVISOR"
+  | "ACCOUNTANT"
+  | "VIEWER"
+  | "VENDOR"
+  | "FLEET"
+  // Revision 4 (#11) — staff who own a set of merchants. Inside the hierarchy,
+  // between ACCOUNTANT and VIEWER: they read the network, they do not run it.
+  | "ACCOUNT_MANAGER"
+  // Revision 4 (#3) — the cash desk login. A portal role like VENDOR and
+  // FLEET, deliberately outside the hierarchy so no minRole gate lets it in.
+  | "CASH_COLLECTOR";
 
-/** Role hierarchy: higher index = less permissions. VENDOR and FLEET intentionally absent. */
-const ROLE_ORDER: UserRole[] = ["ADMIN", "OPS_MANAGER", "SUPERVISOR", "ACCOUNTANT", "VIEWER"];
+/**
+ * Role hierarchy: higher index = less permissions. VENDOR, FLEET and
+ * CASH_COLLECTOR intentionally absent — they are portal roles.
+ */
+const ROLE_ORDER: UserRole[] = [
+  "ADMIN",
+  "OPS_MANAGER",
+  "SUPERVISOR",
+  "ACCOUNTANT",
+  "ACCOUNT_MANAGER",
+  "VIEWER",
+];
 
 /**
  * Returns helpers for checking the current user's role and permissions.
@@ -47,6 +70,7 @@ export function useRole() {
     vendorId: user?.vendorId ?? null,
     isFleet: role === "FLEET",
     fleetPartnerId: user?.fleetPartnerId ?? null,
+    isCashCollector: role === "CASH_COLLECTOR",
     canEdit: hasRole("SUPERVISOR"),       // SUPERVISOR and above can edit
     canDelete: hasRole("OPS_MANAGER"),    // OPS_MANAGER and above can delete
     canManageSettings: hasRole("OPS_MANAGER"), // OPS_MANAGER and above can change settings

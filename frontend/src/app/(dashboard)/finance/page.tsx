@@ -5,19 +5,23 @@
 // all: an overview of three stat cards whose only other content was two link
 // cards pointing at the other two. Revision #31 folded all of it into one
 // screen. The stat cards stayed (they are the answer to "where do we stand"),
-// the link cards went, and the four report views plus cash hand-ins are now a
-// single row of tabs instead of two stacked tab strips on two routes.
+// the link cards went, and the report views became a single row of tabs
+// instead of two stacked tab strips on two routes.
+//
+// Revision 4 (#3) then took cash hand-ins back out, to their own portal. That
+// is not a reversal of the merge: the other three tabs are all the same
+// question asked three ways, and recording cash off a driver never was. The
+// Driver cash card and the old ?tab=cash link both redirect to /cash-desk.
 //
 // The old routes redirect in here, so every bookmark and deep link still
 // lands on the right tab.
-import { Suspense, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Truck, Store, Wallet } from "lucide-react";
 import StatCard from "@/components/shared/StatCard";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
-import RemittancesPanel from "@/components/finance/RemittancesPanel";
 import ReportsPanel, { type ReportView } from "@/components/finance/ReportsPanel";
 import { walletsApi, fetchAllPages } from "@/lib/darbApi";
 import type { WalletAccount, WalletEntry } from "@/types/darb";
@@ -25,10 +29,10 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd } from "@/i18n/format";
 import { cn } from "@/lib/cn";
 
-/** One flat strip. "cash" is the hand-in desk; the rest are read-only reports. */
-type Tab = "cash" | ReportView;
+/** One flat strip of read-only reports. Cash hand-ins live at /cash-desk. */
+type Tab = ReportView;
 
-const TABS: Tab[] = ["cash", "ledger", "vendor-statements", "reconciliation"];
+const TABS: Tab[] = ["ledger", "vendor-statements", "reconciliation"];
 
 function isTab(value: string | null): value is Tab {
   return TABS.includes(value as Tab);
@@ -44,10 +48,17 @@ function MoneyScreen() {
   const { t, locale } = useI18n();
   const searchParams = useSearchParams();
 
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>(() => {
     const requested = searchParams.get("tab");
-    return isTab(requested) ? requested : "cash";
+    return isTab(requested) ? requested : "ledger";
   });
+
+  // Revision 4 (#3): ?tab=cash used to open the hand-in desk here. It is its
+  // own portal now, so the bookmark forwards rather than 404s.
+  useEffect(() => {
+    if (searchParams.get("tab") === "cash") router.replace("/cash-desk");
+  }, [searchParams, router]);
   // Deep links from the stat cards and from the old /finance/reports URL can
   // pre-filter the ledger by entry type.
   const [ledgerType, setLedgerType] = useState(() => searchParams.get("type") ?? "");
@@ -86,7 +97,6 @@ function MoneyScreen() {
   );
 
   const tabLabels: Record<Tab, string> = {
-    cash: t("simple.moneyCash"),
     ledger: t("reports.viewLedger"),
     "vendor-statements": t("reports.viewVendorStatements"),
     reconciliation: t("reports.viewReconciliation"),
@@ -130,7 +140,7 @@ function MoneyScreen() {
           value={formatKwd(driverCash, locale)}
           icon={Truck}
           trend={t("wallet.viewRemittances")}
-          onClick={() => openTab("cash")}
+          onClick={() => router.push("/cash-desk")}
         />
         <StatCard
           title={t("wallet.feesToday")}
@@ -157,13 +167,9 @@ function MoneyScreen() {
         ))}
       </div>
 
-      {tab === "cash" ? (
-        <RemittancesPanel />
-      ) : (
-        // Remounting on a type change is deliberate: it reseeds the panel's
-        // own filter state from the deep link.
-        <ReportsPanel key={`${tab}:${ledgerType}`} view={tab} initialType={ledgerType} />
-      )}
+      {/* Remounting on a type change is deliberate: it reseeds the panel's
+          own filter state from the deep link. */}
+      <ReportsPanel key={`${tab}:${ledgerType}`} view={tab} initialType={ledgerType} />
     </div>
   );
 }
