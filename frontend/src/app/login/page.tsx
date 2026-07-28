@@ -46,23 +46,30 @@ export default function LoginPage() {
             <span className="text-sm tracking-widest uppercase text-white/70">Darb</span>
           </div>
 
+          {/* This panel used to read "An AI ops chief for Keeta, Talabat,
+              Deliveroo and Americana fleets", with a "4 platforms" stat
+              counting them. That was the pre-rebuild positioning, and it put
+              four competitors' names on the first screen anyone sees. Darb is
+              the only platform in scope now (PRD §1), so the copy says what
+              Darb does rather than whose fleets it manages. */}
           <div className="max-w-xl animate-fade-up">
             <h1 className="font-display text-display-xl text-white mb-6">
-              The operating<br/>system for<br/>delivery fleets.
+              The operating<br/>system for<br/>delivery in Kuwait.
             </h1>
             <p className="text-white/75 text-lg leading-relaxed max-w-md">
-              An AI ops chief for Keeta, Talabat, Deliveroo and Americana fleets — proposals, live floor signals, and finance clarity in one place.
+              Shops send the order. Darb owns the dispatch, the driver, the delivery and the
+              money, and shows every one of them in one place.
             </p>
 
             <div className="mt-10 flex items-center gap-6">
               <div>
-                <div className="font-display text-4xl">40+</div>
-                <div className="text-xs text-white/60 uppercase tracking-wider mt-1">models</div>
+                <div className="font-display text-4xl">Kuwait</div>
+                <div className="text-xs text-white/60 uppercase tracking-wider mt-1">zones</div>
               </div>
               <div className="w-px h-10 bg-white/15" />
               <div>
-                <div className="font-display text-4xl">4</div>
-                <div className="text-xs text-white/60 uppercase tracking-wider mt-1">platforms</div>
+                <div className="font-display text-4xl">One</div>
+                <div className="text-xs text-white/60 uppercase tracking-wider mt-1">partner</div>
               </div>
               <div className="w-px h-10 bg-white/15" />
               <div>
@@ -88,7 +95,7 @@ export default function LoginPage() {
 
           <div className="mb-8">
             <h2 className="font-display text-display-sm text-sand-900 mb-2">Welcome back</h2>
-            <p className="text-sm text-sand-700">Sign in to your AI ops chief.</p>
+            <p className="text-sm text-sand-700">Sign in to Darb.</p>
           </div>
 
           <div className="inline-flex p-1 rounded-pill bg-sand-200 mb-6">

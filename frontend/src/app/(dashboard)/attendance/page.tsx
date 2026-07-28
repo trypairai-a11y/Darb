@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { useApiGet } from "@/hooks/useApi";
 import StatCard from "@/components/shared/StatCard";
-import PlatformBadge from "@/components/shared/PlatformBadge";
 import { cn } from "@/lib/cn";
 import { CalendarCheck, Clock, UserX, FileText } from "lucide-react";
 import InsightBanner from "@/components/shared/InsightBanner";
@@ -23,11 +22,10 @@ export default function AttendancePage() {
   const { t, locale } = useI18n();
   const [tab, setTab] = useState<Tab>("daily");
   const [date, setDate] = useState(new Date().toLocaleDateString("en-CA"));
-  const [platform, setPlatform] = useState("");
 
   const { data: summary } = useApiGet<any>("/api/attendance/summary");
   const { data: records } = useApiGet<any>(
-    `/api/attendance?dateFrom=${date}&dateTo=${date}&limit=100${platform ? `&platform=${platform}` : ""}`
+    `/api/attendance?dateFrom=${date}&dateTo=${date}&limit=100`
   );
   const { data: leaves } = useApiGet<any>("/api/leave-requests?limit=50");
 
@@ -100,17 +98,6 @@ export default function AttendancePage() {
               onChange={(e) => setDate(e.target.value)}
               className="px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
-            <select
-              value={platform}
-              onChange={(e) => setPlatform(e.target.value)}
-              className="px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-            >
-              <option value="">{t("attendancePage.allPlatforms")}</option>
-              <option value="KEETA">Keeta</option>
-              <option value="TALABAT">Talabat</option>
-              <option value="DELIVEROO">Deliveroo</option>
-              <option value="AMERICANA">Americana</option>
-            </select>
           </div>
 
           {/* Table */}
@@ -119,7 +106,6 @@ export default function AttendancePage() {
               <thead>
                 <tr className="border-b border-gray-50">
                   <th className="text-start text-xs font-medium text-secondary px-5 py-3">{t("table.driver")}</th>
-                  <th className="text-start text-xs font-medium text-secondary px-5 py-3">{t("table.platform")}</th>
                   <th className="text-start text-xs font-medium text-secondary px-5 py-3">{t("table.status")}</th>
                   <th className="text-start text-xs font-medium text-secondary px-5 py-3">{t("attendancePage.clockIn")}</th>
                   <th className="text-start text-xs font-medium text-secondary px-5 py-3">{t("attendancePage.clockOut")}</th>
@@ -129,7 +115,7 @@ export default function AttendancePage() {
               <tbody>
                 {attendanceList.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-5 py-12 text-center text-sm text-secondary">
+                    <td colSpan={5} className="px-5 py-12 text-center text-sm text-secondary">
                       {t("attendancePage.noAttendanceRecords")}
                     </td>
                   </tr>
@@ -137,9 +123,6 @@ export default function AttendancePage() {
                   attendanceList.map((record: any) => (
                     <tr key={record.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-25">
                       <td className="px-5 py-3 text-sm font-medium">{record.driver?.name}</td>
-                      <td className="px-5 py-3">
-                        <PlatformBadge platform={record.driver?.platform} />
-                      </td>
                       <td className="px-5 py-3">
                         <span className={cn("px-2 py-0.5 rounded-md text-xs font-medium", STATUS_COLORS[record.status])}>
                           {statusLabel(record.status)}

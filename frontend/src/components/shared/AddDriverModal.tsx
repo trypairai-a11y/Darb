@@ -25,11 +25,10 @@ const INVENTORY_ITEMS = [
   { key: "PETROL_CARD", label: "Petrol Card", hasQuantity: false },
 ] as const;
 
-const PLATFORMS = [
-  { value: "TALABAT", label: "Talabat" },
-  { value: "KEETA", label: "Keeta" },
-  { value: "AMERICANA", label: "Americana" },
-] as const;
+// Darb is the only platform in scope (PRD §1). This list used to offer
+// Talabat, Keeta and Americana, which put three competitors in a dropdown on
+// a form for creating OUR drivers.
+const PLATFORMS = [{ value: "DARB", label: "Darb" }] as const;
 
 type InventoryState = Record<string, { issued: boolean; quantity: number }>;
 
