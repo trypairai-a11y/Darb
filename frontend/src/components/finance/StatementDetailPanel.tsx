@@ -34,10 +34,24 @@ function fileSlug(statement: VendorStatementRow): string {
   return `statement-${code}-${statement.periodStart.slice(0, 7)}`.replace(/[^A-Za-z0-9-]/g, "-");
 }
 
+/** Column sums for the drill-in. Nulls (a payout has no order total) count as 0. */
+function sumRows(rows: StatementTransaction[]) {
+  const add = (acc: number, v: string | null | undefined) => acc + Number(v ?? 0);
+  return {
+    orderTotal: rows.reduce((acc, r) => add(acc, r.orderTotalKwd), 0).toFixed(3),
+    deliveryFee: rows.reduce((acc, r) => add(acc, r.deliveryFeeKwd), 0).toFixed(3),
+    codNet: rows.reduce((acc, r) => add(acc, r.codNetKwd), 0).toFixed(3),
+  };
+}
+
 /**
  * Revision 4 (#5) — one shop's detailed statement as CSV. Exported here rather
  * than from the list so the file matches what is on screen: the client asked
  * for the download to follow "the same concept" as the report.
+ *
+ * The file carries the same footing as the panel: a totals line, then the
+ * opening/closing block. A statement that lands in a merchant's inbox without
+ * the net balance on it is a list of orders, not a statement.
  */
 export function exportStatementCsv(
   statement: VendorStatementRow,
@@ -50,8 +64,14 @@ export function exportStatementCsv(
     fee: string;
     codNet: string;
     reference: string;
+    totals: string;
+    openingBalance: string;
+    prepaidFees: string;
+    refunds: string;
+    netBalance: string;
   }
 ) {
+  const totals = sumRows(rows);
   downloadCsv(
     fileSlug(statement),
     [
@@ -63,15 +83,23 @@ export function exportStatementCsv(
       labels.fee,
       labels.codNet,
     ],
-    rows.map((r) => [
-      r.date ? r.date.slice(0, 10) : "n/a",
-      r.orderNumber ?? "n/a",
-      r.kind,
-      r.reference ?? "n/a",
-      r.orderTotalKwd ?? "n/a",
-      r.deliveryFeeKwd ?? "n/a",
-      r.codNetKwd,
-    ])
+    [
+      ...rows.map((r) => [
+        r.date ? r.date.slice(0, 10) : "n/a",
+        r.orderNumber ?? "n/a",
+        r.kind,
+        r.reference ?? "n/a",
+        r.orderTotalKwd ?? "n/a",
+        r.deliveryFeeKwd ?? "n/a",
+        r.codNetKwd,
+      ]),
+      ["", "", "", labels.totals, totals.orderTotal, totals.deliveryFee, totals.codNet],
+      ["", "", "", labels.openingBalance, "", "", statement.openingBalanceKwd],
+      ["", "", "", labels.codNet, "", "", statement.codNetKwd],
+      ["", "", "", labels.prepaidFees, "", "", statement.prepaidFeesKwd],
+      ["", "", "", labels.refunds, "", "", statement.refundsKwd],
+      ["", "", "", labels.netBalance, "", "", statement.closingBalanceKwd],
+    ]
   );
 }
 
@@ -86,6 +114,7 @@ export default function StatementDetailPanel({ statement, onClose }: StatementDe
   });
 
   const rows = useMemo(() => detailQuery.data?.rows ?? [], [detailQuery.data]);
+  const totals = useMemo(() => sumRows(rows), [rows]);
 
   const kindLabel = (kind: StatementTransaction["kind"]) =>
     kind === "REFUND"
@@ -116,7 +145,21 @@ export default function StatementDetailPanel({ statement, onClose }: StatementDe
         />
       ) : (
         <div className="space-y-5">
-          <div className="flex justify-end">
+          {/* The net balance is the one number the reader came for, so it sits
+              above the rows rather than three hundred lines below them. */}
+          <div className="flex items-end justify-between gap-4 rounded-2xl bg-sand-50 border border-sand-200 px-4 py-3">
+            <div>
+              <p className="text-xs font-medium text-sand-600">{t("reports.netBalance")}</p>
+              <p
+                dir="ltr"
+                className={cn(
+                  "text-2xl font-display tabular-nums mt-0.5",
+                  Number(statement.closingBalanceKwd) < 0 ? "text-red-600" : "text-sand-900"
+                )}
+              >
+                {formatKwd(statement.closingBalanceKwd, locale)}
+              </p>
+            </div>
             <button
               type="button"
               disabled={rows.length === 0}
@@ -129,6 +172,11 @@ export default function StatementDetailPanel({ statement, onClose }: StatementDe
                   total: t("reports.orderTotal"),
                   fee: t("reports.deliveryFee"),
                   codNet: t("reports.codNet"),
+                  totals: t("reports.totals"),
+                  openingBalance: t("reports.openingBalance"),
+                  prepaidFees: t("reports.prepaidFees"),
+                  refunds: t("reports.refunds"),
+                  netBalance: t("reports.netBalance"),
                 })
               }
               className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors disabled:opacity-50"
@@ -248,6 +296,26 @@ export default function StatementDetailPanel({ statement, onClose }: StatementDe
                     );
                   })}
                 </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-sand-300">
+                    <td />
+                    <td className="py-2.5 text-xs font-medium text-sand-900" colSpan={2}>
+                      {t("reports.totals")}
+                    </td>
+                    <td dir="ltr" className="py-2.5 text-end tabular-nums font-medium text-sand-900">
+                      {formatKwd(totals.orderTotal, locale)}
+                    </td>
+                    <td dir="ltr" className="py-2.5 text-end tabular-nums font-medium text-sand-900">
+                      {formatKwd(totals.deliveryFee, locale)}
+                    </td>
+                    <td
+                      dir="ltr"
+                      className="py-2.5 text-end tabular-nums font-semibold text-sand-900"
+                    >
+                      {formatKwd(totals.codNet, locale)}
+                    </td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           )}
@@ -260,7 +328,7 @@ export default function StatementDetailPanel({ statement, onClose }: StatementDe
             <Foot label={t("reports.prepaidFees")} value={statement.prepaidFeesKwd} />
             <Foot label={t("reports.refunds")} value={statement.refundsKwd} />
             <Foot
-              label={t("reports.closingBalance")}
+              label={t("reports.netBalance")}
               value={statement.closingBalanceKwd}
               emphasis
             />

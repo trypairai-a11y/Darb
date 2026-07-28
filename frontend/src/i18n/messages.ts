@@ -1619,6 +1619,8 @@ export interface Messages {
     period: string;
     codNet: string;
     closingBalance: string;
+    netBalance: string;
+    totals: string;
     runDate: string;
     typePlatformRevenue: string;
     typeFleetCost: string;
@@ -3568,6 +3570,8 @@ export const en: Messages = {
     period: "Period",
     codNet: "COD net",
     closingBalance: "Closing balance",
+    netBalance: "Net balance",
+    totals: "Totals",
     runDate: "Run date",
     typePlatformRevenue: "Platform revenue",
     typeFleetCost: "Fleet cost",
@@ -5517,6 +5521,8 @@ export const ar: Messages = {
     period: "الفترة",
     codNet: "صافي الدفع عند الاستلام",
     closingBalance: "الرصيد الختامي",
+    netBalance: "صافي الرصيد",
+    totals: "الإجماليات",
     runDate: "تاريخ التشغيل",
     typePlatformRevenue: "إيراد المنصة",
     typeFleetCost: "تكلفة الأسطول",

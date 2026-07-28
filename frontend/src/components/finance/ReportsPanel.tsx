@@ -261,6 +261,11 @@ export default function ReportsPanel({ view, initialType = "" }: ReportsPanelPro
     total: t("reports.orderTotal"),
     fee: t("reports.deliveryFee"),
     codNet: t("reports.codNet"),
+    totals: t("reports.totals"),
+    openingBalance: t("reports.openingBalance"),
+    prepaidFees: t("reports.prepaidFees"),
+    refunds: t("reports.refunds"),
+    netBalance: t("reports.netBalance"),
   };
 
   const rowCount =

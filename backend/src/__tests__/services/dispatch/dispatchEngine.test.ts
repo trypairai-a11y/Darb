@@ -560,6 +560,13 @@ describe("sweepDispatch", () => {
   const setWedged = (rows: unknown[]) => { wedgedRows = rows; };
   const setExhausted = (rows: unknown[]) => { exhaustedRows = rows; };
 
+  // Leg 3a (adopt unstamped NO_DRIVER orders) issues an updateMany on every
+  // sweep, so the stub routes on the selector rather than call order —
+  // otherwise it would swallow the claim fixtures the leg-3b tests set up.
+  let claimResults: unknown[] = [];
+  let defaultClaim: unknown = { count: 1 };
+  const queueClaims = (...results: unknown[]) => { claimResults = results; };
+
   beforeEach(() => {
     // runDispatchRound bails immediately on a non-DISPATCHING order, so
     // deliveryOrder.findFirst call count == number of orders advanced.
@@ -567,9 +574,20 @@ describe("sweepDispatch", () => {
     prisma.dispatchOffer.findMany.mockResolvedValue([]);
     wedgedRows = [];
     exhaustedRows = [];
+    claimResults = [];
+    defaultClaim = { count: 1 };
     prisma.deliveryOrder.findMany.mockImplementation(async (q: any) =>
       q?.where?.status === "NO_DRIVER" ? exhaustedRows : wedgedRows,
     );
+    prisma.deliveryOrder.updateMany.mockImplementation(async (q: any) => {
+      if (q?.where?.nextRedispatchAt === null) return { count: 0 }; // leg 3a
+      if (claimResults.length) {
+        const next = claimResults.shift();
+        if (next instanceof Error) throw next;
+        return next;
+      }
+      return defaultClaim;
+    });
   });
 
   test("idle: nothing due and nothing wedged", async () => {
@@ -714,6 +732,21 @@ describe("sweepDispatch", () => {
   // tests defend the property that fixes it: an exhausted order is offered
   // again on its own schedule, without anyone touching it.
 
+  test("leg 3a adopts NO_DRIVER orders that predate the retry clock", async () => {
+    // The order in the client's screenshot: exhausted before this feature
+    // existed, so its stamp is NULL. A `lte` selector never matches NULL, so
+    // without this pass the fix would reach every order EXCEPT the ones
+    // already stuck — which are the only ones anybody was complaining about.
+    await sweepDispatch({ now: NOW });
+
+    const adopt = prisma.deliveryOrder.updateMany.mock.calls.find(
+      (c: any) => c[0]?.where?.nextRedispatchAt === null,
+    )[0];
+    expect(adopt.where).toEqual({ status: "NO_DRIVER", nextRedispatchAt: null });
+    // Due immediately: they have waited long enough already.
+    expect(adopt.data).toEqual({ nextRedispatchAt: NOW });
+  });
+
   test("leg 3 selects only NO_DRIVER orders whose retry is due", async () => {
     await sweepDispatch({ now: NOW, limit: 25 });
 
@@ -728,13 +761,14 @@ describe("sweepDispatch", () => {
 
   test("returns a due exhausted order to DISPATCHING and re-offers it", async () => {
     setExhausted([{ id: "ord-stuck", tenantId: TENANT }]);
-    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 1 });
 
     const result = await sweepDispatch({ now: NOW });
 
     expect(result.retried).toBe(1);
     // The claim clears the due stamp so two concurrent sweeps cannot both win.
-    const claim = prisma.deliveryOrder.updateMany.mock.calls[0][0];
+    const claim = prisma.deliveryOrder.updateMany.mock.calls.find(
+      (c: any) => c[0]?.where?.id === "ord-stuck",
+    )[0];
     expect(claim.where).toMatchObject({ id: "ord-stuck", status: "NO_DRIVER" });
     expect(claim.data.nextRedispatchAt).toBeNull();
     // And it went on to actually dispatch, rather than just flipping status.
@@ -743,7 +777,7 @@ describe("sweepDispatch", () => {
 
   test("an order claimed by someone else in the meantime is left alone", async () => {
     setExhausted([{ id: "ord-stuck", tenantId: TENANT }]);
-    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 0 }); // assigned/cancelled first
+    defaultClaim = { count: 0 }; // assigned/cancelled first
 
     const result = await sweepDispatch({ now: NOW });
 
@@ -753,10 +787,11 @@ describe("sweepDispatch", () => {
 
   test("a failed retry re-arms rather than parking the order forever", async () => {
     setExhausted([{ id: "ord-stuck", tenantId: TENANT }]);
-    prisma.deliveryOrder.updateMany
-      .mockResolvedValueOnce({ count: 1 }) // the claim succeeds...
-      .mockRejectedValueOnce(new Error("db blip")) // ...the transition does not
-      .mockResolvedValue({ count: 1 }); // the re-arm
+    queueClaims(
+      { count: 1 }, // the claim succeeds...
+      new Error("db blip"), // ...the transition does not
+      { count: 1 }, // the re-arm
+    );
 
     const result = await sweepDispatch({ now: NOW });
 

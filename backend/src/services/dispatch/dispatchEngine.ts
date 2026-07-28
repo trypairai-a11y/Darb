@@ -1003,7 +1003,28 @@ export async function sweepDispatch(
     }
   }
 
-  // ── Leg 3: retry orders that ran out of offer rounds ──────────────────────
+  // ── Leg 3a: adopt NO_DRIVER orders that carry no retry clock ──────────────
+  // Every order that exhausted BEFORE this feature shipped has a NULL stamp,
+  // and the leg-3b selector below is a `lte` — NULL never matches one. Without
+  // this pass the orders the client was actually complaining about, the ones
+  // already sitting at No Driver, would be the only orders the fix never
+  // reached. It is also a standing self-heal: any path that lands an order in
+  // NO_DRIVER without stamping it gets adopted on the next tick rather than
+  // stranding the order forever.
+  //
+  // The update IS the claim — a row only matches while its stamp is NULL — so
+  // two concurrent sweeps cannot both adopt the same order.
+  // eslint-disable-next-line no-prisma-without-tenant -- cron-internal: cross-tenant by design; sets only a scheduling stamp, no tenant-visible state.
+  const adopted = await prisma.deliveryOrder.updateMany({
+    where: { status: "NO_DRIVER", nextRedispatchAt: null },
+    // Due immediately: these have been waiting long enough already.
+    data: { nextRedispatchAt: now },
+  });
+  if (adopted.count > 0) {
+    logger.info({ adopted: adopted.count }, "sweepDispatch: adopted unstamped NO_DRIVER orders");
+  }
+
+  // ── Leg 3b: retry orders that ran out of offer rounds ─────────────────────
   // Revision 4 (#1). Before this leg an order that exhausted its rounds sat at
   // NO_DRIVER until a supervisor noticed — which is how an order ends up with
   // an SLA measured in days. Now the sweep keeps offering it on a backoff,
