@@ -126,20 +126,10 @@ export const zonesApi = {
    * zone that fell off the page. So this pages to the end, and callers that
    * build a grid must use it rather than list().
    */
-  listAll: async (): Promise<DeliveryZone[]> => {
-    const out: DeliveryZone[] = [];
-    for (let page = 1; page <= 50; page++) {
-      const res = await get<DeliveryZone[] | Paginated<DeliveryZone>>("/api/zones", {
-        page,
-        limit: 100,
-      });
-      const batch = unwrapList<DeliveryZone>(res);
-      out.push(...batch);
-      const total = (res as Paginated<DeliveryZone>)?.pagination?.total;
-      if (Array.isArray(res) || batch.length === 0 || (total != null && out.length >= total)) break;
-    }
-    return out;
-  },
+  listAll: (): Promise<DeliveryZone[]> =>
+    fetchAllPages<DeliveryZone>((params) =>
+      get<DeliveryZone[] | Paginated<DeliveryZone>>("/api/zones", params),
+    ),
   getById: (id: string) => get<DeliveryZone>(`/api/zones/${id}`),
   create: (body: Partial<DeliveryZone>) => post<DeliveryZone>("/api/zones", body),
   update: (id: string, body: Partial<DeliveryZone>) => put<DeliveryZone>(`/api/zones/${id}`, body),
@@ -210,6 +200,9 @@ export const deliveryOrdersApi = {
     post<DeliveryOrder>(`/api/delivery-orders/${id}/cancel`, { reason }),
   updateDropoff: (id: string, body: { lat: number; lng: number; address?: string }) =>
     patch<DeliveryOrder>(`/api/delivery-orders/${id}/dropoff`, body),
+  /** Record (or correct) why a FAILED / CANCELLED / RETURNED order ended. */
+  recordReason: (id: string, reason: string) =>
+    patch<DeliveryOrder>(`/api/delivery-orders/${id}/reason`, { reason }),
 };
 
 // ── /api/wallets ─────────────────────────────────────────────────────────

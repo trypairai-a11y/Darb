@@ -15,6 +15,7 @@ const STATUS_STYLES: Record<DeliveryOrderStatus, string> = {
   PICKED_UP: "bg-amber-50 text-amber-700",
   DELIVERED: "bg-green-50 text-green-700",
   FAILED: "bg-red-100 text-red-700",
+  RETURNED: "bg-purple-50 text-purple-700",
   CANCELLED: "bg-gray-100 text-gray-500",
 };
 
@@ -27,6 +28,7 @@ const STATUS_I18N: Record<DeliveryOrderStatus, string> = {
   PICKED_UP: "darbOrderStatus.pickedUp",
   DELIVERED: "darbOrderStatus.delivered",
   FAILED: "darbOrderStatus.failed",
+  RETURNED: "darbOrderStatus.returned",
   CANCELLED: "darbOrderStatus.cancelled",
 };
 

@@ -532,7 +532,30 @@ async function sendOfferPush(
 
 // ─── Exhaustion (NO_DRIVER + supervisor Notification) ──────────────────────
 
-async function notifySupervisorsDispatchExhausted(order: DeliveryOrder): Promise<void> {
+/**
+ * Couriers on shift right now with usable GPS — the same freshness rule
+ * selectCandidates applies, so this answers "was there anybody to ask?"
+ * rather than "does the roster have names in it". A roster of 115 drivers who
+ * are all clocked off is zero here, which is the number ops needs to see.
+ */
+async function countOnlineCouriers(tenantId: string): Promise<number> {
+  const settings = await getDispatchSettings(tenantId);
+  const staleCutoff = new Date(Date.now() - settings.gpsStaleAfterSec * 1000);
+  return prisma.courierOnlineSession.count({
+    where: {
+      tenantId,
+      availability: "ONLINE",
+      lastGpsAt: { gt: staleCutoff },
+      lastGpsLat: { not: null },
+      lastGpsLng: { not: null },
+    },
+  });
+}
+
+async function notifySupervisorsDispatchExhausted(
+  order: DeliveryOrder,
+  reason: string,
+): Promise<void> {
   try {
     const users = await prisma.user.findMany({
       where: {
@@ -543,13 +566,26 @@ async function notifySupervisorsDispatchExhausted(order: DeliveryOrder): Promise
       select: { id: true },
     });
     if (users.length === 0) return;
+
+    // Name the actual blocker. "No driver after 3 rounds" sent ops hunting a
+    // dispatch fault when the roster was simply clocked off.
+    const noneOnline = reason === "NO_COURIERS_ONLINE";
+    const title = noneOnline ? "No couriers online" : "Dispatch exhausted — no driver";
+    const message = noneOnline
+      ? `Order ${order.orderNumber} has nobody to offer to: no courier is on shift with live GPS. Get a courier online, or assign this order manually.`
+      : `Order ${order.orderNumber} found no driver after ${order.offerRound} offer round(s). Assign manually or redispatch.`;
+
     await prisma.notification.createMany({
       data: users.map((user) => ({
         tenantId: order.tenantId,
         userId: user.id,
-        title: "Dispatch exhausted — no driver",
-        message: `Order ${order.orderNumber} found no driver after ${order.offerRound} offer round(s). Assign manually or redispatch.`,
-        type: "DISPATCH_EXHAUSTED",
+        title,
+        message,
+        titleAr: noneOnline ? "لا يوجد مندوبون متصلون" : "تعذر إيجاد مندوب",
+        bodyAr: noneOnline
+          ? `الطلب ${order.orderNumber} لا يوجد من يُعرض عليه: لا يوجد مندوب على الدوام بموقع محدّث. أدخل مندوبا للخدمة أو عيّن الطلب يدويا.`
+          : `الطلب ${order.orderNumber} لم يجد مندوبا بعد ${order.offerRound} جولة عرض. عيّنه يدويا أو أعد الإرسال.`,
+        type: noneOnline ? "NO_COURIERS_ONLINE" : "DISPATCH_EXHAUSTED",
         severity: "HIGH",
         sourceId: order.id,
         category: "OPS_TODO",
@@ -558,6 +594,7 @@ async function notifySupervisorsDispatchExhausted(order: DeliveryOrder): Promise
           orderNumber: order.orderNumber,
           vendorId: order.vendorId,
           offerRound: order.offerRound,
+          reason,
         } as Prisma.InputJsonValue,
       })),
     });
@@ -603,7 +640,7 @@ async function exhaustDispatch(order: DeliveryOrder, reason: string): Promise<vo
   }
   // Only the first exhaustion is worth waking a supervisor for. After that the
   // retries are doing the work and a notification per attempt is just noise.
-  if (attempts === 1) await notifySupervisorsDispatchExhausted(order);
+  if (attempts === 1) await notifySupervisorsDispatchExhausted(order, reason);
 }
 
 /**
@@ -669,7 +706,13 @@ async function runDispatchRound(tenantId: string, orderId: string): Promise<void
 
   const candidates = await selectCandidates(tenantId, orderId);
   if (candidates.length === 0) {
-    await exhaustDispatch(order, "NO_CANDIDATES");
+    // Empty pool has two very different causes and one used to be invisible:
+    // nobody is on shift at all, or people are on shift but every one of them
+    // was filtered out (out of range, busy, cash ceiling, already offered).
+    // The first is a rota problem and the second is a dispatch one, so the
+    // timeline and the supervisor notice should not call them the same thing.
+    const onlineNow = await countOnlineCouriers(tenantId);
+    await exhaustDispatch(order, onlineNow === 0 ? "NO_COURIERS_ONLINE" : "NO_CANDIDATES");
     return;
   }
 

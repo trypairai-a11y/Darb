@@ -178,6 +178,7 @@ function describeTransition(
   from: DeliveryOrderStatus,
   to: DeliveryOrderStatus,
   actor: OrderActor,
+  meta?: Record<string, unknown>,
 ): string {
   const by = actor.name ?? actor.type;
   switch (to) {
@@ -196,7 +197,20 @@ function describeTransition(
     case "CANCELLED":
       return `Order cancelled (by ${by})`;
     case "NO_DRIVER":
-      return `Dispatch exhausted — no driver accepted`;
+      // "No driver accepted" reads as "couriers are turning this down", which
+      // sends ops looking for a dispatch fault. Most of the time the truth is
+      // that nobody was on shift to be asked, and that is a rota problem, not
+      // a dispatch one. The engine already knows which it was; say it.
+      switch (meta?.reason) {
+        case "NO_COURIERS_ONLINE":
+          return `No couriers online — nobody to offer this to`;
+        case "NO_CANDIDATES":
+          return `No courier available in range`;
+        case "MAX_ROUNDS":
+          return `Dispatch exhausted — no driver accepted`;
+        default:
+          return `Dispatch exhausted — no driver found`;
+      }
     case "REJECTED":
       return `Order rejected`;
     case "CREATED":
@@ -241,7 +255,7 @@ export async function transitionOrder(
       tenantId,
       orderId,
       action: actionForStatus(to),
-      description: describeTransition(from, to, actor),
+      description: describeTransition(from, to, actor, eventMeta),
       operator: actor.name ?? actor.type,
       operatorId: actor.id ?? null,
       timestamp: new Date(),

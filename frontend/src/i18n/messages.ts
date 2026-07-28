@@ -1523,6 +1523,13 @@ export interface Messages {
     cancelConfirmTitle: string;
     cancelConfirmMessage: string;
     cancelReason: string;
+    outcomeReason: string;
+    reasonMissing: string;
+    reasonMissingHint: string;
+    recordReason: string;
+    editReason: string;
+    recordReasonTitle: string;
+    recordReasonMessage: string;
     quoteBreakdown: string;
     pickupZone: string;
     dropoffZone: string;
@@ -1665,6 +1672,7 @@ export interface Messages {
     pickedUp: string;
     delivered: string;
     failed: string;
+    returned: string;
     cancelled: string;
   };
   foodics: {
@@ -1885,6 +1893,16 @@ export interface Messages {
     thisMonth: string;
     from: string;
     to: string;
+  };
+  /** Why intake refused an order. System codes, looked up by code, so every
+   *  value the backend can write needs a row here. */
+  rejectReason: {
+    OUT_OF_ZONE_DROPOFF: string;
+    UNSERVICEABLE_PAIR: string;
+    NO_COORDINATES: string;
+    BRANCH_UNZONED: string;
+    VENDOR_PAUSED: string;
+    VENDOR_CREDIT_CAP: string;
   };
   cockpit: {
     groupByOwner: string;
@@ -3501,6 +3519,13 @@ export const en: Messages = {
     cancelConfirmTitle: "Cancel this order?",
     cancelConfirmMessage: "The customer and vendor flows stop here. This cannot be undone.",
     cancelReason: "Cancellation reason",
+    outcomeReason: "Reason",
+    reasonMissing: "No reason recorded",
+    reasonMissingHint: "No reason was recorded. Add one so the merchant can be told what happened.",
+    recordReason: "Record reason",
+    editReason: "Edit reason",
+    recordReasonTitle: "Record the reason",
+    recordReasonMessage: "Say what happened to this order. It shows on the order console and in reports.",
     quoteBreakdown: "Quote breakdown",
     pickupZone: "Pickup zone",
     dropoffZone: "Dropoff zone",
@@ -3651,6 +3676,7 @@ export const en: Messages = {
     pickedUp: "Picked up",
     delivered: "Delivered",
     failed: "Failed",
+    returned: "Returned to shop",
     cancelled: "Cancelled",
   },
   foodics: {
@@ -3869,6 +3895,14 @@ export const en: Messages = {
     thisMonth: "This month",
     from: "From",
     to: "To",
+  },
+  rejectReason: {
+    OUT_OF_ZONE_DROPOFF: "Dropoff is outside every delivery zone",
+    UNSERVICEABLE_PAIR: "No price set for this pickup and dropoff pair",
+    NO_COORDINATES: "Dropoff arrived without coordinates",
+    BRANCH_UNZONED: "The pickup branch is not in a zone",
+    VENDOR_PAUSED: "The merchant had orders paused",
+    VENDOR_CREDIT_CAP: "The merchant is over its credit cap",
   },
   cockpit: {
     groupByOwner: "Group by owner",
@@ -5483,6 +5517,13 @@ export const ar: Messages = {
     cancelConfirmTitle: "إلغاء هذا الطلب؟",
     cancelConfirmMessage: "تتوقف رحلة العميل والمطعم هنا. لا يمكن التراجع عن هذا الإجراء.",
     cancelReason: "سبب الإلغاء",
+    outcomeReason: "السبب",
+    reasonMissing: "لم يُسجَّل سبب",
+    reasonMissingHint: "لم يُسجَّل أي سبب. سجّل سبباً حتى يمكن إبلاغ المطعم بما حدث.",
+    recordReason: "تسجيل السبب",
+    editReason: "تعديل السبب",
+    recordReasonTitle: "تسجيل السبب",
+    recordReasonMessage: "اذكر ما حدث لهذا الطلب. سيظهر في شاشة الطلبات وفي التقارير.",
     quoteBreakdown: "تفاصيل التسعيرة",
     pickupZone: "منطقة الاستلام",
     dropoffZone: "منطقة التسليم",
@@ -5624,6 +5665,7 @@ export const ar: Messages = {
     pickedUp: "تم الاستلام",
     delivered: "تم التسليم",
     failed: "فشل",
+    returned: "أُعيد للمتجر",
     cancelled: "ملغى",
   },
   foodics: {
@@ -5839,6 +5881,14 @@ export const ar: Messages = {
     thisMonth: "هذا الشهر",
     from: "من",
     to: "إلى",
+  },
+  rejectReason: {
+    OUT_OF_ZONE_DROPOFF: "موقع التسليم خارج جميع مناطق التوصيل",
+    UNSERVICEABLE_PAIR: "لا يوجد سعر محدد لهذا المسار بين الاستلام والتسليم",
+    NO_COORDINATES: "وصل موقع التسليم بدون إحداثيات",
+    BRANCH_UNZONED: "فرع الاستلام غير مرتبط بأي منطقة",
+    VENDOR_PAUSED: "كان المطعم موقفاً استقبال الطلبات",
+    VENDOR_CREDIT_CAP: "تجاوز المطعم حد الائتمان",
   },
   cockpit: {
     groupByOwner: "تجميع حسب المالك",

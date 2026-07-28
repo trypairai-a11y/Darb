@@ -125,6 +125,11 @@ function prime(opts: {
   prisma.deliveryOrder.findFirst.mockResolvedValue({ ...BASE_ORDER, ...(opts.order ?? {}) });
   prisma.fulfillmentSettings.findUnique.mockResolvedValue(null); // schema defaults
   prisma.courierOnlineSession.findMany.mockResolvedValue(opts.sessions ?? []);
+  // How many couriers are on shift at all — what separates "nobody to ask"
+  // from "asked everyone and none of them fit". Same list the selector reads,
+  // so the two can never disagree in a test.
+  prisma.courierOnlineSession.count = prisma.courierOnlineSession.count ?? jest.fn();
+  prisma.courierOnlineSession.count.mockResolvedValue((opts.sessions ?? []).length);
   prisma.deliveryOrder.findMany.mockResolvedValue(opts.busy ?? []);
   prisma.dispatchOffer.findMany.mockResolvedValue(opts.offers ?? []);
   prisma.deliveryOrder.groupBy.mockResolvedValue(opts.idle ?? []);
@@ -360,14 +365,30 @@ describe("startDispatch", () => {
         }),
       }),
     );
+    // Nobody was on shift, so the notice says so rather than blaming couriers
+    // for declining an offer they were never sent.
     const notif = prisma.notification.createMany.mock.calls[0][0].data[0];
-    expect(notif).toMatchObject({ tenantId: TENANT, userId: "u-sup", type: "DISPATCH_EXHAUSTED" });
+    expect(notif).toMatchObject({ tenantId: TENANT, userId: "u-sup", type: "NO_COURIERS_ONLINE" });
+    expect(notif.message).toContain("no courier is on shift");
 
     const exhausted = publishEvent.mock.calls.filter(
       (c) => c[0]?.type === "order.dispatch_exhausted",
     );
     expect(exhausted).toHaveLength(1);
     expect(scheduleOfferExpiry).not.toHaveBeenCalled();
+  });
+
+  test("couriers online but all filtered out → NO_CANDIDATES, not 'nobody online'", async () => {
+    // On shift, but too far to be a candidate: a dispatch problem, not a rota
+    // one, and the two must not read the same to a supervisor.
+    prime({ sessions: [mkSession("drv-far", 5)] });
+
+    await startDispatch(TENANT, ORDER_ID);
+
+    expect(prisma.deliveryOrder.updateMany.mock.calls[0][0].data.status).toBe("NO_DRIVER");
+    const notif = prisma.notification.createMany.mock.calls[0][0].data[0];
+    expect(notif.type).toBe("DISPATCH_EXHAUSTED");
+    expect(notif.metadata.reason).toBe("NO_CANDIDATES");
   });
 
   test("round ≥ maxOfferRounds → NO_DRIVER without querying candidates", async () => {

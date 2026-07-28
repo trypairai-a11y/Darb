@@ -15,6 +15,10 @@ export type DeliveryOrderStatus =
   | "PICKED_UP"
   | "DELIVERED"
   | "FAILED"
+  // PRD §6 return-to-merchant. FAILED→RETURNED is the only exit from FAILED,
+  // and the backend FSM has always had it; the frontend union simply never
+  // listed it.
+  | "RETURNED"
   | "CANCELLED";
 
 export type DeliveryOrderSource = "FOODICS" | "VENDOR_PORTAL" | "SUPERVISOR";
@@ -49,7 +53,8 @@ export type OrderRejectionReason =
   | "UNSERVICEABLE_PAIR"
   | "NO_COORDINATES"
   | "BRANCH_UNZONED"
-  | "VENDOR_PAUSED";
+  | "VENDOR_PAUSED"
+  | "VENDOR_CREDIT_CAP";
 
 export type RemittanceMethod = "CASH" | "BANK_TRANSFER" | "AL_MUZAINI";
 
@@ -650,6 +655,9 @@ export interface FleetDriverRow {
 
 export interface FleetScorecard {
   fleetPartnerId: string;
+  /** The window the numbers were measured over, echoed back by the API. */
+  periodFrom?: string;
+  periodTo?: string;
   driverCount: number;
   deliveredOrders: number;
   onTimeRate: number | null;
