@@ -153,6 +153,8 @@ export const vendorsApi = {
       name: string;
       email: string;
       password: string;
+      /** Revision 4 (#9) — the branch calls this person when an order stalls. */
+      phone?: string;
       vendorRole: VendorPortalRole;
       branchId?: string | null;
     }

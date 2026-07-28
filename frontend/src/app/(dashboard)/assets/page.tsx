@@ -24,7 +24,7 @@ type Tab = "vehicles" | "sims" | "devices" | "platformEquipment";
  * re-enable them.
  */
 const TABS: { key: Tab; label: string; icon: typeof Car }[] = [
-  { key: "platformEquipment", label: "Platform Equipment", icon: Boxes },
+  { key: "platformEquipment", label: "Equipment", icon: Boxes },
 ];
 
 const ADD_BUTTON_LABEL: Record<Tab, string> = {
@@ -32,13 +32,6 @@ const ADD_BUTTON_LABEL: Record<Tab, string> = {
   sims: "Add SIM",
   devices: "Add Device",
   platformEquipment: "Add Equipment",
-};
-
-const PLATFORM_BADGE: Record<string, string> = {
-  TALABAT: "bg-red-50 text-red-700 ring-red-100",
-  KEETA: "bg-amber-50 text-amber-700 ring-amber-100",
-  DELIVEROO: "bg-emerald-50 text-emerald-700 ring-emerald-100",
-  AMERICANA: "bg-blue-50 text-blue-700 ring-blue-100",
 };
 
 const ITEM_TYPE_LABELS: Record<string, string> = {
@@ -68,70 +61,27 @@ type EquipmentRow = {
   minStock: number;
 };
 
+/**
+ * Revision 4 (#13): Darb is the only platform in scope, so the demo pools for
+ * Keeta, Talabat, Deliveroo and Americana are gone. They were left over from
+ * the multi-aggregator platform the PRD rebuild deleted, and every one of them
+ * offered an ops manager a pool of kit that does not exist.
+ */
 const MOCK_PLATFORM_EQUIPMENT: EquipmentRow[] = [
-  // KEETA — ~35 drivers, minStock 7
-  { id: "mk-1",  platform: "KEETA", itemType: "HELMET",        total: 42, issued: 33, available: 9, minStock: 7 },
-  { id: "mk-2",  platform: "KEETA", itemType: "TSHIRT",        total: 40, issued: 35, available: 5, minStock: 7 },
-  { id: "mk-3",  platform: "KEETA", itemType: "PANTS",         total: 39, issued: 32, available: 7, minStock: 7 },
-  { id: "mk-4",  platform: "KEETA", itemType: "COOLING_VEST",  total: 38, issued: 30, available: 8, minStock: 7 },
-  { id: "mk-5",  platform: "KEETA", itemType: "SAFETY_VEST",   total: 43, issued: 34, available: 9, minStock: 7 },
-  { id: "mk-6",  platform: "KEETA", itemType: "WATER_BOTTLE",  total: 41, issued: 33, available: 8, minStock: 7 },
-  { id: "mk-7",  platform: "KEETA", itemType: "GLOVES",        total: 37, issued: 34, available: 3, minStock: 7 },
-  { id: "mk-8",  platform: "KEETA", itemType: "SAFETY_KIT",    total: 39, issued: 30, available: 9, minStock: 7 },
-  { id: "mk-9",  platform: "KEETA", itemType: "BIG_BAG",       total: 42, issued: 33, available: 9, minStock: 7 },
-  { id: "mk-10", platform: "KEETA", itemType: "SMALL_BAG",     total: 40, issued: 32, available: 8, minStock: 7 },
-  { id: "mk-11", platform: "KEETA", itemType: "CAP",           total: 38, issued: 30, available: 8, minStock: 7 },
-  { id: "mk-12", platform: "KEETA", itemType: "MOBILE_PHONE",  total: 37, issued: 30, available: 7, minStock: 7 },
-  { id: "mk-13", platform: "KEETA", itemType: "SIM_CARD",      total: 41, issued: 32, available: 9, minStock: 7 },
-  { id: "mk-14", platform: "KEETA", itemType: "PETROL_CARD",   total: 36, issued: 30, available: 6, minStock: 7 },
-
-  // TALABAT — ~50 drivers, minStock 10
-  { id: "mt-1",  platform: "TALABAT", itemType: "HELMET",        total: 56, issued: 45, available: 11, minStock: 10 },
-  { id: "mt-2",  platform: "TALABAT", itemType: "TSHIRT",        total: 54, issued: 47, available: 7,  minStock: 10 },
-  { id: "mt-3",  platform: "TALABAT", itemType: "PANTS",         total: 55, issued: 46, available: 9,  minStock: 10 },
-  { id: "mt-4",  platform: "TALABAT", itemType: "COOLING_VEST",  total: 53, issued: 42, available: 11, minStock: 10 },
-  { id: "mt-5",  platform: "TALABAT", itemType: "SAFETY_VEST",   total: 58, issued: 47, available: 11, minStock: 10 },
-  { id: "mt-6",  platform: "TALABAT", itemType: "WATER_BOTTLE",  total: 56, issued: 44, available: 12, minStock: 10 },
-  { id: "mt-7",  platform: "TALABAT", itemType: "GLOVES",        total: 52, issued: 40, available: 12, minStock: 10 },
-  { id: "mt-8",  platform: "TALABAT", itemType: "SAFETY_KIT",    total: 54, issued: 42, available: 12, minStock: 10 },
-  { id: "mt-9",  platform: "TALABAT", itemType: "BIG_BAG",       total: 57, issued: 45, available: 12, minStock: 10 },
-  { id: "mt-10", platform: "TALABAT", itemType: "SMALL_BAG",     total: 55, issued: 44, available: 11, minStock: 10 },
-  { id: "mt-11", platform: "TALABAT", itemType: "CAP",           total: 53, issued: 41, available: 12, minStock: 10 },
-  { id: "mt-12", platform: "TALABAT", itemType: "MOBILE_PHONE",  total: 54, issued: 42, available: 12, minStock: 10 },
-  { id: "mt-13", platform: "TALABAT", itemType: "SIM_CARD",      total: 56, issued: 44, available: 12, minStock: 10 },
-  { id: "mt-14", platform: "TALABAT", itemType: "PETROL_CARD",   total: 51, issued: 42, available: 9,  minStock: 10 },
-
-  // DELIVEROO — ~25 drivers, minStock 5
-  { id: "md-1",  platform: "DELIVEROO", itemType: "HELMET",        total: 30, issued: 24, available: 6, minStock: 5 },
-  { id: "md-2",  platform: "DELIVEROO", itemType: "TSHIRT",        total: 28, issued: 25, available: 3, minStock: 5 },
-  { id: "md-3",  platform: "DELIVEROO", itemType: "PANTS",         total: 29, issued: 22, available: 7, minStock: 5 },
-  { id: "md-4",  platform: "DELIVEROO", itemType: "COOLING_VEST",  total: 27, issued: 21, available: 6, minStock: 5 },
-  { id: "md-5",  platform: "DELIVEROO", itemType: "SAFETY_VEST",   total: 31, issued: 24, available: 7, minStock: 5 },
-  { id: "md-6",  platform: "DELIVEROO", itemType: "WATER_BOTTLE",  total: 30, issued: 22, available: 8, minStock: 5 },
-  { id: "md-7",  platform: "DELIVEROO", itemType: "GLOVES",        total: 28, issued: 22, available: 6, minStock: 5 },
-  { id: "md-8",  platform: "DELIVEROO", itemType: "SAFETY_KIT",    total: 27, issued: 20, available: 7, minStock: 5 },
-  { id: "md-9",  platform: "DELIVEROO", itemType: "BIG_BAG",       total: 30, issued: 23, available: 7, minStock: 5 },
-  { id: "md-10", platform: "DELIVEROO", itemType: "SMALL_BAG",     total: 28, issued: 22, available: 6, minStock: 5 },
-  { id: "md-11", platform: "DELIVEROO", itemType: "CAP",           total: 27, issued: 20, available: 7, minStock: 5 },
-  { id: "md-12", platform: "DELIVEROO", itemType: "MOBILE_PHONE",  total: 28, issued: 21, available: 7, minStock: 5 },
-  { id: "md-13", platform: "DELIVEROO", itemType: "SIM_CARD",      total: 28, issued: 22, available: 6, minStock: 5 },
-  { id: "md-14", platform: "DELIVEROO", itemType: "PETROL_CARD",   total: 26, issued: 22, available: 4, minStock: 5 },
-
-  // AMERICANA — ~40 drivers, minStock 8
-  { id: "ma-1",  platform: "AMERICANA", itemType: "HELMET",        total: 47, issued: 38, available: 9,  minStock: 8 },
-  { id: "ma-2",  platform: "AMERICANA", itemType: "TSHIRT",        total: 45, issued: 40, available: 5,  minStock: 8 },
-  { id: "ma-3",  platform: "AMERICANA", itemType: "PANTS",         total: 46, issued: 37, available: 9,  minStock: 8 },
-  { id: "ma-4",  platform: "AMERICANA", itemType: "COOLING_VEST",  total: 44, issued: 35, available: 9,  minStock: 8 },
-  { id: "ma-5",  platform: "AMERICANA", itemType: "SAFETY_VEST",   total: 48, issued: 38, available: 10, minStock: 8 },
-  { id: "ma-6",  platform: "AMERICANA", itemType: "WATER_BOTTLE",  total: 47, issued: 37, available: 10, minStock: 8 },
-  { id: "ma-7",  platform: "AMERICANA", itemType: "GLOVES",        total: 43, issued: 34, available: 9,  minStock: 8 },
-  { id: "ma-8",  platform: "AMERICANA", itemType: "SAFETY_KIT",    total: 45, issued: 35, available: 10, minStock: 8 },
-  { id: "ma-9",  platform: "AMERICANA", itemType: "BIG_BAG",       total: 47, issued: 37, available: 10, minStock: 8 },
-  { id: "ma-10", platform: "AMERICANA", itemType: "SMALL_BAG",     total: 45, issued: 36, available: 9,  minStock: 8 },
-  { id: "ma-11", platform: "AMERICANA", itemType: "CAP",           total: 44, issued: 34, available: 10, minStock: 8 },
-  { id: "ma-12", platform: "AMERICANA", itemType: "MOBILE_PHONE",  total: 43, issued: 36, available: 7,  minStock: 8 },
-  { id: "ma-13", platform: "AMERICANA", itemType: "SIM_CARD",      total: 46, issued: 36, available: 10, minStock: 8 },
-  { id: "ma-14", platform: "AMERICANA", itemType: "PETROL_CARD",   total: 42, issued: 35, available: 7,  minStock: 8 },
+  { id: "md-1",  platform: "DARB", itemType: "HELMET",       total: 48, issued: 39, available: 9,  minStock: 8 },
+  { id: "md-2",  platform: "DARB", itemType: "TSHIRT",       total: 50, issued: 42, available: 8,  minStock: 8 },
+  { id: "md-3",  platform: "DARB", itemType: "PANTS",        total: 46, issued: 38, available: 8,  minStock: 8 },
+  { id: "md-4",  platform: "DARB", itemType: "COOLING_VEST", total: 44, issued: 36, available: 8,  minStock: 8 },
+  { id: "md-5",  platform: "DARB", itemType: "SAFETY_VEST",  total: 49, issued: 40, available: 9,  minStock: 8 },
+  { id: "md-6",  platform: "DARB", itemType: "WATER_BOTTLE", total: 47, issued: 38, available: 9,  minStock: 8 },
+  { id: "md-7",  platform: "DARB", itemType: "GLOVES",       total: 43, issued: 37, available: 6,  minStock: 8 },
+  { id: "md-8",  platform: "DARB", itemType: "SAFETY_KIT",   total: 45, issued: 36, available: 9,  minStock: 8 },
+  { id: "md-9",  platform: "DARB", itemType: "BIG_BAG",      total: 48, issued: 39, available: 9,  minStock: 8 },
+  { id: "md-10", platform: "DARB", itemType: "SMALL_BAG",    total: 46, issued: 38, available: 8,  minStock: 8 },
+  { id: "md-11", platform: "DARB", itemType: "CAP",          total: 44, issued: 36, available: 8,  minStock: 8 },
+  { id: "md-12", platform: "DARB", itemType: "MOBILE_PHONE", total: 42, issued: 35, available: 7,  minStock: 8 },
+  { id: "md-13", platform: "DARB", itemType: "SIM_CARD",     total: 47, issued: 38, available: 9,  minStock: 8 },
+  { id: "md-14", platform: "DARB", itemType: "PETROL_CARD",  total: 41, issued: 35, available: 6,  minStock: 8 },
 ];
 
 function formatLicenseDate(value?: string | null) {
@@ -248,13 +198,17 @@ export default function GlobalAssetsPage() {
     );
   });
 
-  const apiEquipment: any[] = equipmentData?.data || [];
+  // Revision 4 (#13): historical rows for the deleted aggregator platforms are
+  // still in the database (no destructive migrations), so filter rather than
+  // trust the endpoint — otherwise a stale row puts Talabat back on screen.
+  const apiEquipment: any[] = (equipmentData?.data || []).filter(
+    (e: any) => (e.platform ?? "DARB") === "DARB"
+  );
   const equipmentSource: any[] = apiEquipment.length > 0 ? apiEquipment : MOCK_PLATFORM_EQUIPMENT;
   const equipment: any[] = equipmentSource.filter((e: any) => {
     if (!query) return true;
     const q = query.toLowerCase();
     return (
-      (e.platform || "").toLowerCase().includes(q) ||
       (ITEM_TYPE_LABELS[e.itemType] || e.itemType || "").toLowerCase().includes(q)
     );
   });
@@ -472,21 +426,9 @@ export default function GlobalAssetsPage() {
     },
   ];
 
+  // Revision 4 (#13): no Platform column. With one platform it said "DARB" on
+  // every row, which is a column that answers a question nobody has.
   const equipmentColumns = [
-    {
-      key: "platform",
-      label: "Platform",
-      render: (v: string) => (
-        <span
-          className={cn(
-            "inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold tracking-wide ring-1",
-            PLATFORM_BADGE[v] || "bg-gray-50 text-gray-600 ring-gray-100"
-          )}
-        >
-          {v || "—"}
-        </span>
-      ),
-    },
     {
       key: "itemType",
       label: "Item",
@@ -556,7 +498,9 @@ export default function GlobalAssetsPage() {
         ? devicesCountData.length
         : 0),
     equipment: (() => {
-      const rows: any[] = equipmentCountData?.data || [];
+      const rows: any[] = (equipmentCountData?.data || []).filter(
+        (r: any) => (r.platform ?? "DARB") === "DARB"
+      );
       const source = rows.length > 0 ? rows : MOCK_PLATFORM_EQUIPMENT;
       return source.reduce((s: number, r: any) => s + (Number(r.total) || 0), 0);
     })(),

@@ -337,6 +337,26 @@ function BranchesTab({ vendorId }: { vendorId: string }) {
       render: (v: string | null) => (v ? <span dir="auto">{v}</span> : <span className="text-sand-400">—</span>),
     },
     {
+      // Revision 4 (#8). The column the form has always been able to fill.
+      // Dispatch calls a branch when an order stalls at pickup, and the number
+      // was only visible by opening the edit panel one branch at a time.
+      key: "phone",
+      label: t("vendorsPage.phone"),
+      render: (v: string | null) =>
+        v ? (
+          <a
+            href={`tel:${v}`}
+            dir="ltr"
+            className="font-mono text-xs text-primary hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {v}
+          </a>
+        ) : (
+          <span className="text-sand-400">n/a</span>
+        ),
+    },
+    {
       key: "zone",
       label: t("vendorsPage.zone"),
       sortable: false,
@@ -701,6 +721,10 @@ function UsersTab({ vendorId }: { vendorId: string }) {
     name: "",
     email: "",
     password: "",
+    // Revision 4 (#9). The User model has always had the column and the users
+    // list has always shown it; the create form was the one place that could
+    // not fill it, so every portal login arrived without a number.
+    phone: "",
     vendorRole: "OWNER" as VendorPortalRole,
     branchId: "",
   });
@@ -742,11 +766,19 @@ function UsersTab({ vendorId }: { vendorId: string }) {
         name: form.name.trim(),
         email: form.email.trim(),
         password: form.password,
+        phone: form.phone.trim() || undefined,
         vendorRole: form.vendorRole,
         branchId: needsBranch ? form.branchId : null,
       });
       toast.success(t("vendorsPage.userCreated"));
-      setForm({ name: "", email: "", password: "", vendorRole: "OWNER", branchId: "" });
+      setForm({
+        name: "",
+        email: "",
+        password: "",
+        phone: "",
+        vendorRole: "OWNER",
+        branchId: "",
+      });
       await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", vendorId, "users"] });
     } catch (err) {
       const msg =
@@ -816,17 +848,32 @@ function UsersTab({ vendorId }: { vendorId: string }) {
             void handleCreate();
           }}
         >
-          <div>
-            <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
-              {t("vendorsPage.userName")}
-            </label>
-            <input
-              type="text"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-              required
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
+                {t("vendorsPage.userName")}
+              </label>
+              <input
+                type="text"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
+                {t("vendorsPage.phone")}
+              </label>
+              <input
+                type="tel"
+                dir="ltr"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                placeholder={t("settingsPage.phonePlaceholder")}
+                className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

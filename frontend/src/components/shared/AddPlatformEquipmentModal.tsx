@@ -3,12 +3,12 @@ import { useState } from "react";
 import api from "@/lib/api";
 import { X, Loader2 } from "lucide-react";
 
-const PLATFORMS = [
-  { value: "TALABAT", label: "Talabat" },
-  { value: "KEETA", label: "Keeta" },
-  { value: "DELIVEROO", label: "Deliveroo" },
-  { value: "AMERICANA", label: "Americana" },
-];
+/**
+ * Revision 4 (#13): Darb is the only platform in scope. The dropdown is gone
+ * rather than reduced to a single option — a select with one choice is a
+ * question with one answer, which is not a question.
+ */
+const DARB_PLATFORM = "DARB";
 
 const ITEM_TYPES: { value: string; label: string }[] = [
   { value: "HELMET", label: "Helmet" },
@@ -47,7 +47,7 @@ export default function AddPlatformEquipmentModal({
   const [error, setError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
-    platform: "TALABAT",
+    platform: DARB_PLATFORM,
     itemType: "HELMET",
     total: "",
     minStock: "",
@@ -107,9 +107,9 @@ export default function AddPlatformEquipmentModal({
       >
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100">
           <div>
-            <h2 className="text-lg font-semibold">Add Platform Equipment</h2>
+            <h2 className="text-lg font-semibold">Add equipment</h2>
             <p className="text-xs text-secondary mt-0.5">
-              Create a new inventory pool for a platform and item type.
+              Create a new inventory pool for an item type.
             </p>
           </div>
           <button onClick={onClose} className="p-1 hover:bg-gray-50 rounded-lg">
@@ -122,21 +122,7 @@ export default function AddPlatformEquipmentModal({
         )}
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>Platform *</label>
-              <select
-                value={form.platform}
-                onChange={(e) => update("platform", e.target.value)}
-                className={inputClass}
-              >
-                {PLATFORMS.map((p) => (
-                  <option key={p.value} value={p.value}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div>
             <div>
               <label className={labelClass}>Item type *</label>
               <select
@@ -155,7 +141,7 @@ export default function AddPlatformEquipmentModal({
 
           {isDuplicate && (
             <div className="px-3 py-2 bg-amber-50 text-amber-700 text-xs rounded-lg">
-              An inventory pool already exists for this platform and item type. Edit it directly from
+              An inventory pool already exists for this item type. Edit it directly from
               the table to adjust counts.
             </div>
           )}

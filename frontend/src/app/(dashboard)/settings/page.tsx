@@ -3,18 +3,38 @@ import { useState, useEffect, useCallback } from "react";
 import { useApiGet } from "@/hooks/useApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/cn";
-import { Plus, X, Shield, UserX, UserCheck, Loader2, Bell, Check } from "lucide-react";
+import { Plus, X, Shield, UserX, UserCheck, Loader2, Bell, Check, Store } from "lucide-react";
 import api from "@/lib/api";
 import BackToSetup from "@/components/shared/BackToSetup";
 import { useI18n } from "@/i18n/I18nProvider";
 
-const ROLES = ["ADMIN", "OPS_MANAGER", "SUPERVISOR", "ACCOUNTANT", "VIEWER"] as const;
+// Revision 4 (#11) — ACCOUNT_MANAGER joins the roles a notification rule can
+// name. The rules API was already keyed on an arbitrary role string, so the
+// column is the whole change on this side.
+const ROLES = [
+  "ADMIN",
+  "OPS_MANAGER",
+  "SUPERVISOR",
+  "ACCOUNTANT",
+  "ACCOUNT_MANAGER",
+  "VIEWER",
+] as const;
+
+/**
+ * Roles an admin can assign. CASH_COLLECTOR is here but not in ROLES above:
+ * it is a portal login for the hand-in desk, so it needs to be creatable
+ * without adding a column to a violation-notifications matrix it has no
+ * reason to appear in.
+ */
+const ASSIGNABLE_ROLES = [...ROLES, "CASH_COLLECTOR"] as const;
 
 const ROLE_COLORS: Record<string, string> = {
   ADMIN: "bg-red-50 text-red-600",
   OPS_MANAGER: "bg-blue-50 text-blue-600",
   SUPERVISOR: "bg-purple-50 text-purple-600",
   ACCOUNTANT: "bg-green-50 text-green-600",
+  ACCOUNT_MANAGER: "bg-teal-50 text-teal-600",
+  CASH_COLLECTOR: "bg-amber-50 text-amber-600",
   VIEWER: "bg-gray-100 text-gray-500",
 };
 
@@ -27,24 +47,61 @@ function UsersTab() {
   const { data, refetch } = useApiGet<any>("/api/users?limit=100");
   const users = data?.data || [];
   const [showInvite, setShowInvite] = useState(false);
-  const [inviteForm, setInviteForm] = useState({ name: "", email: "", password: "", role: "VIEWER", phone: "" });
+  // Revision 4 (#12): no password field. The admin never sets anyone's
+  // credential; the invited person chooses their own from a link that expires.
+  const [inviteForm, setInviteForm] = useState({ name: "", email: "", role: "VIEWER", phone: "" });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toggling, setToggling] = useState<string | null>(null);
+  /** Set after a successful invite; the modal switches to showing the link. */
+  const [issued, setIssued] = useState<{
+    email: string;
+    inviteUrl: string;
+    inviteExpiresAt: string;
+    emailSent: boolean;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [permissionsFor, setPermissionsFor] = useState<{ id: string; name: string; role: string } | null>(null);
+
+  function closeInvite() {
+    setShowInvite(false);
+    setIssued(null);
+    setCopied(false);
+    setError(null);
+  }
 
   async function handleInvite(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
     try {
-      await api.post("/api/users", inviteForm);
-      setShowInvite(false);
-      setInviteForm({ name: "", email: "", password: "", role: "VIEWER", phone: "" });
+      const { data } = await api.post("/api/users", inviteForm);
+      // The link is shown whether or not the email left the building, so
+      // invites work today by copy-paste and start arriving by email the
+      // moment a provider key is configured.
+      setIssued({
+        email: data.email,
+        inviteUrl: data.inviteUrl,
+        inviteExpiresAt: data.inviteExpiresAt,
+        emailSent: !!data.emailSent,
+      });
+      setInviteForm({ name: "", email: "", role: "VIEWER", phone: "" });
       refetch();
     } catch (err: any) {
       setError(err.response?.data?.error || err.message);
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function copyInviteLink() {
+    if (!issued) return;
+    try {
+      await navigator.clipboard.writeText(issued.inviteUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setError("Could not copy. Select the link and copy it by hand.");
     }
   }
 
@@ -102,7 +159,7 @@ function UsersTab() {
                     className="appearance-none px-2 py-0.5 rounded-md text-xs font-medium border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20"
                     style={{ backgroundColor: "transparent" }}
                   >
-                    {ROLES.map((r) => (
+                    {ASSIGNABLE_ROLES.map((r) => (
                       <option key={r} value={r}>{r.replace("_", " ")}</option>
                     ))}
                   </select>
@@ -120,6 +177,13 @@ function UsersTab() {
                   {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString() : "Never"}
                 </td>
                 <td className="px-5 py-3 text-right">
+                  <button
+                    onClick={() => setPermissionsFor({ id: u.id, name: u.name, role: u.role })}
+                    className="p-1.5 rounded-lg text-secondary hover:bg-gray-50 hover:text-primary transition-colors"
+                    title="Permissions"
+                  >
+                    <Shield size={14} />
+                  </button>
                   <button
                     onClick={() => handleToggleActive(u.id)}
                     disabled={toggling === u.id}
@@ -144,15 +208,54 @@ function UsersTab() {
       </div>
 
       {showInvite && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowInvite(false)}>
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeInvite}>
           <div className="bg-white rounded-2xl shadow-lg w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold">Invite User</h2>
-              <button onClick={() => setShowInvite(false)} className="p-1 hover:bg-gray-50 rounded-lg"><X size={18} /></button>
+              <h2 className="text-lg font-semibold">{issued ? "Invite sent" : "Invite User"}</h2>
+              <button onClick={closeInvite} className="p-1 hover:bg-gray-50 rounded-lg"><X size={18} /></button>
             </div>
 
             {error && <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-sm">{error}</div>}
 
+            {issued ? (
+              <div className="space-y-4">
+                <p className="text-sm text-secondary">
+                  {issued.emailSent
+                    ? `We emailed ${issued.email} a link to choose their password.`
+                    : `No email provider is configured yet, so send ${issued.email} this link yourself.`}
+                </p>
+                <div>
+                  <label className="block text-xs font-medium text-secondary mb-1">Invite link</label>
+                  <div className="flex gap-2">
+                    <input
+                      readOnly
+                      dir="ltr"
+                      value={issued.inviteUrl}
+                      onFocus={(e) => e.currentTarget.select()}
+                      className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-xs font-mono bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    />
+                    <button
+                      type="button"
+                      onClick={copyInviteLink}
+                      className="px-3 py-2 text-sm font-medium rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors whitespace-nowrap"
+                    >
+                      {copied ? "Copied" : "Copy"}
+                    </button>
+                  </div>
+                  <p className="text-xs text-secondary mt-2">
+                    Works once, and stops working on{" "}
+                    {new Date(issued.inviteExpiresAt).toLocaleString()}.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeInvite}
+                  className="w-full px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-hover transition-colors"
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
             <form onSubmit={handleInvite} className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-secondary mb-1">Name *</label>
@@ -167,13 +270,6 @@ function UsersTab() {
                   onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder="user@example.com" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-secondary mb-1">Password *</label>
-                <input type="password" required value={inviteForm.password}
-                  onChange={(e) => setInviteForm({ ...inviteForm, password: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  placeholder="Min 8 characters" minLength={8} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -192,21 +288,263 @@ function UsersTab() {
                     placeholder="+965 xxxx xxxx" />
                 </div>
               </div>
+              <p className="text-xs text-secondary">
+                They choose their own password from a link we send. You never set one.
+              </p>
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowInvite(false)}
+                <button type="button" onClick={closeInvite}
                   className="flex-1 px-4 py-2 text-sm font-medium rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
                   Cancel
                 </button>
                 <button type="submit" disabled={submitting}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-hover transition-colors disabled:opacity-50">
                   {submitting && <Loader2 size={14} className="animate-spin" />}
-                  {submitting ? "Creating..." : "Invite User"}
+                  {submitting ? "Sending..." : "Send invite"}
                 </button>
               </div>
             </form>
+            )}
           </div>
         </div>
       )}
+
+      {permissionsFor && (
+        <PermissionsModal
+          user={permissionsFor}
+          onClose={() => setPermissionsFor(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+
+/* ── Per-user permissions (revision 4 #12) ── */
+//
+// The client asked for "a page for restrictions for each user, what he can
+// view or change, and for account managers, what companies they are handling".
+//
+// A surface here is a screen, not an API route, because a screen is what a
+// person can name. Every cell starts on "Role default" rather than a copy of
+// the role's answer: the difference between "this user inherits ACCOUNTANT"
+// and "someone chose EDIT for this user" is the thing an audit needs to see,
+// and flattening it on first open would destroy it.
+//
+// The rail hides what is set to No access, but the server enforces the same
+// map via requireSurface, so this is a real restriction and not a hidden menu.
+
+const SURFACE_LABELS: Record<string, string> = {
+  LIVE: "Live",
+  ORDERS: "Orders",
+  MONEY: "Money",
+  SETUP: "Setup",
+  TODAY: "Today",
+  CASH_DESK: "Cash desk",
+  PEOPLE: "People and access",
+};
+
+const LEVELS = [
+  { value: "", label: "Role default" },
+  { value: "NONE", label: "No access" },
+  { value: "VIEW", label: "View" },
+  { value: "EDIT", label: "View and edit" },
+];
+
+interface PermissionsPayload {
+  surfaces: string[];
+  role: string;
+  defaults: Record<string, string>;
+  overrides: Record<string, string>;
+  effective: Record<string, string>;
+  managedVendorIds: string[];
+}
+
+function PermissionsModal({
+  user,
+  onClose,
+}: {
+  user: { id: string; name: string; role: string };
+  onClose: () => void;
+}) {
+  const { data, loading, refetch } = useApiGet<PermissionsPayload>(
+    `/api/users/${user.id}/permissions`
+  );
+  const { data: vendorsData } = useApiGet<any>(
+    user.role === "ACCOUNT_MANAGER" ? "/api/vendors?limit=200" : null
+  );
+
+  const [overrides, setOverrides] = useState<Record<string, string>>({});
+  const [vendorIds, setVendorIds] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [seeded, setSeeded] = useState(false);
+
+  useEffect(() => {
+    if (!data || seeded) return;
+    setOverrides(data.overrides ?? {});
+    setVendorIds(data.managedVendorIds ?? []);
+    setSeeded(true);
+  }, [data, seeded]);
+
+  const vendors: any[] = vendorsData?.data ?? [];
+
+  function setLevel(surface: string, value: string) {
+    setOverrides((prev) => {
+      const next = { ...prev };
+      if (value === "") delete next[surface];
+      else next[surface] = value;
+      return next;
+    });
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    setError(null);
+    try {
+      // Surfaces the user cleared must be sent as null, not omitted, or the
+      // server has no way to tell "put this back on the role default" apart
+      // from "leave it alone".
+      const payload: Record<string, string | null> = {};
+      for (const surface of data?.surfaces ?? []) {
+        payload[surface] = overrides[surface] ?? null;
+      }
+      await api.put(`/api/users/${user.id}/permissions`, {
+        overrides: payload,
+        ...(user.role === "ACCOUNT_MANAGER" ? { managedVendorIds: vendorIds } : {}),
+      });
+      refetch();
+      onClose();
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-lg w-full max-w-lg max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between p-6 pb-4">
+          <div>
+            <h2 className="text-lg font-semibold">Permissions</h2>
+            <p className="text-xs text-secondary mt-0.5">
+              {user.name} · {user.role.replace("_", " ")}
+            </p>
+          </div>
+          <button onClick={onClose} className="p-1 hover:bg-gray-50 rounded-lg">
+            <X size={18} />
+          </button>
+        </div>
+
+        {error && (
+          <div className="mx-6 mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-sm">{error}</div>
+        )}
+
+        <div className="flex-1 overflow-y-auto px-6 space-y-5">
+          {loading || !data ? (
+            <div className="py-10 flex justify-center">
+              <Loader2 size={18} className="animate-spin text-secondary" />
+            </div>
+          ) : (
+            <>
+              <div className="space-y-2">
+                {data.surfaces.map((surface) => {
+                  const chosen = overrides[surface] ?? "";
+                  const inherited = data.defaults[surface];
+                  return (
+                    <div key={surface} className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium">
+                          {SURFACE_LABELS[surface] ?? surface}
+                        </div>
+                        {chosen === "" && (
+                          <div className="text-xs text-secondary">
+                            Inherits {LEVELS.find((l) => l.value === inherited)?.label ?? inherited}
+                          </div>
+                        )}
+                      </div>
+                      <select
+                        value={chosen}
+                        onChange={(e) => setLevel(surface, e.target.value)}
+                        className="px-3 py-1.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      >
+                        {LEVELS.map((l) => (
+                          <option key={l.value} value={l.value}>
+                            {l.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {user.role === "ACCOUNT_MANAGER" && (
+                <div className="pt-2 border-t border-gray-100">
+                  <div className="flex items-center gap-2 mb-2 mt-4">
+                    <Store size={14} className="text-secondary" />
+                    <span className="text-sm font-medium">Account manager for</span>
+                  </div>
+                  <p className="text-xs text-secondary mb-3">
+                    The merchants this person is responsible for.
+                  </p>
+                  <div className="space-y-1 max-h-56 overflow-y-auto">
+                    {vendors.length === 0 && (
+                      <p className="text-xs text-secondary">n/a</p>
+                    )}
+                    {vendors.map((v: any) => (
+                      <label
+                        key={v.id}
+                        className="flex items-center gap-2 text-sm py-1 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={vendorIds.includes(v.id)}
+                          onChange={(e) =>
+                            setVendorIds((prev) =>
+                              e.target.checked
+                                ? [...prev, v.id]
+                                : prev.filter((id) => id !== v.id)
+                            )
+                          }
+                          className="rounded border-gray-300"
+                        />
+                        <span>{v.name}</span>
+                        <span className="text-xs text-secondary font-mono">{v.code}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <div className="flex gap-3 p-6 pt-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 px-4 py-2 text-sm font-medium rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving || loading}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-hover transition-colors disabled:opacity-50"
+          >
+            {saving && <Loader2 size={14} className="animate-spin" />}
+            {saving ? "Saving..." : "Save"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

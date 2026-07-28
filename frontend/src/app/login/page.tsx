@@ -20,9 +20,13 @@ const ROLE_LANDING: Record<string, string> = {
   SUPERVISOR: "/ops",
   ACCOUNTANT: "/finance",
   VIEWER: "/orders",
+  // Revision 4 (#11) — an account manager reads the network rather than
+  // running it, so the order board is a better landing than the map.
+  ACCOUNT_MANAGER: "/orders",
   // Portal roles land in (and are fenced into) their portals.
   VENDOR: "/vendor",
   FLEET: "/fleet-portal",
+  CASH_COLLECTOR: "/cash-desk",
 };
 
 function landingForRole(role: string | undefined): string {
