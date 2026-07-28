@@ -6,10 +6,12 @@ import { Router, Request, Response } from "express";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
 import { rbac } from "../middleware/rbac";
+import { requireSurface } from "../middleware/requireSurface";
 import { getCockpitSummary } from "../services/cockpitService";
 
 const router = Router();
-router.use(authMiddleware, tenantScope, rbac("ADMIN"));
+// Revision 4 (#12) — the role gate, then the per-user one.
+router.use(authMiddleware, tenantScope, rbac("ADMIN"), requireSurface("TODAY", "VIEW"));
 
 /**
  * @swagger

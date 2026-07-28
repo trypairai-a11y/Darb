@@ -20,6 +20,10 @@ import { JwtPayload } from "./auth";
 const CASH_ALLOWED_PREFIXES = [
   "/api/auth",
   "/api/wallets/remittances",
+  // Balances only: the desk has to see what the driver is holding before it
+  // accepts the money. rbac on that route admits the role; the ledger,
+  // statements and reconciliation endpoints stay out of reach.
+  "/api/wallets/accounts",
   "/api/drivers", // the hand-in form needs the driver picker
   "/api/events",
 ];

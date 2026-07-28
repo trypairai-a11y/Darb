@@ -3,6 +3,7 @@ import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
 import { rbac } from "../middleware/rbac";
+import { requireSurface } from "../middleware/requireSurface";
 import { getPagination, paginatedResponse } from "../utils/pagination";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "crypto";
@@ -16,7 +17,10 @@ import {
 } from "../services/permissionService";
 
 const router = Router();
-router.use(authMiddleware, tenantScope);
+// Revision 4 (#12): rbac() answers "is this role allowed here"; requireSurface
+// narrows it to "is this person allowed here", which is what a per-user
+// permissions page creates. ADMIN is exempt — see the middleware.
+router.use(authMiddleware, tenantScope, requireSurface("PEOPLE", "VIEW"));
 
 // ─── List Users ─────────────────────────────────────────────────────────────
 

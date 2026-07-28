@@ -25,8 +25,20 @@ import {
 import { RefundError, processRefund } from "../services/wallet/refundService";
 
 const FINANCE_READ = ["ADMIN", "OPS_MANAGER", "ACCOUNTANT"];
-const REMITTANCE_WRITE = ["ACCOUNTANT", "SUPERVISOR", "ADMIN"];
-const REMITTANCE_READ = ["ADMIN", "OPS_MANAGER", "ACCOUNTANT", "SUPERVISOR"];
+// Revision 4 (#3): CASH_COLLECTOR is the cash desk login. Without it here the
+// fence lets the role through and rbac then 403s it out of the one job it has.
+const REMITTANCE_WRITE = ["ACCOUNTANT", "SUPERVISOR", "ADMIN", "CASH_COLLECTOR"];
+const REMITTANCE_READ = [
+  "ADMIN",
+  "OPS_MANAGER",
+  "ACCOUNTANT",
+  "SUPERVISOR",
+  "CASH_COLLECTOR",
+];
+// Balances only, no ledger detail. The cash desk has to see what a driver is
+// holding before it accepts a hand-in — that is the whole point of the screen
+// — so it reads accounts without reading entries or statements.
+const BALANCE_READ = [...FINANCE_READ, "SUPERVISOR", "CASH_COLLECTOR"];
 
 const OWNER_TYPES = [
   "DRIVER_CASH",
@@ -87,7 +99,7 @@ const createAdjustmentSchema = z.object({
  *       200:
  *         description: Paginated wallet accounts with balances as 3dp strings
  */
-router.get("/accounts", rbac(...FINANCE_READ), async (req: Request, res: Response) => {
+router.get("/accounts", rbac(...BALANCE_READ), async (req: Request, res: Response) => {
   try {
     const { skip, limit, page } = getPagination(req);
     const tenantId = req.user!.tenantId;

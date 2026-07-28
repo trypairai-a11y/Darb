@@ -17,6 +17,7 @@ import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
 import { rbac } from "../middleware/rbac";
+import { requireSurface } from "../middleware/requireSurface";
 import { validateBody } from "../utils/validate";
 import { getPagination, paginatedResponse } from "../utils/pagination";
 import { Prisma } from "../generated/prisma";
@@ -24,7 +25,7 @@ import { Prisma } from "../generated/prisma";
 const PLAN_EDITORS = ["ADMIN", "OPS_MANAGER"];
 
 const router = Router();
-router.use(authMiddleware, tenantScope);
+router.use(authMiddleware, tenantScope, requireSurface("SETUP", "VIEW"));
 
 // ─── Schemas ────────────────────────────────────────────────────────────────
 

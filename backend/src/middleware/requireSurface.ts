@@ -22,6 +22,14 @@ export function requireSurface(
       res.status(401).json({ error: "Not authenticated" });
       return;
     }
+    // ADMIN is never gated by a per-user override. Without this an admin can
+    // set their own PEOPLE surface to NONE and lose the very endpoint that
+    // would undo it — a one-click, unrecoverable lockout. Restrictions are for
+    // restricting staff, not for locking an owner out of their own tenant.
+    if (req.user.role === "ADMIN") {
+      next();
+      return;
+    }
     try {
       if (!(await can(req.user.tenantId, req.user.userId, surface, required))) {
         res.status(403).json({ error: "Insufficient permissions" });
