@@ -571,6 +571,172 @@ router.get("/vendor-statements", rbac(...FINANCE_READ), async (req: Request, res
 
 /**
  * @swagger
+ * /api/wallets/vendor-statements/{id}/transactions:
+ *   get:
+ *     tags: [Wallets]
+ *     summary: Every transaction behind one shop's statement period
+ *     description: >
+ *       Revision 4 (#4). The statement list answers "what do we owe this shop";
+ *       this answers "why". One row per order delivered in the period, plus the
+ *       refunds and the payout, each carrying the ledger postings behind it.
+ */
+router.get(
+  "/vendor-statements/:id/transactions",
+  rbac(...FINANCE_READ),
+  async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.user!.tenantId;
+      const statement = await prisma.vendorStatement.findFirst({
+        where: { id: req.params.id, tenantId },
+        include: { vendor: { select: { id: true, name: true, code: true } } },
+      });
+      if (!statement) { res.status(404).json({ error: "Statement not found" }); return; }
+
+      const period = {
+        gte: statement.periodStart,
+        lt: statement.periodEnd, // periodEnd is exclusive, per the model
+      };
+
+      const [orders, refunds, payoutTx] = await Promise.all([
+        prisma.deliveryOrder.findMany({
+          where: {
+            tenantId,
+            vendorId: statement.vendorId,
+            status: "DELIVERED",
+            deliveredAt: period,
+          },
+          orderBy: { deliveredAt: "asc" },
+          select: {
+            id: true,
+            orderNumber: true,
+            deliveredAt: true,
+            paymentMethod: true,
+            orderTotalKwd: true,
+            deliveryFeeKwd: true,
+            codCollectedKwd: true,
+            customerName: true,
+          },
+        }),
+        prisma.refund.findMany({
+          where: {
+            tenantId,
+            vendorId: statement.vendorId,
+            status: "PROCESSED",
+            updatedAt: period,
+          },
+          orderBy: { updatedAt: "asc" },
+          include: { order: { select: { orderNumber: true } } },
+        }),
+        statement.payoutTxId
+          ? prisma.walletTransaction.findFirst({
+              where: { id: statement.payoutTxId, tenantId },
+              include: { entries: true },
+            })
+          : Promise.resolve(null),
+      ]);
+
+      // The postings behind the order rows, fetched in one query and grouped
+      // rather than one query per order.
+      const orderIds = orders.map((o) => o.id);
+      const txs = orderIds.length
+        ? await prisma.walletTransaction.findMany({
+            where: { tenantId, orderId: { in: orderIds } },
+            include: { entries: { include: { account: { select: { ownerType: true } } } } },
+          })
+        : [];
+      const txByOrder = new Map<string, typeof txs>();
+      for (const tx of txs) {
+        if (!tx.orderId) continue;
+        const list = txByOrder.get(tx.orderId) ?? [];
+        list.push(tx);
+        txByOrder.set(tx.orderId, list);
+      }
+
+      const serialiseEntries = (list: typeof txs) =>
+        list.flatMap((tx) =>
+          tx.entries.map((e: any) => ({
+            id: e.id,
+            transactionType: tx.type,
+            account: e.account?.ownerType ?? null,
+            direction: e.direction,
+            amountKwd: toKwdString(e.amountKwd),
+            runningBalanceKwd: toKwdString(e.runningBalanceKwd),
+            createdAt: e.createdAt,
+          })),
+        );
+
+      const rows = [
+        ...orders.map((o) => {
+          const total = Number(o.orderTotalKwd ?? 0);
+          const fee = Number(o.deliveryFeeKwd ?? 0);
+          return {
+            kind: "DELIVERY" as const,
+            date: o.deliveredAt,
+            orderId: o.id,
+            orderNumber: o.orderNumber,
+            reference: o.customerName ?? null,
+            paymentMethod: o.paymentMethod,
+            orderTotalKwd: total.toFixed(3),
+            deliveryFeeKwd: fee.toFixed(3),
+            // What the shop is owed for this order: COD collected less our fee.
+            // Prepaid orders collect nothing, so the shop owes us the fee.
+            codNetKwd: (Number(o.codCollectedKwd ?? 0) - fee).toFixed(3),
+            entries: serialiseEntries(txByOrder.get(o.id) ?? []),
+          };
+        }),
+        ...refunds.map((r) => ({
+          kind: "REFUND" as const,
+          date: r.updatedAt,
+          orderId: r.orderId,
+          orderNumber: r.order?.orderNumber ?? null,
+          reference: r.reason,
+          paymentMethod: null,
+          orderTotalKwd: (-Number(r.amountKwd ?? 0)).toFixed(3),
+          deliveryFeeKwd: null,
+          codNetKwd: (-Number(r.amountKwd ?? 0)).toFixed(3),
+          entries: [],
+        })),
+        ...(payoutTx
+          ? [
+              {
+                kind: "PAYOUT" as const,
+                date: payoutTx.createdAt,
+                orderId: null,
+                orderNumber: null,
+                reference: payoutTx.memo ?? "Statement settled",
+                paymentMethod: null,
+                orderTotalKwd: null,
+                deliveryFeeKwd: null,
+                codNetKwd: (-Number(statement.closingBalanceKwd ?? 0)).toFixed(3),
+                entries: serialiseEntries([payoutTx as any]),
+              },
+            ]
+          : []),
+      ].sort((a, b) => new Date(a.date ?? 0).getTime() - new Date(b.date ?? 0).getTime());
+
+      res.json({
+        statement: {
+          id: statement.id,
+          vendor: statement.vendor,
+          periodStart: statement.periodStart,
+          periodEnd: statement.periodEnd,
+          openingBalanceKwd: toKwdString(statement.openingBalanceKwd),
+          codNetKwd: toKwdString(statement.codNetKwd),
+          prepaidFeesKwd: toKwdString(statement.prepaidFeesKwd),
+          refundsKwd: toKwdString(statement.refundsKwd),
+          closingBalanceKwd: toKwdString(statement.closingBalanceKwd),
+          status: statement.status,
+        },
+        rows,
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+/**
+ * @swagger
  * /api/wallets/vendor-statements/generate:
  *   post:
  *     tags: [Wallets]

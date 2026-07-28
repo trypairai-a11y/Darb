@@ -1,6 +1,8 @@
 import { Router, Request, Response, CookieOptions } from "express";
 import { AuthService } from "../services/authService";
 import { authMiddleware } from "../middleware/auth";
+import { redeemInvite } from "../services/inviteService";
+import { resolvePermissions } from "../services/permissionService";
 
 const router = Router();
 
@@ -224,7 +226,47 @@ router.post("/logout", (_req: Request, res: Response) => {
 router.get("/me", authMiddleware, async (req: Request, res: Response) => {
   try {
     const user = await AuthService.getMe(req.user!.userId);
-    res.json(user);
+    // Revision 4 (#12) — the rail reads this to hide surfaces the person has
+    // no access to. The API enforces the same map via requireSurface, so a
+    // hidden screen is also an unreachable endpoint, not just an invisible one.
+    const permissions = await resolvePermissions(req.user!.tenantId, req.user!.userId);
+    res.json({ ...user, permissions });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/auth/set-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Redeem a staff invite and set your own password
+ *     security: []
+ *     description: >
+ *       Revision 4 (#12). Public by necessity — the caller has no session yet;
+ *       the invite token is the credential. Single use, 72 hour expiry.
+ */
+router.post("/set-password", async (req: Request, res: Response) => {
+  try {
+    const { token, password } = req.body as { token?: string; password?: string };
+    if (!token || !password) {
+      res.status(400).json({ error: "token and password are required" });
+      return;
+    }
+    if (password.length < 8) {
+      res.status(400).json({ error: "Password must be at least 8 characters" });
+      return;
+    }
+
+    const result = await redeemInvite(token, password);
+    if (!result.ok) {
+      // One message for every failure mode: a caller probing tokens learns
+      // nothing about which ones exist.
+      res.status(400).json({ error: "This invite link is no longer valid", reason: result.reason });
+      return;
+    }
+    res.json({ ok: true });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }

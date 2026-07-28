@@ -6,6 +6,7 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
+import ExcelJS from "exceljs";
 import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
@@ -136,6 +137,136 @@ router.post("/", rbac(...MUTATE), validateBody(createFleetSchema), async (req: R
       },
     });
     res.status(201).json(fleet);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/fleets/export.xlsx:
+ *   get:
+ *     tags: [Fleets]
+ *     summary: Fleets workbook — summary, scorecards and payout statements
+ *     description: >
+ *       Revision 4 (#10). The old client-side CSV carried only the five list
+ *       columns, so everything an ops manager actually reviews (the scorecard
+ *       and the payout history in the side panel) had to be read off screen
+ *       one fleet at a time. Three sheets, one download.
+ *
+ *       Rates are written as real numbers with a percent format and money with
+ *       a 3dp format, so Excel sorts and sums them instead of treating them as
+ *       text.
+ */
+router.get("/export.xlsx", rbac(...READ), async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const range = parseRange(req);
+
+    const fleets = await prisma.fleetPartner.findMany({
+      where: { tenantId },
+      orderBy: { name: "asc" },
+      include: {
+        _count: { select: { drivers: true, users: true } },
+        statements: { orderBy: { periodStart: "desc" } },
+      },
+    });
+
+    // Scorecards are per-fleet queries; run them together rather than in
+    // series so a 20-fleet tenant is one round of work, not twenty.
+    const scorecards = await Promise.all(
+      fleets.map((f) =>
+        getFleetScorecard(tenantId, f.id, range).catch(() => null),
+      ),
+    );
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = "Darb";
+    workbook.created = new Date();
+
+    const PCT = "0.0%";
+    const KWD = "#,##0.000";
+
+    const summary = workbook.addWorksheet("Fleets");
+    summary.columns = [
+      { header: "Fleet", key: "name", width: 28 },
+      { header: "Roster", key: "roster", width: 10 },
+      { header: "Discipline", key: "discipline", width: 14 },
+      { header: "Fee per order (KD)", key: "fee", width: 18, style: { numFmt: KWD } },
+      { header: "Status", key: "status", width: 12 },
+    ];
+    for (const f of fleets) {
+      summary.addRow({
+        name: f.name,
+        roster: f._count.drivers,
+        discipline: f.disciplineStatus,
+        fee: Number(f.flatFeePerOrderKwd),
+        status: f.isActive ? "Active" : "Inactive",
+      });
+    }
+
+    const scores = workbook.addWorksheet("Scorecards");
+    scores.columns = [
+      { header: "Fleet", key: "name", width: 28 },
+      { header: "On-time rate", key: "onTime", width: 14, style: { numFmt: PCT } },
+      { header: "Acceptance rate", key: "acceptance", width: 16, style: { numFmt: PCT } },
+      { header: "Utilisation", key: "utilisation", width: 13, style: { numFmt: PCT } },
+      { header: "Delivered orders", key: "delivered", width: 17 },
+      { header: "Online hours", key: "online", width: 14, style: { numFmt: "0.0" } },
+      { header: "Contracted hours", key: "contracted", width: 17, style: { numFmt: "0.0" } },
+      { header: "Rating", key: "rating", width: 10, style: { numFmt: "0.00" } },
+    ];
+    fleets.forEach((f, i) => {
+      const s = scorecards[i];
+      scores.addRow({
+        name: f.name,
+        // "n/a" rather than 0: a fleet with no orders has no on-time rate, and
+        // a zero there would read as a failing one.
+        onTime: s?.onTimeRate ?? "n/a",
+        acceptance: s?.acceptanceRate ?? "n/a",
+        utilisation: s?.utilisation ?? "n/a",
+        delivered: s?.deliveredOrders ?? 0,
+        online: s?.onlineHours ?? 0,
+        contracted: s?.contractedHours ?? "n/a",
+        rating: s?.avgRating ?? "n/a",
+      });
+    });
+
+    const payouts = workbook.addWorksheet("Payouts");
+    payouts.columns = [
+      { header: "Fleet", key: "name", width: 28 },
+      { header: "Period", key: "period", width: 14 },
+      { header: "Delivered orders", key: "orders", width: 17 },
+      { header: "Fee per order (KD)", key: "fee", width: 18, style: { numFmt: KWD } },
+      { header: "Total (KD)", key: "total", width: 14, style: { numFmt: KWD } },
+      { header: "Status", key: "status", width: 10 },
+    ];
+    for (const f of fleets) {
+      for (const st of f.statements) {
+        payouts.addRow({
+          name: f.name,
+          period: st.periodStart.toISOString().slice(0, 7), // YYYY-MM
+          orders: st.deliveredOrders,
+          fee: Number(st.feePerOrderKwd),
+          total: Number(st.totalKwd),
+          status: st.status,
+        });
+      }
+    }
+
+    for (const sheet of [summary, scores, payouts]) {
+      sheet.getRow(1).font = { bold: true };
+      sheet.views = [{ state: "frozen", ySplit: 1 }];
+    }
+
+    const filename = `fleets-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    await workbook.xlsx.write(res);
+    res.end();
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

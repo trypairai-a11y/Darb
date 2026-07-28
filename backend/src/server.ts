@@ -76,6 +76,7 @@ import fleetPortalRouter from "./routes/fleetPortal";
 import cockpitRouter from "./routes/cockpit";
 import { blockVendorOutsideAllowlist } from "./middleware/vendorContainment";
 import { blockFleetOutsideAllowlist } from "./middleware/fleetContainment";
+import { blockCashCollectorOutsideAllowlist } from "./middleware/cashDeskContainment";
 import { startDispatchWorker } from "./queues/dispatchWorker";
 import { startFoodicsWorker } from "./queues/foodicsWorker";
 import { startWalletReconciliationWorker } from "./queues/walletReconciliationWorker";
@@ -206,6 +207,9 @@ app.use("/api", apiLimiter);
 // without editing them. Non-vendor traffic passes through untouched.
 app.use(blockVendorOutsideAllowlist);
 app.use(blockFleetOutsideAllowlist);
+// Revision 4 (#3) — the cash desk is its own portal: a CASH_COLLECTOR token
+// reaches the hand-in surface and nothing else.
+app.use(blockCashCollectorOutsideAllowlist);
 
 // Darb 2.0 — PUBLIC routers (no auth) mounted BEFORE the auth-carrying ones.
 // webhooksRouter: third-party platform callbacks (per-connection path secret).

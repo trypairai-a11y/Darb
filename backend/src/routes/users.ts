@@ -5,6 +5,15 @@ import { tenantScope } from "../middleware/tenantScope";
 import { rbac } from "../middleware/rbac";
 import { getPagination, paginatedResponse } from "../utils/pagination";
 import bcrypt from "bcryptjs";
+import { randomBytes } from "crypto";
+import { AppSurface, PermissionLevel } from "../generated/prisma";
+import { createInvite, emailInvite } from "../services/inviteService";
+import {
+  APP_SURFACES,
+  defaultsForRole,
+  managedVendorIds,
+  resolvePermissions,
+} from "../services/permissionService";
 
 const router = Router();
 router.use(authMiddleware, tenantScope);
@@ -66,21 +75,28 @@ router.get("/:id", rbac("ADMIN", "OPS_MANAGER"), async (req: Request, res: Respo
 });
 
 // ─── Invite (Create) User ───────────────────────────────────────────────────
+//
+// Revision 4 (#12): the admin no longer sets anyone's password. The row is
+// created with an unusable random hash and the invited person chooses their
+// own credential from a link that expires. `password` in the body is ignored
+// rather than rejected, so an older client cannot set one by accident.
 
 router.post("/", rbac("ADMIN"), async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
-    const { email, name, phone, role, password } = req.body;
+    const { email, name, phone, role } = req.body;
 
-    if (!email || !name || !password) {
-      res.status(400).json({ error: "email, name, and password are required" });
+    if (!email || !name) {
+      res.status(400).json({ error: "email and name are required" });
       return;
     }
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) { res.status(409).json({ error: "Email already in use" }); return; }
 
-    const passwordHash = await bcrypt.hash(password, 12);
+    // Unusable by construction: nobody knows this string and nothing returns
+    // it. The account is unreachable until the invite is redeemed.
+    const passwordHash = await bcrypt.hash(randomBytes(32).toString("hex"), 12);
     const user = await prisma.user.create({
       data: {
         email,
@@ -96,7 +112,167 @@ router.post("/", rbac("ADMIN"), async (req: Request, res: Response) => {
       },
     });
 
-    res.status(201).json(user);
+    const invite = await createInvite({ tenantId, userId: user.id });
+    const delivery = await emailInvite({
+      email: user.email,
+      name: user.name,
+      url: invite.url,
+      expiresAt: invite.expiresAt,
+    });
+
+    // inviteUrl comes back regardless of whether the email left the building,
+    // so invites work by copy-paste today and by email once a provider key is
+    // configured.
+    res.status(201).json({
+      ...user,
+      inviteUrl: invite.url,
+      inviteExpiresAt: invite.expiresAt,
+      emailSent: delivery.ok,
+      emailProvider: delivery.provider,
+    });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ─── Re-invite ──────────────────────────────────────────────────────────────
+
+router.post("/:id/invite", rbac("ADMIN"), async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const user = await prisma.user.findFirst({
+      where: { id: req.params.id, tenantId },
+      select: { id: true, email: true, name: true },
+    });
+    if (!user) { res.status(404).json({ error: "User not found" }); return; }
+
+    const invite = await createInvite({ tenantId, userId: user.id });
+    const delivery = await emailInvite({
+      email: user.email,
+      name: user.name,
+      url: invite.url,
+      expiresAt: invite.expiresAt,
+    });
+    res.json({
+      inviteUrl: invite.url,
+      inviteExpiresAt: invite.expiresAt,
+      emailSent: delivery.ok,
+      emailProvider: delivery.provider,
+    });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ─── Per-surface permissions (revision 4 #12) ───────────────────────────────
+//
+// GET returns the effective map plus the role's defaults, so the page can show
+// "inherited" rather than pretending every cell was chosen by a human.
+
+router.get("/:id/permissions", rbac("ADMIN"), async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const user = await prisma.user.findFirst({
+      where: { id: req.params.id, tenantId },
+      select: { id: true, role: true },
+    });
+    if (!user) { res.status(404).json({ error: "User not found" }); return; }
+
+    const [effective, overrides, vendorIds] = await Promise.all([
+      resolvePermissions(tenantId, user.id),
+      prisma.userSurfacePermission.findMany({
+        where: { tenantId, userId: user.id },
+        select: { surface: true, level: true },
+      }),
+      managedVendorIds(tenantId, user.id),
+    ]);
+
+    res.json({
+      surfaces: APP_SURFACES,
+      role: user.role,
+      defaults: defaultsForRole(user.role),
+      overrides: Object.fromEntries(overrides.map((o) => [o.surface, o.level])),
+      effective,
+      managedVendorIds: vendorIds,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put("/:id/permissions", rbac("ADMIN"), async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const user = await prisma.user.findFirst({
+      where: { id: req.params.id, tenantId },
+      select: { id: true, role: true },
+    });
+    if (!user) { res.status(404).json({ error: "User not found" }); return; }
+
+    const body = req.body as {
+      overrides?: Record<string, string | null>;
+      managedVendorIds?: string[];
+    };
+
+    if (body.overrides) {
+      const entries = Object.entries(body.overrides);
+      for (const [surface, level] of entries) {
+        if (!APP_SURFACES.includes(surface as AppSurface)) {
+          res.status(400).json({ error: `Unknown surface: ${surface}` });
+          return;
+        }
+        if (level != null && !["NONE", "VIEW", "EDIT"].includes(level)) {
+          res.status(400).json({ error: `Unknown level: ${level}` });
+          return;
+        }
+      }
+      // null clears the override and puts the surface back on the role default,
+      // which is a different thing from granting NONE.
+      await prisma.$transaction(async (tx) => {
+        for (const [surface, level] of entries) {
+          if (level == null) {
+            await tx.userSurfacePermission.deleteMany({
+              where: { userId: user.id, surface: surface as AppSurface },
+            });
+          } else {
+            await tx.userSurfacePermission.upsert({
+              where: {
+                userId_surface: { userId: user.id, surface: surface as AppSurface },
+              },
+              create: {
+                tenantId,
+                userId: user.id,
+                surface: surface as AppSurface,
+                level: level as PermissionLevel,
+              },
+              update: { level: level as PermissionLevel },
+            });
+          }
+        }
+      });
+    }
+
+    if (body.managedVendorIds) {
+      const valid = await prisma.vendor.findMany({
+        where: { tenantId, id: { in: body.managedVendorIds } },
+        select: { id: true },
+      });
+      const validIds = valid.map((v) => v.id);
+      await prisma.$transaction(async (tx) => {
+        await tx.accountManagerVendor.deleteMany({ where: { tenantId, userId: user.id } });
+        if (validIds.length > 0) {
+          await tx.accountManagerVendor.createMany({
+            data: validIds.map((vendorId) => ({ tenantId, userId: user.id, vendorId })),
+          });
+        }
+      });
+    }
+
+    const [effective, vendorIds] = await Promise.all([
+      resolvePermissions(tenantId, user.id),
+      managedVendorIds(tenantId, user.id),
+    ]);
+    res.json({ effective, managedVendorIds: vendorIds });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
