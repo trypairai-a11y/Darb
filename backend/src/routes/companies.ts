@@ -13,6 +13,19 @@ router.use(authMiddleware, tenantScope);
 const MUTATORS = ["ADMIN", "OPS_MANAGER"];
 const DESTRUCTIVE = ["ADMIN"];
 
+/**
+ * The account manager is internal Darb staff. A VENDOR or FLEET portal account
+ * must never end up owning a company record (revision #20). Returns false when
+ * the id names nobody eligible in this tenant.
+ */
+async function isInternalManager(id: string, tenantId: string) {
+  const manager = await prisma.user.findFirst({
+    where: { id, tenantId, role: { notIn: ["VENDOR", "FLEET"] } },
+    select: { id: true },
+  });
+  return !!manager;
+}
+
 const companySchema = z.object({
   name: z.string().min(1, "Company name is required").max(200),
   // Platform is no longer collected in the UI (revision #16 removed the column
@@ -134,9 +147,17 @@ router.get("/:id", async (req: Request, res: Response) => {
  */
 router.post("/", rbac(...MUTATORS), validateBody(companySchema.passthrough()), async (req: Request, res: Response) => {
   try {
+    const { accountManagerId, ...rest } = req.body;
+    // Same rule the PUT applies: a company can be born already assigned, but
+    // only to internal staff.
+    if (accountManagerId && !(await isInternalManager(accountManagerId, req.user!.tenantId))) {
+      res.status(400).json({ error: "Account manager must be an internal Darb user" });
+      return;
+    }
     const company = await prisma.company.create({
       data: {
-        ...req.body,
+        ...rest,
+        accountManagerId: accountManagerId || null,
         platform: req.body.platform ?? "KEETA",
         tenantId: req.user!.tenantId,
       },
@@ -176,21 +197,9 @@ router.put("/:id", rbac(...MUTATORS), async (req: Request, res: Response) => {
     if (kind !== undefined) data.kind = kind;
     // Empty string from a cleared <select> means "unassign", not "skip".
     if (accountManagerId !== undefined) {
-      if (accountManagerId) {
-        // The account manager is internal Darb staff. A VENDOR or FLEET portal
-        // account must never end up owning a company record.
-        const manager = await prisma.user.findFirst({
-          where: {
-            id: accountManagerId,
-            tenantId: req.user!.tenantId,
-            role: { notIn: ["VENDOR", "FLEET"] },
-          },
-          select: { id: true },
-        });
-        if (!manager) {
-          res.status(400).json({ error: "Account manager must be an internal Darb user" });
-          return;
-        }
+      if (accountManagerId && !(await isInternalManager(accountManagerId, req.user!.tenantId))) {
+        res.status(400).json({ error: "Account manager must be an internal Darb user" });
+        return;
       }
       data.accountManagerId = accountManagerId || null;
     }

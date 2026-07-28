@@ -718,7 +718,7 @@ export default function SettingsPage() {
   // account manager (revision #20), and the API enforces the same rule.
   const { data: staffData } = useApiGet<any>("/api/users?limit=100");
   const [showAddCompany, setShowAddCompany] = useState(false);
-  const [newCompany, setNewCompany] = useState({ name: "", kind: "FLEET" });
+  const [newCompany, setNewCompany] = useState({ name: "", kind: "FLEET", accountManagerId: "" });
   const [kindFilter, setKindFilter] = useState<"ALL" | "FLEET" | "VENDOR">("ALL");
 
   // Profile form
@@ -758,8 +758,15 @@ export default function SettingsPage() {
 
   const handleAddCompany = async () => {
     try {
-      await api.post("/api/companies", newCompany);
+      const { accountManagerId, ...rest } = newCompany;
+      // Unassigned means the field is absent, not an empty string: the create
+      // schema types accountManagerId as a uuid and would reject "".
+      await api.post("/api/companies", {
+        ...rest,
+        ...(accountManagerId ? { accountManagerId } : {}),
+      });
       setShowAddCompany(false);
+      setNewCompany({ name: "", kind: "FLEET", accountManagerId: "" });
       refetchCompanies();
     } catch (err) {
       console.error(err);
@@ -907,6 +914,16 @@ export default function SettingsPage() {
                       className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20">
                       <option value="FLEET">{t("settingsPage.kindFleet")}</option>
                       <option value="VENDOR">{t("settingsPage.kindVendor")}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-secondary mb-1.5">{t("settingsPage.accountManagerCol")}</label>
+                    <select value={newCompany.accountManagerId} onChange={(e) => setNewCompany({ ...newCompany, accountManagerId: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20">
+                      <option value="">{t("settingsPage.unassigned")}</option>
+                      {staff.map((u: any) => (
+                        <option key={u.id} value={u.id}>{u.name}</option>
+                      ))}
                     </select>
                   </div>
                   <button onClick={handleAddCompany}
