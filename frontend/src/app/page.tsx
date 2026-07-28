@@ -4,23 +4,15 @@
 // that middleware.ts intercepted "/" for the known handles first. It routes by
 // role now, and the darb-hq handle falls through to here rather than
 // hardcoding the cockpit.
+//
+// The table lives in lib/roleLanding so this door and the login form cannot
+// drift apart. They had: the login form knew about CASH_COLLECTOR and this
+// did not, so the same person landed on the cash desk or the ops map depending
+// on which way they came in.
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-
-/**
- * Ops staff are the daily users, so the live control room is home. An
- * accountant sits below SUPERVISOR in the role hierarchy and would land on a
- * screen their own rail does not list, so they go to Money instead. Portal
- * roles are fenced by PortalGuard anyway; sending them straight there just
- * saves a bounce.
- */
-function landingFor(role: string | undefined): string {
-  if (role === "VENDOR") return "/vendor";
-  if (role === "FLEET") return "/fleet-portal";
-  if (role === "ACCOUNTANT") return "/finance";
-  return "/ops";
-}
+import { landingForRole } from "@/lib/roleLanding";
 
 export default function RootPage() {
   const { user, loading } = useAuth();
@@ -28,7 +20,7 @@ export default function RootPage() {
 
   useEffect(() => {
     if (!loading) {
-      router.replace(user ? landingFor(user.role) : "/login");
+      router.replace(user ? landingForRole(user.role) : "/login");
     }
   }, [user, loading, router]);
 

@@ -4,35 +4,7 @@ import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 
-/**
- * Post-auth landing depends on the authenticated User's role. Staff land on
- * the live ops map, money roles on finance, portal roles inside their fenced
- * portal.
- *
- * SUPER_ADMIN is a separate flag (User.isSuperAdmin), not a UserRole — the
- * standard role-landing applies, with /admin/* surfaces gated by the
- * isSuperAdmin flag.
- */
-const ROLE_LANDING: Record<string, string> = {
-  // Darb 2.0 — staff land on the live ops map, money roles on finance.
-  ADMIN: "/ops",
-  OPS_MANAGER: "/ops",
-  SUPERVISOR: "/ops",
-  ACCOUNTANT: "/finance",
-  VIEWER: "/orders",
-  // Revision 4 (#11) — an account manager reads the network rather than
-  // running it, so the order board is a better landing than the map.
-  ACCOUNT_MANAGER: "/orders",
-  // Portal roles land in (and are fenced into) their portals.
-  VENDOR: "/vendor",
-  FLEET: "/fleet-portal",
-  CASH_COLLECTOR: "/cash-desk",
-};
-
-function landingForRole(role: string | undefined): string {
-  if (!role) return "/ops";
-  return ROLE_LANDING[role] ?? "/ops";
-}
+import { landingForRole } from "@/lib/roleLanding";
 
 export default function LoginPage() {
   const { login, demoLogin } = useAuth();
