@@ -157,20 +157,33 @@ router.post("/", rbac(...MUTATE), validateBody(createFleetSchema), async (req: R
  *       Rates are written as real numbers with a percent format and money with
  *       a 3dp format, so Excel sorts and sums them instead of treating them as
  *       text.
+ *
+ *       `?fleetId=` narrows all three sheets to one partner. The detail panel
+ *       on /fleets shows a scorecard and a payout history that exist nowhere
+ *       else on screen, and an ops manager reviewing a single company should
+ *       not have to download every company to get them.
  */
 router.get("/export.xlsx", rbac(...READ), async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
     const range = parseRange(req);
+    const fleetId = typeof req.query.fleetId === "string" ? req.query.fleetId : null;
 
     const fleets = await prisma.fleetPartner.findMany({
-      where: { tenantId },
+      where: { tenantId, ...(fleetId ? { id: fleetId } : {}) },
       orderBy: { name: "asc" },
       include: {
         _count: { select: { drivers: true, users: true } },
         statements: { orderBy: { periodStart: "desc" } },
       },
     });
+    // A fleetId that resolves to nothing is a wrong id or another tenant's:
+    // say so rather than handing back an empty workbook that reads as "this
+    // partner has no data".
+    if (fleetId && fleets.length === 0) {
+      res.status(404).json({ error: "Fleet partner not found" });
+      return;
+    }
 
     // Scorecards are per-fleet queries; run them together rather than in
     // series so a 20-fleet tenant is one round of work, not twenty.
@@ -259,7 +272,10 @@ router.get("/export.xlsx", rbac(...READ), async (req: Request, res: Response) =>
       sheet.views = [{ state: "frozen", ySplit: 1 }];
     }
 
-    const filename = `fleets-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    const slug = fleetId
+      ? (fleets[0].name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "fleet")
+      : "fleets";
+    const filename = `${slug}-${new Date().toISOString().slice(0, 10)}.xlsx`;
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

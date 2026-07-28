@@ -7,7 +7,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Download } from "lucide-react";
-import api from "@/lib/api";
+import { downloadBlob } from "@/utils/downloadBlob";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
@@ -27,8 +27,40 @@ function pct(value: number | null | undefined, locale: Locale): string {
   return value == null ? "n/a" : formatPercent(value, locale, 1);
 }
 
+/** Slugged the same way the server names the file, so both agree. */
+function slugify(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "fleet";
+}
+
+/**
+ * The workbook, optionally narrowed to one partner. `fleetId` is what the
+ * panel passes: the scorecard and the payout history are only rendered there,
+ * so without it the panel is the one screen whose data cannot leave the app.
+ */
+async function exportWorkbook(fleetId?: string, nameForFile?: string) {
+  const query = fleetId ? `?fleetId=${encodeURIComponent(fleetId)}` : "";
+  const stem = nameForFile ? slugify(nameForFile) : "fleets";
+  await downloadBlob(
+    `/api/fleets/export.xlsx${query}`,
+    `${stem}-${new Date().toISOString().slice(0, 10)}.xlsx`
+  );
+}
+
 function ScorecardPanel({ fleet }: { fleet: FleetRow }) {
   const { t, locale } = useI18n();
+  const toast = useToast();
+  const [downloading, setDownloading] = useState(false);
+
+  async function downloadFleet() {
+    setDownloading(true);
+    try {
+      await exportWorkbook(fleet.id, fleet.name);
+    } catch {
+      toast.error(t("toast.failedSave"));
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   const scorecardQuery = useQuery({
     queryKey: ["darb", "fleets", fleet.id, "scorecard"],
@@ -53,6 +85,15 @@ function ScorecardPanel({ fleet }: { fleet: FleetRow }) {
         <span dir="ltr" className="text-sm text-sand-700 tabular-nums">
           {t("fleetPortal.feePerOrder")}: {formatKwd(fleet.flatFeePerOrderKwd, locale)}
         </span>
+        <button
+          type="button"
+          onClick={() => void downloadFleet()}
+          disabled={downloading}
+          className="ms-auto inline-flex items-center gap-1.5 px-3 h-8 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors disabled:opacity-50"
+        >
+          <Download size={12} aria-hidden="true" />
+          {downloading ? t("common.processing") : t("fleetPortal.exportExcel")}
+        </button>
       </div>
 
       {/* Scorecard */}
@@ -146,13 +187,7 @@ export default function FleetsPage() {
   async function downloadWorkbook() {
     setDownloading(true);
     try {
-      const res = await api.get("/api/fleets/export.xlsx", { responseType: "blob" });
-      const url = URL.createObjectURL(res.data as Blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `fleets-${new Date().toISOString().slice(0, 10)}.xlsx`;
-      a.click();
-      URL.revokeObjectURL(url);
+      await exportWorkbook();
     } catch {
       toast.error(t("toast.failedSave"));
     } finally {

@@ -4,6 +4,7 @@ import { cn } from "@/lib/cn";
 import { ArrowUp, ArrowDown, ArrowUpDown, Download, CheckSquare, Square, MinusSquare } from "lucide-react";
 import { useI18n } from "@/i18n/I18nProvider";
 import { DirectionalIcon } from "@/i18n/directionalIcon";
+import { triggerDownload } from "@/utils/downloadBlob";
 
 interface Column {
   key: string;
@@ -123,12 +124,10 @@ export default function DataTable({
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${exportFilename || "export"}-${new Date().toISOString().split("T")[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    triggerDownload(
+      blob,
+      `${exportFilename || "export"}-${new Date().toISOString().split("T")[0]}.csv`
+    );
   }
 
   const allPageIds = sortedData.map((r) => r[rowKey]).filter(Boolean) as string[];

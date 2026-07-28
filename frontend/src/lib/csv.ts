@@ -2,6 +2,8 @@
 // Mirrors the escaping rules of DataTable's inline export so files open the
 // same way in Excel/Numbers regardless of which surface produced them.
 
+import { triggerDownload } from "@/utils/downloadBlob";
+
 function escapeCell(cell: unknown): string {
   if (cell == null) return '""';
   return `"${String(cell).replace(/"/g, '""')}"`;
@@ -21,10 +23,5 @@ export function downloadCsv(
   rows: (string | number | null | undefined)[][]
 ): void {
   const blob = new Blob([buildCsv(headers, rows)], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${filename}-${new Date().toISOString().split("T")[0]}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+  triggerDownload(blob, `${filename}-${new Date().toISOString().split("T")[0]}.csv`);
 }
