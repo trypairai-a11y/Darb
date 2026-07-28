@@ -37,7 +37,13 @@
  */
 
 import { Platform } from "react-native";
-import * as SQLite from "expo-sqlite";
+// expo-sqlite is imported for its TYPES only. A value import evaluates the
+// module at load, which calls requireNativeModule("ExpoSQLite") and throws on
+// web — before any Platform.OS branch below can run. That crash took the whole
+// driver app to a blank white screen in a phone browser, which is the one
+// place the card promises it works. The real module is required lazily inside
+// db(), which is only ever reached when !isWeb.
+import type * as SQLite from "expo-sqlite";
 import * as SecureStore from "./deviceStorage";
 import { uploadLocations } from "../api/client";
 import { WebQueue } from "./webQueueStore";
@@ -72,7 +78,10 @@ let _db: SQLite.SQLiteDatabase | null = null;
 
 async function db(): Promise<SQLite.SQLiteDatabase> {
   if (_db) return _db;
-  _db = await SQLite.openDatabaseAsync("darb-outbox.db");
+  // Required here, not at module scope — see the import note above.
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const sqlite = require("expo-sqlite") as typeof import("expo-sqlite");
+  _db = await sqlite.openDatabaseAsync("darb-outbox.db");
   await _db.execAsync(
     `CREATE TABLE IF NOT EXISTS outbox (
        id INTEGER PRIMARY KEY AUTOINCREMENT,
