@@ -9,6 +9,10 @@
  *             plan's origin→destination rate cell
  *   by km   → the first tier whose maxKm covers the routing distance
  *
+ * A by-zone plan holding no rates at all has never been configured, and falls
+ * back to the tenant-wide pricing below rather than refusing every order that
+ * merchant sends. A blank cell inside a filled grid still means unserviceable.
+ *
  * Vendors with no plan keep the original tenant-wide pricing:
  *   Quote = FulfillmentSettings.intraZoneFeeKwd
  *         + (same zone ? 0 : ZoneSurcharge[origin→dest].surchargeKwd).
@@ -252,7 +256,22 @@ export async function quoteDelivery(
   // zone and the plan prices it; until then it is a supervisor's call.
   if (!dropoffZone) return { ok: false, reason: "OUT_OF_ZONE_DROPOFF" };
 
-  if (plan?.type === "ZONE") {
+  // A by-zone plan with NOT ONE rate in it has never been configured, and
+  // reading it as "every pair unserviceable" refuses that merchant's entire
+  // order book. That is not a hypothetical: a plan created and left empty took
+  // a live pharmacy off dispatch completely, and the only visible symptom was
+  // orders piling up in Needs review.
+  //
+  // A blank CELL in a filled grid still means unserviceable — that is somebody
+  // deciding not to serve a pair. An EMPTY grid is somebody who has not decided
+  // anything yet, so the tenant-wide rate card answers until they do. The two
+  // are different states and only one of them should stop a delivery.
+  const planIsConfigured =
+    plan?.type === "ZONE"
+      ? (await prisma.deliveryPlanZoneRate.count({ where: { planId: plan.id } })) > 0
+      : false;
+
+  if (plan?.type === "ZONE" && planIsConfigured) {
     // Revision 5 (#7): the intra-zone flat fee belongs to the plan. A delivery
     // that starts and ends in the same zone is priced by the plan's own flat
     // fee, not by a single tenant-wide number every plan had to share.
@@ -281,7 +300,7 @@ export async function quoteDelivery(
     };
   }
 
-  // ── 3c. No plan: the original tenant-wide pricing ────────────────────────
+  // ── 3c. No plan, or an empty one: the original tenant-wide pricing ───────
   const settings = await prisma.fulfillmentSettings.findUnique({
     where: { tenantId },
   });

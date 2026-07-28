@@ -316,6 +316,9 @@ describe("quoteDelivery with a delivery plan", () => {
       return { zoneId: "zone-a" };
     });
     prisma.deliveryPlan.findFirst.mockResolvedValue(plan);
+    // A by-zone plan is "configured" once it holds any rate at all. Default to
+    // configured; the empty-plan test overrides this to 0.
+    prisma.deliveryPlanZoneRate.count.mockResolvedValue(1);
   }
 
   beforeEach(() => {
@@ -339,6 +342,23 @@ describe("quoteDelivery with a delivery plan", () => {
     expect(result.planId).toBe("plan-z");
     // The old tenant-wide surcharge table is not consulted at all.
     expect(prisma.zoneSurcharge.findFirst).not.toHaveBeenCalled();
+  });
+
+  // Regression: an empty plan took a live merchant off dispatch entirely, and
+  // the only symptom was orders stacking up in Needs review.
+  test("by-zone plan with no rates at all is unconfigured, not unserviceable", async () => {
+    primeBranchOnPlan({ id: "plan-z", type: "ZONE", kmTiers: [] });
+    prisma.deliveryPlanZoneRate.count.mockResolvedValue(0); // never configured
+    prisma.zoneSurcharge.findFirst.mockResolvedValue({ surchargeKwd: D("0.500") });
+
+    const result = await quoteDelivery(TENANT, { branchId: "branch-1", dropoff: IN_ZONE_B });
+
+    // Falls through to the tenant-wide card: 1.250 flat + 0.500 surcharge.
+    expect(result.ok).toBe(true);
+    expect(result.feeKwd.toFixed(3)).toBe("1.750");
+    expect(result.planId).toBeUndefined();
+    // The empty grid is never consulted for a cell.
+    expect(prisma.deliveryPlanZoneRate.findFirst).not.toHaveBeenCalled();
   });
 
   test("by-zone plan: a missing cell means the pair is unserviceable", async () => {
