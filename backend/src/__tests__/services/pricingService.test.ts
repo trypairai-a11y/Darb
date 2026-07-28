@@ -14,7 +14,14 @@ const prisma = getMockPrisma();
 // The Darb 2.0 delegates aren't part of mocks/config yet — attach them to the
 // shared stub before the services capture the prisma reference. Property
 // lookup happens at call time, so this is safe either way.
-for (const model of ["deliveryZone", "vendorBranch", "zoneSurcharge", "fulfillmentSettings"]) {
+for (const model of [
+  "deliveryZone",
+  "vendorBranch",
+  "zoneSurcharge",
+  "fulfillmentSettings",
+  "deliveryPlan",
+  "deliveryPlanZoneRate",
+]) {
   if (!prisma[model]) {
     prisma[model] = {
       findMany: jest.fn(),
@@ -25,6 +32,15 @@ for (const model of ["deliveryZone", "vendorBranch", "zoneSurcharge", "fulfillme
     };
   }
 }
+
+// Revision 4 (#7): the km path's only outside dependency. Mocked at the
+// module boundary so these tests never touch the network or the cache table.
+jest.mock("../../services/distanceService", () => ({
+  drivingDistanceKm: jest.fn(),
+}));
+const { drivingDistanceKm } = require("../../services/distanceService") as {
+  drivingDistanceKm: jest.Mock;
+};
 
 const { quoteDelivery } = require("../../services/pricingService");
 const { invalidateZoneCache } = require("../../services/zoneService");
@@ -279,5 +295,159 @@ describe("quoteDelivery", () => {
     await expect(
       quoteDelivery(TENANT, { branchId: "branch-1", dropoff: IN_ZONE_A }),
     ).rejects.toThrow(/FulfillmentSettings missing for tenant t1/);
+  });
+});
+
+// ─── Revision 4 (#7): delivery plans ────────────────────────────────────────
+//
+// The property that matters most here is the fallback. Plans ship dark: a
+// vendor with no plan must price exactly as it did before, which is what lets
+// merchants move onto plans one at a time instead of on a flag day. Every test
+// above exercises that path — these cover what happens once a plan exists.
+
+describe("quoteDelivery with a delivery plan", () => {
+  const D = (v: string) => new Prisma.Decimal(v);
+
+  /** A branch whose vendor is on `plan` (or on nothing when null). */
+  function primeBranchOnPlan(plan: Record<string, unknown> | null, coords?: { lat: number; lng: number }) {
+    prisma.vendorBranch.findFirst.mockImplementation(async ({ select }: any) => {
+      if (select?.vendor) return { vendor: { deliveryPlanId: plan?.id ?? null } };
+      if (select?.lat) return { lat: coords?.lat ?? null, lng: coords?.lng ?? null };
+      return { zoneId: "zone-a" };
+    });
+    prisma.deliveryPlan.findFirst.mockResolvedValue(plan);
+  }
+
+  beforeEach(() => {
+    resetAllMocks();
+    invalidateZoneCache(TENANT);
+    primeZones();
+    primeSettings();
+    drivingDistanceKm.mockReset();
+  });
+
+  // ── By-zone plans ─────────────────────────────────────────────────────────
+
+  test("by-zone plan prices off its own grid, not the tenant-wide settings", async () => {
+    primeBranchOnPlan({ id: "plan-z", type: "ZONE", kmTiers: [] });
+    prisma.deliveryPlanZoneRate.findFirst.mockResolvedValue({ feeKwd: D("2.250") });
+
+    const result = await quoteDelivery(TENANT, { branchId: "branch-1", dropoff: IN_ZONE_B });
+
+    expect(result.ok).toBe(true);
+    expect(result.feeKwd.toFixed(3)).toBe("2.250");
+    expect(result.planId).toBe("plan-z");
+    // The old tenant-wide surcharge table is not consulted at all.
+    expect(prisma.zoneSurcharge.findFirst).not.toHaveBeenCalled();
+  });
+
+  test("by-zone plan: a missing cell means the pair is unserviceable", async () => {
+    primeBranchOnPlan({ id: "plan-z", type: "ZONE", kmTiers: [] });
+    prisma.deliveryPlanZoneRate.findFirst.mockResolvedValue(null); // the blank cell
+
+    const result = await quoteDelivery(TENANT, { branchId: "branch-1", dropoff: IN_ZONE_B });
+
+    expect(result).toEqual({ ok: false, reason: "UNSERVICEABLE_PAIR" });
+  });
+
+  test("by-zone plan: the intra-zone row supplies the same-zone fee", async () => {
+    primeBranchOnPlan({ id: "plan-z", type: "ZONE", kmTiers: [] });
+    prisma.deliveryPlanZoneRate.findFirst.mockResolvedValue({ feeKwd: D("1.000") });
+
+    const result = await quoteDelivery(TENANT, { branchId: "branch-1", dropoff: IN_ZONE_A });
+
+    expect(result.ok).toBe(true);
+    expect(result.feeKwd.toFixed(3)).toBe("1.000");
+    const q = prisma.deliveryPlanZoneRate.findFirst.mock.calls[0][0];
+    expect(q.where).toMatchObject({ originZoneId: "zone-a", destZoneId: "zone-a" });
+  });
+
+  // ── By-kilometre plans ────────────────────────────────────────────────────
+  //
+  // The client's worked example: 12 km and under = A, 12.1 to 14 = B, 14+ = C.
+  // The open-ended top band is maxKm = null, which is why "14+" is a row here
+  // and not a branch in the pricing code.
+
+  const KM_TIERS = [
+    { maxKm: D("12"), feeKwd: D("1.500") },
+    { maxKm: D("14"), feeKwd: D("2.000") },
+    { maxKm: null, feeKwd: D("2.750") },
+  ];
+
+  function primeKmPlan(tiers = KM_TIERS) {
+    primeBranchOnPlan({ id: "plan-k", type: "KM", kmTiers: tiers }, { lat: 29.375, lng: 47.975 });
+  }
+
+  test.each([
+    ["under the first breakpoint", 8.4, "1.500"],
+    ["exactly on a breakpoint", 12, "1.500"],
+    ["just past a breakpoint", 12.1, "2.000"],
+    ["in the open-ended top band", 21.6, "2.750"],
+  ])("by-km plan: %s → KD %s", async (_label, km, expected) => {
+    primeKmPlan();
+    drivingDistanceKm.mockResolvedValue({ km, source: "google" });
+
+    const result = await quoteDelivery(TENANT, { branchId: "branch-1", dropoff: IN_ZONE_B });
+
+    expect(result.ok).toBe(true);
+    expect(result.feeKwd.toFixed(3)).toBe(expected);
+    expect(result.distanceKm).toBe(km);
+  });
+
+  test("by-km plan: a blank price marks that band unserviceable", async () => {
+    primeKmPlan([
+      { maxKm: D("12"), feeKwd: D("1.500") },
+      { maxKm: null, feeKwd: null }, // we do not deliver past 12 km
+    ]);
+    drivingDistanceKm.mockResolvedValue({ km: 18, source: "google" });
+
+    const result = await quoteDelivery(TENANT, { branchId: "branch-1", dropoff: IN_ZONE_B });
+
+    expect(result).toEqual({ ok: false, reason: "UNSERVICEABLE_PAIR" });
+  });
+
+  test("by-km plan: running off the end of a closed ladder is unserviceable", async () => {
+    primeKmPlan([{ maxKm: D("12"), feeKwd: D("1.500") }]); // no open-ended band
+    drivingDistanceKm.mockResolvedValue({ km: 30, source: "google" });
+
+    const result = await quoteDelivery(TENANT, { branchId: "branch-1", dropoff: IN_ZONE_B });
+
+    expect(result).toEqual({ ok: false, reason: "UNSERVICEABLE_PAIR" });
+  });
+
+  test("by-km plan: a straight-line fallback still prices, and says so", async () => {
+    primeKmPlan();
+    drivingDistanceKm.mockResolvedValue({ km: 9.2, source: "straight-line" });
+
+    const result = await quoteDelivery(TENANT, { branchId: "branch-1", dropoff: IN_ZONE_B });
+
+    // A degraded distance must not reject the order — it must be visible.
+    expect(result.ok).toBe(true);
+    expect(result.feeKwd.toFixed(3)).toBe("1.500");
+    expect(result.distanceSource).toBe("straight-line");
+  });
+
+  test("by-km plan: a dropoff given only as a zone has no distance to price", async () => {
+    primeKmPlan();
+
+    const result = await quoteDelivery(TENANT, {
+      branchId: "branch-1",
+      dropoff: { zoneId: "zone-b" },
+    });
+
+    expect(result).toEqual({ ok: false, reason: "NO_COORDINATES" });
+    expect(drivingDistanceKm).not.toHaveBeenCalled();
+  });
+
+  test("an inactive plan falls back to tenant-wide pricing rather than failing", async () => {
+    // deliveryPlan.findFirst filters on isActive, so a deactivated plan reads
+    // as "no plan" — the vendor keeps getting priced instead of being cut off.
+    primeBranchOnPlan(null);
+    prisma.zoneSurcharge.findFirst.mockResolvedValue({ surchargeKwd: D("0.750") });
+
+    const result = await quoteDelivery(TENANT, { branchId: "branch-1", dropoff: IN_ZONE_B });
+
+    expect(result.ok).toBe(true);
+    expect(result.feeKwd.toFixed(3)).toBe("2.000");
   });
 });

@@ -61,6 +61,9 @@ const updateVendorSchema = z.object({
   requiresCarOnly: z.boolean().optional(),
   isPaused: z.boolean().optional(),
   isActive: z.boolean().optional(),
+  // Revision 4 (#7) — the named price list this merchant is quoted on. null
+  // puts it back on the tenant-wide FulfillmentSettings + ZoneSurcharge pair.
+  deliveryPlanId: z.string().uuid().nullable().optional(),
 });
 
 const createBranchSchema = z.object({
@@ -274,6 +277,8 @@ router.get("/:id", async (req: Request, res: Response) => {
         foodicsConnection: {
           select: { status: true, orderTagId: true, lastEventAt: true },
         },
+        // Revision 4 (#7) — the profile tab shows which price list applies.
+        deliveryPlan: { select: { id: true, name: true, type: true, isActive: true } },
       },
     });
     if (!vendor) { res.status(404).json({ error: "Vendor not found" }); return; }
@@ -317,6 +322,16 @@ router.put(
   async (req: Request, res: Response) => {
     try {
       const tenantId = req.user!.tenantId;
+      // Revision 4 (#7): a plan id from another tenant would silently reprice
+      // this merchant off someone else's rate card. Verify before writing.
+      const planId = (req.body as { deliveryPlanId?: string | null }).deliveryPlanId;
+      if (planId) {
+        const plan = await prisma.deliveryPlan.findFirst({
+          where: { id: planId, tenantId },
+          select: { id: true },
+        });
+        if (!plan) { res.status(400).json({ error: "Delivery plan not found" }); return; }
+      }
       const result = await prisma.vendor.updateMany({
         where: { id: req.params.id, tenantId },
         data: req.body,

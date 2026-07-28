@@ -60,6 +60,7 @@ import scheduledBriefingsRouter from "./routes/scheduledBriefings";
 import webhooksRouter from "./routes/webhooks";
 import foodicsRouter, { foodicsCallbackRouter } from "./routes/foodics";
 import zonesRouter from "./routes/zones";
+import deliveryPlansRouter from "./routes/deliveryPlans";
 import vendorsRouter from "./routes/vendors";
 import vendorPortalRouter from "./routes/vendorPortal";
 import deliveryOrdersRouter from "./routes/deliveryOrders";
@@ -286,6 +287,7 @@ app.use("/api/scheduled-briefings", scheduledBriefingsRouter);
 startScheduledBriefingsWorker();
 // Darb 2.0 — delivery fulfillment surface (plan §A8):
 //   /api/zones           zones CRUD + resolve/quote + surcharges + settings
+//   /api/delivery-plans  named by-zone / by-km price lists (revision 4 #7)
 //   /api/vendors         staff-facing vendor management
 //   /api/vendor          vendor-portal (VENDOR role, vendorScope from JWT)
 //   /api/delivery-orders staff order console (list/detail/timeline/assign/…)
@@ -295,6 +297,7 @@ startScheduledBriefingsWorker();
 //   /api/foodics         authed Foodics connect/status/branch-map/disconnect
 //                        (public GET /callback mounted earlier, same prefix)
 app.use("/api/zones", zonesRouter);
+app.use("/api/delivery-plans", deliveryPlansRouter);
 app.use("/api/vendors", vendorsRouter);
 // Darb 2.0 PRD §9/§14 — fleet governance + founder cockpit
 app.use("/api/fleets", fleetsRouter);

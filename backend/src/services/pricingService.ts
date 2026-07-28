@@ -1,16 +1,28 @@
 /**
- * Delivery pricing service — Darb 2.0 (§A4).
+ * Delivery pricing service — Darb 2.0 (§A4), revision 4 (#7).
  *
- * Quote = FulfillmentSettings.intraZoneFeeKwd
- *       + (same zone ? 0 : ZoneSurcharge[origin→dest].surchargeKwd).
+ * A vendor is priced by its assigned DeliveryPlan. A plan is either by zone or
+ * by kilometre, never both, because a price list a person cannot read off a
+ * screen is a price list nobody trusts.
  *
- * A missing ZoneSurcharge row for a cross-zone pair means the pair is
- * unserviceable by design (absence of a row = UNSERVICEABLE_PAIR).
- * All money math uses Prisma.Decimal — never JS floats.
+ *   by zone → intra-zone fee + zone-to-zone surcharge, per plan
+ *   by km   → the first tier whose maxKm covers the routing distance
+ *
+ * Vendors with no plan keep the original tenant-wide pricing:
+ *   Quote = FulfillmentSettings.intraZoneFeeKwd
+ *         + (same zone ? 0 : ZoneSurcharge[origin→dest].surchargeKwd).
+ *
+ * That fallback is what lets plans ship dark and vendors move onto them one at
+ * a time instead of all at once behind a flag day.
+ *
+ * A missing rate means the pair or the band is unserviceable by design
+ * (absence of a row = UNSERVICEABLE_PAIR). All money math uses Prisma.Decimal
+ * — never JS floats.
  */
 import { Prisma } from "../generated/prisma";
 import { prisma } from "../config";
 import { ResolvedZone, resolveZone } from "./zoneService";
+import { DistanceSource, drivingDistanceKm } from "./distanceService";
 
 // ─── Contract types ─────────────────────────────────────────────────────────
 
@@ -28,6 +40,10 @@ export type QuoteResult =
       feeKwd: Prisma.Decimal;
       pickupZone: ResolvedZone;
       dropoffZone: ResolvedZone;
+      /** Set only for by-kilometre plans. */
+      distanceKm?: number;
+      distanceSource?: DistanceSource;
+      planId?: string;
     }
   | { ok: false; reason: QuoteRejection };
 
@@ -43,6 +59,54 @@ function toResolvedZone(z: { id: string; code: string; name: string; nameAr: str
   return { id: z.id, code: z.code, name: z.name, nameAr: z.nameAr ?? null };
 }
 
+function toNum(v: unknown): number | null {
+  if (v == null) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * The plan a delivery is priced on, resolved from the branch's vendor. Null
+ * means "no plan assigned" and the caller falls back to FulfillmentSettings.
+ */
+async function resolvePlan(tenantId: string, branchId?: string) {
+  if (!branchId) return null;
+  const branch = await prisma.vendorBranch.findFirst({
+    where: { id: branchId, tenantId },
+    select: { vendor: { select: { deliveryPlanId: true } } },
+  });
+  const planId = branch?.vendor?.deliveryPlanId;
+  if (!planId) return null;
+
+  const plan = await prisma.deliveryPlan.findFirst({
+    where: { id: planId, tenantId, isActive: true },
+    include: { kmTiers: { orderBy: { sortOrder: "asc" } } },
+  });
+  return plan ?? null;
+}
+
+/**
+ * Fee for a by-kilometre plan. Tiers are ordered ascending and the last one may
+ * carry maxKm = NULL, meaning "and above" — that is what makes "14+ km" a row
+ * rather than a special case here. A tier with a NULL fee is the client's blank
+ * cell: that band is not served.
+ */
+function feeForDistance(
+  tiers: Array<{ maxKm: Prisma.Decimal | null; feeKwd: Prisma.Decimal | null }>,
+  km: number,
+): Prisma.Decimal | null {
+  for (const tier of tiers) {
+    const max = tier.maxKm == null ? null : Number(tier.maxKm);
+    if (max == null || km <= max) {
+      return tier.feeKwd == null
+        ? null
+        : new Prisma.Decimal(tier.feeKwd as unknown as Prisma.Decimal.Value);
+    }
+  }
+  // Past every band and none of them was open-ended: not served.
+  return null;
+}
+
 // ─── Quote ──────────────────────────────────────────────────────────────────
 
 /**
@@ -54,8 +118,9 @@ function toResolvedZone(z: { id: string; code: string; name: string; nameAr: str
  * coordinates AND no zoneId → NO_COORDINATES; resolved to nothing →
  * OUT_OF_ZONE_DROPOFF).
  *
- * Throws when FulfillmentSettings is missing for the tenant — that is a
- * configuration error, not a quotable rejection (routes map it to 500).
+ * Throws when a plan-less vendor has no FulfillmentSettings for the tenant —
+ * that is a configuration error, not a quotable rejection (routes map it to
+ * 500).
  */
 export async function quoteDelivery(
   tenantId: string,
@@ -108,7 +173,65 @@ export async function quoteDelivery(
     return { ok: false, reason: "NO_COORDINATES" };
   }
 
+  const base = {
+    pickupZoneId: pickupZone.id,
+    dropoffZoneId: dropoffZone.id,
+    pickupZone,
+    dropoffZone,
+  };
+
   // ── 3. Fee (Prisma.Decimal arithmetic only) ──────────────────────────────
+  const plan = await resolvePlan(tenantId, input.branchId);
+
+  // ── 3a. By-kilometre plan ────────────────────────────────────────────────
+  if (plan?.type === "KM") {
+    const branch = await prisma.vendorBranch.findFirst({
+      where: { id: input.branchId!, tenantId },
+      select: { lat: true, lng: true },
+    });
+    const originLat = toNum(branch?.lat);
+    const originLng = toNum(branch?.lng);
+    const destLat = toNum(dropoff.lat);
+    const destLng = toNum(dropoff.lng);
+    // Kilometre pricing needs two pins. A dropoff given only as a zone id has
+    // no distance to measure, so it cannot be priced on a km plan.
+    if (originLat == null || originLng == null) return { ok: false, reason: "BRANCH_UNZONED" };
+    if (destLat == null || destLng == null) return { ok: false, reason: "NO_COORDINATES" };
+
+    const distance = await drivingDistanceKm(
+      tenantId,
+      { lat: originLat, lng: originLng },
+      { lat: destLat, lng: destLng },
+    );
+    const feeKwd = feeForDistance(plan.kmTiers, distance.km);
+    if (feeKwd == null) return { ok: false, reason: "UNSERVICEABLE_PAIR" };
+
+    return {
+      ok: true,
+      ...base,
+      feeKwd,
+      distanceKm: Number(distance.km.toFixed(3)),
+      distanceSource: distance.source,
+      planId: plan.id,
+    };
+  }
+
+  // ── 3b. By-zone plan ─────────────────────────────────────────────────────
+  if (plan?.type === "ZONE") {
+    const rate = await prisma.deliveryPlanZoneRate.findFirst({
+      where: { planId: plan.id, originZoneId: pickupZone.id, destZoneId: dropoffZone.id },
+      select: { feeKwd: true },
+    });
+    if (!rate) return { ok: false, reason: "UNSERVICEABLE_PAIR" };
+    return {
+      ok: true,
+      ...base,
+      feeKwd: new Prisma.Decimal(rate.feeKwd as unknown as Prisma.Decimal.Value),
+      planId: plan.id,
+    };
+  }
+
+  // ── 3c. No plan: the original tenant-wide pricing ────────────────────────
   const settings = await prisma.fulfillmentSettings.findUnique({
     where: { tenantId },
   });
@@ -131,12 +254,5 @@ export async function quoteDelivery(
     );
   }
 
-  return {
-    ok: true,
-    pickupZoneId: pickupZone.id,
-    dropoffZoneId: dropoffZone.id,
-    feeKwd,
-    pickupZone,
-    dropoffZone,
-  };
+  return { ok: true, ...base, feeKwd };
 }
