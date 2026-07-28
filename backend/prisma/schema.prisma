@@ -225,6 +225,9 @@ enum ComplianceEventType {
   CASH_THRESHOLD_EXCEEDED
 }
 
+// Retained only so the Postgres type is not dropped (no destructive
+// migrations). PlatformInventory.itemType and DriverInventory.itemType are
+// slugs now, so ops can create item types this list never anticipated.
 enum InventoryItemType {
   HELMET
   TSHIRT
@@ -753,7 +756,9 @@ model DriverRestriction {
 model DriverInventory {
   id                  String             @id @default(uuid())
   driverId            String
-  itemType            InventoryItemType
+  // Slug, not the InventoryItemType enum: a custom platform item has to be
+  // issuable to a driver or creating one is only half a feature.
+  itemType            String
   issued              Boolean            @default(false)
   quantity            Int                @default(0)
   issuedDate          DateTime?
@@ -1592,16 +1597,21 @@ model PlatformSettings {
 
 // 31. PlatformInventory - total stock of equipment items per platform
 model PlatformInventory {
-  id        String            @id @default(uuid())
+  id        String   @id @default(uuid())
   tenantId  String
   platform  Platform
-  itemType  InventoryItemType
-  total     Int               @default(0)
-  issued    Int               @default(0)
-  available Int               @default(0)
-  minStock  Int               @default(0)
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
+  // Was the InventoryItemType enum. Ops can now create their own item types
+  // from /assets, and a new kind of kit must not need a migration, so the
+  // column is a slug (UPPER_SNAKE) with `label` carrying the display name.
+  // The enum still exists in the database; nothing reads it any more.
+  itemType  String
+  label     String?
+  total     Int      @default(0)
+  issued    Int      @default(0)
+  available Int      @default(0)
+  minStock  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
 

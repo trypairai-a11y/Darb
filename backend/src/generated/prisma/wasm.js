@@ -800,6 +800,7 @@ exports.Prisma.PlatformInventoryScalarFieldEnum = {
   tenantId: 'tenantId',
   platform: 'platform',
   itemType: 'itemType',
+  label: 'label',
   total: 'total',
   issued: 'issued',
   available: 'available',
@@ -1978,6 +1979,7 @@ exports.Prisma.DriverRestrictionOrderByRelevanceFieldEnum = {
 exports.Prisma.DriverInventoryOrderByRelevanceFieldEnum = {
   id: 'id',
   driverId: 'driverId',
+  itemType: 'itemType',
   conditionNote: 'conditionNote'
 };
 
@@ -2265,7 +2267,9 @@ exports.Prisma.PlatformSettingsOrderByRelevanceFieldEnum = {
 
 exports.Prisma.PlatformInventoryOrderByRelevanceFieldEnum = {
   id: 'id',
-  tenantId: 'tenantId'
+  tenantId: 'tenantId',
+  itemType: 'itemType',
+  label: 'label'
 };
 
 exports.Prisma.AmericanaDailyOrdersOrderByRelevanceFieldEnum = {
@@ -2999,23 +3003,6 @@ exports.DriverStatus = exports.$Enums.DriverStatus = {
 exports.RestrictionType = exports.$Enums.RestrictionType = {
   TEMPORARY: 'TEMPORARY',
   PERMANENT: 'PERMANENT'
-};
-
-exports.InventoryItemType = exports.$Enums.InventoryItemType = {
-  HELMET: 'HELMET',
-  TSHIRT: 'TSHIRT',
-  PANTS: 'PANTS',
-  COOLING_VEST: 'COOLING_VEST',
-  SAFETY_VEST: 'SAFETY_VEST',
-  WATER_BOTTLE: 'WATER_BOTTLE',
-  GLOVES: 'GLOVES',
-  SAFETY_KIT: 'SAFETY_KIT',
-  BIG_BAG: 'BIG_BAG',
-  SMALL_BAG: 'SMALL_BAG',
-  CAP: 'CAP',
-  MOBILE_PHONE: 'MOBILE_PHONE',
-  SIM_CARD: 'SIM_CARD',
-  PETROL_CARD: 'PETROL_CARD'
 };
 
 exports.EquipmentCondition = exports.$Enums.EquipmentCondition = {

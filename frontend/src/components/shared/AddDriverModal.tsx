@@ -1,10 +1,13 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import api from "@/lib/api";
 import { useApiGet } from "@/hooks/useApi";
 import { X, Loader2, ChevronRight, ChevronLeft, Check } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { itemDisplayName } from "@/lib/equipmentItems";
 
+// Defaults. Item types ops created themselves are appended from the platform
+// inventory below, so a new kind of kit is issuable the moment it exists.
 const INVENTORY_ITEMS = [
   { key: "HELMET", label: "Helmet", hasQuantity: false },
   { key: "TSHIRT", label: "T-Shirts", hasQuantity: true },
@@ -59,6 +62,22 @@ export default function AddDriverModal({ platform, onClose, onSuccess }: AddDriv
     return init;
   });
 
+  const { data: platformInventoryData } = useApiGet<any>(
+    "/api/platform-settings/inventory/all"
+  );
+
+  const inventoryItems = useMemo(() => {
+    const known = new Set(INVENTORY_ITEMS.map((i) => i.key));
+    const extras = ((platformInventoryData?.data || []) as any[])
+      .filter((row) => (row.platform ?? "DARB") === "DARB" && !known.has(row.itemType))
+      .map((row) => ({
+        key: row.itemType as string,
+        label: itemDisplayName(row.itemType, row.label),
+        hasQuantity: true,
+      }));
+    return [...INVENTORY_ITEMS, ...extras];
+  }, [platformInventoryData]);
+
   // Fetch companies filtered by selected platform
   const selectedPlatform = form.platform;
   const companiesUrl = selectedPlatform
@@ -104,7 +123,7 @@ export default function AddDriverModal({ platform, onClose, onSuccess }: AddDriv
     setSubmitting(true);
     setError(null);
     try {
-      const inventoryItems = Object.entries(inventory)
+      const issuedItems = Object.entries(inventory)
         .filter(([, v]) => v.issued)
         .map(([itemType, v]) => ({
           itemType,
@@ -292,8 +311,8 @@ export default function AddDriverModal({ platform, onClose, onSuccess }: AddDriv
               <p className="text-xs text-secondary mb-3">
                 Toggle items issued to this driver. Set quantity where applicable.
               </p>
-              {INVENTORY_ITEMS.map((item) => {
-                const state = inventory[item.key];
+              {inventoryItems.map((item) => {
+                const state = inventory[item.key] || { issued: false, quantity: 0 };
                 return (
                   <div
                     key={item.key}

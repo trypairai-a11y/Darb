@@ -13,6 +13,7 @@ import AddDeviceModal from "@/components/shared/AddDeviceModal";
 import AddPlatformEquipmentModal from "@/components/shared/AddPlatformEquipmentModal";
 import BackToSetup from "@/components/shared/BackToSetup";
 import { useI18n } from "@/i18n/I18nProvider";
+import { itemDisplayName } from "@/lib/equipmentItems";
 
 type Tab = "vehicles" | "sims" | "devices" | "platformEquipment";
 
@@ -34,27 +35,11 @@ const ADD_BUTTON_LABEL: Record<Tab, string> = {
   platformEquipment: "Add Equipment",
 };
 
-const ITEM_TYPE_LABELS: Record<string, string> = {
-  HELMET: "Helmet",
-  TSHIRT: "T-Shirt",
-  PANTS: "Pants",
-  COOLING_VEST: "Cooling Vest",
-  SAFETY_VEST: "Safety Vest",
-  WATER_BOTTLE: "Water Bottle",
-  GLOVES: "Gloves",
-  SAFETY_KIT: "Safety Kit",
-  BIG_BAG: "Big Bag",
-  SMALL_BAG: "Small Bag",
-  CAP: "Cap",
-  MOBILE_PHONE: "Mobile Phone",
-  SIM_CARD: "SIM Card",
-  PETROL_CARD: "Petrol Card",
-};
-
 type EquipmentRow = {
   id: string;
   platform: string;
   itemType: string;
+  label?: string | null;
   total: number;
   issued: number;
   available: number;
@@ -208,15 +193,26 @@ export default function GlobalAssetsPage() {
   const equipment: any[] = equipmentSource.filter((e: any) => {
     if (!query) return true;
     const q = query.toLowerCase();
-    return (
-      (ITEM_TYPE_LABELS[e.itemType] || e.itemType || "").toLowerCase().includes(q)
-    );
+    return itemDisplayName(e.itemType, e.label).toLowerCase().includes(q);
   });
 
   const equipmentExisting: { platform: string; itemType: string }[] = equipmentSource.map((e: any) => ({
     platform: e.platform,
     itemType: e.itemType,
   }));
+
+  // The fourteen defaults on screen are a placeholder until something is
+  // actually saved. Persist them alongside the first real add, or the table
+  // would collapse to the single row the API now returns.
+  const equipmentBootstrap: any[] | undefined =
+    apiEquipment.length === 0
+      ? MOCK_PLATFORM_EQUIPMENT.map((e) => ({
+          itemType: e.itemType,
+          total: e.total,
+          issued: e.issued,
+          minStock: e.minStock,
+        }))
+      : undefined;
 
   const vehicleColumns = [
     {
@@ -432,7 +428,9 @@ export default function GlobalAssetsPage() {
     {
       key: "itemType",
       label: "Item",
-      render: (v: string) => <span className="text-sm">{ITEM_TYPE_LABELS[v] || v || "—"}</span>,
+      render: (v: string, r: any) => (
+        <span className="text-sm">{itemDisplayName(v, r.label)}</span>
+      ),
     },
     {
       key: "total",
@@ -641,6 +639,7 @@ export default function GlobalAssetsPage() {
           onClose={() => setAddModalOpen(false)}
           onSuccess={handleAddSuccess}
           existing={equipmentExisting}
+          bootstrap={equipmentBootstrap}
         />
       )}
 

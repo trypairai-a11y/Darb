@@ -648,26 +648,6 @@ export const RestrictionType: {
 export type RestrictionType = (typeof RestrictionType)[keyof typeof RestrictionType]
 
 
-export const InventoryItemType: {
-  HELMET: 'HELMET',
-  TSHIRT: 'TSHIRT',
-  PANTS: 'PANTS',
-  COOLING_VEST: 'COOLING_VEST',
-  SAFETY_VEST: 'SAFETY_VEST',
-  WATER_BOTTLE: 'WATER_BOTTLE',
-  GLOVES: 'GLOVES',
-  SAFETY_KIT: 'SAFETY_KIT',
-  BIG_BAG: 'BIG_BAG',
-  SMALL_BAG: 'SMALL_BAG',
-  CAP: 'CAP',
-  MOBILE_PHONE: 'MOBILE_PHONE',
-  SIM_CARD: 'SIM_CARD',
-  PETROL_CARD: 'PETROL_CARD'
-};
-
-export type InventoryItemType = (typeof InventoryItemType)[keyof typeof InventoryItemType]
-
-
 export const EquipmentCondition: {
   OK: 'OK',
   DAMAGED: 'DAMAGED',
@@ -1246,10 +1226,6 @@ export const DriverStatus: typeof $Enums.DriverStatus
 export type RestrictionType = $Enums.RestrictionType
 
 export const RestrictionType: typeof $Enums.RestrictionType
-
-export type InventoryItemType = $Enums.InventoryItemType
-
-export const InventoryItemType: typeof $Enums.InventoryItemType
 
 export type EquipmentCondition = $Enums.EquipmentCondition
 
@@ -24576,7 +24552,7 @@ export namespace Prisma {
   export type DriverInventoryMinAggregateOutputType = {
     id: string | null
     driverId: string | null
-    itemType: $Enums.InventoryItemType | null
+    itemType: string | null
     issued: boolean | null
     quantity: number | null
     issuedDate: Date | null
@@ -24591,7 +24567,7 @@ export namespace Prisma {
   export type DriverInventoryMaxAggregateOutputType = {
     id: string | null
     driverId: string | null
-    itemType: $Enums.InventoryItemType | null
+    itemType: string | null
     issued: boolean | null
     quantity: number | null
     issuedDate: Date | null
@@ -24763,7 +24739,7 @@ export namespace Prisma {
   export type DriverInventoryGroupByOutputType = {
     id: string
     driverId: string
-    itemType: $Enums.InventoryItemType
+    itemType: string
     issued: boolean
     quantity: number
     issuedDate: Date | null
@@ -24856,7 +24832,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       driverId: string
-      itemType: $Enums.InventoryItemType
+      itemType: string
       issued: boolean
       quantity: number
       issuedDate: Date | null
@@ -25262,7 +25238,7 @@ export namespace Prisma {
   interface DriverInventoryFieldRefs {
     readonly id: FieldRef<"DriverInventory", 'String'>
     readonly driverId: FieldRef<"DriverInventory", 'String'>
-    readonly itemType: FieldRef<"DriverInventory", 'InventoryItemType'>
+    readonly itemType: FieldRef<"DriverInventory", 'String'>
     readonly issued: FieldRef<"DriverInventory", 'Boolean'>
     readonly quantity: FieldRef<"DriverInventory", 'Int'>
     readonly issuedDate: FieldRef<"DriverInventory", 'DateTime'>
@@ -59764,7 +59740,8 @@ export namespace Prisma {
     id: string | null
     tenantId: string | null
     platform: $Enums.Platform | null
-    itemType: $Enums.InventoryItemType | null
+    itemType: string | null
+    label: string | null
     total: number | null
     issued: number | null
     available: number | null
@@ -59777,7 +59754,8 @@ export namespace Prisma {
     id: string | null
     tenantId: string | null
     platform: $Enums.Platform | null
-    itemType: $Enums.InventoryItemType | null
+    itemType: string | null
+    label: string | null
     total: number | null
     issued: number | null
     available: number | null
@@ -59791,6 +59769,7 @@ export namespace Prisma {
     tenantId: number
     platform: number
     itemType: number
+    label: number
     total: number
     issued: number
     available: number
@@ -59820,6 +59799,7 @@ export namespace Prisma {
     tenantId?: true
     platform?: true
     itemType?: true
+    label?: true
     total?: true
     issued?: true
     available?: true
@@ -59833,6 +59813,7 @@ export namespace Prisma {
     tenantId?: true
     platform?: true
     itemType?: true
+    label?: true
     total?: true
     issued?: true
     available?: true
@@ -59846,6 +59827,7 @@ export namespace Prisma {
     tenantId?: true
     platform?: true
     itemType?: true
+    label?: true
     total?: true
     issued?: true
     available?: true
@@ -59945,7 +59927,8 @@ export namespace Prisma {
     id: string
     tenantId: string
     platform: $Enums.Platform
-    itemType: $Enums.InventoryItemType
+    itemType: string
+    label: string | null
     total: number
     issued: number
     available: number
@@ -59978,6 +59961,7 @@ export namespace Prisma {
     tenantId?: boolean
     platform?: boolean
     itemType?: boolean
+    label?: boolean
     total?: boolean
     issued?: boolean
     available?: boolean
@@ -59992,6 +59976,7 @@ export namespace Prisma {
     tenantId?: boolean
     platform?: boolean
     itemType?: boolean
+    label?: boolean
     total?: boolean
     issued?: boolean
     available?: boolean
@@ -60006,6 +59991,7 @@ export namespace Prisma {
     tenantId?: boolean
     platform?: boolean
     itemType?: boolean
+    label?: boolean
     total?: boolean
     issued?: boolean
     available?: boolean
@@ -60030,7 +60016,8 @@ export namespace Prisma {
       id: string
       tenantId: string
       platform: $Enums.Platform
-      itemType: $Enums.InventoryItemType
+      itemType: string
+      label: string | null
       total: number
       issued: number
       available: number
@@ -60434,7 +60421,8 @@ export namespace Prisma {
     readonly id: FieldRef<"PlatformInventory", 'String'>
     readonly tenantId: FieldRef<"PlatformInventory", 'String'>
     readonly platform: FieldRef<"PlatformInventory", 'Platform'>
-    readonly itemType: FieldRef<"PlatformInventory", 'InventoryItemType'>
+    readonly itemType: FieldRef<"PlatformInventory", 'String'>
+    readonly label: FieldRef<"PlatformInventory", 'String'>
     readonly total: FieldRef<"PlatformInventory", 'Int'>
     readonly issued: FieldRef<"PlatformInventory", 'Int'>
     readonly available: FieldRef<"PlatformInventory", 'Int'>
@@ -138408,6 +138396,7 @@ export namespace Prisma {
     tenantId: 'tenantId',
     platform: 'platform',
     itemType: 'itemType',
+    label: 'label',
     total: 'total',
     issued: 'issued',
     available: 'available',
@@ -139841,6 +139830,7 @@ export namespace Prisma {
   export const DriverInventoryOrderByRelevanceFieldEnum: {
     id: 'id',
     driverId: 'driverId',
+    itemType: 'itemType',
     conditionNote: 'conditionNote'
   };
 
@@ -140224,7 +140214,9 @@ export namespace Prisma {
 
   export const PlatformInventoryOrderByRelevanceFieldEnum: {
     id: 'id',
-    tenantId: 'tenantId'
+    tenantId: 'tenantId',
+    itemType: 'itemType',
+    label: 'label'
   };
 
   export type PlatformInventoryOrderByRelevanceFieldEnum = (typeof PlatformInventoryOrderByRelevanceFieldEnum)[keyof typeof PlatformInventoryOrderByRelevanceFieldEnum]
@@ -141311,20 +141303,6 @@ export namespace Prisma {
    * Reference to a field of type 'RestrictionType[]'
    */
   export type ListEnumRestrictionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RestrictionType[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'InventoryItemType'
-   */
-  export type EnumInventoryItemTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InventoryItemType'>
-    
-
-
-  /**
-   * Reference to a field of type 'InventoryItemType[]'
-   */
-  export type ListEnumInventoryItemTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InventoryItemType[]'>
     
 
 
@@ -143279,7 +143257,7 @@ export namespace Prisma {
     NOT?: DriverInventoryWhereInput | DriverInventoryWhereInput[]
     id?: StringFilter<"DriverInventory"> | string
     driverId?: StringFilter<"DriverInventory"> | string
-    itemType?: EnumInventoryItemTypeFilter<"DriverInventory"> | $Enums.InventoryItemType
+    itemType?: StringFilter<"DriverInventory"> | string
     issued?: BoolFilter<"DriverInventory"> | boolean
     quantity?: IntFilter<"DriverInventory"> | number
     issuedDate?: DateTimeNullableFilter<"DriverInventory"> | Date | string | null
@@ -143315,7 +143293,7 @@ export namespace Prisma {
     OR?: DriverInventoryWhereInput[]
     NOT?: DriverInventoryWhereInput | DriverInventoryWhereInput[]
     driverId?: StringFilter<"DriverInventory"> | string
-    itemType?: EnumInventoryItemTypeFilter<"DriverInventory"> | $Enums.InventoryItemType
+    itemType?: StringFilter<"DriverInventory"> | string
     issued?: BoolFilter<"DriverInventory"> | boolean
     quantity?: IntFilter<"DriverInventory"> | number
     issuedDate?: DateTimeNullableFilter<"DriverInventory"> | Date | string | null
@@ -143354,7 +143332,7 @@ export namespace Prisma {
     NOT?: DriverInventoryScalarWhereWithAggregatesInput | DriverInventoryScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"DriverInventory"> | string
     driverId?: StringWithAggregatesFilter<"DriverInventory"> | string
-    itemType?: EnumInventoryItemTypeWithAggregatesFilter<"DriverInventory"> | $Enums.InventoryItemType
+    itemType?: StringWithAggregatesFilter<"DriverInventory"> | string
     issued?: BoolWithAggregatesFilter<"DriverInventory"> | boolean
     quantity?: IntWithAggregatesFilter<"DriverInventory"> | number
     issuedDate?: DateTimeNullableWithAggregatesFilter<"DriverInventory"> | Date | string | null
@@ -146780,7 +146758,8 @@ export namespace Prisma {
     id?: StringFilter<"PlatformInventory"> | string
     tenantId?: StringFilter<"PlatformInventory"> | string
     platform?: EnumPlatformFilter<"PlatformInventory"> | $Enums.Platform
-    itemType?: EnumInventoryItemTypeFilter<"PlatformInventory"> | $Enums.InventoryItemType
+    itemType?: StringFilter<"PlatformInventory"> | string
+    label?: StringNullableFilter<"PlatformInventory"> | string | null
     total?: IntFilter<"PlatformInventory"> | number
     issued?: IntFilter<"PlatformInventory"> | number
     available?: IntFilter<"PlatformInventory"> | number
@@ -146795,6 +146774,7 @@ export namespace Prisma {
     tenantId?: SortOrder
     platform?: SortOrder
     itemType?: SortOrder
+    label?: SortOrderInput | SortOrder
     total?: SortOrder
     issued?: SortOrder
     available?: SortOrder
@@ -146813,7 +146793,8 @@ export namespace Prisma {
     NOT?: PlatformInventoryWhereInput | PlatformInventoryWhereInput[]
     tenantId?: StringFilter<"PlatformInventory"> | string
     platform?: EnumPlatformFilter<"PlatformInventory"> | $Enums.Platform
-    itemType?: EnumInventoryItemTypeFilter<"PlatformInventory"> | $Enums.InventoryItemType
+    itemType?: StringFilter<"PlatformInventory"> | string
+    label?: StringNullableFilter<"PlatformInventory"> | string | null
     total?: IntFilter<"PlatformInventory"> | number
     issued?: IntFilter<"PlatformInventory"> | number
     available?: IntFilter<"PlatformInventory"> | number
@@ -146828,6 +146809,7 @@ export namespace Prisma {
     tenantId?: SortOrder
     platform?: SortOrder
     itemType?: SortOrder
+    label?: SortOrderInput | SortOrder
     total?: SortOrder
     issued?: SortOrder
     available?: SortOrder
@@ -146848,7 +146830,8 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"PlatformInventory"> | string
     tenantId?: StringWithAggregatesFilter<"PlatformInventory"> | string
     platform?: EnumPlatformWithAggregatesFilter<"PlatformInventory"> | $Enums.Platform
-    itemType?: EnumInventoryItemTypeWithAggregatesFilter<"PlatformInventory"> | $Enums.InventoryItemType
+    itemType?: StringWithAggregatesFilter<"PlatformInventory"> | string
+    label?: StringNullableWithAggregatesFilter<"PlatformInventory"> | string | null
     total?: IntWithAggregatesFilter<"PlatformInventory"> | number
     issued?: IntWithAggregatesFilter<"PlatformInventory"> | number
     available?: IntWithAggregatesFilter<"PlatformInventory"> | number
@@ -155323,7 +155306,7 @@ export namespace Prisma {
 
   export type DriverInventoryCreateInput = {
     id?: string
-    itemType: $Enums.InventoryItemType
+    itemType: string
     issued?: boolean
     quantity?: number
     issuedDate?: Date | string | null
@@ -155339,7 +155322,7 @@ export namespace Prisma {
   export type DriverInventoryUncheckedCreateInput = {
     id?: string
     driverId: string
-    itemType: $Enums.InventoryItemType
+    itemType: string
     issued?: boolean
     quantity?: number
     issuedDate?: Date | string | null
@@ -155353,7 +155336,7 @@ export namespace Prisma {
 
   export type DriverInventoryUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    itemType?: EnumInventoryItemTypeFieldUpdateOperationsInput | $Enums.InventoryItemType
+    itemType?: StringFieldUpdateOperationsInput | string
     issued?: BoolFieldUpdateOperationsInput | boolean
     quantity?: IntFieldUpdateOperationsInput | number
     issuedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -155369,7 +155352,7 @@ export namespace Prisma {
   export type DriverInventoryUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     driverId?: StringFieldUpdateOperationsInput | string
-    itemType?: EnumInventoryItemTypeFieldUpdateOperationsInput | $Enums.InventoryItemType
+    itemType?: StringFieldUpdateOperationsInput | string
     issued?: BoolFieldUpdateOperationsInput | boolean
     quantity?: IntFieldUpdateOperationsInput | number
     issuedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -155384,7 +155367,7 @@ export namespace Prisma {
   export type DriverInventoryCreateManyInput = {
     id?: string
     driverId: string
-    itemType: $Enums.InventoryItemType
+    itemType: string
     issued?: boolean
     quantity?: number
     issuedDate?: Date | string | null
@@ -155398,7 +155381,7 @@ export namespace Prisma {
 
   export type DriverInventoryUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    itemType?: EnumInventoryItemTypeFieldUpdateOperationsInput | $Enums.InventoryItemType
+    itemType?: StringFieldUpdateOperationsInput | string
     issued?: BoolFieldUpdateOperationsInput | boolean
     quantity?: IntFieldUpdateOperationsInput | number
     issuedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -155413,7 +155396,7 @@ export namespace Prisma {
   export type DriverInventoryUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     driverId?: StringFieldUpdateOperationsInput | string
-    itemType?: EnumInventoryItemTypeFieldUpdateOperationsInput | $Enums.InventoryItemType
+    itemType?: StringFieldUpdateOperationsInput | string
     issued?: BoolFieldUpdateOperationsInput | boolean
     quantity?: IntFieldUpdateOperationsInput | number
     issuedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -159176,7 +159159,8 @@ export namespace Prisma {
   export type PlatformInventoryCreateInput = {
     id?: string
     platform: $Enums.Platform
-    itemType: $Enums.InventoryItemType
+    itemType: string
+    label?: string | null
     total?: number
     issued?: number
     available?: number
@@ -159190,7 +159174,8 @@ export namespace Prisma {
     id?: string
     tenantId: string
     platform: $Enums.Platform
-    itemType: $Enums.InventoryItemType
+    itemType: string
+    label?: string | null
     total?: number
     issued?: number
     available?: number
@@ -159202,7 +159187,8 @@ export namespace Prisma {
   export type PlatformInventoryUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
-    itemType?: EnumInventoryItemTypeFieldUpdateOperationsInput | $Enums.InventoryItemType
+    itemType?: StringFieldUpdateOperationsInput | string
+    label?: NullableStringFieldUpdateOperationsInput | string | null
     total?: IntFieldUpdateOperationsInput | number
     issued?: IntFieldUpdateOperationsInput | number
     available?: IntFieldUpdateOperationsInput | number
@@ -159216,7 +159202,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
-    itemType?: EnumInventoryItemTypeFieldUpdateOperationsInput | $Enums.InventoryItemType
+    itemType?: StringFieldUpdateOperationsInput | string
+    label?: NullableStringFieldUpdateOperationsInput | string | null
     total?: IntFieldUpdateOperationsInput | number
     issued?: IntFieldUpdateOperationsInput | number
     available?: IntFieldUpdateOperationsInput | number
@@ -159229,7 +159216,8 @@ export namespace Prisma {
     id?: string
     tenantId: string
     platform: $Enums.Platform
-    itemType: $Enums.InventoryItemType
+    itemType: string
+    label?: string | null
     total?: number
     issued?: number
     available?: number
@@ -159241,7 +159229,8 @@ export namespace Prisma {
   export type PlatformInventoryUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
-    itemType?: EnumInventoryItemTypeFieldUpdateOperationsInput | $Enums.InventoryItemType
+    itemType?: StringFieldUpdateOperationsInput | string
+    label?: NullableStringFieldUpdateOperationsInput | string | null
     total?: IntFieldUpdateOperationsInput | number
     issued?: IntFieldUpdateOperationsInput | number
     available?: IntFieldUpdateOperationsInput | number
@@ -159254,7 +159243,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
-    itemType?: EnumInventoryItemTypeFieldUpdateOperationsInput | $Enums.InventoryItemType
+    itemType?: StringFieldUpdateOperationsInput | string
+    label?: NullableStringFieldUpdateOperationsInput | string | null
     total?: IntFieldUpdateOperationsInput | number
     issued?: IntFieldUpdateOperationsInput | number
     available?: IntFieldUpdateOperationsInput | number
@@ -168719,13 +168709,6 @@ export namespace Prisma {
     _max?: NestedEnumRestrictionTypeFilter<$PrismaModel>
   }
 
-  export type EnumInventoryItemTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.InventoryItemType | EnumInventoryItemTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.InventoryItemType[] | ListEnumInventoryItemTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.InventoryItemType[] | ListEnumInventoryItemTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumInventoryItemTypeFilter<$PrismaModel> | $Enums.InventoryItemType
-  }
-
   export type EnumEquipmentConditionFilter<$PrismaModel = never> = {
     equals?: $Enums.EquipmentCondition | EnumEquipmentConditionFieldRefInput<$PrismaModel>
     in?: $Enums.EquipmentCondition[] | ListEnumEquipmentConditionFieldRefInput<$PrismaModel>
@@ -168790,16 +168773,6 @@ export namespace Prisma {
 
   export type DriverInventorySumOrderByAggregateInput = {
     quantity?: SortOrder
-  }
-
-  export type EnumInventoryItemTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.InventoryItemType | EnumInventoryItemTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.InventoryItemType[] | ListEnumInventoryItemTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.InventoryItemType[] | ListEnumInventoryItemTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumInventoryItemTypeWithAggregatesFilter<$PrismaModel> | $Enums.InventoryItemType
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumInventoryItemTypeFilter<$PrismaModel>
-    _max?: NestedEnumInventoryItemTypeFilter<$PrismaModel>
   }
 
   export type EnumEquipmentConditionWithAggregatesFilter<$PrismaModel = never> = {
@@ -171479,7 +171452,7 @@ export namespace Prisma {
   export type PlatformInventoryTenantIdPlatformItemTypeCompoundUniqueInput = {
     tenantId: string
     platform: $Enums.Platform
-    itemType: $Enums.InventoryItemType
+    itemType: string
   }
 
   export type PlatformInventoryCountOrderByAggregateInput = {
@@ -171487,6 +171460,7 @@ export namespace Prisma {
     tenantId?: SortOrder
     platform?: SortOrder
     itemType?: SortOrder
+    label?: SortOrder
     total?: SortOrder
     issued?: SortOrder
     available?: SortOrder
@@ -171507,6 +171481,7 @@ export namespace Prisma {
     tenantId?: SortOrder
     platform?: SortOrder
     itemType?: SortOrder
+    label?: SortOrder
     total?: SortOrder
     issued?: SortOrder
     available?: SortOrder
@@ -171520,6 +171495,7 @@ export namespace Prisma {
     tenantId?: SortOrder
     platform?: SortOrder
     itemType?: SortOrder
+    label?: SortOrder
     total?: SortOrder
     issued?: SortOrder
     available?: SortOrder
@@ -183638,10 +183614,6 @@ export namespace Prisma {
     connect?: DriverWhereUniqueInput
   }
 
-  export type EnumInventoryItemTypeFieldUpdateOperationsInput = {
-    set?: $Enums.InventoryItemType
-  }
-
   export type EnumEquipmentConditionFieldUpdateOperationsInput = {
     set?: $Enums.EquipmentCondition
   }
@@ -190279,28 +190251,11 @@ export namespace Prisma {
     _max?: NestedEnumRestrictionTypeFilter<$PrismaModel>
   }
 
-  export type NestedEnumInventoryItemTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.InventoryItemType | EnumInventoryItemTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.InventoryItemType[] | ListEnumInventoryItemTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.InventoryItemType[] | ListEnumInventoryItemTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumInventoryItemTypeFilter<$PrismaModel> | $Enums.InventoryItemType
-  }
-
   export type NestedEnumEquipmentConditionFilter<$PrismaModel = never> = {
     equals?: $Enums.EquipmentCondition | EnumEquipmentConditionFieldRefInput<$PrismaModel>
     in?: $Enums.EquipmentCondition[] | ListEnumEquipmentConditionFieldRefInput<$PrismaModel>
     notIn?: $Enums.EquipmentCondition[] | ListEnumEquipmentConditionFieldRefInput<$PrismaModel>
     not?: NestedEnumEquipmentConditionFilter<$PrismaModel> | $Enums.EquipmentCondition
-  }
-
-  export type NestedEnumInventoryItemTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.InventoryItemType | EnumInventoryItemTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.InventoryItemType[] | ListEnumInventoryItemTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.InventoryItemType[] | ListEnumInventoryItemTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumInventoryItemTypeWithAggregatesFilter<$PrismaModel> | $Enums.InventoryItemType
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumInventoryItemTypeFilter<$PrismaModel>
-    _max?: NestedEnumInventoryItemTypeFilter<$PrismaModel>
   }
 
   export type NestedEnumEquipmentConditionWithAggregatesFilter<$PrismaModel = never> = {
@@ -192778,7 +192733,8 @@ export namespace Prisma {
   export type PlatformInventoryCreateWithoutTenantInput = {
     id?: string
     platform: $Enums.Platform
-    itemType: $Enums.InventoryItemType
+    itemType: string
+    label?: string | null
     total?: number
     issued?: number
     available?: number
@@ -192790,7 +192746,8 @@ export namespace Prisma {
   export type PlatformInventoryUncheckedCreateWithoutTenantInput = {
     id?: string
     platform: $Enums.Platform
-    itemType: $Enums.InventoryItemType
+    itemType: string
+    label?: string | null
     total?: number
     issued?: number
     available?: number
@@ -196561,7 +196518,8 @@ export namespace Prisma {
     id?: StringFilter<"PlatformInventory"> | string
     tenantId?: StringFilter<"PlatformInventory"> | string
     platform?: EnumPlatformFilter<"PlatformInventory"> | $Enums.Platform
-    itemType?: EnumInventoryItemTypeFilter<"PlatformInventory"> | $Enums.InventoryItemType
+    itemType?: StringFilter<"PlatformInventory"> | string
+    label?: StringNullableFilter<"PlatformInventory"> | string | null
     total?: IntFilter<"PlatformInventory"> | number
     issued?: IntFilter<"PlatformInventory"> | number
     available?: IntFilter<"PlatformInventory"> | number
@@ -202956,7 +202914,7 @@ export namespace Prisma {
 
   export type DriverInventoryCreateWithoutDriverInput = {
     id?: string
-    itemType: $Enums.InventoryItemType
+    itemType: string
     issued?: boolean
     quantity?: number
     issuedDate?: Date | string | null
@@ -202970,7 +202928,7 @@ export namespace Prisma {
 
   export type DriverInventoryUncheckedCreateWithoutDriverInput = {
     id?: string
-    itemType: $Enums.InventoryItemType
+    itemType: string
     issued?: boolean
     quantity?: number
     issuedDate?: Date | string | null
@@ -205370,7 +205328,7 @@ export namespace Prisma {
     NOT?: DriverInventoryScalarWhereInput | DriverInventoryScalarWhereInput[]
     id?: StringFilter<"DriverInventory"> | string
     driverId?: StringFilter<"DriverInventory"> | string
-    itemType?: EnumInventoryItemTypeFilter<"DriverInventory"> | $Enums.InventoryItemType
+    itemType?: StringFilter<"DriverInventory"> | string
     issued?: BoolFilter<"DriverInventory"> | boolean
     quantity?: IntFilter<"DriverInventory"> | number
     issuedDate?: DateTimeNullableFilter<"DriverInventory"> | Date | string | null
@@ -279918,7 +279876,8 @@ export namespace Prisma {
   export type PlatformInventoryCreateManyTenantInput = {
     id?: string
     platform: $Enums.Platform
-    itemType: $Enums.InventoryItemType
+    itemType: string
+    label?: string | null
     total?: number
     issued?: number
     available?: number
@@ -282581,7 +282540,8 @@ export namespace Prisma {
   export type PlatformInventoryUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
-    itemType?: EnumInventoryItemTypeFieldUpdateOperationsInput | $Enums.InventoryItemType
+    itemType?: StringFieldUpdateOperationsInput | string
+    label?: NullableStringFieldUpdateOperationsInput | string | null
     total?: IntFieldUpdateOperationsInput | number
     issued?: IntFieldUpdateOperationsInput | number
     available?: IntFieldUpdateOperationsInput | number
@@ -282593,7 +282553,8 @@ export namespace Prisma {
   export type PlatformInventoryUncheckedUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
-    itemType?: EnumInventoryItemTypeFieldUpdateOperationsInput | $Enums.InventoryItemType
+    itemType?: StringFieldUpdateOperationsInput | string
+    label?: NullableStringFieldUpdateOperationsInput | string | null
     total?: IntFieldUpdateOperationsInput | number
     issued?: IntFieldUpdateOperationsInput | number
     available?: IntFieldUpdateOperationsInput | number
@@ -282605,7 +282566,8 @@ export namespace Prisma {
   export type PlatformInventoryUncheckedUpdateManyWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
     platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
-    itemType?: EnumInventoryItemTypeFieldUpdateOperationsInput | $Enums.InventoryItemType
+    itemType?: StringFieldUpdateOperationsInput | string
+    label?: NullableStringFieldUpdateOperationsInput | string | null
     total?: IntFieldUpdateOperationsInput | number
     issued?: IntFieldUpdateOperationsInput | number
     available?: IntFieldUpdateOperationsInput | number
@@ -287438,7 +287400,7 @@ export namespace Prisma {
 
   export type DriverInventoryCreateManyDriverInput = {
     id?: string
-    itemType: $Enums.InventoryItemType
+    itemType: string
     issued?: boolean
     quantity?: number
     issuedDate?: Date | string | null
@@ -288150,7 +288112,7 @@ export namespace Prisma {
 
   export type DriverInventoryUpdateWithoutDriverInput = {
     id?: StringFieldUpdateOperationsInput | string
-    itemType?: EnumInventoryItemTypeFieldUpdateOperationsInput | $Enums.InventoryItemType
+    itemType?: StringFieldUpdateOperationsInput | string
     issued?: BoolFieldUpdateOperationsInput | boolean
     quantity?: IntFieldUpdateOperationsInput | number
     issuedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -288164,7 +288126,7 @@ export namespace Prisma {
 
   export type DriverInventoryUncheckedUpdateWithoutDriverInput = {
     id?: StringFieldUpdateOperationsInput | string
-    itemType?: EnumInventoryItemTypeFieldUpdateOperationsInput | $Enums.InventoryItemType
+    itemType?: StringFieldUpdateOperationsInput | string
     issued?: BoolFieldUpdateOperationsInput | boolean
     quantity?: IntFieldUpdateOperationsInput | number
     issuedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -288178,7 +288140,7 @@ export namespace Prisma {
 
   export type DriverInventoryUncheckedUpdateManyWithoutDriverInput = {
     id?: StringFieldUpdateOperationsInput | string
-    itemType?: EnumInventoryItemTypeFieldUpdateOperationsInput | $Enums.InventoryItemType
+    itemType?: StringFieldUpdateOperationsInput | string
     issued?: BoolFieldUpdateOperationsInput | boolean
     quantity?: IntFieldUpdateOperationsInput | number
     issuedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

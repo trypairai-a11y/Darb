@@ -105,20 +105,65 @@ router.get("/:platform/inventory", async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * itemType is a slug, not an enum, so ops can invent kit we never listed. Fold
+ * a free-text name down to UPPER_SNAKE so "Rain jacket", "rain-jacket" and
+ * "RAIN_JACKET" all land on the same inventory pool instead of three.
+ */
+function toItemSlug(raw: string): string {
+  return String(raw)
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 48);
+}
+
 // PUT /api/platform-settings/:platform/inventory
 router.put("/:platform/inventory", rbac(...ADMINS), async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
     const platform = req.params.platform.toUpperCase();
-    const { items } = req.body; // [{ itemType, total, minStock }]
+    const { items } = req.body; // [{ itemType, label?, total, minStock }]
+
+    if (!Array.isArray(items) || items.length === 0) {
+      res.status(400).json({ error: "items must be a non-empty array" });
+      return;
+    }
 
     const results = [];
     for (const item of items) {
-      const issued = item.issued || 0;
+      const itemType = toItemSlug(item.itemType ?? "");
+      if (!itemType) {
+        res.status(400).json({ error: "itemType is required and must contain a letter or digit" });
+        return;
+      }
+
+      const total = Number(item.total);
+      if (!Number.isFinite(total) || total < 0) {
+        res.status(400).json({ error: `total must be a number >= 0 for ${itemType}` });
+        return;
+      }
+
+      const issued = Number(item.issued) || 0;
+      const minStock = Number(item.minStock) || 0;
+      const label = typeof item.label === "string" && item.label.trim() ? item.label.trim() : undefined;
+
       const result = await prisma.platformInventory.upsert({
-        where: { tenantId_platform_itemType: { tenantId, platform: platform as any, itemType: item.itemType } },
-        create: { tenantId, platform: platform as any, itemType: item.itemType, total: item.total, issued, available: item.total - issued, minStock: item.minStock || 0 },
-        update: { total: item.total, issued, available: item.total - issued, minStock: item.minStock || 0 },
+        where: { tenantId_platform_itemType: { tenantId, platform: platform as any, itemType } },
+        create: {
+          tenantId,
+          platform: platform as any,
+          itemType,
+          label,
+          total,
+          issued,
+          available: total - issued,
+          minStock,
+        },
+        // A label is only ever set, never cleared by an update that omits it:
+        // renaming is a separate intent from restocking.
+        update: { ...(label ? { label } : {}), total, issued, available: total - issued, minStock },
       });
       results.push(result);
     }
@@ -128,6 +173,39 @@ router.put("/:platform/inventory", rbac(...ADMINS), async (req: Request, res: Re
     res.status(400).json({ error: err.message });
   }
 });
+
+// DELETE /api/platform-settings/:platform/inventory/:itemType — retire a pool.
+// Creating item types without a way to remove a typo is a one-way door.
+router.delete(
+  "/:platform/inventory/:itemType",
+  rbac(...ADMINS),
+  async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.user!.tenantId;
+      const platform = req.params.platform.toUpperCase();
+      const itemType = toItemSlug(req.params.itemType);
+
+      const existing = await prisma.platformInventory.findUnique({
+        where: { tenantId_platform_itemType: { tenantId, platform: platform as any, itemType } },
+      });
+      if (!existing) {
+        res.status(404).json({ error: "Inventory pool not found" });
+        return;
+      }
+      if (existing.issued > 0) {
+        res.status(409).json({
+          error: `${existing.issued} of these are still issued to drivers. Collect them before removing the item.`,
+        });
+        return;
+      }
+
+      await prisma.platformInventory.delete({ where: { id: existing.id } });
+      res.json({ data: { id: existing.id } });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+);
 
 function getDefaultTargetsBase(platform: string) {
   switch (platform) {
