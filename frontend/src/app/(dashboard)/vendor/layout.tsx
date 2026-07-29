@@ -104,8 +104,8 @@ function InspectBanner() {
  * has no reason to see money at all.
  */
 const FORBIDDEN: Record<string, string[]> = {
-  FINANCE: ["/vendor/settings"],
-  ORDER_TRACKING: ["/vendor/wallet", "/vendor/settings", "/vendor/grow"],
+  FINANCE: ["/vendor/settings", "/vendor/team"],
+  ORDER_TRACKING: ["/vendor/wallet", "/vendor/settings", "/vendor/grow", "/vendor/team"],
 };
 
 function RoleRouteFence() {

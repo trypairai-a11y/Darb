@@ -1960,6 +1960,26 @@ export interface Messages {
     exportCsv: string;
     refreshed: string;
   };
+  vendorTeam: {
+    title: string;
+    subtitle: string;
+    add: string;
+    email: string;
+    password: string;
+    passwordHint: string;
+    role: string;
+    roleOWNER: string;
+    roleFINANCE: string;
+    roleORDER_TRACKING: string;
+    hintOwner: string;
+    hintFinance: string;
+    hintTracking: string;
+    allBranches: string;
+    access: string;
+    added: string;
+    created: string;
+    empty: string;
+  };
   vendorExtra: {
     analyticsTitle: string;
     analyticsSubtitle: string;
@@ -3955,6 +3975,26 @@ export const en: Messages = {
     exportCsv: "Export CSV",
     refreshed: "Refreshed",
   },
+  vendorTeam: {
+    title: "Team",
+    subtitle: "The people at your shop who can sign in, and what each of them may see.",
+    add: "Add user",
+    email: "Email",
+    password: "Password",
+    passwordHint: "At least 8 characters.",
+    role: "Role",
+    roleOWNER: "Owner",
+    roleFINANCE: "Finance",
+    roleORDER_TRACKING: "Order tracking",
+    hintOwner: "Runs everything, and adds people like this one.",
+    hintFinance: "Money and what orders were worth. No shop settings.",
+    hintTracking: "Follows deliveries and raises support. No money.",
+    allBranches: "All branches",
+    access: "Access",
+    added: "Added",
+    created: "User created.",
+    empty: "No one else yet.",
+  },
   vendorExtra: {
     analyticsTitle: "Analytics",
     analyticsSubtitle: "Your delivery performance and customers.",
@@ -5935,6 +5975,26 @@ export const ar: Messages = {
     noAlerts: "كل شيء سليم. لا تجاوزات.",
     exportCsv: "تصدير CSV",
     refreshed: "آخر تحديث",
+  },
+  vendorTeam: {
+    title: "الفريق",
+    subtitle: "من في متجرك يمكنه تسجيل الدخول، وما الذي يراه كل واحد منهم.",
+    add: "إضافة مستخدم",
+    email: "البريد الإلكتروني",
+    password: "كلمة المرور",
+    passwordHint: "٨ أحرف على الأقل.",
+    role: "الدور",
+    roleOWNER: "المالك",
+    roleFINANCE: "المالية",
+    roleORDER_TRACKING: "متابعة الطلبات",
+    hintOwner: "يدير كل شيء، ويضيف أشخاصاً مثل هذا.",
+    hintFinance: "المال وقيمة الطلبات. بدون إعدادات المتجر.",
+    hintTracking: "يتابع التوصيلات ويرفع طلبات الدعم. بدون مال.",
+    allBranches: "كل الفروع",
+    access: "الوصول",
+    added: "أُضيف",
+    created: "تم إنشاء المستخدم.",
+    empty: "لا أحد بعد.",
   },
   vendorExtra: {
     analyticsTitle: "التحليلات",

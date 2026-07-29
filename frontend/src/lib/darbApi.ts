@@ -378,6 +378,16 @@ export const vendorApi = {
   requestRefund: (orderId: string, reason: string) =>
     post<RefundRow>(`/api/vendor/orders/${orderId}/refund-request`, { reason }),
   statements: () => get<VendorStatementRow[]>("/api/vendor/statements"),
+  // ── Revision 8 (#7): the shop's own team, OWNER only ──
+  team: () => get<VendorUser[]>("/api/vendor/team"),
+  createTeamUser: (body: {
+    email: string; password: string; name: string; phone?: string;
+    vendorRole: VendorPortalRole; branchId?: string | null;
+  }) => post<VendorUser>("/api/vendor/team", body),
+  updateTeamUser: (
+    id: string,
+    body: { isActive?: boolean; vendorRole?: VendorPortalRole; branchId?: string | null },
+  ) => patch<VendorUser>(`/api/vendor/team/${id}`, body),
 };
 
 // ── /api/fleet (fleet-portal scope — fleetPartnerId comes from the JWT) ──

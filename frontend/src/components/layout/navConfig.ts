@@ -129,6 +129,7 @@ export const NAV_SECTIONS: NavSection[] = [
         owns: ["/vendor/analytics", "/vendor/campaigns"],
         vendorRoles: ["OWNER", "FINANCE"],
       },
+      { i18n: "vendorTeam.title", path: "/vendor/team", icon: Users, vendorRoles: ["OWNER"] },
       { i18n: "darbNav.vendorSettings", path: "/vendor/settings", icon: Settings, vendorRoles: ["OWNER"] },
     ],
   },

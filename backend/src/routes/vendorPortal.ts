@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import ExcelJS from "exceljs";
+import bcrypt from "bcryptjs";
 import { prisma } from "../config";
 import { trackingUrl } from "../services/customerMessagingService";
 import { authMiddleware } from "../middleware/auth";
@@ -851,6 +852,145 @@ router.get("/statements", requireVendorRole("OWNER", "FINANCE"), async (req: Req
   }
 });
 
+
+// ─── Team (revision 8, edit 7) ───────────────────────────────────────────────
+
+/**
+ * The shop's own team.
+ *
+ * The Darb side has always been able to create a shop's portal users; the shop
+ * could not. That made Darb the bottleneck for something a shop owner should
+ * do themselves: hiring an accountant, or giving a new branch supervisor a
+ * login for their branch only.
+ *
+ * OWNER only, and everything is fenced to the owner's own vendor, so this
+ * cannot become a way to read or touch another shop's team. Password rules and
+ * hashing match the Darb-side flow exactly.
+ */
+const vendorTeamUserSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  name: z.string().min(1).max(120),
+  phone: z.string().max(30).optional(),
+  vendorRole: z.enum(["OWNER", "FINANCE", "ORDER_TRACKING"]),
+  branchId: z.string().min(1).optional().nullable(),
+});
+
+router.get("/team", requireVendorRole("OWNER"), async (req: Request, res: Response) => {
+  try {
+    const { tenantId, vendorId } = req.user!;
+    const users = await prisma.user.findMany({
+      where: { tenantId, vendorId: vendorId!, role: "VENDOR" },
+      orderBy: { createdAt: "asc" },
+      select: {
+        id: true, email: true, name: true, phone: true, vendorRole: true,
+        branchId: true, isActive: true, createdAt: true,
+        branch: { select: { id: true, name: true } },
+      },
+    });
+    res.json(users);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post(
+  "/team",
+  requireVendorRole("OWNER"),
+  validateBody(vendorTeamUserSchema),
+  async (req: Request, res: Response) => {
+    try {
+      const { tenantId, vendorId, userId } = req.user!;
+      const { email, password, name, phone, vendorRole, branchId } = req.body;
+
+      const existing = await prisma.user.findUnique({ where: { email } });
+      if (existing) { res.status(400).json({ error: "Email already registered" }); return; }
+
+      // A branch-scoped login must point at a branch of THIS shop, or an owner
+      // could fence their tracker to somebody else's branch.
+      if (branchId) {
+        const branch = await prisma.vendorBranch.findFirst({
+          where: { id: branchId, tenantId, vendorId: vendorId! },
+          select: { id: true },
+        });
+        if (!branch) { res.status(400).json({ error: "Branch does not belong to this shop" }); return; }
+      }
+
+      const passwordHash = await bcrypt.hash(password, 12);
+      const user = await prisma.user.create({
+        data: {
+          tenantId,
+          email,
+          passwordHash,
+          name,
+          phone,
+          role: "VENDOR",
+          vendorId: vendorId!,
+          vendorRole,
+          // Owner and finance are shop-wide, so they carry no branch even if
+          // one was posted. Only a tracker can be pinned, and only optionally:
+          // a tracker with no branch covers all of them.
+          branchId: vendorRole === "ORDER_TRACKING" ? (branchId ?? null) : null,
+        },
+        select: {
+          id: true, email: true, name: true, phone: true, vendorRole: true,
+          branchId: true, isActive: true, createdAt: true,
+        },
+      });
+      res.status(201).json(user);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+);
+
+router.patch("/team/:id", requireVendorRole("OWNER"), async (req: Request, res: Response) => {
+  try {
+    const { tenantId, vendorId, userId } = req.user!;
+    if (req.params.id === userId) {
+      // An owner disabling themselves locks the shop out of its own portal.
+      res.status(400).json({ error: "You cannot change your own access" });
+      return;
+    }
+    const target = await prisma.user.findFirst({
+      where: { id: req.params.id, tenantId, vendorId: vendorId!, role: "VENDOR" },
+      select: { id: true },
+    });
+    if (!target) { res.status(404).json({ error: "User not found" }); return; }
+
+    const data: any = {};
+    if (typeof req.body.isActive === "boolean") data.isActive = req.body.isActive;
+    if (typeof req.body.vendorRole === "string") {
+      if (!["OWNER", "FINANCE", "ORDER_TRACKING"].includes(req.body.vendorRole)) {
+        res.status(400).json({ error: "Unknown role" }); return;
+      }
+      data.vendorRole = req.body.vendorRole;
+      if (req.body.vendorRole !== "ORDER_TRACKING") data.branchId = null;
+    }
+    if ("branchId" in req.body) {
+      const bid = req.body.branchId || null;
+      if (bid) {
+        const branch = await prisma.vendorBranch.findFirst({
+          where: { id: bid, tenantId, vendorId: vendorId! }, select: { id: true },
+        });
+        if (!branch) { res.status(400).json({ error: "Branch does not belong to this shop" }); return; }
+      }
+      data.branchId = bid;
+    }
+
+    const user = await prisma.user.update({
+      where: { id: req.params.id },
+      data,
+      select: {
+        id: true, email: true, name: true, phone: true, vendorRole: true,
+        branchId: true, isActive: true, createdAt: true,
+      },
+    });
+    res.json(user);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
 
 // ─── Analytics (PRD §7 Data Analytics tab — order-derived v1) ───────────────
 
