@@ -127,7 +127,7 @@ function OrderCard({ order }: { order: DeliveryOrder }) {
 export default function VendorBoardPage() {
   const { t, locale } = useI18n();
   const queryClient = useQueryClient();
-  const { inspectVendorId } = useVendorBranch();
+  const { branchId, inspectVendorId } = useVendorBranch();
 
   const meQuery = useQuery({
     queryKey: ["darb", "vendor", "me"],
@@ -149,7 +149,7 @@ export default function VendorBoardPage() {
       const payload = event.payload as OrderEventPayload;
       if (!payload?.orderId) return;
       let needsRefetch = false;
-      queryClient.setQueryData<OrdersResponse>(ORDERS_KEY, (prev) => {
+      queryClient.setQueryData<OrdersResponse>([...ORDERS_KEY, branchId], (prev) => {
         if (!prev) return prev;
         const list = unwrapList<DeliveryOrder>(prev);
         const idx = list.findIndex((o) => o.id === payload.orderId);
@@ -175,14 +175,16 @@ export default function VendorBoardPage() {
         void queryClient.invalidateQueries({ queryKey: ORDERS_KEY });
       }
     },
-    [queryClient]
+    [queryClient, branchId]
   );
 
   const { connected } = useDarbEvents({ onEvent });
 
+  // The branch pills are part of the cache key: without it, switching branch
+  // showed the previous branch's board until something else invalidated it.
   const ordersQuery = useQuery({
-    queryKey: ORDERS_KEY,
-    queryFn: () => vendorApi.orders({ limit: 200 }),
+    queryKey: [...ORDERS_KEY, branchId],
+    queryFn: () => vendorApi.orders({ limit: 200, branchId: branchId ?? undefined }),
     // SSE keeps the cache fresh while connected; poll only as a fallback.
     refetchInterval: connected ? false : 15_000,
   });

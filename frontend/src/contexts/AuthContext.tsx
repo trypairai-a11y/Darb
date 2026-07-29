@@ -22,6 +22,12 @@ interface User {
   // Darb 2.0 — FLEET-role users carry their fleet-partner binding so the
   // frontend can fence them into /fleet-portal/* and scope portal calls.
   fleetPartnerId?: string;
+  // Darb 2.0 — which portal role a VENDOR user holds (OWNER | FINANCE |
+  // ORDER_TRACKING) and, for a branch-scoped tracker, the one branch they may
+  // see. Both come from the signed token; the header and the rail read them so
+  // a shop's accountant is not shown the same portal as its owner.
+  vendorRole?: "OWNER" | "FINANCE" | "ORDER_TRACKING" | null;
+  branchId?: string | null;
 }
 
 interface AuthContextType {

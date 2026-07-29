@@ -47,9 +47,14 @@ const pauseSchema = z.object({ paused: z.boolean() });
  * Portal sub-role fences (client revision #9).
  *
  * OWNER is the default and behaves exactly as the portal always did, so every
- * pre-existing vendor login keeps working unchanged. The other two narrow it:
- *   FINANCE        — money only; no order list, no order creation
- *   ORDER_TRACKING — orders for its own branch only; no money, no settings
+ * pre-existing vendor login keeps working unchanged. The other two narrow it,
+ * per the shop roles the client described:
+ *   FINANCE        — the shop's accountant. Tops up the balance and checks
+ *                    what orders were worth, so they read orders but never
+ *                    place, cancel or refund one.
+ *   ORDER_TRACKING — tracks orders and raises support requests. Pinned to one
+ *                    branch when a branch was assigned, across all of them
+ *                    when it was not. Never sees money.
  */
 type VendorRole = "OWNER" | "FINANCE" | "ORDER_TRACKING";
 
@@ -58,9 +63,26 @@ function vendorRoleOf(req: Request): VendorRole {
   return role === "FINANCE" || role === "ORDER_TRACKING" ? role : "OWNER";
 }
 
-/** The branch an ORDER_TRACKING login is pinned to; null for vendor-wide roles. */
+/**
+ * Which branch this request is limited to, or null for the whole vendor.
+ *
+ * Two different things end up here. An ORDER_TRACKING login is *pinned* to its
+ * own branch and cannot see past it, whatever it asks for. A vendor-wide role
+ * may *choose* a branch with ?branchId=, which is what the branch pills in the
+ * portal header are for: they were sending the id and nothing was reading it,
+ * so picking a branch changed the highlight and nothing else.
+ *
+ * A chosen id is only ever used as a filter on a query already scoped to this
+ * vendor, so a branch belonging to somebody else narrows the result to nothing
+ * rather than widening it to their data.
+ */
 function scopedBranchId(req: Request): string | null {
-  return vendorRoleOf(req) === "ORDER_TRACKING" ? (req.user?.branchId ?? null) : null;
+  // A branch-scoped tracker is fenced to its own branch whatever it asks for.
+  // A tracker with no branch assigned covers all of them and chooses like an
+  // owner, which is the other half of how the client uses this role.
+  if (vendorRoleOf(req) === "ORDER_TRACKING" && req.user?.branchId) return req.user.branchId;
+  const chosen = typeof req.query.branchId === "string" ? req.query.branchId.trim() : "";
+  return chosen.length > 0 ? chosen : null;
 }
 
 /** Guard a route to a set of portal sub-roles. */
@@ -136,7 +158,14 @@ router.get("/me", async (req: Request, res: Response) => {
       },
     });
     if (!vendor) { res.status(404).json({ error: "Vendor not found" }); return; }
-    res.json(vendor);
+
+    // A branch-scoped login is handed only its own branch. It used to receive
+    // the whole list, so the portal drew an "All branches" pill and a pill per
+    // branch for someone who was fenced to exactly one of them.
+    const pinned = scopedBranchId(req);
+    res.json(
+      pinned ? { ...vendor, branches: vendor.branches.filter((b) => b.id === pinned) } : vendor
+    );
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -430,6 +459,21 @@ router.get("/wallet/entries", requireVendorRole("OWNER", "FINANCE"), async (req:
     }
 
     const where: any = { tenantId, accountId: account.id };
+
+    // The wallet itself is one balance for the whole vendor, by design, so a
+    // branch choice narrows which movements are listed rather than splitting
+    // the account. Entries reach a branch through the order their transaction
+    // settled; postings with no order (a payout, a correction) belong to the
+    // vendor as a whole and drop out of a branch-scoped view.
+    const branchId = scopedBranchId(req);
+    if (branchId) {
+      const branchOrders = await prisma.deliveryOrder.findMany({
+        where: { tenantId, vendorId: vendorId!, branchId },
+        select: { id: true },
+      });
+      where.transaction = { orderId: { in: branchOrders.map((o) => o.id) } };
+    }
+
     const month = typeof req.query.month === "string" ? req.query.month : undefined;
     if (month) {
       const m = /^(\d{4})-(\d{2})$/.exec(month);

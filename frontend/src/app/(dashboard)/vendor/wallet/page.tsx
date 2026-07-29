@@ -23,12 +23,14 @@ import WalletLedgerTable from "@/components/darb/WalletLedgerTable";
 import { vendorApi, unwrapList, fetchAllPages } from "@/lib/darbApi";
 import { downloadCsv } from "@/lib/csv";
 import type { RefundRow, VendorStatementRow, WalletEntry } from "@/types/darb";
+import { useVendorBranch } from "@/contexts/VendorBranchContext";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDate, formatKwd } from "@/i18n/format";
 
 export default function VendorWalletPage() {
   const { t, locale } = useI18n();
   const toast = useToast();
+  const { branchId } = useVendorBranch();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(25);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
@@ -39,9 +41,11 @@ export default function VendorWalletPage() {
     refetchInterval: 60_000,
   });
 
+  // Only the ledger narrows to a branch. The balance above it is one figure
+  // for the whole vendor and deliberately ignores the pills.
   const entriesQuery = useQuery({
-    queryKey: ["darb", "vendor", "wallet-entries", page, limit],
-    queryFn: () => vendorApi.walletEntries({ page, limit }),
+    queryKey: ["darb", "vendor", "wallet-entries", page, limit, branchId],
+    queryFn: () => vendorApi.walletEntries({ page, limit, branchId: branchId ?? undefined }),
     refetchInterval: 30_000,
   });
   const entries = useMemo(() => unwrapList<WalletEntry>(entriesQuery.data), [entriesQuery.data]);

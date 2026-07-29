@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useRole } from "@/hooks/useRole";
+import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/i18n/I18nProvider";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { PanelLeftClose } from "lucide-react";
@@ -18,6 +19,8 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { collapsed, open, setOpen } = useSidebar();
   const { role, hasRole } = useRole();
+  const { user } = useAuth();
+  const vendorRole = user?.vendorRole ?? "OWNER";
   const { t, dir } = useI18n();
 
   const sectionVisible = (section: NavSection): boolean => {
@@ -31,7 +34,13 @@ export default function Sidebar() {
   const visibleSections = NAV_SECTIONS.filter(sectionVisible)
     .map((section) => ({
       ...section,
-      items: section.items.filter((item) => !item.minRole || hasRole(item.minRole)),
+      items: section.items.filter(
+        (item) =>
+          (!item.minRole || hasRole(item.minRole)) &&
+          // A vendor login only sees the entries its portal role can open.
+          // Staff are unaffected: no staff item carries vendorRoles.
+          (!item.vendorRoles || (role === "VENDOR" && item.vendorRoles.includes(vendorRole))),
+      ),
     }))
     .filter((section) => section.items.length > 0);
   const isActive = buildIsActive(visibleSections, pathname);

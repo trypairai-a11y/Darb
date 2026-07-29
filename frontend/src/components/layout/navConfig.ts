@@ -41,6 +41,16 @@ export interface NavItem {
   owns?: string[];
   /** Hierarchy gate applied to this item alone, on top of the section gate. */
   minRole?: UserRole;
+  /**
+   * Which vendor portal roles may see this item. Omit for "any of them".
+   *
+   * The vendor rail used to be the same four entries for every shop login, so
+   * an Order tracking user was shown Wallet and got a 403 page when they took
+   * the invitation. The roles are the shop's own: an owner runs everything, an
+   * accountant handles money and looks up what orders were worth, and a
+   * tracker follows deliveries and raises support.
+   */
+  vendorRoles?: ("OWNER" | "FINANCE" | "ORDER_TRACKING")[];
 }
 
 export interface NavSection {
@@ -109,7 +119,7 @@ export const NAV_SECTIONS: NavSection[] = [
         icon: ClipboardList,
         owns: ["/vendor/orders/new"],
       },
-      { i18n: "darbNav.vendorWallet", path: "/vendor/wallet", icon: Wallet },
+      { i18n: "darbNav.vendorWallet", path: "/vendor/wallet", icon: Wallet, vendorRoles: ["OWNER", "FINANCE"] },
       {
         i18n: "simple.grow",
         // Not /vendor/analytics: blockers match that segment and killed the
@@ -117,8 +127,9 @@ export const NAV_SECTIONS: NavSection[] = [
         path: "/vendor/grow",
         icon: TrendingUp,
         owns: ["/vendor/analytics", "/vendor/campaigns"],
+        vendorRoles: ["OWNER", "FINANCE"],
       },
-      { i18n: "darbNav.vendorSettings", path: "/vendor/settings", icon: Settings },
+      { i18n: "darbNav.vendorSettings", path: "/vendor/settings", icon: Settings, vendorRoles: ["OWNER"] },
     ],
   },
   {

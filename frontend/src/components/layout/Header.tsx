@@ -58,7 +58,14 @@ export default function Header() {
           </div>
           <div className="text-end leading-tight">
             <p className="text-[13px] font-medium text-sand-900">{user?.name}</p>
-            <p className="text-[11px] text-sand-600 uppercase tracking-widest">{user?.role?.replace("_", " ")}</p>
+            <p className="text-[11px] text-sand-600 uppercase tracking-widest">
+              {/* A vendor's portal role is the useful label: "Vendor" is the
+                  same word for the owner, the accountant and the tracker. */}
+              {(user?.role === "VENDOR" && user?.vendorRole
+                ? user.vendorRole
+                : user?.role
+              )?.replace(/_/g, " ")}
+            </p>
           </div>
         </div>
         <button

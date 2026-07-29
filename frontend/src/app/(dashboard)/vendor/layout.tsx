@@ -3,12 +3,14 @@
 // the VendorBranchProvider and, when the vendor has 2+ branches, renders a
 // compact pill selector sub-header so pages (analytics first) can scope to
 // one branch. Single-branch vendors see no extra chrome.
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Eye } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { VendorBranchProvider, useVendorBranch } from "@/contexts/VendorBranchContext";
 import { vendorApi } from "@/lib/darbApi";
+import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/hooks/useRole";
 import { useI18n } from "@/i18n/I18nProvider";
 
@@ -92,10 +94,41 @@ function InspectBanner() {
   );
 }
 
+/**
+ * Keeps a portal role out of the screens it cannot open.
+ *
+ * Hiding the rail entry is not enough on its own: a bookmark, a notification
+ * link or a typed URL still lands, and the API answers with a 403 the screen
+ * shows as "Request failed with status code 403". The rules are the shop's own
+ * roles: an accountant has no reason to change shop settings, and a tracker
+ * has no reason to see money at all.
+ */
+const FORBIDDEN: Record<string, string[]> = {
+  FINANCE: ["/vendor/settings"],
+  ORDER_TRACKING: ["/vendor/wallet", "/vendor/settings", "/vendor/grow"],
+};
+
+function RoleRouteFence() {
+  const { user } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!user || user.role !== "VENDOR" || !pathname) return;
+    const blocked = FORBIDDEN[user.vendorRole ?? "OWNER"] ?? [];
+    if (blocked.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+      router.replace("/vendor");
+    }
+  }, [user, pathname, router]);
+
+  return null;
+}
+
 export default function VendorLayout({ children }: { children: ReactNode }) {
   return (
     <VendorBranchProvider>
       <div className="space-y-4">
+        <RoleRouteFence />
         <InspectBanner />
         <BranchPills />
         {children}
