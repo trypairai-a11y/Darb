@@ -42,12 +42,21 @@ import { flushOrderEvents, transitionOrder } from "./orderStateMachine";
 import { demoTenantIds } from "./demoPresenceService";
 
 /**
- * How long an offer sits before the demo driver takes it. Long enough that
- * anyone watching the ops board sees a genuine Offered row appear and then be
- * answered, short enough to stay inside the 15s offer window rather than
- * letting it expire and cost the order another round.
+ * There is deliberately no "think time" before accepting, and it cost a
+ * production round trip to learn why.
+ *
+ * The first cut waited six seconds so the ops board would show a genuine
+ * Offered row being answered. It accepted nothing, ever. An offer is created
+ * by the dispatch leg of a sweep and this pass runs at the end of that same
+ * sweep, so the offer is milliseconds old when it is looked at — younger than
+ * any threshold worth setting. The next look is a whole tick later, and with
+ * offerWindowSec at 15s against a minute-scale tick the offer is long dead by
+ * then. Every positive threshold is therefore equivalent to "never".
+ *
+ * So a live offer is taken the moment it is seen. The visible cost is that the
+ * board goes from Dispatching to Assigned without pausing on Offered. The
+ * alternative is the stall this whole service exists to end.
  */
-const ACCEPT_AFTER_SEC = 6;
 
 /** Minutes at the merchant before the order is collected. */
 const PICKUP_AFTER_SEC = 120;
@@ -74,7 +83,7 @@ function autoCourierEnabled(): boolean {
   return (process.env.DEMO_AUTO_COURIER ?? "").trim() === "true";
 }
 
-/** Accept every offer that has been sitting long enough to have been read. */
+/** Accept every offer that is still live. */
 async function acceptDueOffers(tenantId: string, now: Date): Promise<number> {
   const offers = await prisma.dispatchOffer.findMany({
     where: {
@@ -83,7 +92,6 @@ async function acceptDueOffers(tenantId: string, now: Date): Promise<number> {
       // Not yet expired: acceptOffer guards on this too, so an offer that aged
       // out between the read and the write is simply lost, never resurrected.
       expiresAt: { gt: now },
-      createdAt: { lte: new Date(now.getTime() - ACCEPT_AFTER_SEC * 1000) },
     },
     select: { id: true, driverId: true },
     orderBy: { createdAt: "asc" }, // longest-waiting customer first

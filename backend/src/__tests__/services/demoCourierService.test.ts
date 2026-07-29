@@ -145,17 +145,24 @@ describe("runDemoCouriers", () => {
     expect(result.accepted).toBe(1);
   });
 
-  test("a fresh offer is left alone so the board shows a real offer window", async () => {
+  test("an offer made on this very tick is taken, not left to age out", async () => {
+    // Regression, learned in production: the dispatch leg creates the offer and
+    // this pass runs at the end of the same sweep, so the offer is milliseconds
+    // old. The next look is a tick later, by which time a 15s window has
+    // expired. Any minimum age at all means nothing is ever accepted.
     enable();
-    emptyTables();
+    prisma.dispatchOffer.findMany.mockResolvedValue([
+      { id: "offer-now", driverId: "drv-1", createdAt: NOW },
+    ]);
+    prisma.deliveryOrder.findMany.mockResolvedValue([]);
 
-    await runDemoCouriers(NOW);
+    const result = await runDemoCouriers(NOW);
 
-    // The age filter is in the query, not in JS: an offer made this tick must
-    // not match it.
+    expect(result.accepted).toBe(1);
     const where = prisma.dispatchOffer.findMany.mock.calls[0][0].where;
     expect(where.status).toBe("OFFERED");
-    expect(where.createdAt.lte.getTime()).toBeLessThan(NOW.getTime());
+    expect(where.createdAt).toBeUndefined(); // no age gate, by design
+    // Still never resurrects a dead offer.
     expect(where.expiresAt.gt).toEqual(NOW);
   });
 
