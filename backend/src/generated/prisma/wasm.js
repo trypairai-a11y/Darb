@@ -1885,6 +1885,7 @@ exports.Prisma.SupportTicketScalarFieldEnum = {
   createdById: 'createdById',
   subject: 'subject',
   status: 'status',
+  type: 'type',
   orderId: 'orderId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -3452,6 +3453,13 @@ exports.SupportTicketStatus = exports.$Enums.SupportTicketStatus = {
   OPEN: 'OPEN',
   ANSWERED: 'ANSWERED',
   RESOLVED: 'RESOLVED'
+};
+
+exports.SupportTicketType = exports.$Enums.SupportTicketType = {
+  ORDER: 'ORDER',
+  WALLET: 'WALLET',
+  TECHNICAL: 'TECHNICAL',
+  OTHER: 'OTHER'
 };
 
 exports.Prisma.ModelName = {

@@ -43,6 +43,7 @@ import type {
   FleetEarnings,
   CockpitSummary,
   SupportTicket,
+  SupportTicketType,
 } from "@/types/darb";
 
 type Params = Record<string, string | number | boolean | undefined | null>;
@@ -382,8 +383,9 @@ export const vendorApi = {
   statements: () => get<VendorStatementRow[]>("/api/vendor/statements"),
   // ── Revision 8 (#7): the shop's own team, OWNER only ──
   // ── Revision 8 (#6): support, open to every shop role ──
-  support: () => get<SupportTicket[]>("/api/vendor/support"),
-  createTicket: (body: { subject: string; body: string; orderId?: string | null }) =>
+  support: (params?: { type?: string; status?: string }) =>
+    get<SupportTicket[]>("/api/vendor/support", params as Params),
+  createTicket: (body: { type: SupportTicketType; subject: string; body: string; orderId?: string | null }) =>
     post<SupportTicket>("/api/vendor/support", body),
   replyToTicket: (id: string, body: string) =>
     post<SupportTicket>(`/api/vendor/support/${id}/reply`, { body }),

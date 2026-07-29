@@ -863,6 +863,10 @@ router.get("/statements", requireVendorRole("OWNER", "FINANCE"), async (req: Req
  * cannot see money or settings, so support is the only channel it has.
  */
 const supportTicketSchema = z.object({
+  // Revision 9 (#6). The four kinds the client named. Typing a request is what
+  // lets Darb route it: an order complaint and a failed payment do not go to
+  // the same desk.
+  type: z.enum(["ORDER", "WALLET", "TECHNICAL", "OTHER"]).default("OTHER"),
   subject: z.string().trim().min(1).max(200),
   body: z.string().trim().min(1).max(4000),
   orderId: z.string().min(1).optional().nullable(),
@@ -871,8 +875,18 @@ const supportTicketSchema = z.object({
 router.get("/support", async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId } = req.user!;
+    // Deliberately not branch-scoped, even for a pinned tracker: a ticket
+    // belongs to the shop, and the client asked that an owner see every one of
+    // them regardless of which branch the board is currently filtered to.
     const tickets = await prisma.supportTicket.findMany({
-      where: { tenantId, vendorId: vendorId! },
+      where: {
+        tenantId,
+        vendorId: vendorId!,
+        ...(typeof req.query.type === "string" && req.query.type ? { type: req.query.type as any } : {}),
+        ...(typeof req.query.status === "string" && req.query.status
+          ? { status: req.query.status as any }
+          : {}),
+      },
       orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
       take: 200,
       include: { messages: { orderBy: { createdAt: "asc" } } },
@@ -889,7 +903,7 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       const { tenantId, vendorId, userId, email } = req.user!;
-      const { subject, body, orderId } = req.body;
+      const { type, subject, body, orderId } = req.body;
 
       // An order reference is only meaningful if it is this shop's order.
       if (orderId) {
@@ -905,6 +919,7 @@ router.post(
           tenantId,
           vendorId: vendorId!,
           createdById: userId,
+          type,
           subject,
           orderId: orderId ?? null,
           messages: { create: { tenantId, author: "VENDOR", authorName: email, body } },

@@ -3550,6 +3550,8 @@ model SupportTicket {
   createdById String?
   subject     String
   status      SupportTicketStatus @default(OPEN)
+  /// Revision 9 (#6) — what the request is about, in the shop's own terms.
+  type        SupportTicketType   @default(OTHER)
   /// The order this is about, when it is about one.
   orderId     String?
   createdAt   DateTime            @default(now())
@@ -3582,4 +3584,15 @@ enum SupportTicketStatus {
   OPEN
   ANSWERED
   RESOLVED
+}
+
+/// The four kinds of request a shop raises, as the client described them.
+enum SupportTicketType {
+  /// Driver late, complaint about the delivery, driver behaviour, order damaged.
+  ORDER
+  /// Payment, a query about an invoice, a failed payment, a refund.
+  WALLET
+  /// Software: slow, orders not showing, cannot log in, and suggestions.
+  TECHNICAL
+  OTHER
 }

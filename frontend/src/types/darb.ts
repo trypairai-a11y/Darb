@@ -797,6 +797,9 @@ export interface DeliveryPlan {
 
 export type SupportTicketStatus = "OPEN" | "ANSWERED" | "RESOLVED";
 
+/** What a request is about, in the shop's own terms (revision 9, #6). */
+export type SupportTicketType = "ORDER" | "WALLET" | "TECHNICAL" | "OTHER";
+
 export interface SupportTicketMessage {
   id: string;
   author: "VENDOR" | "DARB";
@@ -809,6 +812,7 @@ export interface SupportTicket {
   id: string;
   subject: string;
   status: SupportTicketStatus;
+  type: SupportTicketType;
   orderId?: string | null;
   createdAt: string;
   updatedAt: string;

@@ -16,7 +16,7 @@ import SlidePanel from "@/components/shared/SlidePanel";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/Toast";
 import { vendorApi } from "@/lib/darbApi";
-import type { SupportTicket, SupportTicketStatus } from "@/types/darb";
+import type { SupportTicket, SupportTicketStatus, SupportTicketType } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDateTime } from "@/i18n/format";
 import { cn } from "@/lib/cn";
@@ -31,6 +31,8 @@ export default function VendorSupportPage() {
 
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [ticketType, setTicketType] = useState<SupportTicketType>("ORDER");
+  const [filter, setFilter] = useState<SupportTicketType | "ALL">("ALL");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
@@ -53,7 +55,7 @@ export default function VendorSupportPage() {
   async function raise() {
     setSaving(true);
     try {
-      await vendorApi.createTicket({ subject: subject.trim(), body: body.trim() });
+      await vendorApi.createTicket({ type: ticketType, subject: subject.trim(), body: body.trim() });
       toast.success(t("vendorSupport.raised"));
       setOpen(false);
       setSubject("");
@@ -93,7 +95,8 @@ export default function VendorSupportPage() {
     );
   }
 
-  const tickets = ticketsQuery.data ?? [];
+  const all = ticketsQuery.data ?? [];
+  const tickets = filter === "ALL" ? all : all.filter((x) => x.type === filter);
   const statusLabel = (s: SupportTicketStatus) =>
     s === "RESOLVED"
       ? t("vendorSupport.statusResolved")
@@ -118,6 +121,24 @@ export default function VendorSupportPage() {
         </button>
       </div>
 
+      {/* Revision 9 (#6). Four kinds, and a shop with a payment query should
+          not have to read past a week of delivery complaints to find it. */}
+      <div className="flex gap-1 bg-sand-100 rounded-pill p-1 w-fit flex-wrap">
+        {(["ALL", "ORDER", "WALLET", "TECHNICAL", "OTHER"] as const).map((key) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setFilter(key)}
+            className={cn(
+              "px-4 h-9 text-sm font-medium rounded-pill transition-colors",
+              filter === key ? "bg-white text-sand-900 shadow-soft" : "text-sand-600 hover:text-sand-900"
+            )}
+          >
+            {key === "ALL" ? t("vendorSupport.typeALL") : t(`vendorSupport.type${key}`)}
+          </button>
+        ))}
+      </div>
+
       {tickets.length === 0 ? (
         <div className="bg-card border border-sand-200 rounded-2xl shadow-soft px-5 py-12 text-center">
           <p className="text-sm text-sand-600">{t("vendorSupport.empty")}</p>
@@ -138,10 +159,12 @@ export default function VendorSupportPage() {
                     {formatDateTime(ticket.createdAt, locale)}
                   </p>
                 </div>
-                <StatusBadge
-                  status={ticket.status}
-                  label={statusLabel(ticket.status)}
-                />
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-pill bg-sand-100 text-sand-700 text-[11px] font-medium uppercase tracking-wide">
+                    {t(`vendorSupport.type${ticket.type}`)}
+                  </span>
+                  <StatusBadge status={ticket.status} label={statusLabel(ticket.status)} />
+                </div>
               </header>
 
               <div className="p-5 space-y-3">
@@ -206,6 +229,22 @@ export default function VendorSupportPage() {
 
       <SlidePanel open={open} onClose={() => setOpen(false)} title={t("vendorSupport.raise")}>
         <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
+              {t("vendorSupport.type")} *
+            </label>
+            <select
+              value={ticketType}
+              onChange={(e) => setTicketType(e.target.value as SupportTicketType)}
+              className={inputClass}
+            >
+              <option value="ORDER">{t("vendorSupport.typeORDER")}</option>
+              <option value="WALLET">{t("vendorSupport.typeWALLET")}</option>
+              <option value="TECHNICAL">{t("vendorSupport.typeTECHNICAL")}</option>
+              <option value="OTHER">{t("vendorSupport.typeOTHER")}</option>
+            </select>
+            <p className="mt-1.5 text-xs text-sand-600">{t(`vendorSupport.hint${ticketType}`)}</p>
+          </div>
           <div>
             <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
               {t("vendorSupport.subject")} *

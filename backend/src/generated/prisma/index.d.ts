@@ -1222,6 +1222,16 @@ export const SupportTicketStatus: {
 
 export type SupportTicketStatus = (typeof SupportTicketStatus)[keyof typeof SupportTicketStatus]
 
+
+export const SupportTicketType: {
+  ORDER: 'ORDER',
+  WALLET: 'WALLET',
+  TECHNICAL: 'TECHNICAL',
+  OTHER: 'OTHER'
+};
+
+export type SupportTicketType = (typeof SupportTicketType)[keyof typeof SupportTicketType]
+
 }
 
 export type SubscriptionPlan = $Enums.SubscriptionPlan
@@ -1459,6 +1469,10 @@ export const PermissionLevel: typeof $Enums.PermissionLevel
 export type SupportTicketStatus = $Enums.SupportTicketStatus
 
 export const SupportTicketStatus: typeof $Enums.SupportTicketStatus
+
+export type SupportTicketType = $Enums.SupportTicketType
+
+export const SupportTicketType: typeof $Enums.SupportTicketType
 
 /**
  * ##  Prisma Client ʲˢ
@@ -138035,6 +138049,7 @@ export namespace Prisma {
     createdById: string | null
     subject: string | null
     status: $Enums.SupportTicketStatus | null
+    type: $Enums.SupportTicketType | null
     orderId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -138047,6 +138062,7 @@ export namespace Prisma {
     createdById: string | null
     subject: string | null
     status: $Enums.SupportTicketStatus | null
+    type: $Enums.SupportTicketType | null
     orderId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -138059,6 +138075,7 @@ export namespace Prisma {
     createdById: number
     subject: number
     status: number
+    type: number
     orderId: number
     createdAt: number
     updatedAt: number
@@ -138073,6 +138090,7 @@ export namespace Prisma {
     createdById?: true
     subject?: true
     status?: true
+    type?: true
     orderId?: true
     createdAt?: true
     updatedAt?: true
@@ -138085,6 +138103,7 @@ export namespace Prisma {
     createdById?: true
     subject?: true
     status?: true
+    type?: true
     orderId?: true
     createdAt?: true
     updatedAt?: true
@@ -138097,6 +138116,7 @@ export namespace Prisma {
     createdById?: true
     subject?: true
     status?: true
+    type?: true
     orderId?: true
     createdAt?: true
     updatedAt?: true
@@ -138182,6 +138202,7 @@ export namespace Prisma {
     createdById: string | null
     subject: string
     status: $Enums.SupportTicketStatus
+    type: $Enums.SupportTicketType
     orderId: string | null
     createdAt: Date
     updatedAt: Date
@@ -138211,6 +138232,7 @@ export namespace Prisma {
     createdById?: boolean
     subject?: boolean
     status?: boolean
+    type?: boolean
     orderId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -138227,6 +138249,7 @@ export namespace Prisma {
     createdById?: boolean
     subject?: boolean
     status?: boolean
+    type?: boolean
     orderId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -138241,6 +138264,7 @@ export namespace Prisma {
     createdById?: boolean
     subject?: boolean
     status?: boolean
+    type?: boolean
     orderId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -138274,6 +138298,10 @@ export namespace Prisma {
       createdById: string | null
       subject: string
       status: $Enums.SupportTicketStatus
+      /**
+       * Revision 9 (#6) — what the request is about, in the shop's own terms.
+       */
+      type: $Enums.SupportTicketType
       /**
        * The order this is about, when it is about one.
        */
@@ -138682,6 +138710,7 @@ export namespace Prisma {
     readonly createdById: FieldRef<"SupportTicket", 'String'>
     readonly subject: FieldRef<"SupportTicket", 'String'>
     readonly status: FieldRef<"SupportTicket", 'SupportTicketStatus'>
+    readonly type: FieldRef<"SupportTicket", 'SupportTicketType'>
     readonly orderId: FieldRef<"SupportTicket", 'String'>
     readonly createdAt: FieldRef<"SupportTicket", 'DateTime'>
     readonly updatedAt: FieldRef<"SupportTicket", 'DateTime'>
@@ -142107,6 +142136,7 @@ export namespace Prisma {
     createdById: 'createdById',
     subject: 'subject',
     status: 'status',
+    type: 'type',
     orderId: 'orderId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -144495,6 +144525,20 @@ export namespace Prisma {
    * Reference to a field of type 'SupportTicketStatus[]'
    */
   export type ListEnumSupportTicketStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SupportTicketStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'SupportTicketType'
+   */
+  export type EnumSupportTicketTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SupportTicketType'>
+    
+
+
+  /**
+   * Reference to a field of type 'SupportTicketType[]'
+   */
+  export type ListEnumSupportTicketTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SupportTicketType[]'>
     
   /**
    * Deep Input Types
@@ -156338,6 +156382,7 @@ export namespace Prisma {
     createdById?: StringNullableFilter<"SupportTicket"> | string | null
     subject?: StringFilter<"SupportTicket"> | string
     status?: EnumSupportTicketStatusFilter<"SupportTicket"> | $Enums.SupportTicketStatus
+    type?: EnumSupportTicketTypeFilter<"SupportTicket"> | $Enums.SupportTicketType
     orderId?: StringNullableFilter<"SupportTicket"> | string | null
     createdAt?: DateTimeFilter<"SupportTicket"> | Date | string
     updatedAt?: DateTimeFilter<"SupportTicket"> | Date | string
@@ -156353,6 +156398,7 @@ export namespace Prisma {
     createdById?: SortOrderInput | SortOrder
     subject?: SortOrder
     status?: SortOrder
+    type?: SortOrder
     orderId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -156372,6 +156418,7 @@ export namespace Prisma {
     createdById?: StringNullableFilter<"SupportTicket"> | string | null
     subject?: StringFilter<"SupportTicket"> | string
     status?: EnumSupportTicketStatusFilter<"SupportTicket"> | $Enums.SupportTicketStatus
+    type?: EnumSupportTicketTypeFilter<"SupportTicket"> | $Enums.SupportTicketType
     orderId?: StringNullableFilter<"SupportTicket"> | string | null
     createdAt?: DateTimeFilter<"SupportTicket"> | Date | string
     updatedAt?: DateTimeFilter<"SupportTicket"> | Date | string
@@ -156387,6 +156434,7 @@ export namespace Prisma {
     createdById?: SortOrderInput | SortOrder
     subject?: SortOrder
     status?: SortOrder
+    type?: SortOrder
     orderId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -156405,6 +156453,7 @@ export namespace Prisma {
     createdById?: StringNullableWithAggregatesFilter<"SupportTicket"> | string | null
     subject?: StringWithAggregatesFilter<"SupportTicket"> | string
     status?: EnumSupportTicketStatusWithAggregatesFilter<"SupportTicket"> | $Enums.SupportTicketStatus
+    type?: EnumSupportTicketTypeWithAggregatesFilter<"SupportTicket"> | $Enums.SupportTicketType
     orderId?: StringNullableWithAggregatesFilter<"SupportTicket"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"SupportTicket"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"SupportTicket"> | Date | string
@@ -169488,6 +169537,7 @@ export namespace Prisma {
     createdById?: string | null
     subject: string
     status?: $Enums.SupportTicketStatus
+    type?: $Enums.SupportTicketType
     orderId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -169503,6 +169553,7 @@ export namespace Prisma {
     createdById?: string | null
     subject: string
     status?: $Enums.SupportTicketStatus
+    type?: $Enums.SupportTicketType
     orderId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -169514,6 +169565,7 @@ export namespace Prisma {
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     subject?: StringFieldUpdateOperationsInput | string
     status?: EnumSupportTicketStatusFieldUpdateOperationsInput | $Enums.SupportTicketStatus
+    type?: EnumSupportTicketTypeFieldUpdateOperationsInput | $Enums.SupportTicketType
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -169529,6 +169581,7 @@ export namespace Prisma {
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     subject?: StringFieldUpdateOperationsInput | string
     status?: EnumSupportTicketStatusFieldUpdateOperationsInput | $Enums.SupportTicketStatus
+    type?: EnumSupportTicketTypeFieldUpdateOperationsInput | $Enums.SupportTicketType
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -169542,6 +169595,7 @@ export namespace Prisma {
     createdById?: string | null
     subject: string
     status?: $Enums.SupportTicketStatus
+    type?: $Enums.SupportTicketType
     orderId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -169552,6 +169606,7 @@ export namespace Prisma {
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     subject?: StringFieldUpdateOperationsInput | string
     status?: EnumSupportTicketStatusFieldUpdateOperationsInput | $Enums.SupportTicketStatus
+    type?: EnumSupportTicketTypeFieldUpdateOperationsInput | $Enums.SupportTicketType
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -169564,6 +169619,7 @@ export namespace Prisma {
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     subject?: StringFieldUpdateOperationsInput | string
     status?: EnumSupportTicketStatusFieldUpdateOperationsInput | $Enums.SupportTicketStatus
+    type?: EnumSupportTicketTypeFieldUpdateOperationsInput | $Enums.SupportTicketType
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -179355,6 +179411,13 @@ export namespace Prisma {
     not?: NestedEnumSupportTicketStatusFilter<$PrismaModel> | $Enums.SupportTicketStatus
   }
 
+  export type EnumSupportTicketTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.SupportTicketType | EnumSupportTicketTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.SupportTicketType[] | ListEnumSupportTicketTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SupportTicketType[] | ListEnumSupportTicketTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumSupportTicketTypeFilter<$PrismaModel> | $Enums.SupportTicketType
+  }
+
   export type SupportTicketMessageListRelationFilter = {
     every?: SupportTicketMessageWhereInput
     some?: SupportTicketMessageWhereInput
@@ -179378,6 +179441,7 @@ export namespace Prisma {
     createdById?: SortOrder
     subject?: SortOrder
     status?: SortOrder
+    type?: SortOrder
     orderId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -179390,6 +179454,7 @@ export namespace Prisma {
     createdById?: SortOrder
     subject?: SortOrder
     status?: SortOrder
+    type?: SortOrder
     orderId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -179402,6 +179467,7 @@ export namespace Prisma {
     createdById?: SortOrder
     subject?: SortOrder
     status?: SortOrder
+    type?: SortOrder
     orderId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -179415,6 +179481,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumSupportTicketStatusFilter<$PrismaModel>
     _max?: NestedEnumSupportTicketStatusFilter<$PrismaModel>
+  }
+
+  export type EnumSupportTicketTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SupportTicketType | EnumSupportTicketTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.SupportTicketType[] | ListEnumSupportTicketTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SupportTicketType[] | ListEnumSupportTicketTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumSupportTicketTypeWithAggregatesFilter<$PrismaModel> | $Enums.SupportTicketType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumSupportTicketTypeFilter<$PrismaModel>
+    _max?: NestedEnumSupportTicketTypeFilter<$PrismaModel>
   }
 
   export type SupportTicketRelationFilter = {
@@ -193024,6 +193100,10 @@ export namespace Prisma {
     set?: $Enums.SupportTicketStatus
   }
 
+  export type EnumSupportTicketTypeFieldUpdateOperationsInput = {
+    set?: $Enums.SupportTicketType
+  }
+
   export type TenantUpdateOneRequiredWithoutSupportTicketsNestedInput = {
     create?: XOR<TenantCreateWithoutSupportTicketsInput, TenantUncheckedCreateWithoutSupportTicketsInput>
     connectOrCreate?: TenantCreateOrConnectWithoutSupportTicketsInput
@@ -194457,6 +194537,13 @@ export namespace Prisma {
     not?: NestedEnumSupportTicketStatusFilter<$PrismaModel> | $Enums.SupportTicketStatus
   }
 
+  export type NestedEnumSupportTicketTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.SupportTicketType | EnumSupportTicketTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.SupportTicketType[] | ListEnumSupportTicketTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SupportTicketType[] | ListEnumSupportTicketTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumSupportTicketTypeFilter<$PrismaModel> | $Enums.SupportTicketType
+  }
+
   export type NestedEnumSupportTicketStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.SupportTicketStatus | EnumSupportTicketStatusFieldRefInput<$PrismaModel>
     in?: $Enums.SupportTicketStatus[] | ListEnumSupportTicketStatusFieldRefInput<$PrismaModel>
@@ -194465,6 +194552,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumSupportTicketStatusFilter<$PrismaModel>
     _max?: NestedEnumSupportTicketStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumSupportTicketTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SupportTicketType | EnumSupportTicketTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.SupportTicketType[] | ListEnumSupportTicketTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SupportTicketType[] | ListEnumSupportTicketTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumSupportTicketTypeWithAggregatesFilter<$PrismaModel> | $Enums.SupportTicketType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumSupportTicketTypeFilter<$PrismaModel>
+    _max?: NestedEnumSupportTicketTypeFilter<$PrismaModel>
   }
 
   export type CompanyCreateWithoutTenantInput = {
@@ -198644,6 +198741,7 @@ export namespace Prisma {
     createdById?: string | null
     subject: string
     status?: $Enums.SupportTicketStatus
+    type?: $Enums.SupportTicketType
     orderId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -198657,6 +198755,7 @@ export namespace Prisma {
     createdById?: string | null
     subject: string
     status?: $Enums.SupportTicketStatus
+    type?: $Enums.SupportTicketType
     orderId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -202102,6 +202201,7 @@ export namespace Prisma {
     createdById?: StringNullableFilter<"SupportTicket"> | string | null
     subject?: StringFilter<"SupportTicket"> | string
     status?: EnumSupportTicketStatusFilter<"SupportTicket"> | $Enums.SupportTicketStatus
+    type?: EnumSupportTicketTypeFilter<"SupportTicket"> | $Enums.SupportTicketType
     orderId?: StringNullableFilter<"SupportTicket"> | string | null
     createdAt?: DateTimeFilter<"SupportTicket"> | Date | string
     updatedAt?: DateTimeFilter<"SupportTicket"> | Date | string
@@ -264617,6 +264717,7 @@ export namespace Prisma {
     createdById?: string | null
     subject: string
     status?: $Enums.SupportTicketStatus
+    type?: $Enums.SupportTicketType
     orderId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -264630,6 +264731,7 @@ export namespace Prisma {
     createdById?: string | null
     subject: string
     status?: $Enums.SupportTicketStatus
+    type?: $Enums.SupportTicketType
     orderId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -283975,6 +284077,7 @@ export namespace Prisma {
     createdById?: string | null
     subject: string
     status?: $Enums.SupportTicketStatus
+    type?: $Enums.SupportTicketType
     orderId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -283989,6 +284092,7 @@ export namespace Prisma {
     createdById?: string | null
     subject: string
     status?: $Enums.SupportTicketStatus
+    type?: $Enums.SupportTicketType
     orderId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -284015,6 +284119,7 @@ export namespace Prisma {
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     subject?: StringFieldUpdateOperationsInput | string
     status?: EnumSupportTicketStatusFieldUpdateOperationsInput | $Enums.SupportTicketStatus
+    type?: EnumSupportTicketTypeFieldUpdateOperationsInput | $Enums.SupportTicketType
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -284029,6 +284134,7 @@ export namespace Prisma {
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     subject?: StringFieldUpdateOperationsInput | string
     status?: EnumSupportTicketStatusFieldUpdateOperationsInput | $Enums.SupportTicketStatus
+    type?: EnumSupportTicketTypeFieldUpdateOperationsInput | $Enums.SupportTicketType
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -285491,6 +285597,7 @@ export namespace Prisma {
     createdById?: string | null
     subject: string
     status?: $Enums.SupportTicketStatus
+    type?: $Enums.SupportTicketType
     orderId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -290124,6 +290231,7 @@ export namespace Prisma {
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     subject?: StringFieldUpdateOperationsInput | string
     status?: EnumSupportTicketStatusFieldUpdateOperationsInput | $Enums.SupportTicketStatus
+    type?: EnumSupportTicketTypeFieldUpdateOperationsInput | $Enums.SupportTicketType
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -290137,6 +290245,7 @@ export namespace Prisma {
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     subject?: StringFieldUpdateOperationsInput | string
     status?: EnumSupportTicketStatusFieldUpdateOperationsInput | $Enums.SupportTicketStatus
+    type?: EnumSupportTicketTypeFieldUpdateOperationsInput | $Enums.SupportTicketType
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -290149,6 +290258,7 @@ export namespace Prisma {
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     subject?: StringFieldUpdateOperationsInput | string
     status?: EnumSupportTicketStatusFieldUpdateOperationsInput | $Enums.SupportTicketStatus
+    type?: EnumSupportTicketTypeFieldUpdateOperationsInput | $Enums.SupportTicketType
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -297540,6 +297650,7 @@ export namespace Prisma {
     createdById?: string | null
     subject: string
     status?: $Enums.SupportTicketStatus
+    type?: $Enums.SupportTicketType
     orderId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -297998,6 +298109,7 @@ export namespace Prisma {
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     subject?: StringFieldUpdateOperationsInput | string
     status?: EnumSupportTicketStatusFieldUpdateOperationsInput | $Enums.SupportTicketStatus
+    type?: EnumSupportTicketTypeFieldUpdateOperationsInput | $Enums.SupportTicketType
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -298011,6 +298123,7 @@ export namespace Prisma {
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     subject?: StringFieldUpdateOperationsInput | string
     status?: EnumSupportTicketStatusFieldUpdateOperationsInput | $Enums.SupportTicketStatus
+    type?: EnumSupportTicketTypeFieldUpdateOperationsInput | $Enums.SupportTicketType
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -298023,6 +298136,7 @@ export namespace Prisma {
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     subject?: StringFieldUpdateOperationsInput | string
     status?: EnumSupportTicketStatusFieldUpdateOperationsInput | $Enums.SupportTicketStatus
+    type?: EnumSupportTicketTypeFieldUpdateOperationsInput | $Enums.SupportTicketType
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

@@ -1979,6 +1979,16 @@ export interface Messages {
     fromYou: string;
     addReply: string;
     send: string;
+    type: string;
+    typeALL: string;
+    typeORDER: string;
+    typeWALLET: string;
+    typeTECHNICAL: string;
+    typeOTHER: string;
+    hintORDER: string;
+    hintWALLET: string;
+    hintTECHNICAL: string;
+    hintOTHER: string;
   };
   vendorTeam: {
     title: string;
@@ -4014,6 +4024,16 @@ export const en: Messages = {
     fromYou: "You",
     addReply: "Add a reply",
     send: "Send",
+    type: "Type",
+    typeALL: "All",
+    typeORDER: "Order",
+    typeWALLET: "Wallet",
+    typeTECHNICAL: "Technical",
+    typeOTHER: "Other",
+    hintORDER: "Driver late, a complaint about the delivery, driver behaviour, or a damaged order.",
+    hintWALLET: "A payment, a query about an invoice, a failed payment, or a refund.",
+    hintTECHNICAL: "The system is slow, orders are not showing, you cannot log in, or a suggestion.",
+    hintOTHER: "Anything else.",
   },
   vendorTeam: {
     title: "Team",
@@ -6035,6 +6055,16 @@ export const ar: Messages = {
     fromYou: "أنت",
     addReply: "إضافة رد",
     send: "إرسال",
+    type: "النوع",
+    typeALL: "الكل",
+    typeORDER: "الطلبات",
+    typeWALLET: "المحفظة",
+    typeTECHNICAL: "تقني",
+    typeOTHER: "أخرى",
+    hintORDER: "تأخر السائق، شكوى على التوصيل، سلوك السائق، أو طلب تالف.",
+    hintWALLET: "دفعة، استفسار عن فاتورة، فشل في الدفع، أو استرجاع.",
+    hintTECHNICAL: "النظام بطيء، الطلبات لا تظهر، تعذّر تسجيل الدخول، أو اقتراح.",
+    hintOTHER: "أي شيء آخر.",
   },
   vendorTeam: {
     title: "الفريق",
