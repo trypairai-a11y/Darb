@@ -16,6 +16,7 @@ import { useToast } from "@/components/shared/Toast";
 import { DirectionalIcon } from "@/i18n/directionalIcon";
 import DriverCard from "@/components/darb/DriverCard";
 import OrderStatusBadge from "@/components/darb/OrderStatusBadge";
+import { OrderOutcomeBanner } from "@/components/darb/OrderOutcome";
 import SlaCountdown from "@/components/darb/SlaCountdown";
 import LiveMap from "@/components/map/LiveMap";
 import { vendorApi, unwrapList } from "@/lib/darbApi";
@@ -181,6 +182,11 @@ export default function VendorOrderDetailPage() {
           <OrderStatusBadge status={order.status} size="md" />
         </div>
       </div>
+
+      {/* Why it ended this way. The merchant is the one who has to answer the
+          customer, so a dead order states its reason here, read-only: only
+          Darb ops may write one. */}
+      <OrderOutcomeBanner order={order} />
 
       {/* Money callouts */}
       {order.paymentMethod === "COD" ? (

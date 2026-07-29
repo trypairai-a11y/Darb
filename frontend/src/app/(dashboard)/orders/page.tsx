@@ -14,6 +14,11 @@ import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
 import OrderStatusBadge from "@/components/darb/OrderStatusBadge";
+import {
+  OrderOutcomeBanner,
+  OrderOutcomeCell,
+  outcomeReason,
+} from "@/components/darb/OrderOutcome";
 import OfferTimeline from "@/components/darb/OfferTimeline";
 import SlaCountdown from "@/components/darb/SlaCountdown";
 import { deliveryOrdersApi, vendorsApi, unwrapList } from "@/lib/darbApi";
@@ -45,6 +50,7 @@ type PendingAction =
   | { kind: "assign"; candidate: DispatchCandidate }
   | { kind: "redispatch" }
   | { kind: "cancel" }
+  | { kind: "reason" }
   | null;
 
 export default function DeliveryOrdersPage() {
@@ -60,6 +66,7 @@ export default function DeliveryOrdersPage() {
   const [reassigning, setReassigning] = useState(false);
   const [pending, setPending] = useState<PendingAction>(null);
   const [cancelReason, setCancelReason] = useState("");
+  const [reasonDraft, setReasonDraft] = useState("");
   const [actionBusy, setActionBusy] = useState(false);
 
   const listParams = useMemo(
@@ -129,6 +136,7 @@ export default function DeliveryOrdersPage() {
     setReassigning(false);
     setPending(null);
     setCancelReason("");
+    setReasonDraft("");
   }
 
   async function invalidateAll() {
@@ -146,6 +154,8 @@ export default function DeliveryOrdersPage() {
         await deliveryOrdersApi.assign(selectedId, pending.candidate.driverId);
       } else if (pending.kind === "redispatch") {
         await deliveryOrdersApi.redispatch(selectedId);
+      } else if (pending.kind === "reason") {
+        await deliveryOrdersApi.recordReason(selectedId, reasonDraft.trim());
       } else {
         await deliveryOrdersApi.cancel(selectedId, cancelReason.trim() || undefined);
       }
@@ -153,6 +163,7 @@ export default function DeliveryOrdersPage() {
       setPending(null);
       setReassigning(false);
       setCancelReason("");
+      setReasonDraft("");
       await invalidateAll();
     } catch (err) {
       const msg =
@@ -193,6 +204,16 @@ export default function DeliveryOrdersPage() {
       sortable: false,
       render: (v: DeliveryOrder["driver"]) =>
         v?.name ? <span dir="auto">{v.name}</span> : <span className="text-sand-400">—</span>,
+    },
+    {
+      // A red badge with no explanation is what made the FAILED filter
+      // unreadable. The reason lives next to the status it explains.
+      key: "outcomeReason", // derived, not a column on the row
+      label: t("dispatch.outcomeReason"),
+      sortable: false,
+      className: "whitespace-normal max-w-[16rem]",
+      render: (_v: unknown, row: DeliveryOrder) => <OrderOutcomeCell order={row} />,
+      exportValue: (_v: unknown, row: DeliveryOrder) => outcomeReason(row, t) ?? "n/a",
     },
     {
       key: "orderTotalKwd",
@@ -322,6 +343,19 @@ export default function DeliveryOrdersPage() {
                   </div>
                 )}
             </div>
+
+            {/* Why it ended this way — first thing read on a dead order */}
+            <OrderOutcomeBanner
+              order={order}
+              onRecord={
+                canEdit
+                  ? () => {
+                      setReasonDraft(outcomeReason(order, t) ?? "");
+                      setPending({ kind: "reason" });
+                    }
+                  : undefined
+              }
+            />
 
             {/* Quote breakdown */}
             <section>
@@ -543,6 +577,52 @@ export default function DeliveryOrdersPage() {
                 className="px-5 h-10 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-pill transition-colors disabled:opacity-50"
               >
                 {actionBusy ? t("common.processing") : t("dispatch.cancelOrder")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Record the reason on an order that already ended without one. */}
+      {pending?.kind === "reason" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+          <div
+            className="absolute inset-0 bg-navy-900/40 backdrop-blur-sm"
+            onClick={() => setPending(null)}
+            aria-hidden="true"
+          />
+          <div className="relative bg-card rounded-2xl border border-sand-200 shadow-float w-full max-w-md p-6">
+            <h2 className="font-display text-xl text-sand-900">
+              {t("dispatch.recordReasonTitle")}
+            </h2>
+            <p className="mt-1.5 text-sm text-sand-700">{t("dispatch.recordReasonMessage")}</p>
+            <label className="block text-xs font-medium text-sand-700 mt-4 mb-1.5 uppercase tracking-wide">
+              {t("dispatch.outcomeReason")}
+            </label>
+            <input
+              type="text"
+              dir="auto"
+              autoFocus
+              maxLength={500}
+              value={reasonDraft}
+              onChange={(e) => setReasonDraft(e.target.value)}
+              className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setPending(null)}
+                className="px-4 h-10 text-sm font-medium text-sand-800 bg-sand-100 hover:bg-sand-200 rounded-pill transition-colors"
+              >
+                {t("common.cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={() => void runPendingAction()}
+                disabled={actionBusy || reasonDraft.trim().length === 0}
+                className="px-5 h-10 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-pill transition-colors disabled:opacity-50"
+              >
+                {actionBusy ? t("common.processing") : t("common.save")}
               </button>
             </div>
           </div>

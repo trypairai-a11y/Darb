@@ -51,6 +51,20 @@ const SUPERVISOR_CANCELLABLE: DeliveryOrderStatus[] = [
 /** Rejection reasons a dropoff fix can cure (§A8 PATCH /:id/dropoff). */
 const DROPOFF_FIXABLE_REASONS = ["NO_COORDINATES", "OUT_OF_ZONE_DROPOFF"];
 
+/**
+ * Statuses whose outcome reason a supervisor may record after the fact, and
+ * the column each one writes. A FAILED order that carries no reason is an
+ * order nobody can explain to the merchant, and the driver app is not the
+ * only way one gets there (legacy rows predate the required-reason check).
+ * REJECTED is deliberately absent: rejectionReason is a system code written
+ * by the intake guard, not free text an operator gets to overwrite.
+ */
+const REASON_FIELD_BY_STATUS: Partial<Record<DeliveryOrderStatus, "failureReason" | "cancelReason">> = {
+  FAILED: "failureReason",
+  RETURNED: "failureReason",
+  CANCELLED: "cancelReason",
+};
+
 const router = Router();
 router.use(authMiddleware, tenantScope);
 
@@ -88,6 +102,10 @@ const assignSchema = z.object({
 });
 
 const cancelSchema = z.object({
+  reason: z.string().trim().min(1, "Reason is required").max(500),
+});
+
+const reasonSchema = z.object({
   reason: z.string().trim().min(1, "Reason is required").max(500),
 });
 
@@ -450,6 +468,76 @@ router.post(
         note,
       });
       res.json(order);
+    } catch (err) {
+      handleOrderError(res, err);
+    }
+  },
+);
+
+/**
+ * @swagger
+ * /api/delivery-orders/{id}/reason:
+ *   patch:
+ *     tags: [Delivery Orders]
+ *     summary: Record (or correct) the reason a FAILED / CANCELLED / RETURNED order ended
+ *     description: >
+ *       Writes failureReason (FAILED, RETURNED) or cancelReason (CANCELLED)
+ *       and appends an OrderEvent so the correction is auditable. REJECTED is
+ *       not editable: its reason is a system code from the intake guard.
+ */
+router.patch(
+  "/:id/reason",
+  rbac(...SUPERVISOR_PLUS),
+  validateBody(reasonSchema),
+  async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.user!.tenantId;
+      const { reason } = req.body as z.infer<typeof reasonSchema>;
+
+      const order = await prisma.deliveryOrder.findFirst({
+        where: { id: req.params.id, tenantId },
+        select: { id: true, status: true, failureReason: true, cancelReason: true },
+      });
+      if (!order) {
+        res.status(404).json({ error: "Order not found" });
+        return;
+      }
+
+      const field = REASON_FIELD_BY_STATUS[order.status];
+      if (!field) {
+        res
+          .status(409)
+          .json({ error: `A ${order.status} order has no outcome reason to record` });
+        return;
+      }
+      const previous = order[field];
+
+      const updated = await prisma.$transaction(async (tx) => {
+        const row = await tx.deliveryOrder.update({
+          where: { id: order.id },
+          data:
+            field === "failureReason"
+              ? { failureReason: reason }
+              : { cancelReason: reason },
+        });
+        await tx.orderEvent.create({
+          data: {
+            tenantId,
+            orderId: order.id,
+            action: "order.reason_recorded",
+            description: previous
+              ? `Outcome reason corrected to "${reason}"`
+              : `Outcome reason recorded: ${reason}`,
+            operator: req.user!.email,
+            operatorId: req.user!.userId,
+            timestamp: new Date(),
+            metadata: { status: order.status, field, previous, reason },
+          },
+        });
+        return row;
+      });
+
+      res.json(updated);
     } catch (err) {
       handleOrderError(res, err);
     }

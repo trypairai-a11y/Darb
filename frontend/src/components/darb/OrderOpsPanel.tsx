@@ -10,6 +10,7 @@ import SlidePanel from "@/components/shared/SlidePanel";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import { useToast } from "@/components/shared/Toast";
 import OrderStatusBadge from "@/components/darb/OrderStatusBadge";
+import { OrderOutcomeBanner, outcomeReason } from "@/components/darb/OrderOutcome";
 import OfferTimeline from "@/components/darb/OfferTimeline";
 import SlaCountdown from "@/components/darb/SlaCountdown";
 import { deliveryOrdersApi, unwrapList } from "@/lib/darbApi";
@@ -25,6 +26,7 @@ type PendingAction =
   | { kind: "assign"; candidate: DispatchCandidate }
   | { kind: "redispatch" }
   | { kind: "cancel" }
+  | { kind: "reason" }
   | null;
 
 interface OrderOpsPanelProps {
@@ -53,6 +55,7 @@ export default function OrderOpsPanel({
   const [reassigning, setReassigning] = useState(false);
   const [pending, setPending] = useState<PendingAction>(null);
   const [cancelReason, setCancelReason] = useState("");
+  const [reasonDraft, setReasonDraft] = useState("");
   const [actionBusy, setActionBusy] = useState(false);
 
   const detailQuery = useQuery({
@@ -94,6 +97,7 @@ export default function OrderOpsPanel({
     setReassigning(false);
     setPending(null);
     setCancelReason("");
+    setReasonDraft("");
     onClose();
   }
 
@@ -105,6 +109,8 @@ export default function OrderOpsPanel({
         await deliveryOrdersApi.assign(orderId, pending.candidate.driverId);
       } else if (pending.kind === "redispatch") {
         await deliveryOrdersApi.redispatch(orderId);
+      } else if (pending.kind === "reason") {
+        await deliveryOrdersApi.recordReason(orderId, reasonDraft.trim());
       } else {
         await deliveryOrdersApi.cancel(orderId, cancelReason.trim() || undefined);
       }
@@ -112,6 +118,7 @@ export default function OrderOpsPanel({
       setPending(null);
       setReassigning(false);
       setCancelReason("");
+      setReasonDraft("");
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["darb", "delivery-orders"] }),
         queryClient.invalidateQueries({ queryKey: ["darb", "delivery-order", orderId] }),
@@ -148,6 +155,19 @@ export default function OrderOpsPanel({
                 </div>
               )}
             </div>
+
+            {/* Why it ended this way — first thing read on a dead order */}
+            <OrderOutcomeBanner
+              order={order}
+              onRecord={
+                canEdit
+                  ? () => {
+                      setReasonDraft(outcomeReason(order, t) ?? "");
+                      setPending({ kind: "reason" });
+                    }
+                  : undefined
+              }
+            />
 
             {/* Order facts */}
             <section>
@@ -388,6 +408,52 @@ export default function OrderOpsPanel({
                 className="px-5 h-10 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-pill transition-colors disabled:opacity-50"
               >
                 {actionBusy ? t("common.processing") : t("dispatch.cancelOrder")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Record the reason on an order that already ended without one. */}
+      {pending?.kind === "reason" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+          <div
+            className="absolute inset-0 bg-navy-900/40 backdrop-blur-sm"
+            onClick={() => setPending(null)}
+            aria-hidden="true"
+          />
+          <div className="relative bg-card rounded-2xl border border-sand-200 shadow-float w-full max-w-md p-6">
+            <h2 className="font-display text-xl text-sand-900">
+              {t("dispatch.recordReasonTitle")}
+            </h2>
+            <p className="mt-1.5 text-sm text-sand-700">{t("dispatch.recordReasonMessage")}</p>
+            <label className="block text-xs font-medium text-sand-700 mt-4 mb-1.5 uppercase tracking-wide">
+              {t("dispatch.outcomeReason")}
+            </label>
+            <input
+              type="text"
+              dir="auto"
+              autoFocus
+              maxLength={500}
+              value={reasonDraft}
+              onChange={(e) => setReasonDraft(e.target.value)}
+              className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setPending(null)}
+                className="px-4 h-10 text-sm font-medium text-sand-800 bg-sand-100 hover:bg-sand-200 rounded-pill transition-colors"
+              >
+                {t("common.cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={() => void runPendingAction()}
+                disabled={actionBusy || reasonDraft.trim().length === 0}
+                className="px-5 h-10 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-pill transition-colors disabled:opacity-50"
+              >
+                {actionBusy ? t("common.processing") : t("common.save")}
               </button>
             </div>
           </div>
