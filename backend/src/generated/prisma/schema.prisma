@@ -499,6 +499,7 @@ model Tenant {
   userInvites               UserInvite[]
   userSurfacePermissions    UserSurfacePermission[]
   accountManagerVendors     AccountManagerVendor[]
+  supportTickets            SupportTicket[]
 }
 
 // 2. Company
@@ -2805,6 +2806,8 @@ model Vendor {
   deliveryPlan      DeliveryPlan?          @relation(fields: [deliveryPlanId], references: [id])
   accountManagers   AccountManagerVendor[]
 
+  supportTickets SupportTicket[]
+
   @@unique([tenantId, code])
   @@index([tenantId, isActive])
 }
@@ -3531,4 +3534,52 @@ model AccountManagerVendor {
 
   @@unique([userId, vendorId])
   @@index([tenantId, vendorId])
+}
+
+/// Revision 8 (#6) — a shop's support requests.
+///
+/// Raised from the vendor portal by any of the three shop roles, including
+/// Order tracking, whose whole job is following deliveries and reporting when
+/// one goes wrong. Kept deliberately small: a subject, a body, an optional
+/// order it is about, and a thread of replies from both sides.
+model SupportTicket {
+  id          String              @id @default(uuid())
+  tenantId    String
+  vendorId    String
+  /// Who raised it, so the shop can see which of its own people asked.
+  createdById String?
+  subject     String
+  status      SupportTicketStatus @default(OPEN)
+  /// The order this is about, when it is about one.
+  orderId     String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  tenant   Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vendor   Vendor                 @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  messages SupportTicketMessage[]
+
+  @@index([tenantId, vendorId, status])
+  @@index([tenantId, status, createdAt])
+}
+
+model SupportTicketMessage {
+  id         String   @id @default(uuid())
+  tenantId   String
+  ticketId   String
+  /// VENDOR or DARB — which side of the conversation this came from.
+  author     String
+  authorName String?
+  body       String
+  createdAt  DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId, createdAt])
+}
+
+enum SupportTicketStatus {
+  OPEN
+  ANSWERED
+  RESOLVED
 }

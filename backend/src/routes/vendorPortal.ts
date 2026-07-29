@@ -853,6 +853,103 @@ router.get("/statements", requireVendorRole("OWNER", "FINANCE"), async (req: Req
 });
 
 
+// ─── Support (revision 8, edit 6) ────────────────────────────────────────────
+
+/**
+ * A shop's support requests.
+ *
+ * Open to all three shop roles. Order tracking especially: following
+ * deliveries and reporting when one goes wrong is the whole job, and that role
+ * cannot see money or settings, so support is the only channel it has.
+ */
+const supportTicketSchema = z.object({
+  subject: z.string().trim().min(1).max(200),
+  body: z.string().trim().min(1).max(4000),
+  orderId: z.string().min(1).optional().nullable(),
+});
+
+router.get("/support", async (req: Request, res: Response) => {
+  try {
+    const { tenantId, vendorId } = req.user!;
+    const tickets = await prisma.supportTicket.findMany({
+      where: { tenantId, vendorId: vendorId! },
+      orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
+      take: 200,
+      include: { messages: { orderBy: { createdAt: "asc" } } },
+    });
+    res.json(tickets);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post(
+  "/support",
+  validateBody(supportTicketSchema),
+  async (req: Request, res: Response) => {
+    try {
+      const { tenantId, vendorId, userId, email } = req.user!;
+      const { subject, body, orderId } = req.body;
+
+      // An order reference is only meaningful if it is this shop's order.
+      if (orderId) {
+        const order = await prisma.deliveryOrder.findFirst({
+          where: { id: orderId, tenantId, vendorId: vendorId! },
+          select: { id: true },
+        });
+        if (!order) { res.status(400).json({ error: "Order not found" }); return; }
+      }
+
+      const ticket = await prisma.supportTicket.create({
+        data: {
+          tenantId,
+          vendorId: vendorId!,
+          createdById: userId,
+          subject,
+          orderId: orderId ?? null,
+          messages: { create: { tenantId, author: "VENDOR", authorName: email, body } },
+        },
+        include: { messages: { orderBy: { createdAt: "asc" } } },
+      });
+      res.status(201).json(ticket);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+);
+
+/** Add a reply to a ticket this shop owns, and reopen it if Darb had answered. */
+router.post("/support/:id/reply", async (req: Request, res: Response) => {
+  try {
+    const { tenantId, vendorId, email } = req.user!;
+    const body = typeof req.body?.body === "string" ? req.body.body.trim() : "";
+    if (!body) { res.status(400).json({ error: "Message is required" }); return; }
+
+    const ticket = await prisma.supportTicket.findFirst({
+      where: { id: req.params.id, tenantId, vendorId: vendorId! },
+      select: { id: true, status: true },
+    });
+    if (!ticket) { res.status(404).json({ error: "Ticket not found" }); return; }
+    if (ticket.status === "RESOLVED") {
+      res.status(409).json({ error: "This request is closed. Raise a new one." });
+      return;
+    }
+
+    await prisma.supportTicketMessage.create({
+      data: { tenantId, ticketId: ticket.id, author: "VENDOR", authorName: email, body },
+    });
+    // A reply from the shop puts the ball back in Darb's court.
+    const updated = await prisma.supportTicket.update({
+      where: { id: ticket.id },
+      data: { status: "OPEN" },
+      include: { messages: { orderBy: { createdAt: "asc" } } },
+    });
+    res.json(updated);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 // ─── Team (revision 8, edit 7) ───────────────────────────────────────────────
 
 /**

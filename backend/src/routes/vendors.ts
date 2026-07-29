@@ -608,6 +608,67 @@ router.post(
   }
 );
 
+// ─── Support (revision 8, edit 6) ────────────────────────────────────────────
+
+/**
+ * The Darb side of a shop's support requests.
+ *
+ * Without this the vendor portal's Support tab would be a place to shout into:
+ * a shop could raise a request and nobody at Darb could see it, let alone
+ * answer. Lives under the vendor it belongs to, which is where staff already
+ * go to look at one merchant.
+ */
+router.get("/:id/support", async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const tickets = await prisma.supportTicket.findMany({
+      where: { tenantId, vendorId: req.params.id },
+      orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
+      take: 200,
+      include: { messages: { orderBy: { createdAt: "asc" } } },
+    });
+    res.json(tickets);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/** Answer a request, and optionally close it. */
+router.post("/:id/support/:ticketId/reply", rbac("ADMIN", "OPS_MANAGER", "SUPERVISOR"), async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const body = typeof req.body?.body === "string" ? req.body.body.trim() : "";
+    const resolve = req.body?.resolve === true;
+    if (!body && !resolve) { res.status(400).json({ error: "Message is required" }); return; }
+
+    const ticket = await prisma.supportTicket.findFirst({
+      where: { id: req.params.ticketId, tenantId, vendorId: req.params.id },
+      select: { id: true },
+    });
+    if (!ticket) { res.status(404).json({ error: "Ticket not found" }); return; }
+
+    if (body) {
+      await prisma.supportTicketMessage.create({
+        data: {
+          tenantId,
+          ticketId: ticket.id,
+          author: "DARB",
+          authorName: req.user!.email,
+          body,
+        },
+      });
+    }
+    const updated = await prisma.supportTicket.update({
+      where: { id: ticket.id },
+      data: { status: resolve ? "RESOLVED" : "ANSWERED" },
+      include: { messages: { orderBy: { createdAt: "asc" } } },
+    });
+    res.json(updated);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 // ─── Wallet ──────────────────────────────────────────────────────────────────
 
 /**

@@ -15,6 +15,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { UserRole } from "@/hooks/useRole";
 import {
+  LifeBuoy,
   Radio,
   Briefcase,
   Wallet,
@@ -129,6 +130,9 @@ export const NAV_SECTIONS: NavSection[] = [
         owns: ["/vendor/analytics", "/vendor/campaigns"],
         vendorRoles: ["OWNER", "FINANCE"],
       },
+      // Open to all three roles: a tracker who can see neither money nor
+      // settings has no other way to tell Darb something went wrong.
+      { i18n: "vendorSupport.title", path: "/vendor/support", icon: LifeBuoy },
       { i18n: "vendorTeam.title", path: "/vendor/team", icon: Users, vendorRoles: ["OWNER"] },
       { i18n: "darbNav.vendorSettings", path: "/vendor/settings", icon: Settings, vendorRoles: ["OWNER"] },
     ],

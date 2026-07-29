@@ -791,3 +791,26 @@ export interface DeliveryPlan {
   createdAt?: string;
   updatedAt?: string;
 }
+
+
+// ── Support (revision 8, edit 6) ─────────────────────────────────────────
+
+export type SupportTicketStatus = "OPEN" | "ANSWERED" | "RESOLVED";
+
+export interface SupportTicketMessage {
+  id: string;
+  author: "VENDOR" | "DARB";
+  authorName?: string | null;
+  body: string;
+  createdAt: string;
+}
+
+export interface SupportTicket {
+  id: string;
+  subject: string;
+  status: SupportTicketStatus;
+  orderId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  messages: SupportTicketMessage[];
+}

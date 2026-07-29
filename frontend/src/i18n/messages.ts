@@ -1960,6 +1960,23 @@ export interface Messages {
     exportCsv: string;
     refreshed: string;
   };
+  vendorSupport: {
+    title: string;
+    subtitle: string;
+    raise: string;
+    subject: string;
+    details: string;
+    detailsHint: string;
+    raised: string;
+    empty: string;
+    statusOpen: string;
+    statusAnswered: string;
+    statusResolved: string;
+    fromDarb: string;
+    fromYou: string;
+    addReply: string;
+    send: string;
+  };
   vendorTeam: {
     title: string;
     subtitle: string;
@@ -3975,6 +3992,23 @@ export const en: Messages = {
     exportCsv: "Export CSV",
     refreshed: "Refreshed",
   },
+  vendorSupport: {
+    title: "Support",
+    subtitle: "Ask Darb about an order, a payment, or anything else. We answer here.",
+    raise: "New request",
+    subject: "Subject",
+    details: "What happened",
+    detailsHint: "Include the order number if it is about one delivery.",
+    raised: "Request sent.",
+    empty: "Nothing raised yet.",
+    statusOpen: "Waiting on Darb",
+    statusAnswered: "Answered",
+    statusResolved: "Closed",
+    fromDarb: "Darb",
+    fromYou: "You",
+    addReply: "Add a reply",
+    send: "Send",
+  },
   vendorTeam: {
     title: "Team",
     subtitle: "The people at your shop who can sign in, and what each of them may see.",
@@ -5975,6 +6009,23 @@ export const ar: Messages = {
     noAlerts: "كل شيء سليم. لا تجاوزات.",
     exportCsv: "تصدير CSV",
     refreshed: "آخر تحديث",
+  },
+  vendorSupport: {
+    title: "الدعم",
+    subtitle: "اسأل درب عن طلب أو دفعة أو أي شيء آخر. نجيب هنا.",
+    raise: "طلب جديد",
+    subject: "الموضوع",
+    details: "ما الذي حدث",
+    detailsHint: "أضف رقم الطلب إذا كان الأمر يخص توصيلة واحدة.",
+    raised: "تم إرسال الطلب.",
+    empty: "لا توجد طلبات بعد.",
+    statusOpen: "بانتظار درب",
+    statusAnswered: "تمت الإجابة",
+    statusResolved: "مُغلق",
+    fromDarb: "درب",
+    fromYou: "أنت",
+    addReply: "إضافة رد",
+    send: "إرسال",
   },
   vendorTeam: {
     title: "الفريق",

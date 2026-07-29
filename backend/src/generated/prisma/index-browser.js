@@ -1878,6 +1878,28 @@ exports.Prisma.AccountManagerVendorScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.SupportTicketScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  vendorId: 'vendorId',
+  createdById: 'createdById',
+  subject: 'subject',
+  status: 'status',
+  orderId: 'orderId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SupportTicketMessageScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  ticketId: 'ticketId',
+  author: 'author',
+  authorName: 'authorName',
+  body: 'body',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -2957,6 +2979,24 @@ exports.Prisma.AccountManagerVendorOrderByRelevanceFieldEnum = {
   userId: 'userId',
   vendorId: 'vendorId'
 };
+
+exports.Prisma.SupportTicketOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  vendorId: 'vendorId',
+  createdById: 'createdById',
+  subject: 'subject',
+  orderId: 'orderId'
+};
+
+exports.Prisma.SupportTicketMessageOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  ticketId: 'ticketId',
+  author: 'author',
+  authorName: 'authorName',
+  body: 'body'
+};
 exports.SubscriptionPlan = exports.$Enums.SubscriptionPlan = {
   FREE: 'FREE',
   PRO: 'PRO',
@@ -3408,6 +3448,12 @@ exports.PermissionLevel = exports.$Enums.PermissionLevel = {
   EDIT: 'EDIT'
 };
 
+exports.SupportTicketStatus = exports.$Enums.SupportTicketStatus = {
+  OPEN: 'OPEN',
+  ANSWERED: 'ANSWERED',
+  RESOLVED: 'RESOLVED'
+};
+
 exports.Prisma.ModelName = {
   Tenant: 'Tenant',
   Company: 'Company',
@@ -3519,7 +3565,9 @@ exports.Prisma.ModelName = {
   FleetPayoutStatement: 'FleetPayoutStatement',
   UserInvite: 'UserInvite',
   UserSurfacePermission: 'UserSurfacePermission',
-  AccountManagerVendor: 'AccountManagerVendor'
+  AccountManagerVendor: 'AccountManagerVendor',
+  SupportTicket: 'SupportTicket',
+  SupportTicketMessage: 'SupportTicketMessage'
 };
 
 /**
