@@ -34,6 +34,7 @@ import { applyFleetDiscipline } from "../services/fleetDiscipline";
 import { computeAllTenantTiers, snapshotAllTenants } from "../services/performanceService";
 import { prisma } from "../config";
 import { refreshDemoData } from "../services/demoRefreshService";
+import { refreshDemoPresence } from "../services/demoPresenceService";
 
 const router = Router();
 
@@ -87,6 +88,18 @@ router.get("/dispatch-sweep", async (req: Request, res: Response) => {
 
   const startedAt = Date.now();
   try {
+    // Demo tenants only, and only those named in DEMO_PRESENCE_TENANTS. Their
+    // couriers have no app posting GPS, so sweepStalePresence below would take
+    // the whole roster offline within five minutes and every order after that
+    // would exhaust with nobody to offer it to. Runs BEFORE the stale sweep so
+    // the couriers it refreshes are not immediately marked dark again.
+    let presenceUpkeep = { tenants: 0, refreshed: 0, woken: 0 };
+    try {
+      presenceUpkeep = await refreshDemoPresence();
+    } catch (err) {
+      logger.warn({ err }, "cron: demo presence upkeep failed, continuing");
+    }
+
     let presenceOffline = 0;
     try {
       presenceOffline = await sweepStalePresence();
@@ -110,6 +123,7 @@ router.get("/dispatch-sweep", async (req: Request, res: Response) => {
     return res.json({
       ok: true,
       presenceOffline,
+      presenceUpkeep,
       scheduledAdvanced,
       ...dispatch,
       durationMs: Date.now() - startedAt,
