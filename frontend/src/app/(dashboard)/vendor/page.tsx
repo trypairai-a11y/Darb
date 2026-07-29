@@ -13,7 +13,6 @@ import StatCard from "@/components/shared/StatCard";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import OrderStatusBadge from "@/components/darb/OrderStatusBadge";
-import PauseOrdersToggle from "@/components/darb/PauseOrdersToggle";
 import SlaCountdown from "@/components/darb/SlaCountdown";
 import { useDarbEvents } from "@/hooks/useDarbEvents";
 import { vendorApi, unwrapList } from "@/lib/darbApi";
@@ -73,7 +72,7 @@ function OrderCard({ order }: { order: DeliveryOrder }) {
       </div>
       <div className="mt-1.5 flex items-center justify-between gap-2">
         <span className="text-sm text-sand-800 truncate" dir="auto">
-          {order.customerName ?? order.customerPhone ?? "—"}
+          {order.customerName ?? order.customerPhone ?? t("common.notAvailable")}
         </span>
         {order.paymentMethod === "COD" && (
           <span dir="ltr" className="text-xs font-medium text-sand-900 tabular-nums whitespace-nowrap">
@@ -256,29 +255,32 @@ export default function VendorBoardPage() {
         </div>
       </div>
 
+      {/* Paused is the one state where the board cannot do its job, so the
+          banner carries the way out: the toggle now lives in Settings, and a
+          merchant who is paused should not have to go looking for it. */}
       {vendor?.isPaused && (
-        <div className="px-4 py-3 rounded-xl border border-red-200 bg-red-50 text-sm text-red-700">
-          {t("vendorPortal.pausedBanner")}
+        <div className="flex items-center justify-between gap-3 flex-wrap px-4 py-3 rounded-xl border border-red-200 bg-red-50 text-sm text-red-700">
+          <span>{t("vendorPortal.pausedBanner")}</span>
+          <Link
+            href="/vendor/settings"
+            className="font-medium underline underline-offset-2 hover:no-underline"
+          >
+            {t("vendorPortal.pauseSection")}
+          </Link>
         </div>
       )}
 
-      {/* Header stats + pause */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
+      {/* Header stats. The pause toggle used to sit here as a third card and
+          again in Settings, two controls for one switch. The board keeps the
+          paused banner above, which is information; the switch lives in
+          Settings, where the rest of the vendor's own configuration is. */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
         <StatCard
           title={t("vendorPortal.walletBalance")}
-          value={balance != null ? formatKwd(balance, locale) : "—"}
+          value={balance != null ? formatKwd(balance, locale) : t("common.notAvailable")}
           icon={Wallet}
         />
         <StatCard title={t("vendorPortal.ordersToday")} value={ordersToday} icon={ClipboardList} />
-        <div className="bg-card border border-sand-200 rounded-2xl p-5 shadow-soft flex items-center justify-center">
-          <PauseOrdersToggle
-            paused={vendor?.isPaused ?? false}
-            onChange={async (paused) => {
-              await vendorApi.pause(paused);
-              await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", "me"] });
-            }}
-          />
-        </div>
       </div>
 
       {/* Status-grouped board */}

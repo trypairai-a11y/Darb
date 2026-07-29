@@ -5,13 +5,15 @@ import { NextRequest, NextResponse } from "next/server";
 // the API proxy are untouched, so one app serves every handle.
 // darb-hq is deliberately absent: it is the staff handle, and staff land by
 // role (app/page.tsx) rather than everyone being dropped on the cockpit.
+// There used to be a darb-ops handle next to it, pinned to /ops. It was the
+// same app behind the same login, and it only differed for non-supervisors,
+// who it dropped on the map instead of their own surface. Staff use darb-hq.
 //
 // darb-track is the customer handle and MUST be listed. Without an entry it
 // fell through to app/page.tsx, which sends anyone not signed in to /login —
 // a customer tapping the bare domain got a staff sign-in form. /track explains
 // that the real link arrives by WhatsApp, and asks for nothing.
 const HANDLE_LANDING: Record<string, string> = {
-  "darb-ops.vercel.app": "/ops",
   "darb-merchant.vercel.app": "/vendor",
   "darb-fleet.vercel.app": "/fleet-portal",
   "darb-track.vercel.app": "/track",

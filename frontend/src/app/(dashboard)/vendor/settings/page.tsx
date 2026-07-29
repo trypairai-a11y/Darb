@@ -139,19 +139,19 @@ export default function VendorSettingsPage() {
         <h2 className="font-medium text-sand-900 mb-4">{t("vendorPortal.profile")}</h2>
         <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm">
           <dt className="text-sand-600">{t("vendorsPage.name")}</dt>
-          <dd dir="auto">{vendor?.name ?? "—"}</dd>
+          <dd dir="auto">{vendor?.name ?? t("common.notAvailable")}</dd>
           <dt className="text-sand-600">{t("vendorsPage.nameAr")}</dt>
-          <dd dir="auto">{vendor?.nameAr ?? "—"}</dd>
+          <dd dir="auto">{vendor?.nameAr ?? t("common.notAvailable")}</dd>
           <dt className="text-sand-600">{t("vendorsPage.code")}</dt>
           <dd dir="ltr" className="font-mono text-xs">
-            {vendor?.code ?? "—"}
+            {vendor?.code ?? t("common.notAvailable")}
           </dd>
           <dt className="text-sand-600">{t("vendorsPage.phone")}</dt>
-          <dd dir="ltr">{vendor?.phone ?? "—"}</dd>
+          <dd dir="ltr">{vendor?.phone ?? t("common.notAvailable")}</dd>
           <dt className="text-sand-600">{t("vendorsPage.branches")}</dt>
           <dd>
             {branches.length === 0 ? (
-              "—"
+              t("common.notAvailable")
             ) : (
               <ul className="space-y-1">
                 {branches.map((b) => (

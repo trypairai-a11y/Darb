@@ -1,12 +1,12 @@
 "use client";
-// The "Numbers" tab of the merchant Grow screen: order-derived analytics.
-// Date range (default last 30 days) + branch scope from VendorBranchContext;
-// KPI StatCards, orders-by-day bar list, top customers table, CSV export and
-// a print-to-PDF shortcut. Lifted out of the old /vendor/analytics page minus
-// its heading, which the Grow screen carries now.
+// The body of the merchant Grow screen: order-derived analytics. Date range
+// (default last 30 days) + branch scope from VendorBranchContext; KPI
+// StatCards, orders-by-day bar list, top customers table and a CSV export.
+// Lifted out of the old /vendor/analytics page minus its heading, which the
+// Grow screen carries.
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, Download, Printer, Repeat, ShoppingBag, Wallet } from "lucide-react";
+import { BarChart3, Download, Repeat, ShoppingBag, Wallet } from "lucide-react";
 import StatCard from "@/components/shared/StatCard";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
@@ -86,6 +86,9 @@ export default function AnalyticsPanel() {
             dateTo={range.to}
             onChange={(from, to) => setRange({ from, to })}
           />
+          {/* CSV only. The print-to-PDF button beside it printed the browser
+              page, chrome and all, which is not a document anyone would send
+              on. The CSV is the export that survives. */}
           <button
             type="button"
             onClick={exportCsv}
@@ -93,14 +96,6 @@ export default function AnalyticsPanel() {
           >
             <Download size={12} aria-hidden="true" />
             {t("vendorExtra.exportCsv")}
-          </button>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors"
-          >
-            <Printer size={12} aria-hidden="true" />
-            {t("vendorExtra.printPdf")}
           </button>
         </div>
       </div>

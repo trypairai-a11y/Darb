@@ -12,10 +12,8 @@
 // directory up loaded fine. Renaming the segment sidesteps the whole class.
 import { redirect } from "next/navigation";
 
-export default function VendorAnalyticsRedirect({
-  searchParams,
-}: {
-  searchParams: { tab?: string };
-}) {
-  redirect(searchParams.tab ? `/vendor/grow?tab=${searchParams.tab}` : "/vendor/grow");
+// Grow has no tabs left to forward to, so every old link lands on the one
+// screen it now has.
+export default function VendorAnalyticsRedirect() {
+  redirect("/vendor/grow");
 }

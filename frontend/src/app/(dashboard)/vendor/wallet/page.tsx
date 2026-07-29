@@ -1,11 +1,18 @@
 "use client";
-// Darb 2.0 — /vendor/wallet: balance StatCard + the shared WalletLedgerTable
-// over GET /api/vendor/wallet/entries, plus monthly statements — a month list
-// whose Download CSV buttons pull that month's entries (month + date-range
-// params) and build the file client-side.
+// Darb 2.0 — /vendor/wallet: balance, credit line, the shared
+// WalletLedgerTable over GET /api/vendor/wallet/entries, the vendor's
+// statements, and refunds. Four sections, in the order a merchant reads them:
+// what am I owed, what moved, what did we agree for the period, what came back.
+//
+// There used to be two sections both called statements. One was a hand-rolled
+// list of the last six calendar months whose Download buttons guessed the
+// period from the browser clock; the other was the real VendorStatement rows
+// from the server, with the opening and closing balances both sides actually
+// settle against. A merchant reconciling their books had to know which one to
+// trust. Only the server's rows remain, and each carries its own CSV.
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CreditCard, Download, FileText, Loader2, Wallet } from "lucide-react";
+import { CreditCard, Download, Loader2, Wallet } from "lucide-react";
 import StatCard from "@/components/shared/StatCard";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
@@ -15,45 +22,16 @@ import { useToast } from "@/components/shared/Toast";
 import WalletLedgerTable from "@/components/darb/WalletLedgerTable";
 import { vendorApi, unwrapList, fetchAllPages } from "@/lib/darbApi";
 import { downloadCsv } from "@/lib/csv";
-import type { RefundRow, WalletEntry } from "@/types/darb";
+import type { RefundRow, VendorStatementRow, WalletEntry } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
-import { formatDate, formatKwd, localeTag } from "@/i18n/format";
-
-const STATEMENT_MONTHS = 6;
-
-interface MonthOption {
-  /** "YYYY-MM" */
-  key: string;
-  label: string;
-  dateFrom: string;
-  dateTo: string;
-}
-
-function lastMonths(count: number, localeStr: string): MonthOption[] {
-  const out: MonthOption[] = [];
-  const now = new Date();
-  for (let i = 0; i < count; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const year = d.getFullYear();
-    const month = d.getMonth();
-    const pad = (n: number) => String(n).padStart(2, "0");
-    const lastDay = new Date(year, month + 1, 0).getDate();
-    out.push({
-      key: `${year}-${pad(month + 1)}`,
-      label: new Intl.DateTimeFormat(localeStr, { year: "numeric", month: "long" }).format(d),
-      dateFrom: `${year}-${pad(month + 1)}-01`,
-      dateTo: `${year}-${pad(month + 1)}-${pad(lastDay)}`,
-    });
-  }
-  return out;
-}
+import { formatDate, formatKwd } from "@/i18n/format";
 
 export default function VendorWalletPage() {
   const { t, locale } = useI18n();
   const toast = useToast();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(25);
-  const [downloadingMonth, setDownloadingMonth] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const walletQuery = useQuery({
     queryKey: ["darb", "vendor", "wallet"],
@@ -73,9 +51,7 @@ export default function VendorWalletPage() {
           .pagination
       : undefined;
 
-  const months = useMemo(() => lastMonths(STATEMENT_MONTHS, localeTag(locale)), [locale]);
-
-  // PRD build — refunds + monthly netting statements from the API.
+  // PRD build — refunds + netting statements from the API.
   const refundsQuery = useQuery({
     queryKey: ["darb", "vendor", "refunds"],
     queryFn: () => vendorApi.refunds(),
@@ -85,22 +61,24 @@ export default function VendorWalletPage() {
     queryFn: () => vendorApi.statements(),
   });
 
-  async function downloadStatement(month: MonthOption) {
-    setDownloadingMonth(month.key);
+  /** CSV of every ledger entry inside one statement's own period. */
+  async function downloadStatement(row: VendorStatementRow) {
+    setDownloadingId(row.id);
     try {
-      // Paged: the server clamps limit to 100, so a >100-entry month used to
+      const dateFrom = row.periodStart.slice(0, 10);
+      const dateTo = row.periodEnd.slice(0, 10);
+      // Paged: the server clamps limit to 100, so a >100-entry period used to
       // export a statement whose running balance did not tie out.
       const rows = await fetchAllPages<WalletEntry>((p) => vendorApi.walletEntries(p), {
-        month: month.key,
-        dateFrom: month.dateFrom,
-        dateTo: month.dateTo,
+        dateFrom,
+        dateTo,
       });
       if (rows.length === 0) {
         toast.info(t("reportsPage.noData"));
         return;
       }
       downloadCsv(
-        `statement-${month.key}`,
+        `statement-${dateFrom}-to-${dateTo}`,
         [
           t("wallet.date"),
           t("wallet.type"),
@@ -121,7 +99,7 @@ export default function VendorWalletPage() {
     } catch {
       toast.error(t("reportsPage.exportFailed"));
     } finally {
-      setDownloadingMonth(null);
+      setDownloadingId(null);
     }
   }
 
@@ -169,7 +147,7 @@ export default function VendorWalletPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           title={t("vendorPortal.walletBalance")}
-          value={balance != null ? formatKwd(balance, locale) : "—"}
+          value={balance != null ? formatKwd(balance, locale) : t("common.notAvailable")}
           icon={Wallet}
         />
         {creditCap != null && (
@@ -231,39 +209,6 @@ export default function VendorWalletPage() {
         exportFilename="vendor-wallet"
       />
 
-      {/* Monthly statements */}
-      <section className="bg-card border border-sand-200 rounded-2xl shadow-soft">
-        <header className="px-5 py-4 border-b border-sand-200">
-          <h2 className="text-sm font-medium text-sand-900">{t("vendorPortal.statements")}</h2>
-          <p className="text-xs text-sand-600 mt-0.5">{t("vendorPortal.statementsHint")}</p>
-        </header>
-        <ul className="divide-y divide-sand-200">
-          {months.map((m) => (
-            <li key={m.key} className="flex items-center justify-between gap-3 px-5 py-3">
-              <span className="flex items-center gap-2.5 text-sm text-sand-900">
-                <FileText size={15} className="text-sand-500" aria-hidden="true" />
-                {m.label}
-              </span>
-              <button
-                type="button"
-                onClick={() => void downloadStatement(m)}
-                disabled={downloadingMonth === m.key}
-                className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors disabled:opacity-50"
-              >
-                {downloadingMonth === m.key ? (
-                  <Loader2 size={12} className="animate-spin" aria-hidden="true" />
-                ) : (
-                  <Download size={12} aria-hidden="true" />
-                )}
-                {downloadingMonth === m.key
-                  ? t("reportsPage.preparing")
-                  : t("vendorPortal.downloadCsv")}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
-
       {/* Refunds */}
       <section className="bg-card border border-sand-200 rounded-2xl shadow-soft">
         <header className="px-5 py-4 border-b border-sand-200">
@@ -295,9 +240,13 @@ export default function VendorWalletPage() {
         )}
       </section>
 
-      {/* Monthly netting statements (API) */}
+      {/* Statements. One section, server-issued periods, each with its own CSV
+          of the ledger entries that fall inside it. */}
       <section className="space-y-3">
-        <h2 className="text-sm font-medium text-sand-900">{t("vendorExtra.statementsTitle")}</h2>
+        <div>
+          <h2 className="text-sm font-medium text-sand-900">{t("vendorExtra.statementsTitle")}</h2>
+          <p className="text-xs text-sand-600 mt-0.5">{t("vendorPortal.statementsHint")}</p>
+        </div>
         <DataTable
           columns={[
             {
@@ -348,6 +297,27 @@ export default function VendorWalletPage() {
               key: "status",
               label: t("vendorExtra.statementStatus"),
               render: (value: string) => <StatusBadge status={value} />,
+            },
+            {
+              key: "id",
+              label: "",
+              render: (_value: string, row: VendorStatementRow) => (
+                <button
+                  type="button"
+                  onClick={() => void downloadStatement(row)}
+                  disabled={downloadingId === row.id}
+                  className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors disabled:opacity-50"
+                >
+                  {downloadingId === row.id ? (
+                    <Loader2 size={12} className="animate-spin" aria-hidden="true" />
+                  ) : (
+                    <Download size={12} aria-hidden="true" />
+                  )}
+                  {downloadingId === row.id
+                    ? t("reportsPage.preparing")
+                    : t("vendorPortal.downloadCsv")}
+                </button>
+              ),
             },
           ]}
           data={statements}

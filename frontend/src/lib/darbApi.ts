@@ -287,6 +287,11 @@ export const vendorApi = {
   me: () => get<Vendor & { branches?: VendorBranch[] }>("/api/vendor/me"),
   orders: (params?: Params) =>
     get<Paginated<DeliveryOrder> | DeliveryOrder[]>("/api/vendor/orders", params),
+  // One order, with its real event log. The server names the events `timeline`,
+  // not `events` — the detail page read `events`, found nothing, and silently
+  // fell back to a four-step timeline derived from the order's own timestamps.
+  order: (id: string) =>
+    get<DeliveryOrder & { timeline?: DeliveryOrderEvent[] }>(`/api/vendor/orders/${id}`),
   // The backend takes the dropoff nested — zod strips unknown keys, so a flat
   // dropoffLat/dropoffLng silently loses the coordinates rather than erroring.
   createOrder: (body: {

@@ -19,7 +19,7 @@ import OrderStatusBadge from "@/components/darb/OrderStatusBadge";
 import { OrderOutcomeBanner } from "@/components/darb/OrderOutcome";
 import SlaCountdown from "@/components/darb/SlaCountdown";
 import LiveMap from "@/components/map/LiveMap";
-import { vendorApi, unwrapList } from "@/lib/darbApi";
+import { vendorApi } from "@/lib/darbApi";
 import type { DeliveryOrder, DeliveryOrderEvent } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd, formatTime } from "@/i18n/format";
@@ -61,16 +61,19 @@ export default function VendorOrderDetailPage() {
   const [refunding, setRefunding] = useState(false);
   const [refundReason, setRefundReason] = useState("");
 
-  const ordersQuery = useQuery({
-    queryKey: ["darb", "vendor", "orders"],
-    queryFn: () => vendorApi.orders({ limit: 200 }),
+  // One order, fetched by id. This used to pull the vendor's whole order list
+  // capped at 200 and find the row client-side, so a busy merchant's older
+  // orders reported "not found" and every open detail page re-downloaded 200
+  // orders every ten seconds.
+  const orderQuery = useQuery({
+    queryKey: ["darb", "vendor", "order", orderId],
+    queryFn: () => vendorApi.order(orderId!),
+    enabled: !!orderId,
     refetchInterval: 10_000,
+    retry: false,
   });
 
-  const order = useMemo(
-    () => unwrapList<DeliveryOrder>(ordersQuery.data).find((o) => o.id === orderId) ?? null,
-    [ordersQuery.data, orderId]
-  );
+  const order = orderQuery.data ?? null;
 
   const refundsQuery = useQuery({
     queryKey: ["darb", "vendor", "refunds"],
@@ -83,12 +86,13 @@ export default function VendorOrderDetailPage() {
 
   const timeline = useMemo<DeliveryOrderEvent[]>(() => {
     if (!order) return [];
-    const events = (order as DeliveryOrder & { events?: DeliveryOrderEvent[] }).events;
+    const events = order.timeline;
     if (Array.isArray(events) && events.length > 0) {
       return [...events].sort(
         (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
       );
     }
+    // Orders created before the event log existed have no rows of their own.
     return derivedTimeline(order, t);
   }, [order, t]);
 
@@ -100,6 +104,8 @@ export default function VendorOrderDetailPage() {
       toast.success(t("toast.updated"));
       setConfirmCancel(false);
       setCancelReason("");
+      // This order and the board it came from.
+      await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", "order", orderId] });
       await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", "orders"] });
     } catch (err) {
       const msg =
@@ -137,12 +143,16 @@ export default function VendorOrderDetailPage() {
     }
   }
 
-  if (ordersQuery.isLoading) return <PageSkeleton statCards={0} tableRows={5} tableCols={2} />;
-  if (ordersQuery.error) {
+  if (orderQuery.isLoading) return <PageSkeleton statCards={0} tableRows={5} tableCols={2} />;
+  // A 404 is "no such order for this vendor", which the not-found block below
+  // says better than a red error box.
+  const notFound =
+    (orderQuery.error as { response?: { status?: number } } | null)?.response?.status === 404;
+  if (orderQuery.error && !notFound) {
     return (
       <ErrorState
-        error={ordersQuery.error instanceof Error ? ordersQuery.error.message : t("errors.loadingData")}
-        onRetry={() => ordersQuery.refetch()}
+        error={orderQuery.error instanceof Error ? orderQuery.error.message : t("errors.loadingData")}
+        onRetry={() => orderQuery.refetch()}
       />
     );
   }
@@ -219,7 +229,7 @@ export default function VendorOrderDetailPage() {
         <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm">
           <dt className="text-sand-600">{t("dispatch.customer")}</dt>
           <dd dir="auto">
-            {order.customerName ?? "—"}
+            {order.customerName ?? t("common.notAvailable")}
             {order.customerPhone && (
               <a href={`tel:${order.customerPhone}`} dir="ltr" className="block text-primary text-xs">
                 {order.customerPhone}
@@ -227,12 +237,12 @@ export default function VendorOrderDetailPage() {
             )}
           </dd>
           <dt className="text-sand-600">{t("vendorPortal.address")}</dt>
-          <dd dir="auto">{order.dropoffAddress ?? "—"}</dd>
+          <dd dir="auto">{order.dropoffAddress ?? t("common.notAvailable")}</dd>
           <dt className="text-sand-600">{t("dispatch.dropoffZone")}</dt>
           <dd dir="auto">
             {(locale === "ar" && order.dropoffZone?.nameAr
               ? order.dropoffZone.nameAr
-              : order.dropoffZone?.name) ?? "—"}
+              : order.dropoffZone?.name) ?? t("common.notAvailable")}
           </dd>
           <dt className="text-sand-600">{t("dispatch.orderTotal")}</dt>
           <dd dir="ltr" className="tabular-nums">

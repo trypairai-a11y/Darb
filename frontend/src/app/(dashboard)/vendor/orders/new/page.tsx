@@ -120,7 +120,7 @@ export default function VendorNewOrderPage() {
   }, [selectedBranch, pin, t]);
 
   const zoneName = (z: ZoneQuote["pickupZone"]) =>
-    (locale === "ar" && z?.nameAr ? z.nameAr : z?.name) ?? "—";
+    (locale === "ar" && z?.nameAr ? z.nameAr : z?.name) ?? t("common.notAvailable");
 
   const totalValid = orderTotal !== "" && Number.isFinite(Number(orderTotal)) && Number(orderTotal) >= 0;
   const canSubmit =

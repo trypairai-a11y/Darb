@@ -23,6 +23,7 @@ export interface Messages {
     dismiss: string;
     clear: string;
     processing: string;
+    notAvailable: string;
     of: string;
     selected: string;
     perPage: string;
@@ -1285,8 +1286,6 @@ export interface Messages {
     backToSetup: string;
     grow: string;
     growSubtitle: string;
-    growNumbers: string;
-    growMessages: string;
   };
   shiftsPage: {
     title: string;
@@ -1485,7 +1484,6 @@ export interface Messages {
     prepaidCallout: string;
     cancelHint: string;
     cancelMessage: string;
-    statements: string;
     statementsHint: string;
     downloadCsv: string;
     settingsTitle: string;
@@ -1938,32 +1936,7 @@ export interface Messages {
     exportCsv: string;
     refreshed: string;
   };
-  campaigns: {
-    title: string;
-    subtitle: string;
-    pendingApproval: string;
-    pendingBody: string;
-    templatesTitle: string;
-    templateWinback: string;
-    templateWinbackBody: string;
-    templateNewArrival: string;
-    templateNewArrivalBody: string;
-    templateWeekend: string;
-    templateWeekendBody: string;
-    schedule: string;
-    audience: string;
-    audienceLapsed: string;
-    audienceAll: string;
-    audienceLoyal: string;
-    saveDraft: string;
-    send: string;
-    drafts: string;
-    noDrafts: string;
-    draftSaved: string;
-  };
   vendorExtra: {
-    navAnalytics: string;
-    navCampaigns: string;
     analyticsTitle: string;
     analyticsSubtitle: string;
     ordersTotal: string;
@@ -1976,7 +1949,6 @@ export interface Messages {
     customerTotal: string;
     byDayTitle: string;
     exportCsv: string;
-    printPdf: string;
     branchAll: string;
     creditLine: string;
     creditUsed: string;
@@ -2020,6 +1992,7 @@ export const en: Messages = {
     dismiss: "Dismiss",
     clear: "Clear",
     processing: "Processing…",
+    notAvailable: "n/a",
     of: "of",
     selected: "selected",
     perPage: "per page",
@@ -3276,8 +3249,6 @@ export const en: Messages = {
     backToSetup: "Back to Setup",
     grow: "Grow",
     growSubtitle: "How your orders are doing, and how to bring customers back.",
-    growNumbers: "Numbers",
-    growMessages: "Messages",
   },
   shiftsPage: {
     title: "Shifts",
@@ -3481,7 +3452,6 @@ export const en: Messages = {
     prepaidCallout: "Prepaid — the driver collects nothing.",
     cancelHint: "Orders can only be cancelled before pickup.",
     cancelMessage: "We'll stop looking for a driver and cancel this delivery. This cannot be undone.",
-    statements: "Monthly statements",
     statementsHint: "Download a CSV of all wallet activity for a month.",
     downloadCsv: "Download CSV",
     settingsTitle: "Settings",
@@ -3937,32 +3907,7 @@ export const en: Messages = {
     exportCsv: "Export CSV",
     refreshed: "Refreshed",
   },
-  campaigns: {
-    title: "Campaigns",
-    subtitle: "WhatsApp campaigns for your customers.",
-    pendingApproval: "Pending WhatsApp Business approval",
-    pendingBody: "Sending activates the moment the WhatsApp Business account clears. You can prepare drafts now.",
-    templatesTitle: "Templates",
-    templateWinback: "Win back lapsed customers",
-    templateWinbackBody: "A gentle nudge to customers who have not ordered in 30 days.",
-    templateNewArrival: "New arrivals",
-    templateNewArrivalBody: "Announce new products to your repeat buyers.",
-    templateWeekend: "Weekend offer",
-    templateWeekendBody: "A time-boxed weekend promotion to your full list.",
-    schedule: "Schedule",
-    audience: "Audience",
-    audienceLapsed: "Lapsed customers (30d+)",
-    audienceAll: "All customers",
-    audienceLoyal: "Loyal customers (5+ orders)",
-    saveDraft: "Save draft",
-    send: "Send",
-    drafts: "Drafts",
-    noDrafts: "No drafts yet. Pick a template to start.",
-    draftSaved: "Draft saved.",
-  },
   vendorExtra: {
-    navAnalytics: "Analytics",
-    navCampaigns: "Campaigns",
     analyticsTitle: "Analytics",
     analyticsSubtitle: "Your delivery performance and customers.",
     ordersTotal: "Orders",
@@ -3975,7 +3920,6 @@ export const en: Messages = {
     customerTotal: "Total (KWD)",
     byDayTitle: "Orders by day",
     exportCsv: "Export CSV",
-    printPdf: "Print / PDF",
     branchAll: "All branches",
     creditLine: "Credit line",
     creditUsed: "used",
@@ -4019,6 +3963,7 @@ export const ar: Messages = {
     dismiss: "إخفاء",
     clear: "مسح",
     processing: "جارٍ المعالجة…",
+    notAvailable: "n/a",
     of: "من",
     selected: "محدد",
     perPage: "لكل صفحة",
@@ -5275,8 +5220,6 @@ export const ar: Messages = {
     backToSetup: "رجوع إلى الإعداد",
     grow: "النمو",
     growSubtitle: "كيف تسير طلباتك، وكيف تُعيد العملاء إليك.",
-    growNumbers: "الأرقام",
-    growMessages: "الرسائل",
   },
   shiftsPage: {
     title: "الورديات",
@@ -5478,7 +5421,6 @@ export const ar: Messages = {
     prepaidCallout: "مدفوع مسبقاً — لا يحصّل السائق شيئاً.",
     cancelHint: "لا يمكن إلغاء الطلب إلا قبل الاستلام.",
     cancelMessage: "سنتوقف عن البحث عن سائق ونلغي هذه التوصيلة. لا يمكن التراجع عن هذا الإجراء.",
-    statements: "الكشوف الشهرية",
     statementsHint: "حمّل ملف CSV بكل حركات المحفظة لشهر معيّن.",
     downloadCsv: "تحميل CSV",
     settingsTitle: "الإعدادات",
@@ -5922,32 +5864,7 @@ export const ar: Messages = {
     exportCsv: "تصدير CSV",
     refreshed: "آخر تحديث",
   },
-  campaigns: {
-    title: "الحملات",
-    subtitle: "حملات واتساب لعملائك.",
-    pendingApproval: "بانتظار اعتماد واتساب للأعمال",
-    pendingBody: "يتفعل الإرسال فور اعتماد حساب واتساب للأعمال. يمكنك تجهيز المسودات الآن.",
-    templatesTitle: "القوالب",
-    templateWinback: "استرجاع العملاء المنقطعين",
-    templateWinbackBody: "تذكير لطيف للعملاء الذين لم يطلبوا منذ 30 يوماً.",
-    templateNewArrival: "وصل حديثاً",
-    templateNewArrivalBody: "أعلن عن منتجاتك الجديدة لعملائك الدائمين.",
-    templateWeekend: "عرض نهاية الأسبوع",
-    templateWeekendBody: "عرض محدود لنهاية الأسبوع لكامل قائمتك.",
-    schedule: "الجدولة",
-    audience: "الجمهور",
-    audienceLapsed: "عملاء منقطعون (+30 يوماً)",
-    audienceAll: "جميع العملاء",
-    audienceLoyal: "عملاء أوفياء (+5 طلبات)",
-    saveDraft: "حفظ مسودة",
-    send: "إرسال",
-    drafts: "المسودات",
-    noDrafts: "لا مسودات بعد. اختر قالباً للبدء.",
-    draftSaved: "تم حفظ المسودة.",
-  },
   vendorExtra: {
-    navAnalytics: "التحليلات",
-    navCampaigns: "الحملات",
     analyticsTitle: "التحليلات",
     analyticsSubtitle: "أداء التوصيل وعملاؤك.",
     ordersTotal: "الطلبات",
@@ -5960,7 +5877,6 @@ export const ar: Messages = {
     customerTotal: "الإجمالي (د.ك)",
     byDayTitle: "الطلبات حسب اليوم",
     exportCsv: "تصدير CSV",
-    printPdf: "طباعة / PDF",
     branchAll: "جميع الفروع",
     creditLine: "خط الائتمان",
     creditUsed: "مستخدم",
