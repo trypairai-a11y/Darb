@@ -19,6 +19,7 @@ import OrderStatusBadge from "@/components/darb/OrderStatusBadge";
 import { OrderOutcomeBanner } from "@/components/darb/OrderOutcome";
 import SlaCountdown from "@/components/darb/SlaCountdown";
 import LiveMap from "@/components/map/LiveMap";
+import { useVendorBranch } from "@/contexts/VendorBranchContext";
 import { vendorApi } from "@/lib/darbApi";
 import type { DeliveryOrder, DeliveryOrderEvent } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -51,6 +52,7 @@ export default function VendorOrderDetailPage() {
   const params = useParams<{ id: string }>();
   const orderId = params?.id;
   const queryClient = useQueryClient();
+  const { inspectVendorId } = useVendorBranch();
 
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [cancelling, setCancelling] = useState(false);
@@ -169,7 +171,9 @@ export default function VendorOrderDetailPage() {
   }
 
   const active = !TERMINAL.includes(order.status);
-  const canCancel = CANCELLABLE.includes(order.status);
+  // An inspecting admin gets GETs only (middleware/vendorScope), so neither
+  // write action is offered to them.
+  const canCancel = CANCELLABLE.includes(order.status) && !inspectVendorId;
   const hasDropoff = order.dropoffLat != null && order.dropoffLng != null;
 
   return (
@@ -324,7 +328,7 @@ export default function VendorOrderDetailPage() {
       )}
 
       {/* Request refund (delivered orders without an existing refund) */}
-      {order.status === "DELIVERED" && !refundsQuery.isLoading && !existingRefund && (
+      {order.status === "DELIVERED" && !refundsQuery.isLoading && !existingRefund && !inspectVendorId && (
         <div className="flex justify-end">
           <button
             type="button"

@@ -31,7 +31,9 @@ import { RefundError, requestRefund } from "../services/wallet/refundService";
  */
 
 const router = Router();
-router.use(authMiddleware, tenantScope, rbac("VENDOR"), vendorScope);
+// ADMIN is admitted here only so vendorScope can decide: it lets an admin
+// read a named vendor's portal and refuses everything else. See vendorScope.
+router.use(authMiddleware, tenantScope, rbac("VENDOR", "ADMIN"), vendorScope);
 
 const DELIVERY_ORDER_STATUSES = [
   "CREATED", "REJECTED", "DISPATCHING", "NO_DRIVER", "ASSIGNED",
@@ -455,13 +457,38 @@ router.get("/wallet/entries", requireVendorRole("OWNER", "FINANCE"), async (req:
       prisma.walletEntry.count({ where: { ...where, tenantId } }),
     ]);
 
+    // WalletTransaction carries orderId as a scalar, with no relation to
+    // follow, so the order numbers come from one lookup over this page's ids.
+    // Without it the client fell back to printing the raw orderId and a shop
+    // reconciling its own ledger was reading UUIDs.
+    const orderIds = [
+      ...new Set(
+        entries.map((e: any) => e.transaction?.orderId).filter((id: string | null): id is string => !!id)
+      ),
+    ];
+    const orderNumbers = new Map<string, string>();
+    if (orderIds.length > 0) {
+      const orders = await prisma.deliveryOrder.findMany({
+        where: { id: { in: orderIds }, tenantId, vendorId: vendorId! },
+        select: { id: true, orderNumber: true },
+      });
+      for (const o of orders) orderNumbers.set(o.id, o.orderNumber);
+    }
+
     const data = entries.map((e: any) => ({
       id: e.id,
       direction: e.direction,
       amountKwd: fmtKwd(e.amountKwd),
       runningBalanceKwd: fmtKwd(e.runningBalanceKwd),
       createdAt: e.createdAt,
-      transaction: e.transaction,
+      transaction: e.transaction
+        ? {
+            ...e.transaction,
+            order: e.transaction.orderId
+              ? { orderNumber: orderNumbers.get(e.transaction.orderId) ?? null }
+              : null,
+          }
+        : e.transaction,
     }));
 
     res.json(paginatedResponse(data, total, page, limit));

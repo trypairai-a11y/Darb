@@ -59,7 +59,7 @@ export default function WalletLedgerTable({
       sortable: false,
       render: (_: unknown, row: WalletEntry) => {
         const type = row.transaction?.type;
-        if (!type) return <span className="text-sand-500">—</span>;
+        if (!type) return <span className="text-sand-500">{t("common.notAvailable")}</span>;
         return (
           <span
             className={cn(
@@ -79,7 +79,7 @@ export default function WalletLedgerTable({
       sortable: false,
       render: (_: unknown, row: WalletEntry) => (
         <span dir="ltr" className="font-mono text-xs text-sand-700">
-          {row.transaction?.order?.orderNumber ?? row.transaction?.orderId ?? "—"}
+          {row.transaction?.order?.orderNumber ?? row.transaction?.orderId ?? t("common.notAvailable")}
         </span>
       ),
       exportValue: (_: unknown, row: WalletEntry) =>
@@ -95,7 +95,7 @@ export default function WalletLedgerTable({
             {formatKwd(row.amountKwd, locale)}
           </span>
         ) : (
-          <span className="text-sand-400">—</span>
+          <span className="text-sand-400">{t("common.notAvailable")}</span>
         ),
       exportValue: (_: unknown, row: WalletEntry) =>
         row.direction === "DEBIT" ? String(row.amountKwd) : "",
@@ -110,7 +110,7 @@ export default function WalletLedgerTable({
             {formatKwd(row.amountKwd, locale)}
           </span>
         ) : (
-          <span className="text-sand-400">—</span>
+          <span className="text-sand-400">{t("common.notAvailable")}</span>
         ),
       exportValue: (_: unknown, row: WalletEntry) =>
         row.direction === "CREDIT" ? String(row.amountKwd) : "",

@@ -141,7 +141,9 @@ export default function VendorWalletPage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-display text-display-sm text-sand-900">{t("darbNav.vendorWallet")}</h1>
-        <p className="text-sm text-sand-600 mt-1">{t("vendorPortal.statementsHint")}</p>
+        {/* The page subtitle described the statements section, which then
+            repeated the same sentence a screen further down. */}
+        <p className="text-sm text-sand-600 mt-1">{t("vendorPortal.walletHint")}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

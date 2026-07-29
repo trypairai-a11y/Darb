@@ -9,6 +9,7 @@ import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
 import PauseOrdersToggle from "@/components/darb/PauseOrdersToggle";
+import { useVendorBranch } from "@/contexts/VendorBranchContext";
 import { vendorApi } from "@/lib/darbApi";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDateTime } from "@/i18n/format";
@@ -22,6 +23,7 @@ export default function VendorSettingsPage() {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [connecting, setConnecting] = useState(false);
+  const { inspectVendorId } = useVendorBranch();
 
   const meQuery = useQuery({
     queryKey: ["darb", "vendor", "me"],
@@ -77,7 +79,10 @@ export default function VendorSettingsPage() {
         <p className="text-sm text-sand-600 mt-1">{t("vendorPortal.settingsSubtitle")}</p>
       </div>
 
-      {/* Pause */}
+      {/* Pause. Hidden from an inspecting admin, whose POST would be
+          refused: pausing a merchant is a staff action with its own
+          endpoint, not something to do from inside their portal. */}
+      {!inspectVendorId && (
       <section className="bg-card border border-sand-200 rounded-2xl shadow-soft p-6">
         <h2 className="font-medium text-sand-900">{t("vendorPortal.pauseSection")}</h2>
         <p className="text-xs text-sand-600 mt-1 mb-4">{t("vendorPortal.pauseHint")}</p>
@@ -89,6 +94,7 @@ export default function VendorSettingsPage() {
           }}
         />
       </section>
+      )}
 
       {/* Foodics — hidden until the Foodics partner app is approved (v1 slim-down).
           Flip to true once sandbox/production credentials exist. */}

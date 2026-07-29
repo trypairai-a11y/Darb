@@ -1409,6 +1409,7 @@ export interface Messages {
     requiresCarOnly: string;
     active: string;
     paused: string;
+    viewPortal: string;
     branches: string;
     profile: string;
     foodics: string;
@@ -1459,6 +1460,7 @@ export interface Messages {
     colDone: string;
     emptyColumn: string;
     pausedBanner: string;
+    inspecting: string;
     newOrder: string;
     newOrderTitle: string;
     newOrderSubtitle: string;
@@ -1485,6 +1487,7 @@ export interface Messages {
     cancelHint: string;
     cancelMessage: string;
     statementsHint: string;
+    walletHint: string;
     downloadCsv: string;
     settingsTitle: string;
     settingsSubtitle: string;
@@ -3377,6 +3380,7 @@ export const en: Messages = {
     requiresCarOnly: "Car-only deliveries",
     active: "Active",
     paused: "Paused",
+    viewPortal: "View their portal",
     branches: "Branches",
     profile: "Profile",
     foodics: "Foodics",
@@ -3426,7 +3430,8 @@ export const en: Messages = {
     colPickedUp: "Picked up",
     colDone: "Done today",
     emptyColumn: "Nothing here right now.",
-    pausedBanner: "Incoming orders are paused — new orders will be rejected until you resume.",
+    pausedBanner: "Incoming orders are paused. New orders will be rejected until you resume.",
+    inspecting: "You are reading {vendor}'s portal as an admin. Nothing here can be changed.",
     newOrder: "New order",
     newOrderTitle: "New delivery order",
     newOrderSubtitle: "Send a delivery to a customer — we quote the fee before you confirm.",
@@ -3453,6 +3458,7 @@ export const en: Messages = {
     cancelHint: "Orders can only be cancelled before pickup.",
     cancelMessage: "We'll stop looking for a driver and cancel this delivery. This cannot be undone.",
     statementsHint: "Download a CSV of all wallet activity for a month.",
+    walletHint: "What Darb owes you, what has moved, and the statements behind it.",
     downloadCsv: "Download CSV",
     settingsTitle: "Settings",
     settingsSubtitle: "Pause orders, POS connection and your profile.",
@@ -5346,6 +5352,7 @@ export const ar: Messages = {
     requiresCarOnly: "توصيل بالسيارة فقط",
     active: "مفعّل",
     paused: "موقوف مؤقتاً",
+    viewPortal: "عرض بوابتهم",
     branches: "الفروع",
     profile: "الملف",
     foodics: "فودكس",
@@ -5395,7 +5402,8 @@ export const ar: Messages = {
     colPickedUp: "تم الاستلام",
     colDone: "أُنجزت اليوم",
     emptyColumn: "لا يوجد شيء هنا حالياً.",
-    pausedBanner: "الطلبات الواردة موقوفة مؤقتاً — سيتم رفض الطلبات الجديدة حتى تستأنف الاستقبال.",
+    pausedBanner: "الطلبات الواردة موقوفة مؤقتاً. سيتم رفض الطلبات الجديدة حتى تستأنف الاستقبال.",
+    inspecting: "أنت تطالع بوابة {vendor} بصفة مشرف. لا يمكن تغيير أي شيء هنا.",
     newOrder: "طلب جديد",
     newOrderTitle: "طلب توصيل جديد",
     newOrderSubtitle: "أرسل توصيلة إلى عميل — نعرض رسوم التوصيل قبل التأكيد.",
@@ -5422,6 +5430,7 @@ export const ar: Messages = {
     cancelHint: "لا يمكن إلغاء الطلب إلا قبل الاستلام.",
     cancelMessage: "سنتوقف عن البحث عن سائق ونلغي هذه التوصيلة. لا يمكن التراجع عن هذا الإجراء.",
     statementsHint: "حمّل ملف CSV بكل حركات المحفظة لشهر معيّن.",
+    walletHint: "ما تستحقه من درب، وما تحرّك، وكشوف الحساب التي تقف خلفه.",
     downloadCsv: "تحميل CSV",
     settingsTitle: "الإعدادات",
     settingsSubtitle: "إيقاف الطلبات، ربط نقاط البيع، وملفك.",

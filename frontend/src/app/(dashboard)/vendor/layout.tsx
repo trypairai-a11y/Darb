@@ -5,6 +5,7 @@
 // one branch. Single-branch vendors see no extra chrome.
 import { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Eye } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { VendorBranchProvider, useVendorBranch } from "@/contexts/VendorBranchContext";
 import { vendorApi } from "@/lib/darbApi";
@@ -62,10 +63,40 @@ function BranchPills() {
   );
 }
 
+/**
+ * Says whose portal this is when an admin is reading someone else's, and that
+ * they can only read it. Without it the screen is indistinguishable from a
+ * merchant's own, which is the wrong thing for a surface where an admin might
+ * otherwise expect their clicks to land.
+ */
+function InspectBanner() {
+  const { t } = useI18n();
+  const { inspectVendorId } = useVendorBranch();
+
+  const meQuery = useQuery({
+    queryKey: ["darb", "vendor", "me"],
+    queryFn: () => vendorApi.me(),
+    enabled: !!inspectVendorId,
+    staleTime: 5 * 60_000,
+  });
+
+  if (!inspectVendorId) return null;
+
+  return (
+    <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl border border-amber-200 bg-amber-50 text-sm text-amber-800">
+      <Eye size={16} className="shrink-0" aria-hidden="true" />
+      <span dir="auto">
+        {t("vendorPortal.inspecting").replace("{vendor}", meQuery.data?.name ?? "")}
+      </span>
+    </div>
+  );
+}
+
 export default function VendorLayout({ children }: { children: ReactNode }) {
   return (
     <VendorBranchProvider>
       <div className="space-y-4">
+        <InspectBanner />
         <BranchPills />
         {children}
       </div>

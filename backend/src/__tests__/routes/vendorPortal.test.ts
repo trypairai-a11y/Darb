@@ -348,6 +348,11 @@ describe("Vendor portal routes", () => {
         },
       ]);
       prisma.walletEntry.count.mockResolvedValueOnce(1);
+      // WalletTransaction has no order relation, so the route resolves the
+      // numbers itself. Without this the ledger prints raw UUIDs.
+      prisma.deliveryOrder.findMany.mockResolvedValueOnce([
+        { id: "o-1", orderNumber: "DRB-DWPH-0130" },
+      ]);
 
       const res = await request(makeApp()).get("/api/vendor/wallet/entries?month=2026-07");
 
@@ -355,6 +360,14 @@ describe("Vendor portal routes", () => {
       expect(res.body.data[0]).toMatchObject({
         amountKwd: "4.000",
         runningBalanceKwd: "4.000",
+      });
+      // The merchant sees the order number they know, not the id.
+      expect(res.body.data[0].transaction.order).toEqual({ orderNumber: "DRB-DWPH-0130" });
+      // Scoped to this vendor: an id from someone else's ledger resolves to
+      // nothing rather than leaking a number across tenants.
+      expect(prisma.deliveryOrder.findMany).toHaveBeenCalledWith({
+        where: { id: { in: ["o-1"] }, tenantId: "t-1", vendorId: "v-1" },
+        select: { id: true, orderNumber: true },
       });
       const where = prisma.walletEntry.findMany.mock.calls[0][0].where;
       expect(where).toMatchObject({ tenantId: "t-1", accountId: "acc-1" });

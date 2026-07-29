@@ -63,8 +63,28 @@ export function unwrapList<T>(res: T[] | Paginated<T> | { data: T[] } | null | u
   return [];
 }
 
+/**
+ * Admin inspection of a merchant portal (see backend middleware/vendorScope).
+ *
+ * An ADMIN has no vendorId in their token, so every /api/vendor/* call has to
+ * name the vendor it means. Rather than thread that through ~15 call sites and
+ * hope nobody forgets one, it is set once by VendorBranchProvider and appended
+ * here. Null for a vendor's own session, where the id comes from the JWT and
+ * the client must not be able to override it.
+ */
+let inspectVendorId: string | null = null;
+export function setInspectVendorId(id: string | null): void {
+  inspectVendorId = id;
+}
+
 async function get<T>(url: string, params?: Params): Promise<T> {
-  const { data } = await api.get<T>(url, { params: clean(params) });
+  // The trailing slash matters: /api/vendors is the staff CRUD surface and is
+  // scoped by its own route params, not by this.
+  const scoped =
+    inspectVendorId && url.startsWith("/api/vendor/")
+      ? { ...params, vendorId: inspectVendorId }
+      : params;
+  const { data } = await api.get<T>(url, { params: clean(scoped) });
   return data;
 }
 

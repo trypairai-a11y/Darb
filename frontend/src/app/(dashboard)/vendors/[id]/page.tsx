@@ -2,9 +2,10 @@
 // Darb 2.0 — /vendors/[id]: vendor detail with tabs
 // Profile / Branches (CRUD + map pin picker) / Foodics / Wallet / Users.
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, MapPin, Plus, Pencil, Trash2 } from "lucide-react";
+import { Eye, ExternalLink, MapPin, Plus, Pencil, Trash2 } from "lucide-react";
 import DataTable from "@/components/shared/DataTable";
 import SlidePanel from "@/components/shared/SlidePanel";
 import ConfirmModal from "@/components/shared/ConfirmModal";
@@ -22,6 +23,7 @@ import type {
   VendorUser,
   WalletEntry,
 } from "@/types/darb";
+import { useRole } from "@/hooks/useRole";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd, formatDateTime } from "@/i18n/format";
 import { cn } from "@/lib/cn";
@@ -44,6 +46,7 @@ interface BranchFormState {
 }
 
 export default function VendorDetailPage() {
+  const { isAdmin } = useRole();
   const params = useParams<{ id: string }>();
   const vendorId = params?.id;
   const router = useRouter();
@@ -121,6 +124,20 @@ export default function VendorDetailPage() {
               : t("status.inactive")}
         </span>
       </div>
+
+      {/* The way into the merchant's own portal, read-only. Support answers
+          questions about a screen only the merchant can see, so being able to
+          look at exactly what they are looking at beats reconstructing it from
+          staff tables. ADMIN only, which is what the server admits. */}
+      {isAdmin && (
+        <Link
+          href={`/vendor?vendorId=${vendor.id}`}
+          className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors"
+        >
+          <Eye size={13} aria-hidden="true" />
+          {t("vendorsPage.viewPortal")}
+        </Link>
+      )}
 
       {/* Tab bar */}
       <div className="inline-flex p-1 rounded-pill bg-sand-200 flex-wrap">

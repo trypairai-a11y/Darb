@@ -14,6 +14,7 @@ import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import OrderStatusBadge from "@/components/darb/OrderStatusBadge";
 import SlaCountdown from "@/components/darb/SlaCountdown";
+import { useVendorBranch } from "@/contexts/VendorBranchContext";
 import { useDarbEvents } from "@/hooks/useDarbEvents";
 import { vendorApi, unwrapList } from "@/lib/darbApi";
 import type {
@@ -126,6 +127,7 @@ function OrderCard({ order }: { order: DeliveryOrder }) {
 export default function VendorBoardPage() {
   const { t, locale } = useI18n();
   const queryClient = useQueryClient();
+  const { inspectVendorId } = useVendorBranch();
 
   const meQuery = useQuery({
     queryKey: ["darb", "vendor", "me"],
@@ -245,13 +247,18 @@ export default function VendorBoardPage() {
             />
             {connected ? t("vendorPortal.live") : t("vendorPortal.reconnecting")}
           </span>
-          <Link
-            href="/vendor/orders/new"
-            className="inline-flex items-center gap-1.5 px-4 h-10 rounded-pill bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors"
-          >
-            <PlusCircle size={15} aria-hidden="true" />
-            {t("vendorPortal.newOrder")}
-          </Link>
+          {/* An inspecting admin gets GETs only, so the server would refuse
+              this. Hidden rather than disabled: there is nothing they could do
+              to earn it. */}
+          {!inspectVendorId && (
+            <Link
+              href="/vendor/orders/new"
+              className="inline-flex items-center gap-1.5 px-4 h-10 rounded-pill bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors"
+            >
+              <PlusCircle size={15} aria-hidden="true" />
+              {t("vendorPortal.newOrder")}
+            </Link>
+          )}
         </div>
       </div>
 
