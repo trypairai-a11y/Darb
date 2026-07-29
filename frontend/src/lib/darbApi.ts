@@ -342,7 +342,18 @@ export const vendorApi = {
     dropoff: { lat?: number; lng?: number; zoneId?: string };
     orderTotalKwd: number | string;
     paymentMethod: string;
+    /** ISO timestamp for a scheduled pickup; omit to dispatch immediately. */
+    scheduledAt?: string;
   }) => post<DeliveryOrder>("/api/vendor/orders", body),
+  /** This vendor's orders as a workbook, honouring the branch/date filters. */
+  ordersExportUrl: (params: { branchId?: string | null; from?: string; to?: string }) => {
+    const q = new URLSearchParams();
+    if (params.branchId) q.set("branchId", params.branchId);
+    if (params.from) q.set("from", params.from);
+    if (params.to) q.set("to", params.to);
+    const qs = q.toString();
+    return `/api/vendor/orders/export.xlsx${qs ? `?${qs}` : ""}`;
+  },
   // reason is required by the backend schema — the caller must collect one.
   cancelOrder: (id: string, reason: string) =>
     post<DeliveryOrder>(`/api/vendor/orders/${id}/cancel`, { reason }),

@@ -1462,6 +1462,17 @@ export interface Messages {
     colPickedUp: string;
     colDone: string;
     colArrived: string;
+    timing: string;
+    timingNow: string;
+    timingScheduled: string;
+    pickupAt: string;
+    pickupPast: string;
+    exportOrders: string;
+    topUp: string;
+    topUpHow: string;
+    topUpReference: string;
+    creditRemaining: string;
+    creditSuspended: string;
     tabLive: string;
     tabDelivered: string;
     waitingSince: string;
@@ -3443,6 +3454,17 @@ export const en: Messages = {
     colPickedUp: "Picked up",
     colDone: "Done today",
     colArrived: "Arrived at shop",
+    timing: "When to collect",
+    timingNow: "Deliver now",
+    timingScheduled: "Schedule",
+    pickupAt: "Pickup date and time",
+    pickupPast: "Pick a time in the future.",
+    exportOrders: "Export orders",
+    topUp: "Top up",
+    topUpHow: "Transfer to Darb and we credit your wallet the same day. Use your shop code as the transfer reference so we can match it.",
+    topUpReference: "Your transfer reference",
+    creditRemaining: "left before new orders are refused",
+    creditSuspended: "Your credit limit is used up, so new orders are being refused. Top up to start again.",
     tabLive: "Live",
     tabDelivered: "Delivered",
     waitingSince: "waiting",
@@ -5425,6 +5447,17 @@ export const ar: Messages = {
     colPickedUp: "تم الاستلام",
     colDone: "أُنجزت اليوم",
     colArrived: "وصل إلى المحل",
+    timing: "موعد الاستلام",
+    timingNow: "توصيل الآن",
+    timingScheduled: "جدولة",
+    pickupAt: "تاريخ ووقت الاستلام",
+    pickupPast: "اختر وقتاً في المستقبل.",
+    exportOrders: "تصدير الطلبات",
+    topUp: "شحن الرصيد",
+    topUpHow: "حوّل المبلغ إلى درب ونضيفه إلى محفظتك في نفس اليوم. استخدم رمز متجرك كمرجع للتحويل حتى نتمكن من مطابقته.",
+    topUpReference: "مرجع التحويل الخاص بك",
+    creditRemaining: "المتبقي قبل رفض الطلبات الجديدة",
+    creditSuspended: "استُهلك حد الائتمان، لذلك تُرفض الطلبات الجديدة. اشحن الرصيد للمتابعة.",
     tabLive: "الجارية",
     tabDelivered: "المُسلّمة",
     waitingSince: "بالانتظار",

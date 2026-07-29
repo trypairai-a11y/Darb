@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { z } from "zod";
+import ExcelJS from "exceljs";
 import { prisma } from "../config";
 import { trackingUrl } from "../services/customerMessagingService";
 import { authMiddleware } from "../middleware/auth";
@@ -118,6 +119,10 @@ const vendorCreateOrderSchema = z.object({
     lng: z.number().gte(-180).lte(180).optional(),
     zoneId: z.string().min(1).optional(),
   }),
+  // Revision 8 (#4): null or absent means deliver now. A future timestamp
+  // parks the order in CREATED until the sweep is close enough to dispatch it,
+  // which orderService already implements; the portal simply never offered it.
+  scheduledAt: z.string().datetime({ offset: true }).optional().nullable(),
   metadata: z.record(z.unknown()).optional(),
 });
 
@@ -227,6 +232,100 @@ router.get("/orders", async (req: Request, res: Response) => {
 
 /**
  * @swagger
+ * /api/vendor/orders/export.xlsx:
+ *   get:
+ *     tags: [Vendor Portal]
+ *     summary: This vendor's orders as a workbook
+ *     description: >
+ *       Revision 8 (#4). The portal could only ever show orders a page at a
+ *       time on screen; a shop reconciling a week of deliveries against its own
+ *       books needs the same fields in something it can sort and total.
+ *       Honours the same branch, status and date filters as the list.
+ */
+router.get("/orders/export.xlsx", async (req: Request, res: Response) => {
+  try {
+    const { tenantId, vendorId } = req.user!;
+    const where: any = { tenantId, vendorId: vendorId! };
+    const branchId = scopedBranchId(req);
+    if (branchId) where.branchId = branchId;
+
+    const from = typeof req.query.from === "string" ? new Date(req.query.from) : null;
+    const to = typeof req.query.to === "string" ? new Date(`${req.query.to}T23:59:59.999`) : null;
+    if (from || to) {
+      where.createdAt = { ...(from ? { gte: from } : {}), ...(to ? { lte: to } : {}) };
+    }
+
+    const orders = await prisma.deliveryOrder.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: 5000,
+      include: {
+        branch: { select: { name: true } },
+        driver: { select: { name: true } },
+        dropoffZone: { select: { name: true } },
+      },
+    });
+
+    const wb = new ExcelJS.Workbook();
+    const sheet = wb.addWorksheet("Orders");
+    sheet.columns = [
+      { header: "Order", key: "orderNumber", width: 20 },
+      { header: "Created", key: "createdAt", width: 20 },
+      { header: "Scheduled for", key: "scheduledAt", width: 20 },
+      { header: "Branch", key: "branch", width: 26 },
+      { header: "Status", key: "status", width: 14 },
+      { header: "Customer", key: "customerName", width: 22 },
+      { header: "Phone", key: "customerPhone", width: 16 },
+      { header: "Address", key: "dropoffAddress", width: 40 },
+      { header: "Dropoff zone", key: "zone", width: 18 },
+      { header: "Payment", key: "paymentMethod", width: 12 },
+      { header: "Order total (KD)", key: "orderTotalKwd", width: 16 },
+      { header: "Delivery fee (KD)", key: "deliveryFeeKwd", width: 16 },
+      { header: "Driver", key: "driver", width: 22 },
+      { header: "Delivered", key: "deliveredAt", width: 20 },
+    ];
+    sheet.getRow(1).font = { bold: true };
+
+    const stamp = (d: Date | null | undefined) =>
+      d ? new Date(d).toISOString().replace("T", " ").slice(0, 16) : "";
+
+    for (const o of orders) {
+      sheet.addRow({
+        orderNumber: o.orderNumber,
+        createdAt: stamp(o.createdAt),
+        scheduledAt: stamp(o.scheduledAt),
+        branch: o.branch?.name ?? "",
+        status: o.status,
+        customerName: o.customerName ?? "",
+        customerPhone: o.customerPhone ?? "",
+        dropoffAddress: o.dropoffAddress ?? "",
+        zone: o.dropoffZone?.name ?? "",
+        paymentMethod: o.paymentMethod,
+        orderTotalKwd: Number(o.orderTotalKwd ?? 0),
+        deliveryFeeKwd: Number(o.deliveryFeeKwd ?? 0),
+        driver: o.driver?.name ?? "",
+        deliveredAt: stamp(o.deliveredAt),
+      });
+    }
+    // Money reads as money, not as a long float.
+    for (const key of ["orderTotalKwd", "deliveryFeeKwd"]) {
+      sheet.getColumn(key).numFmt = "0.000";
+    }
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", 'attachment; filename="darb-orders.xlsx"');
+    await wb.xlsx.write(res);
+    res.end();
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
  * /api/vendor/orders/{id}:
  *   get:
  *     tags: [Vendor Portal]
@@ -293,6 +392,7 @@ router.post(
         customerPhone: body.customerPhone,
         dropoffAddress: body.dropoffAddress,
         dropoff: body.dropoff,
+        scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : undefined,
         metadata: body.metadata,
         actor: { type: "VENDOR", id: req.user!.userId, name: req.user!.email },
       });
@@ -427,6 +527,21 @@ router.get("/wallet", requireVendorRole("OWNER", "FINANCE"), async (req: Request
       accountId: account?.id ?? null,
       creditCapKwd: vendor?.creditCapKwd ? fmtKwd(vendor.creditCapKwd) : null,
       creditUsedKwd: debt ? fmtKwd(debt) : "0.000",
+      // Revision 8 (#5). The page showed how much credit was used but not how
+      // much was left, which is the number that decides whether the next order
+      // is accepted: pricingService rejects with VENDOR_CREDIT_CAP once the
+      // debt passes the cap, so this is the real headroom before new orders
+      // stop being taken.
+      creditRemainingKwd: vendor?.creditCapKwd
+        ? fmtKwd(
+            vendor.creditCapKwd.minus(debt ?? 0).lessThan(0)
+              ? 0
+              : vendor.creditCapKwd.minus(debt ?? 0),
+          )
+        : null,
+      creditSuspended: Boolean(
+        vendor?.creditCapKwd && debt && debt.greaterThanOrEqualTo(vendor.creditCapKwd),
+      ),
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

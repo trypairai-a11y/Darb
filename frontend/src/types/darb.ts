@@ -555,6 +555,10 @@ export interface VendorWallet {
   // PRD §11 credit line (null cap = no cap configured).
   creditCapKwd?: Kwd | null;
   creditUsedKwd?: Kwd;
+  /** Headroom before new orders are refused. Null when no cap is set. */
+  creditRemainingKwd?: Kwd | null;
+  /** True once the debt has reached the cap and orders are being rejected. */
+  creditSuspended?: boolean;
 }
 
 // ── Darb 2.0 PRD build ────────────────────────────────────────────────────

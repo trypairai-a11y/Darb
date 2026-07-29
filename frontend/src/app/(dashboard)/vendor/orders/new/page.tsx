@@ -7,13 +7,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BadgeCheck, Loader2, TriangleAlert } from "lucide-react";
-import LiveMap from "@/components/map/LiveMap";
-import type { OrderMarker } from "@/components/map/LiveMap";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
 import { vendorApi, unwrapList } from "@/lib/darbApi";
-import { pointInZone, zoneCentroid } from "@/lib/geo";
+import { zoneCentroid } from "@/lib/geo";
 import type { DeliveryZone, ZoneQuote } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd } from "@/i18n/format";
@@ -50,10 +48,13 @@ export default function VendorNewOrderPage() {
   const [customerPhone, setCustomerPhone] = useState("");
   const [zoneId, setZoneId] = useState("");
   const [address, setAddress] = useState("");
-  const [pin, setPin] = useState<{ lat: number; lng: number } | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "PREPAID">("COD");
   const [orderTotal, setOrderTotal] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // Revision 8 (#4). orderService has always understood a future scheduledAt;
+  // the portal simply never offered a way to set one.
+  const [timing, setTiming] = useState<"NOW" | "SCHEDULED">("NOW");
+  const [pickupAt, setPickupAt] = useState("");
 
   const [quote, setQuote] = useState<ZoneQuote | null>(null);
   const [quoting, setQuoting] = useState(false);
@@ -66,14 +67,15 @@ export default function VendorNewOrderPage() {
   const selectedZone = zones.find((z) => z.id === zoneId) ?? null;
 
   // Effective dropoff: explicit pin first, else the selected zone's centroid.
+  // Without the map there is no pin: the dropoff is the chosen zone's centre,
+  // and the customer's written address rides along with the order.
   const dropoff = useMemo<{ lat: number; lng: number } | null>(() => {
-    if (pin) return pin;
     if (selectedZone) {
       const c = zoneCentroid(selectedZone);
       if (c) return { lat: c[0], lng: c[1] };
     }
     return null;
-  }, [pin, selectedZone]);
+  }, [selectedZone]);
 
   // Debounced fee quote.
   useEffect(() => {
@@ -96,34 +98,16 @@ export default function VendorNewOrderPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [branchId, dropoff?.lat, dropoff?.lng]);
 
-  function handleMapClick(lat: number, lng: number) {
-    setPin({ lat, lng });
-    // Keep the zone select in sync with the pin when it falls inside a zone.
-    const hit = zones.find((z) => pointInZone(lat, lng, z));
-    if (hit) setZoneId(hit.id);
-  }
-
   const selectedBranch = branches.find((b) => b.id === branchId) ?? null;
-
-  const mapOrders = useMemo<OrderMarker[]>(() => {
-    const pickup =
-      selectedBranch && selectedBranch.lat != null && selectedBranch.lng != null
-        ? {
-            lat: Number(selectedBranch.lat),
-            lng: Number(selectedBranch.lng),
-            label: selectedBranch.name,
-          }
-        : null;
-    const drop = pin ? { ...pin, label: t("vendorPortal.zone") } : null;
-    if (!pickup && !drop) return [];
-    return [{ id: "new-order", pickup, dropoff: drop, showLine: !!(pickup && drop) }];
-  }, [selectedBranch, pin, t]);
 
   const zoneName = (z: ZoneQuote["pickupZone"]) =>
     (locale === "ar" && z?.nameAr ? z.nameAr : z?.name) ?? t("common.notAvailable");
 
   const totalValid = orderTotal !== "" && Number.isFinite(Number(orderTotal)) && Number(orderTotal) >= 0;
+  // A scheduled order with no time is not scheduled, it is just late.
+  const scheduleValid = timing === "NOW" || (pickupAt !== "" && new Date(pickupAt) > new Date());
   const canSubmit =
+    scheduleValid &&
     !!branchId &&
     customerPhone.trim() !== "" &&
     !!dropoff &&
@@ -144,6 +128,7 @@ export default function VendorNewOrderPage() {
         dropoff: { lat: dropoff.lat, lng: dropoff.lng },
         orderTotalKwd: orderTotal,
         paymentMethod,
+        scheduledAt: timing === "SCHEDULED" ? new Date(pickupAt).toISOString() : undefined,
       });
       toast.success(t("vendorPortal.orderPlaced"));
       await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", "orders"] });
@@ -170,13 +155,13 @@ export default function VendorNewOrderPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6 max-w-2xl">
       <div>
         <h1 className="font-display text-display-sm text-sand-900">{t("vendorPortal.newOrderTitle")}</h1>
         <p className="text-sm text-sand-600 mt-1">{t("vendorPortal.newOrderSubtitle")}</p>
       </div>
 
-      <form onSubmit={submit} className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+      <form onSubmit={submit} className="grid grid-cols-1 gap-6 items-start">
         {/* ── Form fields ── */}
         <div className="bg-card border border-sand-200 rounded-2xl shadow-soft p-6 space-y-4">
           {branches.length > 1 && (
@@ -231,7 +216,6 @@ export default function VendorNewOrderPage() {
               value={zoneId}
               onChange={(e) => {
                 setZoneId(e.target.value);
-                setPin(null); // zone choice replaces a previous pin
               }}
               className={inputClass}
             >
@@ -299,6 +283,45 @@ export default function VendorNewOrderPage() {
             </div>
           </div>
 
+          {/* When to collect */}
+          <div>
+            <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
+              {t("vendorPortal.timing")}
+            </label>
+            <div className="flex rounded-xl border border-sand-300 overflow-hidden h-10">
+              {(["NOW", "SCHEDULED"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setTiming(m)}
+                  className={cn(
+                    "flex-1 text-sm font-medium transition-colors",
+                    timing === m ? "bg-primary text-white" : "bg-white text-sand-700 hover:bg-sand-100"
+                  )}
+                >
+                  {m === "NOW" ? t("vendorPortal.timingNow") : t("vendorPortal.timingScheduled")}
+                </button>
+              ))}
+            </div>
+            {timing === "SCHEDULED" && (
+              <div className="mt-3">
+                <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
+                  {t("vendorPortal.pickupAt")} *
+                </label>
+                <input
+                  type="datetime-local"
+                  value={pickupAt}
+                  onChange={(e) => setPickupAt(e.target.value)}
+                  className={inputClass}
+                  required
+                />
+                {pickupAt !== "" && new Date(pickupAt) <= new Date() && (
+                  <p className="mt-1.5 text-xs text-red-600">{t("vendorPortal.pickupPast")}</p>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Quote banner */}
           {(quoting || quote) && (
             <div
@@ -347,30 +370,6 @@ export default function VendorNewOrderPage() {
           </button>
         </div>
 
-        {/* ── Pin-drop map ── */}
-        <div className="bg-card border border-sand-200 rounded-2xl shadow-soft overflow-hidden">
-          <div className="px-5 py-3 border-b border-sand-200">
-            <p className="text-xs text-sand-600">{t("vendorPortal.mapPinHint")}</p>
-          </div>
-          <LiveMap
-            height="440px"
-            zones={zones}
-            zoneFillOpacity={0.08}
-            selectedZoneId={zoneId || null}
-            orders={mapOrders}
-            onMapClick={handleMapClick}
-            fitBounds={
-              pin
-                ? [[pin.lat, pin.lng]]
-                : selectedZone
-                  ? (() => {
-                      const c = zoneCentroid(selectedZone);
-                      return c ? [c] : null;
-                    })()
-                  : null
-            }
-          />
-        </div>
       </form>
     </div>
   );

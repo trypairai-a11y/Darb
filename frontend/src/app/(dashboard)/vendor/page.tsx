@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ClipboardList, Phone, PlusCircle, Wallet } from "lucide-react";
+import { ClipboardList, Download, Phone, PlusCircle, Wallet } from "lucide-react";
 import StatCard from "@/components/shared/StatCard";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
@@ -310,6 +310,20 @@ export default function VendorBoardPage() {
           {/* An inspecting admin gets GETs only, so the server would refuse
               this. Hidden rather than disabled: there is nothing they could do
               to earn it. */}
+          {/* Revision 8 (#4). The board shows a page at a time; a shop
+              reconciling a week against its own books needs the lot. Opens the
+              workbook endpoint directly, so the browser handles the download
+              and no blob is assembled in memory. */}
+          <a
+            href={vendorApi.ordersExportUrl({
+              branchId,
+              ...(inspectVendorId ? {} : {}),
+            })}
+            className="inline-flex items-center gap-1.5 px-4 h-10 rounded-pill bg-sand-100 text-sand-800 text-sm font-medium hover:bg-sand-200 transition-colors"
+          >
+            <Download size={15} aria-hidden="true" />
+            {t("vendorPortal.exportOrders")}
+          </a>
           {!inspectVendorId && (
             <Link
               href="/vendor/orders/new"

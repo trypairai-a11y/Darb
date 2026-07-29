@@ -330,6 +330,10 @@ describe("Vendor portal routes", () => {
         // PRD §11 credit line fields (no vendor row mocked ⇒ no cap).
         creditCapKwd: null,
         creditUsedKwd: "0.000",
+        // Revision 8 (#5): headroom and the suspension flag. Both null/false
+        // with no cap configured, which is the "no credit line" case.
+        creditRemainingKwd: null,
+        creditSuspended: false,
       });
       expect(prisma.walletAccount.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({

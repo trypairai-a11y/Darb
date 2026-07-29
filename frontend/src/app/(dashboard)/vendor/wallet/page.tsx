@@ -12,7 +12,8 @@
 // trust. Only the server's rows remain, and each carries its own CSV.
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CreditCard, Download, Loader2, Wallet } from "lucide-react";
+import { CreditCard, Download, Loader2, Plus, Wallet } from "lucide-react";
+import ConfirmModal from "@/components/shared/ConfirmModal";
 import StatCard from "@/components/shared/StatCard";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
@@ -26,6 +27,7 @@ import type { RefundRow, VendorStatementRow, WalletEntry } from "@/types/darb";
 import { useVendorBranch } from "@/contexts/VendorBranchContext";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDate, formatKwd } from "@/i18n/format";
+import { cn } from "@/lib/cn";
 
 export default function VendorWalletPage() {
   const { t, locale } = useI18n();
@@ -34,6 +36,13 @@ export default function VendorWalletPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(25);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [topUpOpen, setTopUpOpen] = useState(false);
+
+  const meQuery = useQuery({
+    queryKey: ["darb", "vendor", "me"],
+    queryFn: () => vendorApi.me(),
+    staleTime: 60_000,
+  });
 
   const walletQuery = useQuery({
     queryKey: ["darb", "vendor", "wallet"],
@@ -131,6 +140,9 @@ export default function VendorWalletPage() {
       ? Math.min(1, Math.max(0, creditUsed / Number(creditCap)))
       : 0;
 
+  const creditRemaining = walletQuery.data?.creditRemainingKwd;
+  const creditSuspended = walletQuery.data?.creditSuspended ?? false;
+
   const refunds = refundsQuery.data ?? [];
   const statements = statementsQuery.data ?? [];
 
@@ -143,12 +155,38 @@ export default function VendorWalletPage() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
       <div>
         <h1 className="font-display text-display-sm text-sand-900">{t("darbNav.vendorWallet")}</h1>
         {/* The page subtitle described the statements section, which then
             repeated the same sentence a screen further down. */}
         <p className="text-sm text-sand-600 mt-1">{t("vendorPortal.walletHint")}</p>
       </div>
+      <button
+        type="button"
+        onClick={() => setTopUpOpen(true)}
+        className="inline-flex items-center gap-1.5 px-4 h-10 rounded-pill bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors self-start"
+      >
+        <Plus size={15} aria-hidden="true" />
+        {t("vendorPortal.topUp")}
+      </button>
+      </div>
+
+      {/* Revision 8 (#5). The cap is not decoration: pricingService refuses new
+          orders with VENDOR_CREDIT_CAP once the debt reaches it, so a shop that
+          is close needs telling before deliveries stop, not after. */}
+      {creditSuspended && (
+        <div className="flex items-center justify-between gap-3 flex-wrap px-4 py-3 rounded-xl border border-red-200 bg-red-50 text-sm text-red-700">
+          <span>{t("vendorPortal.creditSuspended")}</span>
+          <button
+            type="button"
+            onClick={() => setTopUpOpen(true)}
+            className="font-medium underline underline-offset-2 hover:no-underline"
+          >
+            {t("vendorPortal.topUp")}
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
@@ -181,10 +219,21 @@ export default function VendorWalletPage() {
                   aria-valuemax={100}
                 >
                   <div
-                    className="h-full rounded-pill bg-navy-700"
+                    className={cn(
+                      "h-full rounded-pill",
+                      creditRatio >= 1 ? "bg-red-600" : creditRatio >= 0.8 ? "bg-amber-500" : "bg-navy-700"
+                    )}
                     style={{ width: `${Math.round(creditRatio * 100)}%` }}
                   />
                 </div>
+                {creditRemaining != null && (
+                  <p className="mt-2 text-xs text-sand-600">
+                    <span dir="ltr" className="tabular-nums font-medium text-sand-900">
+                      {formatKwd(creditRemaining, locale)}
+                    </span>{" "}
+                    {t("vendorPortal.creditRemaining")}
+                  </p>
+                )}
               </div>
               <div className="h-9 w-9 shrink-0 rounded-pill bg-sand-100 flex items-center justify-center text-sand-700">
                 <CreditCard size={16} aria-hidden="true" />
@@ -245,6 +294,23 @@ export default function VendorWalletPage() {
           </ul>
         )}
       </section>
+
+      <ConfirmModal
+        open={topUpOpen}
+        title={t("vendorPortal.topUp")}
+        message={t("vendorPortal.topUpHow")}
+        variant="default"
+        confirmLabel={t("common.close")}
+        onConfirm={() => setTopUpOpen(false)}
+        onCancel={() => setTopUpOpen(false)}
+      >
+        <div className="rounded-xl bg-sand-100 p-4 text-sm space-y-2">
+          <p className="text-sand-700">{t("vendorPortal.topUpReference")}</p>
+          <p dir="ltr" className="font-mono text-sand-900">
+            {meQuery.data?.code ?? ""}
+          </p>
+        </div>
+      </ConfirmModal>
 
       {/* Statements. One section, server-issued periods, each with its own CSV
           of the ledger entries that fall inside it. */}
