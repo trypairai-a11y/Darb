@@ -64,6 +64,7 @@ import deliveryPlansRouter from "./routes/deliveryPlans";
 import vendorsRouter from "./routes/vendors";
 import vendorPortalRouter from "./routes/vendorPortal";
 import deliveryOrdersRouter from "./routes/deliveryOrders";
+import { opportunisticSweepMiddleware } from "./services/opportunisticSweep";
 import walletsRouter from "./routes/wallets";
 import incidentsRouter from "./routes/incidents";
 import dispatchMonitorRouter from "./routes/dispatchMonitor";
@@ -308,6 +309,15 @@ app.use("/api/fleets", fleetsRouter);
 app.use("/api/fleet", fleetPortalRouter);
 app.use("/api/cockpit", cockpitRouter);
 app.use("/api/vendor", vendorPortalRouter);
+// Traffic-driven dispatch sweep. Vercel Hobby will only schedule a cron
+// once a day, so between 03:00 runs nothing expires offers or returns
+// NO_DRIVER orders to dispatch. Mounted on the two surfaces the ops
+// console actually polls, after auth, so a logged-in operator watching the
+// board keeps the queue moving. Never blocks the response; off unless
+// OPPORTUNISTIC_SWEEP=true. A real minute-level ticker still belongs on
+// top of this — see .github/workflows/dispatch-ticker.yml.
+app.use("/api/delivery-orders", opportunisticSweepMiddleware);
+app.use("/api/dispatch", opportunisticSweepMiddleware);
 app.use("/api/delivery-orders", deliveryOrdersRouter);
 app.use("/api/wallets", walletsRouter);
 app.use("/api/incidents", incidentsRouter);
