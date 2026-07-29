@@ -1,10 +1,24 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 
 import { landingForRole } from "@/lib/roleLanding";
+
+// Each persona handle lands its audience on a surface (middleware.ts), but the
+// login form sat in front of all of them saying the same thing, so a merchant
+// tapping darb-merchant met a sign-in screen indistinguishable from the staff
+// one and had no way to tell they were in the right place. Naming the portal
+// costs one line and changes no behaviour: where you go after signing in is
+// still decided by your role, not by the door you came through.
+//
+// darb-hq is absent on purpose. It is the staff handle and its audience is
+// everyone, so there is no one portal to name.
+const PORTAL_BY_HOST: Record<string, string> = {
+  "darb-merchant.vercel.app": "Merchant portal",
+  "darb-fleet.vercel.app": "Fleet portal",
+};
 
 export default function LoginPage() {
   const { login, demoLogin } = useAuth();
@@ -15,6 +29,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<"email" | "phone">("email");
   const [phone, setPhone] = useState("");
+  // Read after mount: the server has no hostname, and filling this in during
+  // render would be a hydration mismatch on every handle.
+  const [portal, setPortal] = useState<string | null>(null);
+  useEffect(() => {
+    setPortal(PORTAL_BY_HOST[window.location.hostname] ?? null);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,7 +115,9 @@ export default function LoginPage() {
 
           <div className="mb-8">
             <h2 className="font-display text-display-sm text-sand-900 mb-2">Welcome back</h2>
-            <p className="text-sm text-sand-700">Sign in to Darb.</p>
+            <p className="text-sm text-sand-700">
+              {portal ? `Sign in to Darb. ${portal}.` : "Sign in to Darb."}
+            </p>
           </div>
 
           <div className="inline-flex p-1 rounded-pill bg-sand-200 mb-6">
