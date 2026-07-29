@@ -1,0 +1,1 @@
+ALTER TYPE "DeliveryOrderStatus" ADD VALUE IF NOT EXISTS 'ARRIVED';

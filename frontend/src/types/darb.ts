@@ -12,6 +12,7 @@ export type DeliveryOrderStatus =
   | "DISPATCHING"
   | "NO_DRIVER"
   | "ASSIGNED"
+  | "ARRIVED"
   | "PICKED_UP"
   | "DELIVERED"
   | "FAILED"
@@ -196,6 +197,8 @@ export interface DeliveryOrder {
    * the detail endpoints only, and null until PUBLIC_TRACKING_BASE_URL is set.
    */
   trackingUrl?: string | null;
+  /** Revision 8 (#3): when the courier reached the shop. */
+  arrivedAt?: string | null;
   source: DeliveryOrderSource;
   foodicsOrderId?: string | null;
   vendorId: string;

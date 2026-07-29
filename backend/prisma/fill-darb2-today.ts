@@ -26,6 +26,10 @@ const prisma = new PrismaClient({
 });
 
 const REF_PREFIX = "FILL-";
+// Unique per run. The first version numbered refs from 1 each time, so a
+// second run collided with the first on externalRef and createMany's
+// skipDuplicates silently dropped every single row while reporting success.
+const RUN_ID = randomBytes(3).toString("hex");
 
 const FIRST = ["Ahmad", "Yousef", "Fahad", "Noura", "Dana", "Hessa", "Abdullah", "Bader",
                "Maryam", "Faisal", "Latifa", "Salem", "Reem", "Khaled", "Shaikha"];
@@ -87,11 +91,24 @@ async function main() {
     throw new Error("Need active merchants, drivers and zones.");
   }
 
-  // Replace any previous fill for today rather than stacking on it.
-  const removed = await prisma.deliveryOrder.deleteMany({
-    where: { tenantId: tid, externalRef: { startsWith: REF_PREFIX }, createdAt: { gte: kuwaitDayStart() } },
+  // Top up rather than replace. Deleting was wrong twice over: the demo
+  // courier service walks live orders through to delivered within minutes, so
+  // a re-run is nearly always "the board has gone quiet again, put work back
+  // on it"; and once the dispatch engine has attached offers to an order, the
+  // delete fails on a foreign key anyway. Counting what is already live and
+  // creating only the shortfall does the intended job and touches nothing that
+  // already exists.
+  const liveNow = await prisma.deliveryOrder.groupBy({
+    by: ["status", "vendorId"],
+    where: {
+      tenantId: tid,
+      createdAt: { gte: kuwaitDayStart() },
+      status: { in: ["DISPATCHING", "ASSIGNED", "ARRIVED", "PICKED_UP"] },
+    },
+    _count: true,
   });
-  if (removed.count) console.log(`Cleared ${removed.count} rows from an earlier fill.`);
+  const have = new Map<string, number>();
+  for (const row of liveNow) have.set(`${row.vendorId}:${row.status}`, row._count);
 
   const dayStart = kuwaitDayStart();
   const now = new Date();
@@ -113,14 +130,21 @@ async function main() {
     { status: "DISPATCHING", count: 2 },
     { status: "ASSIGNED", count: 2 },
     { status: "PICKED_UP", count: 2 },
+    // Delivered is only seeded when the day is empty; otherwise the real
+    // history of the day is whatever the couriers actually completed.
     { status: "DELIVERED", count: 6 },
   ];
 
   let seq = 0;
   for (const v of usable) {
-    const branch = v.branches[0];
     for (const step of PLAN) {
-      for (let i = 0; i < step.count; i++) {
+      const already = have.get(`${v.id}:${step.status}`) ?? 0;
+      const need = Math.max(0, step.count - already);
+      for (let i = 0; i < need; i++) {
+        // Spread across the merchant's branches, so the branch filter has
+        // something to actually filter. Pinning every order to branches[0]
+        // made the pills look broken when they were working.
+        const branch = v.branches[(seq + i) % v.branches.length];
         const num = (lastNums.get(v.id) ?? 0) + 1;
         lastNums.set(v.id, num);
         const dropZone = pick(zones);
@@ -173,7 +197,7 @@ async function main() {
           codCollectedKwd: step.status === "DELIVERED" && cod ? money(total) : null,
           slaDeadline: new Date(createdAt.getTime() + 45 * 60_000),
           trackingToken: token(),
-          externalRef: `${REF_PREFIX}${dayStart.toISOString().slice(0, 10)}-${++seq}`,
+          externalRef: `${REF_PREFIX}${dayStart.toISOString().slice(0, 10)}-${RUN_ID}-${++seq}`,
           assignedAt,
           pickedUpAt,
           deliveredAt,

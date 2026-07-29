@@ -2,7 +2,7 @@
  * Darb 2.0 order state machine (plan §A2).
  *
  * Coarse FSM:
- *   CREATED →(auto) DISPATCHING →(accept) ASSIGNED → PICKED_UP → DELIVERED
+ *   CREATED →(auto) DISPATCHING →(accept) ASSIGNED → ARRIVED → PICKED_UP → DELIVERED
  *   CREATED → REJECTED (validation; rejected rows are usually INSERTED as
  *             REJECTED by orderService — the transition exists for
  *             completeness)
@@ -69,7 +69,12 @@ export const ALLOWED: Record<DeliveryOrderStatus, DeliveryOrderStatus[]> = {
   REJECTED: ["CREATED"],
   DISPATCHING: ["ASSIGNED", "NO_DRIVER", "CANCELLED"],
   NO_DRIVER: ["DISPATCHING", "ASSIGNED", "CANCELLED"],
-  ASSIGNED: ["PICKED_UP", "FAILED", "CANCELLED"],
+  // Revision 8 (#3) inserted ARRIVED between accepting and collecting, so a
+  // shop can see a courier is standing at its counter. ASSIGNED → PICKED_UP
+  // stays legal: a driver who collects without tapping Arrived, and every
+  // order already in flight when this shipped, must still be able to finish.
+  ASSIGNED: ["ARRIVED", "PICKED_UP", "FAILED", "CANCELLED"],
+  ARRIVED: ["PICKED_UP", "FAILED", "CANCELLED"],
   PICKED_UP: ["DELIVERED", "FAILED", "CANCELLED"],
   // PRD §6 return-to-merchant: after a FAILED delivery (customer unreachable)
   // rider support authorises the return. FAILED is no longer terminal.
@@ -98,6 +103,7 @@ export function isTransitionAllowed(
 const SSE_TYPE_FOR_STATUS: Partial<Record<DeliveryOrderStatus, DarbEventType>> = {
   REJECTED: "order.rejected",
   ASSIGNED: "order.assigned",
+  ARRIVED: "order.arrived",
   PICKED_UP: "order.picked_up",
   DELIVERED: "order.delivered",
   FAILED: "order.failed",
@@ -188,6 +194,8 @@ function describeTransition(
         : `Order entered dispatch`;
     case "ASSIGNED":
       return `Order assigned to driver (by ${by})`;
+    case "ARRIVED":
+      return `Courier arrived at the shop`;
     case "PICKED_UP":
       return `Courier picked up the order`;
     case "DELIVERED":

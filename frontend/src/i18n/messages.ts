@@ -1461,6 +1461,12 @@ export interface Messages {
     colEnRoute: string;
     colPickedUp: string;
     colDone: string;
+    colArrived: string;
+    tabLive: string;
+    tabDelivered: string;
+    waitingSince: string;
+    etaStore: string;
+    etaCustomer: string;
     emptyColumn: string;
     pausedBanner: string;
     inspecting: string;
@@ -1673,6 +1679,7 @@ export interface Messages {
     dispatching: string;
     noDriver: string;
     assigned: string;
+    arrived: string;
     pickedUp: string;
     delivered: string;
     failed: string;
@@ -3435,6 +3442,12 @@ export const en: Messages = {
     colEnRoute: "Driver en route",
     colPickedUp: "Picked up",
     colDone: "Done today",
+    colArrived: "Arrived at shop",
+    tabLive: "Live",
+    tabDelivered: "Delivered",
+    waitingSince: "waiting",
+    etaStore: "to shop",
+    etaCustomer: "to customer",
     emptyColumn: "Nothing here right now.",
     pausedBanner: "Incoming orders are paused. New orders will be rejected until you resume.",
     inspecting: "You are reading {vendor}'s portal as an admin. Nothing here can be changed.",
@@ -3655,6 +3668,7 @@ export const en: Messages = {
     // read as "somebody go and fix this"; the order is being worked.
     noDriver: "Retrying",
     assigned: "Assigned",
+    arrived: "Arrived at shop",
     pickedUp: "Picked up",
     delivered: "Delivered",
     failed: "Failed",
@@ -5410,6 +5424,12 @@ export const ar: Messages = {
     colEnRoute: "السائق في الطريق",
     colPickedUp: "تم الاستلام",
     colDone: "أُنجزت اليوم",
+    colArrived: "وصل إلى المحل",
+    tabLive: "الجارية",
+    tabDelivered: "المُسلّمة",
+    waitingSince: "بالانتظار",
+    etaStore: "إلى المحل",
+    etaCustomer: "إلى العميل",
     emptyColumn: "لا يوجد شيء هنا حالياً.",
     pausedBanner: "الطلبات الواردة موقوفة مؤقتاً. سيتم رفض الطلبات الجديدة حتى تستأنف الاستقبال.",
     inspecting: "أنت تطالع بوابة {vendor} بصفة مشرف. لا يمكن تغيير أي شيء هنا.",
@@ -5621,6 +5641,7 @@ export const ar: Messages = {
     dispatching: "جارٍ الإسناد",
     noDriver: "إعادة المحاولة",
     assigned: "مُسند",
+    arrived: "وصل إلى المحل",
     pickedUp: "تم الاستلام",
     delivered: "تم التسليم",
     failed: "فشل",

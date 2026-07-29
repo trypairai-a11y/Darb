@@ -12,6 +12,9 @@ const STATUS_STYLES: Record<DeliveryOrderStatus, string> = {
   DISPATCHING: "bg-blue-50 text-blue-600",
   NO_DRIVER: "bg-orange-50 text-orange-600",
   ASSIGNED: "bg-indigo-50 text-indigo-600",
+  // Waiting at the counter reads as a hold, not progress, so it borrows the
+  // same amber the SLA warnings use rather than a fresh colour.
+  ARRIVED: "bg-amber-50 text-amber-700",
   PICKED_UP: "bg-amber-50 text-amber-700",
   DELIVERED: "bg-green-50 text-green-700",
   FAILED: "bg-red-100 text-red-700",
@@ -25,6 +28,7 @@ const STATUS_I18N: Record<DeliveryOrderStatus, string> = {
   DISPATCHING: "darbOrderStatus.dispatching",
   NO_DRIVER: "darbOrderStatus.noDriver",
   ASSIGNED: "darbOrderStatus.assigned",
+  ARRIVED: "darbOrderStatus.arrived",
   PICKED_UP: "darbOrderStatus.pickedUp",
   DELIVERED: "darbOrderStatus.delivered",
   FAILED: "darbOrderStatus.failed",

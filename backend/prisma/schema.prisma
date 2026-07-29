@@ -2696,6 +2696,10 @@ enum DeliveryOrderStatus {
   DISPATCHING
   NO_DRIVER
   ASSIGNED
+  // Revision 8 (#3): the driver is at the shop, waiting for the order to be
+  // handed over. The board counts up from here so a shop can see how long its
+  // own counter has kept a courier standing there.
+  ARRIVED
   PICKED_UP
   DELIVERED
   FAILED
@@ -3079,6 +3083,9 @@ model DeliveryOrder {
   // PRD §11 refunds: set when a full-order refund is PROCESSED.
   refundedAt         DateTime?
   assignedAt         DateTime?
+  // Revision 8 (#3): when the driver reached the shop. The wait the board
+  // counts up is arrivedAt to pickedUpAt, which is the shop's own handover.
+  arrivedAt          DateTime?
   pickedUpAt         DateTime?
   deliveredAt        DateTime?
   cancelledAt        DateTime?

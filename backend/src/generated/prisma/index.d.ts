@@ -1084,6 +1084,7 @@ export const DeliveryOrderStatus: {
   DISPATCHING: 'DISPATCHING',
   NO_DRIVER: 'NO_DRIVER',
   ASSIGNED: 'ASSIGNED',
+  ARRIVED: 'ARRIVED',
   PICKED_UP: 'PICKED_UP',
   DELIVERED: 'DELIVERED',
   FAILED: 'FAILED',
@@ -117722,6 +117723,7 @@ export namespace Prisma {
     externalRef: string | null
     refundedAt: Date | null
     assignedAt: Date | null
+    arrivedAt: Date | null
     pickedUpAt: Date | null
     deliveredAt: Date | null
     cancelledAt: Date | null
@@ -117768,6 +117770,7 @@ export namespace Prisma {
     externalRef: string | null
     refundedAt: Date | null
     assignedAt: Date | null
+    arrivedAt: Date | null
     pickedUpAt: Date | null
     deliveredAt: Date | null
     cancelledAt: Date | null
@@ -117814,6 +117817,7 @@ export namespace Prisma {
     externalRef: number
     refundedAt: number
     assignedAt: number
+    arrivedAt: number
     pickedUpAt: number
     deliveredAt: number
     cancelledAt: number
@@ -117885,6 +117889,7 @@ export namespace Prisma {
     externalRef?: true
     refundedAt?: true
     assignedAt?: true
+    arrivedAt?: true
     pickedUpAt?: true
     deliveredAt?: true
     cancelledAt?: true
@@ -117931,6 +117936,7 @@ export namespace Prisma {
     externalRef?: true
     refundedAt?: true
     assignedAt?: true
+    arrivedAt?: true
     pickedUpAt?: true
     deliveredAt?: true
     cancelledAt?: true
@@ -117977,6 +117983,7 @@ export namespace Prisma {
     externalRef?: true
     refundedAt?: true
     assignedAt?: true
+    arrivedAt?: true
     pickedUpAt?: true
     deliveredAt?: true
     cancelledAt?: true
@@ -118111,6 +118118,7 @@ export namespace Prisma {
     externalRef: string | null
     refundedAt: Date | null
     assignedAt: Date | null
+    arrivedAt: Date | null
     pickedUpAt: Date | null
     deliveredAt: Date | null
     cancelledAt: Date | null
@@ -118177,6 +118185,7 @@ export namespace Prisma {
     externalRef?: boolean
     refundedAt?: boolean
     assignedAt?: boolean
+    arrivedAt?: boolean
     pickedUpAt?: boolean
     deliveredAt?: boolean
     cancelledAt?: boolean
@@ -118235,6 +118244,7 @@ export namespace Prisma {
     externalRef?: boolean
     refundedAt?: boolean
     assignedAt?: boolean
+    arrivedAt?: boolean
     pickedUpAt?: boolean
     deliveredAt?: boolean
     cancelledAt?: boolean
@@ -118288,6 +118298,7 @@ export namespace Prisma {
     externalRef?: boolean
     refundedAt?: boolean
     assignedAt?: boolean
+    arrivedAt?: boolean
     pickedUpAt?: boolean
     deliveredAt?: boolean
     cancelledAt?: boolean
@@ -118371,6 +118382,7 @@ export namespace Prisma {
       externalRef: string | null
       refundedAt: Date | null
       assignedAt: Date | null
+      arrivedAt: Date | null
       pickedUpAt: Date | null
       deliveredAt: Date | null
       cancelledAt: Date | null
@@ -118818,6 +118830,7 @@ export namespace Prisma {
     readonly externalRef: FieldRef<"DeliveryOrder", 'String'>
     readonly refundedAt: FieldRef<"DeliveryOrder", 'DateTime'>
     readonly assignedAt: FieldRef<"DeliveryOrder", 'DateTime'>
+    readonly arrivedAt: FieldRef<"DeliveryOrder", 'DateTime'>
     readonly pickedUpAt: FieldRef<"DeliveryOrder", 'DateTime'>
     readonly deliveredAt: FieldRef<"DeliveryOrder", 'DateTime'>
     readonly cancelledAt: FieldRef<"DeliveryOrder", 'DateTime'>
@@ -139522,6 +139535,7 @@ export namespace Prisma {
     externalRef: 'externalRef',
     refundedAt: 'refundedAt',
     assignedAt: 'assignedAt',
+    arrivedAt: 'arrivedAt',
     pickedUpAt: 'pickedUpAt',
     deliveredAt: 'deliveredAt',
     cancelledAt: 'cancelledAt',
@@ -152178,6 +152192,7 @@ export namespace Prisma {
     externalRef?: StringNullableFilter<"DeliveryOrder"> | string | null
     refundedAt?: DateTimeNullableFilter<"DeliveryOrder"> | Date | string | null
     assignedAt?: DateTimeNullableFilter<"DeliveryOrder"> | Date | string | null
+    arrivedAt?: DateTimeNullableFilter<"DeliveryOrder"> | Date | string | null
     pickedUpAt?: DateTimeNullableFilter<"DeliveryOrder"> | Date | string | null
     deliveredAt?: DateTimeNullableFilter<"DeliveryOrder"> | Date | string | null
     cancelledAt?: DateTimeNullableFilter<"DeliveryOrder"> | Date | string | null
@@ -152235,6 +152250,7 @@ export namespace Prisma {
     externalRef?: SortOrderInput | SortOrder
     refundedAt?: SortOrderInput | SortOrder
     assignedAt?: SortOrderInput | SortOrder
+    arrivedAt?: SortOrderInput | SortOrder
     pickedUpAt?: SortOrderInput | SortOrder
     deliveredAt?: SortOrderInput | SortOrder
     cancelledAt?: SortOrderInput | SortOrder
@@ -152299,6 +152315,7 @@ export namespace Prisma {
     externalRef?: StringNullableFilter<"DeliveryOrder"> | string | null
     refundedAt?: DateTimeNullableFilter<"DeliveryOrder"> | Date | string | null
     assignedAt?: DateTimeNullableFilter<"DeliveryOrder"> | Date | string | null
+    arrivedAt?: DateTimeNullableFilter<"DeliveryOrder"> | Date | string | null
     pickedUpAt?: DateTimeNullableFilter<"DeliveryOrder"> | Date | string | null
     deliveredAt?: DateTimeNullableFilter<"DeliveryOrder"> | Date | string | null
     cancelledAt?: DateTimeNullableFilter<"DeliveryOrder"> | Date | string | null
@@ -152356,6 +152373,7 @@ export namespace Prisma {
     externalRef?: SortOrderInput | SortOrder
     refundedAt?: SortOrderInput | SortOrder
     assignedAt?: SortOrderInput | SortOrder
+    arrivedAt?: SortOrderInput | SortOrder
     pickedUpAt?: SortOrderInput | SortOrder
     deliveredAt?: SortOrderInput | SortOrder
     cancelledAt?: SortOrderInput | SortOrder
@@ -152411,6 +152429,7 @@ export namespace Prisma {
     externalRef?: StringNullableWithAggregatesFilter<"DeliveryOrder"> | string | null
     refundedAt?: DateTimeNullableWithAggregatesFilter<"DeliveryOrder"> | Date | string | null
     assignedAt?: DateTimeNullableWithAggregatesFilter<"DeliveryOrder"> | Date | string | null
+    arrivedAt?: DateTimeNullableWithAggregatesFilter<"DeliveryOrder"> | Date | string | null
     pickedUpAt?: DateTimeNullableWithAggregatesFilter<"DeliveryOrder"> | Date | string | null
     deliveredAt?: DateTimeNullableWithAggregatesFilter<"DeliveryOrder"> | Date | string | null
     cancelledAt?: DateTimeNullableWithAggregatesFilter<"DeliveryOrder"> | Date | string | null
@@ -165043,6 +165062,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -165100,6 +165120,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -165145,6 +165166,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -165202,6 +165224,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -165253,6 +165276,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -165294,6 +165318,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -165341,6 +165366,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -175376,6 +175402,7 @@ export namespace Prisma {
     externalRef?: SortOrder
     refundedAt?: SortOrder
     assignedAt?: SortOrder
+    arrivedAt?: SortOrder
     pickedUpAt?: SortOrder
     deliveredAt?: SortOrder
     cancelledAt?: SortOrder
@@ -175434,6 +175461,7 @@ export namespace Prisma {
     externalRef?: SortOrder
     refundedAt?: SortOrder
     assignedAt?: SortOrder
+    arrivedAt?: SortOrder
     pickedUpAt?: SortOrder
     deliveredAt?: SortOrder
     cancelledAt?: SortOrder
@@ -175480,6 +175508,7 @@ export namespace Prisma {
     externalRef?: SortOrder
     refundedAt?: SortOrder
     assignedAt?: SortOrder
+    arrivedAt?: SortOrder
     pickedUpAt?: SortOrder
     deliveredAt?: SortOrder
     cancelledAt?: SortOrder
@@ -194915,6 +194944,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -194970,6 +195000,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -198438,6 +198469,7 @@ export namespace Prisma {
     externalRef?: StringNullableFilter<"DeliveryOrder"> | string | null
     refundedAt?: DateTimeNullableFilter<"DeliveryOrder"> | Date | string | null
     assignedAt?: DateTimeNullableFilter<"DeliveryOrder"> | Date | string | null
+    arrivedAt?: DateTimeNullableFilter<"DeliveryOrder"> | Date | string | null
     pickedUpAt?: DateTimeNullableFilter<"DeliveryOrder"> | Date | string | null
     deliveredAt?: DateTimeNullableFilter<"DeliveryOrder"> | Date | string | null
     cancelledAt?: DateTimeNullableFilter<"DeliveryOrder"> | Date | string | null
@@ -204933,6 +204965,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -204988,6 +205021,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -260982,6 +261016,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -261037,6 +261072,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -262077,6 +262113,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -262132,6 +262169,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -263022,6 +263060,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -263077,6 +263116,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -263132,6 +263172,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -263187,6 +263228,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -268042,6 +268084,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -268098,6 +268141,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -268576,6 +268620,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -268632,6 +268677,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -272181,6 +272227,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -272237,6 +272284,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -272721,6 +272769,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -272777,6 +272826,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -274194,6 +274244,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -274250,6 +274301,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -274728,6 +274780,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -274784,6 +274837,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -275818,6 +275872,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -275874,6 +275929,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -276220,6 +276276,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -276276,6 +276333,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -281000,6 +281058,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -285047,6 +285106,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -285102,6 +285162,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -285152,6 +285213,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -288496,6 +288558,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -290439,6 +290502,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -290494,6 +290558,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -290544,6 +290609,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -293167,6 +293233,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -293407,6 +293474,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -293462,6 +293530,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -293512,6 +293581,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -293708,6 +293778,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -293769,6 +293840,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -293824,6 +293896,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -293874,6 +293947,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -294049,6 +294123,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -294095,6 +294170,7 @@ export namespace Prisma {
     externalRef?: string | null
     refundedAt?: Date | string | null
     assignedAt?: Date | string | null
+    arrivedAt?: Date | string | null
     pickedUpAt?: Date | string | null
     deliveredAt?: Date | string | null
     cancelledAt?: Date | string | null
@@ -294265,6 +294341,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -294320,6 +294397,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -294370,6 +294448,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -294411,6 +294490,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -294466,6 +294546,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -294516,6 +294597,7 @@ export namespace Prisma {
     externalRef?: NullableStringFieldUpdateOperationsInput | string | null
     refundedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pickedUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

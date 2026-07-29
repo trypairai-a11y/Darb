@@ -31,6 +31,9 @@ export type DarbEventType =
   | "order.created"
   | "order.rejected"
   | "order.assigned"
+  // Revision 8 (#3): the courier reached the shop and is waiting for the
+  // handover. Between assigned and picked up.
+  | "order.arrived"
   | "order.picked_up"
   | "order.delivered"
   | "order.failed"

@@ -539,8 +539,11 @@ router.post("/orders/:id/status", async (req: Request, res: Response) => {
       res.status(409).json({ error: "ORDER_STATE_CONFLICT" });
       return;
     }
-    const requiredStatus = newRank <= PHASE_RANK.PICKED_UP ? "ASSIGNED" : "PICKED_UP";
-    if (order.status !== requiredStatus) {
+    // Everything up to collection happens while the order is out with a driver,
+    // which is ASSIGNED or, since revision 8, ARRIVED once they reach the shop.
+    const allowedStatuses =
+      newRank <= PHASE_RANK.PICKED_UP ? ["ASSIGNED", "ARRIVED"] : ["PICKED_UP"];
+    if (!allowedStatuses.includes(order.status)) {
       res.status(409).json({ error: "ORDER_STATE_CONFLICT" });
       return;
     }
@@ -560,7 +563,7 @@ router.post("/orders/:id/status", async (req: Request, res: Response) => {
         await transitionOrder(trx, {
           orderId: order.id,
           tenantId,
-          from: "ASSIGNED",
+          from: order.status as "ASSIGNED" | "ARRIVED",
           to: "PICKED_UP",
           actor: driverActor(driver),
           data: {
@@ -582,6 +585,33 @@ router.post("/orders/:id/status", async (req: Request, res: Response) => {
         logger.warn({ err: e, orderId: order.id }, "foodics writeback enqueue failed"),
       );
       fireCustomerMilestone(order.id, driver.tenantId, "PICKED_UP");
+    } else if (milestone === "ARRIVED_AT_PICKUP" && order.status === "ASSIGNED") {
+      // Revision 8 (#3). The driver app has always reported this milestone; it
+      // just lived in metadata, so the shop could not see it. Promoting it to a
+      // real status is what puts an Arrived column on the merchant board, and
+      // it needs no change in the mobile app.
+      const { tx } = await prisma.$transaction(async (trx) => {
+        await transitionOrder(trx, {
+          orderId: order.id,
+          tenantId,
+          from: "ASSIGNED",
+          to: "ARRIVED",
+          actor: driverActor(driver),
+          data: {
+            arrivedAt: at,
+            metadata: newMetadata as Prisma.InputJsonValue,
+          },
+          eventMeta: {
+            orderNumber: order.orderNumber,
+            vendorId: order.vendorId,
+            driverId: driver.id,
+            idempotencyKey,
+            ...gpsMeta,
+          },
+        });
+        return { tx: trx };
+      });
+      flushOrderEvents(tx); // publishes SSE order.arrived
     } else {
       await prisma.orderEvent.create({
         data: {

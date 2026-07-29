@@ -5,7 +5,7 @@
 // into the TanStack cache (setQueryData) with a 15s refetch fallback while
 // the stream is down. Header: wallet balance, orders today, pause toggle and
 // the Live/Reconnecting pill.
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ClipboardList, Phone, PlusCircle, Wallet } from "lucide-react";
@@ -53,6 +53,30 @@ function isToday(iso: string | null | undefined): boolean {
   );
 }
 
+/**
+ * How long the courier has been standing at the counter.
+ *
+ * Counts up rather than down on purpose: this is the shop's own handover, and
+ * there is no deadline to run out, only a number that keeps growing until
+ * somebody hands the bag over.
+ */
+function WaitingSince({ since }: { since: string }) {
+  const { t } = useI18n();
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const secs = Math.max(0, Math.floor((now - new Date(since).getTime()) / 1000));
+  const mm = String(Math.floor(secs / 60)).padStart(2, "0");
+  const ss = String(secs % 60).padStart(2, "0");
+  return (
+    <span dir="ltr" className="text-xs font-medium tabular-nums text-amber-700">
+      {mm}:{ss} {t("vendorPortal.waitingSince")}
+    </span>
+  );
+}
+
 function OrderCard({ order }: { order: DeliveryOrder }) {
   const { t, locale } = useI18n();
   const active = !["DELIVERED", "FAILED", "CANCELLED", "REJECTED"].includes(order.status);
@@ -65,7 +89,9 @@ function OrderCard({ order }: { order: DeliveryOrder }) {
         <span dir="ltr" className="font-mono text-xs font-medium text-sand-900 truncate">
           {order.orderNumber}
         </span>
-        {active && order.slaDeadline ? (
+        {order.status === "ARRIVED" && order.arrivedAt ? (
+          <WaitingSince since={order.arrivedAt} />
+        ) : active && order.slaDeadline ? (
           <SlaCountdown deadline={order.slaDeadline} className="text-xs" />
         ) : (
           <OrderStatusBadge status={order.status} />
@@ -94,6 +120,16 @@ function OrderCard({ order }: { order: DeliveryOrder }) {
         <div className="mt-2.5 flex items-center justify-between gap-2 rounded-lg bg-sand-100/70 px-2.5 py-1.5">
           <span className="text-xs font-medium text-sand-800 truncate" dir="auto">
             {order.driver.name}
+            {/* The stage says where the driver is going; the ETA says when.
+                ASSIGNED is heading to the shop, PICKED_UP to the customer. */}
+            {order.slaDeadline && (order.status === "ASSIGNED" || order.status === "PICKED_UP") && (
+              <span className="ms-1.5 text-[11px] font-normal text-sand-600">
+                <SlaCountdown deadline={order.slaDeadline} className="text-[11px]" />{" "}
+                {order.status === "ASSIGNED"
+                  ? t("vendorPortal.etaStore")
+                  : t("vendorPortal.etaCustomer")}
+              </span>
+            )}
           </span>
           {order.driver.phone && (
             <span
@@ -128,6 +164,9 @@ export default function VendorBoardPage() {
   const { t, locale } = useI18n();
   const queryClient = useQueryClient();
   const { branchId, inspectVendorId } = useVendorBranch();
+  // Live work and finished work are two different questions, so they are two
+  // tabs rather than a fourth column of things nobody needs to act on.
+  const [tab, setTab] = useState<"live" | "delivered">("live");
 
   const meQuery = useQuery({
     queryKey: ["darb", "vendor", "me"],
@@ -190,24 +229,43 @@ export default function VendorBoardPage() {
   });
   const orders = useMemo(() => unwrapList<DeliveryOrder>(ordersQuery.data), [ordersQuery.data]);
 
+  // Revision 8 (#3). The live board is the work still in front of the shop,
+  // in the order the shop experiences it: waiting on a driver, driver coming,
+  // driver standing at the counter, gone to the customer. Finished orders are
+  // not part of that and moved to their own tab.
   const columns = useMemo(() => {
     const incoming = orders.filter((o) =>
       ["CREATED", "DISPATCHING", "NO_DRIVER"].includes(o.status)
     );
     const enRoute = orders.filter((o) => o.status === "ASSIGNED");
+    const arrived = orders.filter((o) => o.status === "ARRIVED");
     const pickedUp = orders.filter((o) => o.status === "PICKED_UP");
-    const done = orders.filter(
-      (o) =>
-        ["DELIVERED", "FAILED", "CANCELLED"].includes(o.status) &&
-        isToday(o.deliveredAt ?? o.updatedAt ?? o.createdAt)
-    );
     return [
       { key: "incoming", label: t("vendorPortal.colIncoming"), items: incoming },
       { key: "enRoute", label: t("vendorPortal.colEnRoute"), items: enRoute },
+      { key: "arrived", label: t("vendorPortal.colArrived"), items: arrived },
       { key: "pickedUp", label: t("vendorPortal.colPickedUp"), items: pickedUp },
-      { key: "done", label: t("vendorPortal.colDone"), items: done },
     ];
   }, [orders, t]);
+
+  // Everything that ended today, whichever way it ended. A shop chasing a
+  // complaint needs the failed and cancelled ones here too, not only the
+  // delivered ones.
+  const finishedToday = useMemo(
+    () =>
+      orders
+        .filter(
+          (o) =>
+            ["DELIVERED", "FAILED", "CANCELLED", "RETURNED"].includes(o.status) &&
+            isToday(o.deliveredAt ?? o.updatedAt ?? o.createdAt)
+        )
+        .sort(
+          (a, b) =>
+            new Date(b.deliveredAt ?? b.updatedAt ?? b.createdAt).getTime() -
+            new Date(a.deliveredAt ?? a.updatedAt ?? a.createdAt).getTime()
+        ),
+    [orders]
+  );
 
   const ordersToday = useMemo(() => orders.filter((o) => isToday(o.createdAt)).length, [orders]);
 
@@ -292,7 +350,41 @@ export default function VendorBoardPage() {
         <StatCard title={t("vendorPortal.ordersToday")} value={ordersToday} icon={ClipboardList} />
       </div>
 
-      {/* Status-grouped board */}
+      {/* Live / Delivered */}
+      <div className="flex gap-1 bg-sand-100 rounded-pill p-1 w-fit">
+        {(["live", "delivered"] as const).map((key) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setTab(key)}
+            className={cn(
+              "px-4 h-9 text-sm font-medium rounded-pill transition-colors",
+              tab === key ? "bg-white text-sand-900 shadow-soft" : "text-sand-600 hover:text-sand-900"
+            )}
+          >
+            {key === "live" ? t("vendorPortal.tabLive") : t("vendorPortal.tabDelivered")}
+            <span className="ms-1.5 text-xs text-sand-500 tabular-nums">
+              {key === "live"
+                ? columns.reduce((n, c) => n + c.items.length, 0)
+                : finishedToday.length}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {tab === "delivered" ? (
+        <section className="bg-card border border-sand-200 rounded-2xl shadow-soft">
+          <div className="p-3 space-y-2.5">
+            {finishedToday.length === 0 ? (
+              <p className="text-xs text-sand-500 px-1 py-6 text-center">
+                {t("vendorPortal.emptyColumn")}
+              </p>
+            ) : (
+              finishedToday.map((o) => <OrderCard key={o.id} order={o} />)
+            )}
+          </div>
+        </section>
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {columns.map((col) => (
           <section key={col.key} className="bg-card border border-sand-200 rounded-2xl shadow-soft flex flex-col">
@@ -310,6 +402,7 @@ export default function VendorBoardPage() {
           </section>
         ))}
       </div>
+      )}
     </div>
   );
 }

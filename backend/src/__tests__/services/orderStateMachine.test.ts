@@ -43,9 +43,17 @@ describe("ALLOWED transition table (§A2 legality matrix)", () => {
     ["NO_DRIVER", "DISPATCHING"], // redispatch
     ["NO_DRIVER", "ASSIGNED"], // manual assign
     ["NO_DRIVER", "CANCELLED"],
+    // Revision 8 (#3) inserted ARRIVED between accepting and collecting.
+    // ASSIGNED → PICKED_UP stays legal on purpose: a driver who collects
+    // without tapping Arrived, and every order that was already in flight when
+    // this shipped, must still be able to finish.
+    ["ASSIGNED", "ARRIVED"],
     ["ASSIGNED", "PICKED_UP"],
     ["ASSIGNED", "FAILED"],
     ["ASSIGNED", "CANCELLED"],
+    ["ARRIVED", "PICKED_UP"],
+    ["ARRIVED", "FAILED"],
+    ["ARRIVED", "CANCELLED"],
     ["PICKED_UP", "DELIVERED"],
     ["PICKED_UP", "FAILED"],
     ["PICKED_UP", "CANCELLED"], // supervisor pre-DELIVERED cancel
