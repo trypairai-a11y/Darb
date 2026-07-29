@@ -12,12 +12,13 @@ import type { DeliveryOrder } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd } from "@/i18n/format";
 import { cn } from "@/lib/cn";
-import { elapsedMinutes, LARGE_ORDER_KWD } from "./opsFilters";
+import { LARGE_ORDER_KWD } from "./opsFilters";
 
+// `now` is gone from these props along with the elapsed-minutes readout that
+// was the only thing using it. SlaCountdown drives itself off the shared tick.
 interface OpsTaskListProps {
   orders: DeliveryOrder[];
   selectedId: string | null;
-  now: number;
   onSelect: (orderId: string) => void;
   onCopy: (order: DeliveryOrder) => void;
 }
@@ -25,7 +26,6 @@ interface OpsTaskListProps {
 export default function OpsTaskList({
   orders,
   selectedId,
-  now,
   onSelect,
   onCopy,
 }: OpsTaskListProps) {
@@ -39,7 +39,6 @@ export default function OpsTaskList({
     <ul className="space-y-1.5">
       {orders.map((order) => {
         const selected = order.id === selectedId;
-        const accepted = !!order.driverId;
         const large = Number(order.orderTotalKwd) >= LARGE_ORDER_KWD;
         return (
           <li key={order.id}>
@@ -56,21 +55,18 @@ export default function OpsTaskList({
                 onClick={() => onSelect(order.id)}
                 className="w-full text-start"
               >
+                {/* "Accepted / Awaiting driver" used to sit opposite the vendor
+                    name, and "Total time" opposite the order number. Both were
+                    saying something the rows below already say: the status
+                    badge is a more precise reading of acceptance, and the SLA
+                    countdown is the same clock as the elapsed minutes. The
+                    order number takes the freed slot. */}
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-sm font-medium text-sand-900 truncate" dir="auto">
                     {order.vendor?.name ?? t("opsMap.unknownVendor")}
                   </span>
-                  <span className="shrink-0 text-[11px] font-medium text-sand-600">
-                    {accepted ? t("opsMap.accepted") : t("opsMap.awaitingDriver")}
-                  </span>
-                </div>
-
-                <div className="mt-0.5 flex items-center justify-between gap-2">
-                  <span dir="ltr" className="font-mono text-[11px] text-sand-600 truncate">
+                  <span dir="ltr" className="shrink-0 font-mono text-[11px] text-sand-600">
                     {order.orderNumber}
-                  </span>
-                  <span className="text-[11px] text-sand-600 tabular-nums">
-                    {t("opsMap.totalTime")}: {elapsedMinutes(order, now)} {t("opsMap.minShort")}
                   </span>
                 </div>
 
@@ -99,7 +95,11 @@ export default function OpsTaskList({
                 </div>
               </button>
 
-              <div className="mt-1.5 flex justify-end">
+              {/* Rider support reaches for this rarely, but it sat on every
+                  card at full strength. Opacity rather than `hidden` keeps it
+                  in the tab order and stops the card resizing under the
+                  cursor. */}
+              <div className="mt-1.5 flex justify-end opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
                 <button
                   type="button"
                   onClick={() => onCopy(order)}

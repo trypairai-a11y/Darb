@@ -1701,11 +1701,11 @@ export interface Messages {
     filterCourierIssue: string;
     sortAcceptance: string;
     sortSla: string;
-    accepted: string;
-    awaitingDriver: string;
-    totalTime: string;
     minShort: string;
     leftForDelivery: string;
+    /** Suffixes SlaCountdown uses once mm:ss stops being meaningful. */
+    lateHours: string;
+    lateDays: string;
     large: string;
     noDriverYet: string;
     unknownVendor: string;
@@ -3705,11 +3705,10 @@ export const en: Messages = {
     filterCourierIssue: "Issue reported by courier",
     sortAcceptance: "By acceptance time",
     sortSla: "By time remaining",
-    accepted: "Accepted",
-    awaitingDriver: "Awaiting driver",
-    totalTime: "Total time",
     minShort: "min",
     leftForDelivery: "left for delivery",
+    lateHours: "h late",
+    lateDays: "d late",
     large: "Large",
     noDriverYet: "No driver yet",
     unknownVendor: "Unknown vendor",
@@ -5694,11 +5693,10 @@ export const ar: Messages = {
     filterCourierIssue: "مشكلة أبلغ عنها المندوب",
     sortAcceptance: "حسب وقت القبول",
     sortSla: "حسب الوقت المتبقي",
-    accepted: "مقبول",
-    awaitingDriver: "بانتظار سائق",
-    totalTime: "الوقت الكلي",
     minShort: "دقيقة",
     leftForDelivery: "متبقٍ للتسليم",
+    lateHours: "س تأخير",
+    lateDays: "ي تأخير",
     large: "كبير",
     noDriverYet: "لا يوجد سائق بعد",
     unknownVendor: "تاجر غير معروف",

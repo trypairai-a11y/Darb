@@ -17,6 +17,14 @@ const URGENT: QuickFilter[] = ["late", "almostLate", "courierIssue"];
 export default function OpsFilterChips({ counts, active, onToggle }: OpsFilterChipsProps) {
   const { t } = useI18n();
 
+  // A chip reading "(0)" is a control that cannot do anything: pressing it
+  // filters the list down to nothing. On a quiet shift that was four of the
+  // five, so only chips with something behind them render. An active chip
+  // stays even at zero, otherwise the control you used to empty the list
+  // would vanish and leave no way back.
+  const visible = QUICK_FILTERS.filter((f) => (counts[f] ?? 0) > 0 || active.includes(f));
+  if (visible.length === 0) return null;
+
   const labels: Record<QuickFilter, string> = {
     largeOrder: t("opsMap.filterLargeOrder"),
     almostLate: t("opsMap.filterAlmostLate"),
@@ -27,7 +35,7 @@ export default function OpsFilterChips({ counts, active, onToggle }: OpsFilterCh
 
   return (
     <div className="flex flex-wrap gap-1.5">
-      {QUICK_FILTERS.map((filter) => {
+      {visible.map((filter) => {
         const isActive = active.includes(filter);
         const count = counts[filter] ?? 0;
         const urgent = URGENT.includes(filter) && count > 0;

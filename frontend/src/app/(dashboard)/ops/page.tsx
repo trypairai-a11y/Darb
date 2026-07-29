@@ -161,6 +161,14 @@ function OpsLiveScreen() {
     () => unwrapList<Incident>(incidentsQuery.data).filter((i) => i.status === "OPEN"),
     [incidentsQuery.data]
   );
+  // What EmergencyPanel actually renders is everything not yet RESOLVED, so
+  // that is what the entry point has to count. Gating the way in on OPEN alone
+  // meant an incident somebody had acknowledged but not closed left nothing on
+  // screen to reopen the console with.
+  const liveIncidents = useMemo(
+    () => unwrapList<Incident>(incidentsQuery.data).filter((i) => i.status !== "RESOLVED"),
+    [incidentsQuery.data]
+  );
 
   // ── Realtime ────────────────────────────────────────────────────────────
   const invalidateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -240,6 +248,13 @@ function OpsLiveScreen() {
         QUICK_FILTERS.map((f) => [f, countQuickFilter(activeOrders, f, now, signals)])
       ) as Record<QuickFilter, number>,
     [activeOrders, now, signals]
+  );
+
+  /** Whether the irregular-task block has anything to show. Mirrors the rule
+   *  inside OpsFilterChips so the heading never outlives its chips. */
+  const hasIrregular = useMemo(
+    () => QUICK_FILTERS.some((f) => (quickCounts[f] ?? 0) > 0 || quickFilters.includes(f)),
+    [quickCounts, quickFilters]
   );
 
   const visibleOrders = useMemo(
@@ -409,11 +424,52 @@ function OpsLiveScreen() {
       {/* ── Work panel ── */}
       <aside className="w-[360px] shrink-0 border-e border-sand-200 bg-card flex flex-col">
         <div className="p-4 border-b border-sand-200 space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <h1 className="font-display text-lg text-sand-900">{t("opsPages.mapTitle")}</h1>
+          {/* One status line where the title and three stat tiles used to be.
+              The tiles were three permanent boxes reading 0 / 0 / 0 for most of
+              a shift, and the h1 repeated the rail item already highlighted
+              behind it. Now the row carries only what is wrong, and the
+              connection pill holds it up on its own when nothing is: on a
+              control room screen an empty list is ambiguous, and the pill is
+              the only thing that says quiet shift rather than dead feed. */}
+          <div className="flex items-center justify-between gap-2 min-h-[26px]">
+            <div className="flex flex-wrap items-center gap-1.5">
+              {stalled.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setTab("problems")}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-pill bg-amber-50 text-amber-700 text-[11px] font-medium hover:bg-amber-100 transition-colors"
+                >
+                  <AlertTriangle size={11} aria-hidden="true" />
+                  <span className="tabular-nums">{stalled.length}</span>
+                  {t("opsPages.stalled")}
+                </button>
+              )}
+              {gpsStale.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setTab("problems")}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-pill bg-sand-100 text-sand-700 text-[11px] font-medium hover:bg-sand-200 transition-colors"
+                >
+                  <SatelliteDish size={11} aria-hidden="true" />
+                  <span className="tabular-nums">{gpsStale.length}</span>
+                  {t("opsPages.gpsStale")}
+                </button>
+              )}
+              {liveIncidents.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setEmergencyOpen(true)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-pill bg-red-50 text-red-600 text-[11px] font-medium hover:bg-red-100 transition-colors"
+                >
+                  <Siren size={11} aria-hidden="true" />
+                  <span className="tabular-nums">{liveIncidents.length}</span>
+                  {t("opsPages.sosBadge")}
+                </button>
+              )}
+            </div>
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-pill text-[11px] font-medium",
+                "shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-pill text-[11px] font-medium",
                 connected ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"
               )}
             >
@@ -426,52 +482,6 @@ function OpsLiveScreen() {
               />
               {connected ? t("vendorPortal.live") : t("vendorPortal.reconnecting")}
             </span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <button
-              type="button"
-              onClick={() => setTab("problems")}
-              className="rounded-xl bg-sand-100/70 hover:bg-sand-100 px-2 py-2 transition-colors"
-            >
-              <span className="flex items-center justify-center gap-1 text-amber-600">
-                <AlertTriangle size={12} aria-hidden="true" />
-                <span className="text-sm font-semibold tabular-nums">{stalled.length}</span>
-              </span>
-              <span className="block text-[10px] text-sand-600 mt-0.5">{t("opsPages.stalled")}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("problems")}
-              className="rounded-xl bg-sand-100/70 hover:bg-sand-100 px-2 py-2 transition-colors"
-            >
-              <span className="flex items-center justify-center gap-1 text-sand-700">
-                <SatelliteDish size={12} aria-hidden="true" />
-                <span className="text-sm font-semibold tabular-nums">{gpsStale.length}</span>
-              </span>
-              <span className="block text-[10px] text-sand-600 mt-0.5">{t("opsPages.gpsStale")}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setEmergencyOpen(true)}
-              className={cn(
-                "rounded-xl px-2 py-2 transition-colors",
-                openIncidents.length > 0
-                  ? "bg-red-50 hover:bg-red-100"
-                  : "bg-sand-100/70 hover:bg-sand-100"
-              )}
-            >
-              <span
-                className={cn(
-                  "flex items-center justify-center gap-1",
-                  openIncidents.length > 0 ? "text-red-600" : "text-sand-700"
-                )}
-              >
-                <Siren size={12} aria-hidden="true" />
-                <span className="text-sm font-semibold tabular-nums">{openIncidents.length}</span>
-              </span>
-              <span className="block text-[10px] text-sand-600 mt-0.5">{t("opsPages.sosBadge")}</span>
-            </button>
           </div>
 
           {/* Segments. The map follows whichever one is open. */}
@@ -518,32 +528,42 @@ function OpsLiveScreen() {
                 </select>
               </div>
 
-              <div>
-                {/* Revision 5 (#8): the copy link that used to sit opposite this
-                    warning is gone — "no need for this message". The banner
-                    keeps its copy button, which is where anybody who wants the
-                    list actually reaches for it. */}
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-red-600">
-                    <AlertTriangle size={11} aria-hidden="true" />
-                    {t("opsMap.irregularTask")}
-                  </span>
-                </div>
-                <OpsFilterChips
-                  counts={quickCounts}
-                  active={quickFilters}
-                  onToggle={toggleQuickFilter}
-                />
-              </div>
+              {/* Revision 5 (#8): the copy link that used to sit opposite this
+                  warning is gone — "no need for this message". The banner
+                  keeps its copy button, which is where anybody who wants the
+                  list actually reaches for it.
 
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[11px] text-sand-500 tabular-nums">
-                  {visibleOrders.length} / {activeOrders.length}
-                </span>
+                  The heading now comes and goes with the chips underneath it.
+                  A red "Irregular task" warning standing over five chips that
+                  all read (0) was announcing a problem that did not exist. */}
+              {hasIrregular && (
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-red-600">
+                      <AlertTriangle size={11} aria-hidden="true" />
+                      {t("opsMap.irregularTask")}
+                    </span>
+                  </div>
+                  <OpsFilterChips
+                    counts={quickCounts}
+                    active={quickFilters}
+                    onToggle={toggleQuickFilter}
+                  />
+                </div>
+              )}
+
+              <div className="flex items-center gap-2">
+                {/* "4 / 4" only says something once a filter has narrowed the
+                    list. Unfiltered it is the same number written twice. */}
+                {visibleOrders.length !== activeOrders.length && (
+                  <span className="text-[11px] text-sand-500 tabular-nums">
+                    {visibleOrders.length} / {activeOrders.length}
+                  </span>
+                )}
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value as OrderSort)}
-                  className="px-2 h-7 rounded-pill bg-transparent border border-sand-200 text-[11px] text-sand-700 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="ms-auto px-2 h-7 rounded-pill bg-transparent border border-sand-200 text-[11px] text-sand-700 focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="acceptance">{t("opsMap.sortAcceptance")}</option>
                   <option value="sla">{t("opsMap.sortSla")}</option>
@@ -558,7 +578,6 @@ function OpsLiveScreen() {
             <OpsTaskList
               orders={visibleOrders}
               selectedId={selectedId}
-              now={now}
               onSelect={setSelectedId}
               onCopy={copyOrder}
             />

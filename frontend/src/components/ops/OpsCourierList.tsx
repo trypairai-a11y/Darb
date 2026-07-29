@@ -96,7 +96,7 @@ export default function OpsCourierList({
               <li key={driver.driverId}>
                 <div
                   className={cn(
-                    "rounded-xl border px-3 py-2.5 transition-colors",
+                    "group rounded-xl border px-3 py-2.5 transition-colors",
                     selected
                       ? "border-primary/50 bg-primary/5"
                       : "border-sand-200 bg-white hover:border-primary/30 hover:bg-sand-50"
@@ -132,7 +132,10 @@ export default function OpsCourierList({
                     </div>
                   </button>
 
-                  <div className="mt-1.5 flex justify-end gap-1">
+                  {/* Fifty-odd idle drivers meant a hundred-odd buttons on
+                      screen at rest. Opacity keeps them tabbable and keeps the
+                      list from reflowing as the cursor crosses it. */}
+                  <div className="mt-1.5 flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
                     {driver.phone && (
                       <a
                         href={`tel:${driver.phone}`}
