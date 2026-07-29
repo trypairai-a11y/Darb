@@ -21,6 +21,7 @@ import {
 import { LADDER } from "../services/fleetDiscipline";
 import { WalletError } from "../services/wallet/walletService";
 import { previousMonthPeriod } from "../services/wallet/vendorSettlementService";
+import { parseLocalDate, parseLocalDateEnd } from "../utils/date";
 
 const MUTATE = ["ADMIN", "OPS_MANAGER"];
 const READ = ["ADMIN", "OPS_MANAGER", "SUPERVISOR", "ACCOUNTANT"];
@@ -68,12 +69,23 @@ async function findTenantFleet(tenantId: string, id: string) {
   return prisma.fleetPartner.findFirst({ where: { id, tenantId } });
 }
 
+/**
+ * The scorecard is always a period report, so the range is part of the answer
+ * and travels back with it. `?from`/`?to` are inclusive calendar days in
+ * local (Kuwait) time: the scorecard queries are `lt: to`, so a date-only
+ * `to` has to become that day's end or "today" would report an empty day.
+ */
 function parseRange(req: Request): { from: Date; to: Date } {
-  const to = typeof req.query.to === "string" ? new Date(req.query.to) : new Date();
+  const to =
+    typeof req.query.to === "string" ? parseLocalDateEnd(req.query.to) : new Date();
   const from =
     typeof req.query.from === "string"
-      ? new Date(req.query.from)
+      ? parseLocalDate(req.query.from)
       : new Date(to.getTime() - 30 * 86_400_000);
+  if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) {
+    throw new RangeError("`from` and `to` must be YYYY-MM-DD dates");
+  }
+  if (to < from) throw new RangeError("`to` must not be earlier than `from`");
   return { from, to };
 }
 
@@ -394,6 +406,7 @@ router.get("/export.xlsx", rbac(...READ), async (req: Request, res: Response) =>
 
     await sendWorkbook(res, workbook, `fleets-${today()}.xlsx`);
   } catch (err: any) {
+    if (err instanceof RangeError) { res.status(400).json({ error: err.message }); return; }
     res.status(500).json({ error: err.message });
   }
 });
@@ -591,6 +604,7 @@ router.get("/:id/scorecard", rbac(...READ), async (req: Request, res: Response) 
     const scorecard = await getFleetScorecard(req.user!.tenantId, req.params.id, parseRange(req));
     res.json(scorecard);
   } catch (err: any) {
+    if (err instanceof RangeError) { res.status(400).json({ error: err.message }); return; }
     if (/not found/i.test(err.message)) { res.status(404).json({ error: err.message }); return; }
     res.status(500).json({ error: err.message });
   }

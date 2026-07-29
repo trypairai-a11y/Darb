@@ -10,6 +10,7 @@ import { tenantScope } from "../middleware/tenantScope";
 import { rbac } from "../middleware/rbac";
 import { getFleetScorecard } from "../services/fleetService";
 import { getDriverRating } from "../services/ratingService";
+import { parseLocalDate, parseLocalDateEnd } from "../utils/date";
 
 const router = Router();
 router.use(authMiddleware, tenantScope, rbac("FLEET"));
@@ -174,11 +175,19 @@ router.get("/scorecard", async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
-    const to = typeof req.query.to === "string" ? new Date(req.query.to) : new Date();
+    // Inclusive calendar days, same contract as /api/fleets/:id/scorecard:
+    // the scorecard queries are `lt: to`, so a date-only `to` has to become
+    // that day's end or the partner's "today" reads as an empty day.
+    const to =
+      typeof req.query.to === "string" ? parseLocalDateEnd(req.query.to) : new Date();
     const from =
       typeof req.query.from === "string"
-        ? new Date(req.query.from)
+        ? parseLocalDate(req.query.from)
         : new Date(to.getTime() - 30 * 86_400_000);
+    if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || to < from) {
+      res.status(400).json({ error: "`from` and `to` must be YYYY-MM-DD dates, `from` first" });
+      return;
+    }
     const scorecard = await getFleetScorecard(ctx.tenantId, ctx.fleetPartnerId, { from, to });
     res.json(scorecard);
   } catch (err: any) {

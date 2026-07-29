@@ -12,6 +12,7 @@ import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import SlidePanel from "@/components/shared/SlidePanel";
+import PeriodPicker, { type Period, presetRange } from "@/components/shared/PeriodPicker";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/Toast";
 import { fleetsApi, unwrapList } from "@/lib/darbApi";
@@ -36,9 +37,17 @@ function slugify(name: string): string {
  * The workbook, optionally narrowed to one partner. `fleetId` is what the
  * panel passes: the scorecard and the payout history are only rendered there,
  * so without it the panel is the one screen whose data cannot leave the app.
+ * `period` is passed through so the workbook covers the same window the panel
+ * is showing rather than the server's 30-day default.
  */
-async function exportWorkbook(fleetId?: string, nameForFile?: string) {
-  const query = fleetId ? `?fleetId=${encodeURIComponent(fleetId)}` : "";
+async function exportWorkbook(fleetId?: string, nameForFile?: string, period?: Period) {
+  const params = new URLSearchParams();
+  if (fleetId) params.set("fleetId", fleetId);
+  if (period) {
+    params.set("from", period.from);
+    params.set("to", period.to);
+  }
+  const query = params.toString() ? `?${params.toString()}` : "";
   const stem = nameForFile ? slugify(nameForFile) : "fleets";
   await downloadBlob(
     `/api/fleets/export.xlsx${query}`,
@@ -51,10 +60,19 @@ function ScorecardPanel({ fleet }: { fleet: FleetRow }) {
   const toast = useToast();
   const [downloading, setDownloading] = useState(false);
 
+  /**
+   * A scorecard with no stated period is not a report, it is a number nobody
+   * can act on: 84.8% on-time over what? The panel now names its window and
+   * lets it be changed, and everything below (the numbers and the download)
+   * follows it. Month, not the old silent 30-day default, because that is the
+   * window the payout statements are cut on.
+   */
+  const [period, setPeriod] = useState<Period>(() => presetRange("month"));
+
   async function downloadFleet() {
     setDownloading(true);
     try {
-      await exportWorkbook(fleet.id, fleet.name);
+      await exportWorkbook(fleet.id, fleet.name, period);
     } catch {
       toast.error(t("toast.failedSave"));
     } finally {
@@ -63,8 +81,8 @@ function ScorecardPanel({ fleet }: { fleet: FleetRow }) {
   }
 
   const scorecardQuery = useQuery({
-    queryKey: ["darb", "fleets", fleet.id, "scorecard"],
-    queryFn: () => fleetsApi.scorecard(fleet.id),
+    queryKey: ["darb", "fleets", fleet.id, "scorecard", period.from, period.to],
+    queryFn: () => fleetsApi.scorecard(fleet.id, { from: period.from, to: period.to }),
   });
   const statementsQuery = useQuery({
     queryKey: ["darb", "fleets", fleet.id, "statements"],
@@ -101,6 +119,9 @@ function ScorecardPanel({ fleet }: { fleet: FleetRow }) {
         <h3 className="text-xs uppercase tracking-wide font-medium text-sand-600 mb-2">
           {t("fleetPortal.scorecardTitle")}
         </h3>
+        <div className="mb-3">
+          <PeriodPicker value={period} onChange={setPeriod} />
+        </div>
         {scorecardQuery.isLoading ? (
           <p className="text-sm text-sand-600">{t("common.loading")}</p>
         ) : !s ? (

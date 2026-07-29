@@ -24,6 +24,11 @@ import {
 
 export interface FleetScorecard {
   fleetPartnerId: string;
+  /** The window every number below was measured over, echoed back so the
+   *  screen and the workbook can name the period instead of implying "all
+   *  time". ISO strings; `to` is the inclusive end the caller asked for. */
+  periodFrom: string;
+  periodTo: string;
   driverCount: number;
   deliveredOrders: number;
   onTimeRate: number | null; // 0..1
@@ -51,9 +56,12 @@ export async function getFleetScorecard(
     select: { id: true },
   });
   const driverIds = drivers.map((d) => d.id);
+  const period = { periodFrom: range.from.toISOString(), periodTo: range.to.toISOString() };
+
   if (driverIds.length === 0) {
     return {
       fleetPartnerId,
+      ...period,
       driverCount: 0,
       deliveredOrders: 0,
       onTimeRate: null,
@@ -154,6 +162,7 @@ export async function getFleetScorecard(
 
   return {
     fleetPartnerId,
+    ...period,
     driverCount: driverIds.length,
     deliveredOrders: delivered,
     onTimeRate: withSla.length > 0 ? Number((onTimeCount / withSla.length).toFixed(3)) : null,
