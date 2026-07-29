@@ -36,6 +36,30 @@ async function main() {
   console.log("\n=== order status counts ===");
   byStatus.forEach((r) => console.log(`  ${r.status}: ${r._count._all}`));
 
+  // In flight as well as waiting: an order that reached a driver and then
+  // stopped moving is the same complaint from the customer's side.
+  const inFlight = await prisma.deliveryOrder.findMany({
+    where: { status: { in: ["ASSIGNED", "PICKED_UP"] } },
+    orderBy: { updatedAt: "desc" },
+    take: 10,
+    select: {
+      orderNumber: true,
+      status: true,
+      driverId: true,
+      paymentMethod: true,
+      orderTotalKwd: true,
+      assignedAt: true,
+      pickedUpAt: true,
+    },
+  });
+  console.log("\n=== in flight ===");
+  for (const o of inFlight) {
+    console.log(
+      `  ${o.orderNumber}  ${o.status}  driver=${o.driverId ?? "NONE"}  pay=${o.paymentMethod}  ` +
+        `total=${o.orderTotalKwd}  assigned=${ago(o.assignedAt)}  pickedUp=${ago(o.pickedUpAt)}`,
+    );
+  }
+
   const live = await prisma.deliveryOrder.findMany({
     where: { status: { in: ["CREATED", "DISPATCHING", "NO_DRIVER"] } },
     orderBy: { createdAt: "desc" },
