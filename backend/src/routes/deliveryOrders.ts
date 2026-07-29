@@ -8,6 +8,7 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
 import { prisma } from "../config";
+import { trackingUrl } from "../services/customerMessagingService";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
 import { rbac } from "../middleware/rbac";
@@ -311,7 +312,10 @@ router.get("/:id", async (req: Request, res: Response) => {
       orderBy: { timestamp: "asc" },
     });
 
-    res.json({ ...order, events });
+    // The link the customer was sent, so staff can resend it when the
+    // WhatsApp message does not land. Same helper as the message itself,
+    // so the two can never drift.
+    res.json({ ...order, events, trackingUrl: trackingUrl(order.trackingToken) });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 // Darb 2.0 PRD build — /fleets: compact staff surface over the fleet
 // governance APIs. A DataTable of fleet partners with a SlidePanel
 // click-through showing the fleet's scorecard and payout statements.
@@ -6,12 +7,14 @@
 // acceptable on this staff-only page).
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Download } from "lucide-react";
+import { Eye, Download } from "lucide-react";
 import { downloadBlob } from "@/utils/downloadBlob";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import SlidePanel from "@/components/shared/SlidePanel";
+import { useRole } from "@/hooks/useRole";
+import { cn } from "@/lib/cn";
 import PeriodPicker, { type Period, presetRange } from "@/components/shared/PeriodPicker";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/Toast";
@@ -58,6 +61,7 @@ async function exportWorkbook(fleetId?: string, nameForFile?: string, period?: P
 function ScorecardPanel({ fleet }: { fleet: FleetRow }) {
   const { t, locale } = useI18n();
   const toast = useToast();
+  const { isAdmin } = useRole();
   const [downloading, setDownloading] = useState(false);
 
   /**
@@ -103,11 +107,25 @@ function ScorecardPanel({ fleet }: { fleet: FleetRow }) {
         <span dir="ltr" className="text-sm text-sand-700 tabular-nums">
           {t("fleetPortal.feePerOrder")}: {formatKwd(fleet.flatFeePerOrderKwd, locale)}
         </span>
+        {/* The way into the partner's own portal, read-only. ADMIN only,
+            which is what the server admits (middleware/fleetScope). */}
+        {isAdmin && (
+          <Link
+            href={`/fleet-portal?fleetPartnerId=${fleet.id}`}
+            className="ms-auto inline-flex items-center gap-1.5 px-3 h-8 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors"
+          >
+            <Eye size={12} aria-hidden="true" />
+            {t("vendorsPage.viewPortal")}
+          </Link>
+        )}
         <button
           type="button"
           onClick={() => void downloadFleet()}
           disabled={downloading}
-          className="ms-auto inline-flex items-center gap-1.5 px-3 h-8 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors disabled:opacity-50"
+          className={cn(
+            "inline-flex items-center gap-1.5 px-3 h-8 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors disabled:opacity-50",
+            !isAdmin && "ms-auto"
+          )}
         >
           <Download size={12} aria-hidden="true" />
           {downloading ? t("common.processing") : t("fleetPortal.exportThisCompany")}

@@ -18,6 +18,7 @@ import DriverCard from "@/components/darb/DriverCard";
 import OrderStatusBadge from "@/components/darb/OrderStatusBadge";
 import { OrderOutcomeBanner } from "@/components/darb/OrderOutcome";
 import SlaCountdown from "@/components/darb/SlaCountdown";
+import TrackingLink from "@/components/darb/TrackingLink";
 import LiveMap from "@/components/map/LiveMap";
 import { useVendorBranch } from "@/contexts/VendorBranchContext";
 import { vendorApi } from "@/lib/darbApi";
@@ -201,6 +202,9 @@ export default function VendorOrderDetailPage() {
           customer, so a dead order states its reason here, read-only: only
           Darb ops may write one. */}
       <OrderOutcomeBanner order={order} />
+
+      {/* The link the customer was sent, so the shop can resend it. */}
+      <TrackingLink url={order.trackingUrl} />
 
       {/* Money callouts */}
       {order.paymentMethod === "COD" ? (

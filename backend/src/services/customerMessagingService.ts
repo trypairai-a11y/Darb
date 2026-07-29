@@ -24,7 +24,15 @@ export type CustomerMilestone =
   | "DELIVERED"
   | "CANCELLED";
 
-function trackingUrl(token: string | null): string | null {
+/**
+ * The customer's tracking link. Exported because the staff order panel and the
+ * merchant order detail both offer to resend it, and they have to produce the
+ * exact string the customer was sent, not a plausible-looking rebuild of it.
+ * The tracking page tells customers "the shop you ordered from can send it
+ * again", which was untrue for any merchant working through the portal: the
+ * token reached nobody but the WhatsApp message and the partner API response.
+ */
+export function trackingUrl(token: string | null): string | null {
   const base = process.env.PUBLIC_TRACKING_BASE_URL;
   if (!base || !token) return null;
   return `${base.replace(/\/+$/, "")}/track/${token}`;

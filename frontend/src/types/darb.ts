@@ -191,6 +191,11 @@ export interface VendorUser {
 export interface DeliveryOrder {
   id: string;
   orderNumber: string;
+  /**
+   * The customer's tracking link, exactly as it was sent to them. Present on
+   * the detail endpoints only, and null until PUBLIC_TRACKING_BASE_URL is set.
+   */
+  trackingUrl?: string | null;
   source: DeliveryOrderSource;
   foodicsOrderId?: string | null;
   vendorId: string;

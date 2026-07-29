@@ -8,12 +8,15 @@ import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
 import { rbac } from "../middleware/rbac";
+import { fleetScope } from "../middleware/fleetScope";
 import { getFleetScorecard } from "../services/fleetService";
 import { getDriverRating } from "../services/ratingService";
 import { parseLocalDate, parseLocalDateEnd } from "../utils/date";
 
 const router = Router();
-router.use(authMiddleware, tenantScope, rbac("FLEET"));
+// ADMIN is admitted only so fleetScope can decide: it lets an admin read a
+// named partner's portal and refuses everything else. See fleetScope.
+router.use(authMiddleware, tenantScope, rbac("FLEET", "ADMIN"), fleetScope);
 
 /**
  * Resolve which fleet partner this request is acting as.

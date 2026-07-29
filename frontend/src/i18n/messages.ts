@@ -24,6 +24,9 @@ export interface Messages {
     clear: string;
     processing: string;
     notAvailable: string;
+    copy: string;
+    copied: string;
+    trackingLink: string;
     of: string;
     selected: string;
     perPage: string;
@@ -1996,6 +1999,9 @@ export const en: Messages = {
     clear: "Clear",
     processing: "Processing…",
     notAvailable: "n/a",
+    copy: "Copy",
+    copied: "Copied",
+    trackingLink: "Customer tracking link",
     of: "of",
     selected: "selected",
     perPage: "per page",
@@ -3970,6 +3976,9 @@ export const ar: Messages = {
     clear: "مسح",
     processing: "جارٍ المعالجة…",
     notAvailable: "n/a",
+    copy: "نسخ",
+    copied: "تم النسخ",
+    trackingLink: "رابط تتبع العميل",
     of: "من",
     selected: "محدد",
     perPage: "لكل صفحة",

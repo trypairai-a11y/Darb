@@ -12,6 +12,7 @@ import { useToast } from "@/components/shared/Toast";
 import OrderStatusBadge from "@/components/darb/OrderStatusBadge";
 import { OrderOutcomeBanner, outcomeReason } from "@/components/darb/OrderOutcome";
 import OfferTimeline from "@/components/darb/OfferTimeline";
+import TrackingLink from "@/components/darb/TrackingLink";
 import SlaCountdown from "@/components/darb/SlaCountdown";
 import { deliveryOrdersApi, unwrapList } from "@/lib/darbApi";
 import { useDriverPositions } from "@/lib/driverPositionStore";
@@ -169,20 +170,25 @@ export default function OrderOpsPanel({
               }
             />
 
+            {/* The link the customer was sent. Support gets asked "where is
+                my order" by people who lost the WhatsApp message, and until
+                now had nothing to give them. */}
+            <TrackingLink url={order.trackingUrl} />
+
             {/* Order facts */}
             <section>
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm bg-sand-100/60 rounded-xl p-4">
                 <dt className="text-sand-600">{t("dispatch.vendor")}</dt>
-                <dd dir="auto">{order.vendor?.name ?? "—"}</dd>
+                <dd dir="auto">{order.vendor?.name ?? t("common.notAvailable")}</dd>
                 <dt className="text-sand-600">{t("opsPages.route")}</dt>
                 <dd dir="auto">
                   {(locale === "ar" && order.pickupZone?.nameAr
                     ? order.pickupZone.nameAr
-                    : order.pickupZone?.name) ?? "—"}
+                    : order.pickupZone?.name) ?? t("common.notAvailable")}
                   {" → "}
                   {(locale === "ar" && order.dropoffZone?.nameAr
                     ? order.dropoffZone.nameAr
-                    : order.dropoffZone?.name) ?? "—"}
+                    : order.dropoffZone?.name) ?? t("common.notAvailable")}
                 </dd>
                 <dt className="text-sand-600">{t("dispatch.orderTotal")}</dt>
                 <dd dir="ltr" className="tabular-nums">
@@ -196,7 +202,7 @@ export default function OrderOpsPanel({
                 <dd>{order.paymentMethod === "COD" ? t("dispatch.cod") : t("dispatch.prepaid")}</dd>
                 <dt className="text-sand-600">{t("dispatch.customer")}</dt>
                 <dd dir="auto">
-                  {order.customerName ?? "—"}
+                  {order.customerName ?? t("common.notAvailable")}
                   {order.customerPhone && (
                     <a href={`tel:${order.customerPhone}`} dir="ltr" className="block text-primary text-xs">
                       {order.customerPhone}

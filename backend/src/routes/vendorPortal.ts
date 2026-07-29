@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { prisma } from "../config";
+import { trackingUrl } from "../services/customerMessagingService";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
 import { rbac } from "../middleware/rbac";
@@ -227,7 +228,7 @@ router.get("/orders/:id", async (req: Request, res: Response) => {
       orderBy: { timestamp: "asc" },
     });
 
-    res.json({ ...order, timeline });
+    res.json({ ...order, timeline, trackingUrl: trackingUrl(order.trackingToken) });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

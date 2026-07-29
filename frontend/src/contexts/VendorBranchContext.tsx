@@ -5,7 +5,6 @@
 // consumer (vendorApi.me() in the vendor layout); this context only owns the
 // selected id.
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { setInspectVendorId } from "@/lib/darbApi";
 
 const STORAGE_KEY = "darb.vendor.branch";
 
@@ -42,23 +41,11 @@ export function VendorBranchProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // darbApi has to know the id DURING this render, not after it. Children mount
-  // and fire their queries before a parent's effects run, so setting this in a
-  // useEffect meant the first /api/vendor/* calls went out unscoped, came back
-  // 403, and left the portal showing an empty board and no vendor name. Writing
-  // it here is safe because it is idempotent: every render computes the same id
-  // from the same URL.
-  if (typeof window !== "undefined") {
-    setInspectVendorId(new URLSearchParams(window.location.search).get("vendorId"));
-  }
-
-  // The React-visible copy stays in an effect so the server (no URL) and the
-  // client's first paint agree, and hydration does not mismatch on the banner.
-  // Cleared on unmount so leaving the portal cannot leak the scope into a
-  // later request.
+  // Only the banner and the hidden write controls need this in React.
+  // Scoping the requests is darbApi's job, and it reads the same URL at
+  // request time, so there is no ordering to get wrong.
   useEffect(() => {
     setInspect(new URLSearchParams(window.location.search).get("vendorId"));
-    return () => setInspectVendorId(null);
   }, []);
 
   function setBranchId(id: string | null) {

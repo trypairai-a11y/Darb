@@ -64,27 +64,47 @@ export function unwrapList<T>(res: T[] | Paginated<T> | { data: T[] } | null | u
 }
 
 /**
- * Admin inspection of a merchant portal (see backend middleware/vendorScope).
+ * Admin inspection of a portal (see backend middleware/vendorScope and
+ * middleware/fleetScope).
  *
- * An ADMIN has no vendorId in their token, so every /api/vendor/* call has to
- * name the vendor it means. Rather than thread that through ~15 call sites and
- * hope nobody forgets one, it is set once by VendorBranchProvider and appended
- * here. Null for a vendor's own session, where the id comes from the JWT and
- * the client must not be able to override it.
+ * An ADMIN carries neither a vendorId nor a fleetPartnerId in their token, so
+ * every portal call has to name the account it means. Rather than thread that
+ * through ~20 call sites and hope nobody forgets one, it is set once by the
+ * portal's layout and appended here. Both are null for a portal user's own
+ * session, where the id comes from the JWT and the client must not be able to
+ * override it.
  */
-let inspectVendorId: string | null = null;
-export function setInspectVendorId(id: string | null): void {
-  inspectVendorId = id;
+/**
+ * The id an inspecting admin is scoped to, read from the URL at request time.
+ *
+ * This was a module variable set by each portal's layout, which meant it had to
+ * be written before any child fired a query, and that ordering did not hold:
+ * the first /api/fleet/* calls went out unscoped and came back 403. Reading the
+ * URL here cannot be raced, because the URL is already correct by the time any
+ * request is made.
+ *
+ * A portal user's own session is unaffected. vendorScope and fleetScope take
+ * the id from the JWT for VENDOR and FLEET tokens and ignore the query
+ * entirely, so a stray ?vendorId= in a merchant's address bar changes nothing.
+ *
+ * The trailing slashes matter: /api/vendors and /api/fleets are the staff CRUD
+ * surfaces, scoped by their own route params rather than by this.
+ */
+function inspectParams(url: string): Params | null {
+  if (typeof window === "undefined") return null;
+  const key = url.startsWith("/api/vendor/")
+    ? "vendorId"
+    : url.startsWith("/api/fleet/")
+      ? "fleetPartnerId"
+      : null;
+  if (!key) return null;
+  const id = new URLSearchParams(window.location.search).get(key);
+  return id ? { [key]: id } : null;
 }
 
 async function get<T>(url: string, params?: Params): Promise<T> {
-  // The trailing slash matters: /api/vendors is the staff CRUD surface and is
-  // scoped by its own route params, not by this.
-  const scoped =
-    inspectVendorId && url.startsWith("/api/vendor/")
-      ? { ...params, vendorId: inspectVendorId }
-      : params;
-  const { data } = await api.get<T>(url, { params: clean(scoped) });
+  const scope = inspectParams(url);
+  const { data } = await api.get<T>(url, { params: clean(scope ? { ...params, ...scope } : params) });
   return data;
 }
 

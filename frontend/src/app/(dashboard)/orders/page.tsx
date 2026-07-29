@@ -9,6 +9,7 @@ import { RefreshCw, UserPlus2, XCircle } from "lucide-react";
 import DataTable from "@/components/shared/DataTable";
 import FilterBar from "@/components/shared/FilterBar";
 import SlidePanel from "@/components/shared/SlidePanel";
+import TrackingLink from "@/components/darb/TrackingLink";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
@@ -356,6 +357,11 @@ export default function DeliveryOrdersPage() {
                   : undefined
               }
             />
+
+            {/* The link the customer was sent. Support gets asked "where is
+                my order" by people who lost the WhatsApp message, and until
+                now had nothing to give them. */}
+            <TrackingLink url={order.trackingUrl} />
 
             {/* Quote breakdown */}
             <section>

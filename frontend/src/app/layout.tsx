@@ -7,9 +7,13 @@ import { I18nProvider } from "@/i18n/I18nProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { DEFAULT_LOCALE, LOCALES, Locale, isRtl } from "@/i18n/messages";
 
+// "Darb - Fleet Management" and "AI-powered delivery fleet operating system"
+// both predate the 2026-07 pivot, from when this managed other people's fleets.
+// Darb runs the delivery now: shops send the order, Darb owns the dispatch,
+// the driver, the delivery and the money.
 export const metadata: Metadata = {
-  title: "Darb - Fleet Management",
-  description: "AI-powered delivery fleet operating system",
+  title: "Darb",
+  description: "Zone-based delivery for Kuwait.",
 };
 
 export default function RootLayout({
