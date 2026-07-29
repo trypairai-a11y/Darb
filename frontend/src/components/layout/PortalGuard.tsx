@@ -16,9 +16,22 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 
 /** Portal roles and the path prefix each one is fenced into. */
-const PORTALS: { role: string; home: string; alsoAllow?: string[] }[] = [
-  { role: "VENDOR", home: "/vendor" },
-  { role: "FLEET", home: "/fleet-portal" },
+const PORTALS: {
+  role: string;
+  home: string;
+  alsoAllow?: string[];
+  /** Query param that names the account an admin is inspecting. */
+  inspectParam?: string;
+  /** Where to send an admin who named none. */
+  pick?: string;
+}[] = [
+  // `pick` is where an admin goes when they ask for a portal without saying
+  // whose. Inspection needs a named account (?vendorId / ?fleetPartnerId); with
+  // none, the API refuses and the screen used to show a bare
+  // "Request failed with status code 403". The staff list is the answer to the
+  // question they actually asked, and it carries a View their portal link.
+  { role: "VENDOR", home: "/vendor", inspectParam: "vendorId", pick: "/vendors" },
+  { role: "FLEET", home: "/fleet-portal", inspectParam: "fleetPartnerId", pick: "/fleets" },
   {
     role: "CASH_COLLECTOR",
     home: "/cash-desk",
@@ -45,12 +58,19 @@ export default function PortalGuard() {
       if (!inPortal(own.home)) router.replace(own.home);
       return;
     }
-    // Staff hitting a portal bounce to "/" — except ADMIN, who may inspect,
-    // and any role a portal explicitly admits.
-    if (
-      user.role !== "ADMIN" &&
-      PORTALS.some((p) => inPortal(p.home) && !p.alsoAllow?.includes(user.role))
-    ) {
+    if (user.role === "ADMIN") {
+      // An admin may inspect a portal, but only a named one. Without the id
+      // every request 403s, so send them to the list to choose instead of
+      // leaving them on an error screen.
+      const portal = PORTALS.find((p) => inPortal(p.home) && p.pick);
+      if (portal && !new URLSearchParams(window.location.search).get(portal.inspectParam!)) {
+        router.replace(portal.pick!);
+      }
+      return;
+    }
+    // Every other staff role bounces out of a portal entirely, except one a
+    // portal explicitly admits.
+    if (PORTALS.some((p) => inPortal(p.home) && !p.alsoAllow?.includes(user.role))) {
       router.replace("/");
     }
   }, [user, pathname, router]);
