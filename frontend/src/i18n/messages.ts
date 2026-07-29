@@ -1473,6 +1473,9 @@ export interface Messages {
     topUpReference: string;
     creditRemaining: string;
     creditSuspended: string;
+    accessRestricted: string;
+    accessRestrictedHint: string;
+    viewingBranch: string;
     tabLive: string;
     tabDelivered: string;
     waitingSince: string;
@@ -3502,6 +3505,9 @@ export const en: Messages = {
     topUpReference: "Your transfer reference",
     creditRemaining: "left before new orders are refused",
     creditSuspended: "Your credit limit is used up, so new orders are being refused. Top up to start again.",
+    accessRestricted: "Access restricted",
+    accessRestrictedHint: "Your role does not include this screen. Your shop owner can change what you see.",
+    viewingBranch: "Viewing",
     tabLive: "Live",
     tabDelivered: "Delivered",
     waitingSince: "waiting",
@@ -5532,6 +5538,9 @@ export const ar: Messages = {
     topUpReference: "مرجع التحويل الخاص بك",
     creditRemaining: "المتبقي قبل رفض الطلبات الجديدة",
     creditSuspended: "استُهلك حد الائتمان، لذلك تُرفض الطلبات الجديدة. اشحن الرصيد للمتابعة.",
+    accessRestricted: "الوصول مقيّد",
+    accessRestrictedHint: "دورك لا يشمل هذه الشاشة. يمكن لمالك المتجر تغيير ما تراه.",
+    viewingBranch: "تعرض",
     tabLive: "الجارية",
     tabDelivered: "المُسلّمة",
     waitingSince: "بالانتظار",

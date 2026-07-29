@@ -3,13 +3,14 @@
 // the VendorBranchProvider and, when the vendor has 2+ branches, renders a
 // compact pill selector sub-header so pages (analytics first) can scope to
 // one branch. Single-branch vendors see no extra chrome.
-import { ReactNode, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Eye } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { VendorBranchProvider, useVendorBranch } from "@/contexts/VendorBranchContext";
 import { vendorApi } from "@/lib/darbApi";
+import AccessRestricted from "@/components/vendor/AccessRestricted";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/hooks/useRole";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -17,6 +18,8 @@ import { useI18n } from "@/i18n/I18nProvider";
 function BranchPills() {
   const { t } = useI18n();
   const { isVendor } = useRole();
+  const { user } = useAuth();
+  const pinnedBranch = Boolean(user?.role === "VENDOR" && user?.branchId);
   const { branchId, setBranchId } = useVendorBranch();
 
   const meQuery = useQuery({
@@ -27,6 +30,20 @@ function BranchPills() {
   });
 
   const branches = meQuery.data?.branches ?? [];
+
+  // Revision 9 (#10). A tracker pinned to one branch is sent exactly that
+  // branch and no pills render, so the board gave no clue whose orders these
+  // were. One branch plus a pinned role is a label, not a choice.
+  if (branches.length === 1 && pinnedBranch) {
+    return (
+      <div className="flex items-center gap-2 text-sm">
+        <span className="text-sand-600">{t("vendorPortal.viewingBranch")}</span>
+        <span className="font-medium text-sand-900" dir="auto">
+          {branches[0].name}
+        </span>
+      </div>
+    );
+  }
   if (branches.length < 2) return null;
 
   const pill = (active: boolean) =>
@@ -108,30 +125,33 @@ const FORBIDDEN: Record<string, string[]> = {
   ORDER_TRACKING: ["/vendor/wallet", "/vendor/settings", "/vendor/grow", "/vendor/team"],
 };
 
-function RoleRouteFence() {
+/**
+ * True when this login may not open the screen it is currently on.
+ *
+ * Revision 9 (#9, #11): this used to redirect to /vendor, which left the user
+ * wondering whether they had mis-clicked, and the API's 403 rendered as
+ * "Something went wrong" with a Try again button that could never work. The
+ * page now says plainly that access is restricted and stays put.
+ */
+function useRestricted(): boolean {
   const { user } = useAuth();
   const pathname = usePathname();
-  const router = useRouter();
+  if (!user || user.role !== "VENDOR" || !pathname) return false;
+  const blocked = FORBIDDEN[user.vendorRole ?? "OWNER"] ?? [];
+  return blocked.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
 
-  useEffect(() => {
-    if (!user || user.role !== "VENDOR" || !pathname) return;
-    const blocked = FORBIDDEN[user.vendorRole ?? "OWNER"] ?? [];
-    if (blocked.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
-      router.replace("/vendor");
-    }
-  }, [user, pathname, router]);
-
-  return null;
+function VendorBody({ children }: { children: ReactNode }) {
+  return useRestricted() ? <AccessRestricted /> : <>{children}</>;
 }
 
 export default function VendorLayout({ children }: { children: ReactNode }) {
   return (
     <VendorBranchProvider>
       <div className="space-y-4">
-        <RoleRouteFence />
         <InspectBanner />
         <BranchPills />
-        {children}
+        <VendorBody>{children}</VendorBody>
       </div>
     </VendorBranchProvider>
   );

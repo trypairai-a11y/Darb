@@ -347,9 +347,10 @@ export const vendorApi = {
     scheduledAt?: string;
   }) => post<DeliveryOrder>("/api/vendor/orders", body),
   /** This vendor's orders as a workbook, honouring the branch/date filters. */
-  ordersExportUrl: (params: { branchId?: string | null; from?: string; to?: string }) => {
+  ordersExportUrl: (params: { branchId?: string | null; from?: string; to?: string; vendorId?: string | null }) => {
     const q = new URLSearchParams();
     if (params.branchId) q.set("branchId", params.branchId);
+    if (params.vendorId) q.set("vendorId", params.vendorId);
     if (params.from) q.set("from", params.from);
     if (params.to) q.set("to", params.to);
     const qs = q.toString();

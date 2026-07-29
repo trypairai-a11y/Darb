@@ -10,6 +10,8 @@ import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ClipboardList, Download, Phone, PlusCircle, Wallet } from "lucide-react";
 import StatCard from "@/components/shared/StatCard";
+import { useToast } from "@/components/shared/Toast";
+import { downloadBlob } from "@/utils/downloadBlob";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import OrderStatusBadge from "@/components/darb/OrderStatusBadge";
@@ -167,6 +169,8 @@ export default function VendorBoardPage() {
   // Live work and finished work are two different questions, so they are two
   // tabs rather than a fourth column of things nobody needs to act on.
   const [tab, setTab] = useState<"live" | "delivered">("live");
+  const [exporting, setExporting] = useState(false);
+  const toast = useToast();
 
   const meQuery = useQuery({
     queryKey: ["darb", "vendor", "me"],
@@ -314,16 +318,27 @@ export default function VendorBoardPage() {
               reconciling a week against its own books needs the lot. Opens the
               workbook endpoint directly, so the browser handles the download
               and no blob is assembled in memory. */}
-          <a
-            href={vendorApi.ordersExportUrl({
-              branchId,
-              ...(inspectVendorId ? {} : {}),
-            })}
-            className="inline-flex items-center gap-1.5 px-4 h-10 rounded-pill bg-sand-100 text-sand-800 text-sm font-medium hover:bg-sand-200 transition-colors"
+          <button
+            type="button"
+            disabled={exporting}
+            onClick={async () => {
+              setExporting(true);
+              try {
+                await downloadBlob(
+                  vendorApi.ordersExportUrl({ branchId, vendorId: inspectVendorId }),
+                  `darb-orders-${new Date().toISOString().slice(0, 10)}.xlsx`
+                );
+              } catch {
+                toast.error(t("reportsPage.exportFailed"));
+              } finally {
+                setExporting(false);
+              }
+            }}
+            className="inline-flex items-center gap-1.5 px-4 h-10 rounded-pill bg-sand-100 text-sand-800 text-sm font-medium hover:bg-sand-200 transition-colors disabled:opacity-50"
           >
             <Download size={15} aria-hidden="true" />
-            {t("vendorPortal.exportOrders")}
-          </a>
+            {exporting ? t("common.processing") : t("vendorPortal.exportOrders")}
+          </button>
           {!inspectVendorId && (
             <Link
               href="/vendor/orders/new"
