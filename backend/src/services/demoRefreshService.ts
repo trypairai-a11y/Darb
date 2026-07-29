@@ -49,8 +49,16 @@ const FIRST = ["Ahmed", "Sara", "Yousef", "Fatima", "Omar", "Layla", "Khalid", "
 const LAST = ["Al Ali", "Al Mutairi", "Al Rashid", "Al Sabah", "Al Otaibi"];
 const STREETS = ["Block 4 Street 12", "Block 9 Street 3", "Block 1 Street 7", "Block 6 Street 22"];
 
+/**
+ * Trimmed before comparing. `vercel env add` stores whatever it is handed,
+ * newline included, so a value piped from `echo` arrives as "true\n" and an
+ * exact match reads it as off. That is not hypothetical: production carried
+ * DEMO_REFRESH_ENABLED="true\n" for six days believing the nightly demo
+ * refresh was running. A flag that looks set in the dashboard and reads as
+ * unset in the process is the worst kind of quiet.
+ */
 export function isDemoRefreshEnabled(): boolean {
-  return process.env.DEMO_REFRESH_ENABLED === "true";
+  return (process.env.DEMO_REFRESH_ENABLED ?? "").trim() === "true";
 }
 
 /** Local Kuwait midnight, as a UTC instant. */

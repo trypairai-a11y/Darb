@@ -35,6 +35,7 @@ import { computeAllTenantTiers, snapshotAllTenants } from "../services/performan
 import { prisma } from "../config";
 import { refreshDemoData } from "../services/demoRefreshService";
 import { refreshDemoPresence } from "../services/demoPresenceService";
+import { runDemoCouriers } from "../services/demoCourierService";
 
 const router = Router();
 
@@ -120,12 +121,23 @@ router.get("/dispatch-sweep", async (req: Request, res: Response) => {
 
     const dispatch = await sweepDispatch();
 
+    // Demo tenants only, behind DEMO_AUTO_COURIER. Runs AFTER the dispatch leg
+    // so an offer made on this tick is still fresh when it looks, and gets its
+    // pause before being answered on the next one.
+    let demoCouriers = { tenants: 0, accepted: 0, pickedUp: 0, delivered: 0 };
+    try {
+      demoCouriers = await runDemoCouriers();
+    } catch (err) {
+      logger.warn({ err }, "cron: demo courier pass failed");
+    }
+
     return res.json({
       ok: true,
       presenceOffline,
       presenceUpkeep,
       scheduledAdvanced,
       ...dispatch,
+      demoCouriers,
       durationMs: Date.now() - startedAt,
     });
   } catch (error) {

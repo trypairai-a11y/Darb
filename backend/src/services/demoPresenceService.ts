@@ -42,8 +42,12 @@ export interface PresenceUpkeepResult {
  * Tenants this is enabled for. Comma-separated ids in DEMO_PRESENCE_TENANTS.
  * Empty (the default) disables the whole thing, which is what production
  * tenants with real drivers get.
+ *
+ * Exported because demoCourierService gates on the same list: a tenant whose
+ * couriers are fixtures breathing on synthetic GPS is exactly a tenant whose
+ * couriers cannot answer an offer. One allow-list, one blast radius.
  */
-function enabledTenantIds(): string[] {
+export function demoTenantIds(): string[] {
   return (process.env.DEMO_PRESENCE_TENANTS ?? "")
     .split(",")
     .map((s) => s.trim())
@@ -122,7 +126,7 @@ async function wakeRoster(tenantId: string): Promise<number> {
  * with it, because the sweep is the thing that actually moves orders.
  */
 export async function refreshDemoPresence(): Promise<PresenceUpkeepResult> {
-  const tenantIds = enabledTenantIds();
+  const tenantIds = demoTenantIds();
   const result: PresenceUpkeepResult = { tenants: 0, refreshed: 0, woken: 0 };
   if (tenantIds.length === 0) return result;
 

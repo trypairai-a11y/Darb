@@ -13,6 +13,11 @@ jest.mock("../../services/orderService", () => ({
 jest.mock("../../services/demoPresenceService", () => ({
   refreshDemoPresence: jest.fn().mockResolvedValue({ tenants: 0, refreshed: 0, woken: 0 }),
 }));
+jest.mock("../../services/demoCourierService", () => ({
+  runDemoCouriers: jest
+    .fn()
+    .mockResolvedValue({ tenants: 0, accepted: 0, pickedUp: 0, delivered: 0 }),
+}));
 
 const { sweepDispatch } = require("../../services/dispatch/dispatchEngine");
 const { sweepScheduledOrders } = require("../../services/orderService");

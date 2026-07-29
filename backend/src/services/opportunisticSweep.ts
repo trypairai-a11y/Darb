@@ -29,6 +29,7 @@ import { logger } from "../config/logger";
 import { sweepDispatch } from "./dispatch/dispatchEngine";
 import { sweepScheduledOrders } from "./orderService";
 import { refreshDemoPresence } from "./demoPresenceService";
+import { runDemoCouriers } from "./demoCourierService";
 
 /** Shortest gap between two traffic-driven sweeps, per instance. */
 const MIN_INTERVAL_MS = 60_000;
@@ -65,7 +66,10 @@ export async function maybeSweep(now: number = Date.now()): Promise<boolean> {
     await refreshDemoPresence();
     await sweepScheduledOrders();
     const result = await sweepDispatch();
-    logger.info({ ...result, trigger: "traffic" }, "opportunistic dispatch sweep");
+    // After dispatch, so an offer made on this tick keeps its pause and is
+    // answered on the next one. No-op unless DEMO_AUTO_COURIER is on.
+    const demoCouriers = await runDemoCouriers();
+    logger.info({ ...result, demoCouriers, trigger: "traffic" }, "opportunistic dispatch sweep");
     return true;
   } catch (err) {
     logger.warn({ err }, "opportunistic dispatch sweep failed");
