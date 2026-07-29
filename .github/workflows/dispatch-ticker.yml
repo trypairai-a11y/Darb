@@ -1,0 +1,53 @@
+# Minute-level ticker for the dispatch sweep.
+#
+# Vercel Hobby only permits daily crons, so vercel.json schedules
+# /api/cron/dispatch-sweep at 03:00 and nothing drives it in between. That is
+# the whole background process: offers expire, NO_DRIVER orders return to
+# DISPATCHING on their backoff, scheduled orders go out, and demo courier
+# presence is kept alive. Without a tick, an order placed at 09:00 sits until
+# the following morning.
+#
+# GitHub's scheduled minimum is every 5 minutes, which is coarser than the 15s
+# offer window but enough that orders move on their own. Upgrading to Vercel
+# Pro and setting "* * * * *" in vercel.json is the better fix; this is the
+# free one.
+#
+# IMPORTANT: scheduled workflows only run from the repository's DEFAULT branch.
+# This file does nothing until it is merged to main. It also needs a repository
+# secret named CRON_SECRET matching the backend's.
+name: dispatch-ticker
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  # A slow sweep must not stack up behind the next tick.
+  group: dispatch-ticker
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Sweep dispatch
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "CRON_SECRET is not set on this repository — cannot authenticate." >&2
+            exit 1
+          fi
+          code=$(curl -sS -o /tmp/sweep.json -w '%{http_code}' \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            https://pair-darb-api.vercel.app/api/cron/dispatch-sweep)
+          cat /tmp/sweep.json
+          echo
+          # A non-2xx is a real failure: the sweep is the only thing moving
+          # orders on this deploy, so a silent red tick means a stalled queue.
+          if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
+            echo "sweep returned HTTP $code" >&2
+            exit 1
+          fi
