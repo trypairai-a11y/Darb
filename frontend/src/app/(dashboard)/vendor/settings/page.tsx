@@ -40,6 +40,13 @@ export default function VendorSettingsPage() {
 
   const vendor = meQuery.data;
   const branches = useMemo(() => meQuery.data?.branches ?? [], [meQuery.data?.branches]);
+  // Revision 10 (#7). "" means the whole account, which is what the toggle
+  // always did and stays the default.
+  const [pauseBranchId, setPauseBranchId] = useState("");
+  const pausedBranchNames = useMemo(
+    () => branches.filter((b) => b.isPaused).map((b) => b.name),
+    [branches],
+  );
 
   async function connectFoodics() {
     setConnecting(true);
@@ -86,13 +93,76 @@ export default function VendorSettingsPage() {
       <section className="bg-card border border-sand-200 rounded-2xl shadow-soft p-6">
         <h2 className="font-medium text-sand-900">{t("vendorPortal.pauseSection")}</h2>
         <p className="text-xs text-sand-600 mt-1 mb-4">{t("vendorPortal.pauseHint")}</p>
+
+        {/* Revision 10 (#7). One switch used to stop the whole account, so a
+            shop with a queue at one counter had to refuse orders everywhere.
+            The scope picker is only worth drawing for a shop that has more than
+            one branch; a single-branch shop keeps the plain toggle. */}
+        {branches.length > 1 && (
+          <>
+            <div className="flex gap-1 bg-sand-100 rounded-pill p-1 w-fit mb-3 flex-wrap">
+              <button
+                type="button"
+                onClick={() => setPauseBranchId("")}
+                className={cn(
+                  "px-4 h-9 text-sm font-medium rounded-pill transition-colors",
+                  pauseBranchId === ""
+                    ? "bg-white text-sand-900 shadow-soft"
+                    : "text-sand-600 hover:text-sand-900",
+                )}
+              >
+                {t("vendorPortal.pauseScopeAll")}
+              </button>
+              {branches.map((b) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => setPauseBranchId(b.id)}
+                  className={cn(
+                    "px-4 h-9 text-sm font-medium rounded-pill transition-colors",
+                    pauseBranchId === b.id
+                      ? "bg-white text-sand-900 shadow-soft"
+                      : "text-sand-600 hover:text-sand-900",
+                  )}
+                >
+                  <span dir="auto">{b.name}</span>
+                  {b.isPaused && (
+                    <span
+                      aria-hidden="true"
+                      className="inline-block h-1.5 w-1.5 rounded-full bg-red-500 ms-1.5 align-middle"
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-sand-600 mb-4">{t("vendorPortal.pauseBranchHint")}</p>
+          </>
+        )}
+
         <PauseOrdersToggle
-          paused={vendor?.isPaused ?? false}
+          // The account-wide switch pauses every counter on top of the branch
+          // flags, so a branch inside a paused account reads as paused here
+          // rather than claiming to be taking orders it would in fact refuse.
+          paused={
+            pauseBranchId === ""
+              ? (vendor?.isPaused ?? false)
+              : (vendor?.isPaused ?? false) ||
+                (branches.find((b) => b.id === pauseBranchId)?.isPaused ?? false)
+          }
+          // A branch cannot be resumed while the whole account is paused: the
+          // switch would flip and orders would still be refused.
+          disabled={pauseBranchId !== "" && (vendor?.isPaused ?? false)}
           onChange={async (paused) => {
-            await vendorApi.pause(paused);
+            await vendorApi.pause(paused, pauseBranchId || undefined);
             await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", "me"] });
           }}
         />
+
+        {pausedBranchNames.length > 0 && pauseBranchId === "" && !vendor?.isPaused && (
+          <p dir="auto" className="mt-3 text-xs text-red-700">
+            {t("vendorPortal.pausedBranches")}: {pausedBranchNames.join(", ")}
+          </p>
+        )}
       </section>
       )}
 

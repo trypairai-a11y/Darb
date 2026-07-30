@@ -39,7 +39,10 @@ export type WalletTxType =
   | "PREPAID_SETTLEMENT"
   | "REMITTANCE"
   | "ADJUSTMENT"
-  | "VENDOR_PAYOUT";
+  | "VENDOR_PAYOUT"
+  // Revision 10 (#2) — a merchant paying into their own wallet. Its own type so
+  // a shop can tell what it paid in apart from what Darb corrected.
+  | "TOP_UP";
 
 export type WalletEntryDirection = "DEBIT" | "CREDIT";
 
@@ -55,6 +58,8 @@ export type OrderRejectionReason =
   | "NO_COORDINATES"
   | "BRANCH_UNZONED"
   | "VENDOR_PAUSED"
+  // Revision 10 (#7) — one branch stopped taking orders, not the whole shop.
+  | "BRANCH_PAUSED"
   | "VENDOR_CREDIT_CAP";
 
 export type RemittanceMethod = "CASH" | "BANK_TRANSFER" | "AL_MUZAINI";
@@ -139,6 +144,13 @@ export interface Vendor {
   createdAt?: string;
   updatedAt?: string;
   branches?: VendorBranch[];
+  /**
+   * Revision 10 (#6) — the tabs the CALLING login may open, returned by
+   * /api/vendor/me. The rail and the route fence read this instead of deriving
+   * access from vendorRole, so a narrowed tab list is visible to the portal
+   * rather than only showing up as a 403.
+   */
+  portalTabs?: VendorTab[] | null;
   /** Flat count returned by the vendors list endpoint. */
   branchCount?: number;
   foodicsConnected?: boolean;
@@ -161,6 +173,9 @@ export interface VendorBranch {
   zoneId?: string | null;
   foodicsBranchId?: string | null;
   zone?: Pick<DeliveryZone, "id" | "code" | "name" | "nameAr"> | null;
+  // Revision 10 (#7) — this counter alone has stopped taking orders. The
+  // account-wide Vendor.isPaused still pauses every branch on top of this.
+  isPaused?: boolean;
   // Revision 5 (#6) — the branch's own price list. Null inherits the vendor's.
   deliveryPlanId?: string | null;
   deliveryPlan?: { id: string; name: string; type: DeliveryPlanType } | null;
@@ -185,6 +200,59 @@ export interface VendorUser {
   branch?: { id: string; name: string } | null;
   isActive?: boolean;
   createdAt?: string;
+  /**
+   * Revision 10 (#6) — the per-user tab override actually saved on this login.
+   * Null means "inherit the role's tabs", which is what every pre-existing
+   * login does.
+   */
+  vendorTabs?: VendorTab[] | null;
+  /** What this login opens today: the override if set, else the role default. */
+  effectiveTabs?: VendorTab[];
+}
+
+/** Revision 10 (#6) — the merchant portal's own tabs. */
+export type VendorTab = "ORDERS" | "WALLET" | "GROW" | "SUPPORT" | "TEAM" | "SETTINGS";
+
+export type VendorTopUpStatus = "PENDING" | "PAID" | "CANCELLED" | "FAILED";
+
+/**
+ * Revision 10 (#2) — one merchant top-up. `paymentUrl` is the gateway's hosted
+ * checkout when a gateway is configured, and the Darb-hosted /pay/{token} page
+ * otherwise, so it is always a link the shop can open.
+ */
+export interface VendorTopUp {
+  id: string;
+  amountKwd: Kwd;
+  status: VendorTopUpStatus;
+  reference: string;
+  paymentUrl?: string | null;
+  /** "MYFATOORAH" when a gateway took it, "MANUAL" when the transfer rail did. */
+  provider?: string | null;
+  token?: string;
+  paidAt?: string | null;
+  createdAt?: string;
+}
+
+/**
+ * Revision 10 (#1) — what came back from a bulk order import.
+ *
+ * The 422 shape is the same object with `created: 0`: every row that needs
+ * fixing is in `rows`, and nothing was created, because a half-finished import
+ * is the one outcome a merchant cannot reconcile.
+ */
+export interface OrderImportResult {
+  created: number;
+  accepted?: number;
+  total?: number;
+  error?: string;
+  rows: Array<{
+    row: number;
+    ok: boolean;
+    orderId?: string;
+    orderNumber?: string;
+    status?: string;
+    error?: string;
+  }>;
 }
 
 // ── Delivery orders ──────────────────────────────────────────────────────
@@ -551,6 +619,22 @@ export interface FoodicsStatus {
 export interface VendorWallet {
   account?: WalletAccount | null;
   balanceKwd?: Kwd;
+  /**
+   * Revision 10 (#3) — the figure to show for whatever the branch pills are on:
+   * the account total for All branches, that branch's own net when one is
+   * picked. The card used to print `balanceKwd` regardless, so two branches
+   * showed the identical number while the ledger under it changed.
+   */
+  scopedBalanceKwd?: Kwd;
+  scopedBranchId?: string | null;
+  /** Branch id → that branch's own net movement, as a 3dp string. */
+  branchBalances?: Record<string, Kwd>;
+  /** Postings that belong to no branch: payouts, top-ups, corrections. */
+  unallocatedKwd?: Kwd;
+  /** Revision 10 (#2) — what to prefill the top-up field with. */
+  suggestedTopUpKwd?: Kwd;
+  /** What the shop owes right now. The floor of any useful top-up. */
+  outstandingKwd?: Kwd;
   entries?: WalletEntry[];
   // PRD §11 credit line (null cap = no cap configured).
   creditCapKwd?: Kwd | null;
@@ -572,6 +656,14 @@ export interface VendorAnalytics {
   avgOrderValueKwd: string;
   uniqueCustomers: number;
   repeatBuyers: number;
+  /**
+   * Revision 10 (#4) — average minutes a driver waits at the shop between
+   * arriving and being handed the order. Null when nothing in the period had
+   * both stamps, which is a different claim from "zero minutes".
+   */
+  avgPrepMinutes?: number | null;
+  /** How many orders that average is built from. */
+  prepSampleSize?: number;
   topCustomers: Array<{ phone: string; name: string | null; orders: number; totalKwd: string }>;
   byDay: Array<{ day: string; orders: number; totalKwd: string }>;
 }
@@ -795,7 +887,9 @@ export interface DeliveryPlan {
 
 // ── Support (revision 8, edit 6) ─────────────────────────────────────────
 
-export type SupportTicketStatus = "OPEN" | "ANSWERED" | "RESOLVED";
+// Revision 10 (#5) — CANCELLED is the shop withdrawing its own request. Kept
+// apart from RESOLVED, which means Darb dealt with it.
+export type SupportTicketStatus = "OPEN" | "ANSWERED" | "RESOLVED" | "CANCELLED";
 
 /** What a request is about, in the shop's own terms (revision 9, #6). */
 export type SupportTicketType = "ORDER" | "WALLET" | "TECHNICAL" | "OTHER";

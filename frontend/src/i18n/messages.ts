@@ -1517,6 +1517,62 @@ export interface Messages {
     profile: string;
     pauseSection: string;
     pauseHint: string;
+    importTitle: string;
+    importHint: string;
+    importStep1: string;
+    importStep2: string;
+    importStep3: string;
+    importDownload: string;
+    importChoose: string;
+    importSelected: string;
+    importSubmit: string;
+    importMaxRows: string;
+    importDone: string;
+    importRow: string;
+    importFixFirst: string;
+    importRejected: string;
+    importOpenBoard: string;
+    importSingleInstead: string;
+    topUpAmount: string;
+    topUpSuggested: string;
+    topUpUseSuggested: string;
+    topUpOutstanding: string;
+    topUpWhySuggested: string;
+    topUpContinue: string;
+    topUpOpenLink: string;
+    topUpReference2: string;
+    topUpPendingTitle: string;
+    topUpManualHint: string;
+    topUpCancel: string;
+    topUpCancelled: string;
+    topUpAmountInvalid: string;
+    topUpHistory: string;
+    topUpStatusPENDING: string;
+    topUpStatusPAID: string;
+    topUpStatusCANCELLED: string;
+    topUpStatusFAILED: string;
+    walletBalanceAll: string;
+    walletBalanceBranch: string;
+    walletUnallocated: string;
+    walletUnallocatedHint: string;
+    pauseScopeAll: string;
+    pauseScopeBranch: string;
+    pauseBranchHint: string;
+    pausedBranches: string;
+    pauseNoneSelected: string;
+    payTitle: string;
+    payFor: string;
+    payAmount: string;
+    payReference: string;
+    payRedirecting: string;
+    payOpenGateway: string;
+    payTransferTitle: string;
+    payTransferHint: string;
+    payPaid: string;
+    payCancelled: string;
+    payFailed: string;
+    payNotFound: string;
+    payBackToPortal: string;
   };
   dispatch: {
     title: string;
@@ -1631,6 +1687,7 @@ export interface Messages {
     viewStatements: string;
     viewRemittances: string;
     viewLedger: string;
+    txTopUp: string;
   };
   reports: {
     statementDetail: string;
@@ -1927,6 +1984,7 @@ export interface Messages {
     NO_COORDINATES: string;
     BRANCH_UNZONED: string;
     VENDOR_PAUSED: string;
+    BRANCH_PAUSED: string;
     VENDOR_CREDIT_CAP: string;
   };
   cockpit: {
@@ -1989,6 +2047,14 @@ export interface Messages {
     hintWALLET: string;
     hintTECHNICAL: string;
     hintOTHER: string;
+    statusCancelled: string;
+    cancelTicket: string;
+    cancelTitle: string;
+    cancelMessage: string;
+    cancelReason: string;
+    cancelConfirm: string;
+    cancelKeep: string;
+    cancelDone: string;
   };
   vendorTeam: {
     title: string;
@@ -2009,6 +2075,23 @@ export interface Messages {
     added: string;
     created: string;
     empty: string;
+    tabs: string;
+    tabsHint: string;
+    tabsInherit: string;
+    tabsCustom: string;
+    tabsEmpty: string;
+    tabORDERS: string;
+    tabWALLET: string;
+    tabGROW: string;
+    tabSUPPORT: string;
+    tabTEAM: string;
+    tabSETTINGS: string;
+    editAccess: string;
+    accessSaved: string;
+    tabsColumn: string;
+    tabsAll: string;
+    save: string;
+    cannotEditSelf: string;
   };
   vendorExtra: {
     analyticsTitle: string;
@@ -2044,6 +2127,10 @@ export interface Messages {
     statementRefunds: string;
     statementClosing: string;
     statementStatus: string;
+    avgPrepTime: string;
+    avgPrepTimeHint: string;
+    minutesShort: string;
+    prepFromOrders: string;
   };
 }
 
@@ -3560,6 +3647,62 @@ export const en: Messages = {
     profile: "Profile",
     pauseSection: "Incoming orders",
     pauseHint: "Pausing rejects new orders from the portal and Foodics until you resume.",
+    importTitle: "Import several orders",
+    importHint: "More than one delivery? Download the template, fill in one row per order, then bring it back here.",
+    importStep1: "Download the template",
+    importStep2: "Fill in one row per order",
+    importStep3: "Import the filled-in file",
+    importDownload: "Download template",
+    importChoose: "Choose file",
+    importSelected: "Selected",
+    importSubmit: "Import orders",
+    importMaxRows: "Up to 50 orders per file.",
+    importDone: "orders created",
+    importRow: "Row",
+    importFixFirst: "Nothing was imported. Fix these rows and try again.",
+    importRejected: "created but refused",
+    importOpenBoard: "See them on the board",
+    importSingleInstead: "Just one order? Fill in the form below.",
+    topUpAmount: "Amount to top up",
+    topUpSuggested: "Suggested",
+    topUpUseSuggested: "Use suggested",
+    topUpOutstanding: "Outstanding now",
+    topUpWhySuggested: "Enough to clear what you owe plus about a week of your own delivery fees.",
+    topUpContinue: "Continue to payment",
+    topUpOpenLink: "Open the payment link",
+    topUpReference2: "Payment reference",
+    topUpPendingTitle: "Waiting on your payment",
+    topUpManualHint: "Pay by transfer quoting the reference above. Darb credits your wallet as soon as it lands.",
+    topUpCancel: "Cancel this top up",
+    topUpCancelled: "Top up cancelled",
+    topUpAmountInvalid: "Enter an amount in KD, up to 3 decimals.",
+    topUpHistory: "Recent top ups",
+    topUpStatusPENDING: "Awaiting payment",
+    topUpStatusPAID: "Paid",
+    topUpStatusCANCELLED: "Cancelled",
+    topUpStatusFAILED: "Failed",
+    walletBalanceAll: "Wallet balance, all branches",
+    walletBalanceBranch: "Wallet balance, this branch",
+    walletUnallocated: "not tied to a branch",
+    walletUnallocatedHint: "Top ups, payouts and corrections belong to the shop rather than to one branch, so the branch figures plus this add up to the total.",
+    pauseScopeAll: "All branches",
+    pauseScopeBranch: "This branch only",
+    pauseBranchHint: "Pause one counter without stopping the rest of the shop.",
+    pausedBranches: "Paused branches",
+    pauseNoneSelected: "Pick a branch above to pause it on its own.",
+    payTitle: "Top up your Darb wallet",
+    payFor: "For",
+    payAmount: "Amount",
+    payReference: "Reference",
+    payRedirecting: "Taking you to the payment page",
+    payOpenGateway: "Continue to payment",
+    payTransferTitle: "Pay by transfer",
+    payTransferHint: "Send the amount above and quote the reference. Darb credits your wallet as soon as it lands, usually the same working day.",
+    payPaid: "This top up has been paid. Your wallet has been credited.",
+    payCancelled: "This top up was cancelled. Raise a new one from your wallet.",
+    payFailed: "This payment did not go through. Raise a new top up from your wallet.",
+    payNotFound: "This link is not valid. It may have expired, or been typed incorrectly.",
+    payBackToPortal: "Back to your portal",
   },
   dispatch: {
     title: "Delivery orders",
@@ -3674,6 +3817,7 @@ export const en: Messages = {
     viewStatements: "View shop statements",
     viewRemittances: "View cash hand-ins",
     viewLedger: "View fee ledger",
+    txTopUp: "Top up",
   },
   reports: {
     statementDetail: "Statement detail",
@@ -3973,6 +4117,7 @@ export const en: Messages = {
     NO_COORDINATES: "Dropoff arrived without coordinates",
     BRANCH_UNZONED: "The pickup branch is not in a zone",
     VENDOR_PAUSED: "The merchant had orders paused",
+    BRANCH_PAUSED: "This branch had orders paused",
     VENDOR_CREDIT_CAP: "The merchant is over its credit cap",
   },
   cockpit: {
@@ -4035,6 +4180,14 @@ export const en: Messages = {
     hintWALLET: "A payment, a query about an invoice, a failed payment, or a refund.",
     hintTECHNICAL: "The system is slow, orders are not showing, you cannot log in, or a suggestion.",
     hintOTHER: "Anything else.",
+    statusCancelled: "Cancelled",
+    cancelTicket: "Cancel this request",
+    cancelTitle: "Cancel this request?",
+    cancelMessage: "Darb will stop working on it. You can always raise a new one.",
+    cancelReason: "Why, if you want to say (optional)",
+    cancelConfirm: "Cancel the request",
+    cancelKeep: "Keep it open",
+    cancelDone: "Request cancelled",
   },
   vendorTeam: {
     title: "Team",
@@ -4055,6 +4208,23 @@ export const en: Messages = {
     added: "Added",
     created: "User created.",
     empty: "No one else yet.",
+    tabs: "Tabs this person can open",
+    tabsHint: "Leave it on the role's own tabs, or pick exactly what this person sees.",
+    tabsInherit: "Whatever the role opens",
+    tabsCustom: "Choose the tabs",
+    tabsEmpty: "No tabs. This person can sign in and see nothing.",
+    tabORDERS: "Orders",
+    tabWALLET: "Wallet",
+    tabGROW: "Grow",
+    tabSUPPORT: "Support",
+    tabTEAM: "Team",
+    tabSETTINGS: "Settings",
+    editAccess: "Edit access",
+    accessSaved: "Access updated",
+    tabsColumn: "Tabs",
+    tabsAll: "All tabs",
+    save: "Save",
+    cannotEditSelf: "You cannot change your own access.",
   },
   vendorExtra: {
     analyticsTitle: "Analytics",
@@ -4090,6 +4260,10 @@ export const en: Messages = {
     statementRefunds: "Refunds",
     statementClosing: "Closing",
     statementStatus: "Status",
+    avgPrepTime: "Avg preparation time",
+    avgPrepTimeHint: "How long our drivers wait at the shop before the order is handed over.",
+    minutesShort: "min",
+    prepFromOrders: "from {n} orders",
   },
 };
 
@@ -5604,6 +5778,62 @@ export const ar: Messages = {
     profile: "الملف",
     pauseSection: "الطلبات الواردة",
     pauseHint: "الإيقاف المؤقت يرفض الطلبات الجديدة من البوابة وفودكس حتى تستأنف الاستقبال.",
+    importTitle: "استيراد عدة طلبات",
+    importHint: "أكثر من طلب؟ حمل القالب، واملأ صفا لكل طلب، ثم أعده هنا.",
+    importStep1: "حمل القالب",
+    importStep2: "املأ صفا لكل طلب",
+    importStep3: "استورد الملف المكتمل",
+    importDownload: "تحميل القالب",
+    importChoose: "اختر ملفا",
+    importSelected: "الملف المختار",
+    importSubmit: "استيراد الطلبات",
+    importMaxRows: "حتى 50 طلبا في الملف الواحد.",
+    importDone: "طلبات تم إنشاؤها",
+    importRow: "صف",
+    importFixFirst: "لم يتم استيراد أي طلب. صحح هذه الصفوف وأعد المحاولة.",
+    importRejected: "تم إنشاؤها ولكن رفضت",
+    importOpenBoard: "اعرضها في لوحة الطلبات",
+    importSingleInstead: "طلب واحد فقط؟ املأ النموذج أدناه.",
+    topUpAmount: "مبلغ الإيداع",
+    topUpSuggested: "المبلغ المقترح",
+    topUpUseSuggested: "استخدم المقترح",
+    topUpOutstanding: "المستحق حاليا",
+    topUpWhySuggested: "يكفي لتسديد المستحق مع نحو أسبوع من رسوم التوصيل الخاصة بك.",
+    topUpContinue: "متابعة إلى الدفع",
+    topUpOpenLink: "افتح رابط الدفع",
+    topUpReference2: "مرجع الدفع",
+    topUpPendingTitle: "في انتظار الدفع",
+    topUpManualHint: "ادفع بالتحويل مع ذكر المرجع أعلاه. تضيف Darb المبلغ إلى محفظتك عند وصوله.",
+    topUpCancel: "إلغاء هذا الإيداع",
+    topUpCancelled: "تم إلغاء الإيداع",
+    topUpAmountInvalid: "أدخل المبلغ بالدينار، حتى 3 خانات عشرية.",
+    topUpHistory: "الإيداعات الأخيرة",
+    topUpStatusPENDING: "في انتظار الدفع",
+    topUpStatusPAID: "مدفوع",
+    topUpStatusCANCELLED: "ملغى",
+    topUpStatusFAILED: "فشل",
+    walletBalanceAll: "رصيد المحفظة، جميع الفروع",
+    walletBalanceBranch: "رصيد المحفظة، هذا الفرع",
+    walletUnallocated: "غير مرتبط بفرع",
+    walletUnallocatedHint: "الإيداعات والدفعات والتصحيحات تخص المتجر لا فرعا واحدا، لذلك مجموع أرصدة الفروع مع هذا المبلغ يساوي الإجمالي.",
+    pauseScopeAll: "جميع الفروع",
+    pauseScopeBranch: "هذا الفرع فقط",
+    pauseBranchHint: "أوقف فرعا واحدا دون إيقاف بقية المتجر.",
+    pausedBranches: "الفروع الموقوفة",
+    pauseNoneSelected: "اختر فرعا أعلاه لإيقافه بمفرده.",
+    payTitle: "إيداع في محفظة Darb",
+    payFor: "لحساب",
+    payAmount: "المبلغ",
+    payReference: "المرجع",
+    payRedirecting: "جاري تحويلك إلى صفحة الدفع",
+    payOpenGateway: "متابعة إلى الدفع",
+    payTransferTitle: "الدفع بالتحويل",
+    payTransferHint: "أرسل المبلغ أعلاه مع ذكر المرجع. تضيف Darb المبلغ إلى محفظتك عند وصوله، عادة في نفس يوم العمل.",
+    payPaid: "تم دفع هذا الإيداع وإضافته إلى محفظتك.",
+    payCancelled: "تم إلغاء هذا الإيداع. أنشئ إيداعا جديدا من محفظتك.",
+    payFailed: "لم تكتمل عملية الدفع. أنشئ إيداعا جديدا من محفظتك.",
+    payNotFound: "هذا الرابط غير صالح. قد يكون منتهيا أو مكتوبا بشكل خاطئ.",
+    payBackToPortal: "العودة إلى البوابة",
   },
   dispatch: {
     title: "طلبات التوصيل",
@@ -5718,6 +5948,7 @@ export const ar: Messages = {
     viewStatements: "عرض كشوف المتاجر",
     viewRemittances: "عرض التوريدات النقدية",
     viewLedger: "عرض دفتر الرسوم",
+    txTopUp: "إيداع",
   },
   reports: {
     statementDetail: "تفاصيل كشف الحساب",
@@ -6005,6 +6236,7 @@ export const ar: Messages = {
     NO_COORDINATES: "وصل موقع التسليم بدون إحداثيات",
     BRANCH_UNZONED: "فرع الاستلام غير مرتبط بأي منطقة",
     VENDOR_PAUSED: "كان المطعم موقفاً استقبال الطلبات",
+    BRANCH_PAUSED: "كان هذا الفرع موقفا استقبال الطلبات",
     VENDOR_CREDIT_CAP: "تجاوز المطعم حد الائتمان",
   },
   cockpit: {
@@ -6067,6 +6299,14 @@ export const ar: Messages = {
     hintWALLET: "دفعة، استفسار عن فاتورة، فشل في الدفع، أو استرجاع.",
     hintTECHNICAL: "النظام بطيء، الطلبات لا تظهر، تعذّر تسجيل الدخول، أو اقتراح.",
     hintOTHER: "أي شيء آخر.",
+    statusCancelled: "ملغى",
+    cancelTicket: "إلغاء هذا الطلب",
+    cancelTitle: "إلغاء هذا الطلب؟",
+    cancelMessage: "ستتوقف Darb عن العمل عليه. يمكنك دائما إنشاء طلب جديد.",
+    cancelReason: "السبب، إن أردت ذكره (اختياري)",
+    cancelConfirm: "إلغاء الطلب",
+    cancelKeep: "أبقه مفتوحا",
+    cancelDone: "تم إلغاء الطلب",
   },
   vendorTeam: {
     title: "الفريق",
@@ -6087,6 +6327,23 @@ export const ar: Messages = {
     added: "أُضيف",
     created: "تم إنشاء المستخدم.",
     empty: "لا أحد بعد.",
+    tabs: "التبويبات التي يمكن لهذا الشخص فتحها",
+    tabsHint: "اتركها على تبويبات الدور، أو حدد بالضبط ما يراه هذا الشخص.",
+    tabsInherit: "حسب الدور",
+    tabsCustom: "اختر التبويبات",
+    tabsEmpty: "لا توجد تبويبات. سيتمكن هذا الشخص من الدخول دون رؤية أي شيء.",
+    tabORDERS: "الطلبات",
+    tabWALLET: "المحفظة",
+    tabGROW: "النمو",
+    tabSUPPORT: "الدعم",
+    tabTEAM: "الفريق",
+    tabSETTINGS: "الإعدادات",
+    editAccess: "تعديل الوصول",
+    accessSaved: "تم تحديث الوصول",
+    tabsColumn: "التبويبات",
+    tabsAll: "كل التبويبات",
+    save: "حفظ",
+    cannotEditSelf: "لا يمكنك تغيير وصولك الخاص.",
   },
   vendorExtra: {
     analyticsTitle: "التحليلات",
@@ -6122,6 +6379,10 @@ export const ar: Messages = {
     statementRefunds: "الاستردادات",
     statementClosing: "الختامي",
     statementStatus: "الحالة",
+    avgPrepTime: "متوسط وقت التحضير",
+    avgPrepTimeHint: "المدة التي ينتظرها مندوبونا في المتجر قبل تسليم الطلب.",
+    minutesShort: "دقيقة",
+    prepFromOrders: "من {n} طلب",
   },
 };
 

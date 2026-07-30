@@ -3,8 +3,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { useQuery } from "@tanstack/react-query";
 import { useRole } from "@/hooks/useRole";
 import { useAuth } from "@/contexts/AuthContext";
+import { vendorApi } from "@/lib/darbApi";
+import { roleDefaultTabs } from "@/lib/vendorTabs";
 import { useI18n } from "@/i18n/I18nProvider";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { PanelLeftClose } from "lucide-react";
@@ -23,6 +26,25 @@ export default function Sidebar() {
   const vendorRole = user?.vendorRole ?? "OWNER";
   const { t, dir } = useI18n();
 
+  /**
+   * Revision 10 (#6) — the tabs this shop login may open, from the server.
+   *
+   * The rail used to be filtered on vendorRole alone, which could not see a
+   * per-user tab list at all: an owner narrowed somebody's access and the entry
+   * stayed in the rail until they clicked it and got a 403. The same /me query
+   * the portal already runs, so this costs no extra request.
+   */
+  const meQuery = useQuery({
+    queryKey: ["darb", "vendor", "me"],
+    queryFn: () => vendorApi.me(),
+    enabled: role === "VENDOR",
+    staleTime: 60_000,
+  });
+  // Until the answer lands, fall back to what the role opens. That is what the
+  // rail showed before per-user tabs existed, so the worst case is one entry
+  // appearing for a moment before it is taken away, rather than an empty rail.
+  const vendorTabs = meQuery.data?.portalTabs ?? roleDefaultTabs(vendorRole);
+
   const sectionVisible = (section: NavSection): boolean => {
     if (section.roles) return section.roles.includes(role);
     if (section.minRole) return hasRole(section.minRole);
@@ -39,7 +61,10 @@ export default function Sidebar() {
           (!item.minRole || hasRole(item.minRole)) &&
           // A vendor login only sees the entries its portal role can open.
           // Staff are unaffected: no staff item carries vendorRoles.
-          (!item.vendorRoles || (role === "VENDOR" && item.vendorRoles.includes(vendorRole))),
+          (!item.vendorRoles || (role === "VENDOR" && item.vendorRoles.includes(vendorRole))) &&
+          // …and only the tabs its own access includes. Both gates apply, so
+          // Team stays owner-only even if somebody is granted the TEAM tab.
+          (!item.vendorTab || role !== "VENDOR" || vendorTabs.includes(item.vendorTab)),
       ),
     }))
     .filter((section) => section.items.length > 0);

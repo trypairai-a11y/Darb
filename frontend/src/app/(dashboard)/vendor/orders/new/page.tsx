@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BadgeCheck, Loader2, TriangleAlert } from "lucide-react";
 import ErrorState from "@/components/shared/ErrorState";
+import OrderBulkImport from "@/components/vendor/OrderBulkImport";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
 import { vendorApi, unwrapList } from "@/lib/darbApi";
@@ -160,6 +161,11 @@ export default function VendorNewOrderPage() {
         <h1 className="font-display text-display-sm text-sand-900">{t("vendorPortal.newOrderTitle")}</h1>
         <p className="text-sm text-sand-600 mt-1">{t("vendorPortal.newOrderSubtitle")}</p>
       </div>
+
+      {/* Revision 10 (#1). Above the form on purpose: a merchant with twenty
+          deliveries should see the bulk route before they start typing the
+          first one out by hand. */}
+      <OrderBulkImport />
 
       <form onSubmit={submit} className="grid grid-cols-1 gap-6 items-start">
         {/* ── Form fields ── */}

@@ -71,6 +71,7 @@ import dispatchMonitorRouter from "./routes/dispatchMonitor";
 import cronRouter from "./routes/cron";
 import partnerRouter from "./routes/partner";
 import trackRouter from "./routes/track";
+import payRouter from "./routes/pay";
 import agentDeliveryRouter from "./routes/agentDelivery";
 import fleetsRouter from "./routes/fleets";
 import fleetPortalRouter from "./routes/fleetPortal";
@@ -227,6 +228,10 @@ app.use("/api/cron", cronRouter);
 // trackingToken is the only credential; strict safe-subset responses.
 app.use("/api/partner", partnerRouter);
 app.use("/api/track", trackRouter);
+// payRouter: revision 10 (#2) public wallet top-up link. Same discipline as
+// trackRouter — the 128-bit top-up token is the only credential, and the
+// payload never carries anything about the shop beyond what is being paid.
+app.use("/api/pay", payRouter);
 
 // Routes
 app.use("/api/auth", authRoutes);

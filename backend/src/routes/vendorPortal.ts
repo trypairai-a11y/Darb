@@ -1,7 +1,9 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import ExcelJS from "exceljs";
+import multer from "multer";
 import bcrypt from "bcryptjs";
+import { Prisma } from "../generated/prisma";
 import { prisma } from "../config";
 import { trackingUrl } from "../services/customerMessagingService";
 import { authMiddleware } from "../middleware/auth";
@@ -18,6 +20,20 @@ import {
 import { OrderStateConflictError } from "../services/orderStateMachine";
 import { quoteDelivery } from "../services/pricingService";
 import { RefundError, requestRefund } from "../services/wallet/refundService";
+import { getVendorBranchBalances } from "../services/wallet/vendorBranchBalanceService";
+import {
+  TopUpError,
+  cancelTopUp,
+  createTopUp,
+  suggestTopUp,
+} from "../services/wallet/topUpService";
+import {
+  VENDOR_TABS,
+  type VendorTab,
+  effectiveVendorTabs,
+  isVendorTab,
+  parseVendorTabs,
+} from "../services/vendorTabService";
 
 /**
  * Vendor portal API (Darb 2.0, plan §A8 /api/vendor).
@@ -43,7 +59,12 @@ const DELIVERY_ORDER_STATUSES = [
   "PICKED_UP", "DELIVERED", "FAILED", "CANCELLED",
 ] as const;
 
-const pauseSchema = z.object({ paused: z.boolean() });
+// Revision 10 (#7): a branchId pauses that counter alone; absent means the
+// whole account, which is what the toggle always did.
+const pauseSchema = z.object({
+  paused: z.boolean(),
+  branchId: z.string().min(1).optional().nullable(),
+});
 
 /**
  * Portal sub-role fences (client revision #9).
@@ -96,6 +117,57 @@ function requireVendorRole(...allowed: VendorRole[]) {
     }
     next();
   };
+}
+
+/**
+ * Per-user tab access (revision 10, #6).
+ *
+ * Read from the row, not from the JWT. A token minted before the owner narrowed
+ * somebody's tabs would otherwise keep opening the screens it was minted with
+ * until it expired, which is the same stale-flag hole requireSuperAdmin already
+ * avoids by going to the database on every request.
+ *
+ * An inspecting ADMIN is not a shop login and has no tab list. They are already
+ * fenced to read-only by vendorScope, so the tab gate stands aside for them
+ * rather than inventing an answer.
+ */
+async function tabsForRequest(req: Request): Promise<VendorTab[] | null> {
+  if (req.user?.role !== "VENDOR") return null;
+  const cached = (req as { _vendorTabs?: VendorTab[] })._vendorTabs;
+  if (cached) return cached;
+  const row = await prisma.user.findFirst({
+    where: { id: req.user.userId, tenantId: req.user.tenantId },
+    select: { vendorRole: true, vendorTabs: true },
+  });
+  const tabs = effectiveVendorTabs(row?.vendorRole ?? req.user.vendorRole, row?.vendorTabs);
+  (req as { _vendorTabs?: VendorTab[] })._vendorTabs = tabs;
+  return tabs;
+}
+
+/** Guard a route to one portal tab. */
+function requireVendorTab(tab: VendorTab) {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const tabs = await tabsForRequest(req);
+      if (tabs && !tabs.includes(tab)) {
+        res.status(403).json({ error: "This tab is not part of your access" });
+        return;
+      }
+      next();
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  };
+}
+
+/** The tab list an owner posted, or undefined when they sent none. */
+function readTabsInput(raw: unknown): VendorTab[] | null | undefined {
+  if (raw === undefined) return undefined;
+  // Explicit null resets the user back to whatever their role opens.
+  if (raw === null) return null;
+  if (!Array.isArray(raw)) return undefined;
+  const chosen = raw.filter(isVendorTab);
+  return VENDOR_TABS.filter((tab) => chosen.includes(tab));
 }
 
 /** KWD amount: number or "1.250"-style string, ≤3 decimal places. */
@@ -169,9 +241,16 @@ router.get("/me", async (req: Request, res: Response) => {
     // the whole list, so the portal drew an "All branches" pill and a pill per
     // branch for someone who was fenced to exactly one of them.
     const pinned = scopedBranchId(req);
-    res.json(
-      pinned ? { ...vendor, branches: vendor.branches.filter((b) => b.id === pinned) } : vendor
-    );
+    const branches = pinned ? vendor.branches.filter((b) => b.id === pinned) : vendor.branches;
+    res.json({
+      ...vendor,
+      branches,
+      // Revision 10 (#6). The rail and the route fence both used to be derived
+      // from vendorRole alone on the client, which meant a narrowed tab list
+      // was invisible to the portal until the page 403'd. This is the same
+      // answer the tab gate enforces, so screen and server agree.
+      portalTabs: await tabsForRequest(req),
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -191,7 +270,7 @@ router.get("/me", async (req: Request, res: Response) => {
  *         schema: { type: string }
  *         description: CSV of DeliveryOrderStatus values, e.g. "CREATED,ASSIGNED"
  */
-router.get("/orders", async (req: Request, res: Response) => {
+router.get("/orders", requireVendorTab("ORDERS"), async (req: Request, res: Response) => {
   try {
     const { skip, limit, page } = getPagination(req);
     // Scope ALWAYS comes from the JWT — a ?vendorId= query param is ignored.
@@ -243,7 +322,7 @@ router.get("/orders", async (req: Request, res: Response) => {
  *       books needs the same fields in something it can sort and total.
  *       Honours the same branch, status and date filters as the list.
  */
-router.get("/orders/export.xlsx", async (req: Request, res: Response) => {
+router.get("/orders/export.xlsx", requireVendorTab("ORDERS"), async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId } = req.user!;
     const where: any = { tenantId, vendorId: vendorId! };
@@ -325,6 +404,384 @@ router.get("/orders/export.xlsx", async (req: Request, res: Response) => {
   }
 });
 
+// ─── Bulk import (revision 10, #1) ───────────────────────────────────────────
+//
+// A pharmacy with twenty deliveries waiting was re-typing the same eight fields
+// twenty times. The client asked for the obvious shape: download a template,
+// fill one row per order, import it back, and the orders exist.
+//
+// Both halves of that are here. The template is generated from THIS shop's own
+// branches and the live zone list, on a second sheet, so the values a merchant
+// types are values the importer can resolve. The importer validates every row
+// before it creates anything, and reports per row, because a file where row 14
+// has a typo should not leave the merchant guessing which orders went in.
+//
+// These sit ABOVE /orders/:id deliberately: Express matches in declaration
+// order and "/orders/:id" would otherwise swallow "/orders/import-template.xlsx".
+
+/**
+ * How many orders one file may carry.
+ *
+ * Not arbitrary: each row runs a real quote and a real dispatch, and the
+ * serverless function is capped at 60 seconds. Fifty rows lands comfortably
+ * inside that; a shop with more splits the file, which the template says.
+ */
+const MAX_IMPORT_ROWS = 50;
+
+const IMPORT_COLUMNS = [
+  { header: "Branch", key: "branch", width: 28 },
+  { header: "Customer name", key: "customerName", width: 24 },
+  { header: "Customer phone", key: "customerPhone", width: 18 },
+  { header: "Dropoff zone", key: "zone", width: 22 },
+  { header: "Address", key: "address", width: 42 },
+  { header: "Payment (COD or PREPAID)", key: "payment", width: 24 },
+  { header: "Order total (KD)", key: "orderTotal", width: 18 },
+  { header: "When to collect (blank = now)", key: "whenToCollect", width: 30 },
+] as const;
+
+// In-memory only: the serverless filesystem is read-only, and an order sheet is
+// a few kilobytes. Same shape as the courier import on the admin side.
+const importUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024 },
+});
+
+/** Loose match for a name typed into a spreadsheet: case and spacing forgiven. */
+function normaliseName(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+/** Read one cell as trimmed text, whatever ExcelJS decided its type was. */
+function cellText(value: ExcelJS.CellValue): string {
+  if (value === null || value === undefined) return "";
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "object") {
+    const rich = value as { text?: string; result?: unknown; hyperlink?: string };
+    if (typeof rich.text === "string") return rich.text.trim();
+    if (rich.result !== undefined && rich.result !== null) return String(rich.result).trim();
+    return "";
+  }
+  return String(value).trim();
+}
+
+/**
+ * @swagger
+ * /api/vendor/orders/import-template.xlsx:
+ *   get:
+ *     tags: [Vendor Portal]
+ *     summary: Blank bulk-order template, pre-filled with this shop's branches and the live zones
+ */
+router.get(
+  "/orders/import-template.xlsx",
+  requireVendorRole("OWNER", "ORDER_TRACKING"),
+  requireVendorTab("ORDERS"),
+  async (req: Request, res: Response) => {
+    try {
+      const { tenantId, vendorId } = req.user!;
+      const pinned = scopedBranchId(req);
+      const [branches, zones] = await Promise.all([
+        prisma.vendorBranch.findMany({
+          where: {
+            tenantId,
+            vendorId: vendorId!,
+            isActive: true,
+            ...(pinned ? { id: pinned } : {}),
+          },
+          orderBy: { name: "asc" },
+          select: { name: true, zone: { select: { name: true } } },
+        }),
+        prisma.deliveryZone.findMany({
+          where: { tenantId, isActive: true },
+          orderBy: { name: "asc" },
+          select: { name: true, code: true },
+        }),
+      ]);
+
+      const wb = new ExcelJS.Workbook();
+      const sheet = wb.addWorksheet("Orders");
+      sheet.columns = IMPORT_COLUMNS.map((c) => ({ ...c }));
+      sheet.getRow(1).font = { bold: true };
+      // A totals column formatted as text turns "1.5" into a string the
+      // importer then has to guess at. Say it is money up front.
+      sheet.getColumn("orderTotal").numFmt = "0.000";
+
+      // One filled example row, greyed, so the shape is obvious without reading
+      // instructions. The importer skips it: see EXAMPLE_PHONE below.
+      const example = sheet.addRow({
+        branch: branches[0]?.name ?? "Your branch name",
+        customerName: "Example customer",
+        customerPhone: "00000000",
+        zone: zones[0]?.name ?? "Salmiya",
+        address: "Block 4, Street 12, House 8",
+        payment: "COD",
+        orderTotal: 12.5,
+        whenToCollect: "",
+      });
+      example.font = { color: { argb: "FF9AA0A6" }, italic: true };
+
+      const ref = wb.addWorksheet("Valid values");
+      ref.columns = [
+        { header: "Your branches", key: "branch", width: 32 },
+        { header: "Branch zone", key: "branchZone", width: 22 },
+        { header: "Delivery zones", key: "zone", width: 26 },
+        { header: "Zone code", key: "zoneCode", width: 18 },
+      ];
+      ref.getRow(1).font = { bold: true };
+      const rows = Math.max(branches.length, zones.length);
+      for (let i = 0; i < rows; i++) {
+        ref.addRow({
+          branch: branches[i]?.name ?? "",
+          branchZone: branches[i]?.zone?.name ?? "",
+          zone: zones[i]?.name ?? "",
+          zoneCode: zones[i]?.code ?? "",
+        });
+      }
+      ref.addRow({});
+      ref.addRow({ branch: `Up to ${MAX_IMPORT_ROWS} orders per file.` });
+      ref.addRow({ branch: "Payment must read COD or PREPAID." });
+      ref.addRow({
+        branch: 'Leave "When to collect" blank to send the order now, or write a date and time like 2026-08-01 15:30.',
+      });
+      ref.addRow({ branch: "The grey example row is ignored. Delete it or type over it." });
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      );
+      res.setHeader("Content-Disposition", 'attachment; filename="darb-orders-template.xlsx"');
+      await wb.xlsx.write(res);
+      res.end();
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+/** The example row's phone. A row still carrying it was never filled in. */
+const EXAMPLE_PHONE = "00000000";
+
+interface ImportRowResult {
+  row: number;
+  ok: boolean;
+  orderNumber?: string;
+  orderId?: string;
+  status?: string;
+  error?: string;
+}
+
+/**
+ * @swagger
+ * /api/vendor/orders/bulk-import:
+ *   post:
+ *     tags: [Vendor Portal]
+ *     summary: Create many orders from a filled-in template workbook
+ *     description: >
+ *       multipart/form-data with one `file`. Every row is validated first; if any
+ *       row is unusable nothing is created and the errors come back per row, so a
+ *       merchant never ends up with half an import to reconcile by hand.
+ */
+router.post(
+  "/orders/bulk-import",
+  requireVendorRole("OWNER", "ORDER_TRACKING"),
+  requireVendorTab("ORDERS"),
+  importUpload.single("file"),
+  async (req: Request, res: Response) => {
+    try {
+      const { tenantId, vendorId } = req.user!;
+      const file = (req as Request & { file?: { buffer: Buffer } }).file;
+      if (!file?.buffer) {
+        res.status(400).json({ error: "Attach the filled-in template as `file`" });
+        return;
+      }
+
+      const wb = new ExcelJS.Workbook();
+      try {
+        await wb.xlsx.load(file.buffer as unknown as ArrayBuffer);
+      } catch {
+        res.status(400).json({ error: "That file is not a readable Excel workbook" });
+        return;
+      }
+      const sheet = wb.getWorksheet("Orders") ?? wb.worksheets[0];
+      if (!sheet) {
+        res.status(400).json({ error: "The workbook has no sheets" });
+        return;
+      }
+
+      const pinned = scopedBranchId(req);
+      const [branches, zones] = await Promise.all([
+        prisma.vendorBranch.findMany({
+          where: { tenantId, vendorId: vendorId!, ...(pinned ? { id: pinned } : {}) },
+          select: { id: true, name: true, nameAr: true, isActive: true },
+        }),
+        prisma.deliveryZone.findMany({
+          where: { tenantId, isActive: true },
+          select: { id: true, name: true, nameAr: true, code: true },
+        }),
+      ]);
+
+      const branchByName = new Map<string, { id: string; isActive: boolean }>();
+      for (const b of branches) {
+        branchByName.set(normaliseName(b.name), { id: b.id, isActive: b.isActive });
+        if (b.nameAr) branchByName.set(normaliseName(b.nameAr), { id: b.id, isActive: b.isActive });
+      }
+      const zoneByName = new Map<string, string>();
+      for (const z of zones) {
+        zoneByName.set(normaliseName(z.name), z.id);
+        zoneByName.set(normaliseName(z.code), z.id);
+        if (z.nameAr) zoneByName.set(normaliseName(z.nameAr), z.id);
+      }
+
+      // ── Pass one: read and validate every row, create nothing ──
+      interface ParsedRow {
+        row: number;
+        branchId: string;
+        customerName?: string;
+        customerPhone: string;
+        zoneId: string;
+        address?: string;
+        paymentMethod: "COD" | "PREPAID";
+        orderTotalKwd: string;
+        scheduledAt?: Date;
+      }
+      const parsed: ParsedRow[] = [];
+      const errors: ImportRowResult[] = [];
+      let dataRows = 0;
+
+      sheet.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return; // header
+        const values = IMPORT_COLUMNS.map((_c, i) => cellText(row.getCell(i + 1).value));
+        // A wholly empty row is spreadsheet padding, not a mistake.
+        if (values.every((v) => v === "")) return;
+
+        const [branchName, customerName, phoneRaw, zoneName, address, paymentRaw, totalRaw, whenRaw] =
+          values;
+        const phone = phoneRaw.replace(/\s+/g, "");
+        // The template's own grey example, left in place. Skipping it silently is
+        // kinder than refusing the whole file over a row we put there.
+        if (phone === EXAMPLE_PHONE && normaliseName(customerName) === "example customer") return;
+
+        dataRows += 1;
+        const fail = (message: string) => errors.push({ row: rowNumber, ok: false, error: message });
+
+        const branch = branchByName.get(normaliseName(branchName));
+        if (!branchName) fail("Branch is required");
+        else if (!branch) fail(`No branch of yours is called "${branchName}"`);
+        else if (!branch.isActive) fail(`Branch "${branchName}" is not active`);
+
+        if (!phone) fail("Customer phone is required");
+
+        const zoneId = zoneByName.get(normaliseName(zoneName));
+        if (!zoneName) fail("Dropoff zone is required");
+        else if (!zoneId) fail(`"${zoneName}" is not a delivery zone`);
+
+        const payment = normaliseName(paymentRaw).toUpperCase();
+        if (payment !== "COD" && payment !== "PREPAID") {
+          fail(`Payment must read COD or PREPAID, not "${paymentRaw}"`);
+        }
+
+        const total = totalRaw.replace(/,/g, "");
+        if (!/^\d{1,7}(\.\d{1,3})?$/.test(total)) {
+          fail(`Order total "${totalRaw}" is not a KD amount with up to 3 decimals`);
+        }
+
+        let scheduledAt: Date | undefined;
+        if (whenRaw) {
+          const when = new Date(whenRaw);
+          if (Number.isNaN(when.getTime())) {
+            fail(`"${whenRaw}" is not a date and time. Use 2026-08-01 15:30, or leave it blank.`);
+          } else if (when.getTime() <= Date.now()) {
+            fail("When to collect is in the past. Leave it blank to send the order now.");
+          } else {
+            scheduledAt = when;
+          }
+        }
+
+        if (branch?.id && phone && zoneId && (payment === "COD" || payment === "PREPAID")) {
+          parsed.push({
+            row: rowNumber,
+            branchId: branch.id,
+            customerName: customerName || undefined,
+            customerPhone: phone,
+            zoneId,
+            address: address || undefined,
+            paymentMethod: payment,
+            orderTotalKwd: total,
+            scheduledAt,
+          });
+        }
+      });
+
+      if (dataRows === 0) {
+        res.status(400).json({ error: "The sheet has no order rows in it" });
+        return;
+      }
+      if (dataRows > MAX_IMPORT_ROWS) {
+        res.status(413).json({
+          error: `That file has ${dataRows} orders. Split it into files of ${MAX_IMPORT_ROWS} or fewer and import them one at a time.`,
+        });
+        return;
+      }
+      // All or nothing. A partial import is the worst outcome here: the merchant
+      // cannot tell which of their twenty deliveries are live without checking
+      // the board row by row.
+      if (errors.length > 0) {
+        res.status(422).json({
+          error: `${errors.length} of ${dataRows} rows need fixing. Nothing was imported.`,
+          created: 0,
+          rows: errors.sort((a, b) => a.row - b.row),
+        });
+        return;
+      }
+
+      // ── Pass two: create. Sequential on purpose — each order runs a quote and
+      // enters dispatch, and firing fifty of those at once would have them
+      // competing for the same drivers in an order nobody chose.
+      const results: ImportRowResult[] = [];
+      for (const p of parsed) {
+        try {
+          const order = await createDeliveryOrder({
+            tenantId,
+            source: "VENDOR_PORTAL",
+            vendorId: vendorId!,
+            branchId: p.branchId,
+            paymentMethod: p.paymentMethod,
+            orderTotalKwd: p.orderTotalKwd,
+            customerName: p.customerName,
+            customerPhone: p.customerPhone,
+            dropoffAddress: p.address,
+            dropoff: { zoneId: p.zoneId },
+            scheduledAt: p.scheduledAt,
+            actor: { type: "VENDOR", id: req.user!.userId, name: req.user!.email },
+          });
+          results.push({
+            row: p.row,
+            // A REJECTED row is a real outcome, not a failure to import: the
+            // order exists and says why it was refused, same as a single entry
+            // through the form.
+            ok: order.status !== "REJECTED",
+            orderId: order.id,
+            orderNumber: order.orderNumber,
+            status: order.status,
+            error: order.status === "REJECTED" ? (order.rejectionReason ?? undefined) : undefined,
+          });
+        } catch (err: any) {
+          results.push({ row: p.row, ok: false, error: err?.message ?? "Could not be created" });
+        }
+      }
+
+      const created = results.filter((r) => r.orderId).length;
+      res.status(201).json({
+        created,
+        accepted: results.filter((r) => r.ok).length,
+        total: parsed.length,
+        rows: results,
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message ?? "Unexpected error" });
+    }
+  },
+);
+
 /**
  * @swagger
  * /api/vendor/orders/{id}:
@@ -332,7 +789,7 @@ router.get("/orders/export.xlsx", async (req: Request, res: Response) => {
  *     tags: [Vendor Portal]
  *     summary: Order detail (must belong to this vendor) with driver + timeline
  */
-router.get("/orders/:id", async (req: Request, res: Response) => {
+router.get("/orders/:id", requireVendorTab("ORDERS"), async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId } = req.user!;
     const branchId = scopedBranchId(req);
@@ -377,6 +834,7 @@ router.get("/orders/:id", async (req: Request, res: Response) => {
 router.post(
   "/orders",
   requireVendorRole("OWNER", "ORDER_TRACKING"),
+  requireVendorTab("ORDERS"),
   validateBody(vendorCreateOrderSchema),
   async (req: Request, res: Response) => {
     try {
@@ -418,6 +876,7 @@ router.post(
 router.post(
   "/orders/:id/cancel",
   requireVendorRole("OWNER", "ORDER_TRACKING"),
+  requireVendorTab("ORDERS"),
   validateBody(vendorCancelSchema),
   async (req: Request, res: Response) => {
     try {
@@ -473,17 +932,43 @@ router.post(
 router.post(
   "/pause",
   requireVendorRole("OWNER"),
+  requireVendorTab("SETTINGS"),
   validateBody(pauseSchema),
   async (req: Request, res: Response) => {
     try {
       const { tenantId, vendorId } = req.user!;
-      const { paused } = req.body as { paused: boolean };
+      const { paused, branchId } = req.body as { paused: boolean; branchId?: string | null };
+
+      // Revision 10 (#7). One switch used to stop the whole account, so a shop
+      // with a queue at one counter had to refuse orders at every other counter
+      // too. A branchId pauses that branch alone; no branchId keeps the
+      // account-wide behaviour the toggle always had.
+      if (branchId) {
+        const result = await prisma.vendorBranch.updateMany({
+          where: { id: branchId, tenantId, vendorId: vendorId! },
+          data: { isPaused: paused },
+        });
+        if (result.count === 0) { res.status(404).json({ error: "Branch not found" }); return; }
+        res.json({ ok: true, branchId, isPaused: paused });
+        return;
+      }
 
       const result = await prisma.vendor.updateMany({
         where: { id: vendorId!, tenantId },
         data: { isPaused: paused },
       });
       if (result.count === 0) { res.status(404).json({ error: "Vendor not found" }); return; }
+
+      // Resuming the account has to clear the branch flags too, or a shop that
+      // paused one counter last week and then resumed the account would find
+      // that one counter still silently refusing orders with no switch showing
+      // it. Pausing the account leaves them alone: they are already covered.
+      if (!paused) {
+        await prisma.vendorBranch.updateMany({
+          where: { tenantId, vendorId: vendorId!, isPaused: true },
+          data: { isPaused: false },
+        });
+      }
 
       // NOTE(darb2-integration): DarbEventType (services/eventBus.ts) has no
       // "vendor.paused" member, and eventBus is a shared file owned by another
@@ -507,10 +992,10 @@ router.post(
  *     tags: [Vendor Portal]
  *     summary: Vendor wallet balance (KWD, 3dp string)
  */
-router.get("/wallet", requireVendorRole("OWNER", "FINANCE"), async (req: Request, res: Response) => {
+router.get("/wallet", requireVendorTab("WALLET"), async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId } = req.user!;
-    const [account, vendor] = await Promise.all([
+    const [account, vendor, branchBalances, suggestion] = await Promise.all([
       prisma.walletAccount.findFirst({
         where: { tenantId, ownerKey: `VENDOR:${vendorId!}` },
       }),
@@ -518,14 +1003,36 @@ router.get("/wallet", requireVendorRole("OWNER", "FINANCE"), async (req: Request
         where: { id: vendorId!, tenantId },
         select: { creditCapKwd: true },
       }),
+      // Revision 10 (#3). The card used to print the account total whichever
+      // branch pill was lit, so two branches showed the identical figure while
+      // the ledger under it changed. Both numbers are here now: the total for
+      // "All branches", and each branch's own share.
+      getVendorBranchBalances(tenantId, vendorId!),
+      // Revision 10 (#2). The top-up field prefills from this rather than from
+      // an empty box the merchant has to guess at.
+      suggestTopUp(tenantId, vendorId!),
     ]);
     // PRD §11 credit line: debt = the negative side of the payable balance.
     const balance = account?.balanceKwd ?? null;
     const debt = balance && balance.isNegative() ? balance.neg() : null;
+
+    const chosenBranch = scopedBranchId(req);
     res.json({
       ownerKey: `VENDOR:${vendorId!}`,
       balanceKwd: fmtKwd(account?.balanceKwd),
       accountId: account?.id ?? null,
+      // The figure to show for whatever the pills are on right now. A branch
+      // with no movement yet reads 0.000, not the shop's total.
+      scopedBalanceKwd: chosenBranch
+        ? (branchBalances.byBranch[chosenBranch] ?? "0.000")
+        : branchBalances.totalKwd,
+      scopedBranchId: chosenBranch,
+      branchBalances: branchBalances.byBranch,
+      // Payouts, top-ups and corrections belong to the shop, not to a counter.
+      // Named rather than hidden, so branch figures plus this equal the total.
+      unallocatedKwd: branchBalances.unallocatedKwd,
+      suggestedTopUpKwd: suggestion.amountKwd,
+      outstandingKwd: suggestion.outstandingKwd,
       creditCapKwd: vendor?.creditCapKwd ? fmtKwd(vendor.creditCapKwd) : null,
       creditUsedKwd: debt ? fmtKwd(debt) : "0.000",
       // Revision 8 (#5). The page showed how much credit was used but not how
@@ -561,7 +1068,7 @@ router.get("/wallet", requireVendorRole("OWNER", "FINANCE"), async (req: Request
  *         schema: { type: string, example: "2026-07" }
  *         description: Restrict to a calendar month (YYYY-MM)
  */
-router.get("/wallet/entries", requireVendorRole("OWNER", "FINANCE"), async (req: Request, res: Response) => {
+router.get("/wallet/entries", requireVendorTab("WALLET"), async (req: Request, res: Response) => {
   try {
     const { skip, limit, page } = getPagination(req);
     const { tenantId, vendorId } = req.user!;
@@ -658,6 +1165,77 @@ router.get("/wallet/entries", requireVendorRole("OWNER", "FINANCE"), async (req:
   }
 });
 
+// ─── Top-up (revision 10, #2) ────────────────────────────────────────────────
+//
+// The old flow was a modal telling the shop to make a bank transfer quoting its
+// shop code, and somebody at Darb reconciling it by hand. The client asked for
+// a suggested amount, an editable field, and a link that takes the payment.
+
+const topUpSchema = z.object({ amountKwd: kwdAmountSchema });
+
+router.post(
+  "/wallet/top-up",
+  requireVendorTab("WALLET"),
+  validateBody(topUpSchema),
+  async (req: Request, res: Response) => {
+    try {
+      const { tenantId, vendorId, userId } = req.user!;
+      const topUp = await createTopUp({
+        tenantId,
+        vendorId: vendorId!,
+        amountKwd: (req.body as z.infer<typeof topUpSchema>).amountKwd as string,
+        requestedById: userId,
+      });
+      res.status(201).json(topUp);
+    } catch (err: any) {
+      if (err instanceof TopUpError) { res.status(400).json({ error: err.message }); return; }
+      res.status(500).json({ error: err?.message ?? "Unexpected error" });
+    }
+  },
+);
+
+/** The shop's own top-up history, so an unpaid link can be reopened or dropped. */
+router.get("/wallet/top-ups", requireVendorTab("WALLET"), async (req: Request, res: Response) => {
+  try {
+    const { tenantId, vendorId } = req.user!;
+    const rows = await prisma.vendorTopUp.findMany({
+      where: { tenantId, vendorId: vendorId! },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      select: {
+        id: true, amountKwd: true, status: true, reference: true,
+        paymentUrl: true, provider: true, paidAt: true, createdAt: true,
+      },
+    });
+    res.json(
+      rows.map((r) => ({ ...r, amountKwd: fmtKwd(r.amountKwd) })),
+    );
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/wallet/top-ups/:id/cancel", requireVendorTab("WALLET"), async (req: Request, res: Response) => {
+  try {
+    const { tenantId, vendorId } = req.user!;
+    // Ownership check first: a foreign id must look like a plain 404.
+    const owned = await prisma.vendorTopUp.findFirst({
+      where: { id: req.params.id, tenantId, vendorId: vendorId! },
+      select: { id: true },
+    });
+    if (!owned) { res.status(404).json({ error: "Top-up not found" }); return; }
+
+    const cancelled = await cancelTopUp(tenantId, req.params.id);
+    if (!cancelled) {
+      res.status(409).json({ error: "This top-up has already been paid" });
+      return;
+    }
+    res.json({ ok: true });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 // ─── Branches ────────────────────────────────────────────────────────────────
 
 /**
@@ -734,7 +1312,7 @@ router.get("/zones", async (req: Request, res: Response) => {
  *       404:
  *         description: Branch does not belong to this vendor
  */
-router.post("/quote", validateBody(vendorQuoteSchema), async (req: Request, res: Response) => {
+router.post("/quote", requireVendorTab("ORDERS"), validateBody(vendorQuoteSchema), async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId } = req.user!;
     const input = req.body as z.infer<typeof vendorQuoteSchema>;
@@ -784,7 +1362,7 @@ router.post("/quote", validateBody(vendorQuoteSchema), async (req: Request, res:
  *     tags: [Vendor Portal]
  *     summary: Raise a full-order refund request for a DELIVERED order
  */
-router.post("/orders/:id/refund-request", async (req: Request, res: Response) => {
+router.post("/orders/:id/refund-request", requireVendorTab("WALLET"), async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId, userId } = req.user!;
     const reason =
@@ -816,7 +1394,7 @@ router.post("/orders/:id/refund-request", async (req: Request, res: Response) =>
  *     tags: [Vendor Portal]
  *     summary: The vendor's own refund requests
  */
-router.get("/refunds", async (req: Request, res: Response) => {
+router.get("/refunds", requireVendorTab("WALLET"), async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId } = req.user!;
     const rows = await prisma.refund.findMany({
@@ -838,7 +1416,7 @@ router.get("/refunds", async (req: Request, res: Response) => {
  *     tags: [Vendor Portal]
  *     summary: The vendor's monthly netting statements
  */
-router.get("/statements", requireVendorRole("OWNER", "FINANCE"), async (req: Request, res: Response) => {
+router.get("/statements", requireVendorTab("WALLET"), async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId } = req.user!;
     const rows = await prisma.vendorStatement.findMany({
@@ -872,7 +1450,7 @@ const supportTicketSchema = z.object({
   orderId: z.string().min(1).optional().nullable(),
 });
 
-router.get("/support", async (req: Request, res: Response) => {
+router.get("/support", requireVendorTab("SUPPORT"), async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId } = req.user!;
     // Deliberately not branch-scoped, even for a pinned tracker: a ticket
@@ -899,6 +1477,7 @@ router.get("/support", async (req: Request, res: Response) => {
 
 router.post(
   "/support",
+  requireVendorTab("SUPPORT"),
   validateBody(supportTicketSchema),
   async (req: Request, res: Response) => {
     try {
@@ -934,7 +1513,7 @@ router.post(
 );
 
 /** Add a reply to a ticket this shop owns, and reopen it if Darb had answered. */
-router.post("/support/:id/reply", async (req: Request, res: Response) => {
+router.post("/support/:id/reply", requireVendorTab("SUPPORT"), async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId, email } = req.user!;
     const body = typeof req.body?.body === "string" ? req.body.body.trim() : "";
@@ -945,7 +1524,7 @@ router.post("/support/:id/reply", async (req: Request, res: Response) => {
       select: { id: true, status: true },
     });
     if (!ticket) { res.status(404).json({ error: "Ticket not found" }); return; }
-    if (ticket.status === "RESOLVED") {
+    if (ticket.status === "RESOLVED" || ticket.status === "CANCELLED") {
       res.status(409).json({ error: "This request is closed. Raise a new one." });
       return;
     }
@@ -957,6 +1536,70 @@ router.post("/support/:id/reply", async (req: Request, res: Response) => {
     const updated = await prisma.supportTicket.update({
       where: { id: ticket.id },
       data: { status: "OPEN" },
+      include: { messages: { orderBy: { createdAt: "asc" } } },
+    });
+    res.json(updated);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+/**
+ * Withdraw a request (revision 10, #5).
+ *
+ * A shop that raised something and then sorted it out itself had no way to say
+ * so: the request sat waiting on Darb, and the only way it ever closed was
+ * somebody at Darb answering a question nobody needed answering any more.
+ *
+ * CANCELLED rather than RESOLVED on purpose. Resolved means Darb dealt with it,
+ * and folding the two together would flatter Darb's own response figures with
+ * requests it never touched. A note goes on the thread so the record says who
+ * withdrew it, and Darb can still read the history.
+ */
+router.post("/support/:id/cancel", requireVendorTab("SUPPORT"), async (req: Request, res: Response) => {
+  try {
+    const { tenantId, vendorId, email } = req.user!;
+    const reason = typeof req.body?.reason === "string" ? req.body.reason.trim().slice(0, 500) : "";
+
+    const ticket = await prisma.supportTicket.findFirst({
+      where: { id: req.params.id, tenantId, vendorId: vendorId! },
+      select: { id: true, status: true },
+    });
+    if (!ticket) { res.status(404).json({ error: "Ticket not found" }); return; }
+    if (ticket.status === "RESOLVED") {
+      res.status(409).json({ error: "Darb has already closed this request." });
+      return;
+    }
+    if (ticket.status === "CANCELLED") {
+      res.status(409).json({ error: "This request is already cancelled." });
+      return;
+    }
+
+    // Status-guarded, same as every other transition in this codebase: two
+    // people cancelling the same request at once must not both win.
+    const claimed = await prisma.supportTicket.updateMany({
+      where: { id: ticket.id, tenantId, vendorId: vendorId!, status: { in: ["OPEN", "ANSWERED"] } },
+      data: { status: "CANCELLED" },
+    });
+    if (claimed.count === 0) {
+      res.status(409).json({ error: "This request has just changed. Reload and try again." });
+      return;
+    }
+
+    await prisma.supportTicketMessage.create({
+      data: {
+        tenantId,
+        ticketId: ticket.id,
+        author: "VENDOR",
+        authorName: email,
+        body: reason
+          ? `Request cancelled by the shop: ${reason}`
+          : "Request cancelled by the shop.",
+      },
+    });
+
+    const updated = await prisma.supportTicket.findFirst({
+      where: { id: ticket.id, tenantId },
       include: { messages: { orderBy: { createdAt: "asc" } } },
     });
     res.json(updated);
@@ -986,9 +1629,12 @@ const vendorTeamUserSchema = z.object({
   phone: z.string().max(30).optional(),
   vendorRole: z.enum(["OWNER", "FINANCE", "ORDER_TRACKING"]),
   branchId: z.string().min(1).optional().nullable(),
+  // Revision 10 (#6). Omit to inherit the role's tabs, which is what every
+  // login did before this existed. An explicit list narrows or widens it.
+  vendorTabs: z.array(z.enum(VENDOR_TABS)).optional().nullable(),
 });
 
-router.get("/team", requireVendorRole("OWNER"), async (req: Request, res: Response) => {
+router.get("/team", requireVendorRole("OWNER"), requireVendorTab("TEAM"), async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId } = req.user!;
     const users = await prisma.user.findMany({
@@ -996,11 +1642,20 @@ router.get("/team", requireVendorRole("OWNER"), async (req: Request, res: Respon
       orderBy: { createdAt: "asc" },
       select: {
         id: true, email: true, name: true, phone: true, vendorRole: true,
-        branchId: true, isActive: true, createdAt: true,
+        branchId: true, isActive: true, createdAt: true, vendorTabs: true,
         branch: { select: { id: true, name: true } },
       },
     });
-    res.json(users);
+    // Both figures: what was actually saved (null = inherit) and what the login
+    // opens today. The page needs the first to show the checkboxes honestly and
+    // the second to say which tabs the person really has.
+    res.json(
+      users.map((u) => ({
+        ...u,
+        vendorTabs: parseVendorTabs(u.vendorTabs),
+        effectiveTabs: effectiveVendorTabs(u.vendorRole, u.vendorTabs),
+      })),
+    );
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -1009,11 +1664,12 @@ router.get("/team", requireVendorRole("OWNER"), async (req: Request, res: Respon
 router.post(
   "/team",
   requireVendorRole("OWNER"),
+  requireVendorTab("TEAM"),
   validateBody(vendorTeamUserSchema),
   async (req: Request, res: Response) => {
     try {
       const { tenantId, vendorId, userId } = req.user!;
-      const { email, password, name, phone, vendorRole, branchId } = req.body;
+      const { email, password, name, phone, vendorRole, branchId, vendorTabs } = req.body;
 
       const existing = await prisma.user.findUnique({ where: { email } });
       if (existing) { res.status(400).json({ error: "Email already registered" }); return; }
@@ -1043,20 +1699,25 @@ router.post(
           // one was posted. Only a tracker can be pinned, and only optionally:
           // a tracker with no branch covers all of them.
           branchId: vendorRole === "ORDER_TRACKING" ? (branchId ?? null) : null,
+          vendorTabs: Array.isArray(vendorTabs) ? (vendorTabs as string[]) : undefined,
         },
         select: {
           id: true, email: true, name: true, phone: true, vendorRole: true,
-          branchId: true, isActive: true, createdAt: true,
+          branchId: true, isActive: true, createdAt: true, vendorTabs: true,
         },
       });
-      res.status(201).json(user);
+      res.status(201).json({
+        ...user,
+        vendorTabs: parseVendorTabs(user.vendorTabs),
+        effectiveTabs: effectiveVendorTabs(user.vendorRole, user.vendorTabs),
+      });
     } catch (err: any) {
       res.status(400).json({ error: err.message });
     }
   }
 );
 
-router.patch("/team/:id", requireVendorRole("OWNER"), async (req: Request, res: Response) => {
+router.patch("/team/:id", requireVendorRole("OWNER"), requireVendorTab("TEAM"), async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId, userId } = req.user!;
     if (req.params.id === userId) {
@@ -1089,16 +1750,27 @@ router.patch("/team/:id", requireVendorRole("OWNER"), async (req: Request, res: 
       }
       data.branchId = bid;
     }
+    // Revision 10 (#6). null resets the user to their role's own tabs; a list
+    // replaces it. Absent leaves whatever is stored alone, so a PATCH that only
+    // flips isActive does not quietly wipe somebody's tab list.
+    if ("vendorTabs" in req.body) {
+      const tabs = readTabsInput(req.body.vendorTabs);
+      if (tabs !== undefined) data.vendorTabs = tabs === null ? Prisma.DbNull : tabs;
+    }
 
     const user = await prisma.user.update({
       where: { id: req.params.id },
       data,
       select: {
         id: true, email: true, name: true, phone: true, vendorRole: true,
-        branchId: true, isActive: true, createdAt: true,
+        branchId: true, isActive: true, createdAt: true, vendorTabs: true,
       },
     });
-    res.json(user);
+    res.json({
+      ...user,
+      vendorTabs: parseVendorTabs(user.vendorTabs),
+      effectiveTabs: effectiveVendorTabs(user.vendorRole, user.vendorTabs),
+    });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
@@ -1123,7 +1795,7 @@ router.patch("/team/:id", requireVendorRole("OWNER"), async (req: Request, res: 
  *         name: branchId
  *         schema: { type: string }
  */
-router.get("/analytics", async (req: Request, res: Response) => {
+router.get("/analytics", requireVendorTab("GROW"), async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId } = req.user!;
     const to = typeof req.query.to === "string" ? new Date(`${req.query.to}T23:59:59.999`) : new Date();
@@ -1148,11 +1820,21 @@ router.get("/analytics", async (req: Request, res: Response) => {
         customerPhone: true,
         customerName: true,
         deliveredAt: true,
+        // Revision 10 (#4) — the handover wait. arrivedAt is stamped when the
+        // driver reaches the shop, pickedUpAt when the shop hands the order
+        // over, so the gap between them is the shop's own preparation time.
+        arrivedAt: true,
+        pickedUpAt: true,
       },
       take: 10_000,
     });
 
     let revenue = 0;
+    // Only orders where the driver's arrival and the handover were both stamped
+    // can say anything about preparation. Historical rows predating arrivedAt
+    // simply do not count towards the average rather than dragging it to zero.
+    let prepMinutes = 0;
+    let prepSample = 0;
     const byCustomer = new Map<string, { name: string | null; orders: number; totalKwd: number }>();
     const byDay = new Map<string, { orders: number; totalKwd: number }>();
     for (const o of orders) {
@@ -1164,6 +1846,15 @@ router.get("/analytics", async (req: Request, res: Response) => {
         c.totalKwd += total;
         if (!c.name && o.customerName) c.name = o.customerName;
         byCustomer.set(o.customerPhone, c);
+      }
+      if (o.arrivedAt && o.pickedUpAt) {
+        const waited = (o.pickedUpAt.getTime() - o.arrivedAt.getTime()) / 60_000;
+        // A negative gap means the two stamps landed out of order, which is a
+        // data fault rather than a shop that handed over before arriving.
+        if (waited >= 0) {
+          prepMinutes += waited;
+          prepSample += 1;
+        }
       }
       const day = o.deliveredAt ? o.deliveredAt.toISOString().slice(0, 10) : "unknown";
       const d = byDay.get(day) ?? { orders: 0, totalKwd: 0 };
@@ -1192,6 +1883,10 @@ router.get("/analytics", async (req: Request, res: Response) => {
       avgOrderValueKwd: orders.length > 0 ? (revenue / orders.length).toFixed(3) : "0.000",
       uniqueCustomers: byCustomer.size,
       repeatBuyers,
+      // Revision 10 (#4). Null rather than 0 when nothing measurable happened:
+      // "no data yet" and "we are handing over instantly" are different claims.
+      avgPrepMinutes: prepSample > 0 ? Number((prepMinutes / prepSample).toFixed(1)) : null,
+      prepSampleSize: prepSample,
       topCustomers,
       byDay: [...byDay.entries()]
         .filter(([day]) => day !== "unknown")

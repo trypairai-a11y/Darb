@@ -584,6 +584,18 @@ export type SupportTicket = $Result.DefaultSelection<Prisma.$SupportTicketPayloa
  * 
  */
 export type SupportTicketMessage = $Result.DefaultSelection<Prisma.$SupportTicketMessagePayload>
+/**
+ * Model VendorTopUp
+ * Revision 10 (#2) — a shop paying money into its Darb wallet.
+ * 
+ * Top-up used to be a paragraph telling the merchant to make a bank transfer
+ * quoting their shop code, and somebody at Darb matching it up by hand. This
+ * row is the intent to pay: it carries the amount, a public token that is the
+ * only credential the payment page needs, and the gateway's own reference once
+ * there is one. The wallet credit is posted when the payment is confirmed,
+ * keyed on `topup:{id}` so a replayed webhook cannot double-credit.
+ */
+export type VendorTopUp = $Result.DefaultSelection<Prisma.$VendorTopUpPayload>
 
 /**
  * Enums
@@ -1147,7 +1159,8 @@ export const WalletTxType: {
   VENDOR_PAYOUT: 'VENDOR_PAYOUT',
   REFUND: 'REFUND',
   TIP: 'TIP',
-  FLEET_PAYOUT: 'FLEET_PAYOUT'
+  FLEET_PAYOUT: 'FLEET_PAYOUT',
+  TOP_UP: 'TOP_UP'
 };
 
 export type WalletTxType = (typeof WalletTxType)[keyof typeof WalletTxType]
@@ -1217,7 +1230,8 @@ export type PermissionLevel = (typeof PermissionLevel)[keyof typeof PermissionLe
 export const SupportTicketStatus: {
   OPEN: 'OPEN',
   ANSWERED: 'ANSWERED',
-  RESOLVED: 'RESOLVED'
+  RESOLVED: 'RESOLVED',
+  CANCELLED: 'CANCELLED'
 };
 
 export type SupportTicketStatus = (typeof SupportTicketStatus)[keyof typeof SupportTicketStatus]
@@ -1231,6 +1245,16 @@ export const SupportTicketType: {
 };
 
 export type SupportTicketType = (typeof SupportTicketType)[keyof typeof SupportTicketType]
+
+
+export const VendorTopUpStatus: {
+  PENDING: 'PENDING',
+  PAID: 'PAID',
+  CANCELLED: 'CANCELLED',
+  FAILED: 'FAILED'
+};
+
+export type VendorTopUpStatus = (typeof VendorTopUpStatus)[keyof typeof VendorTopUpStatus]
 
 }
 
@@ -1473,6 +1497,10 @@ export const SupportTicketStatus: typeof $Enums.SupportTicketStatus
 export type SupportTicketType = $Enums.SupportTicketType
 
 export const SupportTicketType: typeof $Enums.SupportTicketType
+
+export type VendorTopUpStatus = $Enums.VendorTopUpStatus
+
+export const VendorTopUpStatus: typeof $Enums.VendorTopUpStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -2726,6 +2754,16 @@ export class PrismaClient<
     * ```
     */
   get supportTicketMessage(): Prisma.SupportTicketMessageDelegate<ExtArgs>;
+
+  /**
+   * `prisma.vendorTopUp`: Exposes CRUD operations for the **VendorTopUp** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more VendorTopUps
+    * const vendorTopUps = await prisma.vendorTopUp.findMany()
+    * ```
+    */
+  get vendorTopUp(): Prisma.VendorTopUpDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -3279,7 +3317,8 @@ export namespace Prisma {
     UserSurfacePermission: 'UserSurfacePermission',
     AccountManagerVendor: 'AccountManagerVendor',
     SupportTicket: 'SupportTicket',
-    SupportTicketMessage: 'SupportTicketMessage'
+    SupportTicketMessage: 'SupportTicketMessage',
+    VendorTopUp: 'VendorTopUp'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -3295,7 +3334,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "tenant" | "company" | "ownerGroup" | "user" | "driver" | "driverRestriction" | "driverInventory" | "recruitmentPipeline" | "vehicle" | "vehicleDriverAssignment" | "shift" | "attendanceRecord" | "orderLog" | "cashRecord" | "cashTransaction" | "pendingDuesLedger" | "vehicleInspection" | "maintenanceRecord" | "device" | "sim" | "capturedOrder" | "locationLog" | "appUsageLog" | "deviceCommand" | "aiScore" | "alert" | "aiDigest" | "auditLog" | "ticket" | "leaveRequest" | "talabatSession" | "talabatViolationEvent" | "talabatDelivery" | "keetaDailyMetrics" | "ingestRun" | "deliverooDailyMetrics" | "talabatDailyMetrics" | "platformSettings" | "platformInventory" | "americanaDailyOrders" | "americanaChain" | "americanaStore" | "americanaContract" | "americanaChainRate" | "driverBatchHistory" | "americanaStoreAssignment" | "americanaDailyIngestion" | "kpiDefinition" | "kpiRecord" | "notification" | "notificationDelivery" | "notificationRule" | "courierOnlineSession" | "violation" | "penalty" | "appeal" | "orderEvent" | "aiInsight" | "demandHeatmap" | "deliveryArea" | "courierAttendanceSlot" | "keetaAvailableShiftSlot" | "shiftComplianceConfig" | "partner" | "partnerBankAccount" | "incentiveTargetRound" | "incentiveGoal" | "incentiveTier" | "courierIncentivePayout" | "billing" | "taxInvoice" | "paymentWithdrawal" | "agentRunLog" | "agentToolCall" | "pendingAgentAction" | "agentAction" | "agentMemory" | "pinnedView" | "performanceSnapshot" | "metricEvent" | "chatThread" | "chatMessage" | "scheduledBriefing" | "vendor" | "vendorBranch" | "deliveryZone" | "zoneSurcharge" | "deliveryPlan" | "deliveryPlanZoneRate" | "deliveryPlanKmTier" | "distanceCache" | "fulfillmentSettings" | "deliveryOrder" | "dispatchOffer" | "walletAccount" | "walletTransaction" | "walletEntry" | "remittance" | "walletReconciliationRun" | "incident" | "foodicsConnection" | "webhookEvent" | "apiKey" | "orderRating" | "vendorStatement" | "refund" | "fleetPartner" | "fleetPayoutStatement" | "userInvite" | "userSurfacePermission" | "accountManagerVendor" | "supportTicket" | "supportTicketMessage"
+      modelProps: "tenant" | "company" | "ownerGroup" | "user" | "driver" | "driverRestriction" | "driverInventory" | "recruitmentPipeline" | "vehicle" | "vehicleDriverAssignment" | "shift" | "attendanceRecord" | "orderLog" | "cashRecord" | "cashTransaction" | "pendingDuesLedger" | "vehicleInspection" | "maintenanceRecord" | "device" | "sim" | "capturedOrder" | "locationLog" | "appUsageLog" | "deviceCommand" | "aiScore" | "alert" | "aiDigest" | "auditLog" | "ticket" | "leaveRequest" | "talabatSession" | "talabatViolationEvent" | "talabatDelivery" | "keetaDailyMetrics" | "ingestRun" | "deliverooDailyMetrics" | "talabatDailyMetrics" | "platformSettings" | "platformInventory" | "americanaDailyOrders" | "americanaChain" | "americanaStore" | "americanaContract" | "americanaChainRate" | "driverBatchHistory" | "americanaStoreAssignment" | "americanaDailyIngestion" | "kpiDefinition" | "kpiRecord" | "notification" | "notificationDelivery" | "notificationRule" | "courierOnlineSession" | "violation" | "penalty" | "appeal" | "orderEvent" | "aiInsight" | "demandHeatmap" | "deliveryArea" | "courierAttendanceSlot" | "keetaAvailableShiftSlot" | "shiftComplianceConfig" | "partner" | "partnerBankAccount" | "incentiveTargetRound" | "incentiveGoal" | "incentiveTier" | "courierIncentivePayout" | "billing" | "taxInvoice" | "paymentWithdrawal" | "agentRunLog" | "agentToolCall" | "pendingAgentAction" | "agentAction" | "agentMemory" | "pinnedView" | "performanceSnapshot" | "metricEvent" | "chatThread" | "chatMessage" | "scheduledBriefing" | "vendor" | "vendorBranch" | "deliveryZone" | "zoneSurcharge" | "deliveryPlan" | "deliveryPlanZoneRate" | "deliveryPlanKmTier" | "distanceCache" | "fulfillmentSettings" | "deliveryOrder" | "dispatchOffer" | "walletAccount" | "walletTransaction" | "walletEntry" | "remittance" | "walletReconciliationRun" | "incident" | "foodicsConnection" | "webhookEvent" | "apiKey" | "orderRating" | "vendorStatement" | "refund" | "fleetPartner" | "fleetPayoutStatement" | "userInvite" | "userSurfacePermission" | "accountManagerVendor" | "supportTicket" | "supportTicketMessage" | "vendorTopUp"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -11209,6 +11248,76 @@ export namespace Prisma {
           }
         }
       }
+      VendorTopUp: {
+        payload: Prisma.$VendorTopUpPayload<ExtArgs>
+        fields: Prisma.VendorTopUpFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.VendorTopUpFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorTopUpPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.VendorTopUpFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorTopUpPayload>
+          }
+          findFirst: {
+            args: Prisma.VendorTopUpFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorTopUpPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.VendorTopUpFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorTopUpPayload>
+          }
+          findMany: {
+            args: Prisma.VendorTopUpFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorTopUpPayload>[]
+          }
+          create: {
+            args: Prisma.VendorTopUpCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorTopUpPayload>
+          }
+          createMany: {
+            args: Prisma.VendorTopUpCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.VendorTopUpCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorTopUpPayload>[]
+          }
+          delete: {
+            args: Prisma.VendorTopUpDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorTopUpPayload>
+          }
+          update: {
+            args: Prisma.VendorTopUpUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorTopUpPayload>
+          }
+          deleteMany: {
+            args: Prisma.VendorTopUpDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.VendorTopUpUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.VendorTopUpUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorTopUpPayload>
+          }
+          aggregate: {
+            args: Prisma.VendorTopUpAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateVendorTopUp>
+          }
+          groupBy: {
+            args: Prisma.VendorTopUpGroupByArgs<ExtArgs>
+            result: $Utils.Optional<VendorTopUpGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.VendorTopUpCountArgs<ExtArgs>
+            result: $Utils.Optional<VendorTopUpCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -11465,6 +11574,7 @@ export namespace Prisma {
     userSurfacePermissions: number
     accountManagerVendors: number
     supportTickets: number
+    vendorTopUps: number
   }
 
   export type TenantCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -11563,6 +11673,7 @@ export namespace Prisma {
     userSurfacePermissions?: boolean | TenantCountOutputTypeCountUserSurfacePermissionsArgs
     accountManagerVendors?: boolean | TenantCountOutputTypeCountAccountManagerVendorsArgs
     supportTickets?: boolean | TenantCountOutputTypeCountSupportTicketsArgs
+    vendorTopUps?: boolean | TenantCountOutputTypeCountVendorTopUpsArgs
   }
 
   // Custom InputTypes
@@ -12239,6 +12350,13 @@ export namespace Prisma {
    */
   export type TenantCountOutputTypeCountSupportTicketsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SupportTicketWhereInput
+  }
+
+  /**
+   * TenantCountOutputType without action
+   */
+  export type TenantCountOutputTypeCountVendorTopUpsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VendorTopUpWhereInput
   }
 
 
@@ -13671,6 +13789,7 @@ export namespace Prisma {
     refunds: number
     accountManagers: number
     supportTickets: number
+    topUps: number
   }
 
   export type VendorCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -13682,6 +13801,7 @@ export namespace Prisma {
     refunds?: boolean | VendorCountOutputTypeCountRefundsArgs
     accountManagers?: boolean | VendorCountOutputTypeCountAccountManagersArgs
     supportTickets?: boolean | VendorCountOutputTypeCountSupportTicketsArgs
+    topUps?: boolean | VendorCountOutputTypeCountTopUpsArgs
   }
 
   // Custom InputTypes
@@ -13749,6 +13869,13 @@ export namespace Prisma {
    */
   export type VendorCountOutputTypeCountSupportTicketsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SupportTicketWhereInput
+  }
+
+  /**
+   * VendorCountOutputType without action
+   */
+  export type VendorCountOutputTypeCountTopUpsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VendorTopUpWhereInput
   }
 
 
@@ -14484,6 +14611,7 @@ export namespace Prisma {
     userSurfacePermissions?: boolean | Tenant$userSurfacePermissionsArgs<ExtArgs>
     accountManagerVendors?: boolean | Tenant$accountManagerVendorsArgs<ExtArgs>
     supportTickets?: boolean | Tenant$supportTicketsArgs<ExtArgs>
+    vendorTopUps?: boolean | Tenant$vendorTopUpsArgs<ExtArgs>
     _count?: boolean | TenantCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["tenant"]>
 
@@ -14619,6 +14747,7 @@ export namespace Prisma {
     userSurfacePermissions?: boolean | Tenant$userSurfacePermissionsArgs<ExtArgs>
     accountManagerVendors?: boolean | Tenant$accountManagerVendorsArgs<ExtArgs>
     supportTickets?: boolean | Tenant$supportTicketsArgs<ExtArgs>
+    vendorTopUps?: boolean | Tenant$vendorTopUpsArgs<ExtArgs>
     _count?: boolean | TenantCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type TenantIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -14723,6 +14852,7 @@ export namespace Prisma {
       userSurfacePermissions: Prisma.$UserSurfacePermissionPayload<ExtArgs>[]
       accountManagerVendors: Prisma.$AccountManagerVendorPayload<ExtArgs>[]
       supportTickets: Prisma.$SupportTicketPayload<ExtArgs>[]
+      vendorTopUps: Prisma.$VendorTopUpPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -15200,6 +15330,7 @@ export namespace Prisma {
     userSurfacePermissions<T extends Tenant$userSurfacePermissionsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$userSurfacePermissionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserSurfacePermissionPayload<ExtArgs>, T, "findMany"> | Null>
     accountManagerVendors<T extends Tenant$accountManagerVendorsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$accountManagerVendorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountManagerVendorPayload<ExtArgs>, T, "findMany"> | Null>
     supportTickets<T extends Tenant$supportTicketsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$supportTicketsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SupportTicketPayload<ExtArgs>, T, "findMany"> | Null>
+    vendorTopUps<T extends Tenant$vendorTopUpsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$vendorTopUpsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorTopUpPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -17484,6 +17615,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: SupportTicketScalarFieldEnum | SupportTicketScalarFieldEnum[]
+  }
+
+  /**
+   * Tenant.vendorTopUps
+   */
+  export type Tenant$vendorTopUpsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorTopUp
+     */
+    select?: VendorTopUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorTopUpInclude<ExtArgs> | null
+    where?: VendorTopUpWhereInput
+    orderBy?: VendorTopUpOrderByWithRelationInput | VendorTopUpOrderByWithRelationInput[]
+    cursor?: VendorTopUpWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: VendorTopUpScalarFieldEnum | VendorTopUpScalarFieldEnum[]
   }
 
   /**
@@ -19778,6 +19929,7 @@ export namespace Prisma {
     ownerGroupId: number
     branchId: number
     vendorRole: number
+    vendorTabs: number
     isActive: number
     lastLoginAt: number
     createdAt: number
@@ -19843,6 +19995,7 @@ export namespace Prisma {
     ownerGroupId?: true
     branchId?: true
     vendorRole?: true
+    vendorTabs?: true
     isActive?: true
     lastLoginAt?: true
     createdAt?: true
@@ -19937,6 +20090,7 @@ export namespace Prisma {
     ownerGroupId: string | null
     branchId: string | null
     vendorRole: string | null
+    vendorTabs: JsonValue | null
     isActive: boolean
     lastLoginAt: Date | null
     createdAt: Date
@@ -19975,6 +20129,7 @@ export namespace Prisma {
     ownerGroupId?: boolean
     branchId?: boolean
     vendorRole?: boolean
+    vendorTabs?: boolean
     isActive?: boolean
     lastLoginAt?: boolean
     createdAt?: boolean
@@ -20019,6 +20174,7 @@ export namespace Prisma {
     ownerGroupId?: boolean
     branchId?: boolean
     vendorRole?: boolean
+    vendorTabs?: boolean
     isActive?: boolean
     lastLoginAt?: boolean
     createdAt?: boolean
@@ -20045,6 +20201,7 @@ export namespace Prisma {
     ownerGroupId?: boolean
     branchId?: boolean
     vendorRole?: boolean
+    vendorTabs?: boolean
     isActive?: boolean
     lastLoginAt?: boolean
     createdAt?: boolean
@@ -20125,6 +20282,7 @@ export namespace Prisma {
       ownerGroupId: string | null
       branchId: string | null
       vendorRole: string | null
+      vendorTabs: Prisma.JsonValue | null
       isActive: boolean
       lastLoginAt: Date | null
       createdAt: Date
@@ -20558,6 +20716,7 @@ export namespace Prisma {
     readonly ownerGroupId: FieldRef<"User", 'String'>
     readonly branchId: FieldRef<"User", 'String'>
     readonly vendorRole: FieldRef<"User", 'String'>
+    readonly vendorTabs: FieldRef<"User", 'Json'>
     readonly isActive: FieldRef<"User", 'Boolean'>
     readonly lastLoginAt: FieldRef<"User", 'DateTime'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
@@ -108233,6 +108392,7 @@ export namespace Prisma {
     deliveryPlan?: boolean | Vendor$deliveryPlanArgs<ExtArgs>
     accountManagers?: boolean | Vendor$accountManagersArgs<ExtArgs>
     supportTickets?: boolean | Vendor$supportTicketsArgs<ExtArgs>
+    topUps?: boolean | Vendor$topUpsArgs<ExtArgs>
     _count?: boolean | VendorCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["vendor"]>
 
@@ -108282,6 +108442,7 @@ export namespace Prisma {
     deliveryPlan?: boolean | Vendor$deliveryPlanArgs<ExtArgs>
     accountManagers?: boolean | Vendor$accountManagersArgs<ExtArgs>
     supportTickets?: boolean | Vendor$supportTicketsArgs<ExtArgs>
+    topUps?: boolean | Vendor$topUpsArgs<ExtArgs>
     _count?: boolean | VendorCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type VendorIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -108303,6 +108464,7 @@ export namespace Prisma {
       deliveryPlan: Prisma.$DeliveryPlanPayload<ExtArgs> | null
       accountManagers: Prisma.$AccountManagerVendorPayload<ExtArgs>[]
       supportTickets: Prisma.$SupportTicketPayload<ExtArgs>[]
+      topUps: Prisma.$VendorTopUpPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -108693,6 +108855,7 @@ export namespace Prisma {
     deliveryPlan<T extends Vendor$deliveryPlanArgs<ExtArgs> = {}>(args?: Subset<T, Vendor$deliveryPlanArgs<ExtArgs>>): Prisma__DeliveryPlanClient<$Result.GetResult<Prisma.$DeliveryPlanPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     accountManagers<T extends Vendor$accountManagersArgs<ExtArgs> = {}>(args?: Subset<T, Vendor$accountManagersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountManagerVendorPayload<ExtArgs>, T, "findMany"> | Null>
     supportTickets<T extends Vendor$supportTicketsArgs<ExtArgs> = {}>(args?: Subset<T, Vendor$supportTicketsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SupportTicketPayload<ExtArgs>, T, "findMany"> | Null>
+    topUps<T extends Vendor$topUpsArgs<ExtArgs> = {}>(args?: Subset<T, Vendor$topUpsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorTopUpPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -109243,6 +109406,26 @@ export namespace Prisma {
   }
 
   /**
+   * Vendor.topUps
+   */
+  export type Vendor$topUpsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorTopUp
+     */
+    select?: VendorTopUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorTopUpInclude<ExtArgs> | null
+    where?: VendorTopUpWhereInput
+    orderBy?: VendorTopUpOrderByWithRelationInput | VendorTopUpOrderByWithRelationInput[]
+    cursor?: VendorTopUpWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: VendorTopUpScalarFieldEnum | VendorTopUpScalarFieldEnum[]
+  }
+
+  /**
    * Vendor without action
    */
   export type VendorDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -109292,6 +109475,7 @@ export namespace Prisma {
     zoneId: string | null
     deliveryPlanId: string | null
     foodicsBranchId: string | null
+    isPaused: boolean | null
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -109310,6 +109494,7 @@ export namespace Prisma {
     zoneId: string | null
     deliveryPlanId: string | null
     foodicsBranchId: string | null
+    isPaused: boolean | null
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -109328,6 +109513,7 @@ export namespace Prisma {
     zoneId: number
     deliveryPlanId: number
     foodicsBranchId: number
+    isPaused: number
     isActive: number
     createdAt: number
     updatedAt: number
@@ -109358,6 +109544,7 @@ export namespace Prisma {
     zoneId?: true
     deliveryPlanId?: true
     foodicsBranchId?: true
+    isPaused?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -109376,6 +109563,7 @@ export namespace Prisma {
     zoneId?: true
     deliveryPlanId?: true
     foodicsBranchId?: true
+    isPaused?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -109394,6 +109582,7 @@ export namespace Prisma {
     zoneId?: true
     deliveryPlanId?: true
     foodicsBranchId?: true
+    isPaused?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -109499,6 +109688,7 @@ export namespace Prisma {
     zoneId: string | null
     deliveryPlanId: string | null
     foodicsBranchId: string | null
+    isPaused: boolean
     isActive: boolean
     createdAt: Date
     updatedAt: Date
@@ -109536,6 +109726,7 @@ export namespace Prisma {
     zoneId?: boolean
     deliveryPlanId?: boolean
     foodicsBranchId?: boolean
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -109561,6 +109752,7 @@ export namespace Prisma {
     zoneId?: boolean
     deliveryPlanId?: boolean
     foodicsBranchId?: boolean
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -109583,6 +109775,7 @@ export namespace Prisma {
     zoneId?: boolean
     deliveryPlanId?: boolean
     foodicsBranchId?: boolean
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -109627,6 +109820,7 @@ export namespace Prisma {
       zoneId: string | null
       deliveryPlanId: string | null
       foodicsBranchId: string | null
+      isPaused: boolean
       isActive: boolean
       createdAt: Date
       updatedAt: Date
@@ -110041,6 +110235,7 @@ export namespace Prisma {
     readonly zoneId: FieldRef<"VendorBranch", 'String'>
     readonly deliveryPlanId: FieldRef<"VendorBranch", 'String'>
     readonly foodicsBranchId: FieldRef<"VendorBranch", 'String'>
+    readonly isPaused: FieldRef<"VendorBranch", 'Boolean'>
     readonly isActive: FieldRef<"VendorBranch", 'Boolean'>
     readonly createdAt: FieldRef<"VendorBranch", 'DateTime'>
     readonly updatedAt: FieldRef<"VendorBranch", 'DateTime'>
@@ -140027,6 +140222,1106 @@ export namespace Prisma {
 
 
   /**
+   * Model VendorTopUp
+   */
+
+  export type AggregateVendorTopUp = {
+    _count: VendorTopUpCountAggregateOutputType | null
+    _avg: VendorTopUpAvgAggregateOutputType | null
+    _sum: VendorTopUpSumAggregateOutputType | null
+    _min: VendorTopUpMinAggregateOutputType | null
+    _max: VendorTopUpMaxAggregateOutputType | null
+  }
+
+  export type VendorTopUpAvgAggregateOutputType = {
+    amountKwd: Decimal | null
+  }
+
+  export type VendorTopUpSumAggregateOutputType = {
+    amountKwd: Decimal | null
+  }
+
+  export type VendorTopUpMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    vendorId: string | null
+    requestedById: string | null
+    amountKwd: Decimal | null
+    status: $Enums.VendorTopUpStatus | null
+    token: string | null
+    reference: string | null
+    paymentUrl: string | null
+    providerRef: string | null
+    provider: string | null
+    paidAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type VendorTopUpMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    vendorId: string | null
+    requestedById: string | null
+    amountKwd: Decimal | null
+    status: $Enums.VendorTopUpStatus | null
+    token: string | null
+    reference: string | null
+    paymentUrl: string | null
+    providerRef: string | null
+    provider: string | null
+    paidAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type VendorTopUpCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    vendorId: number
+    requestedById: number
+    amountKwd: number
+    status: number
+    token: number
+    reference: number
+    paymentUrl: number
+    providerRef: number
+    provider: number
+    paidAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type VendorTopUpAvgAggregateInputType = {
+    amountKwd?: true
+  }
+
+  export type VendorTopUpSumAggregateInputType = {
+    amountKwd?: true
+  }
+
+  export type VendorTopUpMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    vendorId?: true
+    requestedById?: true
+    amountKwd?: true
+    status?: true
+    token?: true
+    reference?: true
+    paymentUrl?: true
+    providerRef?: true
+    provider?: true
+    paidAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type VendorTopUpMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    vendorId?: true
+    requestedById?: true
+    amountKwd?: true
+    status?: true
+    token?: true
+    reference?: true
+    paymentUrl?: true
+    providerRef?: true
+    provider?: true
+    paidAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type VendorTopUpCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    vendorId?: true
+    requestedById?: true
+    amountKwd?: true
+    status?: true
+    token?: true
+    reference?: true
+    paymentUrl?: true
+    providerRef?: true
+    provider?: true
+    paidAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type VendorTopUpAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which VendorTopUp to aggregate.
+     */
+    where?: VendorTopUpWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VendorTopUps to fetch.
+     */
+    orderBy?: VendorTopUpOrderByWithRelationInput | VendorTopUpOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: VendorTopUpWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VendorTopUps from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VendorTopUps.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned VendorTopUps
+    **/
+    _count?: true | VendorTopUpCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: VendorTopUpAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: VendorTopUpSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: VendorTopUpMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: VendorTopUpMaxAggregateInputType
+  }
+
+  export type GetVendorTopUpAggregateType<T extends VendorTopUpAggregateArgs> = {
+        [P in keyof T & keyof AggregateVendorTopUp]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateVendorTopUp[P]>
+      : GetScalarType<T[P], AggregateVendorTopUp[P]>
+  }
+
+
+
+
+  export type VendorTopUpGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VendorTopUpWhereInput
+    orderBy?: VendorTopUpOrderByWithAggregationInput | VendorTopUpOrderByWithAggregationInput[]
+    by: VendorTopUpScalarFieldEnum[] | VendorTopUpScalarFieldEnum
+    having?: VendorTopUpScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: VendorTopUpCountAggregateInputType | true
+    _avg?: VendorTopUpAvgAggregateInputType
+    _sum?: VendorTopUpSumAggregateInputType
+    _min?: VendorTopUpMinAggregateInputType
+    _max?: VendorTopUpMaxAggregateInputType
+  }
+
+  export type VendorTopUpGroupByOutputType = {
+    id: string
+    tenantId: string
+    vendorId: string
+    requestedById: string | null
+    amountKwd: Decimal
+    status: $Enums.VendorTopUpStatus
+    token: string
+    reference: string
+    paymentUrl: string | null
+    providerRef: string | null
+    provider: string | null
+    paidAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: VendorTopUpCountAggregateOutputType | null
+    _avg: VendorTopUpAvgAggregateOutputType | null
+    _sum: VendorTopUpSumAggregateOutputType | null
+    _min: VendorTopUpMinAggregateOutputType | null
+    _max: VendorTopUpMaxAggregateOutputType | null
+  }
+
+  type GetVendorTopUpGroupByPayload<T extends VendorTopUpGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<VendorTopUpGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof VendorTopUpGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], VendorTopUpGroupByOutputType[P]>
+            : GetScalarType<T[P], VendorTopUpGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type VendorTopUpSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    vendorId?: boolean
+    requestedById?: boolean
+    amountKwd?: boolean
+    status?: boolean
+    token?: boolean
+    reference?: boolean
+    paymentUrl?: boolean
+    providerRef?: boolean
+    provider?: boolean
+    paidAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    vendor?: boolean | VendorDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["vendorTopUp"]>
+
+  export type VendorTopUpSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    vendorId?: boolean
+    requestedById?: boolean
+    amountKwd?: boolean
+    status?: boolean
+    token?: boolean
+    reference?: boolean
+    paymentUrl?: boolean
+    providerRef?: boolean
+    provider?: boolean
+    paidAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    vendor?: boolean | VendorDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["vendorTopUp"]>
+
+  export type VendorTopUpSelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    vendorId?: boolean
+    requestedById?: boolean
+    amountKwd?: boolean
+    status?: boolean
+    token?: boolean
+    reference?: boolean
+    paymentUrl?: boolean
+    providerRef?: boolean
+    provider?: boolean
+    paidAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type VendorTopUpInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    vendor?: boolean | VendorDefaultArgs<ExtArgs>
+  }
+  export type VendorTopUpIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    vendor?: boolean | VendorDefaultArgs<ExtArgs>
+  }
+
+  export type $VendorTopUpPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "VendorTopUp"
+    objects: {
+      tenant: Prisma.$TenantPayload<ExtArgs>
+      vendor: Prisma.$VendorPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      vendorId: string
+      /**
+       * Who asked for it, so a shop can see which of its own people paid.
+       */
+      requestedById: string | null
+      amountKwd: Prisma.Decimal
+      status: $Enums.VendorTopUpStatus
+      /**
+       * 128-bit random, the only auth for the public /api/pay surface.
+       */
+      token: string
+      /**
+       * Human-quotable reference, e.g. "TOP-4F2A19".
+       */
+      reference: string
+      /**
+       * Where the merchant was sent to pay. A gateway URL when one is configured,
+       * otherwise the Darb-hosted payment page for this token.
+       */
+      paymentUrl: string | null
+      /**
+       * The gateway's own id for this payment, once it has issued one.
+       */
+      providerRef: string | null
+      /**
+       * "MYFATOORAH" | "MANUAL" — which rail actually took the money.
+       */
+      provider: string | null
+      paidAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["vendorTopUp"]>
+    composites: {}
+  }
+
+  type VendorTopUpGetPayload<S extends boolean | null | undefined | VendorTopUpDefaultArgs> = $Result.GetResult<Prisma.$VendorTopUpPayload, S>
+
+  type VendorTopUpCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<VendorTopUpFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: VendorTopUpCountAggregateInputType | true
+    }
+
+  export interface VendorTopUpDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['VendorTopUp'], meta: { name: 'VendorTopUp' } }
+    /**
+     * Find zero or one VendorTopUp that matches the filter.
+     * @param {VendorTopUpFindUniqueArgs} args - Arguments to find a VendorTopUp
+     * @example
+     * // Get one VendorTopUp
+     * const vendorTopUp = await prisma.vendorTopUp.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends VendorTopUpFindUniqueArgs>(args: SelectSubset<T, VendorTopUpFindUniqueArgs<ExtArgs>>): Prisma__VendorTopUpClient<$Result.GetResult<Prisma.$VendorTopUpPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one VendorTopUp that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {VendorTopUpFindUniqueOrThrowArgs} args - Arguments to find a VendorTopUp
+     * @example
+     * // Get one VendorTopUp
+     * const vendorTopUp = await prisma.vendorTopUp.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends VendorTopUpFindUniqueOrThrowArgs>(args: SelectSubset<T, VendorTopUpFindUniqueOrThrowArgs<ExtArgs>>): Prisma__VendorTopUpClient<$Result.GetResult<Prisma.$VendorTopUpPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first VendorTopUp that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorTopUpFindFirstArgs} args - Arguments to find a VendorTopUp
+     * @example
+     * // Get one VendorTopUp
+     * const vendorTopUp = await prisma.vendorTopUp.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends VendorTopUpFindFirstArgs>(args?: SelectSubset<T, VendorTopUpFindFirstArgs<ExtArgs>>): Prisma__VendorTopUpClient<$Result.GetResult<Prisma.$VendorTopUpPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first VendorTopUp that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorTopUpFindFirstOrThrowArgs} args - Arguments to find a VendorTopUp
+     * @example
+     * // Get one VendorTopUp
+     * const vendorTopUp = await prisma.vendorTopUp.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends VendorTopUpFindFirstOrThrowArgs>(args?: SelectSubset<T, VendorTopUpFindFirstOrThrowArgs<ExtArgs>>): Prisma__VendorTopUpClient<$Result.GetResult<Prisma.$VendorTopUpPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more VendorTopUps that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorTopUpFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all VendorTopUps
+     * const vendorTopUps = await prisma.vendorTopUp.findMany()
+     * 
+     * // Get first 10 VendorTopUps
+     * const vendorTopUps = await prisma.vendorTopUp.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const vendorTopUpWithIdOnly = await prisma.vendorTopUp.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends VendorTopUpFindManyArgs>(args?: SelectSubset<T, VendorTopUpFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorTopUpPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a VendorTopUp.
+     * @param {VendorTopUpCreateArgs} args - Arguments to create a VendorTopUp.
+     * @example
+     * // Create one VendorTopUp
+     * const VendorTopUp = await prisma.vendorTopUp.create({
+     *   data: {
+     *     // ... data to create a VendorTopUp
+     *   }
+     * })
+     * 
+     */
+    create<T extends VendorTopUpCreateArgs>(args: SelectSubset<T, VendorTopUpCreateArgs<ExtArgs>>): Prisma__VendorTopUpClient<$Result.GetResult<Prisma.$VendorTopUpPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many VendorTopUps.
+     * @param {VendorTopUpCreateManyArgs} args - Arguments to create many VendorTopUps.
+     * @example
+     * // Create many VendorTopUps
+     * const vendorTopUp = await prisma.vendorTopUp.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends VendorTopUpCreateManyArgs>(args?: SelectSubset<T, VendorTopUpCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many VendorTopUps and returns the data saved in the database.
+     * @param {VendorTopUpCreateManyAndReturnArgs} args - Arguments to create many VendorTopUps.
+     * @example
+     * // Create many VendorTopUps
+     * const vendorTopUp = await prisma.vendorTopUp.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many VendorTopUps and only return the `id`
+     * const vendorTopUpWithIdOnly = await prisma.vendorTopUp.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends VendorTopUpCreateManyAndReturnArgs>(args?: SelectSubset<T, VendorTopUpCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorTopUpPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a VendorTopUp.
+     * @param {VendorTopUpDeleteArgs} args - Arguments to delete one VendorTopUp.
+     * @example
+     * // Delete one VendorTopUp
+     * const VendorTopUp = await prisma.vendorTopUp.delete({
+     *   where: {
+     *     // ... filter to delete one VendorTopUp
+     *   }
+     * })
+     * 
+     */
+    delete<T extends VendorTopUpDeleteArgs>(args: SelectSubset<T, VendorTopUpDeleteArgs<ExtArgs>>): Prisma__VendorTopUpClient<$Result.GetResult<Prisma.$VendorTopUpPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one VendorTopUp.
+     * @param {VendorTopUpUpdateArgs} args - Arguments to update one VendorTopUp.
+     * @example
+     * // Update one VendorTopUp
+     * const vendorTopUp = await prisma.vendorTopUp.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends VendorTopUpUpdateArgs>(args: SelectSubset<T, VendorTopUpUpdateArgs<ExtArgs>>): Prisma__VendorTopUpClient<$Result.GetResult<Prisma.$VendorTopUpPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more VendorTopUps.
+     * @param {VendorTopUpDeleteManyArgs} args - Arguments to filter VendorTopUps to delete.
+     * @example
+     * // Delete a few VendorTopUps
+     * const { count } = await prisma.vendorTopUp.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends VendorTopUpDeleteManyArgs>(args?: SelectSubset<T, VendorTopUpDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more VendorTopUps.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorTopUpUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many VendorTopUps
+     * const vendorTopUp = await prisma.vendorTopUp.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends VendorTopUpUpdateManyArgs>(args: SelectSubset<T, VendorTopUpUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one VendorTopUp.
+     * @param {VendorTopUpUpsertArgs} args - Arguments to update or create a VendorTopUp.
+     * @example
+     * // Update or create a VendorTopUp
+     * const vendorTopUp = await prisma.vendorTopUp.upsert({
+     *   create: {
+     *     // ... data to create a VendorTopUp
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the VendorTopUp we want to update
+     *   }
+     * })
+     */
+    upsert<T extends VendorTopUpUpsertArgs>(args: SelectSubset<T, VendorTopUpUpsertArgs<ExtArgs>>): Prisma__VendorTopUpClient<$Result.GetResult<Prisma.$VendorTopUpPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of VendorTopUps.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorTopUpCountArgs} args - Arguments to filter VendorTopUps to count.
+     * @example
+     * // Count the number of VendorTopUps
+     * const count = await prisma.vendorTopUp.count({
+     *   where: {
+     *     // ... the filter for the VendorTopUps we want to count
+     *   }
+     * })
+    **/
+    count<T extends VendorTopUpCountArgs>(
+      args?: Subset<T, VendorTopUpCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], VendorTopUpCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a VendorTopUp.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorTopUpAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends VendorTopUpAggregateArgs>(args: Subset<T, VendorTopUpAggregateArgs>): Prisma.PrismaPromise<GetVendorTopUpAggregateType<T>>
+
+    /**
+     * Group by VendorTopUp.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorTopUpGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends VendorTopUpGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: VendorTopUpGroupByArgs['orderBy'] }
+        : { orderBy?: VendorTopUpGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, VendorTopUpGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetVendorTopUpGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the VendorTopUp model
+   */
+  readonly fields: VendorTopUpFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for VendorTopUp.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__VendorTopUpClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    vendor<T extends VendorDefaultArgs<ExtArgs> = {}>(args?: Subset<T, VendorDefaultArgs<ExtArgs>>): Prisma__VendorClient<$Result.GetResult<Prisma.$VendorPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the VendorTopUp model
+   */ 
+  interface VendorTopUpFieldRefs {
+    readonly id: FieldRef<"VendorTopUp", 'String'>
+    readonly tenantId: FieldRef<"VendorTopUp", 'String'>
+    readonly vendorId: FieldRef<"VendorTopUp", 'String'>
+    readonly requestedById: FieldRef<"VendorTopUp", 'String'>
+    readonly amountKwd: FieldRef<"VendorTopUp", 'Decimal'>
+    readonly status: FieldRef<"VendorTopUp", 'VendorTopUpStatus'>
+    readonly token: FieldRef<"VendorTopUp", 'String'>
+    readonly reference: FieldRef<"VendorTopUp", 'String'>
+    readonly paymentUrl: FieldRef<"VendorTopUp", 'String'>
+    readonly providerRef: FieldRef<"VendorTopUp", 'String'>
+    readonly provider: FieldRef<"VendorTopUp", 'String'>
+    readonly paidAt: FieldRef<"VendorTopUp", 'DateTime'>
+    readonly createdAt: FieldRef<"VendorTopUp", 'DateTime'>
+    readonly updatedAt: FieldRef<"VendorTopUp", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * VendorTopUp findUnique
+   */
+  export type VendorTopUpFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorTopUp
+     */
+    select?: VendorTopUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorTopUpInclude<ExtArgs> | null
+    /**
+     * Filter, which VendorTopUp to fetch.
+     */
+    where: VendorTopUpWhereUniqueInput
+  }
+
+  /**
+   * VendorTopUp findUniqueOrThrow
+   */
+  export type VendorTopUpFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorTopUp
+     */
+    select?: VendorTopUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorTopUpInclude<ExtArgs> | null
+    /**
+     * Filter, which VendorTopUp to fetch.
+     */
+    where: VendorTopUpWhereUniqueInput
+  }
+
+  /**
+   * VendorTopUp findFirst
+   */
+  export type VendorTopUpFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorTopUp
+     */
+    select?: VendorTopUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorTopUpInclude<ExtArgs> | null
+    /**
+     * Filter, which VendorTopUp to fetch.
+     */
+    where?: VendorTopUpWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VendorTopUps to fetch.
+     */
+    orderBy?: VendorTopUpOrderByWithRelationInput | VendorTopUpOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for VendorTopUps.
+     */
+    cursor?: VendorTopUpWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VendorTopUps from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VendorTopUps.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VendorTopUps.
+     */
+    distinct?: VendorTopUpScalarFieldEnum | VendorTopUpScalarFieldEnum[]
+  }
+
+  /**
+   * VendorTopUp findFirstOrThrow
+   */
+  export type VendorTopUpFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorTopUp
+     */
+    select?: VendorTopUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorTopUpInclude<ExtArgs> | null
+    /**
+     * Filter, which VendorTopUp to fetch.
+     */
+    where?: VendorTopUpWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VendorTopUps to fetch.
+     */
+    orderBy?: VendorTopUpOrderByWithRelationInput | VendorTopUpOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for VendorTopUps.
+     */
+    cursor?: VendorTopUpWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VendorTopUps from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VendorTopUps.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VendorTopUps.
+     */
+    distinct?: VendorTopUpScalarFieldEnum | VendorTopUpScalarFieldEnum[]
+  }
+
+  /**
+   * VendorTopUp findMany
+   */
+  export type VendorTopUpFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorTopUp
+     */
+    select?: VendorTopUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorTopUpInclude<ExtArgs> | null
+    /**
+     * Filter, which VendorTopUps to fetch.
+     */
+    where?: VendorTopUpWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VendorTopUps to fetch.
+     */
+    orderBy?: VendorTopUpOrderByWithRelationInput | VendorTopUpOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing VendorTopUps.
+     */
+    cursor?: VendorTopUpWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VendorTopUps from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VendorTopUps.
+     */
+    skip?: number
+    distinct?: VendorTopUpScalarFieldEnum | VendorTopUpScalarFieldEnum[]
+  }
+
+  /**
+   * VendorTopUp create
+   */
+  export type VendorTopUpCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorTopUp
+     */
+    select?: VendorTopUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorTopUpInclude<ExtArgs> | null
+    /**
+     * The data needed to create a VendorTopUp.
+     */
+    data: XOR<VendorTopUpCreateInput, VendorTopUpUncheckedCreateInput>
+  }
+
+  /**
+   * VendorTopUp createMany
+   */
+  export type VendorTopUpCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many VendorTopUps.
+     */
+    data: VendorTopUpCreateManyInput | VendorTopUpCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * VendorTopUp createManyAndReturn
+   */
+  export type VendorTopUpCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorTopUp
+     */
+    select?: VendorTopUpSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many VendorTopUps.
+     */
+    data: VendorTopUpCreateManyInput | VendorTopUpCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorTopUpIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * VendorTopUp update
+   */
+  export type VendorTopUpUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorTopUp
+     */
+    select?: VendorTopUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorTopUpInclude<ExtArgs> | null
+    /**
+     * The data needed to update a VendorTopUp.
+     */
+    data: XOR<VendorTopUpUpdateInput, VendorTopUpUncheckedUpdateInput>
+    /**
+     * Choose, which VendorTopUp to update.
+     */
+    where: VendorTopUpWhereUniqueInput
+  }
+
+  /**
+   * VendorTopUp updateMany
+   */
+  export type VendorTopUpUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update VendorTopUps.
+     */
+    data: XOR<VendorTopUpUpdateManyMutationInput, VendorTopUpUncheckedUpdateManyInput>
+    /**
+     * Filter which VendorTopUps to update
+     */
+    where?: VendorTopUpWhereInput
+  }
+
+  /**
+   * VendorTopUp upsert
+   */
+  export type VendorTopUpUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorTopUp
+     */
+    select?: VendorTopUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorTopUpInclude<ExtArgs> | null
+    /**
+     * The filter to search for the VendorTopUp to update in case it exists.
+     */
+    where: VendorTopUpWhereUniqueInput
+    /**
+     * In case the VendorTopUp found by the `where` argument doesn't exist, create a new VendorTopUp with this data.
+     */
+    create: XOR<VendorTopUpCreateInput, VendorTopUpUncheckedCreateInput>
+    /**
+     * In case the VendorTopUp was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<VendorTopUpUpdateInput, VendorTopUpUncheckedUpdateInput>
+  }
+
+  /**
+   * VendorTopUp delete
+   */
+  export type VendorTopUpDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorTopUp
+     */
+    select?: VendorTopUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorTopUpInclude<ExtArgs> | null
+    /**
+     * Filter which VendorTopUp to delete.
+     */
+    where: VendorTopUpWhereUniqueInput
+  }
+
+  /**
+   * VendorTopUp deleteMany
+   */
+  export type VendorTopUpDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which VendorTopUps to delete
+     */
+    where?: VendorTopUpWhereInput
+  }
+
+  /**
+   * VendorTopUp without action
+   */
+  export type VendorTopUpDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorTopUp
+     */
+    select?: VendorTopUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorTopUpInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -140105,6 +141400,7 @@ export namespace Prisma {
     ownerGroupId: 'ownerGroupId',
     branchId: 'branchId',
     vendorRole: 'vendorRole',
+    vendorTabs: 'vendorTabs',
     isActive: 'isActive',
     lastLoginAt: 'lastLoginAt',
     createdAt: 'createdAt',
@@ -141673,6 +142969,7 @@ export namespace Prisma {
     zoneId: 'zoneId',
     deliveryPlanId: 'deliveryPlanId',
     foodicsBranchId: 'foodicsBranchId',
+    isPaused: 'isPaused',
     isActive: 'isActive',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -142156,6 +143453,26 @@ export namespace Prisma {
   };
 
   export type SupportTicketMessageScalarFieldEnum = (typeof SupportTicketMessageScalarFieldEnum)[keyof typeof SupportTicketMessageScalarFieldEnum]
+
+
+  export const VendorTopUpScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    vendorId: 'vendorId',
+    requestedById: 'requestedById',
+    amountKwd: 'amountKwd',
+    status: 'status',
+    token: 'token',
+    reference: 'reference',
+    paymentUrl: 'paymentUrl',
+    providerRef: 'providerRef',
+    provider: 'provider',
+    paidAt: 'paidAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type VendorTopUpScalarFieldEnum = (typeof VendorTopUpScalarFieldEnum)[keyof typeof VendorTopUpScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -143613,6 +144930,21 @@ export namespace Prisma {
   export type SupportTicketMessageOrderByRelevanceFieldEnum = (typeof SupportTicketMessageOrderByRelevanceFieldEnum)[keyof typeof SupportTicketMessageOrderByRelevanceFieldEnum]
 
 
+  export const VendorTopUpOrderByRelevanceFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    vendorId: 'vendorId',
+    requestedById: 'requestedById',
+    token: 'token',
+    reference: 'reference',
+    paymentUrl: 'paymentUrl',
+    providerRef: 'providerRef',
+    provider: 'provider'
+  };
+
+  export type VendorTopUpOrderByRelevanceFieldEnum = (typeof VendorTopUpOrderByRelevanceFieldEnum)[keyof typeof VendorTopUpOrderByRelevanceFieldEnum]
+
+
   /**
    * Field references 
    */
@@ -144540,6 +145872,20 @@ export namespace Prisma {
    */
   export type ListEnumSupportTicketTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SupportTicketType[]'>
     
+
+
+  /**
+   * Reference to a field of type 'VendorTopUpStatus'
+   */
+  export type EnumVendorTopUpStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VendorTopUpStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'VendorTopUpStatus[]'
+   */
+  export type ListEnumVendorTopUpStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VendorTopUpStatus[]'>
+    
   /**
    * Deep Input Types
    */
@@ -144660,6 +146006,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionListRelationFilter
     accountManagerVendors?: AccountManagerVendorListRelationFilter
     supportTickets?: SupportTicketListRelationFilter
+    vendorTopUps?: VendorTopUpListRelationFilter
   }
 
   export type TenantOrderByWithRelationInput = {
@@ -144774,6 +146121,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionOrderByRelationAggregateInput
     accountManagerVendors?: AccountManagerVendorOrderByRelationAggregateInput
     supportTickets?: SupportTicketOrderByRelationAggregateInput
+    vendorTopUps?: VendorTopUpOrderByRelationAggregateInput
     _relevance?: TenantOrderByRelevanceInput
   }
 
@@ -144892,6 +146240,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionListRelationFilter
     accountManagerVendors?: AccountManagerVendorListRelationFilter
     supportTickets?: SupportTicketListRelationFilter
+    vendorTopUps?: VendorTopUpListRelationFilter
   }, "id">
 
   export type TenantOrderByWithAggregationInput = {
@@ -145136,6 +146485,7 @@ export namespace Prisma {
     ownerGroupId?: StringNullableFilter<"User"> | string | null
     branchId?: StringNullableFilter<"User"> | string | null
     vendorRole?: StringNullableFilter<"User"> | string | null
+    vendorTabs?: JsonNullableFilter<"User">
     isActive?: BoolFilter<"User"> | boolean
     lastLoginAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -145179,6 +146529,7 @@ export namespace Prisma {
     ownerGroupId?: SortOrderInput | SortOrder
     branchId?: SortOrderInput | SortOrder
     vendorRole?: SortOrderInput | SortOrder
+    vendorTabs?: SortOrderInput | SortOrder
     isActive?: SortOrder
     lastLoginAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -145226,6 +146577,7 @@ export namespace Prisma {
     ownerGroupId?: StringNullableFilter<"User"> | string | null
     branchId?: StringNullableFilter<"User"> | string | null
     vendorRole?: StringNullableFilter<"User"> | string | null
+    vendorTabs?: JsonNullableFilter<"User">
     isActive?: BoolFilter<"User"> | boolean
     lastLoginAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -145269,6 +146621,7 @@ export namespace Prisma {
     ownerGroupId?: SortOrderInput | SortOrder
     branchId?: SortOrderInput | SortOrder
     vendorRole?: SortOrderInput | SortOrder
+    vendorTabs?: SortOrderInput | SortOrder
     isActive?: SortOrder
     lastLoginAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -145296,6 +146649,7 @@ export namespace Prisma {
     ownerGroupId?: StringNullableWithAggregatesFilter<"User"> | string | null
     branchId?: StringNullableWithAggregatesFilter<"User"> | string | null
     vendorRole?: StringNullableWithAggregatesFilter<"User"> | string | null
+    vendorTabs?: JsonNullableWithAggregatesFilter<"User">
     isActive?: BoolWithAggregatesFilter<"User"> | boolean
     lastLoginAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -153686,6 +155040,7 @@ export namespace Prisma {
     deliveryPlan?: XOR<DeliveryPlanNullableRelationFilter, DeliveryPlanWhereInput> | null
     accountManagers?: AccountManagerVendorListRelationFilter
     supportTickets?: SupportTicketListRelationFilter
+    topUps?: VendorTopUpListRelationFilter
   }
 
   export type VendorOrderByWithRelationInput = {
@@ -153713,6 +155068,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanOrderByWithRelationInput
     accountManagers?: AccountManagerVendorOrderByRelationAggregateInput
     supportTickets?: SupportTicketOrderByRelationAggregateInput
+    topUps?: VendorTopUpOrderByRelationAggregateInput
     _relevance?: VendorOrderByRelevanceInput
   }
 
@@ -153745,6 +155101,7 @@ export namespace Prisma {
     deliveryPlan?: XOR<DeliveryPlanNullableRelationFilter, DeliveryPlanWhereInput> | null
     accountManagers?: AccountManagerVendorListRelationFilter
     supportTickets?: SupportTicketListRelationFilter
+    topUps?: VendorTopUpListRelationFilter
   }, "id" | "tenantId_code">
 
   export type VendorOrderByWithAggregationInput = {
@@ -153803,6 +155160,7 @@ export namespace Prisma {
     zoneId?: StringNullableFilter<"VendorBranch"> | string | null
     deliveryPlanId?: StringNullableFilter<"VendorBranch"> | string | null
     foodicsBranchId?: StringNullableFilter<"VendorBranch"> | string | null
+    isPaused?: BoolFilter<"VendorBranch"> | boolean
     isActive?: BoolFilter<"VendorBranch"> | boolean
     createdAt?: DateTimeFilter<"VendorBranch"> | Date | string
     updatedAt?: DateTimeFilter<"VendorBranch"> | Date | string
@@ -153827,6 +155185,7 @@ export namespace Prisma {
     zoneId?: SortOrderInput | SortOrder
     deliveryPlanId?: SortOrderInput | SortOrder
     foodicsBranchId?: SortOrderInput | SortOrder
+    isPaused?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -153856,6 +155215,7 @@ export namespace Prisma {
     zoneId?: StringNullableFilter<"VendorBranch"> | string | null
     deliveryPlanId?: StringNullableFilter<"VendorBranch"> | string | null
     foodicsBranchId?: StringNullableFilter<"VendorBranch"> | string | null
+    isPaused?: BoolFilter<"VendorBranch"> | boolean
     isActive?: BoolFilter<"VendorBranch"> | boolean
     createdAt?: DateTimeFilter<"VendorBranch"> | Date | string
     updatedAt?: DateTimeFilter<"VendorBranch"> | Date | string
@@ -153880,6 +155240,7 @@ export namespace Prisma {
     zoneId?: SortOrderInput | SortOrder
     deliveryPlanId?: SortOrderInput | SortOrder
     foodicsBranchId?: SortOrderInput | SortOrder
+    isPaused?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -153906,6 +155267,7 @@ export namespace Prisma {
     zoneId?: StringNullableWithAggregatesFilter<"VendorBranch"> | string | null
     deliveryPlanId?: StringNullableWithAggregatesFilter<"VendorBranch"> | string | null
     foodicsBranchId?: StringNullableWithAggregatesFilter<"VendorBranch"> | string | null
+    isPaused?: BoolWithAggregatesFilter<"VendorBranch"> | boolean
     isActive?: BoolWithAggregatesFilter<"VendorBranch"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"VendorBranch"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"VendorBranch"> | Date | string
@@ -156525,6 +157887,112 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"SupportTicketMessage"> | Date | string
   }
 
+  export type VendorTopUpWhereInput = {
+    AND?: VendorTopUpWhereInput | VendorTopUpWhereInput[]
+    OR?: VendorTopUpWhereInput[]
+    NOT?: VendorTopUpWhereInput | VendorTopUpWhereInput[]
+    id?: StringFilter<"VendorTopUp"> | string
+    tenantId?: StringFilter<"VendorTopUp"> | string
+    vendorId?: StringFilter<"VendorTopUp"> | string
+    requestedById?: StringNullableFilter<"VendorTopUp"> | string | null
+    amountKwd?: DecimalFilter<"VendorTopUp"> | Decimal | DecimalJsLike | number | string
+    status?: EnumVendorTopUpStatusFilter<"VendorTopUp"> | $Enums.VendorTopUpStatus
+    token?: StringFilter<"VendorTopUp"> | string
+    reference?: StringFilter<"VendorTopUp"> | string
+    paymentUrl?: StringNullableFilter<"VendorTopUp"> | string | null
+    providerRef?: StringNullableFilter<"VendorTopUp"> | string | null
+    provider?: StringNullableFilter<"VendorTopUp"> | string | null
+    paidAt?: DateTimeNullableFilter<"VendorTopUp"> | Date | string | null
+    createdAt?: DateTimeFilter<"VendorTopUp"> | Date | string
+    updatedAt?: DateTimeFilter<"VendorTopUp"> | Date | string
+    tenant?: XOR<TenantRelationFilter, TenantWhereInput>
+    vendor?: XOR<VendorRelationFilter, VendorWhereInput>
+  }
+
+  export type VendorTopUpOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vendorId?: SortOrder
+    requestedById?: SortOrderInput | SortOrder
+    amountKwd?: SortOrder
+    status?: SortOrder
+    token?: SortOrder
+    reference?: SortOrder
+    paymentUrl?: SortOrderInput | SortOrder
+    providerRef?: SortOrderInput | SortOrder
+    provider?: SortOrderInput | SortOrder
+    paidAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    tenant?: TenantOrderByWithRelationInput
+    vendor?: VendorOrderByWithRelationInput
+    _relevance?: VendorTopUpOrderByRelevanceInput
+  }
+
+  export type VendorTopUpWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    token?: string
+    AND?: VendorTopUpWhereInput | VendorTopUpWhereInput[]
+    OR?: VendorTopUpWhereInput[]
+    NOT?: VendorTopUpWhereInput | VendorTopUpWhereInput[]
+    tenantId?: StringFilter<"VendorTopUp"> | string
+    vendorId?: StringFilter<"VendorTopUp"> | string
+    requestedById?: StringNullableFilter<"VendorTopUp"> | string | null
+    amountKwd?: DecimalFilter<"VendorTopUp"> | Decimal | DecimalJsLike | number | string
+    status?: EnumVendorTopUpStatusFilter<"VendorTopUp"> | $Enums.VendorTopUpStatus
+    reference?: StringFilter<"VendorTopUp"> | string
+    paymentUrl?: StringNullableFilter<"VendorTopUp"> | string | null
+    providerRef?: StringNullableFilter<"VendorTopUp"> | string | null
+    provider?: StringNullableFilter<"VendorTopUp"> | string | null
+    paidAt?: DateTimeNullableFilter<"VendorTopUp"> | Date | string | null
+    createdAt?: DateTimeFilter<"VendorTopUp"> | Date | string
+    updatedAt?: DateTimeFilter<"VendorTopUp"> | Date | string
+    tenant?: XOR<TenantRelationFilter, TenantWhereInput>
+    vendor?: XOR<VendorRelationFilter, VendorWhereInput>
+  }, "id" | "token">
+
+  export type VendorTopUpOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vendorId?: SortOrder
+    requestedById?: SortOrderInput | SortOrder
+    amountKwd?: SortOrder
+    status?: SortOrder
+    token?: SortOrder
+    reference?: SortOrder
+    paymentUrl?: SortOrderInput | SortOrder
+    providerRef?: SortOrderInput | SortOrder
+    provider?: SortOrderInput | SortOrder
+    paidAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: VendorTopUpCountOrderByAggregateInput
+    _avg?: VendorTopUpAvgOrderByAggregateInput
+    _max?: VendorTopUpMaxOrderByAggregateInput
+    _min?: VendorTopUpMinOrderByAggregateInput
+    _sum?: VendorTopUpSumOrderByAggregateInput
+  }
+
+  export type VendorTopUpScalarWhereWithAggregatesInput = {
+    AND?: VendorTopUpScalarWhereWithAggregatesInput | VendorTopUpScalarWhereWithAggregatesInput[]
+    OR?: VendorTopUpScalarWhereWithAggregatesInput[]
+    NOT?: VendorTopUpScalarWhereWithAggregatesInput | VendorTopUpScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"VendorTopUp"> | string
+    tenantId?: StringWithAggregatesFilter<"VendorTopUp"> | string
+    vendorId?: StringWithAggregatesFilter<"VendorTopUp"> | string
+    requestedById?: StringNullableWithAggregatesFilter<"VendorTopUp"> | string | null
+    amountKwd?: DecimalWithAggregatesFilter<"VendorTopUp"> | Decimal | DecimalJsLike | number | string
+    status?: EnumVendorTopUpStatusWithAggregatesFilter<"VendorTopUp"> | $Enums.VendorTopUpStatus
+    token?: StringWithAggregatesFilter<"VendorTopUp"> | string
+    reference?: StringWithAggregatesFilter<"VendorTopUp"> | string
+    paymentUrl?: StringNullableWithAggregatesFilter<"VendorTopUp"> | string | null
+    providerRef?: StringNullableWithAggregatesFilter<"VendorTopUp"> | string | null
+    provider?: StringNullableWithAggregatesFilter<"VendorTopUp"> | string | null
+    paidAt?: DateTimeNullableWithAggregatesFilter<"VendorTopUp"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"VendorTopUp"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"VendorTopUp"> | Date | string
+  }
+
   export type TenantCreateInput = {
     id?: string
     name: string
@@ -156637,6 +158105,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateInput = {
@@ -156751,6 +158220,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUpdateInput = {
@@ -156865,6 +158335,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateInput = {
@@ -156979,6 +158450,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateManyInput = {
@@ -157234,6 +158706,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -157277,6 +158750,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -157310,6 +158784,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -157353,6 +158828,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -157391,6 +158867,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -157407,6 +158884,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -157428,6 +158906,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -166663,6 +168142,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanCreateNestedOneWithoutVendorsInput
     accountManagers?: AccountManagerVendorCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpCreateNestedManyWithoutVendorInput
   }
 
   export type VendorUncheckedCreateInput = {
@@ -166688,6 +168168,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutVendorInput
     accountManagers?: AccountManagerVendorUncheckedCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpUncheckedCreateNestedManyWithoutVendorInput
   }
 
   export type VendorUpdateInput = {
@@ -166713,6 +168194,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanUpdateOneWithoutVendorsNestedInput
     accountManagers?: AccountManagerVendorUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUpdateManyWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateInput = {
@@ -166738,6 +168220,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutVendorNestedInput
     accountManagers?: AccountManagerVendorUncheckedUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUncheckedUpdateManyWithoutVendorNestedInput
   }
 
   export type VendorCreateManyInput = {
@@ -166795,6 +168278,7 @@ export namespace Prisma {
     lat?: Decimal | DecimalJsLike | number | string | null
     lng?: Decimal | DecimalJsLike | number | string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -166819,6 +168303,7 @@ export namespace Prisma {
     zoneId?: string | null
     deliveryPlanId?: string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -166835,6 +168320,7 @@ export namespace Prisma {
     lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -166859,6 +168345,7 @@ export namespace Prisma {
     zoneId?: NullableStringFieldUpdateOperationsInput | string | null
     deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -166879,6 +168366,7 @@ export namespace Prisma {
     zoneId?: string | null
     deliveryPlanId?: string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -166893,6 +168381,7 @@ export namespace Prisma {
     lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -166911,6 +168400,7 @@ export namespace Prisma {
     zoneId?: NullableStringFieldUpdateOperationsInput | string | null
     deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -169694,6 +171184,123 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type VendorTopUpCreateInput = {
+    id?: string
+    requestedById?: string | null
+    amountKwd: Decimal | DecimalJsLike | number | string
+    status?: $Enums.VendorTopUpStatus
+    token: string
+    reference: string
+    paymentUrl?: string | null
+    providerRef?: string | null
+    provider?: string | null
+    paidAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutVendorTopUpsInput
+    vendor: VendorCreateNestedOneWithoutTopUpsInput
+  }
+
+  export type VendorTopUpUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    vendorId: string
+    requestedById?: string | null
+    amountKwd: Decimal | DecimalJsLike | number | string
+    status?: $Enums.VendorTopUpStatus
+    token: string
+    reference: string
+    paymentUrl?: string | null
+    providerRef?: string | null
+    provider?: string | null
+    paidAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VendorTopUpUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumVendorTopUpStatusFieldUpdateOperationsInput | $Enums.VendorTopUpStatus
+    token?: StringFieldUpdateOperationsInput | string
+    reference?: StringFieldUpdateOperationsInput | string
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutVendorTopUpsNestedInput
+    vendor?: VendorUpdateOneRequiredWithoutTopUpsNestedInput
+  }
+
+  export type VendorTopUpUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumVendorTopUpStatusFieldUpdateOperationsInput | $Enums.VendorTopUpStatus
+    token?: StringFieldUpdateOperationsInput | string
+    reference?: StringFieldUpdateOperationsInput | string
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VendorTopUpCreateManyInput = {
+    id?: string
+    tenantId: string
+    vendorId: string
+    requestedById?: string | null
+    amountKwd: Decimal | DecimalJsLike | number | string
+    status?: $Enums.VendorTopUpStatus
+    token: string
+    reference: string
+    paymentUrl?: string | null
+    providerRef?: string | null
+    provider?: string | null
+    paidAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VendorTopUpUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumVendorTopUpStatusFieldUpdateOperationsInput | $Enums.VendorTopUpStatus
+    token?: StringFieldUpdateOperationsInput | string
+    reference?: StringFieldUpdateOperationsInput | string
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VendorTopUpUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumVendorTopUpStatusFieldUpdateOperationsInput | $Enums.VendorTopUpStatus
+    token?: StringFieldUpdateOperationsInput | string
+    reference?: StringFieldUpdateOperationsInput | string
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -170402,6 +172009,12 @@ export namespace Prisma {
     none?: SupportTicketWhereInput
   }
 
+  export type VendorTopUpListRelationFilter = {
+    every?: VendorTopUpWhereInput
+    some?: VendorTopUpWhereInput
+    none?: VendorTopUpWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -170784,6 +172397,10 @@ export namespace Prisma {
   }
 
   export type SupportTicketOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type VendorTopUpOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -171219,6 +172836,7 @@ export namespace Prisma {
     ownerGroupId?: SortOrder
     branchId?: SortOrder
     vendorRole?: SortOrder
+    vendorTabs?: SortOrder
     isActive?: SortOrder
     lastLoginAt?: SortOrder
     createdAt?: SortOrder
@@ -177505,6 +179123,7 @@ export namespace Prisma {
     zoneId?: SortOrder
     deliveryPlanId?: SortOrder
     foodicsBranchId?: SortOrder
+    isPaused?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -177528,6 +179147,7 @@ export namespace Prisma {
     zoneId?: SortOrder
     deliveryPlanId?: SortOrder
     foodicsBranchId?: SortOrder
+    isPaused?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -177546,6 +179166,7 @@ export namespace Prisma {
     zoneId?: SortOrder
     deliveryPlanId?: SortOrder
     foodicsBranchId?: SortOrder
+    isPaused?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -179534,6 +181155,88 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type EnumVendorTopUpStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.VendorTopUpStatus | EnumVendorTopUpStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.VendorTopUpStatus[] | ListEnumVendorTopUpStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.VendorTopUpStatus[] | ListEnumVendorTopUpStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumVendorTopUpStatusFilter<$PrismaModel> | $Enums.VendorTopUpStatus
+  }
+
+  export type VendorTopUpOrderByRelevanceInput = {
+    fields: VendorTopUpOrderByRelevanceFieldEnum | VendorTopUpOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type VendorTopUpCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vendorId?: SortOrder
+    requestedById?: SortOrder
+    amountKwd?: SortOrder
+    status?: SortOrder
+    token?: SortOrder
+    reference?: SortOrder
+    paymentUrl?: SortOrder
+    providerRef?: SortOrder
+    provider?: SortOrder
+    paidAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type VendorTopUpAvgOrderByAggregateInput = {
+    amountKwd?: SortOrder
+  }
+
+  export type VendorTopUpMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vendorId?: SortOrder
+    requestedById?: SortOrder
+    amountKwd?: SortOrder
+    status?: SortOrder
+    token?: SortOrder
+    reference?: SortOrder
+    paymentUrl?: SortOrder
+    providerRef?: SortOrder
+    provider?: SortOrder
+    paidAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type VendorTopUpMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vendorId?: SortOrder
+    requestedById?: SortOrder
+    amountKwd?: SortOrder
+    status?: SortOrder
+    token?: SortOrder
+    reference?: SortOrder
+    paymentUrl?: SortOrder
+    providerRef?: SortOrder
+    provider?: SortOrder
+    paidAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type VendorTopUpSumOrderByAggregateInput = {
+    amountKwd?: SortOrder
+  }
+
+  export type EnumVendorTopUpStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.VendorTopUpStatus | EnumVendorTopUpStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.VendorTopUpStatus[] | ListEnumVendorTopUpStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.VendorTopUpStatus[] | ListEnumVendorTopUpStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumVendorTopUpStatusWithAggregatesFilter<$PrismaModel> | $Enums.VendorTopUpStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumVendorTopUpStatusFilter<$PrismaModel>
+    _max?: NestedEnumVendorTopUpStatusFilter<$PrismaModel>
+  }
+
   export type CompanyCreateNestedManyWithoutTenantInput = {
     create?: XOR<CompanyCreateWithoutTenantInput, CompanyUncheckedCreateWithoutTenantInput> | CompanyCreateWithoutTenantInput[] | CompanyUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: CompanyCreateOrConnectWithoutTenantInput | CompanyCreateOrConnectWithoutTenantInput[]
@@ -180211,6 +181914,13 @@ export namespace Prisma {
     connect?: SupportTicketWhereUniqueInput | SupportTicketWhereUniqueInput[]
   }
 
+  export type VendorTopUpCreateNestedManyWithoutTenantInput = {
+    create?: XOR<VendorTopUpCreateWithoutTenantInput, VendorTopUpUncheckedCreateWithoutTenantInput> | VendorTopUpCreateWithoutTenantInput[] | VendorTopUpUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: VendorTopUpCreateOrConnectWithoutTenantInput | VendorTopUpCreateOrConnectWithoutTenantInput[]
+    createMany?: VendorTopUpCreateManyTenantInputEnvelope
+    connect?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+  }
+
   export type CompanyUncheckedCreateNestedManyWithoutTenantInput = {
     create?: XOR<CompanyCreateWithoutTenantInput, CompanyUncheckedCreateWithoutTenantInput> | CompanyCreateWithoutTenantInput[] | CompanyUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: CompanyCreateOrConnectWithoutTenantInput | CompanyCreateOrConnectWithoutTenantInput[]
@@ -180886,6 +182596,13 @@ export namespace Prisma {
     connectOrCreate?: SupportTicketCreateOrConnectWithoutTenantInput | SupportTicketCreateOrConnectWithoutTenantInput[]
     createMany?: SupportTicketCreateManyTenantInputEnvelope
     connect?: SupportTicketWhereUniqueInput | SupportTicketWhereUniqueInput[]
+  }
+
+  export type VendorTopUpUncheckedCreateNestedManyWithoutTenantInput = {
+    create?: XOR<VendorTopUpCreateWithoutTenantInput, VendorTopUpUncheckedCreateWithoutTenantInput> | VendorTopUpCreateWithoutTenantInput[] | VendorTopUpUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: VendorTopUpCreateOrConnectWithoutTenantInput | VendorTopUpCreateOrConnectWithoutTenantInput[]
+    createMany?: VendorTopUpCreateManyTenantInputEnvelope
+    connect?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -182274,6 +183991,20 @@ export namespace Prisma {
     deleteMany?: SupportTicketScalarWhereInput | SupportTicketScalarWhereInput[]
   }
 
+  export type VendorTopUpUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<VendorTopUpCreateWithoutTenantInput, VendorTopUpUncheckedCreateWithoutTenantInput> | VendorTopUpCreateWithoutTenantInput[] | VendorTopUpUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: VendorTopUpCreateOrConnectWithoutTenantInput | VendorTopUpCreateOrConnectWithoutTenantInput[]
+    upsert?: VendorTopUpUpsertWithWhereUniqueWithoutTenantInput | VendorTopUpUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: VendorTopUpCreateManyTenantInputEnvelope
+    set?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+    disconnect?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+    delete?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+    connect?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+    update?: VendorTopUpUpdateWithWhereUniqueWithoutTenantInput | VendorTopUpUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: VendorTopUpUpdateManyWithWhereWithoutTenantInput | VendorTopUpUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: VendorTopUpScalarWhereInput | VendorTopUpScalarWhereInput[]
+  }
+
   export type CompanyUncheckedUpdateManyWithoutTenantNestedInput = {
     create?: XOR<CompanyCreateWithoutTenantInput, CompanyUncheckedCreateWithoutTenantInput> | CompanyCreateWithoutTenantInput[] | CompanyUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: CompanyCreateOrConnectWithoutTenantInput | CompanyCreateOrConnectWithoutTenantInput[]
@@ -183622,6 +185353,20 @@ export namespace Prisma {
     update?: SupportTicketUpdateWithWhereUniqueWithoutTenantInput | SupportTicketUpdateWithWhereUniqueWithoutTenantInput[]
     updateMany?: SupportTicketUpdateManyWithWhereWithoutTenantInput | SupportTicketUpdateManyWithWhereWithoutTenantInput[]
     deleteMany?: SupportTicketScalarWhereInput | SupportTicketScalarWhereInput[]
+  }
+
+  export type VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<VendorTopUpCreateWithoutTenantInput, VendorTopUpUncheckedCreateWithoutTenantInput> | VendorTopUpCreateWithoutTenantInput[] | VendorTopUpUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: VendorTopUpCreateOrConnectWithoutTenantInput | VendorTopUpCreateOrConnectWithoutTenantInput[]
+    upsert?: VendorTopUpUpsertWithWhereUniqueWithoutTenantInput | VendorTopUpUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: VendorTopUpCreateManyTenantInputEnvelope
+    set?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+    disconnect?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+    delete?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+    connect?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+    update?: VendorTopUpUpdateWithWhereUniqueWithoutTenantInput | VendorTopUpUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: VendorTopUpUpdateManyWithWhereWithoutTenantInput | VendorTopUpUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: VendorTopUpScalarWhereInput | VendorTopUpScalarWhereInput[]
   }
 
   export type TenantCreateNestedOneWithoutCompaniesInput = {
@@ -190960,6 +192705,13 @@ export namespace Prisma {
     connect?: SupportTicketWhereUniqueInput | SupportTicketWhereUniqueInput[]
   }
 
+  export type VendorTopUpCreateNestedManyWithoutVendorInput = {
+    create?: XOR<VendorTopUpCreateWithoutVendorInput, VendorTopUpUncheckedCreateWithoutVendorInput> | VendorTopUpCreateWithoutVendorInput[] | VendorTopUpUncheckedCreateWithoutVendorInput[]
+    connectOrCreate?: VendorTopUpCreateOrConnectWithoutVendorInput | VendorTopUpCreateOrConnectWithoutVendorInput[]
+    createMany?: VendorTopUpCreateManyVendorInputEnvelope
+    connect?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+  }
+
   export type VendorBranchUncheckedCreateNestedManyWithoutVendorInput = {
     create?: XOR<VendorBranchCreateWithoutVendorInput, VendorBranchUncheckedCreateWithoutVendorInput> | VendorBranchCreateWithoutVendorInput[] | VendorBranchUncheckedCreateWithoutVendorInput[]
     connectOrCreate?: VendorBranchCreateOrConnectWithoutVendorInput | VendorBranchCreateOrConnectWithoutVendorInput[]
@@ -191020,6 +192772,13 @@ export namespace Prisma {
     connectOrCreate?: SupportTicketCreateOrConnectWithoutVendorInput | SupportTicketCreateOrConnectWithoutVendorInput[]
     createMany?: SupportTicketCreateManyVendorInputEnvelope
     connect?: SupportTicketWhereUniqueInput | SupportTicketWhereUniqueInput[]
+  }
+
+  export type VendorTopUpUncheckedCreateNestedManyWithoutVendorInput = {
+    create?: XOR<VendorTopUpCreateWithoutVendorInput, VendorTopUpUncheckedCreateWithoutVendorInput> | VendorTopUpCreateWithoutVendorInput[] | VendorTopUpUncheckedCreateWithoutVendorInput[]
+    connectOrCreate?: VendorTopUpCreateOrConnectWithoutVendorInput | VendorTopUpCreateOrConnectWithoutVendorInput[]
+    createMany?: VendorTopUpCreateManyVendorInputEnvelope
+    connect?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
   }
 
   export type TenantUpdateOneRequiredWithoutVendorsNestedInput = {
@@ -191162,6 +192921,20 @@ export namespace Prisma {
     deleteMany?: SupportTicketScalarWhereInput | SupportTicketScalarWhereInput[]
   }
 
+  export type VendorTopUpUpdateManyWithoutVendorNestedInput = {
+    create?: XOR<VendorTopUpCreateWithoutVendorInput, VendorTopUpUncheckedCreateWithoutVendorInput> | VendorTopUpCreateWithoutVendorInput[] | VendorTopUpUncheckedCreateWithoutVendorInput[]
+    connectOrCreate?: VendorTopUpCreateOrConnectWithoutVendorInput | VendorTopUpCreateOrConnectWithoutVendorInput[]
+    upsert?: VendorTopUpUpsertWithWhereUniqueWithoutVendorInput | VendorTopUpUpsertWithWhereUniqueWithoutVendorInput[]
+    createMany?: VendorTopUpCreateManyVendorInputEnvelope
+    set?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+    disconnect?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+    delete?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+    connect?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+    update?: VendorTopUpUpdateWithWhereUniqueWithoutVendorInput | VendorTopUpUpdateWithWhereUniqueWithoutVendorInput[]
+    updateMany?: VendorTopUpUpdateManyWithWhereWithoutVendorInput | VendorTopUpUpdateManyWithWhereWithoutVendorInput[]
+    deleteMany?: VendorTopUpScalarWhereInput | VendorTopUpScalarWhereInput[]
+  }
+
   export type VendorBranchUncheckedUpdateManyWithoutVendorNestedInput = {
     create?: XOR<VendorBranchCreateWithoutVendorInput, VendorBranchUncheckedCreateWithoutVendorInput> | VendorBranchCreateWithoutVendorInput[] | VendorBranchUncheckedCreateWithoutVendorInput[]
     connectOrCreate?: VendorBranchCreateOrConnectWithoutVendorInput | VendorBranchCreateOrConnectWithoutVendorInput[]
@@ -191282,6 +193055,20 @@ export namespace Prisma {
     update?: SupportTicketUpdateWithWhereUniqueWithoutVendorInput | SupportTicketUpdateWithWhereUniqueWithoutVendorInput[]
     updateMany?: SupportTicketUpdateManyWithWhereWithoutVendorInput | SupportTicketUpdateManyWithWhereWithoutVendorInput[]
     deleteMany?: SupportTicketScalarWhereInput | SupportTicketScalarWhereInput[]
+  }
+
+  export type VendorTopUpUncheckedUpdateManyWithoutVendorNestedInput = {
+    create?: XOR<VendorTopUpCreateWithoutVendorInput, VendorTopUpUncheckedCreateWithoutVendorInput> | VendorTopUpCreateWithoutVendorInput[] | VendorTopUpUncheckedCreateWithoutVendorInput[]
+    connectOrCreate?: VendorTopUpCreateOrConnectWithoutVendorInput | VendorTopUpCreateOrConnectWithoutVendorInput[]
+    upsert?: VendorTopUpUpsertWithWhereUniqueWithoutVendorInput | VendorTopUpUpsertWithWhereUniqueWithoutVendorInput[]
+    createMany?: VendorTopUpCreateManyVendorInputEnvelope
+    set?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+    disconnect?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+    delete?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+    connect?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+    update?: VendorTopUpUpdateWithWhereUniqueWithoutVendorInput | VendorTopUpUpdateWithWhereUniqueWithoutVendorInput[]
+    updateMany?: VendorTopUpUpdateManyWithWhereWithoutVendorInput | VendorTopUpUpdateManyWithWhereWithoutVendorInput[]
+    deleteMany?: VendorTopUpScalarWhereInput | VendorTopUpScalarWhereInput[]
   }
 
   export type TenantCreateNestedOneWithoutVendorBranchesInput = {
@@ -193162,6 +194949,38 @@ export namespace Prisma {
     update?: XOR<XOR<SupportTicketUpdateToOneWithWhereWithoutMessagesInput, SupportTicketUpdateWithoutMessagesInput>, SupportTicketUncheckedUpdateWithoutMessagesInput>
   }
 
+  export type TenantCreateNestedOneWithoutVendorTopUpsInput = {
+    create?: XOR<TenantCreateWithoutVendorTopUpsInput, TenantUncheckedCreateWithoutVendorTopUpsInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutVendorTopUpsInput
+    connect?: TenantWhereUniqueInput
+  }
+
+  export type VendorCreateNestedOneWithoutTopUpsInput = {
+    create?: XOR<VendorCreateWithoutTopUpsInput, VendorUncheckedCreateWithoutTopUpsInput>
+    connectOrCreate?: VendorCreateOrConnectWithoutTopUpsInput
+    connect?: VendorWhereUniqueInput
+  }
+
+  export type EnumVendorTopUpStatusFieldUpdateOperationsInput = {
+    set?: $Enums.VendorTopUpStatus
+  }
+
+  export type TenantUpdateOneRequiredWithoutVendorTopUpsNestedInput = {
+    create?: XOR<TenantCreateWithoutVendorTopUpsInput, TenantUncheckedCreateWithoutVendorTopUpsInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutVendorTopUpsInput
+    upsert?: TenantUpsertWithoutVendorTopUpsInput
+    connect?: TenantWhereUniqueInput
+    update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutVendorTopUpsInput, TenantUpdateWithoutVendorTopUpsInput>, TenantUncheckedUpdateWithoutVendorTopUpsInput>
+  }
+
+  export type VendorUpdateOneRequiredWithoutTopUpsNestedInput = {
+    create?: XOR<VendorCreateWithoutTopUpsInput, VendorUncheckedCreateWithoutTopUpsInput>
+    connectOrCreate?: VendorCreateOrConnectWithoutTopUpsInput
+    upsert?: VendorUpsertWithoutTopUpsInput
+    connect?: VendorWhereUniqueInput
+    update?: XOR<XOR<VendorUpdateToOneWithWhereWithoutTopUpsInput, VendorUpdateWithoutTopUpsInput>, VendorUncheckedUpdateWithoutTopUpsInput>
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -194564,6 +196383,23 @@ export namespace Prisma {
     _max?: NestedEnumSupportTicketTypeFilter<$PrismaModel>
   }
 
+  export type NestedEnumVendorTopUpStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.VendorTopUpStatus | EnumVendorTopUpStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.VendorTopUpStatus[] | ListEnumVendorTopUpStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.VendorTopUpStatus[] | ListEnumVendorTopUpStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumVendorTopUpStatusFilter<$PrismaModel> | $Enums.VendorTopUpStatus
+  }
+
+  export type NestedEnumVendorTopUpStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.VendorTopUpStatus | EnumVendorTopUpStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.VendorTopUpStatus[] | ListEnumVendorTopUpStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.VendorTopUpStatus[] | ListEnumVendorTopUpStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumVendorTopUpStatusWithAggregatesFilter<$PrismaModel> | $Enums.VendorTopUpStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumVendorTopUpStatusFilter<$PrismaModel>
+    _max?: NestedEnumVendorTopUpStatusFilter<$PrismaModel>
+  }
+
   export type CompanyCreateWithoutTenantInput = {
     id?: string
     name: string
@@ -194618,6 +196454,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -194659,6 +196496,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -197759,6 +199597,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanCreateNestedOneWithoutVendorsInput
     accountManagers?: AccountManagerVendorCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpCreateNestedManyWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutTenantInput = {
@@ -197783,6 +199622,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutVendorInput
     accountManagers?: AccountManagerVendorUncheckedCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpUncheckedCreateNestedManyWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutTenantInput = {
@@ -197804,6 +199644,7 @@ export namespace Prisma {
     lat?: Decimal | DecimalJsLike | number | string | null
     lng?: Decimal | DecimalJsLike | number | string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -197826,6 +199667,7 @@ export namespace Prisma {
     zoneId?: string | null
     deliveryPlanId?: string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -198772,6 +200614,48 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type VendorTopUpCreateWithoutTenantInput = {
+    id?: string
+    requestedById?: string | null
+    amountKwd: Decimal | DecimalJsLike | number | string
+    status?: $Enums.VendorTopUpStatus
+    token: string
+    reference: string
+    paymentUrl?: string | null
+    providerRef?: string | null
+    provider?: string | null
+    paidAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    vendor: VendorCreateNestedOneWithoutTopUpsInput
+  }
+
+  export type VendorTopUpUncheckedCreateWithoutTenantInput = {
+    id?: string
+    vendorId: string
+    requestedById?: string | null
+    amountKwd: Decimal | DecimalJsLike | number | string
+    status?: $Enums.VendorTopUpStatus
+    token: string
+    reference: string
+    paymentUrl?: string | null
+    providerRef?: string | null
+    provider?: string | null
+    paidAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VendorTopUpCreateOrConnectWithoutTenantInput = {
+    where: VendorTopUpWhereUniqueInput
+    create: XOR<VendorTopUpCreateWithoutTenantInput, VendorTopUpUncheckedCreateWithoutTenantInput>
+  }
+
+  export type VendorTopUpCreateManyTenantInputEnvelope = {
+    data: VendorTopUpCreateManyTenantInput | VendorTopUpCreateManyTenantInput[]
+    skipDuplicates?: boolean
+  }
+
   export type CompanyUpsertWithWhereUniqueWithoutTenantInput = {
     where: CompanyWhereUniqueInput
     update: XOR<CompanyUpdateWithoutTenantInput, CompanyUncheckedUpdateWithoutTenantInput>
@@ -198839,6 +200723,7 @@ export namespace Prisma {
     ownerGroupId?: StringNullableFilter<"User"> | string | null
     branchId?: StringNullableFilter<"User"> | string | null
     vendorRole?: StringNullableFilter<"User"> | string | null
+    vendorTabs?: JsonNullableFilter<"User">
     isActive?: BoolFilter<"User"> | boolean
     lastLoginAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -201386,6 +203271,7 @@ export namespace Prisma {
     zoneId?: StringNullableFilter<"VendorBranch"> | string | null
     deliveryPlanId?: StringNullableFilter<"VendorBranch"> | string | null
     foodicsBranchId?: StringNullableFilter<"VendorBranch"> | string | null
+    isPaused?: BoolFilter<"VendorBranch"> | boolean
     isActive?: BoolFilter<"VendorBranch"> | boolean
     createdAt?: DateTimeFilter<"VendorBranch"> | Date | string
     updatedAt?: DateTimeFilter<"VendorBranch"> | Date | string
@@ -202207,6 +204093,42 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"SupportTicket"> | Date | string
   }
 
+  export type VendorTopUpUpsertWithWhereUniqueWithoutTenantInput = {
+    where: VendorTopUpWhereUniqueInput
+    update: XOR<VendorTopUpUpdateWithoutTenantInput, VendorTopUpUncheckedUpdateWithoutTenantInput>
+    create: XOR<VendorTopUpCreateWithoutTenantInput, VendorTopUpUncheckedCreateWithoutTenantInput>
+  }
+
+  export type VendorTopUpUpdateWithWhereUniqueWithoutTenantInput = {
+    where: VendorTopUpWhereUniqueInput
+    data: XOR<VendorTopUpUpdateWithoutTenantInput, VendorTopUpUncheckedUpdateWithoutTenantInput>
+  }
+
+  export type VendorTopUpUpdateManyWithWhereWithoutTenantInput = {
+    where: VendorTopUpScalarWhereInput
+    data: XOR<VendorTopUpUpdateManyMutationInput, VendorTopUpUncheckedUpdateManyWithoutTenantInput>
+  }
+
+  export type VendorTopUpScalarWhereInput = {
+    AND?: VendorTopUpScalarWhereInput | VendorTopUpScalarWhereInput[]
+    OR?: VendorTopUpScalarWhereInput[]
+    NOT?: VendorTopUpScalarWhereInput | VendorTopUpScalarWhereInput[]
+    id?: StringFilter<"VendorTopUp"> | string
+    tenantId?: StringFilter<"VendorTopUp"> | string
+    vendorId?: StringFilter<"VendorTopUp"> | string
+    requestedById?: StringNullableFilter<"VendorTopUp"> | string | null
+    amountKwd?: DecimalFilter<"VendorTopUp"> | Decimal | DecimalJsLike | number | string
+    status?: EnumVendorTopUpStatusFilter<"VendorTopUp"> | $Enums.VendorTopUpStatus
+    token?: StringFilter<"VendorTopUp"> | string
+    reference?: StringFilter<"VendorTopUp"> | string
+    paymentUrl?: StringNullableFilter<"VendorTopUp"> | string | null
+    providerRef?: StringNullableFilter<"VendorTopUp"> | string | null
+    provider?: StringNullableFilter<"VendorTopUp"> | string | null
+    paidAt?: DateTimeNullableFilter<"VendorTopUp"> | Date | string | null
+    createdAt?: DateTimeFilter<"VendorTopUp"> | Date | string
+    updatedAt?: DateTimeFilter<"VendorTopUp"> | Date | string
+  }
+
   export type TenantCreateWithoutCompaniesInput = {
     id?: string
     name: string
@@ -202318,6 +204240,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCompaniesInput = {
@@ -202431,6 +204354,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCompaniesInput = {
@@ -202477,6 +204401,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -202519,6 +204444,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -203016,6 +204942,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCompaniesInput = {
@@ -203129,6 +205056,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type OwnerGroupUpsertWithoutCompaniesInput = {
@@ -203187,6 +205115,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -203229,6 +205158,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -203426,6 +205356,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutOwnerGroupsInput = {
@@ -203539,6 +205470,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutOwnerGroupsInput = {
@@ -203650,6 +205582,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -203691,6 +205624,7 @@ export namespace Prisma {
     fleetPartnerId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -203846,6 +205780,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutOwnerGroupsInput = {
@@ -203959,6 +205894,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type FleetPartnerUpsertWithWhereUniqueWithoutOwnerGroupInput = {
@@ -204120,6 +206056,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutUsersInput = {
@@ -204233,6 +206170,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutUsersInput = {
@@ -204262,6 +206200,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanCreateNestedOneWithoutVendorsInput
     accountManagers?: AccountManagerVendorCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpCreateNestedManyWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutUsersInput = {
@@ -204286,6 +206225,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutVendorInput
     accountManagers?: AccountManagerVendorUncheckedCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpUncheckedCreateNestedManyWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutUsersInput = {
@@ -204376,6 +206316,7 @@ export namespace Prisma {
     lat?: Decimal | DecimalJsLike | number | string | null
     lng?: Decimal | DecimalJsLike | number | string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -204399,6 +206340,7 @@ export namespace Prisma {
     zoneId?: string | null
     deliveryPlanId?: string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -205370,6 +207312,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutUsersInput = {
@@ -205483,6 +207426,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type VendorUpsertWithoutUsersInput = {
@@ -205518,6 +207462,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanUpdateOneWithoutVendorsNestedInput
     accountManagers?: AccountManagerVendorUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUpdateManyWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutUsersInput = {
@@ -205542,6 +207487,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutVendorNestedInput
     accountManagers?: AccountManagerVendorUncheckedUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUncheckedUpdateManyWithoutVendorNestedInput
   }
 
   export type FleetPartnerUpsertWithoutUsersInput = {
@@ -205650,6 +207596,7 @@ export namespace Prisma {
     lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -205673,6 +207620,7 @@ export namespace Prisma {
     zoneId?: NullableStringFieldUpdateOperationsInput | string | null
     deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -206076,6 +208024,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutDriversInput = {
@@ -206189,6 +208138,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutDriversInput = {
@@ -206245,6 +208195,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -206287,6 +208238,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -208461,6 +210413,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutDriversInput = {
@@ -208574,6 +210527,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type CompanyUpsertWithoutDriversInput = {
@@ -208642,6 +210596,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -208684,6 +210639,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -209741,6 +211697,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutDriverRestrictionsInput = {
@@ -209854,6 +211811,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutDriverRestrictionsInput = {
@@ -210166,6 +212124,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutDriverRestrictionsInput = {
@@ -210279,6 +212238,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutRestrictionsInput = {
@@ -210953,6 +212913,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutRecruitmentPipelineInput = {
@@ -211066,6 +213027,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutRecruitmentPipelineInput = {
@@ -211234,6 +213196,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutRecruitmentPipelineInput = {
@@ -211347,6 +213310,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type CompanyUpsertWithoutRecruitmentPipelineInput = {
@@ -211505,6 +213469,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutVehiclesInput = {
@@ -211618,6 +213583,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutVehiclesInput = {
@@ -212217,6 +214183,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutVehiclesInput = {
@@ -212330,6 +214297,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type CompanyUpsertWithoutVehiclesInput = {
@@ -212773,6 +214741,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutVehicleDriverAssignmentsInput = {
@@ -212886,6 +214855,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutVehicleDriverAssignmentsInput = {
@@ -213259,6 +215229,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutVehicleDriverAssignmentsInput = {
@@ -213372,6 +215343,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type VehicleUpsertWithoutDriverAssignmentsInput = {
@@ -213741,6 +215713,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutShiftsInput = {
@@ -213854,6 +215827,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutShiftsInput = {
@@ -214336,6 +216310,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutShiftsInput = {
@@ -214449,6 +216424,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutShiftsInput = {
@@ -214799,6 +216775,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAttendanceRecordsInput = {
@@ -214912,6 +216889,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAttendanceRecordsInput = {
@@ -215289,6 +217267,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAttendanceRecordsInput = {
@@ -215402,6 +217381,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutAttendanceRecordsInput = {
@@ -215775,6 +217755,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutOrderLogsInput = {
@@ -215888,6 +217869,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutOrderLogsInput = {
@@ -216265,6 +218247,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutOrderLogsInput = {
@@ -216378,6 +218361,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutOrderLogsInput = {
@@ -216751,6 +218735,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCashRecordsInput = {
@@ -216864,6 +218849,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCashRecordsInput = {
@@ -217176,6 +219162,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCashRecordsInput = {
@@ -217289,6 +219276,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutCashRecordsInput = {
@@ -217591,6 +219579,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCashTransactionsInput = {
@@ -217704,6 +219693,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCashTransactionsInput = {
@@ -218016,6 +220006,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCashTransactionsInput = {
@@ -218129,6 +220120,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutCashTransactionsInput = {
@@ -218431,6 +220423,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutPendingDuesLedgersInput = {
@@ -218544,6 +220537,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutPendingDuesLedgersInput = {
@@ -218856,6 +220850,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutPendingDuesLedgersInput = {
@@ -218969,6 +220964,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutPendingDuesLedgersInput = {
@@ -219271,6 +221267,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutVehicleInspectionsInput = {
@@ -219384,6 +221381,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutVehicleInspectionsInput = {
@@ -219757,6 +221755,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutVehicleInspectionsInput = {
@@ -219870,6 +221869,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type VehicleUpsertWithoutInspectionsInput = {
@@ -220239,6 +222239,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutMaintenanceRecordsInput = {
@@ -220352,6 +222353,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutMaintenanceRecordsInput = {
@@ -220786,6 +222788,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutMaintenanceRecordsInput = {
@@ -220899,6 +222902,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type VehicleUpsertWithoutMaintenanceRecordsInput = {
@@ -221937,6 +223941,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutSimsInput = {
@@ -222050,6 +224055,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutSimsInput = {
@@ -222411,6 +224417,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutSimsInput = {
@@ -222524,6 +224531,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutSimsInput = {
@@ -224257,6 +226265,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -224299,6 +226308,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -224402,6 +226412,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -224444,6 +226455,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -224577,6 +226589,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAiScoresInput = {
@@ -224690,6 +226703,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAiScoresInput = {
@@ -225002,6 +227016,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAiScoresInput = {
@@ -225115,6 +227130,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutAiScoresInput = {
@@ -225417,6 +227433,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAlertsInput = {
@@ -225530,6 +227547,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAlertsInput = {
@@ -225791,6 +227809,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -225833,6 +227852,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -225982,6 +228002,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAlertsInput = {
@@ -226095,6 +228116,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutAlertsInput = {
@@ -226374,6 +228396,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -226416,6 +228439,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -226549,6 +228573,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAiDigestsInput = {
@@ -226662,6 +228687,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAiDigestsInput = {
@@ -226791,6 +228817,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAiDigestsInput = {
@@ -226904,6 +228931,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutAuditLogsInput = {
@@ -227017,6 +229045,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAuditLogsInput = {
@@ -227130,6 +229159,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAuditLogsInput = {
@@ -227259,6 +229289,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAuditLogsInput = {
@@ -227372,6 +229403,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutTicketsInput = {
@@ -227485,6 +229517,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutTicketsInput = {
@@ -227598,6 +229631,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutTicketsInput = {
@@ -227798,6 +229832,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -227840,6 +229875,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -227877,6 +229913,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -227919,6 +229956,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -228351,6 +230389,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutTicketsInput = {
@@ -228464,6 +230503,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutSubmittedTicketsInput = {
@@ -228676,6 +230716,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -228718,6 +230759,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -228761,6 +230803,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -228803,6 +230846,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -229237,6 +231281,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutLeaveRequestsInput = {
@@ -229350,6 +231395,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutLeaveRequestsInput = {
@@ -229550,6 +231596,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -229592,6 +231639,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -229741,6 +231789,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutLeaveRequestsInput = {
@@ -229854,6 +231903,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutLeaveRequestsInput = {
@@ -230066,6 +232116,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -230108,6 +232159,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -230241,6 +232293,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutTalabatSessionsInput = {
@@ -230354,6 +232407,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutTalabatSessionsInput = {
@@ -230811,6 +232865,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutTalabatSessionsInput = {
@@ -230924,6 +232979,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutTalabatSessionsInput = {
@@ -231329,6 +233385,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutTalabatViolationEventsInput = {
@@ -231442,6 +233499,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutTalabatViolationEventsInput = {
@@ -231821,6 +233879,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutTalabatViolationEventsInput = {
@@ -231934,6 +233993,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutTalabatViolationEventsInput = {
@@ -232821,6 +234881,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutKeetaDailyMetricsInput = {
@@ -232934,6 +234995,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutKeetaDailyMetricsInput = {
@@ -233246,6 +235308,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutKeetaDailyMetricsInput = {
@@ -233359,6 +235422,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutKeetaDailyMetricsInput = {
@@ -233661,6 +235725,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutIngestRunsInput = {
@@ -233774,6 +235839,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutIngestRunsInput = {
@@ -233903,6 +235969,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutIngestRunsInput = {
@@ -234016,6 +236083,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutDeliverooDailyMetricsInput = {
@@ -234129,6 +236197,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutDeliverooDailyMetricsInput = {
@@ -234242,6 +236311,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutDeliverooDailyMetricsInput = {
@@ -234554,6 +236624,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutDeliverooDailyMetricsInput = {
@@ -234667,6 +236738,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutDeliverooDailyMetricsInput = {
@@ -234969,6 +237041,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutTalabatDailyMetricsInput = {
@@ -235082,6 +237155,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutTalabatDailyMetricsInput = {
@@ -235394,6 +237468,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutTalabatDailyMetricsInput = {
@@ -235507,6 +237582,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutTalabatDailyMetricsInput = {
@@ -235809,6 +237885,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutPlatformSettingsInput = {
@@ -235922,6 +237999,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutPlatformSettingsInput = {
@@ -236051,6 +238129,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutPlatformSettingsInput = {
@@ -236164,6 +238243,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutPlatformInventoryInput = {
@@ -236277,6 +238357,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutPlatformInventoryInput = {
@@ -236390,6 +238471,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutPlatformInventoryInput = {
@@ -236519,6 +238601,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutPlatformInventoryInput = {
@@ -236632,6 +238715,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutAmericanaDailyOrdersInput = {
@@ -236745,6 +238829,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAmericanaDailyOrdersInput = {
@@ -236858,6 +238943,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAmericanaDailyOrdersInput = {
@@ -237248,6 +239334,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAmericanaDailyOrdersInput = {
@@ -237361,6 +239448,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutAmericanaDailyOrdersInput = {
@@ -237753,6 +239841,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAmericanaChainsInput = {
@@ -237866,6 +239955,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAmericanaChainsInput = {
@@ -238129,6 +240219,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAmericanaChainsInput = {
@@ -238242,6 +240333,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type AmericanaStoreUpsertWithWhereUniqueWithoutChainInput = {
@@ -238403,6 +240495,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAmericanaStoresInput = {
@@ -238516,6 +240609,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAmericanaStoresInput = {
@@ -238762,6 +240856,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAmericanaStoresInput = {
@@ -238875,6 +240970,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type AmericanaChainUpsertWithoutStoresInput = {
@@ -239057,6 +241153,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAmericanaContractsInput = {
@@ -239170,6 +241267,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAmericanaContractsInput = {
@@ -239335,6 +241433,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAmericanaContractsInput = {
@@ -239448,6 +241547,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type AmericanaChainRateUpsertWithWhereUniqueWithoutContractInput = {
@@ -239577,6 +241677,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAmericanaChainRatesInput = {
@@ -239690,6 +241791,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAmericanaChainRatesInput = {
@@ -239777,6 +241879,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -239819,6 +241922,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -239968,6 +242072,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAmericanaChainRatesInput = {
@@ -240081,6 +242186,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type AmericanaChainUpsertWithoutRatesInput = {
@@ -240186,6 +242292,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -240228,6 +242335,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -240361,6 +242469,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutDriverBatchHistoryInput = {
@@ -240474,6 +242583,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutDriverBatchHistoryInput = {
@@ -240786,6 +242896,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutDriverBatchHistoryInput = {
@@ -240899,6 +243010,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutBatchHistoryInput = {
@@ -241201,6 +243313,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAmericanaStoreAssignmentsInput = {
@@ -241314,6 +243427,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAmericanaStoreAssignmentsInput = {
@@ -241673,6 +243787,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAmericanaStoreAssignmentsInput = {
@@ -241786,6 +243901,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutAmericanaStoreAssignmentsInput = {
@@ -242141,6 +244257,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAmericanaDailyIngestionsInput = {
@@ -242254,6 +244371,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAmericanaDailyIngestionsInput = {
@@ -242383,6 +244501,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAmericanaDailyIngestionsInput = {
@@ -242496,6 +244615,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutKpiDefinitionsInput = {
@@ -242609,6 +244729,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutKpiDefinitionsInput = {
@@ -242722,6 +244843,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutKpiDefinitionsInput = {
@@ -242887,6 +245009,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutKpiDefinitionsInput = {
@@ -243000,6 +245123,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type KpiRecordUpsertWithWhereUniqueWithoutKpiDefinitionInput = {
@@ -243129,6 +245253,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutKpiRecordsInput = {
@@ -243242,6 +245367,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutKpiRecordsInput = {
@@ -243589,6 +245715,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutKpiRecordsInput = {
@@ -243702,6 +245829,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutKpiRecordsInput = {
@@ -244045,6 +246173,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutNotificationsInput = {
@@ -244158,6 +246287,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutNotificationsInput = {
@@ -244175,6 +246305,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -244217,6 +246348,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -244366,6 +246498,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutNotificationsInput = {
@@ -244479,6 +246612,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutNotificationsInput = {
@@ -244502,6 +246636,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -244544,6 +246679,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -244677,6 +246813,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutNotificationDeliveriesInput = {
@@ -244790,6 +246927,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutNotificationDeliveriesInput = {
@@ -244919,6 +247057,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutNotificationDeliveriesInput = {
@@ -245032,6 +247171,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutNotificationRulesInput = {
@@ -245145,6 +247285,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutNotificationRulesInput = {
@@ -245258,6 +247399,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutNotificationRulesInput = {
@@ -245387,6 +247529,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutNotificationRulesInput = {
@@ -245500,6 +247643,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutCourierOnlineSessionsInput = {
@@ -245613,6 +247757,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCourierOnlineSessionsInput = {
@@ -245726,6 +247871,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCourierOnlineSessionsInput = {
@@ -246038,6 +248184,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCourierOnlineSessionsInput = {
@@ -246151,6 +248298,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutCourierOnlineSessionsInput = {
@@ -246453,6 +248601,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutViolationsInput = {
@@ -246566,6 +248715,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutViolationsInput = {
@@ -246945,6 +249095,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutViolationsInput = {
@@ -247058,6 +249209,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutViolationsInput = {
@@ -247392,6 +249544,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutPenaltiesInput = {
@@ -247505,6 +249658,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutPenaltiesInput = {
@@ -247866,6 +250020,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutPenaltiesInput = {
@@ -247979,6 +250134,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutPenaltiesInput = {
@@ -248297,6 +250453,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAppealsInput = {
@@ -248410,6 +250567,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAppealsInput = {
@@ -248588,6 +250746,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAppealsInput = {
@@ -248701,6 +250860,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type ViolationUpsertWithoutAppealsInput = {
@@ -248869,6 +251029,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutOrderEventsInput = {
@@ -248982,6 +251143,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutOrderEventsInput = {
@@ -249111,6 +251273,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutOrderEventsInput = {
@@ -249224,6 +251387,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutAiInsightsInput = {
@@ -249337,6 +251501,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAiInsightsInput = {
@@ -249450,6 +251615,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAiInsightsInput = {
@@ -249762,6 +251928,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAiInsightsInput = {
@@ -249875,6 +252042,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutAiInsightsInput = {
@@ -250177,6 +252345,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutDemandHeatmapsInput = {
@@ -250290,6 +252459,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutDemandHeatmapsInput = {
@@ -250419,6 +252589,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutDemandHeatmapsInput = {
@@ -250532,6 +252703,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutDeliveryAreasInput = {
@@ -250645,6 +252817,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutDeliveryAreasInput = {
@@ -250758,6 +252931,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutDeliveryAreasInput = {
@@ -250887,6 +253061,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutDeliveryAreasInput = {
@@ -251000,6 +253175,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutCourierAttendanceSlotsInput = {
@@ -251113,6 +253289,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCourierAttendanceSlotsInput = {
@@ -251226,6 +253403,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCourierAttendanceSlotsInput = {
@@ -251538,6 +253716,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCourierAttendanceSlotsInput = {
@@ -251651,6 +253830,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutCourierAttendanceSlotsInput = {
@@ -251953,6 +254133,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutKeetaAvailableSlotsInput = {
@@ -252066,6 +254247,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutKeetaAvailableSlotsInput = {
@@ -252195,6 +254377,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutKeetaAvailableSlotsInput = {
@@ -252308,6 +254491,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutShiftComplianceConfigInput = {
@@ -252421,6 +254605,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutShiftComplianceConfigInput = {
@@ -252534,6 +254719,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutShiftComplianceConfigInput = {
@@ -252663,6 +254849,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutShiftComplianceConfigInput = {
@@ -252776,6 +254963,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutPartnersInput = {
@@ -252889,6 +255077,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutPartnersInput = {
@@ -253002,6 +255191,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutPartnersInput = {
@@ -253249,6 +255439,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutPartnersInput = {
@@ -253362,6 +255553,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type PartnerBankAccountUpsertWithWhereUniqueWithoutPartnerInput = {
@@ -253600,6 +255792,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutIncentiveTargetRoundsInput = {
@@ -253713,6 +255906,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutIncentiveTargetRoundsInput = {
@@ -253963,6 +256157,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutIncentiveTargetRoundsInput = {
@@ -254076,6 +256271,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type PartnerUpsertWithoutIncentiveRoundsInput = {
@@ -254465,6 +256661,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCourierIncentivePayoutsInput = {
@@ -254578,6 +256775,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCourierIncentivePayoutsInput = {
@@ -254929,6 +257127,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCourierIncentivePayoutsInput = {
@@ -255042,6 +257241,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type IncentiveTargetRoundUpsertWithoutPayoutsInput = {
@@ -255389,6 +257589,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutBillingsInput = {
@@ -255502,6 +257703,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutBillingsInput = {
@@ -255735,6 +257937,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutBillingsInput = {
@@ -255848,6 +258051,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type PartnerUpsertWithoutBillingsInput = {
@@ -256055,6 +258259,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutTaxInvoicesInput = {
@@ -256168,6 +258373,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutTaxInvoicesInput = {
@@ -256338,6 +258544,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutTaxInvoicesInput = {
@@ -256451,6 +258658,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type BillingUpsertWithoutTaxInvoiceInput = {
@@ -256611,6 +258819,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutPaymentWithdrawalsInput = {
@@ -256724,6 +258933,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutPaymentWithdrawalsInput = {
@@ -256894,6 +259104,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutPaymentWithdrawalsInput = {
@@ -257007,6 +259218,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type BillingUpsertWithoutWithdrawalsInput = {
@@ -257167,6 +259379,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAgentRunLogsInput = {
@@ -257280,6 +259493,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAgentRunLogsInput = {
@@ -257583,6 +259797,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAgentRunLogsInput = {
@@ -257696,6 +259911,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type AgentToolCallUpsertWithWhereUniqueWithoutRunInput = {
@@ -257988,6 +260204,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutPendingAgentActionsInput = {
@@ -258101,6 +260318,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutPendingAgentActionsInput = {
@@ -258277,6 +260495,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutPendingAgentActionsInput = {
@@ -258390,6 +260609,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type AgentRunLogUpsertWithoutPendingInput = {
@@ -258556,6 +260776,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAgentActionsInput = {
@@ -258669,6 +260890,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAgentActionsInput = {
@@ -258686,6 +260908,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -258728,6 +260951,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -258968,6 +261192,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAgentActionsInput = {
@@ -259081,6 +261306,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutApprovedAgentActionsInput = {
@@ -259104,6 +261330,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -259146,6 +261373,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -259348,6 +261576,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAgentMemoriesInput = {
@@ -259461,6 +261690,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAgentMemoriesInput = {
@@ -259637,6 +261867,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAgentMemoriesInput = {
@@ -259750,6 +261981,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type AgentRunLogUpsertWithoutAgentMemoriesInput = {
@@ -259916,6 +262148,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutPinnedViewsInput = {
@@ -260029,6 +262262,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutPinnedViewsInput = {
@@ -260046,6 +262280,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -260088,6 +262323,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -260237,6 +262473,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutPinnedViewsInput = {
@@ -260350,6 +262587,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutPinnedViewsInput = {
@@ -260373,6 +262611,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -260415,6 +262654,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -260548,6 +262788,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutPerformanceSnapshotsInput = {
@@ -260661,6 +262902,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutPerformanceSnapshotsInput = {
@@ -260973,6 +263215,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutPerformanceSnapshotsInput = {
@@ -261086,6 +263329,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutPerformanceSnapshotsInput = {
@@ -261388,6 +263632,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutMetricEventsInput = {
@@ -261501,6 +263746,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutMetricEventsInput = {
@@ -261518,6 +263764,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -261560,6 +263807,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -261709,6 +263957,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutMetricEventsInput = {
@@ -261822,6 +264071,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutMetricEventsInput = {
@@ -261845,6 +264095,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -261887,6 +264138,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -262020,6 +264272,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutChatThreadsInput = {
@@ -262133,6 +264386,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutChatThreadsInput = {
@@ -262150,6 +264404,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -262192,6 +264447,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -262424,6 +264680,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutChatThreadsInput = {
@@ -262537,6 +264794,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutChatThreadsInput = {
@@ -262560,6 +264818,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -262602,6 +264861,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -262796,6 +265056,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutChatMessagesInput = {
@@ -262909,6 +265170,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutChatMessagesInput = {
@@ -263130,6 +265392,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutChatMessagesInput = {
@@ -263243,6 +265506,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type ChatThreadUpsertWithoutMessagesInput = {
@@ -263460,6 +265724,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutScheduledBriefingsInput = {
@@ -263573,6 +265838,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutScheduledBriefingsInput = {
@@ -263590,6 +265856,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -263632,6 +265899,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -263819,6 +266087,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutScheduledBriefingsInput = {
@@ -263932,6 +266201,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutScheduledBriefingsInput = {
@@ -263955,6 +266225,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -263997,6 +266268,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -264146,6 +266418,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutVendorsInput = {
@@ -264259,6 +266532,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutVendorsInput = {
@@ -264275,6 +266549,7 @@ export namespace Prisma {
     lat?: Decimal | DecimalJsLike | number | string | null
     lng?: Decimal | DecimalJsLike | number | string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -264297,6 +266572,7 @@ export namespace Prisma {
     zoneId?: string | null
     deliveryPlanId?: string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -264324,6 +266600,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -264365,6 +266642,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -264748,6 +267026,48 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type VendorTopUpCreateWithoutVendorInput = {
+    id?: string
+    requestedById?: string | null
+    amountKwd: Decimal | DecimalJsLike | number | string
+    status?: $Enums.VendorTopUpStatus
+    token: string
+    reference: string
+    paymentUrl?: string | null
+    providerRef?: string | null
+    provider?: string | null
+    paidAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutVendorTopUpsInput
+  }
+
+  export type VendorTopUpUncheckedCreateWithoutVendorInput = {
+    id?: string
+    tenantId: string
+    requestedById?: string | null
+    amountKwd: Decimal | DecimalJsLike | number | string
+    status?: $Enums.VendorTopUpStatus
+    token: string
+    reference: string
+    paymentUrl?: string | null
+    providerRef?: string | null
+    provider?: string | null
+    paidAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VendorTopUpCreateOrConnectWithoutVendorInput = {
+    where: VendorTopUpWhereUniqueInput
+    create: XOR<VendorTopUpCreateWithoutVendorInput, VendorTopUpUncheckedCreateWithoutVendorInput>
+  }
+
+  export type VendorTopUpCreateManyVendorInputEnvelope = {
+    data: VendorTopUpCreateManyVendorInput | VendorTopUpCreateManyVendorInput[]
+    skipDuplicates?: boolean
+  }
+
   export type TenantUpsertWithoutVendorsInput = {
     update: XOR<TenantUpdateWithoutVendorsInput, TenantUncheckedUpdateWithoutVendorsInput>
     create: XOR<TenantCreateWithoutVendorsInput, TenantUncheckedCreateWithoutVendorsInput>
@@ -264870,6 +267190,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutVendorsInput = {
@@ -264983,6 +267304,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type VendorBranchUpsertWithWhereUniqueWithoutVendorInput = {
@@ -265187,6 +267509,22 @@ export namespace Prisma {
     data: XOR<SupportTicketUpdateManyMutationInput, SupportTicketUncheckedUpdateManyWithoutVendorInput>
   }
 
+  export type VendorTopUpUpsertWithWhereUniqueWithoutVendorInput = {
+    where: VendorTopUpWhereUniqueInput
+    update: XOR<VendorTopUpUpdateWithoutVendorInput, VendorTopUpUncheckedUpdateWithoutVendorInput>
+    create: XOR<VendorTopUpCreateWithoutVendorInput, VendorTopUpUncheckedCreateWithoutVendorInput>
+  }
+
+  export type VendorTopUpUpdateWithWhereUniqueWithoutVendorInput = {
+    where: VendorTopUpWhereUniqueInput
+    data: XOR<VendorTopUpUpdateWithoutVendorInput, VendorTopUpUncheckedUpdateWithoutVendorInput>
+  }
+
+  export type VendorTopUpUpdateManyWithWhereWithoutVendorInput = {
+    where: VendorTopUpScalarWhereInput
+    data: XOR<VendorTopUpUpdateManyMutationInput, VendorTopUpUncheckedUpdateManyWithoutVendorInput>
+  }
+
   export type TenantCreateWithoutVendorBranchesInput = {
     id?: string
     name: string
@@ -265298,6 +267636,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutVendorBranchesInput = {
@@ -265411,6 +267750,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutVendorBranchesInput = {
@@ -265440,6 +267780,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanCreateNestedOneWithoutVendorsInput
     accountManagers?: AccountManagerVendorCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpCreateNestedManyWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutBranchesInput = {
@@ -265464,6 +267805,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutVendorInput
     accountManagers?: AccountManagerVendorUncheckedCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpUncheckedCreateNestedManyWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutBranchesInput = {
@@ -265675,6 +268017,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -265716,6 +268059,7 @@ export namespace Prisma {
     fleetPartnerId?: string | null
     ownerGroupId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -265871,6 +268215,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutVendorBranchesInput = {
@@ -265984,6 +268329,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type VendorUpsertWithoutBranchesInput = {
@@ -266019,6 +268365,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanUpdateOneWithoutVendorsNestedInput
     accountManagers?: AccountManagerVendorUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUpdateManyWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutBranchesInput = {
@@ -266043,6 +268390,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutVendorNestedInput
     accountManagers?: AccountManagerVendorUncheckedUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUncheckedUpdateManyWithoutVendorNestedInput
   }
 
   export type DeliveryZoneUpsertWithoutBranchesInput = {
@@ -266282,6 +268630,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutDeliveryZonesInput = {
@@ -266395,6 +268744,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutDeliveryZonesInput = {
@@ -266411,6 +268761,7 @@ export namespace Prisma {
     lat?: Decimal | DecimalJsLike | number | string | null
     lng?: Decimal | DecimalJsLike | number | string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -266433,6 +268784,7 @@ export namespace Prisma {
     lng?: Decimal | DecimalJsLike | number | string | null
     deliveryPlanId?: string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -266912,6 +269264,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutDeliveryZonesInput = {
@@ -267025,6 +269378,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type VendorBranchUpsertWithWhereUniqueWithoutZoneInput = {
@@ -267264,6 +269618,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutZoneSurchargesInput = {
@@ -267377,6 +269732,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutZoneSurchargesInput = {
@@ -267604,6 +269960,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutZoneSurchargesInput = {
@@ -267717,6 +270074,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DeliveryZoneUpsertWithoutOriginSurchargesInput = {
@@ -267940,6 +270298,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutDeliveryPlansInput = {
@@ -268053,6 +270412,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutDeliveryPlansInput = {
@@ -268142,6 +270502,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutVendorInput
     accountManagers?: AccountManagerVendorCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpCreateNestedManyWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutDeliveryPlanInput = {
@@ -268166,6 +270527,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutVendorInput
     accountManagers?: AccountManagerVendorUncheckedCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpUncheckedCreateNestedManyWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutDeliveryPlanInput = {
@@ -268187,6 +270549,7 @@ export namespace Prisma {
     lat?: Decimal | DecimalJsLike | number | string | null
     lng?: Decimal | DecimalJsLike | number | string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -268209,6 +270572,7 @@ export namespace Prisma {
     lng?: Decimal | DecimalJsLike | number | string | null
     zoneId?: string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -268348,6 +270712,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutDeliveryPlansInput = {
@@ -268461,6 +270826,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DeliveryPlanZoneRateUpsertWithWhereUniqueWithoutPlanInput = {
@@ -269004,6 +271370,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutDistanceCacheEntriesInput = {
@@ -269117,6 +271484,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutDistanceCacheEntriesInput = {
@@ -269246,6 +271614,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutDistanceCacheEntriesInput = {
@@ -269359,6 +271728,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutFulfillmentSettingsInput = {
@@ -269472,6 +271842,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutFulfillmentSettingsInput = {
@@ -269585,6 +271956,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutFulfillmentSettingsInput = {
@@ -269714,6 +272086,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutFulfillmentSettingsInput = {
@@ -269827,6 +272200,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutDeliveryOrdersInput = {
@@ -269940,6 +272314,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutDeliveryOrdersInput = {
@@ -270053,6 +272428,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutDeliveryOrdersInput = {
@@ -270082,6 +272458,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanCreateNestedOneWithoutVendorsInput
     accountManagers?: AccountManagerVendorCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpCreateNestedManyWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutOrdersInput = {
@@ -270106,6 +272483,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutVendorInput
     accountManagers?: AccountManagerVendorUncheckedCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpUncheckedCreateNestedManyWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutOrdersInput = {
@@ -270122,6 +272500,7 @@ export namespace Prisma {
     lat?: Decimal | DecimalJsLike | number | string | null
     lng?: Decimal | DecimalJsLike | number | string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -270145,6 +272524,7 @@ export namespace Prisma {
     zoneId?: string | null
     deliveryPlanId?: string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -270707,6 +273087,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutDeliveryOrdersInput = {
@@ -270820,6 +273201,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type VendorUpsertWithoutOrdersInput = {
@@ -270855,6 +273237,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanUpdateOneWithoutVendorsNestedInput
     accountManagers?: AccountManagerVendorUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUpdateManyWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutOrdersInput = {
@@ -270879,6 +273262,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutVendorNestedInput
     accountManagers?: AccountManagerVendorUncheckedUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUncheckedUpdateManyWithoutVendorNestedInput
   }
 
   export type VendorBranchUpsertWithoutOrdersInput = {
@@ -270901,6 +273285,7 @@ export namespace Prisma {
     lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -270924,6 +273309,7 @@ export namespace Prisma {
     zoneId?: NullableStringFieldUpdateOperationsInput | string | null
     deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -271440,6 +273826,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutDispatchOffersInput = {
@@ -271553,6 +273940,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutDispatchOffersInput = {
@@ -271972,6 +274360,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutDispatchOffersInput = {
@@ -272085,6 +274474,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DeliveryOrderUpsertWithoutOffersInput = {
@@ -272500,6 +274890,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutWalletAccountsInput = {
@@ -272613,6 +275004,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutWalletAccountsInput = {
@@ -272772,6 +275164,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutWalletAccountsInput = {
@@ -272885,6 +275278,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type WalletEntryUpsertWithWhereUniqueWithoutAccountInput = {
@@ -273014,6 +275408,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutWalletTransactionsInput = {
@@ -273127,6 +275522,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutWalletTransactionsInput = {
@@ -273286,6 +275682,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutWalletTransactionsInput = {
@@ -273399,6 +275796,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type WalletEntryUpsertWithWhereUniqueWithoutTransactionInput = {
@@ -273528,6 +275926,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutWalletEntriesInput = {
@@ -273641,6 +276040,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutWalletEntriesInput = {
@@ -273824,6 +276224,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutWalletEntriesInput = {
@@ -273937,6 +276338,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type WalletTransactionUpsertWithoutEntriesInput = {
@@ -274116,6 +276518,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutRemittancesInput = {
@@ -274229,6 +276632,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutRemittancesInput = {
@@ -274541,6 +276945,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutRemittancesInput = {
@@ -274654,6 +277059,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutRemittancesInput = {
@@ -274956,6 +277362,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutWalletReconciliationRunsInput = {
@@ -275069,6 +277476,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutWalletReconciliationRunsInput = {
@@ -275198,6 +277606,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutWalletReconciliationRunsInput = {
@@ -275311,6 +277720,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutIncidentsInput = {
@@ -275424,6 +277834,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutIncidentsInput = {
@@ -275537,6 +277948,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutIncidentsInput = {
@@ -275956,6 +278368,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutIncidentsInput = {
@@ -276069,6 +278482,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DriverUpsertWithoutIncidentsInput = {
@@ -276484,6 +278898,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutFoodicsConnectionsInput = {
@@ -276597,6 +279012,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutFoodicsConnectionsInput = {
@@ -276626,6 +279042,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanCreateNestedOneWithoutVendorsInput
     accountManagers?: AccountManagerVendorCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpCreateNestedManyWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutFoodicsConnectionInput = {
@@ -276650,6 +279067,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutVendorInput
     accountManagers?: AccountManagerVendorUncheckedCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpUncheckedCreateNestedManyWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutFoodicsConnectionInput = {
@@ -276779,6 +279197,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutFoodicsConnectionsInput = {
@@ -276892,6 +279311,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type VendorUpsertWithoutFoodicsConnectionInput = {
@@ -276927,6 +279347,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanUpdateOneWithoutVendorsNestedInput
     accountManagers?: AccountManagerVendorUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUpdateManyWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutFoodicsConnectionInput = {
@@ -276951,6 +279372,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutVendorNestedInput
     accountManagers?: AccountManagerVendorUncheckedUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUncheckedUpdateManyWithoutVendorNestedInput
   }
 
   export type TenantCreateWithoutApiKeysInput = {
@@ -277064,6 +279486,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutApiKeysInput = {
@@ -277177,6 +279600,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutApiKeysInput = {
@@ -277206,6 +279630,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanCreateNestedOneWithoutVendorsInput
     accountManagers?: AccountManagerVendorCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpCreateNestedManyWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutApiKeysInput = {
@@ -277230,6 +279655,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutVendorInput
     accountManagers?: AccountManagerVendorUncheckedCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpUncheckedCreateNestedManyWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutApiKeysInput = {
@@ -277359,6 +279785,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutApiKeysInput = {
@@ -277472,6 +279899,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type VendorUpsertWithoutApiKeysInput = {
@@ -277507,6 +279935,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanUpdateOneWithoutVendorsNestedInput
     accountManagers?: AccountManagerVendorUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUpdateManyWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutApiKeysInput = {
@@ -277531,6 +279960,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutVendorNestedInput
     accountManagers?: AccountManagerVendorUncheckedUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUncheckedUpdateManyWithoutVendorNestedInput
   }
 
   export type TenantCreateWithoutOrderRatingsInput = {
@@ -277644,6 +280074,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutOrderRatingsInput = {
@@ -277757,6 +280188,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutOrderRatingsInput = {
@@ -278176,6 +280608,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutOrderRatingsInput = {
@@ -278289,6 +280722,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DeliveryOrderUpsertWithoutRatingInput = {
@@ -278704,6 +281138,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutVendorStatementsInput = {
@@ -278817,6 +281252,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutVendorStatementsInput = {
@@ -278846,6 +281282,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanCreateNestedOneWithoutVendorsInput
     accountManagers?: AccountManagerVendorCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpCreateNestedManyWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutStatementsInput = {
@@ -278870,6 +281307,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutVendorInput
     accountManagers?: AccountManagerVendorUncheckedCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpUncheckedCreateNestedManyWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutStatementsInput = {
@@ -278999,6 +281437,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutVendorStatementsInput = {
@@ -279112,6 +281551,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type VendorUpsertWithoutStatementsInput = {
@@ -279147,6 +281587,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanUpdateOneWithoutVendorsNestedInput
     accountManagers?: AccountManagerVendorUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUpdateManyWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutStatementsInput = {
@@ -279171,6 +281612,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutVendorNestedInput
     accountManagers?: AccountManagerVendorUncheckedUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUncheckedUpdateManyWithoutVendorNestedInput
   }
 
   export type TenantCreateWithoutRefundsInput = {
@@ -279284,6 +281726,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutRefundsInput = {
@@ -279397,6 +281840,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutRefundsInput = {
@@ -279533,6 +281977,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanCreateNestedOneWithoutVendorsInput
     accountManagers?: AccountManagerVendorCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpCreateNestedManyWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutRefundsInput = {
@@ -279557,6 +282002,7 @@ export namespace Prisma {
     statements?: VendorStatementUncheckedCreateNestedManyWithoutVendorInput
     accountManagers?: AccountManagerVendorUncheckedCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpUncheckedCreateNestedManyWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutRefundsInput = {
@@ -279686,6 +282132,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutRefundsInput = {
@@ -279799,6 +282246,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DeliveryOrderUpsertWithoutRefundInput = {
@@ -279947,6 +282395,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanUpdateOneWithoutVendorsNestedInput
     accountManagers?: AccountManagerVendorUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUpdateManyWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutRefundsInput = {
@@ -279971,6 +282420,7 @@ export namespace Prisma {
     statements?: VendorStatementUncheckedUpdateManyWithoutVendorNestedInput
     accountManagers?: AccountManagerVendorUncheckedUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUncheckedUpdateManyWithoutVendorNestedInput
   }
 
   export type TenantCreateWithoutFleetPartnersInput = {
@@ -280084,6 +282534,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutFleetPartnersInput = {
@@ -280197,6 +282648,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutFleetPartnersInput = {
@@ -280431,6 +282883,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -280472,6 +282925,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -280665,6 +283119,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutFleetPartnersInput = {
@@ -280778,6 +283233,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type OwnerGroupUpsertWithoutFleetsInput = {
@@ -280974,6 +283430,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutFleetPayoutStatementsInput = {
@@ -281087,6 +283544,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutFleetPayoutStatementsInput = {
@@ -281261,6 +283719,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutFleetPayoutStatementsInput = {
@@ -281374,6 +283833,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type FleetPartnerUpsertWithoutStatementsInput = {
@@ -281538,6 +283998,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutUserInvitesInput = {
@@ -281651,6 +284112,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutUserInvitesInput = {
@@ -281668,6 +284130,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -281710,6 +284173,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -281859,6 +284323,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutUserInvitesInput = {
@@ -281972,6 +284437,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutInvitesInput = {
@@ -281995,6 +284461,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -282037,6 +284504,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -282170,6 +284638,7 @@ export namespace Prisma {
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutUserSurfacePermissionsInput = {
@@ -282283,6 +284752,7 @@ export namespace Prisma {
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutUserSurfacePermissionsInput = {
@@ -282300,6 +284770,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -282342,6 +284813,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -282491,6 +284963,7 @@ export namespace Prisma {
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutUserSurfacePermissionsInput = {
@@ -282604,6 +285077,7 @@ export namespace Prisma {
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutSurfacePermissionsInput = {
@@ -282627,6 +285101,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -282669,6 +285144,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -282802,6 +285278,7 @@ export namespace Prisma {
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAccountManagerVendorsInput = {
@@ -282915,6 +285392,7 @@ export namespace Prisma {
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAccountManagerVendorsInput = {
@@ -282932,6 +285410,7 @@ export namespace Prisma {
     isSuperAdmin?: boolean
     jobGrade?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -282974,6 +285453,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -283023,6 +285503,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutVendorInput
     deliveryPlan?: DeliveryPlanCreateNestedOneWithoutVendorsInput
     supportTickets?: SupportTicketCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpCreateNestedManyWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutAccountManagersInput = {
@@ -283047,6 +285528,7 @@ export namespace Prisma {
     statements?: VendorStatementUncheckedCreateNestedManyWithoutVendorInput
     refunds?: RefundUncheckedCreateNestedManyWithoutVendorInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpUncheckedCreateNestedManyWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutAccountManagersInput = {
@@ -283176,6 +285658,7 @@ export namespace Prisma {
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAccountManagerVendorsInput = {
@@ -283289,6 +285772,7 @@ export namespace Prisma {
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutManagedVendorsInput = {
@@ -283312,6 +285796,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -283354,6 +285839,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -283409,6 +285895,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutVendorNestedInput
     deliveryPlan?: DeliveryPlanUpdateOneWithoutVendorsNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUpdateManyWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutAccountManagersInput = {
@@ -283433,6 +285920,7 @@ export namespace Prisma {
     statements?: VendorStatementUncheckedUpdateManyWithoutVendorNestedInput
     refunds?: RefundUncheckedUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUncheckedUpdateManyWithoutVendorNestedInput
   }
 
   export type TenantCreateWithoutSupportTicketsInput = {
@@ -283546,6 +286034,7 @@ export namespace Prisma {
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutSupportTicketsInput = {
@@ -283659,6 +286148,7 @@ export namespace Prisma {
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutSupportTicketsInput = {
@@ -283688,6 +286178,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutVendorInput
     deliveryPlan?: DeliveryPlanCreateNestedOneWithoutVendorsInput
     accountManagers?: AccountManagerVendorCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpCreateNestedManyWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutSupportTicketsInput = {
@@ -283712,6 +286203,7 @@ export namespace Prisma {
     statements?: VendorStatementUncheckedCreateNestedManyWithoutVendorInput
     refunds?: RefundUncheckedCreateNestedManyWithoutVendorInput
     accountManagers?: AccountManagerVendorUncheckedCreateNestedManyWithoutVendorInput
+    topUps?: VendorTopUpUncheckedCreateNestedManyWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutSupportTicketsInput = {
@@ -283869,6 +286361,7 @@ export namespace Prisma {
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutSupportTicketsInput = {
@@ -283982,6 +286475,7 @@ export namespace Prisma {
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type VendorUpsertWithoutSupportTicketsInput = {
@@ -284017,6 +286511,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutVendorNestedInput
     deliveryPlan?: DeliveryPlanUpdateOneWithoutVendorsNestedInput
     accountManagers?: AccountManagerVendorUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUpdateManyWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutSupportTicketsInput = {
@@ -284041,6 +286536,7 @@ export namespace Prisma {
     statements?: VendorStatementUncheckedUpdateManyWithoutVendorNestedInput
     refunds?: RefundUncheckedUpdateManyWithoutVendorNestedInput
     accountManagers?: AccountManagerVendorUncheckedUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUncheckedUpdateManyWithoutVendorNestedInput
   }
 
   export type SupportTicketMessageUpsertWithWhereUniqueWithoutTicketInput = {
@@ -284140,6 +286636,594 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type TenantCreateWithoutVendorTopUpsInput = {
+    id?: string
+    name: string
+    subscriptionPlan?: $Enums.SubscriptionPlan
+    designPartner?: boolean
+    monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    companies?: CompanyCreateNestedManyWithoutTenantInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
+    shifts?: ShiftCreateNestedManyWithoutTenantInput
+    attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
+    orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
+    cashRecords?: CashRecordCreateNestedManyWithoutTenantInput
+    cashTransactions?: CashTransactionCreateNestedManyWithoutTenantInput
+    pendingDuesLedgers?: PendingDuesLedgerCreateNestedManyWithoutTenantInput
+    vehicleInspections?: VehicleInspectionCreateNestedManyWithoutTenantInput
+    maintenanceRecords?: MaintenanceRecordCreateNestedManyWithoutTenantInput
+    aiScores?: AiScoreCreateNestedManyWithoutTenantInput
+    alerts?: AlertCreateNestedManyWithoutTenantInput
+    aiDigests?: AiDigestCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogCreateNestedManyWithoutTenantInput
+    tickets?: TicketCreateNestedManyWithoutTenantInput
+    leaveRequests?: LeaveRequestCreateNestedManyWithoutTenantInput
+    recruitmentPipeline?: RecruitmentPipelineCreateNestedManyWithoutTenantInput
+    vehicles?: VehicleCreateNestedManyWithoutTenantInput
+    talabatSessions?: TalabatSessionCreateNestedManyWithoutTenantInput
+    talabatViolationEvents?: TalabatViolationEventCreateNestedManyWithoutTenantInput
+    talabatDailyMetrics?: TalabatDailyMetricsCreateNestedManyWithoutTenantInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsCreateNestedManyWithoutTenantInput
+    keetaDailyMetrics?: KeetaDailyMetricsCreateNestedManyWithoutTenantInput
+    americanaDailyOrders?: AmericanaDailyOrdersCreateNestedManyWithoutTenantInput
+    kpiDefinitions?: KpiDefinitionCreateNestedManyWithoutTenantInput
+    kpiRecords?: KpiRecordCreateNestedManyWithoutTenantInput
+    platformSettings?: PlatformSettingsCreateNestedManyWithoutTenantInput
+    platformInventory?: PlatformInventoryCreateNestedManyWithoutTenantInput
+    notifications?: NotificationCreateNestedManyWithoutTenantInput
+    notificationRules?: NotificationRuleCreateNestedManyWithoutTenantInput
+    notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
+    driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
+    courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
+    violations?: ViolationCreateNestedManyWithoutTenantInput
+    penalties?: PenaltyCreateNestedManyWithoutTenantInput
+    appeals?: AppealCreateNestedManyWithoutTenantInput
+    orderEvents?: OrderEventCreateNestedManyWithoutTenantInput
+    aiInsights?: AiInsightCreateNestedManyWithoutTenantInput
+    demandHeatmaps?: DemandHeatmapCreateNestedManyWithoutTenantInput
+    courierAttendanceSlots?: CourierAttendanceSlotCreateNestedManyWithoutTenantInput
+    shiftComplianceConfig?: ShiftComplianceConfigCreateNestedOneWithoutTenantInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotCreateNestedManyWithoutTenantInput
+    deliveryAreas?: DeliveryAreaCreateNestedManyWithoutTenantInput
+    partners?: PartnerCreateNestedManyWithoutTenantInput
+    incentiveTargetRounds?: IncentiveTargetRoundCreateNestedManyWithoutTenantInput
+    courierIncentivePayouts?: CourierIncentivePayoutCreateNestedManyWithoutTenantInput
+    billings?: BillingCreateNestedManyWithoutTenantInput
+    taxInvoices?: TaxInvoiceCreateNestedManyWithoutTenantInput
+    paymentWithdrawals?: PaymentWithdrawalCreateNestedManyWithoutTenantInput
+    agentRunLogs?: AgentRunLogCreateNestedManyWithoutTenantInput
+    pendingAgentActions?: PendingAgentActionCreateNestedManyWithoutTenantInput
+    agentActions?: AgentActionCreateNestedManyWithoutTenantInput
+    agentMemories?: AgentMemoryCreateNestedManyWithoutTenantInput
+    pinnedViews?: PinnedViewCreateNestedManyWithoutTenantInput
+    performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutTenantInput
+    metricEvents?: MetricEventCreateNestedManyWithoutTenantInput
+    chatThreads?: ChatThreadCreateNestedManyWithoutTenantInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutTenantInput
+    scheduledBriefings?: ScheduledBriefingCreateNestedManyWithoutTenantInput
+    ingestRuns?: IngestRunCreateNestedManyWithoutTenantInput
+    americanaChains?: AmericanaChainCreateNestedManyWithoutTenantInput
+    americanaStores?: AmericanaStoreCreateNestedManyWithoutTenantInput
+    americanaContracts?: AmericanaContractCreateNestedManyWithoutTenantInput
+    americanaChainRates?: AmericanaChainRateCreateNestedManyWithoutTenantInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
+    americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
+    sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
+    vendors?: VendorCreateNestedManyWithoutTenantInput
+    vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
+    deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
+    zoneSurcharges?: ZoneSurchargeCreateNestedManyWithoutTenantInput
+    fulfillmentSettings?: FulfillmentSettingsCreateNestedOneWithoutTenantInput
+    deliveryOrders?: DeliveryOrderCreateNestedManyWithoutTenantInput
+    dispatchOffers?: DispatchOfferCreateNestedManyWithoutTenantInput
+    walletAccounts?: WalletAccountCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
+    walletEntries?: WalletEntryCreateNestedManyWithoutTenantInput
+    remittances?: RemittanceCreateNestedManyWithoutTenantInput
+    walletReconciliationRuns?: WalletReconciliationRunCreateNestedManyWithoutTenantInput
+    incidents?: IncidentCreateNestedManyWithoutTenantInput
+    foodicsConnections?: FoodicsConnectionCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
+    orderRatings?: OrderRatingCreateNestedManyWithoutTenantInput
+    vendorStatements?: VendorStatementCreateNestedManyWithoutTenantInput
+    refunds?: RefundCreateNestedManyWithoutTenantInput
+    fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
+    fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
+    distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
+    userInvites?: UserInviteCreateNestedManyWithoutTenantInput
+    userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
+    accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
+    supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantUncheckedCreateWithoutVendorTopUpsInput = {
+    id?: string
+    name: string
+    subscriptionPlan?: $Enums.SubscriptionPlan
+    designPartner?: boolean
+    monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
+    shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
+    attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
+    orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
+    cashRecords?: CashRecordUncheckedCreateNestedManyWithoutTenantInput
+    cashTransactions?: CashTransactionUncheckedCreateNestedManyWithoutTenantInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedCreateNestedManyWithoutTenantInput
+    vehicleInspections?: VehicleInspectionUncheckedCreateNestedManyWithoutTenantInput
+    maintenanceRecords?: MaintenanceRecordUncheckedCreateNestedManyWithoutTenantInput
+    aiScores?: AiScoreUncheckedCreateNestedManyWithoutTenantInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutTenantInput
+    aiDigests?: AiDigestUncheckedCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutTenantInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutTenantInput
+    leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutTenantInput
+    recruitmentPipeline?: RecruitmentPipelineUncheckedCreateNestedManyWithoutTenantInput
+    vehicles?: VehicleUncheckedCreateNestedManyWithoutTenantInput
+    talabatSessions?: TalabatSessionUncheckedCreateNestedManyWithoutTenantInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedCreateNestedManyWithoutTenantInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedCreateNestedManyWithoutTenantInput
+    kpiDefinitions?: KpiDefinitionUncheckedCreateNestedManyWithoutTenantInput
+    kpiRecords?: KpiRecordUncheckedCreateNestedManyWithoutTenantInput
+    platformSettings?: PlatformSettingsUncheckedCreateNestedManyWithoutTenantInput
+    platformInventory?: PlatformInventoryUncheckedCreateNestedManyWithoutTenantInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutTenantInput
+    notificationRules?: NotificationRuleUncheckedCreateNestedManyWithoutTenantInput
+    notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
+    driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
+    violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
+    penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
+    appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
+    orderEvents?: OrderEventUncheckedCreateNestedManyWithoutTenantInput
+    aiInsights?: AiInsightUncheckedCreateNestedManyWithoutTenantInput
+    demandHeatmaps?: DemandHeatmapUncheckedCreateNestedManyWithoutTenantInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedCreateNestedManyWithoutTenantInput
+    shiftComplianceConfig?: ShiftComplianceConfigUncheckedCreateNestedOneWithoutTenantInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUncheckedCreateNestedManyWithoutTenantInput
+    deliveryAreas?: DeliveryAreaUncheckedCreateNestedManyWithoutTenantInput
+    partners?: PartnerUncheckedCreateNestedManyWithoutTenantInput
+    incentiveTargetRounds?: IncentiveTargetRoundUncheckedCreateNestedManyWithoutTenantInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedCreateNestedManyWithoutTenantInput
+    billings?: BillingUncheckedCreateNestedManyWithoutTenantInput
+    taxInvoices?: TaxInvoiceUncheckedCreateNestedManyWithoutTenantInput
+    paymentWithdrawals?: PaymentWithdrawalUncheckedCreateNestedManyWithoutTenantInput
+    agentRunLogs?: AgentRunLogUncheckedCreateNestedManyWithoutTenantInput
+    pendingAgentActions?: PendingAgentActionUncheckedCreateNestedManyWithoutTenantInput
+    agentActions?: AgentActionUncheckedCreateNestedManyWithoutTenantInput
+    agentMemories?: AgentMemoryUncheckedCreateNestedManyWithoutTenantInput
+    pinnedViews?: PinnedViewUncheckedCreateNestedManyWithoutTenantInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutTenantInput
+    metricEvents?: MetricEventUncheckedCreateNestedManyWithoutTenantInput
+    chatThreads?: ChatThreadUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    scheduledBriefings?: ScheduledBriefingUncheckedCreateNestedManyWithoutTenantInput
+    ingestRuns?: IngestRunUncheckedCreateNestedManyWithoutTenantInput
+    americanaChains?: AmericanaChainUncheckedCreateNestedManyWithoutTenantInput
+    americanaStores?: AmericanaStoreUncheckedCreateNestedManyWithoutTenantInput
+    americanaContracts?: AmericanaContractUncheckedCreateNestedManyWithoutTenantInput
+    americanaChainRates?: AmericanaChainRateUncheckedCreateNestedManyWithoutTenantInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
+    sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
+    vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
+    vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
+    deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
+    zoneSurcharges?: ZoneSurchargeUncheckedCreateNestedManyWithoutTenantInput
+    fulfillmentSettings?: FulfillmentSettingsUncheckedCreateNestedOneWithoutTenantInput
+    deliveryOrders?: DeliveryOrderUncheckedCreateNestedManyWithoutTenantInput
+    dispatchOffers?: DispatchOfferUncheckedCreateNestedManyWithoutTenantInput
+    walletAccounts?: WalletAccountUncheckedCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
+    walletEntries?: WalletEntryUncheckedCreateNestedManyWithoutTenantInput
+    remittances?: RemittanceUncheckedCreateNestedManyWithoutTenantInput
+    walletReconciliationRuns?: WalletReconciliationRunUncheckedCreateNestedManyWithoutTenantInput
+    incidents?: IncidentUncheckedCreateNestedManyWithoutTenantInput
+    foodicsConnections?: FoodicsConnectionUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
+    orderRatings?: OrderRatingUncheckedCreateNestedManyWithoutTenantInput
+    vendorStatements?: VendorStatementUncheckedCreateNestedManyWithoutTenantInput
+    refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
+    fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
+    distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
+    userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
+    userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
+    accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
+    supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantCreateOrConnectWithoutVendorTopUpsInput = {
+    where: TenantWhereUniqueInput
+    create: XOR<TenantCreateWithoutVendorTopUpsInput, TenantUncheckedCreateWithoutVendorTopUpsInput>
+  }
+
+  export type VendorCreateWithoutTopUpsInput = {
+    id?: string
+    name: string
+    nameAr?: string | null
+    code: string
+    phone?: string | null
+    requiresCarOnly?: boolean
+    isPaused?: boolean
+    creditCapKwd?: Decimal | DecimalJsLike | number | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutVendorsInput
+    branches?: VendorBranchCreateNestedManyWithoutVendorInput
+    users?: UserCreateNestedManyWithoutVendorInput
+    orders?: DeliveryOrderCreateNestedManyWithoutVendorInput
+    foodicsConnection?: FoodicsConnectionCreateNestedOneWithoutVendorInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutVendorInput
+    statements?: VendorStatementCreateNestedManyWithoutVendorInput
+    refunds?: RefundCreateNestedManyWithoutVendorInput
+    deliveryPlan?: DeliveryPlanCreateNestedOneWithoutVendorsInput
+    accountManagers?: AccountManagerVendorCreateNestedManyWithoutVendorInput
+    supportTickets?: SupportTicketCreateNestedManyWithoutVendorInput
+  }
+
+  export type VendorUncheckedCreateWithoutTopUpsInput = {
+    id?: string
+    tenantId: string
+    name: string
+    nameAr?: string | null
+    code: string
+    phone?: string | null
+    requiresCarOnly?: boolean
+    isPaused?: boolean
+    creditCapKwd?: Decimal | DecimalJsLike | number | string | null
+    deliveryPlanId?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    branches?: VendorBranchUncheckedCreateNestedManyWithoutVendorInput
+    users?: UserUncheckedCreateNestedManyWithoutVendorInput
+    orders?: DeliveryOrderUncheckedCreateNestedManyWithoutVendorInput
+    foodicsConnection?: FoodicsConnectionUncheckedCreateNestedOneWithoutVendorInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutVendorInput
+    statements?: VendorStatementUncheckedCreateNestedManyWithoutVendorInput
+    refunds?: RefundUncheckedCreateNestedManyWithoutVendorInput
+    accountManagers?: AccountManagerVendorUncheckedCreateNestedManyWithoutVendorInput
+    supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutVendorInput
+  }
+
+  export type VendorCreateOrConnectWithoutTopUpsInput = {
+    where: VendorWhereUniqueInput
+    create: XOR<VendorCreateWithoutTopUpsInput, VendorUncheckedCreateWithoutTopUpsInput>
+  }
+
+  export type TenantUpsertWithoutVendorTopUpsInput = {
+    update: XOR<TenantUpdateWithoutVendorTopUpsInput, TenantUncheckedUpdateWithoutVendorTopUpsInput>
+    create: XOR<TenantCreateWithoutVendorTopUpsInput, TenantUncheckedCreateWithoutVendorTopUpsInput>
+    where?: TenantWhereInput
+  }
+
+  export type TenantUpdateToOneWithWhereWithoutVendorTopUpsInput = {
+    where?: TenantWhereInput
+    data: XOR<TenantUpdateWithoutVendorTopUpsInput, TenantUncheckedUpdateWithoutVendorTopUpsInput>
+  }
+
+  export type TenantUpdateWithoutVendorTopUpsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    subscriptionPlan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+    designPartner?: BoolFieldUpdateOperationsInput | boolean
+    monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    companies?: CompanyUpdateManyWithoutTenantNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
+    shifts?: ShiftUpdateManyWithoutTenantNestedInput
+    attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
+    orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
+    cashRecords?: CashRecordUpdateManyWithoutTenantNestedInput
+    cashTransactions?: CashTransactionUpdateManyWithoutTenantNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUpdateManyWithoutTenantNestedInput
+    vehicleInspections?: VehicleInspectionUpdateManyWithoutTenantNestedInput
+    maintenanceRecords?: MaintenanceRecordUpdateManyWithoutTenantNestedInput
+    aiScores?: AiScoreUpdateManyWithoutTenantNestedInput
+    alerts?: AlertUpdateManyWithoutTenantNestedInput
+    aiDigests?: AiDigestUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutTenantNestedInput
+    tickets?: TicketUpdateManyWithoutTenantNestedInput
+    leaveRequests?: LeaveRequestUpdateManyWithoutTenantNestedInput
+    recruitmentPipeline?: RecruitmentPipelineUpdateManyWithoutTenantNestedInput
+    vehicles?: VehicleUpdateManyWithoutTenantNestedInput
+    talabatSessions?: TalabatSessionUpdateManyWithoutTenantNestedInput
+    talabatViolationEvents?: TalabatViolationEventUpdateManyWithoutTenantNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUpdateManyWithoutTenantNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUpdateManyWithoutTenantNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUpdateManyWithoutTenantNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUpdateManyWithoutTenantNestedInput
+    kpiDefinitions?: KpiDefinitionUpdateManyWithoutTenantNestedInput
+    kpiRecords?: KpiRecordUpdateManyWithoutTenantNestedInput
+    platformSettings?: PlatformSettingsUpdateManyWithoutTenantNestedInput
+    platformInventory?: PlatformInventoryUpdateManyWithoutTenantNestedInput
+    notifications?: NotificationUpdateManyWithoutTenantNestedInput
+    notificationRules?: NotificationRuleUpdateManyWithoutTenantNestedInput
+    notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
+    driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
+    violations?: ViolationUpdateManyWithoutTenantNestedInput
+    penalties?: PenaltyUpdateManyWithoutTenantNestedInput
+    appeals?: AppealUpdateManyWithoutTenantNestedInput
+    orderEvents?: OrderEventUpdateManyWithoutTenantNestedInput
+    aiInsights?: AiInsightUpdateManyWithoutTenantNestedInput
+    demandHeatmaps?: DemandHeatmapUpdateManyWithoutTenantNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUpdateManyWithoutTenantNestedInput
+    shiftComplianceConfig?: ShiftComplianceConfigUpdateOneWithoutTenantNestedInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUpdateManyWithoutTenantNestedInput
+    deliveryAreas?: DeliveryAreaUpdateManyWithoutTenantNestedInput
+    partners?: PartnerUpdateManyWithoutTenantNestedInput
+    incentiveTargetRounds?: IncentiveTargetRoundUpdateManyWithoutTenantNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUpdateManyWithoutTenantNestedInput
+    billings?: BillingUpdateManyWithoutTenantNestedInput
+    taxInvoices?: TaxInvoiceUpdateManyWithoutTenantNestedInput
+    paymentWithdrawals?: PaymentWithdrawalUpdateManyWithoutTenantNestedInput
+    agentRunLogs?: AgentRunLogUpdateManyWithoutTenantNestedInput
+    pendingAgentActions?: PendingAgentActionUpdateManyWithoutTenantNestedInput
+    agentActions?: AgentActionUpdateManyWithoutTenantNestedInput
+    agentMemories?: AgentMemoryUpdateManyWithoutTenantNestedInput
+    pinnedViews?: PinnedViewUpdateManyWithoutTenantNestedInput
+    performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutTenantNestedInput
+    metricEvents?: MetricEventUpdateManyWithoutTenantNestedInput
+    chatThreads?: ChatThreadUpdateManyWithoutTenantNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutTenantNestedInput
+    scheduledBriefings?: ScheduledBriefingUpdateManyWithoutTenantNestedInput
+    ingestRuns?: IngestRunUpdateManyWithoutTenantNestedInput
+    americanaChains?: AmericanaChainUpdateManyWithoutTenantNestedInput
+    americanaStores?: AmericanaStoreUpdateManyWithoutTenantNestedInput
+    americanaContracts?: AmericanaContractUpdateManyWithoutTenantNestedInput
+    americanaChainRates?: AmericanaChainRateUpdateManyWithoutTenantNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
+    sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
+    vendors?: VendorUpdateManyWithoutTenantNestedInput
+    vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
+    deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
+    zoneSurcharges?: ZoneSurchargeUpdateManyWithoutTenantNestedInput
+    fulfillmentSettings?: FulfillmentSettingsUpdateOneWithoutTenantNestedInput
+    deliveryOrders?: DeliveryOrderUpdateManyWithoutTenantNestedInput
+    dispatchOffers?: DispatchOfferUpdateManyWithoutTenantNestedInput
+    walletAccounts?: WalletAccountUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
+    walletEntries?: WalletEntryUpdateManyWithoutTenantNestedInput
+    remittances?: RemittanceUpdateManyWithoutTenantNestedInput
+    walletReconciliationRuns?: WalletReconciliationRunUpdateManyWithoutTenantNestedInput
+    incidents?: IncidentUpdateManyWithoutTenantNestedInput
+    foodicsConnections?: FoodicsConnectionUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
+    orderRatings?: OrderRatingUpdateManyWithoutTenantNestedInput
+    vendorStatements?: VendorStatementUpdateManyWithoutTenantNestedInput
+    refunds?: RefundUpdateManyWithoutTenantNestedInput
+    fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
+    fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
+    distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
+    userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
+    userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
+    accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
+    supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+  }
+
+  export type TenantUncheckedUpdateWithoutVendorTopUpsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    subscriptionPlan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+    designPartner?: BoolFieldUpdateOperationsInput | boolean
+    monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
+    shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
+    attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
+    orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
+    cashRecords?: CashRecordUncheckedUpdateManyWithoutTenantNestedInput
+    cashTransactions?: CashTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleInspections?: VehicleInspectionUncheckedUpdateManyWithoutTenantNestedInput
+    maintenanceRecords?: MaintenanceRecordUncheckedUpdateManyWithoutTenantNestedInput
+    aiScores?: AiScoreUncheckedUpdateManyWithoutTenantNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutTenantNestedInput
+    aiDigests?: AiDigestUncheckedUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutTenantNestedInput
+    leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutTenantNestedInput
+    recruitmentPipeline?: RecruitmentPipelineUncheckedUpdateManyWithoutTenantNestedInput
+    vehicles?: VehicleUncheckedUpdateManyWithoutTenantNestedInput
+    talabatSessions?: TalabatSessionUncheckedUpdateManyWithoutTenantNestedInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedUpdateManyWithoutTenantNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedUpdateManyWithoutTenantNestedInput
+    kpiDefinitions?: KpiDefinitionUncheckedUpdateManyWithoutTenantNestedInput
+    kpiRecords?: KpiRecordUncheckedUpdateManyWithoutTenantNestedInput
+    platformSettings?: PlatformSettingsUncheckedUpdateManyWithoutTenantNestedInput
+    platformInventory?: PlatformInventoryUncheckedUpdateManyWithoutTenantNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutTenantNestedInput
+    notificationRules?: NotificationRuleUncheckedUpdateManyWithoutTenantNestedInput
+    notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
+    driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
+    violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
+    penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
+    appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
+    orderEvents?: OrderEventUncheckedUpdateManyWithoutTenantNestedInput
+    aiInsights?: AiInsightUncheckedUpdateManyWithoutTenantNestedInput
+    demandHeatmaps?: DemandHeatmapUncheckedUpdateManyWithoutTenantNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedUpdateManyWithoutTenantNestedInput
+    shiftComplianceConfig?: ShiftComplianceConfigUncheckedUpdateOneWithoutTenantNestedInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryAreas?: DeliveryAreaUncheckedUpdateManyWithoutTenantNestedInput
+    partners?: PartnerUncheckedUpdateManyWithoutTenantNestedInput
+    incentiveTargetRounds?: IncentiveTargetRoundUncheckedUpdateManyWithoutTenantNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedUpdateManyWithoutTenantNestedInput
+    billings?: BillingUncheckedUpdateManyWithoutTenantNestedInput
+    taxInvoices?: TaxInvoiceUncheckedUpdateManyWithoutTenantNestedInput
+    paymentWithdrawals?: PaymentWithdrawalUncheckedUpdateManyWithoutTenantNestedInput
+    agentRunLogs?: AgentRunLogUncheckedUpdateManyWithoutTenantNestedInput
+    pendingAgentActions?: PendingAgentActionUncheckedUpdateManyWithoutTenantNestedInput
+    agentActions?: AgentActionUncheckedUpdateManyWithoutTenantNestedInput
+    agentMemories?: AgentMemoryUncheckedUpdateManyWithoutTenantNestedInput
+    pinnedViews?: PinnedViewUncheckedUpdateManyWithoutTenantNestedInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutTenantNestedInput
+    metricEvents?: MetricEventUncheckedUpdateManyWithoutTenantNestedInput
+    chatThreads?: ChatThreadUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    scheduledBriefings?: ScheduledBriefingUncheckedUpdateManyWithoutTenantNestedInput
+    ingestRuns?: IngestRunUncheckedUpdateManyWithoutTenantNestedInput
+    americanaChains?: AmericanaChainUncheckedUpdateManyWithoutTenantNestedInput
+    americanaStores?: AmericanaStoreUncheckedUpdateManyWithoutTenantNestedInput
+    americanaContracts?: AmericanaContractUncheckedUpdateManyWithoutTenantNestedInput
+    americanaChainRates?: AmericanaChainRateUncheckedUpdateManyWithoutTenantNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
+    sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
+    vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
+    vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
+    zoneSurcharges?: ZoneSurchargeUncheckedUpdateManyWithoutTenantNestedInput
+    fulfillmentSettings?: FulfillmentSettingsUncheckedUpdateOneWithoutTenantNestedInput
+    deliveryOrders?: DeliveryOrderUncheckedUpdateManyWithoutTenantNestedInput
+    dispatchOffers?: DispatchOfferUncheckedUpdateManyWithoutTenantNestedInput
+    walletAccounts?: WalletAccountUncheckedUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    walletEntries?: WalletEntryUncheckedUpdateManyWithoutTenantNestedInput
+    remittances?: RemittanceUncheckedUpdateManyWithoutTenantNestedInput
+    walletReconciliationRuns?: WalletReconciliationRunUncheckedUpdateManyWithoutTenantNestedInput
+    incidents?: IncidentUncheckedUpdateManyWithoutTenantNestedInput
+    foodicsConnections?: FoodicsConnectionUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
+    orderRatings?: OrderRatingUncheckedUpdateManyWithoutTenantNestedInput
+    vendorStatements?: VendorStatementUncheckedUpdateManyWithoutTenantNestedInput
+    refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
+    distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
+    userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
+    userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
+    accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
+    supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+  }
+
+  export type VendorUpsertWithoutTopUpsInput = {
+    update: XOR<VendorUpdateWithoutTopUpsInput, VendorUncheckedUpdateWithoutTopUpsInput>
+    create: XOR<VendorCreateWithoutTopUpsInput, VendorUncheckedCreateWithoutTopUpsInput>
+    where?: VendorWhereInput
+  }
+
+  export type VendorUpdateToOneWithWhereWithoutTopUpsInput = {
+    where?: VendorWhereInput
+    data: XOR<VendorUpdateWithoutTopUpsInput, VendorUncheckedUpdateWithoutTopUpsInput>
+  }
+
+  export type VendorUpdateWithoutTopUpsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    nameAr?: NullableStringFieldUpdateOperationsInput | string | null
+    code?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresCarOnly?: BoolFieldUpdateOperationsInput | boolean
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
+    creditCapKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutVendorsNestedInput
+    branches?: VendorBranchUpdateManyWithoutVendorNestedInput
+    users?: UserUpdateManyWithoutVendorNestedInput
+    orders?: DeliveryOrderUpdateManyWithoutVendorNestedInput
+    foodicsConnection?: FoodicsConnectionUpdateOneWithoutVendorNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutVendorNestedInput
+    statements?: VendorStatementUpdateManyWithoutVendorNestedInput
+    refunds?: RefundUpdateManyWithoutVendorNestedInput
+    deliveryPlan?: DeliveryPlanUpdateOneWithoutVendorsNestedInput
+    accountManagers?: AccountManagerVendorUpdateManyWithoutVendorNestedInput
+    supportTickets?: SupportTicketUpdateManyWithoutVendorNestedInput
+  }
+
+  export type VendorUncheckedUpdateWithoutTopUpsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    nameAr?: NullableStringFieldUpdateOperationsInput | string | null
+    code?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresCarOnly?: BoolFieldUpdateOperationsInput | boolean
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
+    creditCapKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    branches?: VendorBranchUncheckedUpdateManyWithoutVendorNestedInput
+    users?: UserUncheckedUpdateManyWithoutVendorNestedInput
+    orders?: DeliveryOrderUncheckedUpdateManyWithoutVendorNestedInput
+    foodicsConnection?: FoodicsConnectionUncheckedUpdateOneWithoutVendorNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutVendorNestedInput
+    statements?: VendorStatementUncheckedUpdateManyWithoutVendorNestedInput
+    refunds?: RefundUncheckedUpdateManyWithoutVendorNestedInput
+    accountManagers?: AccountManagerVendorUncheckedUpdateManyWithoutVendorNestedInput
+    supportTickets?: SupportTicketUncheckedUpdateManyWithoutVendorNestedInput
+  }
+
   export type CompanyCreateManyTenantInput = {
     id?: string
     name: string
@@ -284167,6 +287251,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -285291,6 +288376,7 @@ export namespace Prisma {
     zoneId?: string | null
     deliveryPlanId?: string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -285603,6 +288689,22 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type VendorTopUpCreateManyTenantInput = {
+    id?: string
+    vendorId: string
+    requestedById?: string | null
+    amountKwd: Decimal | DecimalJsLike | number | string
+    status?: $Enums.VendorTopUpStatus
+    token: string
+    reference: string
+    paymentUrl?: string | null
+    providerRef?: string | null
+    provider?: string | null
+    paidAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type CompanyUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -285660,6 +288762,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -285701,6 +288804,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -285738,6 +288842,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -289205,6 +292310,7 @@ export namespace Prisma {
     deliveryPlan?: DeliveryPlanUpdateOneWithoutVendorsNestedInput
     accountManagers?: AccountManagerVendorUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUpdateManyWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutTenantInput = {
@@ -289229,6 +292335,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutVendorNestedInput
     accountManagers?: AccountManagerVendorUncheckedUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUncheckedUpdateManyWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateManyWithoutTenantInput = {
@@ -289255,6 +292362,7 @@ export namespace Prisma {
     lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -289277,6 +292385,7 @@ export namespace Prisma {
     zoneId?: NullableStringFieldUpdateOperationsInput | string | null
     deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -289296,6 +292405,7 @@ export namespace Prisma {
     zoneId?: NullableStringFieldUpdateOperationsInput | string | null
     deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -290264,6 +293374,54 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type VendorTopUpUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumVendorTopUpStatusFieldUpdateOperationsInput | $Enums.VendorTopUpStatus
+    token?: StringFieldUpdateOperationsInput | string
+    reference?: StringFieldUpdateOperationsInput | string
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    vendor?: VendorUpdateOneRequiredWithoutTopUpsNestedInput
+  }
+
+  export type VendorTopUpUncheckedUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumVendorTopUpStatusFieldUpdateOperationsInput | $Enums.VendorTopUpStatus
+    token?: StringFieldUpdateOperationsInput | string
+    reference?: StringFieldUpdateOperationsInput | string
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VendorTopUpUncheckedUpdateManyWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumVendorTopUpStatusFieldUpdateOperationsInput | $Enums.VendorTopUpStatus
+    token?: StringFieldUpdateOperationsInput | string
+    reference?: StringFieldUpdateOperationsInput | string
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type DriverCreateManyCompanyInput = {
     id?: string
     tenantId: string
@@ -290824,6 +293982,7 @@ export namespace Prisma {
     fleetPartnerId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -290944,6 +294103,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -290985,6 +294145,7 @@ export namespace Prisma {
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -291022,6 +294183,7 @@ export namespace Prisma {
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -297522,6 +300684,7 @@ export namespace Prisma {
     zoneId?: string | null
     deliveryPlanId?: string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -297541,6 +300704,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -297656,6 +300820,22 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type VendorTopUpCreateManyVendorInput = {
+    id?: string
+    tenantId: string
+    requestedById?: string | null
+    amountKwd: Decimal | DecimalJsLike | number | string
+    status?: $Enums.VendorTopUpStatus
+    token: string
+    reference: string
+    paymentUrl?: string | null
+    providerRef?: string | null
+    provider?: string | null
+    paidAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type VendorBranchUpdateWithoutVendorInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -297665,6 +300845,7 @@ export namespace Prisma {
     lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -297687,6 +300868,7 @@ export namespace Prisma {
     zoneId?: NullableStringFieldUpdateOperationsInput | string | null
     deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -297706,6 +300888,7 @@ export namespace Prisma {
     zoneId?: NullableStringFieldUpdateOperationsInput | string | null
     deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -297721,6 +300904,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -297762,6 +300946,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -297799,6 +300984,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -298142,6 +301328,54 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type VendorTopUpUpdateWithoutVendorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumVendorTopUpStatusFieldUpdateOperationsInput | $Enums.VendorTopUpStatus
+    token?: StringFieldUpdateOperationsInput | string
+    reference?: StringFieldUpdateOperationsInput | string
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutVendorTopUpsNestedInput
+  }
+
+  export type VendorTopUpUncheckedUpdateWithoutVendorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumVendorTopUpStatusFieldUpdateOperationsInput | $Enums.VendorTopUpStatus
+    token?: StringFieldUpdateOperationsInput | string
+    reference?: StringFieldUpdateOperationsInput | string
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VendorTopUpUncheckedUpdateManyWithoutVendorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumVendorTopUpStatusFieldUpdateOperationsInput | $Enums.VendorTopUpStatus
+    token?: StringFieldUpdateOperationsInput | string
+    reference?: StringFieldUpdateOperationsInput | string
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type DeliveryOrderCreateManyBranchInput = {
     id?: string
     tenantId: string
@@ -298203,6 +301437,7 @@ export namespace Prisma {
     fleetPartnerId?: string | null
     ownerGroupId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -298368,6 +301603,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -298409,6 +301645,7 @@ export namespace Prisma {
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -298446,6 +301683,7 @@ export namespace Prisma {
     fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -298464,6 +301702,7 @@ export namespace Prisma {
     lng?: Decimal | DecimalJsLike | number | string | null
     deliveryPlanId?: string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -298610,6 +301849,7 @@ export namespace Prisma {
     lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -298632,6 +301872,7 @@ export namespace Prisma {
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -298651,6 +301892,7 @@ export namespace Prisma {
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -299115,6 +302357,7 @@ export namespace Prisma {
     lng?: Decimal | DecimalJsLike | number | string | null
     zoneId?: string | null
     foodicsBranchId?: string | null
+    isPaused?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -299202,6 +302445,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutVendorNestedInput
     accountManagers?: AccountManagerVendorUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUpdateManyWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutDeliveryPlanInput = {
@@ -299226,6 +302470,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutVendorNestedInput
     accountManagers?: AccountManagerVendorUncheckedUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutVendorNestedInput
+    topUps?: VendorTopUpUncheckedUpdateManyWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateManyWithoutDeliveryPlanInput = {
@@ -299252,6 +302497,7 @@ export namespace Prisma {
     lat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -299274,6 +302520,7 @@ export namespace Prisma {
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     zoneId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -299293,6 +302540,7 @@ export namespace Prisma {
     lng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     zoneId?: NullableStringFieldUpdateOperationsInput | string | null
     foodicsBranchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPaused?: BoolFieldUpdateOperationsInput | boolean
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -299581,6 +302829,7 @@ export namespace Prisma {
     ownerGroupId?: string | null
     branchId?: string | null
     vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -299834,6 +303083,7 @@ export namespace Prisma {
     isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -299875,6 +303125,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -299912,6 +303163,7 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -300577,6 +303829,10 @@ export namespace Prisma {
      * @deprecated Use SupportTicketMessageDefaultArgs instead
      */
     export type SupportTicketMessageArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = SupportTicketMessageDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use VendorTopUpDefaultArgs instead
+     */
+    export type VendorTopUpArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = VendorTopUpDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

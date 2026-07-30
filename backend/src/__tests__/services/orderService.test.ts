@@ -218,6 +218,40 @@ describe("createDeliveryOrder", () => {
     expect(data.rejectionReason).toBe("VENDOR_PAUSED");
   });
 
+  test("paused BRANCH → REJECTED BRANCH_PAUSED, with the shop itself still open", async () => {
+    // Revision 10 (#7). One switch used to stop the whole account, so a shop
+    // with a queue at one counter had to refuse orders at every other counter.
+    // Its own reason, so the Needs review list names the branch that closed
+    // rather than blaming the merchant.
+    prisma.vendor.findFirst.mockResolvedValue({ ...VENDOR, isPaused: false });
+    prisma.vendorBranch.findFirst.mockResolvedValue({ id: "b-1", isPaused: true });
+    prisma.deliveryOrder.findFirst.mockResolvedValue(null); // seq lookup
+    prisma.deliveryOrder.create.mockImplementation(async ({ data }: any) => ({
+      id: "ord-bp",
+      ...data,
+    }));
+    prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+
+    const order = await createDeliveryOrder(CREATE_INPUT);
+
+    expect(order.status).toBe("REJECTED");
+    expect(order.rejectionReason).toBe("BRANCH_PAUSED");
+    expect(quoteDelivery).not.toHaveBeenCalled();
+    expect(enqueueDispatchStart).not.toHaveBeenCalled();
+  });
+
+  test("an un-paused branch on an un-paused vendor is unaffected", async () => {
+    // The regression that matters: every existing branch defaults to false, so
+    // this ships with no backfill and nobody's intake changes.
+    primeHappyCreate("DRB-BRGB-0007");
+    prisma.vendorBranch.findFirst.mockResolvedValue({ id: "b-1", isPaused: false });
+
+    const order = await createDeliveryOrder(CREATE_INPUT);
+
+    expect(order.rejectionReason).toBeFalsy();
+    expect(quoteDelivery).toHaveBeenCalled();
+  });
+
   test.each([
     "OUT_OF_ZONE_DROPOFF",
     "UNSERVICEABLE_PAIR",

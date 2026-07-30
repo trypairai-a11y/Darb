@@ -13,6 +13,7 @@ const TX_STYLES: Record<WalletTxType, string> = {
   REMITTANCE: "bg-purple-50 text-purple-600",
   ADJUSTMENT: "bg-amber-50 text-amber-700",
   VENDOR_PAYOUT: "bg-indigo-50 text-indigo-600",
+  TOP_UP: "bg-teal-50 text-teal-700",
 };
 
 const TX_I18N: Record<WalletTxType, string> = {
@@ -21,6 +22,7 @@ const TX_I18N: Record<WalletTxType, string> = {
   REMITTANCE: "wallet.txRemittance",
   ADJUSTMENT: "wallet.txAdjustment",
   VENDOR_PAYOUT: "wallet.txVendorPayout",
+  TOP_UP: "wallet.txTopUp",
 };
 
 interface WalletLedgerTableProps {

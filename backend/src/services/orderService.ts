@@ -78,6 +78,10 @@ const REJECTION_ACTIONS: Record<string, { en: string; ar: string }> = {
     en: "The merchant is paused. Un-pause it to resume intake.",
     ar: "التاجر متوقف مؤقتا. أعد تفعيله لاستئناف استقبال الطلبات.",
   },
+  BRANCH_PAUSED: {
+    en: "This branch is paused. The shop can resume it from its own settings, or un-pause it here.",
+    ar: "هذا الفرع متوقف مؤقتا. يمكن للمتجر إعادة تفعيله من إعداداته، أو أعد تفعيله من هنا.",
+  },
   VENDOR_CREDIT_CAP: {
     en: "The merchant is at its credit cap. Settle the outstanding balance to resume intake.",
     ar: "التاجر وصل إلى حد الائتمان. سدد الرصيد المستحق لاستئناف استقبال الطلبات.",
@@ -305,7 +309,7 @@ export async function createDeliveryOrder(input: CreateOrderInput): Promise<Deli
 
   const branch = await prisma.vendorBranch.findFirst({
     where: { id: input.branchId, tenantId, vendorId: input.vendorId },
-    select: { id: true },
+    select: { id: true, isPaused: true },
   });
   if (!branch) throw new Error(`Branch ${input.branchId} not found for vendor ${input.vendorId}`);
 
@@ -385,6 +389,11 @@ export async function createDeliveryOrder(input: CreateOrderInput): Promise<Deli
   };
 
   if (vendor.isPaused) return persistRejected("VENDOR_PAUSED");
+
+  // Revision 10 (#7): a shop can now stop one counter without stopping the
+  // account. Its own reason, so the Needs review list says which branch closed
+  // rather than blaming the whole merchant.
+  if (branch.isPaused) return persistRejected("BRANCH_PAUSED");
 
   // PRD §11 credit line: outstanding debt at/over the cap pauses intake
   // until the merchant settles.

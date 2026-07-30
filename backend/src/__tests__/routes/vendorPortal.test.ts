@@ -11,6 +11,7 @@
 
 import request from "supertest";
 import express from "express";
+import { Prisma } from "../../generated/prisma";
 import { getMockPrisma, resetAllMocks } from "../setup";
 
 const prisma = getMockPrisma();
@@ -31,7 +32,27 @@ prisma.deliveryOrder = prisma.deliveryOrder ?? {
 };
 prisma.walletAccount = prisma.walletAccount ?? { findFirst: jest.fn() };
 prisma.walletEntry = prisma.walletEntry ?? { findMany: jest.fn(), count: jest.fn() };
-prisma.vendorBranch = prisma.vendorBranch ?? { findMany: jest.fn() };
+prisma.vendorBranch = prisma.vendorBranch ?? { findMany: jest.fn(), updateMany: jest.fn() };
+prisma.vendorBranch.updateMany = prisma.vendorBranch.updateMany ?? jest.fn();
+// Revision 10 (#6) — the tab gate reads the caller's row on every request
+// rather than trusting the JWT, the same way requireSuperAdmin does. Every
+// route on this router goes through it, so the delegate has to exist.
+prisma.user = prisma.user ?? {
+  findFirst: jest.fn(),
+  findUnique: jest.fn(),
+  findMany: jest.fn(),
+  create: jest.fn(),
+  update: jest.fn(),
+};
+// Revision 10 (#2) — top-ups.
+prisma.vendorTopUp = prisma.vendorTopUp ?? {
+  findFirst: jest.fn(),
+  findMany: jest.fn(),
+  create: jest.fn(),
+  updateMany: jest.fn(),
+};
+// getVendorBranchBalances aggregates over the ledger in one grouped raw query.
+prisma.$queryRaw = prisma.$queryRaw ?? jest.fn();
 
 // Orders-core track wired the two former 501 stubs into orderService — mock
 // the service boundary so these route tests stay unit-level.
@@ -48,6 +69,9 @@ const {
   createDeliveryOrder: mockCreateDeliveryOrder,
   cancelOrder: mockCancelOrder,
 } = require("../../services/orderService");
+
+/** Money the way Prisma hands it back: a Decimal, not a JS number. */
+const D = (v: string | number) => new Prisma.Decimal(v);
 
 const VENDOR_USER = {
   userId: "u-vendor",
@@ -70,6 +94,11 @@ function makeApp(user: Record<string, unknown> | null = VENDOR_USER) {
 describe("Vendor portal routes", () => {
   beforeEach(() => {
     resetAllMocks();
+    // No per-user override: every login falls back to its role's own tabs,
+    // which is what each of these tests was written against. Individual tests
+    // override this to exercise a narrowed tab list.
+    prisma.user.findFirst.mockResolvedValue(null);
+    prisma.$queryRaw.mockResolvedValue([]);
   });
 
   // ─── Access control ────────────────────────────────────────────────────────
@@ -318,7 +347,11 @@ describe("Vendor portal routes", () => {
 
   describe("wallet endpoints", () => {
     test("GET /wallet serializes balance as 3dp string and defaults to 0.000", async () => {
-      prisma.walletAccount.findFirst.mockResolvedValueOnce(null);
+      // Not `Once`: the route also asks for the per-branch breakdown and the
+      // top-up suggestion, and both look the account up themselves.
+      prisma.walletAccount.findFirst.mockResolvedValue(null);
+      prisma.vendorBranch.findMany.mockResolvedValue([]);
+      prisma.deliveryOrder.findMany.mockResolvedValue([]);
 
       const res = await request(makeApp()).get("/api/vendor/wallet");
 
@@ -327,6 +360,16 @@ describe("Vendor portal routes", () => {
         ownerKey: "VENDOR:v-1",
         balanceKwd: "0.000",
         accountId: null,
+        // Revision 10 (#3): the figure the card shows for whatever the branch
+        // pills are on. No ?branchId ⇒ the combined total.
+        scopedBalanceKwd: "0.000",
+        scopedBranchId: null,
+        branchBalances: {},
+        unallocatedKwd: "0.000",
+        // Revision 10 (#2): the prefill for the top-up field. Nothing owed and
+        // no delivery history ⇒ the KD 10 floor.
+        suggestedTopUpKwd: "10.000",
+        outstandingKwd: "0.000",
         // PRD §11 credit line fields (no vendor row mocked ⇒ no cap).
         creditCapKwd: null,
         creditUsedKwd: "0.000",
@@ -399,5 +442,228 @@ describe("Vendor portal routes", () => {
         where: { tenantId: "t-1", vendorId: "v-1" },
       })
     );
+  });
+
+  // ─── Revision 10 ───────────────────────────────────────────────────────────
+
+  describe("per-branch pause (revision 10, #7)", () => {
+    test("a branchId pauses that branch alone and never touches the vendor row", async () => {
+      prisma.vendorBranch.updateMany.mockResolvedValueOnce({ count: 1 });
+
+      const res = await request(makeApp())
+        .post("/api/vendor/pause")
+        .send({ paused: true, branchId: "b-2" });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ ok: true, branchId: "b-2", isPaused: true });
+      expect(prisma.vendorBranch.updateMany).toHaveBeenCalledWith({
+        where: { id: "b-2", tenantId: "t-1", vendorId: "v-1" },
+        data: { isPaused: true },
+      });
+      // The whole point of the edit: one counter closing must not close the shop.
+      expect(prisma.vendor.updateMany).not.toHaveBeenCalled();
+    });
+
+    test("a branch belonging to another shop is a 404, not somebody else's pause", async () => {
+      prisma.vendorBranch.updateMany.mockResolvedValueOnce({ count: 0 });
+
+      const res = await request(makeApp())
+        .post("/api/vendor/pause")
+        .send({ paused: true, branchId: "b-elsewhere" });
+
+      expect(res.status).toBe(404);
+    });
+
+    test("resuming the account clears the branch flags too", async () => {
+      prisma.vendor.updateMany.mockResolvedValueOnce({ count: 1 });
+      prisma.vendorBranch.updateMany.mockResolvedValueOnce({ count: 2 });
+
+      const res = await request(makeApp()).post("/api/vendor/pause").send({ paused: false });
+
+      expect(res.status).toBe(200);
+      // Otherwise a branch paused last week keeps refusing orders with no
+      // switch anywhere showing why.
+      expect(prisma.vendorBranch.updateMany).toHaveBeenCalledWith({
+        where: { tenantId: "t-1", vendorId: "v-1", isPaused: true },
+        data: { isPaused: false },
+      });
+    });
+
+    test("pausing the account leaves the branch flags alone", async () => {
+      prisma.vendor.updateMany.mockResolvedValueOnce({ count: 1 });
+
+      const res = await request(makeApp()).post("/api/vendor/pause").send({ paused: true });
+
+      expect(res.status).toBe(200);
+      expect(prisma.vendorBranch.updateMany).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("per-user tab access (revision 10, #6)", () => {
+    test("a narrowed tab list closes the endpoint, not just the rail entry", async () => {
+      // An owner took WALLET away from this login. The tabs come from the row,
+      // not the token, so an already-issued JWT cannot outlive the change.
+      prisma.user.findFirst.mockResolvedValue({
+        vendorRole: "OWNER",
+        vendorTabs: ["ORDERS", "SUPPORT"],
+      });
+
+      const res = await request(makeApp()).get("/api/vendor/wallet");
+
+      expect(res.status).toBe(403);
+      expect(res.body).toEqual({ error: "This tab is not part of your access" });
+      // Refused before any query ran, so a fenced login never reaches the data.
+      expect(prisma.walletAccount.findFirst).not.toHaveBeenCalled();
+    });
+
+    test("a tab the list grants stays open even when the role would not give it", async () => {
+      // ORDER_TRACKING has no WALLET tab by default. An owner granting it is a
+      // decision about their own staff and their own money, and it holds.
+      prisma.user.findFirst.mockResolvedValue({
+        vendorRole: "ORDER_TRACKING",
+        vendorTabs: ["ORDERS", "WALLET", "SUPPORT"],
+      });
+      prisma.walletAccount.findFirst.mockResolvedValue(null);
+      prisma.vendorBranch.findMany.mockResolvedValue([]);
+      prisma.deliveryOrder.findMany.mockResolvedValue([]);
+
+      const res = await request(
+        makeApp({ ...VENDOR_USER, vendorRole: "ORDER_TRACKING" }),
+      ).get("/api/vendor/wallet");
+
+      expect(res.status).toBe(200);
+    });
+
+    test("no override falls back to the role's own tabs — a tracker still sees no money", async () => {
+      prisma.user.findFirst.mockResolvedValue({ vendorRole: "ORDER_TRACKING", vendorTabs: null });
+
+      const res = await request(
+        makeApp({ ...VENDOR_USER, vendorRole: "ORDER_TRACKING" }),
+      ).get("/api/vendor/wallet");
+
+      expect(res.status).toBe(403);
+    });
+
+    test("GET /me hands the caller its own effective tab list", async () => {
+      prisma.vendor.findFirst.mockResolvedValueOnce({ id: "v-1", name: "Al Dawaa", branches: [] });
+      prisma.user.findFirst.mockResolvedValue({ vendorRole: "FINANCE", vendorTabs: null });
+
+      const res = await request(makeApp()).get("/api/vendor/me");
+
+      expect(res.status).toBe(200);
+      // The rail and the route fence read this instead of deriving access from
+      // vendorRole, which is what made a narrowed list invisible until it 403'd.
+      expect(res.body.portalTabs).toEqual(["ORDERS", "WALLET", "GROW", "SUPPORT"]);
+    });
+  });
+
+  describe("branch-aware wallet balance (revision 10, #3)", () => {
+    test("?branchId= scopes the figure to that branch, leaving the account total intact", async () => {
+      prisma.walletAccount.findFirst.mockResolvedValue({ id: "acc-1", balanceKwd: D(-12.5) });
+      prisma.vendorBranch.findMany.mockResolvedValue([{ id: "b-1" }, { id: "b-2" }]);
+      prisma.deliveryOrder.findMany.mockResolvedValue([]);
+      prisma.$queryRaw.mockResolvedValue([
+        { branchId: "b-1", direction: "DEBIT", total: 10 },
+        { branchId: "b-2", direction: "DEBIT", total: 2.5 },
+      ]);
+
+      const res = await request(makeApp()).get("/api/vendor/wallet?branchId=b-2");
+
+      expect(res.status).toBe(200);
+      // The bug the client reported: both branches printed the account total.
+      expect(res.body.balanceKwd).toBe("-12.500");
+      expect(res.body.scopedBalanceKwd).toBe("-2.500");
+      expect(res.body.scopedBranchId).toBe("b-2");
+      expect(res.body.branchBalances).toEqual({ "b-1": "-10.000", "b-2": "-2.500" });
+    });
+
+    test("a branch with no movement reads 0.000, not the shop's total", async () => {
+      prisma.walletAccount.findFirst.mockResolvedValue({ id: "acc-1", balanceKwd: D(-12.5) });
+      prisma.vendorBranch.findMany.mockResolvedValue([{ id: "b-1" }, { id: "b-quiet" }]);
+      prisma.deliveryOrder.findMany.mockResolvedValue([]);
+      prisma.$queryRaw.mockResolvedValue([{ branchId: "b-1", direction: "DEBIT", total: 12.5 }]);
+
+      const res = await request(makeApp()).get("/api/vendor/wallet?branchId=b-quiet");
+
+      expect(res.status).toBe(200);
+      expect(res.body.scopedBalanceKwd).toBe("0.000");
+    });
+
+    test("postings with no order are reported as unallocated so the figures reconcile", async () => {
+      prisma.walletAccount.findFirst.mockResolvedValue({ id: "acc-1", balanceKwd: D(5) });
+      prisma.vendorBranch.findMany.mockResolvedValue([{ id: "b-1" }]);
+      prisma.deliveryOrder.findMany.mockResolvedValue([]);
+      prisma.$queryRaw.mockResolvedValue([
+        { branchId: "b-1", direction: "DEBIT", total: 3 },
+        { branchId: null, direction: "CREDIT", total: 8 },
+      ]);
+
+      const res = await request(makeApp()).get("/api/vendor/wallet");
+
+      expect(res.status).toBe(200);
+      expect(res.body.branchBalances).toEqual({ "b-1": "-3.000" });
+      // A top-up belongs to the shop, not to a counter. Named rather than
+      // hidden, so branch figures plus this equal the total.
+      expect(res.body.unallocatedKwd).toBe("8.000");
+    });
+  });
+
+  describe("cancelling a support request (revision 10, #5)", () => {
+    beforeEach(() => {
+      prisma.supportTicket = prisma.supportTicket ?? {
+        findFirst: jest.fn(), updateMany: jest.fn(), update: jest.fn(), create: jest.fn(),
+        findMany: jest.fn(),
+      };
+      prisma.supportTicketMessage = prisma.supportTicketMessage ?? { create: jest.fn() };
+      for (const fn of [
+        ...Object.values(prisma.supportTicket),
+        ...Object.values(prisma.supportTicketMessage),
+      ]) {
+        if (typeof fn === "function" && "mockReset" in fn) (fn as jest.Mock).mockReset();
+      }
+    });
+
+    test("an open request becomes CANCELLED, with a note saying the shop withdrew it", async () => {
+      prisma.supportTicket.findFirst
+        .mockResolvedValueOnce({ id: "tk-1", status: "OPEN" })
+        .mockResolvedValueOnce({ id: "tk-1", status: "CANCELLED", messages: [] });
+      prisma.supportTicket.updateMany.mockResolvedValueOnce({ count: 1 });
+      prisma.supportTicketMessage.create.mockResolvedValueOnce({});
+
+      const res = await request(makeApp())
+        .post("/api/vendor/support/tk-1/cancel")
+        .send({ reason: "Driver turned up after all" });
+
+      expect(res.status).toBe(200);
+      // Status-guarded like every other transition here: two people cancelling
+      // at once must not both win.
+      expect(prisma.supportTicket.updateMany).toHaveBeenCalledWith({
+        where: {
+          id: "tk-1", tenantId: "t-1", vendorId: "v-1",
+          status: { in: ["OPEN", "ANSWERED"] },
+        },
+        data: { status: "CANCELLED" },
+      });
+      expect(prisma.supportTicketMessage.create.mock.calls[0][0].data.body).toContain(
+        "Driver turned up after all",
+      );
+    });
+
+    test("a request Darb already resolved cannot be withdrawn", async () => {
+      prisma.supportTicket.findFirst.mockResolvedValueOnce({ id: "tk-9", status: "RESOLVED" });
+
+      const res = await request(makeApp()).post("/api/vendor/support/tk-9/cancel").send({});
+
+      expect(res.status).toBe(409);
+      expect(prisma.supportTicket.updateMany).not.toHaveBeenCalled();
+    });
+
+    test("another shop's request is a plain 404", async () => {
+      prisma.supportTicket.findFirst.mockResolvedValueOnce(null);
+
+      const res = await request(makeApp()).post("/api/vendor/support/tk-x/cancel").send({});
+
+      expect(res.status).toBe(404);
+    });
   });
 });

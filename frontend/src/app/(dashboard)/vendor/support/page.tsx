@@ -9,9 +9,10 @@
 // asked, what Darb answered, and whether the matter is closed.
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MessageSquarePlus, Send } from "lucide-react";
+import { MessageSquarePlus, Send, XCircle } from "lucide-react";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
+import ConfirmModal from "@/components/shared/ConfirmModal";
 import SlidePanel from "@/components/shared/SlidePanel";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/Toast";
@@ -37,6 +38,11 @@ export default function VendorSupportPage() {
   const [body, setBody] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [reply, setReply] = useState("");
+  // Revision 10 (#5). A shop that sorted something out itself had no way to say
+  // so: the request sat waiting on Darb until somebody answered a question
+  // nobody needed answering.
+  const [cancelId, setCancelId] = useState<string | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
 
   const ticketsQuery = useQuery({
     queryKey: ["darb", "vendor", "support"],
@@ -63,6 +69,25 @@ export default function VendorSupportPage() {
       await refresh();
     } catch (err) {
       fail(err);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function cancelTicket(id: string) {
+    setSaving(true);
+    try {
+      await vendorApi.cancelTicket(id, cancelReason.trim() || undefined);
+      toast.success(t("vendorSupport.cancelDone"));
+      setCancelId(null);
+      setCancelReason("");
+      await refresh();
+    } catch (err) {
+      fail(err);
+      // Darb closing it first is a 409, and the board is now out of date. Close
+      // the dialog and refetch so the shop sees what actually happened.
+      setCancelId(null);
+      await refresh();
     } finally {
       setSaving(false);
     }
@@ -100,9 +125,14 @@ export default function VendorSupportPage() {
   const statusLabel = (s: SupportTicketStatus) =>
     s === "RESOLVED"
       ? t("vendorSupport.statusResolved")
-      : s === "ANSWERED"
-        ? t("vendorSupport.statusAnswered")
-        : t("vendorSupport.statusOpen");
+      : s === "CANCELLED"
+        ? t("vendorSupport.statusCancelled")
+        : s === "ANSWERED"
+          ? t("vendorSupport.statusAnswered")
+          : t("vendorSupport.statusOpen");
+  // Only a live request can be withdrawn. Resolved means Darb closed it, and
+  // cancelled is already this.
+  const canCancel = (s: SupportTicketStatus) => s === "OPEN" || s === "ANSWERED";
 
   return (
     <div className="space-y-6">
@@ -189,8 +219,8 @@ export default function VendorSupportPage() {
                   </div>
                 ))}
 
-                {ticket.status !== "RESOLVED" && (
-                  <div className="pt-1">
+                {canCancel(ticket.status) && (
+                  <div className="pt-1 flex items-center justify-between gap-3 flex-wrap">
                     {replyTo === ticket.id ? (
                       <div className="flex items-end gap-2">
                         <textarea
@@ -219,6 +249,22 @@ export default function VendorSupportPage() {
                         {t("vendorSupport.addReply")}
                       </button>
                     )}
+                    {/* Quiet, on the far side of the row: withdrawing a request
+                        is a real action but not the one a shop opening this
+                        screen is usually here to take. */}
+                    {replyTo !== ticket.id && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCancelReason("");
+                          setCancelId(ticket.id);
+                        }}
+                        className="inline-flex items-center gap-1.5 text-xs text-sand-600 hover:text-red-700 transition-colors"
+                      >
+                        <XCircle size={13} aria-hidden="true" />
+                        {t("vendorSupport.cancelTicket")}
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -226,6 +272,34 @@ export default function VendorSupportPage() {
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        open={cancelId !== null}
+        title={t("vendorSupport.cancelTitle")}
+        message={t("vendorSupport.cancelMessage")}
+        variant="danger"
+        confirmLabel={t("vendorSupport.cancelConfirm")}
+        cancelLabel={t("vendorSupport.cancelKeep")}
+        loading={saving}
+        onConfirm={() => {
+          if (cancelId) void cancelTicket(cancelId);
+        }}
+        onCancel={() => setCancelId(null)}
+      >
+        <div>
+          <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
+            {t("vendorSupport.cancelReason")}
+          </label>
+          <textarea
+            dir="auto"
+            value={cancelReason}
+            onChange={(e) => setCancelReason(e.target.value)}
+            rows={3}
+            maxLength={500}
+            className="w-full px-3 py-2 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+      </ConfirmModal>
 
       <SlidePanel open={open} onClose={() => setOpen(false)} title={t("vendorSupport.raise")}>
         <div className="space-y-4">

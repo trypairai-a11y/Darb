@@ -12,6 +12,7 @@ import { rbac } from "../middleware/rbac";
 import { validateBody } from "../utils/validate";
 import { getPagination, paginatedResponse } from "../utils/pagination";
 import { pointInBbox, Bbox } from "../utils/geo";
+import { confirmTopUp } from "../services/wallet/topUpService";
 
 /**
  * Staff-facing vendor management (Darb 2.0, plan §A8 /api/vendors).
@@ -643,9 +644,15 @@ router.post("/:id/support/:ticketId/reply", rbac("ADMIN", "OPS_MANAGER", "SUPERV
 
     const ticket = await prisma.supportTicket.findFirst({
       where: { id: req.params.ticketId, tenantId, vendorId: req.params.id },
-      select: { id: true },
+      select: { id: true, status: true },
     });
     if (!ticket) { res.status(404).json({ error: "Ticket not found" }); return; }
+    // Revision 10 (#5): the shop withdrew this. Answering it would flip it back
+    // to ANSWERED and contradict the merchant's own decision to drop it.
+    if (ticket.status === "CANCELLED") {
+      res.status(409).json({ error: "The shop cancelled this request" });
+      return;
+    }
 
     if (body) {
       await prisma.supportTicketMessage.create({
@@ -807,5 +814,67 @@ router.delete("/api-keys/:keyId", rbac("ADMIN"), async (req: Request, res: Respo
     res.status(500).json({ error: err.message });
   }
 });
+
+// ─── Wallet top-ups (revision 10, #2) ────────────────────────────────────────
+//
+// The merchant asks for a top-up from their own portal and gets a link. With a
+// payment gateway configured the gateway's webhook confirms it and the wallet
+// credit posts itself. Without one the money still arrives by transfer, and
+// somebody at Darb has to say so — this is that button, and it is the only
+// place a manual top-up can be credited. Accountant and up, because it moves
+// money.
+
+router.get("/:id/top-ups", rbac("ADMIN", "OPS_MANAGER", "ACCOUNTANT"), async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const rows = await prisma.vendorTopUp.findMany({
+      where: { tenantId, vendorId: req.params.id },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+      select: {
+        id: true, amountKwd: true, status: true, reference: true, provider: true,
+        providerRef: true, paymentUrl: true, paidAt: true, createdAt: true,
+      },
+    });
+    res.json(rows.map((r) => ({ ...r, amountKwd: Number(r.amountKwd).toFixed(3) })));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/** Confirm the money landed and credit the shop's wallet. Idempotent. */
+router.post(
+  "/:id/top-ups/:topUpId/confirm",
+  rbac("ADMIN", "OPS_MANAGER", "ACCOUNTANT"),
+  async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.user!.tenantId;
+      // Ownership check first — a top-up belonging to another shop must read as
+      // a plain 404 rather than telling the caller it exists.
+      const owned = await prisma.vendorTopUp.findFirst({
+        where: { id: req.params.topUpId, tenantId, vendorId: req.params.id },
+        select: { id: true },
+      });
+      if (!owned) { res.status(404).json({ error: "Top-up not found" }); return; }
+
+      const result = await confirmTopUp({
+        tenantId,
+        topUpId: req.params.topUpId,
+        provider: "MANUAL",
+      });
+      if (result.alreadyPaid) {
+        res.status(200).json({ ok: true, alreadyPaid: true });
+        return;
+      }
+      if (!result.ok) {
+        res.status(409).json({ error: "This top-up is not awaiting payment" });
+        return;
+      }
+      res.json({ ok: true, alreadyPaid: false });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  },
+);
 
 export default router;

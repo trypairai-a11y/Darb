@@ -178,6 +178,7 @@ exports.Prisma.UserScalarFieldEnum = {
   ownerGroupId: 'ownerGroupId',
   branchId: 'branchId',
   vendorRole: 'vendorRole',
+  vendorTabs: 'vendorTabs',
   isActive: 'isActive',
   lastLoginAt: 'lastLoginAt',
   createdAt: 'createdAt',
@@ -1503,6 +1504,7 @@ exports.Prisma.VendorBranchScalarFieldEnum = {
   zoneId: 'zoneId',
   deliveryPlanId: 'deliveryPlanId',
   foodicsBranchId: 'foodicsBranchId',
+  isPaused: 'isPaused',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -1899,6 +1901,23 @@ exports.Prisma.SupportTicketMessageScalarFieldEnum = {
   authorName: 'authorName',
   body: 'body',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.VendorTopUpScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  vendorId: 'vendorId',
+  requestedById: 'requestedById',
+  amountKwd: 'amountKwd',
+  status: 'status',
+  token: 'token',
+  reference: 'reference',
+  paymentUrl: 'paymentUrl',
+  providerRef: 'providerRef',
+  provider: 'provider',
+  paidAt: 'paidAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -2998,6 +3017,18 @@ exports.Prisma.SupportTicketMessageOrderByRelevanceFieldEnum = {
   authorName: 'authorName',
   body: 'body'
 };
+
+exports.Prisma.VendorTopUpOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  vendorId: 'vendorId',
+  requestedById: 'requestedById',
+  token: 'token',
+  reference: 'reference',
+  paymentUrl: 'paymentUrl',
+  providerRef: 'providerRef',
+  provider: 'provider'
+};
 exports.SubscriptionPlan = exports.$Enums.SubscriptionPlan = {
   FREE: 'FREE',
   PRO: 'PRO',
@@ -3403,7 +3434,8 @@ exports.WalletTxType = exports.$Enums.WalletTxType = {
   VENDOR_PAYOUT: 'VENDOR_PAYOUT',
   REFUND: 'REFUND',
   TIP: 'TIP',
-  FLEET_PAYOUT: 'FLEET_PAYOUT'
+  FLEET_PAYOUT: 'FLEET_PAYOUT',
+  TOP_UP: 'TOP_UP'
 };
 
 exports.IncidentType = exports.$Enums.IncidentType = {
@@ -3452,7 +3484,8 @@ exports.PermissionLevel = exports.$Enums.PermissionLevel = {
 exports.SupportTicketStatus = exports.$Enums.SupportTicketStatus = {
   OPEN: 'OPEN',
   ANSWERED: 'ANSWERED',
-  RESOLVED: 'RESOLVED'
+  RESOLVED: 'RESOLVED',
+  CANCELLED: 'CANCELLED'
 };
 
 exports.SupportTicketType = exports.$Enums.SupportTicketType = {
@@ -3460,6 +3493,13 @@ exports.SupportTicketType = exports.$Enums.SupportTicketType = {
   WALLET: 'WALLET',
   TECHNICAL: 'TECHNICAL',
   OTHER: 'OTHER'
+};
+
+exports.VendorTopUpStatus = exports.$Enums.VendorTopUpStatus = {
+  PENDING: 'PENDING',
+  PAID: 'PAID',
+  CANCELLED: 'CANCELLED',
+  FAILED: 'FAILED'
 };
 
 exports.Prisma.ModelName = {
@@ -3575,7 +3615,8 @@ exports.Prisma.ModelName = {
   UserSurfacePermission: 'UserSurfacePermission',
   AccountManagerVendor: 'AccountManagerVendor',
   SupportTicket: 'SupportTicket',
-  SupportTicketMessage: 'SupportTicketMessage'
+  SupportTicketMessage: 'SupportTicketMessage',
+  VendorTopUp: 'VendorTopUp'
 };
 
 /**

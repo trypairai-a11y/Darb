@@ -14,6 +14,7 @@
 // anything). A section with no `i18n` renders no heading.
 import type { LucideIcon } from "lucide-react";
 import type { UserRole } from "@/hooks/useRole";
+import type { VendorTab } from "@/types/darb";
 import {
   LifeBuoy,
   Radio,
@@ -52,6 +53,17 @@ export interface NavItem {
    * tracker follows deliveries and raises support.
    */
   vendorRoles?: ("OWNER" | "FINANCE" | "ORDER_TRACKING")[];
+  /**
+   * Revision 10 (#6) — the merchant-portal tab this entry belongs to.
+   *
+   * `vendorRoles` above could only ever say "this role, or not". It could not
+   * express the per-user tab list the client asked for three revisions running,
+   * so an owner who narrowed somebody's access saw the rail entry stay exactly
+   * where it was and the screen 403 when they took it. The Sidebar checks this
+   * against the tabs /api/vendor/me returns for the caller, which is the same
+   * list the server gates each endpoint on.
+   */
+  vendorTab?: VendorTab;
 }
 
 export interface NavSection {
@@ -119,8 +131,14 @@ export const NAV_SECTIONS: NavSection[] = [
         path: "/vendor",
         icon: ClipboardList,
         owns: ["/vendor/orders/new"],
+        vendorTab: "ORDERS",
       },
-      { i18n: "darbNav.vendorWallet", path: "/vendor/wallet", icon: Wallet, vendorRoles: ["OWNER", "FINANCE"] },
+      {
+        i18n: "darbNav.vendorWallet",
+        path: "/vendor/wallet",
+        icon: Wallet,
+        vendorTab: "WALLET",
+      },
       {
         i18n: "simple.grow",
         // Not /vendor/analytics: blockers match that segment and killed the
@@ -128,13 +146,29 @@ export const NAV_SECTIONS: NavSection[] = [
         path: "/vendor/grow",
         icon: TrendingUp,
         owns: ["/vendor/analytics", "/vendor/campaigns"],
-        vendorRoles: ["OWNER", "FINANCE"],
+        vendorTab: "GROW",
       },
-      // Open to all three roles: a tracker who can see neither money nor
-      // settings has no other way to tell Darb something went wrong.
-      { i18n: "vendorSupport.title", path: "/vendor/support", icon: LifeBuoy },
-      { i18n: "vendorTeam.title", path: "/vendor/team", icon: Users, vendorRoles: ["OWNER"] },
-      { i18n: "darbNav.vendorSettings", path: "/vendor/settings", icon: Settings, vendorRoles: ["OWNER"] },
+      // Open to every role by default: a tracker who can see neither money nor
+      // settings has no other way to tell Darb something went wrong. An owner
+      // can still take the tab away from one person.
+      { i18n: "vendorSupport.title", path: "/vendor/support", icon: LifeBuoy, vendorTab: "SUPPORT" },
+      // Managing logins stays OWNER-only whatever the tab list says: a tracker
+      // who could mint an OWNER login could grant themselves everything. Both
+      // gates apply, here and on the endpoint.
+      {
+        i18n: "vendorTeam.title",
+        path: "/vendor/team",
+        icon: Users,
+        vendorRoles: ["OWNER"],
+        vendorTab: "TEAM",
+      },
+      {
+        i18n: "darbNav.vendorSettings",
+        path: "/vendor/settings",
+        icon: Settings,
+        vendorRoles: ["OWNER"],
+        vendorTab: "SETTINGS",
+      },
     ],
   },
   {

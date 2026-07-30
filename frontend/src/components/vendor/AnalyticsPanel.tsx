@@ -6,7 +6,7 @@
 // Grow screen carries.
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, Download, Repeat, ShoppingBag, Wallet } from "lucide-react";
+import { BarChart3, Download, Repeat, ShoppingBag, Timer, Wallet } from "lucide-react";
 import StatCard from "@/components/shared/StatCard";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
@@ -100,7 +100,7 @@ export default function AnalyticsPanel() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard
           title={t("vendorExtra.ordersTotal")}
           value={formatNumber(data.ordersTotal, locale)}
@@ -120,6 +120,25 @@ export default function AnalyticsPanel() {
           title={t("vendorExtra.repeatBuyers")}
           value={formatNumber(data.repeatBuyers, locale)}
           icon={Repeat}
+        />
+        {/* Revision 10 (#4). The handover wait: how long our drivers stand at
+            the counter between arriving and being given the order. Branch-aware
+            like every other card here, because the branch scope is already on
+            the query. "n/a" rather than 0 when nothing in the period had both
+            stamps, since no data and instant handover are different claims. */}
+        <StatCard
+          title={t("vendorExtra.avgPrepTime")}
+          value={
+            data.avgPrepMinutes != null
+              ? `${formatNumber(data.avgPrepMinutes, locale)} ${t("vendorExtra.minutesShort")}`
+              : t("common.notAvailable")
+          }
+          icon={Timer}
+          trend={
+            data.avgPrepMinutes != null && data.prepSampleSize
+              ? t("vendorExtra.prepFromOrders").replace("{n}", formatNumber(data.prepSampleSize, locale))
+              : t("vendorExtra.avgPrepTimeHint")
+          }
         />
       </div>
 

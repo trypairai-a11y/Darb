@@ -13,7 +13,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CreditCard, Download, Loader2, Plus, Wallet } from "lucide-react";
-import ConfirmModal from "@/components/shared/ConfirmModal";
+import TopUpPanel from "@/components/vendor/TopUpPanel";
 import StatCard from "@/components/shared/StatCard";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
@@ -44,14 +44,17 @@ export default function VendorWalletPage() {
     staleTime: 60_000,
   });
 
+  // Revision 10 (#3). The balance figure follows the branch pills now: the
+  // account total for All branches, that branch's own net when one is picked.
+  // It used to print the account total whichever pill was lit, so two branches
+  // showed the identical number while the ledger under it changed, which the
+  // client read as the filter not working.
   const walletQuery = useQuery({
-    queryKey: ["darb", "vendor", "wallet"],
-    queryFn: () => vendorApi.wallet(),
+    queryKey: ["darb", "vendor", "wallet", branchId],
+    queryFn: () => vendorApi.wallet({ branchId: branchId ?? undefined }),
     refetchInterval: 60_000,
   });
 
-  // Only the ledger narrows to a branch. The balance above it is one figure
-  // for the whole vendor and deliberately ignores the pills.
   const entriesQuery = useQuery({
     queryKey: ["darb", "vendor", "wallet-entries", page, limit, branchId],
     queryFn: () => vendorApi.walletEntries({ page, limit, branchId: branchId ?? undefined }),
@@ -130,7 +133,13 @@ export default function VendorWalletPage() {
     );
   }
 
-  const balance = walletQuery.data?.balanceKwd ?? walletQuery.data?.account?.balanceKwd;
+  // scopedBalanceKwd is the answer for whatever the pills are on. The bare
+  // balance is the fallback for a server that predates revision 10.
+  const balance =
+    walletQuery.data?.scopedBalanceKwd ??
+    walletQuery.data?.balanceKwd ??
+    walletQuery.data?.account?.balanceKwd;
+  const unallocated = Number(walletQuery.data?.unallocatedKwd ?? 0);
 
   // PRD §11 credit line — render only when a cap is configured.
   const creditCap = walletQuery.data?.creditCapKwd;
@@ -190,9 +199,19 @@ export default function VendorWalletPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
-          title={t("vendorPortal.walletBalance")}
+          title={
+            branchId ? t("vendorPortal.walletBalanceBranch") : t("vendorPortal.walletBalanceAll")
+          }
           value={balance != null ? formatKwd(balance, locale) : t("common.notAvailable")}
           icon={Wallet}
+          // On the combined view, name the part that belongs to no branch, so a
+          // shop adding its branch figures up can see why they land short of
+          // the total instead of assuming one of them is wrong.
+          trend={
+            !branchId && unallocated !== 0
+              ? `${formatKwd(unallocated, locale)} ${t("vendorPortal.walletUnallocated")}`
+              : undefined
+          }
         />
         {creditCap != null && (
           <div className="group bg-card border border-sand-200 rounded-2xl p-5 shadow-soft transition-all duration-400 ease-sierra-out hover:shadow-lift hover:-translate-y-[1px] sm:col-span-2">
@@ -295,22 +314,12 @@ export default function VendorWalletPage() {
         )}
       </section>
 
-      <ConfirmModal
+      <TopUpPanel
         open={topUpOpen}
-        title={t("vendorPortal.topUp")}
-        message={t("vendorPortal.topUpHow")}
-        variant="default"
-        confirmLabel={t("common.close")}
-        onConfirm={() => setTopUpOpen(false)}
-        onCancel={() => setTopUpOpen(false)}
-      >
-        <div className="rounded-xl bg-sand-100 p-4 text-sm space-y-2">
-          <p className="text-sand-700">{t("vendorPortal.topUpReference")}</p>
-          <p dir="ltr" className="font-mono text-sand-900">
-            {meQuery.data?.code ?? ""}
-          </p>
-        </div>
-      </ConfirmModal>
+        onClose={() => setTopUpOpen(false)}
+        suggestedKwd={walletQuery.data?.suggestedTopUpKwd}
+        outstandingKwd={walletQuery.data?.outstandingKwd}
+      />
 
       {/* Statements. One section, server-issued periods, each with its own CSV
           of the ledger entries that fall inside it. */}

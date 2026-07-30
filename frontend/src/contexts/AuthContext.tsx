@@ -61,9 +61,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const publicRoutes = ["/", "/login"];
-    // /track/* is the public customer tracking surface (PRD §12): no session,
-    // no refresh call, no redirect.
-    if (publicRoutes.includes(pathname) || pathname.startsWith("/track")) {
+    // /track/* is the public customer tracking surface (PRD §12) and /pay/* the
+    // public wallet top-up link (revision 10, #2): no session, no refresh call,
+    // no redirect. A merchant opening a payment link on a phone with no cookie
+    // must land on the payment page, not on a staff sign-in form.
+    if (
+      publicRoutes.includes(pathname) ||
+      pathname.startsWith("/track") ||
+      pathname.startsWith("/pay")
+    ) {
       setLoading(false);
       return;
     }

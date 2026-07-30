@@ -500,6 +500,7 @@ model Tenant {
   userSurfacePermissions    UserSurfacePermission[]
   accountManagerVendors     AccountManagerVendor[]
   supportTickets            SupportTicket[]
+  vendorTopUps              VendorTopUp[]
 }
 
 // 2. Company
@@ -583,6 +584,12 @@ model User {
   // branchId is null for vendor-wide roles (OWNER, FINANCE).
   branchId       String?
   vendorRole     String? // OWNER | FINANCE | ORDER_TRACKING
+  // Revision 10 (#6) — per-user tab access inside the merchant portal, as a
+  // JSON array of tab keys (ORDERS | WALLET | GROW | SUPPORT | TEAM |
+  // SETTINGS). NULL means "inherit whatever this vendorRole opens by default",
+  // which is what every existing shop login does, so this ships with no
+  // backfill. An explicit [] means no tabs at all.
+  vendorTabs     Json?
   isActive       Boolean   @default(true)
   lastLoginAt    DateTime?
   createdAt      DateTime  @default(now())
@@ -2744,6 +2751,10 @@ enum WalletTxType {
   REFUND
   TIP
   FLEET_PAYOUT
+  /// Revision 10 (#2) — a merchant paying money into their own wallet. Its own
+  /// type rather than an ADJUSTMENT so a shop reading its ledger can tell what
+  /// it paid in apart from what Darb corrected.
+  TOP_UP
 }
 
 enum IncidentType {
@@ -2807,6 +2818,7 @@ model Vendor {
   accountManagers   AccountManagerVendor[]
 
   supportTickets SupportTicket[]
+  topUps         VendorTopUp[]
 
   @@unique([tenantId, code])
   @@index([tenantId, isActive])
@@ -2831,6 +2843,11 @@ model VendorBranch {
   // does — this ships with no backfill and no repricing.
   deliveryPlanId  String?
   foodicsBranchId String?
+  // Revision 10 (#7). Pausing used to be one switch for the whole account, so a
+  // shop with a queue at one counter had to stop taking orders everywhere. A
+  // branch is paused when either this flag or the vendor's own is set, which
+  // keeps the account-wide switch working exactly as it did.
+  isPaused        Boolean  @default(false)
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -3061,7 +3078,7 @@ model DeliveryOrder {
   redispatchAttempts Int                 @default(0)
   nextRedispatchAt   DateTime?
   requiresCarOnly    Boolean             @default(false)
-  rejectionReason    String? // OUT_OF_ZONE_DROPOFF | UNSERVICEABLE_PAIR | NO_COORDINATES | BRANCH_UNZONED | VENDOR_PAUSED | VENDOR_CREDIT_CAP
+  rejectionReason    String? // OUT_OF_ZONE_DROPOFF | UNSERVICEABLE_PAIR | NO_COORDINATES | BRANCH_UNZONED | VENDOR_PAUSED | BRANCH_PAUSED | VENDOR_CREDIT_CAP
   cancelReason       String?
   failureReason      String?
   proofPhotoUrl      String?
@@ -3584,6 +3601,55 @@ enum SupportTicketStatus {
   OPEN
   ANSWERED
   RESOLVED
+  /// Revision 10 (#5) — the shop withdrew the request itself. Distinct from
+  /// RESOLVED, which means Darb dealt with it: a cancelled request was never
+  /// answered and should not count against anyone's response time.
+  CANCELLED
+}
+
+/// Revision 10 (#2) — a shop paying money into its Darb wallet.
+///
+/// Top-up used to be a paragraph telling the merchant to make a bank transfer
+/// quoting their shop code, and somebody at Darb matching it up by hand. This
+/// row is the intent to pay: it carries the amount, a public token that is the
+/// only credential the payment page needs, and the gateway's own reference once
+/// there is one. The wallet credit is posted when the payment is confirmed,
+/// keyed on `topup:{id}` so a replayed webhook cannot double-credit.
+model VendorTopUp {
+  id            String            @id @default(uuid())
+  tenantId      String
+  vendorId      String
+  /// Who asked for it, so a shop can see which of its own people paid.
+  requestedById String?
+  amountKwd     Decimal           @db.Decimal(10, 3)
+  status        VendorTopUpStatus @default(PENDING)
+  /// 128-bit random, the only auth for the public /api/pay surface.
+  token         String            @unique
+  /// Human-quotable reference, e.g. "TOP-4F2A19".
+  reference     String
+  /// Where the merchant was sent to pay. A gateway URL when one is configured,
+  /// otherwise the Darb-hosted payment page for this token.
+  paymentUrl    String?
+  /// The gateway's own id for this payment, once it has issued one.
+  providerRef   String?
+  /// "MYFATOORAH" | "MANUAL" — which rail actually took the money.
+  provider      String?
+  paidAt        DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  vendor Vendor @relation(fields: [vendorId], references: [id])
+
+  @@index([tenantId, vendorId, createdAt])
+  @@index([tenantId, status])
+}
+
+enum VendorTopUpStatus {
+  PENDING
+  PAID
+  CANCELLED
+  FAILED
 }
 
 /// The four kinds of request a shop raises, as the client described them.

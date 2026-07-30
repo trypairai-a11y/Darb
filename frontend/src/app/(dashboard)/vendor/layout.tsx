@@ -13,6 +13,7 @@ import { vendorApi } from "@/lib/darbApi";
 import AccessRestricted from "@/components/vendor/AccessRestricted";
 import BranchFilter from "@/components/vendor/BranchFilter";
 import { useAuth } from "@/contexts/AuthContext";
+import { roleDefaultTabs, tabForPath } from "@/lib/vendorTabs";
 import { useI18n } from "@/i18n/I18nProvider";
 
 /**
@@ -58,33 +59,40 @@ function InspectBanner() {
 }
 
 /**
- * Keeps a portal role out of the screens it cannot open.
+ * True when this login may not open the screen it is currently on.
  *
  * Hiding the rail entry is not enough on its own: a bookmark, a notification
  * link or a typed URL still lands, and the API answers with a 403 the screen
- * shows as "Request failed with status code 403". The rules are the shop's own
- * roles: an accountant has no reason to change shop settings, and a tracker
- * has no reason to see money at all.
- */
-const FORBIDDEN: Record<string, string[]> = {
-  FINANCE: ["/vendor/settings", "/vendor/team"],
-  ORDER_TRACKING: ["/vendor/wallet", "/vendor/settings", "/vendor/grow", "/vendor/team"],
-};
-
-/**
- * True when this login may not open the screen it is currently on.
+ * shows as "Request failed with status code 403". Revision 9 (#9, #11) turned
+ * that into a plain "access restricted" page that stays put rather than
+ * bouncing the user to /vendor wondering whether they mis-clicked.
  *
- * Revision 9 (#9, #11): this used to redirect to /vendor, which left the user
- * wondering whether they had mis-clicked, and the API's 403 rendered as
- * "Something went wrong" with a Try again button that could never work. The
- * page now says plainly that access is restricted and stays put.
+ * Revision 10 (#6) changed what it reads. This was a hard-coded map from
+ * vendorRole to blocked paths, which could not express a per-user tab list at
+ * all: an owner who narrowed somebody's tabs saw the rail entry stay put and
+ * the screen 403 on load. It now asks the server what the caller's tabs are, via
+ * the portalTabs field on /api/vendor/me, and falls back to the role's own
+ * defaults while that is in flight or on an older server.
  */
 function useRestricted(): boolean {
   const { user } = useAuth();
   const pathname = usePathname();
+
+  const meQuery = useQuery({
+    queryKey: ["darb", "vendor", "me"],
+    queryFn: () => vendorApi.me(),
+    enabled: user?.role === "VENDOR",
+    staleTime: 60_000,
+  });
+
   if (!user || user.role !== "VENDOR" || !pathname) return false;
-  const blocked = FORBIDDEN[user.vendorRole ?? "OWNER"] ?? [];
-  return blocked.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  const tab = tabForPath(pathname);
+  if (!tab) return false;
+  // Nothing is restricted until we know the answer: flashing "access restricted"
+  // at somebody who does have access is worse than a beat of the real screen.
+  if (meQuery.isLoading) return false;
+  const tabs = meQuery.data?.portalTabs ?? roleDefaultTabs(user.vendorRole ?? "OWNER");
+  return !tabs.includes(tab);
 }
 
 function VendorBody({ children }: { children: ReactNode }) {

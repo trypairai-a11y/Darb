@@ -29,6 +29,7 @@ import { logger } from "../config/logger";
 import { extractFoodicsEnvelope } from "../services/foodics/mapper";
 import { enqueueFoodicsIngest } from "../queues/foodicsWorker";
 import { publishOrderEvent } from "../services/orderStateMachine";
+import { confirmTopUp } from "../services/wallet/topUpService";
 
 const router = Router();
 
@@ -286,6 +287,86 @@ router.post("/twilio-whatsapp", async (req: Request, res: Response) => {
     res.type("text/xml").status(200).send("<Response></Response>");
   } catch (err) {
     logger.error({ err }, "twilio-whatsapp webhook failed");
+    res.status(500).json({ error: "Webhook processing failed" });
+  }
+});
+
+// ─── Payment gateway callback (revision 10, #2) ───────────────────────────────
+
+/**
+ * The gateway telling us a merchant's top-up was paid.
+ *
+ * Path secret, same pattern as the Foodics hook: PAYMENT_WEBHOOK_SECRET must be
+ * set and must match, and it FAILS CLOSED when the secret is unset. An open
+ * endpoint here would be a way to credit any shop's wallet by guessing a token.
+ *
+ * Cross-tenant by design — a gateway knows nothing about our tenants — so the
+ * tenant comes from the top-up row the token resolves to, never from the body.
+ *
+ * Idempotent twice over: the status flip is a compare-and-set on PENDING, and
+ * the ledger posting is keyed `topup:{id}`. A gateway that retries three times
+ * credits the wallet once.
+ */
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+router.post("/payment/:secret", async (req: Request, res: Response) => {
+  try {
+    const expected = process.env.PAYMENT_WEBHOOK_SECRET;
+    if (!expected) {
+      logger.warn("payment webhook hit with PAYMENT_WEBHOOK_SECRET unset — refusing");
+      res.status(503).json({ error: "Payment callbacks are not configured" });
+      return;
+    }
+    // Fixed-time compare: a length mismatch is answered the same as a value one.
+    const given = String(req.params.secret ?? "");
+    const ok =
+      given.length === expected.length &&
+      crypto.timingSafeEqual(Buffer.from(given), Buffer.from(expected));
+    if (!ok) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+
+    const body = (req.body ?? {}) as Record<string, unknown>;
+    // MyFatoorah sends CustomerReference back; we also accept our own token, so
+    // a hand-fired callback during setup does not need the gateway's shape.
+    const token = String(body.token ?? body.CustomerReference ?? "").trim();
+    const reference = String(body.reference ?? body.CustomerReference ?? "").trim();
+    const paid =
+      body.paid === true ||
+      String(body.status ?? body.TransactionStatus ?? "").toUpperCase() === "PAID" ||
+      String(body.InvoiceStatus ?? "").toUpperCase() === "PAID" ||
+      String(body.TransactionStatus ?? "").toUpperCase() === "SUCCESS";
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const topUp = await (prisma as any).vendorTopUp.findFirst({
+      where: token ? { token } : { reference },
+      select: { id: true, tenantId: true },
+    });
+    if (!topUp) {
+      // 200, not 404: a gateway that gets an error retries forever over a
+      // payment we have no record of.
+      logger.warn({ token, reference }, "payment webhook: no matching top-up");
+      res.status(200).json({ ok: true, matched: false });
+      return;
+    }
+
+    if (!paid) {
+      logger.info({ topUpId: topUp.id }, "payment webhook: not a paid status, ignoring");
+      res.status(200).json({ ok: true, credited: false });
+      return;
+    }
+
+    const result = await confirmTopUp({
+      tenantId: topUp.tenantId,
+      topUpId: topUp.id,
+      providerRef: typeof body.InvoiceId === "number" || typeof body.InvoiceId === "string"
+        ? String(body.InvoiceId)
+        : null,
+      provider: "MYFATOORAH",
+    });
+    res.status(200).json({ ok: result.ok, credited: !result.alreadyPaid });
+  } catch (err) {
+    logger.error({ err }, "payment webhook failed");
     res.status(500).json({ error: "Webhook processing failed" });
   }
 });

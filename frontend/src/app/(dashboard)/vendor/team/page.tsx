@@ -10,15 +10,18 @@
 // and the endpoints answer 403 to anyone else.
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { UserPlus } from "lucide-react";
+import { SlidersHorizontal, UserPlus } from "lucide-react";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import SlidePanel from "@/components/shared/SlidePanel";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/Toast";
+import TabPicker from "@/components/vendor/TabPicker";
 import { vendorApi } from "@/lib/darbApi";
-import type { VendorPortalRole, VendorUser } from "@/types/darb";
+import { roleDefaultTabs, VENDOR_TAB_ORDER } from "@/lib/vendorTabs";
+import type { VendorPortalRole, VendorTab, VendorUser } from "@/types/darb";
+import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDate } from "@/i18n/format";
 
@@ -36,6 +39,7 @@ export default function VendorTeamPage() {
   const { t, locale } = useI18n();
   const toast = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -46,7 +50,16 @@ export default function VendorTeamPage() {
     password: "",
     vendorRole: "ORDER_TRACKING" as VendorPortalRole,
     branchId: "",
+    // Revision 10 (#6). null means "inherit the role's tabs", which is what
+    // every login did before this existed.
+    vendorTabs: null as VendorTab[] | null,
   });
+
+  // Revision 10 (#6) — editing one person's access after the fact, which is the
+  // half the client kept asking for: the add form was never the problem, the
+  // problem was that a login already created could not be narrowed.
+  const [editing, setEditing] = useState<VendorUser | null>(null);
+  const [editTabs, setEditTabs] = useState<VendorTab[] | null>(null);
 
   const teamQuery = useQuery({
     queryKey: ["darb", "vendor", "team"],
@@ -71,11 +84,36 @@ export default function VendorTeamPage() {
         // Only a tracker can be pinned to a branch, and only optionally: a
         // tracker with no branch follows all of them.
         branchId: form.vendorRole === "ORDER_TRACKING" ? form.branchId || null : null,
+        vendorTabs: form.vendorTabs,
       });
       toast.success(t("vendorTeam.created"));
       setOpen(false);
-      setForm({ name: "", email: "", phone: "", password: "", vendorRole: "ORDER_TRACKING", branchId: "" });
+      setForm({
+        name: "", email: "", phone: "", password: "",
+        vendorRole: "ORDER_TRACKING", branchId: "", vendorTabs: null,
+      });
       await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", "team"] });
+    } catch (err) {
+      const msg =
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+        t("toast.failedSave");
+      toast.error(msg);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function saveTabs() {
+    if (!editing) return;
+    setSaving(true);
+    try {
+      await vendorApi.updateTeamUser(editing.id, { vendorTabs: editTabs });
+      toast.success(t("vendorTeam.accessSaved"));
+      setEditing(null);
+      await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", "team"] });
+      // The caller's own rail reads the same /me payload, so it has to refetch
+      // if the owner just changed their own team's access.
+      await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", "me"] });
     } catch (err) {
       const msg =
         (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
@@ -163,6 +201,37 @@ export default function VendorTeamPage() {
             ),
           },
           {
+            // Revision 10 (#6). The column the client kept looking for: what
+            // this person can actually open, not just which bundle they were
+            // put in. "All tabs" rather than six chips when nothing is narrowed.
+            key: "effectiveTabs",
+            label: t("vendorTeam.tabsColumn"),
+            sortable: false,
+            render: (_v: unknown, row: VendorUser) => {
+              const tabs = row.effectiveTabs ?? roleDefaultTabs(row.vendorRole ?? "OWNER");
+              if (tabs.length === VENDOR_TAB_ORDER.length) {
+                return <span className="text-sand-600 text-xs">{t("vendorTeam.tabsAll")}</span>;
+              }
+              if (tabs.length === 0) {
+                return <span className="text-red-600 text-xs">{t("errors.noData")}</span>;
+              }
+              return (
+                <span className="flex flex-wrap gap-1">
+                  {VENDOR_TAB_ORDER.filter((x) => tabs.includes(x)).map((tab) => (
+                    <span
+                      key={tab}
+                      className="inline-flex items-center px-2 py-0.5 rounded-pill bg-sand-100 text-sand-700 text-[11px] font-medium"
+                    >
+                      {t(`vendorTeam.tab${tab}`)}
+                    </span>
+                  ))}
+                </span>
+              );
+            },
+            exportValue: (_v: unknown, row: VendorUser) =>
+              (row.effectiveTabs ?? roleDefaultTabs(row.vendorRole ?? "OWNER")).join(" "),
+          },
+          {
             key: "createdAt",
             label: t("vendorTeam.added"),
             render: (value: string) => (
@@ -170,6 +239,30 @@ export default function VendorTeamPage() {
                 {value ? formatDate(value, locale) : t("common.notAvailable")}
               </span>
             ),
+          },
+          {
+            key: "id",
+            label: "",
+            sortable: false,
+            render: (_v: unknown, row: VendorUser) =>
+              // An owner cannot narrow their own access: doing so would be a way
+              // to lock the shop out of the only screen that could undo it. The
+              // endpoint refuses it too.
+              row.id === user?.id ? (
+                <span className="text-xs text-sand-500">{t("vendorTeam.cannotEditSelf")}</span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditing(row);
+                    setEditTabs(row.vendorTabs ?? null);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors"
+                >
+                  <SlidersHorizontal size={12} aria-hidden="true" />
+                  {t("vendorTeam.editAccess")}
+                </button>
+              ),
           },
         ]}
         data={users}
@@ -262,6 +355,11 @@ export default function VendorTeamPage() {
               </select>
             </div>
           )}
+          <TabPicker
+            vendorRole={form.vendorRole}
+            value={form.vendorTabs}
+            onChange={(next) => setForm({ ...form, vendorTabs: next })}
+          />
           <button
             type="button"
             disabled={!canSubmit}
@@ -271,6 +369,43 @@ export default function VendorTeamPage() {
             {saving ? t("common.processing") : t("vendorTeam.add")}
           </button>
         </div>
+      </SlidePanel>
+
+      {/* Editing one person's access. Its own panel rather than a second mode of
+          the add form: the add form needs a password and an email, and this
+          needs neither. */}
+      <SlidePanel
+        open={editing !== null}
+        onClose={() => setEditing(null)}
+        title={editing ? `${t("vendorTeam.editAccess")} — ${editing.name}` : t("vendorTeam.editAccess")}
+      >
+        {editing && (
+          <div className="space-y-5">
+            <div className="rounded-xl bg-sand-100 p-4 text-sm space-y-1">
+              <p dir="auto" className="font-medium text-sand-900">{editing.name}</p>
+              <p dir="ltr" className="text-xs text-sand-600">{editing.email}</p>
+              <p className="text-xs text-sand-600">
+                {t("vendorTeam.role")}:{" "}
+                {t(`vendorTeam.role${editing.vendorRole ?? "OWNER"}`)}
+              </p>
+            </div>
+
+            <TabPicker
+              vendorRole={editing.vendorRole ?? "OWNER"}
+              value={editTabs}
+              onChange={setEditTabs}
+            />
+
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => void saveTabs()}
+              className="w-full h-11 rounded-pill bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors disabled:opacity-50"
+            >
+              {saving ? t("common.processing") : t("vendorTeam.save")}
+            </button>
+          </div>
+        )}
       </SlidePanel>
     </div>
   );

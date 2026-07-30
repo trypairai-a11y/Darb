@@ -44,6 +44,9 @@ import type {
   CockpitSummary,
   SupportTicket,
   SupportTicketType,
+  VendorTab,
+  VendorTopUp,
+  OrderImportResult,
 } from "@/types/darb";
 
 type Params = Record<string, string | number | boolean | undefined | null>;
@@ -365,8 +368,23 @@ export const vendorApi = {
   zones: () => get<DeliveryZone[]>("/api/vendor/zones"),
   quote: (body: { branchId: string; dropoff: { lat: number; lng: number } }) =>
     post<ZoneQuote>("/api/vendor/quote", body),
-  pause: (paused: boolean) => post<Vendor>("/api/vendor/pause", { paused }),
-  wallet: () => get<VendorWallet>("/api/vendor/wallet"),
+  // Revision 10 (#7): a branchId pauses that counter alone; omit it for the
+  // whole account, which is what the toggle always did.
+  pause: (paused: boolean, branchId?: string | null) =>
+    post<{ ok: boolean; isPaused: boolean; branchId?: string }>("/api/vendor/pause", {
+      paused,
+      ...(branchId ? { branchId } : {}),
+    }),
+  // branchId is what makes the balance figure follow the branch pills
+  // (revision 10, #3). Without it the endpoint answers with the account total.
+  wallet: (params?: { branchId?: string | null }) =>
+    get<VendorWallet>("/api/vendor/wallet", params as Params),
+  // ── Revision 10 (#2): top up ──
+  createTopUp: (amountKwd: string) =>
+    post<VendorTopUp>("/api/vendor/wallet/top-up", { amountKwd }),
+  topUps: () => get<VendorTopUp[]>("/api/vendor/wallet/top-ups"),
+  cancelTopUp: (id: string) =>
+    post<{ ok: boolean }>(`/api/vendor/wallet/top-ups/${id}/cancel`, {}),
   walletEntries: (params?: Params) =>
     get<Paginated<WalletEntry> | WalletEntry[]>("/api/vendor/wallet/entries", params),
   /** Vendor-scoped Foodics status (vendorId comes from the JWT). */
@@ -389,15 +407,48 @@ export const vendorApi = {
     post<SupportTicket>("/api/vendor/support", body),
   replyToTicket: (id: string, body: string) =>
     post<SupportTicket>(`/api/vendor/support/${id}/reply`, { body }),
+  /** Revision 10 (#5) — the shop withdraws its own request. 409 if Darb closed it first. */
+  cancelTicket: (id: string, reason?: string) =>
+    post<SupportTicket>(`/api/vendor/support/${id}/cancel`, { reason: reason ?? "" }),
   team: () => get<VendorUser[]>("/api/vendor/team"),
   createTeamUser: (body: {
     email: string; password: string; name: string; phone?: string;
     vendorRole: VendorPortalRole; branchId?: string | null;
+    /** Revision 10 (#6). Omit to inherit the role's tabs. */
+    vendorTabs?: VendorTab[] | null;
   }) => post<VendorUser>("/api/vendor/team", body),
   updateTeamUser: (
     id: string,
-    body: { isActive?: boolean; vendorRole?: VendorPortalRole; branchId?: string | null },
+    body: {
+      isActive?: boolean;
+      vendorRole?: VendorPortalRole;
+      branchId?: string | null;
+      /** null resets the person to their role's tabs; a list replaces it. */
+      vendorTabs?: VendorTab[] | null;
+    },
   ) => patch<VendorUser>(`/api/vendor/team/${id}`, body),
+  // ── Revision 10 (#1): bulk order import ──
+  /**
+   * The blank template, generated from this shop's own branches and the live
+   * zone list. A plain URL rather than a fetch: the browser downloads it.
+   */
+  orderImportTemplateUrl: (params?: { branchId?: string | null; vendorId?: string | null }) => {
+    const q = new URLSearchParams();
+    if (params?.branchId) q.set("branchId", params.branchId);
+    if (params?.vendorId) q.set("vendorId", params.vendorId);
+    const qs = q.toString();
+    return `/api/vendor/orders/import-template.xlsx${qs ? `?${qs}` : ""}`;
+  },
+  /**
+   * Post the filled-in workbook. multipart, so it goes through the shared axios
+   * instance with the boundary the browser sets: passing FormData and no
+   * Content-Type is what lets it do that.
+   */
+  bulkImportOrders: (file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return post<OrderImportResult>("/api/vendor/orders/bulk-import", form);
+  },
 };
 
 // ── /api/fleet (fleet-portal scope — fleetPartnerId comes from the JWT) ──

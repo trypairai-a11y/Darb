@@ -62,7 +62,9 @@ export type WalletTxTypeLiteral =
   | "VENDOR_PAYOUT"
   | "REFUND"
   | "TIP"
-  | "FLEET_PAYOUT";
+  | "FLEET_PAYOUT"
+  // Revision 10 (#2) — a merchant paying into their own wallet.
+  | "TOP_UP";
 
 /** Domain error — routes map instances to HTTP 400. */
 export class WalletError extends Error {}
