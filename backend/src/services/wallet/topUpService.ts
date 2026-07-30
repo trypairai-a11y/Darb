@@ -41,8 +41,20 @@ function generateReference(): string {
   return `TOP-${randomBytes(3).toString("hex").toUpperCase()}`;
 }
 
+/**
+ * Where the merchant-facing payment page lives.
+ *
+ * Its own variable rather than reusing PUBLIC_TRACKING_BASE_URL, which points at
+ * the customer tracking domain: a shop owner paying an invoice should land on
+ * the portal they already log into, not on the domain their customers use to
+ * follow a driver. The two fallbacks keep the link working on a deploy that has
+ * not set it yet, since any of these domains serves /pay.
+ */
 function baseUrl(): string | null {
-  const base = process.env.PUBLIC_TRACKING_BASE_URL || process.env.FRONTEND_URL;
+  const base =
+    process.env.PUBLIC_PORTAL_BASE_URL ||
+    process.env.PUBLIC_TRACKING_BASE_URL ||
+    process.env.FRONTEND_URL;
   return base ? base.replace(/\/+$/, "") : null;
 }
 
