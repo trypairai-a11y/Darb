@@ -20,10 +20,10 @@ import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/Toast";
-import WalletLedgerTable from "@/components/darb/WalletLedgerTable";
+import WalletLedgerTable, { TX_I18N } from "@/components/darb/WalletLedgerTable";
 import { vendorApi, unwrapList, fetchAllPages } from "@/lib/darbApi";
 import { downloadCsv } from "@/lib/csv";
-import type { RefundRow, VendorStatementRow, WalletEntry } from "@/types/darb";
+import type { RefundRow, VendorStatementRow, WalletEntry, WalletTxType } from "@/types/darb";
 import { useVendorBranch } from "@/contexts/VendorBranchContext";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDate, formatKwd } from "@/i18n/format";
@@ -140,6 +140,9 @@ export default function VendorWalletPage() {
     walletQuery.data?.balanceKwd ??
     walletQuery.data?.account?.balanceKwd;
   const unallocated = Number(walletQuery.data?.unallocatedKwd ?? 0);
+  // Already biggest-first from the server, and types that net to nothing are
+  // left out there: they explain no part of the figure being asked about.
+  const unallocatedTypes = Object.entries(walletQuery.data?.unallocatedByType ?? {});
 
   // PRD §11 credit line — render only when a cap is configured.
   const creditCap = walletQuery.data?.creditCapKwd;
@@ -261,6 +264,50 @@ export default function VendorWalletPage() {
           </div>
         )}
       </div>
+
+      {/* Revision 11 (#2). The client read "KD -169.832 not tied to a branch"
+          on the card above and asked what it was for, which a bare number gives
+          nobody a way to find out. It is the net of every posting that reached
+          no branch, because no order carried it: money paid in, money paid out,
+          and corrections. Naming those movements answers the question on the
+          screen, once, instead of by email every time somebody new reads the
+          wallet. Only rendered on the combined view, where the figure appears. */}
+      {!branchId && unallocated !== 0 && (
+        <section className="bg-card border border-sand-200 rounded-2xl shadow-soft px-5 py-4">
+          <h2 className="text-sm font-medium text-sand-900">
+            {t("vendorPortal.walletUnallocatedTitle").replace(
+              "{amount}",
+              formatKwd(unallocated, locale),
+            )}
+          </h2>
+          <p className="text-xs text-sand-600 mt-1 max-w-[46rem]">
+            {t("vendorPortal.walletUnallocatedHint")}
+          </p>
+          {unallocatedTypes.length > 0 && (
+            <ul className="mt-3 space-y-1.5">
+              {unallocatedTypes.map(([type, amount]) => (
+                <li
+                  key={type}
+                  className="flex items-center justify-between gap-4 text-sm border-b border-sand-100 last:border-0 pb-1.5 last:pb-0"
+                >
+                  <span className="text-sand-700">
+                    {TX_I18N[type as WalletTxType] ? t(TX_I18N[type as WalletTxType]) : type}
+                  </span>
+                  <span
+                    dir="ltr"
+                    className={cn(
+                      "tabular-nums font-medium",
+                      Number(amount) < 0 ? "text-red-700" : "text-sand-900",
+                    )}
+                  >
+                    {formatKwd(amount, locale)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
 
       <WalletLedgerTable
         entries={entries}

@@ -16,7 +16,8 @@ const TX_STYLES: Record<WalletTxType, string> = {
   TOP_UP: "bg-teal-50 text-teal-700",
 };
 
-const TX_I18N: Record<WalletTxType, string> = {
+/** Exported: the wallet page names the same transaction types outside a table. */
+export const TX_I18N: Record<WalletTxType, string> = {
   COD_SETTLEMENT: "wallet.txCodSettlement",
   PREPAID_SETTLEMENT: "wallet.txPrepaidSettlement",
   REMITTANCE: "wallet.txRemittance",

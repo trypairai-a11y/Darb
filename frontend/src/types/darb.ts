@@ -151,6 +151,19 @@ export interface Vendor {
    * rather than only showing up as a 403.
    */
   portalTabs?: VendorTab[] | null;
+  /**
+   * Revision 11 (#5) — the caller's portal role and pinned branch, as the
+   * SERVER sees them, from /api/vendor/me.
+   *
+   * Both used to be read off the JWT on this side, and a token carries whatever
+   * was true the day it was minted. An owner who moved somebody to a
+   * branch-only tracking role changed nothing until that person logged out
+   * again: the rail kept drawing the tabs of the role they used to have, and
+   * clicking one produced the 403 the client reported. These are the answer the
+   * route fences enforce, so the screen and the server agree.
+   */
+  portalRole?: VendorPortalRole | null;
+  pinnedBranchId?: string | null;
   /** Flat count returned by the vendors list endpoint. */
   branchCount?: number;
   foodicsConnected?: boolean;
@@ -631,6 +644,12 @@ export interface VendorWallet {
   branchBalances?: Record<string, Kwd>;
   /** Postings that belong to no branch: payouts, top-ups, corrections. */
   unallocatedKwd?: Kwd;
+  /**
+   * Revision 11 (#2) — what that figure is made of, transaction type → net.
+   * The client saw "KD -169.832 not tied to a branch" and asked what it was
+   * for, which a bare number gives no way to find out.
+   */
+  unallocatedByType?: Record<string, Kwd>;
   /** Revision 10 (#2) — what to prefill the top-up field with. */
   suggestedTopUpKwd?: Kwd;
   /** What the shop owes right now. The floor of any useful top-up. */
@@ -664,6 +683,15 @@ export interface VendorAnalytics {
   avgPrepMinutes?: number | null;
   /** How many orders that average is built from. */
   prepSampleSize?: number;
+  /**
+   * Revision 11 (#3) — the wider wait, which every delivered order can answer:
+   * from the order being placed to it leaving with a driver. The prep card
+   * falls back to this when no order in the period carries an arrival stamp,
+   * which is what left it reading n/a. Deliberately a separate number: it
+   * includes waiting for a driver, so averaging the two would mean neither.
+   */
+  avgHandoverMinutes?: number | null;
+  handoverSampleSize?: number;
   topCustomers: Array<{ phone: string; name: string | null; orders: number; totalKwd: string }>;
   byDay: Array<{ day: string; orders: number; totalKwd: string }>;
 }
@@ -910,5 +938,11 @@ export interface SupportTicket {
   orderId?: string | null;
   createdAt: string;
   updatedAt: string;
+  /**
+   * Revision 11 (#4) — which of the shop's own people raised this. A Support
+   * inbox is shared across the whole Team, so a thread of messages all labelled
+   * "You" told an owner nothing about who asked or who withdrew it.
+   */
+  createdByName?: string | null;
   messages: SupportTicketMessage[];
 }

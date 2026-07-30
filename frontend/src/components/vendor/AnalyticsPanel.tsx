@@ -77,6 +77,24 @@ export default function AnalyticsPanel() {
     );
   }
 
+  // Which of the two waits the prep card can answer for this period, and the
+  // line under it that says which one the reader is looking at. Preferring the
+  // narrow measure keeps the number honest the moment drivers start reporting
+  // their arrival, without the card going blank until they do.
+  const useArrival = data.avgPrepMinutes != null && (data.prepSampleSize ?? 0) > 0;
+  const prep = useArrival ? data.avgPrepMinutes : (data.avgHandoverMinutes ?? null);
+  const prepHint = useArrival
+    ? t("vendorExtra.prepFromOrders").replace(
+        "{n}",
+        formatNumber(data.prepSampleSize ?? 0, locale),
+      )
+    : prep != null
+      ? t("vendorExtra.handoverFromOrders").replace(
+          "{n}",
+          formatNumber(data.handoverSampleSize ?? 0, locale),
+        )
+      : t("vendorExtra.avgPrepTimeHint");
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-end gap-4 flex-wrap">
@@ -100,7 +118,11 @@ export default function AnalyticsPanel() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      {/* Revision 11 (#3). Five cards went straight from one column to five at
+          the lg breakpoint, so on a laptop each one was about 180px wide and the
+          label and the description were both being cut. It steps 2 → 3 → 5 now,
+          and only takes the five-across layout at xl where there is room for it. */}
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 xl:gap-4">
         <StatCard
           title={t("vendorExtra.ordersTotal")}
           value={formatNumber(data.ordersTotal, locale)}
@@ -124,21 +146,25 @@ export default function AnalyticsPanel() {
         {/* Revision 10 (#4). The handover wait: how long our drivers stand at
             the counter between arriving and being given the order. Branch-aware
             like every other card here, because the branch scope is already on
-            the query. "n/a" rather than 0 when nothing in the period had both
-            stamps, since no data and instant handover are different claims. */}
+            the query.
+
+            Revision 11 (#3). It read n/a on a shop with 73 delivered orders,
+            and the client asked for it to be filled. The reason is that the
+            arrival stamp only exists when a driver reports reaching the shop,
+            and a driver who taps picked-up straight from assigned never leaves
+            one. So when nothing in the period can answer the narrow question,
+            the card answers the wider one every order can — from the order
+            being placed to it leaving with a driver — and says which of the two
+            it is showing. The two are never averaged together. */}
         <StatCard
           title={t("vendorExtra.avgPrepTime")}
           value={
-            data.avgPrepMinutes != null
-              ? `${formatNumber(data.avgPrepMinutes, locale)} ${t("vendorExtra.minutesShort")}`
+            prep != null
+              ? `${formatNumber(prep, locale)} ${t("vendorExtra.minutesShort")}`
               : t("common.notAvailable")
           }
           icon={Timer}
-          trend={
-            data.avgPrepMinutes != null && data.prepSampleSize
-              ? t("vendorExtra.prepFromOrders").replace("{n}", formatNumber(data.prepSampleSize, locale))
-              : t("vendorExtra.avgPrepTimeHint")
-          }
+          trend={prepHint}
         />
       </div>
 

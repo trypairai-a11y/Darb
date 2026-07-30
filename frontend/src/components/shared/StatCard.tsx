@@ -30,9 +30,15 @@ export default function StatCard({ title, value, icon: Icon, trend, highlight, c
           {/* Titles wrap to two lines instead of truncating: "DRIVERS ON…" and
               "CASH IN THE…" were unreadable in the founder cockpit (revision
               #24). The title attribute still gives the full text on hover. */}
+          {/* Revision 11 (#3). Two lines at 0.14em tracking was not enough room
+              for "AVG PREPARATION TIME" in a five-across row, so the client got
+              "AVG PREPARATIO…" — the clamp was hiding the label rather than
+              wrapping it. Three lines, tighter tracking and a break-word so a
+              long single word breaks instead of being cut. The reserved height
+              stays at two lines, so a row of short titles still aligns. */}
           <p
             title={title}
-            className="text-[11px] uppercase tracking-[0.14em] font-medium text-sand-600 mb-3 leading-[1.35] line-clamp-2 min-h-[2.05em]"
+            className="text-[11px] uppercase tracking-[0.1em] font-medium text-sand-600 mb-3 leading-[1.35] line-clamp-3 min-h-[2.05em] break-words"
           >
             {title}
           </p>
@@ -47,7 +53,9 @@ export default function StatCard({ title, value, icon: Icon, trend, highlight, c
           )}>
             {value}
           </p>
-          {trend && <p className="text-xs text-sand-600 mt-2.5 truncate">{trend}</p>}
+          {/* The description used to truncate to one line, which on a narrow
+              card meant "How long our dri…" and no description at all. */}
+          {trend && <p className="text-xs text-sand-600 mt-2.5 leading-snug line-clamp-2">{trend}</p>}
         </div>
         {Icon && (
           <div className="h-9 w-9 shrink-0 rounded-pill bg-sand-100 dark:bg-sand-900/40 flex items-center justify-center text-sand-700 transition-colors duration-400 ease-sierra-out group-hover:bg-primary/10 group-hover:text-primary">

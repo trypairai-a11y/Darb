@@ -91,7 +91,10 @@ function useRestricted(): boolean {
   // Nothing is restricted until we know the answer: flashing "access restricted"
   // at somebody who does have access is worse than a beat of the real screen.
   if (meQuery.isLoading) return false;
-  const tabs = meQuery.data?.portalTabs ?? roleDefaultTabs(user.vendorRole ?? "OWNER");
+  // Revision 11 (#5): the server's role, not the token's. See Sidebar.
+  const tabs =
+    meQuery.data?.portalTabs ??
+    roleDefaultTabs(meQuery.data?.portalRole ?? user.vendorRole ?? "OWNER");
   return !tabs.includes(tab);
 }
 

@@ -366,6 +366,9 @@ describe("Vendor portal routes", () => {
         scopedBranchId: null,
         branchBalances: {},
         unallocatedKwd: "0.000",
+        // Revision 11 (#2): what the unallocated figure is made of. Empty here
+        // because there is no account, so there is nothing to explain.
+        unallocatedByType: {},
         // Revision 10 (#2): the prefill for the top-up field. Nothing owed and
         // no delivery history ⇒ the KD 10 floor.
         suggestedTopUpKwd: "10.000",

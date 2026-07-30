@@ -81,9 +81,74 @@ const pauseSchema = z.object({
  */
 type VendorRole = "OWNER" | "FINANCE" | "ORDER_TRACKING";
 
+/**
+ * Who this caller is, read from the User row rather than from their token
+ * (revision 11, #5).
+ *
+ * The role, the pinned branch and the tab list all used to come from three
+ * different places: vendorRole and branchId off the signed JWT, tabs off the
+ * row. That split is what produced the bug the client kept reporting. A token
+ * is minted once and carries whatever was true that day, so an owner who
+ * changed somebody from FINANCE to a Mishref-only tracker changed nothing until
+ * that person's token expired: the server kept fencing them as FINANCE with no
+ * branch, so /me handed back every branch and the rail drew a Wallet entry the
+ * tab gate then answered 403 to. Same stale-flag hole requireSuperAdmin avoids
+ * by going to the database on every request.
+ *
+ * One query, resolved once per request by middleware, so every helper below
+ * stays synchronous and nothing pays for it twice.
+ */
+interface VendorIdentity {
+  vendorRole: VendorRole;
+  /** The one branch this login may see, or null for all of them. */
+  branchId: string | null;
+  tabs: VendorTab[] | null;
+  /** What to sign a support message with: their name, else their login. */
+  displayName: string;
+}
+
+function identityOf(req: Request): VendorIdentity | null {
+  return (req as { _vendorIdentity?: VendorIdentity })._vendorIdentity ?? null;
+}
+
+/**
+ * Resolve the caller's identity from their User row, once per request.
+ *
+ * An inspecting ADMIN is not a shop login and has no row to read here. They are
+ * already fenced to read-only by vendorScope, so they get no identity and every
+ * gate below stands aside for them rather than inventing an answer.
+ */
+async function loadVendorIdentity(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    if (req.user?.role !== "VENDOR") { next(); return; }
+    const row = await prisma.user.findFirst({
+      where: { id: req.user.userId, tenantId: req.user.tenantId },
+      select: { vendorRole: true, branchId: true, vendorTabs: true, name: true, email: true },
+    });
+    const role = row?.vendorRole ?? req.user.vendorRole;
+    (req as { _vendorIdentity?: VendorIdentity })._vendorIdentity = {
+      vendorRole: role === "FINANCE" || role === "ORDER_TRACKING" ? role : "OWNER",
+      // Falls back to the token only when the row could not be read at all, so
+      // a login whose branch was cleared is not left pinned to the old one.
+      branchId: row ? (row.branchId ?? null) : (req.user.branchId ?? null),
+      tabs: effectiveVendorTabs(role, row?.vendorTabs),
+      displayName: row?.name?.trim() || row?.email || req.user.email,
+    };
+    next();
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+router.use(loadVendorIdentity);
+
 function vendorRoleOf(req: Request): VendorRole {
-  const role = req.user?.vendorRole;
-  return role === "FINANCE" || role === "ORDER_TRACKING" ? role : "OWNER";
+  return identityOf(req)?.vendorRole ?? "OWNER";
+}
+
+/** The name to put on anything this caller writes. */
+function actorNameOf(req: Request): string {
+  return identityOf(req)?.displayName ?? req.user?.email ?? "";
 }
 
 /**
@@ -103,7 +168,8 @@ function scopedBranchId(req: Request): string | null {
   // A branch-scoped tracker is fenced to its own branch whatever it asks for.
   // A tracker with no branch assigned covers all of them and chooses like an
   // owner, which is the other half of how the client uses this role.
-  if (vendorRoleOf(req) === "ORDER_TRACKING" && req.user?.branchId) return req.user.branchId;
+  const identity = identityOf(req);
+  if (identity?.vendorRole === "ORDER_TRACKING" && identity.branchId) return identity.branchId;
   const chosen = typeof req.query.branchId === "string" ? req.query.branchId.trim() : "";
   return chosen.length > 0 ? chosen : null;
 }
@@ -122,41 +188,22 @@ function requireVendorRole(...allowed: VendorRole[]) {
 /**
  * Per-user tab access (revision 10, #6).
  *
- * Read from the row, not from the JWT. A token minted before the owner narrowed
- * somebody's tabs would otherwise keep opening the screens it was minted with
- * until it expired, which is the same stale-flag hole requireSuperAdmin already
- * avoids by going to the database on every request.
- *
- * An inspecting ADMIN is not a shop login and has no tab list. They are already
- * fenced to read-only by vendorScope, so the tab gate stands aside for them
- * rather than inventing an answer.
+ * Read from the row, not from the JWT — see loadVendorIdentity above, which is
+ * where that row is fetched.
  */
-async function tabsForRequest(req: Request): Promise<VendorTab[] | null> {
-  if (req.user?.role !== "VENDOR") return null;
-  const cached = (req as { _vendorTabs?: VendorTab[] })._vendorTabs;
-  if (cached) return cached;
-  const row = await prisma.user.findFirst({
-    where: { id: req.user.userId, tenantId: req.user.tenantId },
-    select: { vendorRole: true, vendorTabs: true },
-  });
-  const tabs = effectiveVendorTabs(row?.vendorRole ?? req.user.vendorRole, row?.vendorTabs);
-  (req as { _vendorTabs?: VendorTab[] })._vendorTabs = tabs;
-  return tabs;
+function tabsForRequest(req: Request): VendorTab[] | null {
+  return identityOf(req)?.tabs ?? null;
 }
 
 /** Guard a route to one portal tab. */
 function requireVendorTab(tab: VendorTab) {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const tabs = await tabsForRequest(req);
-      if (tabs && !tabs.includes(tab)) {
-        res.status(403).json({ error: "This tab is not part of your access" });
-        return;
-      }
-      next();
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const tabs = tabsForRequest(req);
+    if (tabs && !tabs.includes(tab)) {
+      res.status(403).json({ error: "This tab is not part of your access" });
+      return;
     }
+    next();
   };
 }
 
@@ -240,7 +287,12 @@ router.get("/me", async (req: Request, res: Response) => {
     // A branch-scoped login is handed only its own branch. It used to receive
     // the whole list, so the portal drew an "All branches" pill and a pill per
     // branch for someone who was fenced to exactly one of them.
-    const pinned = scopedBranchId(req);
+    const identity = identityOf(req);
+    // The *pin*, never a chosen branch: a ?branchId= on this call is the pills
+    // asking for a filter, and it must not make the portal think this login is
+    // fenced to one counter.
+    const pinned =
+      identity?.vendorRole === "ORDER_TRACKING" ? (identity.branchId ?? null) : null;
     const branches = pinned ? vendor.branches.filter((b) => b.id === pinned) : vendor.branches;
     res.json({
       ...vendor,
@@ -249,7 +301,13 @@ router.get("/me", async (req: Request, res: Response) => {
       // from vendorRole alone on the client, which meant a narrowed tab list
       // was invisible to the portal until the page 403'd. This is the same
       // answer the tab gate enforces, so screen and server agree.
-      portalTabs: await tabsForRequest(req),
+      portalTabs: tabsForRequest(req),
+      // Revision 11 (#5). The client's own view of who it is came off the JWT,
+      // which is why a login whose role changed kept drawing the rail it was
+      // minted with and got a 403 on click. These two are the server's answer,
+      // from the row, so the rail and the branch filter agree with the gates.
+      portalRole: identity?.vendorRole ?? null,
+      pinnedBranchId: pinned,
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -1038,6 +1096,10 @@ router.get("/wallet", requireVendorTab("WALLET"), async (req: Request, res: Resp
       // Payouts, top-ups and corrections belong to the shop, not to a counter.
       // Named rather than hidden, so branch figures plus this equal the total.
       unallocatedKwd: branchBalances.unallocatedKwd,
+      // Revision 11 (#2). The client asked what the unallocated figure was for.
+      // It is the net of every posting with no order behind it, so the card
+      // lists what those postings were rather than leaving a bare number.
+      unallocatedByType: branchBalances.unallocatedByType,
       suggestedTopUpKwd: suggestion.amountKwd,
       outstandingKwd: suggestion.outstandingKwd,
       creditCapKwd: vendor?.creditCapKwd ? fmtKwd(vendor.creditCapKwd) : null,
@@ -1476,7 +1538,30 @@ router.get("/support", requireVendorTab("SUPPORT"), async (req: Request, res: Re
       take: 200,
       include: { messages: { orderBy: { createdAt: "asc" } } },
     });
-    res.json(tickets);
+
+    // Revision 11 (#4). A shop's Support inbox is shared across its whole team,
+    // so every message reading "YOU" told an owner nothing about which of their
+    // people raised a request or withdrew one. createdById was already stored
+    // and never surfaced; SupportTicket has no relation to User to include, so
+    // the names come from one lookup over the ids on this page.
+    const creatorIds = [
+      ...new Set(tickets.map((tk) => tk.createdById).filter((id): id is string => !!id)),
+    ];
+    const creators = new Map<string, string>();
+    if (creatorIds.length > 0) {
+      const rows = await prisma.user.findMany({
+        where: { id: { in: creatorIds }, tenantId },
+        select: { id: true, name: true, email: true },
+      });
+      for (const u of rows) creators.set(u.id, u.name?.trim() || u.email);
+    }
+
+    res.json(
+      tickets.map((tk) => ({
+        ...tk,
+        createdByName: tk.createdById ? (creators.get(tk.createdById) ?? null) : null,
+      })),
+    );
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -1488,7 +1573,7 @@ router.post(
   validateBody(supportTicketSchema),
   async (req: Request, res: Response) => {
     try {
-      const { tenantId, vendorId, userId, email } = req.user!;
+      const { tenantId, vendorId, userId } = req.user!;
       const { type, subject, body, orderId } = req.body;
 
       // An order reference is only meaningful if it is this shop's order.
@@ -1508,7 +1593,9 @@ router.post(
           type,
           subject,
           orderId: orderId ?? null,
-          messages: { create: { tenantId, author: "VENDOR", authorName: email, body } },
+          // The person's name, not their login: an owner reading the thread
+          // wants to know who asked, and b@b.com does not answer that.
+          messages: { create: { tenantId, author: "VENDOR", authorName: actorNameOf(req), body } },
         },
         include: { messages: { orderBy: { createdAt: "asc" } } },
       });
@@ -1522,7 +1609,7 @@ router.post(
 /** Add a reply to a ticket this shop owns, and reopen it if Darb had answered. */
 router.post("/support/:id/reply", requireVendorTab("SUPPORT"), async (req: Request, res: Response) => {
   try {
-    const { tenantId, vendorId, email } = req.user!;
+    const { tenantId, vendorId } = req.user!;
     const body = typeof req.body?.body === "string" ? req.body.body.trim() : "";
     if (!body) { res.status(400).json({ error: "Message is required" }); return; }
 
@@ -1537,7 +1624,7 @@ router.post("/support/:id/reply", requireVendorTab("SUPPORT"), async (req: Reque
     }
 
     await prisma.supportTicketMessage.create({
-      data: { tenantId, ticketId: ticket.id, author: "VENDOR", authorName: email, body },
+      data: { tenantId, ticketId: ticket.id, author: "VENDOR", authorName: actorNameOf(req), body },
     });
     // A reply from the shop puts the ball back in Darb's court.
     const updated = await prisma.supportTicket.update({
@@ -1565,7 +1652,7 @@ router.post("/support/:id/reply", requireVendorTab("SUPPORT"), async (req: Reque
  */
 router.post("/support/:id/cancel", requireVendorTab("SUPPORT"), async (req: Request, res: Response) => {
   try {
-    const { tenantId, vendorId, email } = req.user!;
+    const { tenantId, vendorId } = req.user!;
     const reason = typeof req.body?.reason === "string" ? req.body.reason.trim().slice(0, 500) : "";
 
     const ticket = await prisma.supportTicket.findFirst({
@@ -1598,10 +1685,14 @@ router.post("/support/:id/cancel", requireVendorTab("SUPPORT"), async (req: Requ
         tenantId,
         ticketId: ticket.id,
         author: "VENDOR",
-        authorName: email,
+        authorName: actorNameOf(req),
+        // Revision 11 (#4). The note used to say "the shop" and nothing else,
+        // which on a shared inbox is exactly the question the client asked:
+        // which of our people withdrew this? The name goes in the record, not
+        // only on the bubble, so it survives into Darb's own view of the thread.
         body: reason
-          ? `Request cancelled by the shop: ${reason}`
-          : "Request cancelled by the shop.",
+          ? `Request cancelled by ${actorNameOf(req)}: ${reason}`
+          : `Request cancelled by ${actorNameOf(req)}.`,
       },
     });
 
@@ -1810,7 +1901,10 @@ router.get("/analytics", requireVendorTab("GROW"), async (req: Request, res: Res
       typeof req.query.from === "string"
         ? new Date(`${req.query.from}T00:00:00.000`)
         : new Date(to.getTime() - 30 * 86_400_000);
-    const branchId = typeof req.query.branchId === "string" ? req.query.branchId : undefined;
+    // Revision 11 (#5). This read its own ?branchId= rather than going through
+    // scopedBranchId, so a tracker pinned to one counter could see the whole
+    // shop's numbers here while every other screen fenced them correctly.
+    const branchId = scopedBranchId(req);
 
     const where: any = {
       tenantId,
@@ -1832,6 +1926,7 @@ router.get("/analytics", requireVendorTab("GROW"), async (req: Request, res: Res
         // over, so the gap between them is the shop's own preparation time.
         arrivedAt: true,
         pickedUpAt: true,
+        createdAt: true,
       },
       take: 10_000,
     });
@@ -1842,6 +1937,15 @@ router.get("/analytics", requireVendorTab("GROW"), async (req: Request, res: Res
     // simply do not count towards the average rather than dragging it to zero.
     let prepMinutes = 0;
     let prepSample = 0;
+    // Revision 11 (#3). arrivedAt only exists once a driver reports reaching
+    // the shop, and a driver who taps picked-up straight from assigned never
+    // stamps it — so on a real shop's history the card above read n/a forever
+    // and the client asked for it to be filled. This is the wider measure that
+    // every delivered order can answer: order placed → order left with a
+    // driver. It is NOT the same number, so it is a separate field with its own
+    // label rather than being averaged into the one above.
+    let handoverMinutes = 0;
+    let handoverSample = 0;
     const byCustomer = new Map<string, { name: string | null; orders: number; totalKwd: number }>();
     const byDay = new Map<string, { orders: number; totalKwd: number }>();
     for (const o of orders) {
@@ -1861,6 +1965,13 @@ router.get("/analytics", requireVendorTab("GROW"), async (req: Request, res: Res
         if (waited >= 0) {
           prepMinutes += waited;
           prepSample += 1;
+        }
+      }
+      if (o.pickedUpAt) {
+        const elapsed = (o.pickedUpAt.getTime() - o.createdAt.getTime()) / 60_000;
+        if (elapsed >= 0) {
+          handoverMinutes += elapsed;
+          handoverSample += 1;
         }
       }
       const day = o.deliveredAt ? o.deliveredAt.toISOString().slice(0, 10) : "unknown";
@@ -1894,6 +2005,11 @@ router.get("/analytics", requireVendorTab("GROW"), async (req: Request, res: Res
       // "no data yet" and "we are handing over instantly" are different claims.
       avgPrepMinutes: prepSample > 0 ? Number((prepMinutes / prepSample).toFixed(1)) : null,
       prepSampleSize: prepSample,
+      // The fallback the card falls back TO, not a replacement: order placed to
+      // order collected, which every delivered order can answer.
+      avgHandoverMinutes:
+        handoverSample > 0 ? Number((handoverMinutes / handoverSample).toFixed(1)) : null,
+      handoverSampleSize: handoverSample,
       topCustomers,
       byDay: [...byDay.entries()]
         .filter(([day]) => day !== "unknown")

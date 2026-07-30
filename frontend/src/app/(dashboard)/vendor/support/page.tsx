@@ -185,8 +185,19 @@ export default function VendorSupportPage() {
                   <p className="font-medium text-sand-900" dir="auto">
                     {ticket.subject}
                   </p>
-                  <p className="text-xs text-sand-500 mt-0.5" dir="ltr">
-                    {formatDateTime(ticket.createdAt, locale)}
+                  {/* Revision 11 (#4). Who raised it, beside when. The inbox is
+                      shared across the shop's whole team, so "raised on Tuesday"
+                      without a name leaves an owner asking the room. */}
+                  <p className="text-xs text-sand-500 mt-0.5">
+                    <span dir="ltr">{formatDateTime(ticket.createdAt, locale)}</span>
+                    {ticket.createdByName && (
+                      <>
+                        {" · "}
+                        <span dir="auto">
+                          {t("vendorSupport.raisedBy").replace("{name}", ticket.createdByName)}
+                        </span>
+                      </>
+                    )}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -210,8 +221,18 @@ export default function VendorSupportPage() {
                         : "bg-sand-100 text-sand-800 ms-auto"
                     )}
                   >
-                    <p className="text-[11px] uppercase tracking-wide text-sand-500 mb-1">
-                      {m.author === "DARB" ? t("vendorSupport.fromDarb") : t("vendorSupport.fromYou")}
+                    {/* Revision 11 (#4). "You" is only true for the person who
+                        wrote it, and a shared inbox means it usually was not
+                        you. Darb's side keeps its own label; the shop's side is
+                        signed with whoever wrote it, falling back to "You" on
+                        older messages that were stored without a name. */}
+                    <p
+                      className="text-[11px] uppercase tracking-wide text-sand-500 mb-1"
+                      dir="auto"
+                    >
+                      {m.author === "DARB"
+                        ? t("vendorSupport.fromDarb")
+                        : (m.authorName ?? t("vendorSupport.fromYou"))}
                     </p>
                     <p dir="auto" className="whitespace-pre-wrap">
                       {m.body}

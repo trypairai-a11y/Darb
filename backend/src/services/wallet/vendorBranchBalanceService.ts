@@ -29,6 +29,15 @@ export interface VendorBranchBalances {
   byBranch: Record<string, string>;
   /** Postings that belong to no branch (payouts, top-ups, corrections). */
   unallocatedKwd: string;
+  /**
+   * What that figure is made of, transaction type → net (revision 11, #2).
+   *
+   * The client read "KD -169.832 not tied to a branch" and asked what it was
+   * for, which is a fair question to ask of a number with no way to open it.
+   * Naming the movements behind it answers that once instead of by email every
+   * time somebody new looks at the wallet.
+   */
+  unallocatedByType: Record<string, string>;
 }
 
 export async function getVendorBranchBalances(
@@ -48,7 +57,7 @@ export async function getVendorBranchBalances(
   for (const branch of branches) byBranch[branch.id] = "0.000";
 
   if (!account) {
-    return { totalKwd: "0.000", byBranch, unallocatedKwd: "0.000" };
+    return { totalKwd: "0.000", byBranch, unallocatedKwd: "0.000", unallocatedByType: {} };
   }
 
   const total = account.balanceKwd;
@@ -57,10 +66,11 @@ export async function getVendorBranchBalances(
   // carries the branch. A per-branch query would be one round trip per counter,
   // and the loop over ids version could not survive a shop with 10k orders.
   const rows = await prisma.$queryRaw<
-    Array<{ branchId: string | null; direction: string; total: Prisma.Decimal }>
+    Array<{ branchId: string | null; direction: string; type: string; total: Prisma.Decimal }>
   >`
     SELECT o."branchId" AS "branchId",
            e."direction" AS "direction",
+           tx."type" AS "type",
            SUM(e."amountKwd") AS "total"
       FROM "WalletEntry" e
       JOIN "WalletTransaction" tx ON tx."id" = e."transactionId"
@@ -70,16 +80,20 @@ export async function getVendorBranchBalances(
             AND o."vendorId" = ${vendorId}
      WHERE e."accountId" = ${account.id}
        AND e."tenantId" = ${tenantId}
-     GROUP BY o."branchId", e."direction"
+     GROUP BY o."branchId", e."direction", tx."type"
   `;
 
   // VENDOR_PAYABLE is liability-like: a CREDIT raises the balance, a DEBIT
   // lowers it. Same polarity table the ledger itself applies.
   const nets = new Map<string | null, Prisma.Decimal>();
+  const byType = new Map<string, Prisma.Decimal>();
   for (const row of rows) {
     const key = row.branchId ?? null;
     const signed = row.direction === "CREDIT" ? new Prisma.Decimal(row.total) : new Prisma.Decimal(row.total).neg();
     nets.set(key, (nets.get(key) ?? new Prisma.Decimal(0)).plus(signed));
+    if (key === null) {
+      byType.set(row.type, (byType.get(row.type) ?? new Prisma.Decimal(0)).plus(signed));
+    }
   }
 
   for (const [branchId, net] of nets) {
@@ -93,5 +107,13 @@ export async function getVendorBranchBalances(
     totalKwd: total.toFixed(3),
     byBranch,
     unallocatedKwd: (nets.get(null) ?? new Prisma.Decimal(0)).toFixed(3),
+    // Biggest movement first, and a type that nets to exactly nothing is left
+    // out: it explains no part of the figure being asked about.
+    unallocatedByType: Object.fromEntries(
+      [...byType.entries()]
+        .filter(([, net]) => !net.isZero())
+        .sort((a, b) => Number(b[1].abs().minus(a[1].abs())))
+        .map(([type, net]) => [type, net.toFixed(3)]),
+    ),
   };
 }

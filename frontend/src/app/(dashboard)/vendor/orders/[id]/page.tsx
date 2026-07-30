@@ -8,7 +8,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Banknote, HandCoins, KeyRound, XCircle } from "lucide-react";
+import { Banknote, HandCoins, XCircle } from "lucide-react";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
@@ -219,18 +219,13 @@ export default function VendorOrderDetailPage() {
         </div>
       )}
 
-      {order.podPin && active && (
-        <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl border border-primary/25 bg-primary/5 text-sm text-sand-900">
-          <KeyRound size={16} className="text-primary" aria-hidden="true" />
-          <span>
-            {t("vendorPortal.podPin")}:{" "}
-            <strong dir="ltr" className="font-mono tracking-[0.25em]">
-              {order.podPin}
-            </strong>
-            <span className="block text-xs text-sand-600 mt-0.5">{t("vendorPortal.podPinHint")}</span>
-          </span>
-        </div>
-      )}
+      {/* Revision 11 (#1). The delivery PIN block used to sit here, telling the
+          shop to pass a code to the customer. The client asked for it to go:
+          handover is settled between the driver and the customer, and putting
+          the code on the merchant's screen made it the shop's errand as well as
+          one more thing on the page that nobody acted on. The PIN itself is
+          untouched — the driver app still takes it, the tracking page still
+          shows the customer theirs. It is only the merchant's copy that goes. */}
 
       {/* Facts */}
       <section className="bg-card border border-sand-200 rounded-2xl shadow-soft p-5">

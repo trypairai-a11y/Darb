@@ -1503,8 +1503,6 @@ export interface Messages {
     orderDetail: string;
     notFound: string;
     backToBoard: string;
-    podPin: string;
-    podPinHint: string;
     codCallout: string;
     prepaidCallout: string;
     cancelHint: string;
@@ -1554,6 +1552,7 @@ export interface Messages {
     walletBalanceAll: string;
     walletBalanceBranch: string;
     walletUnallocated: string;
+    walletUnallocatedTitle: string;
     walletUnallocatedHint: string;
     pauseScopeAll: string;
     pauseScopeBranch: string;
@@ -2025,6 +2024,7 @@ export interface Messages {
     title: string;
     subtitle: string;
     raise: string;
+    raisedBy: string;
     subject: string;
     details: string;
     detailsHint: string;
@@ -2131,6 +2131,7 @@ export interface Messages {
     avgPrepTimeHint: string;
     minutesShort: string;
     prepFromOrders: string;
+    handoverFromOrders: string;
   };
 }
 
@@ -3633,8 +3634,6 @@ export const en: Messages = {
     orderDetail: "Order detail",
     notFound: "Order not found.",
     backToBoard: "Back to board",
-    podPin: "Delivery PIN",
-    podPinHint: "Share this PIN with the customer — the driver needs it to complete the handover.",
     codCallout: "Driver collects {amount} in cash from the customer.",
     prepaidCallout: "Prepaid — the driver collects nothing.",
     cancelHint: "Orders can only be cancelled before pickup.",
@@ -3684,6 +3683,7 @@ export const en: Messages = {
     walletBalanceAll: "Wallet balance, all branches",
     walletBalanceBranch: "Wallet balance, this branch",
     walletUnallocated: "not tied to a branch",
+    walletUnallocatedTitle: "{amount} not tied to a branch",
     walletUnallocatedHint: "Top ups, payouts and corrections belong to the shop rather than to one branch, so the branch figures plus this add up to the total.",
     pauseScopeAll: "All branches",
     pauseScopeBranch: "This branch only",
@@ -4158,6 +4158,7 @@ export const en: Messages = {
     title: "Support",
     subtitle: "Ask Darb about an order, a payment, or anything else. We answer here.",
     raise: "New request",
+    raisedBy: "raised by {name}",
     subject: "Subject",
     details: "What happened",
     detailsHint: "Include the order number if it is about one delivery.",
@@ -4264,6 +4265,7 @@ export const en: Messages = {
     avgPrepTimeHint: "How long our drivers wait at the shop before the order is handed over.",
     minutesShort: "min",
     prepFromOrders: "from {n} orders",
+    handoverFromOrders: "Order placed to collected, {n} orders",
   },
 };
 
@@ -5764,8 +5766,6 @@ export const ar: Messages = {
     orderDetail: "تفاصيل الطلب",
     notFound: "الطلب غير موجود.",
     backToBoard: "العودة إلى اللوحة",
-    podPin: "رمز التسليم",
-    podPinHint: "شارك هذا الرمز مع العميل — يحتاجه السائق لإتمام التسليم.",
     codCallout: "سيحصّل السائق {amount} نقداً من العميل.",
     prepaidCallout: "مدفوع مسبقاً — لا يحصّل السائق شيئاً.",
     cancelHint: "لا يمكن إلغاء الطلب إلا قبل الاستلام.",
@@ -5815,6 +5815,7 @@ export const ar: Messages = {
     walletBalanceAll: "رصيد المحفظة، جميع الفروع",
     walletBalanceBranch: "رصيد المحفظة، هذا الفرع",
     walletUnallocated: "غير مرتبط بفرع",
+    walletUnallocatedTitle: "{amount} غير مرتبط بفرع",
     walletUnallocatedHint: "الإيداعات والدفعات والتصحيحات تخص المتجر لا فرعا واحدا، لذلك مجموع أرصدة الفروع مع هذا المبلغ يساوي الإجمالي.",
     pauseScopeAll: "جميع الفروع",
     pauseScopeBranch: "هذا الفرع فقط",
@@ -6277,6 +6278,7 @@ export const ar: Messages = {
     title: "الدعم",
     subtitle: "اسأل درب عن طلب أو دفعة أو أي شيء آخر. نجيب هنا.",
     raise: "طلب جديد",
+    raisedBy: "بطلب من {name}",
     subject: "الموضوع",
     details: "ما الذي حدث",
     detailsHint: "أضف رقم الطلب إذا كان الأمر يخص توصيلة واحدة.",
@@ -6383,6 +6385,7 @@ export const ar: Messages = {
     avgPrepTimeHint: "المدة التي ينتظرها مندوبونا في المتجر قبل تسليم الطلب.",
     minutesShort: "دقيقة",
     prepFromOrders: "من {n} طلب",
+    handoverFromOrders: "من إنشاء الطلب حتى استلامه، {n} طلب",
   },
 };
 

@@ -1,7 +1,9 @@
 "use client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
 import { LogOut, PanelLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { vendorApi } from "@/lib/darbApi";
 import { useSidebar } from "@/contexts/SidebarContext";
 import NotificationDropdown from "./NotificationDropdown";
 import CompanySwitcher from "./CompanySwitcher";
@@ -27,6 +29,17 @@ export default function Header() {
   };
 
   const initial = (user?.name || t("common.user")).charAt(0).toUpperCase();
+
+  // Revision 11 (#5). Same /me the rail already reads, so this costs no extra
+  // request: the label under the avatar was the token's sub-role, which is the
+  // one thing a login cannot refresh for itself after an owner changes it.
+  const meQuery = useQuery({
+    queryKey: ["darb", "vendor", "me"],
+    queryFn: () => vendorApi.me(),
+    enabled: user?.role === "VENDOR",
+    staleTime: 60_000,
+  });
+  const vendorRole = meQuery.data?.portalRole ?? user?.vendorRole;
 
   return (
     <header className="h-16 bg-sand-50/90 dark:bg-card/80 backdrop-blur-xl border-b border-sand-200 dark:border-border flex items-center justify-between px-6 lg:px-8 sticky top-0 z-30">
@@ -61,10 +74,10 @@ export default function Header() {
             <p className="text-[11px] text-sand-600 uppercase tracking-widest">
               {/* A vendor's portal role is the useful label: "Vendor" is the
                   same word for the owner, the accountant and the tracker. */}
-              {(user?.role === "VENDOR" && user?.vendorRole
-                ? user.vendorRole
-                : user?.role
-              )?.replace(/_/g, " ")}
+              {(user?.role === "VENDOR" && vendorRole ? vendorRole : user?.role)?.replace(
+                /_/g,
+                " ",
+              )}
             </p>
           </div>
         </div>

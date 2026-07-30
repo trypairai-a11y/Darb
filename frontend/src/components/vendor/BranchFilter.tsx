@@ -13,7 +13,6 @@ import { Store } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useVendorBranch } from "@/contexts/VendorBranchContext";
 import { vendorApi } from "@/lib/darbApi";
-import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/hooks/useRole";
 import { useI18n } from "@/i18n/I18nProvider";
 
@@ -34,9 +33,7 @@ export default function BranchFilter({
 }) {
   const { t } = useI18n();
   const { isVendor } = useRole();
-  const { user } = useAuth();
   const { branchId, setBranchId, inspectVendorId } = useVendorBranch();
-  const pinnedBranch = Boolean(user?.role === "VENDOR" && user?.branchId);
 
   const meQuery = useQuery({
     queryKey: ["darb", "vendor", "me"],
@@ -48,6 +45,12 @@ export default function BranchFilter({
   });
 
   const branches = meQuery.data?.branches ?? [];
+  // Revision 11 (#5). Whether this login is pinned is the server's call, from
+  // the User row, not the token's: a tracker assigned to Mishref after their
+  // token was signed was still being drawn the full pill row, and could switch
+  // to another branch's orders from it. /api/vendor/me now sends back the pin
+  // it fenced the response with, so the control cannot disagree with the data.
+  const pinnedBranch = Boolean(meQuery.data?.pinnedBranchId);
 
   // Revision 9 (#10). A tracker pinned to one branch is sent exactly that
   // branch and no pills render, so the board gave no clue whose orders these

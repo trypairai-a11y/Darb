@@ -23,7 +23,6 @@ export default function Sidebar() {
   const { collapsed, open, setOpen } = useSidebar();
   const { role, hasRole } = useRole();
   const { user } = useAuth();
-  const vendorRole = user?.vendorRole ?? "OWNER";
   const { t, dir } = useI18n();
 
   /**
@@ -40,6 +39,12 @@ export default function Sidebar() {
     enabled: role === "VENDOR",
     staleTime: 60_000,
   });
+  // Revision 11 (#5). The role comes from the same answer, not from the token.
+  // A token carries the role its owner had the day it was signed, so a login
+  // that was moved to branch-only order tracking kept being drawn a Wallet and
+  // a Grow entry here — and clicking either produced the 403 the client
+  // reported, because the server was reading the current row all along.
+  const vendorRole = meQuery.data?.portalRole ?? user?.vendorRole ?? "OWNER";
   // Until the answer lands, fall back to what the role opens. That is what the
   // rail showed before per-user tabs existed, so the worst case is one entry
   // appearing for a moment before it is taken away, rather than an empty rail.
