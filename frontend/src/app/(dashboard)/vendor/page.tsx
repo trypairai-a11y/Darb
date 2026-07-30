@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ClipboardList, Download, Phone, PlusCircle, Wallet } from "lucide-react";
+import { ClipboardList, Download, Phone, PlusCircle, Store, Wallet } from "lucide-react";
 import StatCard from "@/components/shared/StatCard";
 import { useToast } from "@/components/shared/Toast";
 import { downloadBlob } from "@/utils/downloadBlob";
@@ -17,6 +17,7 @@ import { PageSkeleton } from "@/components/shared/Skeleton";
 import OrderStatusBadge from "@/components/darb/OrderStatusBadge";
 import SlaCountdown from "@/components/darb/SlaCountdown";
 import { useVendorBranch } from "@/contexts/VendorBranchContext";
+import BranchFilter from "@/components/vendor/BranchFilter";
 import { useDarbEvents } from "@/hooks/useDarbEvents";
 import { vendorApi, unwrapList } from "@/lib/darbApi";
 import type {
@@ -79,7 +80,7 @@ function WaitingSince({ since }: { since: string }) {
   );
 }
 
-function OrderCard({ order }: { order: DeliveryOrder }) {
+function OrderCard({ order, showBranch }: { order: DeliveryOrder; showBranch?: boolean }) {
   const { t, locale } = useI18n();
   const active = !["DELIVERED", "FAILED", "CANCELLED", "REJECTED"].includes(order.status);
   return (
@@ -109,6 +110,17 @@ function OrderCard({ order }: { order: DeliveryOrder }) {
           </span>
         )}
       </div>
+      {/* Whose counter this order is sitting on. Only worth a line when the
+          board is showing more than one branch at once: with a branch selected,
+          every card on screen is that branch and the label is noise. */}
+      {showBranch && order.branch?.name && (
+        <div className="mt-1 flex items-center gap-1 text-[11px] text-sand-500">
+          <Store size={10} aria-hidden="true" className="shrink-0" />
+          <span className="truncate" dir="auto">
+            {order.branch.name}
+          </span>
+        </div>
+      )}
       {active && (
         <div className="mt-2 flex items-center justify-between gap-2">
           <OrderStatusBadge status={order.status} />
@@ -273,6 +285,26 @@ export default function VendorBoardPage() {
 
   const ordersToday = useMemo(() => orders.filter((o) => isToday(o.createdAt)).length, [orders]);
 
+  // A count per branch pill, over whichever tab is open, so the numbers match
+  // the board underneath them.
+  //
+  // Only while showing all branches: the request is scoped server-side, so with
+  // one branch selected the other branches are simply not in this payload and
+  // any number next to them would be a zero that means "not fetched".
+  const branchCounts = useMemo(() => {
+    if (branchId !== null) return undefined;
+    const visible = tab === "live" ? columns.flatMap((c) => c.items) : finishedToday;
+    const out: Record<string, number> & { all?: number } = { all: visible.length };
+    for (const o of visible) {
+      if (o.branchId) out[o.branchId] = (out[o.branchId] ?? 0) + 1;
+    }
+    return out;
+  }, [branchId, tab, columns, finishedToday]);
+
+  // With a branch selected every card on screen is that branch, so the per-card
+  // branch label only earns its line on the all-branches board.
+  const showBranch = branchId === null;
+
   const vendor = meQuery.data;
   const balance = walletQuery.data?.balanceKwd ?? walletQuery.data?.account?.balanceKwd;
 
@@ -379,7 +411,10 @@ export default function VendorBoardPage() {
         <StatCard title={t("vendorPortal.ordersToday")} value={ordersToday} icon={ClipboardList} />
       </div>
 
-      {/* Live / Delivered */}
+      {/* Live / Delivered, and which branch's board this is. Two filters on one
+          row because they answer the same question together: which orders am I
+          looking at. */}
+      <div className="flex items-center justify-between gap-4 flex-wrap">
       <div className="flex gap-1 bg-sand-100 rounded-pill p-1 w-fit">
         {(["live", "delivered"] as const).map((key) => (
           <button
@@ -400,6 +435,8 @@ export default function VendorBoardPage() {
           </button>
         ))}
       </div>
+        <BranchFilter counts={branchCounts} />
+      </div>
 
       {tab === "delivered" ? (
         <section className="bg-card border border-sand-200 rounded-2xl shadow-soft">
@@ -409,7 +446,9 @@ export default function VendorBoardPage() {
                 {t("vendorPortal.emptyColumn")}
               </p>
             ) : (
-              finishedToday.map((o) => <OrderCard key={o.id} order={o} />)
+              finishedToday.map((o) => (
+                <OrderCard key={o.id} order={o} showBranch={showBranch} />
+              ))
             )}
           </div>
         </section>
@@ -425,7 +464,9 @@ export default function VendorBoardPage() {
               {col.items.length === 0 ? (
                 <p className="text-xs text-sand-500 px-1 py-2">{t("vendorPortal.emptyColumn")}</p>
               ) : (
-                col.items.map((o) => <OrderCard key={o.id} order={o} />)
+                col.items.map((o) => (
+                  <OrderCard key={o.id} order={o} showBranch={showBranch} />
+                ))
               )}
             </div>
           </section>

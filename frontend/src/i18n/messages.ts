@@ -2024,6 +2024,7 @@ export interface Messages {
     byDayTitle: string;
     exportCsv: string;
     branchAll: string;
+    branchFilter: string;
     creditLine: string;
     creditUsed: string;
     creditOf: string;
@@ -4069,6 +4070,7 @@ export const en: Messages = {
     byDayTitle: "Orders by day",
     exportCsv: "Export CSV",
     branchAll: "All branches",
+    branchFilter: "Branch",
     creditLine: "Credit line",
     creditUsed: "used",
     creditOf: "of",
@@ -6100,6 +6102,7 @@ export const ar: Messages = {
     byDayTitle: "الطلبات حسب اليوم",
     exportCsv: "تصدير CSV",
     branchAll: "جميع الفروع",
+    branchFilter: "الفرع",
     creditLine: "خط الائتمان",
     creditUsed: "مستخدم",
     creditOf: "من",

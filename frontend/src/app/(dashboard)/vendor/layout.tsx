@@ -1,85 +1,31 @@
 "use client";
 // Darb 2.0 PRD build — vendor portal layout. Wraps every /vendor/* page in
-// the VendorBranchProvider and, when the vendor has 2+ branches, renders a
-// compact pill selector sub-header so pages (analytics first) can scope to
-// one branch. Single-branch vendors see no extra chrome.
+// the VendorBranchProvider and, when the vendor has 2+ branches, renders the
+// shared BranchFilter as a sub-header so pages can scope to one branch. The
+// order board renders that filter itself, so this skips it there.
+// Single-branch vendors see no extra chrome.
 import { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Eye } from "lucide-react";
-import { cn } from "@/lib/cn";
 import { VendorBranchProvider, useVendorBranch } from "@/contexts/VendorBranchContext";
 import { vendorApi } from "@/lib/darbApi";
 import AccessRestricted from "@/components/vendor/AccessRestricted";
+import BranchFilter from "@/components/vendor/BranchFilter";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRole } from "@/hooks/useRole";
 import { useI18n } from "@/i18n/I18nProvider";
 
-function BranchPills() {
-  const { t } = useI18n();
-  const { isVendor } = useRole();
-  const { user } = useAuth();
-  const pinnedBranch = Boolean(user?.role === "VENDOR" && user?.branchId);
-  const { branchId, setBranchId } = useVendorBranch();
-
-  const meQuery = useQuery({
-    queryKey: ["darb", "vendor", "me"],
-    queryFn: () => vendorApi.me(),
-    enabled: isVendor,
-    staleTime: 5 * 60_000,
-  });
-
-  const branches = meQuery.data?.branches ?? [];
-
-  // Revision 9 (#10). A tracker pinned to one branch is sent exactly that
-  // branch and no pills render, so the board gave no clue whose orders these
-  // were. One branch plus a pinned role is a label, not a choice.
-  if (branches.length === 1 && pinnedBranch) {
-    return (
-      <div className="flex items-center gap-2 text-sm">
-        <span className="text-sand-600">{t("vendorPortal.viewingBranch")}</span>
-        <span className="font-medium text-sand-900" dir="auto">
-          {branches[0].name}
-        </span>
-      </div>
-    );
-  }
-  if (branches.length < 2) return null;
-
-  const pill = (active: boolean) =>
-    cn(
-      "px-3.5 h-8 inline-flex items-center rounded-pill text-xs font-medium transition-colors duration-250 ease-sierra-out whitespace-nowrap",
-      active
-        ? "bg-primary text-white shadow-soft"
-        : "bg-sand-100 text-sand-700 hover:bg-sand-200"
-    );
-
-  return (
-    <div className="flex items-center gap-2 overflow-x-auto pb-1 -mb-1" role="tablist">
-      <button
-        type="button"
-        role="tab"
-        aria-selected={branchId === null}
-        onClick={() => setBranchId(null)}
-        className={pill(branchId === null)}
-      >
-        {t("vendorExtra.branchAll")}
-      </button>
-      {branches.map((b) => (
-        <button
-          key={b.id}
-          type="button"
-          role="tab"
-          aria-selected={branchId === b.id}
-          onClick={() => setBranchId(b.id)}
-          className={pill(branchId === b.id)}
-          dir="auto"
-        >
-          {b.name}
-        </button>
-      ))}
-    </div>
-  );
+/**
+ * The branch filter, for every vendor screen except the order board.
+ *
+ * The board renders the same control itself, inside its own filter row beside
+ * the Live / Delivered tabs, with a count per branch. Rendering it here as well
+ * would put two copies of one filter on that screen.
+ */
+function LayoutBranchFilter() {
+  const pathname = usePathname();
+  if (pathname === "/vendor") return null;
+  return <BranchFilter />;
 }
 
 /**
@@ -150,7 +96,7 @@ export default function VendorLayout({ children }: { children: ReactNode }) {
     <VendorBranchProvider>
       <div className="space-y-4">
         <InspectBanner />
-        <BranchPills />
+        <LayoutBranchFilter />
         <VendorBody>{children}</VendorBody>
       </div>
     </VendorBranchProvider>
