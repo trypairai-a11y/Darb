@@ -100,6 +100,7 @@ Seeded portal logins: `fleet@darb.demo / fleet1234` (FLEET). Vendor users are cr
 
 1. Edit `schema.prisma`. Enum values FIRST in their own migration (Postgres cannot use a new enum value in the transaction that adds it).
 2. `npx prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --script > prisma/migrations/<ts>_<name>/migration.sql`
+   **Always read the generated SQL before applying it.** Every diff against prod proposes two destructive steps that must be deleted by hand: `DROP INDEX "ChatMessage_contentTsv_idx"` and `ALTER TABLE "ChatMessage" DROP COLUMN "contentTsv"`. That column is a Postgres tsvector maintained outside Prisma, so the datamodel cannot describe it and the diff assumes it is drift. Dropping it takes chat search with it.
 3. `npx prisma db execute --file ... --url "$DATABASE_URL"` then `npx prisma migrate resolve --applied <name>` then `npx prisma generate`.
 4. Prod applies pending migrations via `migrate deploy` on Vercel build; the datasource `directUrl = env("DATABASE_URL_UNPOOLED")` is what makes that work on Neon (the pooler silently breaks migrate). Verify with `prisma migrate status` against prod after deploying schema changes.
 
