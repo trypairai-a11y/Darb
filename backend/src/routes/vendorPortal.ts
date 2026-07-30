@@ -725,8 +725,15 @@ router.post(
       // cannot tell which of their twenty deliveries are live without checking
       // the board row by row.
       if (errors.length > 0) {
+        // Count ROWS, not messages. One row can fail four different ways, and
+        // "10 of 2 rows need fixing" is a sentence that makes a merchant
+        // distrust the rest of the report.
+        const brokenRows = new Set(errors.map((e) => e.row)).size;
         res.status(422).json({
-          error: `${errors.length} of ${dataRows} rows need fixing. Nothing was imported.`,
+          error:
+            brokenRows === 1
+              ? "One row needs fixing. Nothing was imported."
+              : `${brokenRows} rows need fixing. Nothing was imported.`,
           created: 0,
           rows: errors.sort((a, b) => a.row - b.row),
         });
