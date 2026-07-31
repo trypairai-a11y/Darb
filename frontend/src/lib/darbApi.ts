@@ -40,6 +40,7 @@ import type {
   FleetDriverRow,
   FleetScorecard,
   FleetStatementRow,
+  FleetUser,
   FleetEarnings,
   CockpitSummary,
   SupportTicket,
@@ -472,6 +473,15 @@ export const fleetsApi = {
   scorecard: (id: string, params?: { from?: string; to?: string }) =>
     get<FleetScorecard>(`/api/fleets/${id}/scorecard`, params as Params),
   statements: (id: string) => get<FleetStatementRow[]>(`/api/fleets/${id}/statements`),
+  users: (id: string) => get<FleetUser[]>(`/api/fleets/${id}/users`),
+  /**
+   * Staff set the password and hand it over: fleet logins have no invite flow.
+   * Both this and the list above are ADMIN-only on the server.
+   */
+  createUser: (
+    id: string,
+    body: { name: string; email: string; password: string; phone?: string }
+  ) => post<FleetUser>(`/api/fleets/${id}/users`, body),
 };
 
 // ── /api/cockpit (ADMIN-only founder summary) ────────────────────────────

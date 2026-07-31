@@ -1475,6 +1475,7 @@ export interface Messages {
     creditSuspended: string;
     accessRestricted: string;
     accessRestrictedHint: string;
+    tabLocked: string;
     viewingBranch: string;
     tabLive: string;
     tabDelivered: string;
@@ -1554,6 +1555,8 @@ export interface Messages {
     walletUnallocated: string;
     walletUnallocatedTitle: string;
     walletUnallocatedHint: string;
+    mapDriverLive: string;
+    mapDriverLiveAt: string;
     pauseScopeAll: string;
     pauseScopeBranch: string;
     pauseBranchHint: string;
@@ -1967,6 +1970,16 @@ export interface Messages {
     earningsTitle: string;
     noStatements: string;
     disciplineBanner: string;
+    /**
+     * The portal-login section of the fleet detail panel. Creating one was
+     * API-only until now, so onboarding a delivery company meant a curl.
+     */
+    portalLoginsTitle: string;
+    portalLoginsHint: string;
+    noPortalLogins: string;
+    addPortalLogin: string;
+    createPortalLogin: string;
+    portalLoginCreated: string;
   };
   period: {
     today: string;
@@ -3606,6 +3619,7 @@ export const en: Messages = {
     creditSuspended: "Your credit limit is used up, so new orders are being refused. Top up to start again.",
     accessRestricted: "Access restricted",
     accessRestrictedHint: "Your role does not include this screen. Your shop owner can change what you see.",
+    tabLocked: "Not part of your access. Your shop owner can grant it.",
     viewingBranch: "Viewing",
     tabLive: "Live",
     tabDelivered: "Delivered",
@@ -3685,6 +3699,8 @@ export const en: Messages = {
     walletUnallocated: "not tied to a branch",
     walletUnallocatedTitle: "{amount} not tied to a branch",
     walletUnallocatedHint: "Top ups, payouts and corrections belong to the shop rather than to one branch, so the branch figures plus this add up to the total.",
+    mapDriverLive: "The driver's position updates on its own while the order is on the road.",
+    mapDriverLiveAt: "Driver position, last update {time}. It refreshes on its own while the order is on the road.",
     pauseScopeAll: "All branches",
     pauseScopeBranch: "This branch only",
     pauseBranchHint: "Pause one counter without stopping the rest of the shop.",
@@ -4103,6 +4119,13 @@ export const en: Messages = {
     earningsTitle: "Earnings this month",
     noStatements: "No statements yet. They generate on the 1st of each month.",
     disciplineBanner: "Your fleet is under review. Contact Darb operations.",
+    portalLoginsTitle: "Portal logins",
+    portalLoginsHint:
+      "This person signs in at the fleet portal and sees only this company's roster, scorecard and payouts. Set the password here and pass it on, then ask them to change it.",
+    noPortalLogins: "No portal logins yet.",
+    addPortalLogin: "Add portal login",
+    createPortalLogin: "Create login",
+    portalLoginCreated: "Portal login created.",
   },
   period: {
     today: "Today",
@@ -5738,6 +5761,7 @@ export const ar: Messages = {
     creditSuspended: "استُهلك حد الائتمان، لذلك تُرفض الطلبات الجديدة. اشحن الرصيد للمتابعة.",
     accessRestricted: "الوصول مقيّد",
     accessRestrictedHint: "دورك لا يشمل هذه الشاشة. يمكن لمالك المتجر تغيير ما تراه.",
+    tabLocked: "غير مشمول في صلاحياتك. يمكن لمالك المتجر منحك إياه.",
     viewingBranch: "تعرض",
     tabLive: "الجارية",
     tabDelivered: "المُسلّمة",
@@ -5817,6 +5841,8 @@ export const ar: Messages = {
     walletUnallocated: "غير مرتبط بفرع",
     walletUnallocatedTitle: "{amount} غير مرتبط بفرع",
     walletUnallocatedHint: "الإيداعات والدفعات والتصحيحات تخص المتجر لا فرعا واحدا، لذلك مجموع أرصدة الفروع مع هذا المبلغ يساوي الإجمالي.",
+    mapDriverLive: "موقع السائق يتحدث تلقائيا ما دام الطلب في الطريق.",
+    mapDriverLiveAt: "موقع السائق، آخر تحديث {time}. يتحدث تلقائيا ما دام الطلب في الطريق.",
     pauseScopeAll: "جميع الفروع",
     pauseScopeBranch: "هذا الفرع فقط",
     pauseBranchHint: "أوقف فرعا واحدا دون إيقاف بقية المتجر.",
@@ -6223,6 +6249,13 @@ export const ar: Messages = {
     earningsTitle: "أرباح هذا الشهر",
     noStatements: "لا توجد كشوف بعد. تصدر أول كل شهر.",
     disciplineBanner: "أسطولك قيد المراجعة. تواصل مع عمليات درب.",
+    portalLoginsTitle: "حسابات البوابة",
+    portalLoginsHint:
+      "يدخل صاحب هذا الحساب إلى بوابة الأسطول ولا يرى سوى سائقي هذه الشركة وبطاقة أدائها ومستحقاتها. عيّن كلمة المرور هنا وسلّمها له، ثم اطلب منه تغييرها.",
+    noPortalLogins: "لا توجد حسابات بوابة بعد.",
+    addPortalLogin: "إضافة حساب بوابة",
+    createPortalLogin: "إنشاء الحساب",
+    portalLoginCreated: "تم إنشاء حساب البوابة.",
   },
   period: {
     today: "اليوم",

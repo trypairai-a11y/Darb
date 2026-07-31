@@ -318,6 +318,14 @@ export interface DeliveryOrder {
   pickupZone?: Pick<DeliveryZone, "id" | "code" | "name" | "nameAr"> | null;
   dropoffZone?: Pick<DeliveryZone, "id" | "code" | "name" | "nameAr"> | null;
   offers?: DispatchOffer[];
+  /**
+   * The assigned driver's last GPS fix (revision 11, #6). Only /api/vendor/orders/:id
+   * sends these, and only while the order is ASSIGNED or PICKED_UP — a finished
+   * order's last known point is somewhere the driver has already left.
+   */
+  driverPosition?: { lat: number; lng: number } | null;
+  driverPositionAt?: string | null;
+  etaMin?: number | null;
 }
 
 /** One row of the order timeline (OrderEvent). */
@@ -768,6 +776,21 @@ export interface FleetProfile {
   minDriversOnline: Record<string, number> | null;
   disciplineStatus: "OK" | "WARNED" | "THROTTLED" | "SUSPENDED" | "REMOVED";
   isActive: boolean;
+}
+
+/**
+ * A portal login belonging to one delivery company. Created from the fleet
+ * detail panel; the password is set by staff and handed over, because fleet
+ * users have no invite/set-password flow the way staff accounts do.
+ */
+export interface FleetUser {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+  role: string;
+  isActive?: boolean;
+  createdAt?: string;
 }
 
 export interface FleetDriverRow {

@@ -594,6 +594,38 @@ router.post(
 
 /**
  * @swagger
+ * /api/fleets/{id}/users:
+ *   get:
+ *     tags: [Fleets]
+ *     summary: Portal logins that already exist for this fleet (ADMIN only)
+ */
+router.get("/:id/users", rbac("ADMIN"), async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const fleet = await findTenantFleet(tenantId, req.params.id);
+    if (!fleet) { res.status(404).json({ error: "Fleet partner not found" }); return; }
+
+    // No role filter. The list endpoint's `_count.users` counts the whole
+    // relation, so filtering to role=FLEET here would render a table shorter
+    // than the number beside it and read as a bug rather than as a rule.
+    // ADMIN, matching the POST below it: creating a login and reading the
+    // partner's staff emails are the same disclosure.
+    const users = await prisma.user.findMany({
+      where: { fleetPartnerId: fleet.id, tenantId },
+      select: {
+        id: true, email: true, name: true, phone: true,
+        role: true, isActive: true, createdAt: true,
+      },
+      orderBy: { createdAt: "asc" },
+    });
+    res.json(users);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
  * /api/fleets/{id}/scorecard:
  *   get:
  *     tags: [Fleets]

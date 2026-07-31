@@ -6,8 +6,8 @@ import Link from "next/link";
 // Reuses fleetPortal.* + cockpit.* keys (English-leaning composites are
 // acceptable on this staff-only page).
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Eye, Download } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Eye, Download, Plus } from "lucide-react";
 import { downloadBlob } from "@/utils/downloadBlob";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
@@ -19,7 +19,7 @@ import PeriodPicker, { type Period, presetRange } from "@/components/shared/Peri
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/Toast";
 import { fleetsApi, unwrapList } from "@/lib/darbApi";
-import type { FleetProfile, FleetStatementRow } from "@/types/darb";
+import type { FleetProfile, FleetStatementRow, FleetUser } from "@/types/darb";
 import BackToSetup from "@/components/shared/BackToSetup";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd, formatNumber, formatPercent, localeTag } from "@/i18n/format";
@@ -55,6 +55,183 @@ async function exportWorkbook(fleetId?: string, nameForFile?: string, period?: P
   await downloadBlob(
     `/api/fleets/export.xlsx${query}`,
     `${stem}-${new Date().toISOString().slice(0, 10)}.xlsx`
+  );
+}
+
+/**
+ * Portal logins for one delivery company. Creating one used to be API-only
+ * (`POST /api/fleets/:id/users`), so onboarding a partner meant a curl with an
+ * admin token. The list sits above the form deliberately: without it the only
+ * way to learn a login already exists is the 400 the create returns.
+ *
+ * ADMIN throughout, which is what both endpoints admit.
+ */
+function PortalLoginsSection({ fleet }: { fleet: FleetRow }) {
+  const { t } = useI18n();
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
+
+  const usersQuery = useQuery({
+    queryKey: ["darb", "fleets", fleet.id, "users"],
+    queryFn: () => fleetsApi.users(fleet.id),
+  });
+  const users = unwrapList<FleetUser>(usersQuery.data);
+
+  function reset() {
+    setForm({ name: "", email: "", phone: "", password: "" });
+    setError(null);
+  }
+
+  async function handleCreate() {
+    if (!form.name.trim() || !form.email.trim() || form.password.length < 8) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await fleetsApi.createUser(fleet.id, {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        phone: form.phone.trim() || undefined,
+      });
+      toast.success(t("fleetPortal.portalLoginCreated"));
+      reset();
+      setOpen(false);
+      await queryClient.invalidateQueries({
+        queryKey: ["darb", "fleets", fleet.id, "users"],
+      });
+      // The list column shows _count.users, so it is stale now too.
+      await queryClient.invalidateQueries({ queryKey: ["darb", "fleets"] });
+    } catch (err: any) {
+      // "Email already registered" is the failure an admin actually hits, and
+      // it names its own fix. A generic toast would throw that away.
+      setError(err?.response?.data?.error ?? t("toast.failedSave"));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const inputClass =
+    "w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20";
+  const labelClass =
+    "block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide";
+
+  return (
+    <section>
+      <h3 className="text-xs uppercase tracking-wide font-medium text-sand-600 mb-2">
+        {t("fleetPortal.portalLoginsTitle")}
+      </h3>
+
+      {usersQuery.isLoading ? (
+        <p className="text-sm text-sand-600">{t("common.loading")}</p>
+      ) : users.length === 0 ? (
+        <p className="text-sm text-sand-600">{t("fleetPortal.noPortalLogins")}</p>
+      ) : (
+        <ul className="divide-y divide-sand-200">
+          {users.map((u) => (
+            <li key={u.id} className="flex items-center justify-between gap-3 py-2.5">
+              <div className="min-w-0">
+                <p className="text-sm text-sand-900 truncate" dir="auto">{u.name}</p>
+                <p className="text-xs text-sand-600 mt-0.5 font-mono truncate" dir="ltr">
+                  {u.email}
+                </p>
+              </div>
+              <StatusBadge status={u.isActive === false ? "INACTIVE" : "ACTIVE"} />
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {!open ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="mt-3 inline-flex items-center gap-1.5 px-3 h-8 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors"
+        >
+          <Plus size={12} aria-hidden="true" />
+          {t("fleetPortal.addPortalLogin")}
+        </button>
+      ) : (
+        <form
+          className="mt-3 space-y-3 border-t border-sand-200 pt-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleCreate();
+          }}
+        >
+          <p className="text-xs text-sand-600">{t("fleetPortal.portalLoginsHint")}</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>{t("vendorsPage.userName")}</label>
+              <input
+                type="text"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                className={inputClass}
+                required
+              />
+            </div>
+            <div>
+              <label className={labelClass}>{t("fleetPortal.phone")}</label>
+              <input
+                type="tel"
+                dir="ltr"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                className={inputClass}
+                placeholder={t("settingsPage.phonePlaceholder")}
+              />
+            </div>
+          </div>
+          <div>
+            <label className={labelClass}>{t("vendorsPage.userEmail")}</label>
+            <input
+              type="email"
+              dir="ltr"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              className={inputClass}
+              required
+            />
+          </div>
+          <div>
+            <label className={labelClass}>{t("vendorsPage.userPassword")}</label>
+            <input
+              type="password"
+              dir="ltr"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              className={inputClass}
+              minLength={8}
+              required
+            />
+          </div>
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          <div className="flex items-center gap-2">
+            <button
+              type="submit"
+              disabled={saving}
+              className="inline-flex items-center px-3.5 h-9 rounded-pill bg-primary text-white text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              {saving ? t("common.processing") : t("fleetPortal.createPortalLogin")}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                reset();
+              }}
+              className="inline-flex items-center px-3.5 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors"
+            >
+              {t("common.cancel")}
+            </button>
+          </div>
+        </form>
+      )}
+    </section>
   );
 }
 
@@ -205,6 +382,9 @@ function ScorecardPanel({ fleet }: { fleet: FleetRow }) {
           </ul>
         )}
       </section>
+
+      {/* Portal logins — ADMIN only, matching both endpoints behind it. */}
+      {isAdmin && <PortalLoginsSection fleet={fleet} />}
     </div>
   );
 }
