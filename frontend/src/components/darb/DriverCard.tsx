@@ -28,7 +28,13 @@ export default function DriverCard({
     <div className={cn("bg-card border border-sand-200 rounded-2xl shadow-soft overflow-hidden", className)}>
       <div className="p-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-medium text-sand-900 truncate" dir="auto">
+          {/* Revision 11 (#6). The name sat on its own in a bare card, so a
+              merchant reading the page met a stranger's name with no idea whose
+              it was. Labelling it costs one line and answers the question. */}
+          <p className="text-xs uppercase tracking-wide font-medium text-sand-600">
+            {t("dispatch.driver")}
+          </p>
+          <p className="font-medium text-sand-900 truncate mt-0.5" dir="auto">
             {name}
           </p>
           {phone && (

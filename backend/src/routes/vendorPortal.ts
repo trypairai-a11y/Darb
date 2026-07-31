@@ -12,6 +12,7 @@ import { rbac } from "../middleware/rbac";
 import { vendorScope } from "../middleware/vendorScope";
 import { validateBody } from "../utils/validate";
 import { getPagination, paginatedResponse } from "../utils/pagination";
+import { haversineMeters } from "../utils/geo";
 import {
   OrderNotFoundError,
   cancelOrder,
@@ -200,7 +201,17 @@ function requireVendorTab(tab: VendorTab) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const tabs = tabsForRequest(req);
     if (tabs && !tabs.includes(tab)) {
-      res.status(403).json({ error: "This tab is not part of your access" });
+      // Revision 11 (#7). The refusal names itself and names the tab. The
+      // client showed a rail entry the server would not open — a /me answer
+      // cached from before an owner narrowed somebody is enough to do it — and
+      // the merchant got "Request failed with status code 403". With this the
+      // portal can lock that one entry from the refusal itself, without having
+      // to guess the tab from the URL and without confusing this with the
+      // role-based 403 below, which is a different sentence about a different
+      // thing.
+      res
+        .status(403)
+        .json({ error: "This tab is not part of your access", code: "TAB_NOT_GRANTED", tab });
       return;
     }
     next();
@@ -847,6 +858,51 @@ router.post(
   },
 );
 
+/** Same figure the customer's tracking page quotes, so the two agree. */
+const AVG_SPEED_KMH = 30;
+
+/**
+ * The assigned driver's last GPS fix, or nulls (revision 11, #6).
+ *
+ * Deliberately narrow: a position only exists while the order is ASSIGNED or
+ * PICKED_UP. Once it is delivered, cancelled or failed the driver is somewhere
+ * else entirely, and a shop watching a stale dot would read it as the driver
+ * parked outside a customer they already left. The fix's own timestamp goes out
+ * with it so the client can say how old it is rather than implying "now".
+ */
+async function liveDriverPosition(
+  // tenantId comes from the JWT like every other query on this router, not from
+  // the row we just read.
+  tenantId: string,
+  order: {
+    status: string;
+    driverId: string | null;
+    dropoffLat: Prisma.Decimal | null;
+    dropoffLng: Prisma.Decimal | null;
+  },
+): Promise<{ position: { lat: number; lng: number } | null; at: string | null; etaMin: number | null }> {
+  const none = { position: null, at: null, etaMin: null };
+  if (!order.driverId) return none;
+  if (order.status !== "ASSIGNED" && order.status !== "PICKED_UP") return none;
+
+  const session = await prisma.courierOnlineSession.findFirst({
+    where: { tenantId, driverId: order.driverId },
+    orderBy: { startTime: "desc" },
+    select: { lastGpsLat: true, lastGpsLng: true, lastGpsAt: true },
+  });
+  const lat = session?.lastGpsLat != null ? Number(session.lastGpsLat) : null;
+  const lng = session?.lastGpsLng != null ? Number(session.lastGpsLng) : null;
+  if (lat == null || lng == null) return none;
+
+  let etaMin: number | null = null;
+  if (order.dropoffLat != null && order.dropoffLng != null) {
+    const km = haversineMeters(lat, lng, Number(order.dropoffLat), Number(order.dropoffLng)) / 1000;
+    etaMin = Math.max(1, Math.ceil((km / AVG_SPEED_KMH) * 60));
+  }
+
+  return { position: { lat, lng }, at: session?.lastGpsAt?.toISOString() ?? null, etaMin };
+}
+
 /**
  * @swagger
  * /api/vendor/orders/{id}:
@@ -879,7 +935,22 @@ router.get("/orders/:id", requireVendorTab("ORDERS"), async (req: Request, res: 
       orderBy: { timestamp: "asc" },
     });
 
-    res.json({ ...order, timeline, trackingUrl: trackingUrl(order.trackingToken) });
+    // Revision 11 (#6). The merchant's map used to be a still picture of the
+    // dropoff pin, which told a shop chasing a late order nothing it did not
+    // already know. The driver's last fix goes on the payload the same way the
+    // customer's tracking page gets it (routes/track.ts), and only while the
+    // order is actually on the road: a delivered order's last GPS point is a
+    // place the driver has since left.
+    const live = await liveDriverPosition(tenantId, order);
+
+    res.json({
+      ...order,
+      timeline,
+      trackingUrl: trackingUrl(order.trackingToken),
+      driverPosition: live.position,
+      driverPositionAt: live.at,
+      etaMin: live.etaMin,
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -959,8 +1030,12 @@ router.post(
         orderId: req.params.id,
         reason: (req.body as z.infer<typeof vendorCancelSchema>).reason,
         actor: { type: "VENDOR", id: req.user!.userId, name: req.user!.email },
-        // Vendor cancel: pre-pickup only (§A2).
-        allowFrom: ["CREATED", "DISPATCHING", "NO_DRIVER", "ASSIGNED"],
+        // Vendor cancel: pre-pickup only (§A2). ARRIVED belongs in that list —
+        // revision 8 (#3) inserted it between accepting and collecting and this
+        // was not updated, so an order the driver was standing next to could not
+        // be cancelled by the shop from anywhere. The FSM has always allowed
+        // ARRIVED → CANCELLED; only this list disagreed.
+        allowFrom: ["CREATED", "DISPATCHING", "NO_DRIVER", "ASSIGNED", "ARRIVED"],
       });
       res.json(order);
     } catch (err: any) {
@@ -1732,7 +1807,13 @@ const vendorTeamUserSchema = z.object({
   vendorTabs: z.array(z.enum(VENDOR_TABS)).optional().nullable(),
 });
 
-router.get("/team", requireVendorRole("OWNER"), requireVendorTab("TEAM"), async (req: Request, res: Response) => {
+// Revision 11 (#9). Reading the roster follows the TEAM tab alone. The OWNER
+// gate that used to sit here as well made an explicit grant unusable: an owner
+// ticked Team for their accountant and the screen 403'd, which is the same
+// complaint as the rail entry that never appeared. Creating, editing and
+// deactivating logins below stay OWNER-only, because those are the capability
+// that could be turned on itself — reading who has an account is not.
+router.get("/team", requireVendorTab("TEAM"), async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId } = req.user!;
     const users = await prisma.user.findMany({

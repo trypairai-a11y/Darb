@@ -71,6 +71,13 @@ export default function VendorTeamPage() {
     staleTime: 60_000,
   });
   const branches = useMemo(() => meQuery.data?.branches ?? [], [meQuery.data?.branches]);
+  // Revision 11 (#9). An owner may now grant this screen to somebody who is not
+  // an owner, and they read it: who has a login, what each of them opens. What
+  // they do not get is the ability to mint one, deactivate one or change what
+  // anyone opens — that stays the owner's, on the endpoints and here, so nobody
+  // is shown a button that answers 403. Undefined while /me is in flight, and
+  // the buttons appear once the answer lands rather than flashing and vanishing.
+  const isOwner = (meQuery.data?.portalRole ?? "OWNER") === "OWNER";
 
   async function save() {
     setSaving(true);
@@ -160,14 +167,16 @@ export default function VendorTeamPage() {
           <h1 className="font-display text-display-sm text-sand-900">{t("vendorTeam.title")}</h1>
           <p className="text-sm text-sand-600 mt-1">{t("vendorTeam.subtitle")}</p>
         </div>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-1.5 px-4 h-10 rounded-pill bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors"
-        >
-          <UserPlus size={15} aria-hidden="true" />
-          {t("vendorTeam.add")}
-        </button>
+        {isOwner && (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="inline-flex items-center gap-1.5 px-4 h-10 rounded-pill bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors"
+          >
+            <UserPlus size={15} aria-hidden="true" />
+            {t("vendorTeam.add")}
+          </button>
+        )}
       </div>
 
       <DataTable
@@ -191,14 +200,23 @@ export default function VendorTeamPage() {
           {
             key: "isActive",
             label: t("vendorTeam.access"),
-            render: (value: boolean | undefined, row: VendorUser) => (
-              <button type="button" onClick={() => void toggleActive(row)}>
+            render: (value: boolean | undefined, row: VendorUser) => {
+              const badge = (
                 <StatusBadge
                   status={value === false ? "INACTIVE" : "ACTIVE"}
                   label={value === false ? t("status.inactive") : t("vendorsPage.active")}
                 />
-              </button>
-            ),
+              );
+              // Switching somebody's access off is the owner's call. A reader
+              // sees the state without a button that would only 403.
+              return isOwner ? (
+                <button type="button" onClick={() => void toggleActive(row)}>
+                  {badge}
+                </button>
+              ) : (
+                badge
+              );
+            },
           },
           {
             // Revision 10 (#6). The column the client kept looking for: what
@@ -245,6 +263,8 @@ export default function VendorTeamPage() {
             label: "",
             sortable: false,
             render: (_v: unknown, row: VendorUser) =>
+              // Only an owner changes what anyone opens (revision 11 #9).
+              !isOwner ? null :
               // An owner cannot narrow their own access: doing so would be a way
               // to lock the shop out of the only screen that could undo it. The
               // endpoint refuses it too.

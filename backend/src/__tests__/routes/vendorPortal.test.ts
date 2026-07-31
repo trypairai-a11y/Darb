@@ -53,6 +53,9 @@ prisma.vendorTopUp = prisma.vendorTopUp ?? {
 };
 // getVendorBranchBalances aggregates over the ledger in one grouped raw query.
 prisma.$queryRaw = prisma.$queryRaw ?? jest.fn();
+// Revision 11 (#6) — the order detail carries the driver's last GPS fix, read
+// from the courier's open session the same way the customer tracking page does.
+prisma.courierOnlineSession = prisma.courierOnlineSession ?? { findFirst: jest.fn() };
 
 // Orders-core track wired the two former 501 stubs into orderService — mock
 // the service boundary so these route tests stay unit-level.
@@ -208,6 +211,57 @@ describe("Vendor portal routes", () => {
         })
       );
     });
+
+    // Revision 11 (#6). The merchant's map was a still picture of the dropoff
+    // pin; it now carries the driver's last fix so the dot moves with the poll.
+    test("carries the driver's last GPS fix and an ETA while the order is on the road", async () => {
+      prisma.deliveryOrder.findFirst.mockResolvedValueOnce({
+        id: "o-1",
+        orderNumber: "DRB-BRGB-1",
+        status: "PICKED_UP",
+        driverId: "d-1",
+        dropoffLat: D("29.3000000"),
+        dropoffLng: D("48.0000000"),
+        driver: { id: "d-1", name: "Qadir", phone: "+96550000000" },
+      });
+      prisma.orderEvent.findMany.mockResolvedValueOnce([]);
+      prisma.courierOnlineSession.findFirst.mockResolvedValueOnce({
+        lastGpsLat: D("29.3100000"),
+        lastGpsLng: D("48.0000000"),
+        lastGpsAt: new Date("2026-07-30T10:00:00Z"),
+      });
+
+      const res = await request(makeApp()).get("/api/vendor/orders/o-1");
+
+      expect(res.status).toBe(200);
+      expect(res.body.driverPosition).toEqual({ lat: 29.31, lng: 48 });
+      expect(res.body.driverPositionAt).toBe("2026-07-30T10:00:00.000Z");
+      // ~1.1km at 30km/h is a couple of minutes, never zero.
+      expect(res.body.etaMin).toBeGreaterThan(0);
+      expect(prisma.courierOnlineSession.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { tenantId: "t-1", driverId: "d-1" } })
+      );
+    });
+
+    test("a finished order reports no position — the driver has left that spot", async () => {
+      prisma.deliveryOrder.findFirst.mockResolvedValueOnce({
+        id: "o-1",
+        orderNumber: "DRB-BRGB-1",
+        status: "DELIVERED",
+        driverId: "d-1",
+        dropoffLat: D("29.3000000"),
+        dropoffLng: D("48.0000000"),
+        driver: { id: "d-1", name: "Qadir", phone: null },
+      });
+      prisma.orderEvent.findMany.mockResolvedValueOnce([]);
+
+      const res = await request(makeApp()).get("/api/vendor/orders/o-1");
+
+      expect(res.status).toBe(200);
+      expect(res.body.driverPosition).toBeNull();
+      expect(res.body.etaMin).toBeNull();
+      expect(prisma.courierOnlineSession.findFirst).not.toHaveBeenCalled();
+    });
   });
 
   // ─── Order service wiring (darb2-integration: former 501 stubs) ────────────
@@ -296,7 +350,10 @@ describe("Vendor portal routes", () => {
           tenantId: "t-1",
           orderId: "o-1",
           reason: "changed mind",
-          allowFrom: ["CREATED", "DISPATCHING", "NO_DRIVER", "ASSIGNED"],
+          // ARRIVED is pre-pickup: the driver is at the counter and has not
+          // taken the bag. It was missing here, so an order at exactly the
+          // moment a kitchen discovers it cannot fulfil could not be called off.
+          allowFrom: ["CREATED", "DISPATCHING", "NO_DRIVER", "ASSIGNED", "ARRIVED"],
           actor: expect.objectContaining({ type: "VENDOR" }),
         })
       );
@@ -514,7 +571,14 @@ describe("Vendor portal routes", () => {
       const res = await request(makeApp()).get("/api/vendor/wallet");
 
       expect(res.status).toBe(403);
-      expect(res.body).toEqual({ error: "This tab is not part of your access" });
+      // Revision 11 (#7): the refusal names itself and names the tab, so the
+      // portal can lock that one rail entry from the answer instead of showing
+      // an entry the server will not open and a "something went wrong" behind it.
+      expect(res.body).toEqual({
+        error: "This tab is not part of your access",
+        code: "TAB_NOT_GRANTED",
+        tab: "WALLET",
+      });
       // Refused before any query ran, so a fenced login never reaches the data.
       expect(prisma.walletAccount.findFirst).not.toHaveBeenCalled();
     });
@@ -535,6 +599,41 @@ describe("Vendor portal routes", () => {
       ).get("/api/vendor/wallet");
 
       expect(res.status).toBe(200);
+    });
+
+    // Revision 11 (#9). The client granted an accountant the Team tab, saved it,
+    // and nothing appeared: the roster carried an OWNER role gate on top of the
+    // tab, so a grant could never be taken up. Reading who has a login follows
+    // the tab now; creating one is still the owner's, tested below.
+    test("a granted TEAM tab opens the roster for a login that is not an owner", async () => {
+      prisma.user.findFirst.mockResolvedValue({
+        vendorRole: "FINANCE",
+        vendorTabs: ["ORDERS", "WALLET", "TEAM"],
+      });
+      prisma.user.findMany.mockResolvedValueOnce([]);
+
+      const res = await request(
+        makeApp({ ...VENDOR_USER, vendorRole: "FINANCE" }),
+      ).get("/api/vendor/team");
+
+      expect(res.status).toBe(200);
+    });
+
+    test("that grant does NOT let them mint a login — that stays the owner's", async () => {
+      prisma.user.findFirst.mockResolvedValue({
+        vendorRole: "FINANCE",
+        vendorTabs: ["ORDERS", "WALLET", "TEAM"],
+      });
+
+      const res = await request(makeApp({ ...VENDOR_USER, vendorRole: "FINANCE" }))
+        .post("/api/vendor/team")
+        .send({ email: "new@shop.kw", password: "password123", name: "New", vendorRole: "OWNER" });
+
+      expect(res.status).toBe(403);
+      // The role refusal, not the tab one: it carries no TAB_NOT_GRANTED code,
+      // so the portal does not lock the Team tab over a button they cannot use.
+      expect(res.body.code).toBeUndefined();
+      expect(prisma.user.create).not.toHaveBeenCalled();
     });
 
     test("no override falls back to the role's own tabs — a tracker still sees no money", async () => {

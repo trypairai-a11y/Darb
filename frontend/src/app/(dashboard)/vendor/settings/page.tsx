@@ -39,6 +39,10 @@ export default function VendorSettingsPage() {
   });
 
   const vendor = meQuery.data;
+  // The server's answer, not the token's (revision 11 #5). Pausing the shop is
+  // OWNER-only on the endpoint whatever the tab list says, so the switch below
+  // follows the same rule.
+  const isOwner = (meQuery.data?.portalRole ?? "OWNER") === "OWNER";
   const branches = useMemo(() => meQuery.data?.branches ?? [], [meQuery.data?.branches]);
   // Revision 10 (#7). "" means the whole account, which is what the toggle
   // always did and stays the default.
@@ -88,8 +92,13 @@ export default function VendorSettingsPage() {
 
       {/* Pause. Hidden from an inspecting admin, whose POST would be
           refused: pausing a merchant is a staff action with its own
-          endpoint, not something to do from inside their portal. */}
-      {!inspectVendorId && (
+          endpoint, not something to do from inside their portal.
+
+          Revision 11 (#9) added the second condition. An owner may now grant
+          Settings to somebody who is not an owner, and they read the screen;
+          pausing the shop stays the owner's, so the whole switch goes rather
+          than sitting there answering 403. */}
+      {!inspectVendorId && isOwner && (
       <section className="bg-card border border-sand-200 rounded-2xl shadow-soft p-6">
         <h2 className="font-medium text-sand-900">{t("vendorPortal.pauseSection")}</h2>
         <p className="text-xs text-sand-600 mt-1 mb-4">{t("vendorPortal.pauseHint")}</p>

@@ -26,7 +26,10 @@ import type { DeliveryOrder, DeliveryOrderEvent } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd, formatTime } from "@/i18n/format";
 
-const CANCELLABLE = ["CREATED", "DISPATCHING", "NO_DRIVER", "ASSIGNED"];
+// ARRIVED belongs here: the driver is at the counter and has not taken the bag,
+// which is the moment a kitchen discovers it cannot fulfil the order. It was
+// missing on both sides, so the shop had no way to call one off at all.
+const CANCELLABLE = ["CREATED", "DISPATCHING", "NO_DRIVER", "ASSIGNED", "ARRIVED"];
 const TERMINAL = ["DELIVERED", "FAILED", "CANCELLED", "REJECTED"];
 
 /** Timeline fallback derived from the order's own status timestamps. */
@@ -177,6 +180,41 @@ export default function VendorOrderDetailPage() {
   const canCancel = CANCELLABLE.includes(order.status) && !inspectVendorId;
   const hasDropoff = order.dropoffLat != null && order.dropoffLng != null;
 
+  // Revision 11 (#6). The map showed the dropoff pin and nothing else, so it
+  // answered a question the shop already knew the answer to. The driver's last
+  // fix rides on the same 10s poll as the rest of the page, so the dot moves
+  // without a socket or a second request.
+  const driverPos = order.driverPosition ?? null;
+  const mapDrivers =
+    driverPos && order.driver
+      ? [
+          {
+            driverId: order.driver.id,
+            lat: driverPos.lat,
+            lng: driverPos.lng,
+            at: order.driverPositionAt ?? new Date().toISOString(),
+            name: order.driver.name,
+            hasActiveOrder: true,
+          },
+        ]
+      : [];
+  // Both pins in frame, but re-fit only when the driver has moved about a
+  // kilometre: fitting on every fix would yank the map out from under anyone
+  // trying to zoom in on it.
+  const fitPoints: [number, number][] = [];
+  if (driverPos) fitPoints.push([Math.round(driverPos.lat * 100) / 100, Math.round(driverPos.lng * 100) / 100]);
+  if (hasDropoff) fitPoints.push([Number(order.dropoffLat), Number(order.dropoffLng)]);
+  // Null when there is nothing to draw, and the map does not render at all.
+  // This read the driver's position unconditionally when the order had no
+  // dropoff coordinates, which is every delivered order — its driver position
+  // is deliberately null — so opening one threw "Cannot read properties of
+  // null". A centre has to be as optional as the two things it is derived from.
+  const mapCenter: [number, number] | null = hasDropoff
+    ? [Number(order.dropoffLat), Number(order.dropoffLng)]
+    : driverPos
+      ? [driverPos.lat, driverPos.lng]
+      : null;
+
   return (
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -260,22 +298,42 @@ export default function VendorOrderDetailPage() {
 
       {/* Assigned driver */}
       {order.driver && active && (
-        <DriverCard name={order.driver.name} phone={order.driver.phone} />
+        <DriverCard
+          name={order.driver.name}
+          phone={order.driver.phone}
+          etaMinutes={order.etaMin ?? null}
+        />
       )}
 
-      {/* Dropoff map */}
-      {hasDropoff && (
+      {/* Where the driver is and where the order is going. */}
+      {mapCenter && (
         <div className="bg-card border border-sand-200 rounded-2xl shadow-soft overflow-hidden">
           <LiveMap
             height="240px"
-            center={[Number(order.dropoffLat), Number(order.dropoffLng)]}
+            center={mapCenter}
             zoom={14}
-            marker={{
-              lat: Number(order.dropoffLat),
-              lng: Number(order.dropoffLng),
-              label: order.customerName ?? order.orderNumber,
-            }}
+            drivers={mapDrivers}
+            marker={
+              hasDropoff
+                ? {
+                    lat: Number(order.dropoffLat),
+                    lng: Number(order.dropoffLng),
+                    label: order.customerName ?? order.orderNumber,
+                  }
+                : null
+            }
+            fitBounds={fitPoints.length > 1 ? fitPoints : null}
           />
+          {driverPos && (
+            <p className="px-4 py-2.5 text-xs text-sand-600 border-t border-sand-200">
+              {order.driverPositionAt
+                ? t("vendorPortal.mapDriverLiveAt").replace(
+                    "{time}",
+                    formatTime(order.driverPositionAt, locale)
+                  )
+                : t("vendorPortal.mapDriverLive")}
+            </p>
+          )}
         </div>
       )}
 

@@ -14,6 +14,7 @@ import AccessRestricted from "@/components/vendor/AccessRestricted";
 import BranchFilter from "@/components/vendor/BranchFilter";
 import { useAuth } from "@/contexts/AuthContext";
 import { roleDefaultTabs, tabForPath } from "@/lib/vendorTabs";
+import { useDeniedVendorTabs } from "@/lib/vendorAccess";
 import { useI18n } from "@/i18n/I18nProvider";
 
 /**
@@ -77,6 +78,12 @@ function InspectBanner() {
 function useRestricted(): boolean {
   const { user } = useAuth();
   const pathname = usePathname();
+  // Revision 11 (#7). Whatever the two lists below believe, a tab the server
+  // has already refused this session is refused. The client's screenshot was a
+  // portal that thought it had Grow while every Grow request came back 403, and
+  // the user was shown "Request failed with status code 403" instead of the
+  // access page that has existed since revision 9.
+  const deniedTabs = useDeniedVendorTabs();
 
   const meQuery = useQuery({
     queryKey: ["darb", "vendor", "me"],
@@ -88,6 +95,7 @@ function useRestricted(): boolean {
   if (!user || user.role !== "VENDOR" || !pathname) return false;
   const tab = tabForPath(pathname);
   if (!tab) return false;
+  if (deniedTabs.includes(tab)) return true;
   // Nothing is restricted until we know the answer: flashing "access restricted"
   // at somebody who does have access is worse than a beat of the real screen.
   if (meQuery.isLoading) return false;

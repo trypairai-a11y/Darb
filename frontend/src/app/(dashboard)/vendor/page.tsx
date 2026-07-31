@@ -8,7 +8,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ClipboardList, Download, Phone, PlusCircle, Store, Wallet } from "lucide-react";
+import { ClipboardList, Download, Phone, PlusCircle, Store, Wallet, XCircle } from "lucide-react";
+import ConfirmModal from "@/components/shared/ConfirmModal";
 import StatCard from "@/components/shared/StatCard";
 import { useToast } from "@/components/shared/Toast";
 import { downloadBlob } from "@/utils/downloadBlob";
@@ -32,6 +33,25 @@ import { formatKwd } from "@/i18n/format";
 import { cn } from "@/lib/cn";
 
 const ORDERS_KEY = ["darb", "vendor", "orders"];
+
+/**
+ * The states a shop may still call off, mirroring the vendor cancel endpoint.
+ *
+ * ARRIVED is in the list: the driver is standing at the counter and has not
+ * taken the bag, which is exactly the moment a kitchen discovers it cannot
+ * fulfil the order. Once it is PICKED_UP the order is on the road and stopping
+ * it is Darb's call, not the shop's.
+ */
+const CANCELLABLE: DeliveryOrderStatus[] = [
+  "CREATED",
+  "DISPATCHING",
+  "NO_DRIVER",
+  "ASSIGNED",
+  "ARRIVED",
+];
+
+/** Only these portal roles may cancel; the endpoint enforces the same pair. */
+const CAN_CANCEL_ROLES = ["OWNER", "ORDER_TRACKING"];
 
 const EVENT_STATUS: Partial<Record<DarbLiveEvent["type"], DeliveryOrderStatus>> = {
   "order.rejected": "REJECTED",
@@ -80,7 +100,16 @@ function WaitingSince({ since }: { since: string }) {
   );
 }
 
-function OrderCard({ order, showBranch }: { order: DeliveryOrder; showBranch?: boolean }) {
+function OrderCard({
+  order,
+  showBranch,
+  onCancel,
+}: {
+  order: DeliveryOrder;
+  showBranch?: boolean;
+  /** Omitted when this login may not call the order off. */
+  onCancel?: (order: DeliveryOrder) => void;
+}) {
   const { t, locale } = useI18n();
   const active = !["DELIVERED", "FAILED", "CANCELLED", "REJECTED"].includes(order.status);
   return (
@@ -170,6 +199,28 @@ function OrderCard({ order, showBranch }: { order: DeliveryOrder; showBranch?: b
           )}
         </div>
       )}
+      {/* Calling the order off, on the card.
+          It used to live only inside the order detail page, so a shop that had
+          just been told the item is out of stock had to open the order to say
+          so while the driver waited at the counter. The card is where they are
+          already looking. The whole card is a link, so this stops the click
+          from opening the order underneath the modal. */}
+      {onCancel && (
+        <div className="mt-2.5 flex justify-end">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onCancel(order);
+            }}
+            className="inline-flex items-center gap-1 rounded-pill px-2.5 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <XCircle size={11} aria-hidden="true" />
+            {t("dispatch.cancelOrder")}
+          </button>
+        </div>
+      )}
     </Link>
   );
 }
@@ -182,6 +233,12 @@ export default function VendorBoardPage() {
   // tabs rather than a fourth column of things nobody needs to act on.
   const [tab, setTab] = useState<"live" | "delivered">("live");
   const [exporting, setExporting] = useState(false);
+  // The order the shop is calling off, and the reason the endpoint requires.
+  // Held here rather than inside the card so the modal renders outside the
+  // card's own <Link> and a click in it cannot open the order behind it.
+  const [cancelTarget, setCancelTarget] = useState<DeliveryOrder | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelling, setCancelling] = useState(false);
   const toast = useToast();
 
   const meQuery = useQuery({
@@ -244,6 +301,42 @@ export default function VendorBoardPage() {
     refetchInterval: connected ? false : 15_000,
   });
   const orders = useMemo(() => unwrapList<DeliveryOrder>(ordersQuery.data), [ordersQuery.data]);
+
+  // An inspecting admin gets GETs only (middleware/vendorScope), and an
+  // accountant's login is refused by the endpoint, so neither is offered the
+  // button. The role comes from the server's answer, not the token.
+  const mayCancel =
+    !inspectVendorId && CAN_CANCEL_ROLES.includes(meQuery.data?.portalRole ?? "OWNER");
+  const openCancel = (order: DeliveryOrder) => {
+    setCancelReason("");
+    setCancelTarget(order);
+  };
+  /** The handler for one card, or undefined when that card cannot be called off. */
+  const cancelHandler = (order: DeliveryOrder) =>
+    mayCancel && CANCELLABLE.includes(order.status) ? openCancel : undefined;
+
+  async function confirmCancel() {
+    if (!cancelTarget) return;
+    setCancelling(true);
+    try {
+      await vendorApi.cancelOrder(cancelTarget.id, cancelReason.trim());
+      toast.success(t("toast.updated"));
+      setCancelTarget(null);
+      setCancelReason("");
+      await queryClient.invalidateQueries({ queryKey: ORDERS_KEY });
+    } catch (err) {
+      const resp = (err as { response?: { status?: number; data?: { error?: string } } }).response;
+      // 409 is the state machine saying somebody got there first: the driver
+      // collected it while the modal was open. Refetch so the board agrees.
+      toast.error(resp?.data?.error ?? t("toast.failedSave"));
+      if (resp?.status === 409) {
+        setCancelTarget(null);
+        await queryClient.invalidateQueries({ queryKey: ORDERS_KEY });
+      }
+    } finally {
+      setCancelling(false);
+    }
+  }
 
   // Revision 8 (#3). The live board is the work still in front of the shop,
   // in the order the shop experiences it: waiting on a driver, driver coming,
@@ -465,7 +558,12 @@ export default function VendorBoardPage() {
                 <p className="text-xs text-sand-500 px-1 py-2">{t("vendorPortal.emptyColumn")}</p>
               ) : (
                 col.items.map((o) => (
-                  <OrderCard key={o.id} order={o} showBranch={showBranch} />
+                  <OrderCard
+                    key={o.id}
+                    order={o}
+                    showBranch={showBranch}
+                    onCancel={cancelHandler(o)}
+                  />
                 ))
               )}
             </div>
@@ -473,6 +571,34 @@ export default function VendorBoardPage() {
         ))}
       </div>
       )}
+
+      <ConfirmModal
+        open={!!cancelTarget}
+        title={t("dispatch.cancelConfirmTitle")}
+        message={t("vendorPortal.cancelMessage")}
+        variant="danger"
+        loading={cancelling}
+        confirmLabel={t("dispatch.cancelOrder")}
+        confirmDisabled={cancelReason.trim() === ""}
+        onConfirm={() => void confirmCancel()}
+        onCancel={() => {
+          setCancelTarget(null);
+          setCancelReason("");
+        }}
+      >
+        <label className="block">
+          <span className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
+            {t("dispatch.cancelReason")}
+          </span>
+          <input
+            value={cancelReason}
+            onChange={(e) => setCancelReason(e.target.value)}
+            maxLength={500}
+            autoFocus
+            className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </label>
+      </ConfirmModal>
     </div>
   );
 }
