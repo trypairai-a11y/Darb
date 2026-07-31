@@ -369,16 +369,34 @@ export default function FleetPayoutsPage() {
                         .replace("{listed}", String(detailQuery.data.listedOrders))}
                     </p>
                   )}
-                {/* Client note: how many each driver did. Asked as soon as
-                    anybody reads the total, and previously answerable only by
-                    counting rows in the list underneath. */}
+                {/* The statement, and the only report on it. The order-by-order
+                    list that used to sit underneath said the same thing at
+                    four times the length: what a delivery company checks is
+                    how many each driver did, and the total that follows from
+                    it. The orders themselves are still in Earnings below. */}
                 {(detailQuery.data?.byDriver ?? []).length > 0 && (
                   <div className="rounded-xl border border-sand-200 overflow-hidden">
                     <p className="px-3 py-2 text-xs font-medium text-sand-700 bg-sand-50 border-b border-sand-200">
                       {t("fleetPortal.ordersByDriver")}
                     </p>
-                    <div className="max-h-56 overflow-y-auto">
+                    <div className="max-h-[26rem] overflow-y-auto">
                       <table className="w-full">
+                        <thead className="sticky top-0 bg-white">
+                          <tr className="border-b border-sand-200">
+                            <th className="text-start text-[11px] font-medium text-secondary px-3 py-2">
+                              {t("fleetPortal.driverName")}
+                            </th>
+                            <th className="text-start text-[11px] font-medium text-secondary px-3 py-2">
+                              {t("fleetPortal.darbId")}
+                            </th>
+                            <th className="text-end text-[11px] font-medium text-secondary px-3 py-2">
+                              {t("fleetPortal.orders")}
+                            </th>
+                            <th className="text-end text-[11px] font-medium text-secondary px-3 py-2">
+                              {t("fleetPortal.total")}
+                            </th>
+                          </tr>
+                        </thead>
                         <tbody>
                           {(detailQuery.data?.byDriver ?? []).map((d) => (
                             <tr key={d.driverId} className="border-b border-sand-200 last:border-0">
@@ -395,60 +413,38 @@ export default function FleetPayoutsPage() {
                             </tr>
                           ))}
                         </tbody>
+                        {/* The line the company is actually signing for. */}
+                        <tfoot className="sticky bottom-0 bg-sand-50">
+                          <tr className="border-t border-sand-300">
+                            <td className="px-3 py-2 text-xs font-medium" colSpan={2}>
+                              {t("fleetPortal.total")}
+                            </td>
+                            <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end font-medium">
+                              {formatNumber(openRow.deliveredOrders, locale)}
+                            </td>
+                            <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end font-medium">
+                              {formatKwd(openRow.totalKwd, locale)}
+                            </td>
+                          </tr>
+                        </tfoot>
                       </table>
                     </div>
                   </div>
                 )}
 
-                <div className="rounded-xl border border-sand-200 overflow-hidden">
-                  <div className="max-h-72 overflow-y-auto">
-                    <table className="w-full">
-                      <thead className="sticky top-0 bg-sand-50">
-                        <tr className="border-b border-sand-200">
-                          <th className="text-start text-xs font-medium text-secondary px-3 py-2">
-                            {t("dispatch.orderNumber")}
-                          </th>
-                          <th className="text-start text-xs font-medium text-secondary px-3 py-2">
-                            {t("fleetPortal.driverName")}
-                          </th>
-                          <th className="text-start text-xs font-medium text-secondary px-3 py-2">
-                            {t("darbOrderStatus.delivered")}
-                          </th>
-                          <th className="text-start text-xs font-medium text-secondary px-3 py-2">
-                            {t("fleetPortal.feePerOrder")}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(detailQuery.data?.orders ?? []).map((o) => (
-                          <tr key={o.id} className="border-b border-sand-200 last:border-0">
-                            <td dir="ltr" className="px-3 py-2 text-xs font-mono">{o.orderNumber}</td>
-                            <td dir="auto" className="px-3 py-2 text-xs">{o.driverName ?? "n/a"}</td>
-                            <td dir="ltr" className="px-3 py-2 text-xs tabular-nums">
-                              {formatDateTime(o.deliveredAt, locale)}
-                            </td>
-                            <td dir="ltr" className="px-3 py-2 text-xs tabular-nums">
-                              {formatKwd(o.feeKwd, locale)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
                 <button
                   type="button"
                   onClick={() => {
-                    const rows = detailQuery.data?.orders ?? [];
+                    const rows = detailQuery.data?.byDriver ?? [];
                     downloadCsv(
                       `statement-${openRow.periodStart.slice(0, 7)}`,
                       [
-                        t("dispatch.orderNumber"),
                         t("fleetPortal.driverName"),
-                        t("darbOrderStatus.delivered"),
-                        t("fleetPortal.feePerOrder"),
+                        t("fleetPortal.darbId"),
+                        t("fleetPortal.orders"),
+                        t("fleetPortal.total"),
                       ],
-                      rows.map((o) => [o.orderNumber, o.driverName ?? "n/a", o.deliveredAt, o.feeKwd]),
+                      rows.map((d) => [d.name, d.driverCode ?? "n/a", String(d.orders), d.totalKwd]),
                     );
                   }}
                   className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200"
