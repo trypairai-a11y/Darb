@@ -501,6 +501,10 @@ model Tenant {
   accountManagerVendors     AccountManagerVendor[]
   supportTickets            SupportTicket[]
   vendorTopUps              VendorTopUp[]
+  // Revision 12 — fleet portal request desk.
+  fleetDocuments            FleetDocument[]
+  fleetChangeRequests       FleetChangeRequest[]
+  fleetIssues               FleetIssue[]
 }
 
 // 2. Company
@@ -595,31 +599,38 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  tenant                Tenant                  @relation(fields: [tenantId], references: [id])
-  vendor                Vendor?                 @relation(fields: [vendorId], references: [id])
-  fleetPartner          FleetPartner?           @relation(fields: [fleetPartnerId], references: [id])
-  ownerGroup            OwnerGroup?             @relation(fields: [ownerGroupId], references: [id])
-  branch                VendorBranch?           @relation("BranchPortalUser", fields: [branchId], references: [id])
-  managedCompanies      Company[]               @relation("CompanyAccountManager")
-  supervisedDrivers     Driver[]                @relation("DriverSupervisor")
-  issuedCommands        DeviceCommand[]         @relation("CommandIssuer")
-  acknowledgedAlerts    Alert[]                 @relation("AlertAcknowledger")
-  reviewedLeaves        LeaveRequest[]          @relation("LeaveReviewer")
-  assignedTickets       Ticket[]                @relation("TicketAssignee")
-  submittedTickets      Ticket[]                @relation("TicketSubmitterUser")
-  notifications         Notification[]
-  createdAmericanaRates AmericanaChainRate[]    @relation("AmericanaChainRateCreator")
-  approvedAgentActions  AgentAction[]           @relation("AgentActionApprover")
-  pinnedViews           PinnedView[]            @relation("PinnedViewOwner")
-  metricEvents          MetricEvent[]           @relation("MetricEventActor")
+  tenant                  Tenant                  @relation(fields: [tenantId], references: [id])
+  vendor                  Vendor?                 @relation(fields: [vendorId], references: [id])
+  fleetPartner            FleetPartner?           @relation(fields: [fleetPartnerId], references: [id])
+  ownerGroup              OwnerGroup?             @relation(fields: [ownerGroupId], references: [id])
+  branch                  VendorBranch?           @relation("BranchPortalUser", fields: [branchId], references: [id])
+  managedCompanies        Company[]               @relation("CompanyAccountManager")
+  supervisedDrivers       Driver[]                @relation("DriverSupervisor")
+  issuedCommands          DeviceCommand[]         @relation("CommandIssuer")
+  acknowledgedAlerts      Alert[]                 @relation("AlertAcknowledger")
+  reviewedLeaves          LeaveRequest[]          @relation("LeaveReviewer")
+  assignedTickets         Ticket[]                @relation("TicketAssignee")
+  submittedTickets        Ticket[]                @relation("TicketSubmitterUser")
+  notifications           Notification[]
+  createdAmericanaRates   AmericanaChainRate[]    @relation("AmericanaChainRateCreator")
+  approvedAgentActions    AgentAction[]           @relation("AgentActionApprover")
+  pinnedViews             PinnedView[]            @relation("PinnedViewOwner")
+  metricEvents            MetricEvent[]           @relation("MetricEventActor")
   // Phase 4 Wave 1 — chat ownership + briefing authorship.
-  chatThreads           ChatThread[]            @relation("ChatThreadOwner")
-  scheduledBriefings    ScheduledBriefing[]     @relation("ScheduledBriefingCreator")
+  chatThreads             ChatThread[]            @relation("ChatThreadOwner")
+  scheduledBriefings      ScheduledBriefing[]     @relation("ScheduledBriefingCreator")
   // Revision 4 (#12) — self-service password on invite, per-surface access,
   // and the merchants an account manager owns.
-  invites               UserInvite[]
-  surfacePermissions    UserSurfacePermission[]
-  managedVendors        AccountManagerVendor[]
+  invites                 UserInvite[]
+  surfacePermissions      UserSurfacePermission[]
+  managedVendors          AccountManagerVendor[]
+  // Revision 12 — fleet portal request desk authorship.
+  uploadedFleetDocuments  FleetDocument[]         @relation("FleetDocumentUploader")
+  reviewedFleetDocuments  FleetDocument[]         @relation("FleetDocumentReviewer")
+  requestedFleetChanges   FleetChangeRequest[]    @relation("FleetRequestRequester")
+  reviewedFleetChanges    FleetChangeRequest[]    @relation("FleetRequestReviewer")
+  acknowledgedFleetIssues FleetIssue[]            @relation("FleetIssueAcknowledger")
+  resolvedFleetIssues     FleetIssue[]            @relation("FleetIssueResolver")
 
   @@index([tenantId])
 }
@@ -729,6 +740,10 @@ model Driver {
   remittances               Remittance[]
   incidents                 Incident[]
   orderRatings              OrderRating[]
+  // Revision 12 — fleet portal request desk.
+  fleetDocuments            FleetDocument[]
+  fleetChangeRequests       FleetChangeRequest[]
+  fleetIssues               FleetIssue[]
 
   @@unique([tenantId, driverCode])
   @@index([tenantId])
@@ -3440,11 +3455,16 @@ model FleetPartner {
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
-  tenant     Tenant                 @relation(fields: [tenantId], references: [id])
-  ownerGroup OwnerGroup?            @relation(fields: [ownerGroupId], references: [id])
-  drivers    Driver[]
-  users      User[]
-  statements FleetPayoutStatement[]
+  tenant         Tenant                 @relation(fields: [tenantId], references: [id])
+  ownerGroup     OwnerGroup?            @relation(fields: [ownerGroupId], references: [id])
+  drivers        Driver[]
+  users          User[]
+  statements     FleetPayoutStatement[]
+  // Revision 12 — the portal's request desk.
+  documents      FleetDocument[]
+  changeRequests FleetChangeRequest[]
+  issues         FleetIssue[]
+  supportTickets SupportTicket[]
 
   @@index([tenantId, isActive])
   @@index([tenantId, ownerGroupId])
@@ -3473,6 +3493,185 @@ model FleetPayoutStatement {
 
   @@unique([tenantId, fleetPartnerId, periodStart])
   @@index([tenantId, periodStart])
+}
+
+// ─── Revision 12: the fleet portal becomes a request desk ───────────────────
+//
+// The delivery company portal was three read-only screens. It can now hand
+// Darb documents, put drivers forward, report a resignation and answer
+// operational issues. The rule that shapes all of it: THE FLEET PORTAL NEVER
+// WRITES A LIVE RECORD. Everything is a request, and Darb's approval is what
+// mutates anything real. A subcontractor putting an undocumented driver on the
+// road without Darb seeing the documents is the failure this prevents.
+//
+// One exception, decided by the client: the driver's phone number writes
+// through directly (PATCH /api/fleet/drivers/:id/phone). Drivers change SIMs
+// constantly and a review queue between a driver and their own number strands
+// them. The cost is real: phone is the driver app's sign-in identity.
+
+enum FleetDocumentStatus {
+  /// Uploaded by the fleet, waiting on Darb.
+  PENDING_REVIEW
+  VALID
+  REJECTED
+  EXPIRED
+  /// Replaced by a newer upload of the same type. Never deleted: the history
+  /// of what a fleet showed Darb and when is the point of the table.
+  SUPERSEDED
+}
+
+/// One table for both company and driver documents. `driverId` null means the
+/// document belongs to the delivery company itself.
+model FleetDocument {
+  id              String              @id @default(uuid())
+  tenantId        String
+  fleetPartnerId  String
+  /// Null until a DRIVER_ONBOARD request is approved and the Driver exists.
+  driverId        String?
+  /// Company: TRADE_LICENSE | COMMERCIAL_REG | CIVIL_INSURANCE | VAT_CERT
+  /// Driver:  CIVIL_ID | DRIVING_LICENSE | VEHICLE_REG | VEHICLE_INSURANCE |
+  ///          HEALTH_CERT | WORK_PERMIT | FOOD_HANDLING
+  type            String
+  /// Private R2 object key. Never a public URL: reads go through a signed GET.
+  /// Null when the fleet submitted an expiry date with no file, which is what
+  /// the portal falls back to while R2 is unconfigured.
+  fileKey         String?
+  fileName        String?
+  mimeType        String?
+  sizeBytes       Int?
+  expiryDate      DateTime?
+  status          FleetDocumentStatus @default(PENDING_REVIEW)
+  rejectionReason String?
+  uploadedById    String?
+  reviewedById    String?
+  reviewedAt      DateTime?
+  supersededById  String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  tenant     Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fleet      FleetPartner @relation(fields: [fleetPartnerId], references: [id], onDelete: Cascade)
+  driver     Driver?      @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  uploadedBy User?        @relation("FleetDocumentUploader", fields: [uploadedById], references: [id])
+  reviewedBy User?        @relation("FleetDocumentReviewer", fields: [reviewedById], references: [id])
+
+  @@index([tenantId, fleetPartnerId, status])
+  @@index([tenantId, driverId, type])
+  @@index([tenantId, status, expiryDate])
+}
+
+enum FleetChangeRequestType {
+  DRIVER_ONBOARD
+  DRIVER_STATUS
+  DRIVER_PROFILE
+  DRIVER_DOCUMENT
+  COMPANY_DOCUMENT
+}
+
+enum FleetChangeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  /// The fleet pulled it back before Darb decided.
+  WITHDRAWN
+}
+
+/// The reviewable unit. This is a table rather than a pending flag on each
+/// record because "Anil resigned" has no record of its own to carry a flag.
+///
+/// A pending driver has NO `Driver` row: approval creates it. A rejected
+/// submission therefore cannot leave a half-driver in the dispatch candidate
+/// pool, and `Driver.status` keeps meaning exactly what it means today.
+model FleetChangeRequest {
+  id             String                   @id @default(uuid())
+  tenantId       String
+  fleetPartnerId String
+  type           FleetChangeRequestType
+  /// Set for everything except DRIVER_ONBOARD and COMPANY_DOCUMENT.
+  driverId       String?
+  /// The proposed values. Shape depends on `type`; the service that applies an
+  /// approval is the only thing that reads it.
+  payload        Json
+  /// FleetDocument ids this request is asking Darb to look at.
+  documentIds    String[]                 @default([])
+  status         FleetChangeRequestStatus @default(PENDING)
+  requestedById  String?
+  reviewedById   String?
+  reviewedAt     DateTime?
+  reviewNote     String?
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fleet       FleetPartner @relation(fields: [fleetPartnerId], references: [id], onDelete: Cascade)
+  driver      Driver?      @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  requestedBy User?        @relation("FleetRequestRequester", fields: [requestedById], references: [id])
+  reviewedBy  User?        @relation("FleetRequestReviewer", fields: [reviewedById], references: [id])
+
+  @@index([tenantId, fleetPartnerId, status])
+  @@index([tenantId, status, createdAt])
+}
+
+enum FleetIssueType {
+  LATE_LOGIN
+  NO_ORDERS
+  RATING_DROP
+  DOC_EXPIRING
+  ACCEPTANCE_LOW
+}
+
+enum FleetIssueStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+  /// Open too long. Shows on Darb's side against the fleet.
+  ESCALATED
+}
+
+enum FleetIssueSeverity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+/// Darb's system opens these; the delivery company closes them. That is the
+/// opposite direction of travel from SupportTicket, which is why it is its own
+/// tab and not a ticket type: a supervisor works an inbox of things Darb has
+/// noticed, calls the driver, and records what they did about it.
+model FleetIssue {
+  id               String             @id @default(uuid())
+  tenantId         String
+  fleetPartnerId   String
+  driverId         String?
+  type             FleetIssueType
+  severity         FleetIssueSeverity @default(MEDIUM)
+  title            String
+  detail           String
+  data             Json?
+  status           FleetIssueStatus   @default(OPEN)
+  /// `{type}:{driverId}:{YYYY-MM-DD}`, or `{type}:{driverId}` for standing
+  /// ones. What stops the nightly sweep raising the same issue every night.
+  dedupeKey        String
+  openedAt         DateTime           @default(now())
+  acknowledgedAt   DateTime?
+  acknowledgedById String?
+  resolvedAt       DateTime?
+  resolvedById     String?
+  /// Required to resolve. An acknowledge button with no account of the fix is
+  /// a button that gets clicked to clear a badge.
+  resolutionNote   String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  tenant         Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fleet          FleetPartner @relation(fields: [fleetPartnerId], references: [id], onDelete: Cascade)
+  driver         Driver?      @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  acknowledgedBy User?        @relation("FleetIssueAcknowledger", fields: [acknowledgedById], references: [id])
+  resolvedBy     User?        @relation("FleetIssueResolver", fields: [resolvedById], references: [id])
+
+  @@unique([tenantId, dedupeKey])
+  @@index([tenantId, fleetPartnerId, status])
+  @@index([tenantId, status, openedAt])
 }
 
 // ─── Revision 4 (#12): invites, per-surface access, account managers ─────────
@@ -3560,25 +3759,32 @@ model AccountManagerVendor {
 /// one goes wrong. Kept deliberately small: a subject, a body, an optional
 /// order it is about, and a thread of replies from both sides.
 model SupportTicket {
-  id          String              @id @default(uuid())
-  tenantId    String
-  vendorId    String
+  id             String              @id @default(uuid())
+  tenantId       String
+  /// Revision 12 — exactly ONE of vendorId / fleetPartnerId is set. Making
+  /// vendorId nullable rather than adding a second ticket table keeps Darb on
+  /// one support inbox; a duplicate table would have meant a second triage
+  /// screen nobody remembers to open.
+  vendorId       String?
+  fleetPartnerId String?
   /// Who raised it, so the shop can see which of its own people asked.
-  createdById String?
-  subject     String
-  status      SupportTicketStatus @default(OPEN)
+  createdById    String?
+  subject        String
+  status         SupportTicketStatus @default(OPEN)
   /// Revision 9 (#6) — what the request is about, in the shop's own terms.
-  type        SupportTicketType   @default(OTHER)
+  type           SupportTicketType   @default(OTHER)
   /// The order this is about, when it is about one.
-  orderId     String?
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  orderId        String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
 
   tenant   Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  vendor   Vendor                 @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendor   Vendor?                @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  fleet    FleetPartner?          @relation(fields: [fleetPartnerId], references: [id], onDelete: Cascade)
   messages SupportTicketMessage[]
 
   @@index([tenantId, vendorId, status])
+  @@index([tenantId, fleetPartnerId, status])
   @@index([tenantId, status, createdAt])
 }
 

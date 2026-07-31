@@ -31,6 +31,7 @@ import {
 } from "../services/wallet/vendorSettlementService";
 import { generateFleetStatements } from "../services/fleetService";
 import { applyFleetDiscipline } from "../services/fleetDiscipline";
+import { sweepAllTenantFleetIssues } from "../services/fleet/fleetIssueService";
 import { computeAllTenantTiers, snapshotAllTenants } from "../services/performanceService";
 import { prisma } from "../config";
 import { refreshDemoData } from "../services/demoRefreshService";
@@ -188,6 +189,24 @@ router.get("/daily", async (req: Request, res: Response) => {
       }
     }
     out.discipline = { changed: disciplineChanged };
+
+    // Revision 12 — open the delivery issues the fleet portal's Issues tab
+    // works through. Idempotent by dedupeKey, so running the tick twice in a
+    // day changes nothing.
+    try {
+      const sweeps = await sweepAllTenantFleetIssues();
+      out.fleetIssues = sweeps.reduce(
+        (acc, s) => ({
+          opened: acc.opened + s.opened,
+          escalated: acc.escalated + s.escalated,
+          autoResolved: acc.autoResolved + s.autoResolved,
+        }),
+        { opened: 0, escalated: 0, autoResolved: 0 },
+      );
+    } catch (err) {
+      logger.error({ err }, "cron daily: fleet issue sweep failed");
+      out.fleetIssues = { error: true };
+    }
 
     // Performance tiers + daily snapshots (was the in-process scheduler's job).
     try {

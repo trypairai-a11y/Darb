@@ -22,6 +22,11 @@ import { LADDER } from "../services/fleetDiscipline";
 import { WalletError } from "../services/wallet/walletService";
 import { previousMonthPeriod } from "../services/wallet/vendorSettlementService";
 import { parseLocalDate, parseLocalDateEnd } from "../utils/date";
+import { presignGetUrl } from "../services/r2Service";
+import {
+  approveFleetRequest,
+  rejectFleetRequest,
+} from "../services/fleet/fleetRequestService";
 
 const MUTATE = ["ADMIN", "OPS_MANAGER"];
 const READ = ["ADMIN", "OPS_MANAGER", "SUPERVISOR", "ACCOUNTANT"];
@@ -704,6 +709,299 @@ router.post(
     } catch (err: any) {
       if (err instanceof WalletError) { res.status(400).json({ error: err.message }); return; }
       res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+// ─── Revision 12: reviewing what the delivery companies submit ──────────────
+//
+// The fleet portal never writes a live record; these endpoints are where a
+// request becomes real. Approval and rejection both run status-guarded, so two
+// ops users hitting approve at the same moment cannot apply a change twice.
+
+/**
+ * @swagger
+ * /api/fleets/requests/pending-count:
+ *   get:
+ *     tags: [Fleets]
+ *     summary: How many fleet requests are waiting, for the rail badge
+ */
+router.get("/requests/pending-count", rbac(...READ), async (req: Request, res: Response) => {
+  try {
+    const [requests, issues] = await Promise.all([
+      prisma.fleetChangeRequest.count({
+        where: { tenantId: req.user!.tenantId, status: "PENDING" },
+      }),
+      prisma.fleetIssue.count({
+        where: { tenantId: req.user!.tenantId, status: "ESCALATED" },
+      }),
+    ]);
+    res.json({ pendingRequests: requests, escalatedIssues: issues });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/fleets/documents/{docId}/url:
+ *   get:
+ *     tags: [Fleets]
+ *     summary: Short-lived signed GET so an ops user can actually read the scan
+ */
+router.get("/documents/:docId/url", rbac(...READ), async (req: Request, res: Response) => {
+  try {
+    const doc = await prisma.fleetDocument.findFirst({
+      where: { id: req.params.docId, tenantId: req.user!.tenantId },
+      select: { fileKey: true },
+    });
+    if (!doc) { res.status(404).json({ error: "Document not found" }); return; }
+    if (!doc.fileKey) { res.status(404).json({ error: "No file on this document" }); return; }
+    res.json({ url: await presignGetUrl(doc.fileKey, 3600) });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/fleets/{id}/requests:
+ *   get:
+ *     tags: [Fleets]
+ *     summary: One delivery company's submissions
+ */
+router.get("/:id/requests", rbac(...READ), async (req: Request, res: Response) => {
+  try {
+    const status = typeof req.query.status === "string" ? req.query.status : undefined;
+    const rows = await prisma.fleetChangeRequest.findMany({
+      where: {
+        tenantId: req.user!.tenantId,
+        fleetPartnerId: req.params.id,
+        ...(status ? { status: status as any } : {}),
+      },
+      include: {
+        driver: { select: { id: true, name: true, phone: true } },
+        requestedBy: { select: { id: true, name: true, email: true } },
+        reviewedBy: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+      take: 200,
+    });
+
+    // The documents a request is asking Darb to look at, resolved in one read
+    // rather than a round trip per request: a reviewer opening the panel wants
+    // to see the scans, not a list of ids.
+    const docIds = rows.flatMap((r) => r.documentIds);
+    const docs = docIds.length
+      ? await prisma.fleetDocument.findMany({
+          where: { tenantId: req.user!.tenantId, id: { in: docIds } },
+        })
+      : [];
+    const byId = new Map(docs.map((d) => [d.id, d]));
+
+    res.json(
+      rows.map((r) => ({
+        ...r,
+        documents: r.documentIds.map((id) => byId.get(id)).filter(Boolean),
+      })),
+    );
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/fleets/{id}/requests/{reqId}/approve:
+ *   post:
+ *     tags: [Fleets]
+ *     summary: Approve a fleet request and apply it
+ */
+router.post(
+  "/:id/requests/:reqId/approve",
+  rbac(...MUTATE),
+  async (req: Request, res: Response) => {
+    try {
+      const request = await prisma.fleetChangeRequest.findFirst({
+        where: {
+          id: req.params.reqId,
+          tenantId: req.user!.tenantId,
+          fleetPartnerId: req.params.id,
+        },
+        select: { id: true },
+      });
+      if (!request) { res.status(404).json({ error: "Request not found" }); return; }
+
+      const result = await approveFleetRequest({
+        tenantId: req.user!.tenantId,
+        requestId: request.id,
+        reviewerId: req.user!.userId,
+        note: typeof req.body?.note === "string" ? req.body.note : null,
+      });
+      res.json({ ok: true, ...result });
+    } catch (err: any) {
+      res.status(err.statusCode ?? 400).json({ error: err.message });
+    }
+  },
+);
+
+/**
+ * @swagger
+ * /api/fleets/{id}/requests/{reqId}/reject:
+ *   post:
+ *     tags: [Fleets]
+ *     summary: Reject a fleet request. The reason is shown to the company.
+ */
+router.post(
+  "/:id/requests/:reqId/reject",
+  rbac(...MUTATE),
+  async (req: Request, res: Response) => {
+    try {
+      const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
+      if (reason.length < 5) {
+        // "Rejected" with no reason is a phone call Darb has to take anyway,
+        // which is the work this feature exists to remove.
+        res.status(400).json({ error: "Give the company a reason" });
+        return;
+      }
+      const request = await prisma.fleetChangeRequest.findFirst({
+        where: {
+          id: req.params.reqId,
+          tenantId: req.user!.tenantId,
+          fleetPartnerId: req.params.id,
+        },
+        select: { id: true },
+      });
+      if (!request) { res.status(404).json({ error: "Request not found" }); return; }
+
+      await rejectFleetRequest({
+        tenantId: req.user!.tenantId,
+        requestId: request.id,
+        reviewerId: req.user!.userId,
+        reason,
+      });
+      res.json({ ok: true });
+    } catch (err: any) {
+      res.status(err.statusCode ?? 400).json({ error: err.message });
+    }
+  },
+);
+
+/**
+ * @swagger
+ * /api/fleets/{id}/documents:
+ *   get:
+ *     tags: [Fleets]
+ *     summary: Every document one delivery company has given Darb
+ */
+router.get("/:id/documents", rbac(...READ), async (req: Request, res: Response) => {
+  try {
+    const docs = await prisma.fleetDocument.findMany({
+      where: { tenantId: req.user!.tenantId, fleetPartnerId: req.params.id },
+      include: { driver: { select: { id: true, name: true } } },
+      orderBy: [{ driverId: "asc" }, { type: "asc" }, { createdAt: "desc" }],
+      take: 500,
+    });
+    res.json(docs);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/fleets/{id}/issues:
+ *   get:
+ *     tags: [Fleets]
+ *     summary: What Darb raised against this company and what they did about it
+ */
+router.get("/:id/issues", rbac(...READ), async (req: Request, res: Response) => {
+  try {
+    const rows = await prisma.fleetIssue.findMany({
+      where: {
+        tenantId: req.user!.tenantId,
+        fleetPartnerId: req.params.id,
+        ...(req.query.includeResolved === "true" ? {} : { status: { not: "RESOLVED" } }),
+      },
+      include: {
+        driver: { select: { id: true, name: true } },
+        resolvedBy: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: [{ status: "asc" }, { openedAt: "desc" }],
+      take: 200,
+    });
+    res.json(rows);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/fleets/{id}/support:
+ *   get:
+ *     tags: [Fleets]
+ *     summary: Support requests raised by this delivery company
+ */
+router.get("/:id/support", rbac(...READ), async (req: Request, res: Response) => {
+  try {
+    const tickets = await prisma.supportTicket.findMany({
+      where: { tenantId: req.user!.tenantId, fleetPartnerId: req.params.id },
+      include: { messages: { orderBy: { createdAt: "asc" } } },
+      orderBy: { updatedAt: "desc" },
+      take: 100,
+    });
+    res.json(tickets);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/fleets/{id}/support/{ticketId}/reply:
+ *   post:
+ *     tags: [Fleets]
+ *     summary: Darb answers a delivery company's support request
+ */
+router.post(
+  "/:id/support/:ticketId/reply",
+  rbac(...MUTATE),
+  async (req: Request, res: Response) => {
+    try {
+      const body = typeof req.body?.body === "string" ? req.body.body.trim() : "";
+      if (body.length < 2) { res.status(400).json({ error: "Write a message" }); return; }
+      const ticket = await prisma.supportTicket.findFirst({
+        where: {
+          id: req.params.ticketId,
+          tenantId: req.user!.tenantId,
+          fleetPartnerId: req.params.id,
+        },
+        select: { id: true },
+      });
+      if (!ticket) { res.status(404).json({ error: "Request not found" }); return; }
+
+      await prisma.supportTicketMessage.create({
+        data: {
+          tenantId: req.user!.tenantId,
+          ticketId: ticket.id,
+          author: "DARB",
+          authorName: req.user!.email ?? null,
+          body,
+        },
+      });
+      const updated = await prisma.supportTicket.update({
+        where: { id: ticket.id },
+        data: {
+          status: typeof req.body?.resolve === "boolean" && req.body.resolve
+            ? "RESOLVED"
+            : "ANSWERED",
+        },
+        include: { messages: { orderBy: { createdAt: "asc" } } },
+      });
+      res.json(updated);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
     }
   },
 );

@@ -28,6 +28,8 @@ import {
   Users,
   HandCoins,
   History,
+  FileText,
+  TriangleAlert,
 } from "lucide-react";
 
 export interface NavItem {
@@ -152,21 +154,19 @@ export const NAV_SECTIONS: NavSection[] = [
       // settings has no other way to tell Darb something went wrong. An owner
       // can still take the tab away from one person.
       { i18n: "vendorSupport.title", path: "/vendor/support", icon: LifeBuoy, vendorTab: "SUPPORT" },
-      // Managing logins stays OWNER-only whatever the tab list says: a tracker
-      // who could mint an OWNER login could grant themselves everything. Both
-      // gates apply, here and on the endpoint.
-      {
-        i18n: "vendorTeam.title",
-        path: "/vendor/team",
-        icon: Users,
-        vendorRoles: ["OWNER"],
-        vendorTab: "TEAM",
-      },
+      // Revision 11 (#9). These two carried vendorRoles: ["OWNER"] on top of
+      // their tab, and that gate runs first, so an owner who granted Team or
+      // Settings to an accountant saw the checkbox save and the entry never
+      // appear. A grant that cannot show is not a grant. The tab list decides
+      // which screens open, which is the model the tabs were built on; what
+      // stays OWNER-only is the dangerous work ON those screens — minting a
+      // login and pausing the shop — and that is enforced on the endpoints and
+      // on the controls themselves, not by hiding the whole room.
+      { i18n: "vendorTeam.title", path: "/vendor/team", icon: Users, vendorTab: "TEAM" },
       {
         i18n: "darbNav.vendorSettings",
         path: "/vendor/settings",
         icon: Settings,
-        vendorRoles: ["OWNER"],
         vendorTab: "SETTINGS",
       },
     ],
@@ -188,9 +188,15 @@ export const NAV_SECTIONS: NavSection[] = [
     i18n: "fleetPortal.navSection",
     roles: ["FLEET"],
     items: [
+      // Revision 12 — five entries, ordered by how often a supervisor opens
+      // them. Issues sits high because it is the only one where somebody is
+      // waiting on the delivery company to pick up a phone.
       { i18n: "fleetPortal.navRoster", path: "/fleet-portal", icon: Users },
+      { i18n: "fleetPortal.navIssues", path: "/fleet-portal/issues", icon: TriangleAlert },
+      { i18n: "fleetPortal.navDocuments", path: "/fleet-portal/documents", icon: FileText },
       { i18n: "fleetPortal.navScorecard", path: "/fleet-portal/scorecard", icon: Gauge },
       { i18n: "fleetPortal.navPayouts", path: "/fleet-portal/payouts", icon: Truck },
+      { i18n: "fleetPortal.navSupport", path: "/fleet-portal/support", icon: LifeBuoy },
     ],
   },
 ];

@@ -1944,6 +1944,89 @@ export interface Messages {
     navRoster: string;
     navScorecard: string;
     navPayouts: string;
+    /**
+     * Revision 12 — the portal stopped being three read-only screens. The rule
+     * behind all of it: a delivery company submits, Darb approves or rejects,
+     * and only the approval changes anything real.
+     */
+    navIssues: string;
+    navDocuments: string;
+    navSupport: string;
+    ordersToday: string;
+    orders7d: string;
+    pendingReview: string;
+    addDriver: string;
+    addDriverTitle: string;
+    addDriverHint: string;
+    driverSubmitted: string;
+    submittedOn: string;
+    withdraw: string;
+    withdrawn: string;
+    // Driver profile
+    profileTitle: string;
+    backToRoster: string;
+    driverCode: string;
+    hireDate: string;
+    zone: string;
+    changePhone: string;
+    phoneUpdated: string;
+    phoneDirectHint: string;
+    requestChange: string;
+    markOnLeave: string;
+    markBackActive: string;
+    markResigned: string;
+    statusRequested: string;
+    reasonOptional: string;
+    activityTitle: string;
+    monthTotal: string;
+    activeDays: string;
+    avgPerDay: string;
+    noActivity: string;
+    // Documents
+    documentsTitle: string;
+    documentsSubtitle: string;
+    companyDocuments: string;
+    driverDocuments: string;
+    addDocument: string;
+    documentType: string;
+    expiryDate: string;
+    uploadFile: string;
+    viewFile: string;
+    noFile: string;
+    documentSubmitted: string;
+    storageOff: string;
+    // Requests
+    requestsTitle: string;
+    requestStatus: string;
+    submittedBy: string;
+    darbNote: string;
+    noRequests: string;
+    // Issues
+    issuesTitle: string;
+    issuesSubtitle: string;
+    openIssues: string;
+    acknowledge: string;
+    acknowledged: string;
+    resolveIssue: string;
+    resolveTitle: string;
+    resolveHint: string;
+    resolutionNote: string;
+    issueResolved: string;
+    escalated: string;
+    noIssues: string;
+    showResolved: string;
+    raisedOn: string;
+    // Support
+    supportTitle: string;
+    supportSubtitle: string;
+    newRequest: string;
+    subject: string;
+    message: string;
+    send: string;
+    reply: string;
+    cancelRequest: string;
+    requestRaised: string;
+    noTickets: string;
     rosterTitle: string;
     rosterSubtitle: string;
     driverName: string;
@@ -4093,6 +4176,84 @@ export const en: Messages = {
     navRoster: "Roster",
     navScorecard: "Scorecard",
     navPayouts: "Payouts",
+    navIssues: "Issues",
+    navDocuments: "Documents",
+    navSupport: "Support",
+    ordersToday: "Today",
+    orders7d: "7 days",
+    pendingReview: "Pending Darb review",
+    addDriver: "Add driver",
+    addDriverTitle: "Put a driver forward",
+    addDriverHint:
+      "Darb reviews the driver and their documents before they can take any orders. You will see the outcome here.",
+    driverSubmitted: "Driver submitted for review.",
+    submittedOn: "Submitted",
+    withdraw: "Withdraw",
+    withdrawn: "Request withdrawn.",
+    profileTitle: "Driver profile",
+    backToRoster: "Back to roster",
+    driverCode: "Darb ID",
+    hireDate: "Joined",
+    zone: "Area",
+    changePhone: "Change phone",
+    phoneUpdated: "Phone number updated.",
+    phoneDirectHint:
+      "The phone number is the only thing you can change without Darb reviewing it. The driver signs into the app with it, so changing it signs them out.",
+    requestChange: "Request a change",
+    markOnLeave: "Request leave",
+    markBackActive: "Request return to work",
+    markResigned: "Report resignation",
+    statusRequested: "Sent to Darb for review.",
+    reasonOptional: "Reason (optional)",
+    activityTitle: "Orders per day",
+    monthTotal: "Month total",
+    activeDays: "Days worked",
+    avgPerDay: "Average per day worked",
+    noActivity: "No delivered orders this month.",
+    documentsTitle: "Company documents",
+    documentsSubtitle:
+      "What your company has given Darb. Every upload is reviewed before it counts as valid.",
+    companyDocuments: "Company documents",
+    driverDocuments: "Driver documents",
+    addDocument: "Add document",
+    documentType: "Document",
+    expiryDate: "Expires",
+    uploadFile: "Choose a file",
+    viewFile: "View",
+    noFile: "No file",
+    documentSubmitted: "Document sent for review.",
+    storageOff:
+      "Document upload is not switched on yet. Contact Darb operations. You can still record an expiry date.",
+    requestsTitle: "Your requests",
+    requestStatus: "Outcome",
+    submittedBy: "Submitted by",
+    darbNote: "Darb's note",
+    noRequests: "Nothing submitted yet.",
+    issuesTitle: "Delivery issues",
+    issuesSubtitle:
+      "What Darb has noticed about your drivers. Call the driver, sort it out, then say what you did.",
+    openIssues: "Open",
+    acknowledge: "I am on it",
+    acknowledged: "Acknowledged",
+    resolveIssue: "Resolve",
+    resolveTitle: "Close this issue",
+    resolveHint: "Say what you did about it. Darb reads these.",
+    resolutionNote: "What you did",
+    issueResolved: "Issue closed.",
+    escalated: "Escalated to Darb",
+    noIssues: "Nothing outstanding. Good.",
+    showResolved: "Show closed",
+    raisedOn: "Raised",
+    supportTitle: "Support",
+    supportSubtitle: "Ask Darb something. Your messages and Darb's answers live here.",
+    newRequest: "New request",
+    subject: "Subject",
+    message: "Message",
+    send: "Send",
+    reply: "Reply",
+    cancelRequest: "Withdraw",
+    requestRaised: "Request sent to Darb.",
+    noTickets: "No requests yet.",
     rosterTitle: "Driver roster",
     rosterSubtitle: "Your drivers, their documents and ratings.",
     driverName: "Driver",
@@ -6223,6 +6384,84 @@ export const ar: Messages = {
     navRoster: "السائقون",
     navScorecard: "الأداء",
     navPayouts: "المستحقات",
+    navIssues: "الملاحظات",
+    navDocuments: "الوثائق",
+    navSupport: "الدعم",
+    ordersToday: "اليوم",
+    orders7d: "٧ أيام",
+    pendingReview: "بانتظار مراجعة درب",
+    addDriver: "إضافة سائق",
+    addDriverTitle: "ترشيح سائق جديد",
+    addDriverHint:
+      "تراجع درب السائق ووثائقه قبل أن يتمكن من استلام أي طلب. ستظهر النتيجة هنا.",
+    driverSubmitted: "تم إرسال السائق للمراجعة.",
+    submittedOn: "أُرسل في",
+    withdraw: "سحب الطلب",
+    withdrawn: "تم سحب الطلب.",
+    profileTitle: "ملف السائق",
+    backToRoster: "العودة إلى القائمة",
+    driverCode: "رقم درب",
+    hireDate: "تاريخ الالتحاق",
+    zone: "المنطقة",
+    changePhone: "تغيير الهاتف",
+    phoneUpdated: "تم تحديث رقم الهاتف.",
+    phoneDirectHint:
+      "رقم الهاتف هو الشيء الوحيد الذي يمكنك تغييره دون مراجعة من درب. السائق يدخل إلى التطبيق به، لذا تغييره يخرجه من حسابه.",
+    requestChange: "طلب تعديل",
+    markOnLeave: "طلب إجازة",
+    markBackActive: "طلب العودة للعمل",
+    markResigned: "إبلاغ عن استقالة",
+    statusRequested: "أُرسل إلى درب للمراجعة.",
+    reasonOptional: "السبب (اختياري)",
+    activityTitle: "الطلبات لكل يوم",
+    monthTotal: "إجمالي الشهر",
+    activeDays: "أيام العمل",
+    avgPerDay: "المعدل لكل يوم عمل",
+    noActivity: "لا توجد طلبات موصلة هذا الشهر.",
+    documentsTitle: "وثائق الشركة",
+    documentsSubtitle:
+      "ما قدّمته شركتك إلى درب. كل ملف يُراجَع قبل أن يُعتمد.",
+    companyDocuments: "وثائق الشركة",
+    driverDocuments: "وثائق السائق",
+    addDocument: "إضافة وثيقة",
+    documentType: "الوثيقة",
+    expiryDate: "تنتهي في",
+    uploadFile: "اختر ملفاً",
+    viewFile: "عرض",
+    noFile: "لا يوجد ملف",
+    documentSubmitted: "أُرسلت الوثيقة للمراجعة.",
+    storageOff:
+      "رفع الوثائق غير مفعّل بعد. تواصل مع عمليات درب. يمكنك تسجيل تاريخ الانتهاء الآن.",
+    requestsTitle: "طلباتك",
+    requestStatus: "النتيجة",
+    submittedBy: "مقدّم الطلب",
+    darbNote: "ملاحظة درب",
+    noRequests: "لم تُرسل أي طلبات بعد.",
+    issuesTitle: "ملاحظات التشغيل",
+    issuesSubtitle:
+      "ما لاحظته درب على سائقيك. اتصل بالسائق، عالج الأمر، ثم اكتب ما فعلته.",
+    openIssues: "مفتوحة",
+    acknowledge: "سأتولى الأمر",
+    acknowledged: "قيد المعالجة",
+    resolveIssue: "إغلاق",
+    resolveTitle: "إغلاق هذه الملاحظة",
+    resolveHint: "اكتب ما فعلته بشأنها. درب تقرأ هذه الملاحظات.",
+    resolutionNote: "ما الذي فعلته",
+    issueResolved: "تم إغلاق الملاحظة.",
+    escalated: "رُفعت إلى درب",
+    noIssues: "لا شيء معلّق. ممتاز.",
+    showResolved: "عرض المغلقة",
+    raisedOn: "فُتحت في",
+    supportTitle: "الدعم",
+    supportSubtitle: "اسأل درب. رسائلك وردود درب تظهر هنا.",
+    newRequest: "طلب جديد",
+    subject: "الموضوع",
+    message: "الرسالة",
+    send: "إرسال",
+    reply: "رد",
+    cancelRequest: "سحب",
+    requestRaised: "أُرسل الطلب إلى درب.",
+    noTickets: "لا توجد طلبات بعد.",
     rosterTitle: "قائمة السائقين",
     rosterSubtitle: "سائقوك ووثائقهم وتقييماتهم.",
     driverName: "السائق",

@@ -42,6 +42,13 @@ import type {
   FleetStatementRow,
   FleetUser,
   FleetEarnings,
+  FleetDocument,
+  FleetDocumentInput,
+  FleetDocumentsPayload,
+  FleetChangeRequest,
+  FleetDriverProfile,
+  FleetIssue,
+  FleetMonthActivity,
   CockpitSummary,
   SupportTicket,
   SupportTicketType,
@@ -462,7 +469,147 @@ export const fleetApi = {
   statements: () => get<FleetStatementRow[]>("/api/fleet/statements"),
   earnings: (params?: { month?: string }) =>
     get<FleetEarnings>("/api/fleet/earnings", params as Params),
+
+  // ── Revision 12: the request desk ──────────────────────────────────────
+  // Everything below either reads the fleet's own records or opens a request
+  // for Darb to review. `updatePhone` is the ONE call that writes a live
+  // record, and it is the client's own named exception.
+
+  documents: () => get<FleetDocumentsPayload>("/api/fleet/documents"),
+  documentUrl: (id: string) => get<{ url: string }>(`/api/fleet/documents/${id}/url`),
+  /**
+   * Ask the backend to sign a direct-to-R2 PUT. Answers 503 with
+   * code STORAGE_NOT_CONFIGURED when R2 is not wired up, which the upload
+   * helper turns into a plain sentence rather than a broken picker.
+   */
+  documentUploadUrl: (body: { type: string; contentType: string; fileName?: string }) =>
+    post<{ url: string; key: string; expiresInSec: number }>(
+      "/api/fleet/documents/upload-url",
+      body,
+    ),
+  addCompanyDocument: (body: FleetDocumentInput) =>
+    post<{ document: FleetDocument; requestId: string }>("/api/fleet/documents", body),
+
+  driver: (id: string, params?: { month?: string }) =>
+    get<FleetDriverProfile>(`/api/fleet/drivers/${id}`, params as Params),
+  driverActivity: (id: string, params?: { month?: string }) =>
+    get<FleetMonthActivity>(`/api/fleet/drivers/${id}/activity`, params as Params),
+
+  /** Puts a driver forward. Creates no Driver row until Darb approves. */
+  submitDriver: (body: {
+    name: string;
+    phone: string;
+    vehicleType: string;
+    zone?: string | null;
+    hireDate?: string | null;
+    documents?: FleetDocumentInput[];
+  }) => post<{ request: FleetChangeRequest; documents: FleetDocument[] }>(
+    "/api/fleet/drivers",
+    body,
+  ),
+
+  requestDriverStatus: (id: string, body: { status: string; reason?: string }) =>
+    post<FleetChangeRequest>(`/api/fleet/drivers/${id}/requests`, {
+      type: "DRIVER_STATUS",
+      ...body,
+    }),
+  requestDriverProfile: (
+    id: string,
+    body: { name?: string; vehicleType?: string; zone?: string },
+  ) =>
+    post<FleetChangeRequest>(`/api/fleet/drivers/${id}/requests`, {
+      type: "DRIVER_PROFILE",
+      ...body,
+    }),
+  /**
+   * The document type travels as `documentType`, not `type`: `type` on this
+   * endpoint names the KIND of request. Collapsing the two would have made
+   * every driver document arrive labelled "DRIVER_DOCUMENT".
+   */
+  requestDriverDocument: (id: string, body: FleetDocumentInput) =>
+    post<{ request: FleetChangeRequest; document: FleetDocument }>(
+      `/api/fleet/drivers/${id}/requests`,
+      {
+        type: "DRIVER_DOCUMENT",
+        documentType: body.type,
+        fileKey: body.fileKey ?? null,
+        fileName: body.fileName ?? null,
+        mimeType: body.mimeType ?? null,
+        sizeBytes: body.sizeBytes ?? null,
+        expiryDate: body.expiryDate ?? null,
+      },
+    ),
+
+  /**
+   * The one direct write in this portal. Drivers change SIMs constantly and a
+   * review queue between a driver and their own number strands them.
+   */
+  updatePhone: (id: string, phone: string) =>
+    patch<{ id: string; name: string; phone: string }>(
+      `/api/fleet/drivers/${id}/phone`,
+      { phone },
+    ),
+
+  requests: (params?: { status?: string }) =>
+    get<FleetChangeRequest[]>("/api/fleet/requests", params as Params),
+  withdrawRequest: (id: string) => post<{ ok: true }>(`/api/fleet/requests/${id}/withdraw`),
+
+  issues: (params?: { includeResolved?: boolean }) =>
+    get<{ issues: FleetIssue[]; openCount: number }>("/api/fleet/issues", params as Params),
+  acknowledgeIssue: (id: string) => post<{ ok: true }>(`/api/fleet/issues/${id}/acknowledge`),
+  resolveIssue: (id: string, note: string) =>
+    post<{ ok: true }>(`/api/fleet/issues/${id}/resolve`, { note }),
+
+  support: () => get<SupportTicket[]>("/api/fleet/support"),
+  createTicket: (body: { subject: string; body: string; type?: SupportTicketType }) =>
+    post<SupportTicket>("/api/fleet/support", body),
+  replyTicket: (id: string, body: string) =>
+    post<SupportTicket>(`/api/fleet/support/${id}/reply`, { body }),
+  cancelTicket: (id: string) => post<{ ok: true }>(`/api/fleet/support/${id}/cancel`),
 };
+
+/**
+ * Upload a file straight to R2 and return what the caller should send back to
+ * Darb. The bytes never touch the API: it signs a PUT and the browser does the
+ * transfer. Throws a sentence, not an axios error, so every caller can just
+ * show `err.message`.
+ */
+export async function uploadFleetDocument(
+  type: string,
+  file: File,
+): Promise<FleetDocumentInput> {
+  let signed: { url: string; key: string };
+  try {
+    signed = await fleetApi.documentUploadUrl({
+      type,
+      contentType: file.type,
+      fileName: file.name,
+    });
+  } catch (err) {
+    const e = err as { response?: { data?: { error?: string; code?: string } } };
+    throw new Error(
+      e?.response?.data?.error ?? "Could not start the upload. Contact Darb operations.",
+    );
+  }
+
+  // Straight to the bucket. Needs a CORS rule on the bucket allowing PUT from
+  // the portal origin; the mobile app never hit that because React Native does
+  // not enforce CORS, and a browser does.
+  const res = await fetch(signed.url, {
+    method: "PUT",
+    body: file,
+    headers: { "Content-Type": file.type },
+  });
+  if (!res.ok) throw new Error("The file did not upload. Try again.");
+
+  return {
+    type,
+    fileKey: signed.key,
+    fileName: file.name,
+    mimeType: file.type,
+    sizeBytes: file.size,
+  };
+}
 
 // ── /api/fleets (staff scope) ────────────────────────────────────────────
 
@@ -482,6 +629,29 @@ export const fleetsApi = {
     id: string,
     body: { name: string; email: string; password: string; phone?: string }
   ) => post<FleetUser>(`/api/fleets/${id}/users`, body),
+
+  // ── Revision 12: reviewing what the delivery companies submit ──────────
+
+  pendingCount: () =>
+    get<{ pendingRequests: number; escalatedIssues: number }>(
+      "/api/fleets/requests/pending-count",
+    ),
+  requests: (id: string, params?: { status?: string }) =>
+    get<FleetChangeRequest[]>(`/api/fleets/${id}/requests`, params as Params),
+  approveRequest: (id: string, reqId: string, note?: string) =>
+    post<{ ok: true; driverId: string | null; created: boolean }>(
+      `/api/fleets/${id}/requests/${reqId}/approve`,
+      { note },
+    ),
+  rejectRequest: (id: string, reqId: string, reason: string) =>
+    post<{ ok: true }>(`/api/fleets/${id}/requests/${reqId}/reject`, { reason }),
+  documents: (id: string) => get<FleetDocument[]>(`/api/fleets/${id}/documents`),
+  documentUrl: (docId: string) => get<{ url: string }>(`/api/fleets/documents/${docId}/url`),
+  issues: (id: string, params?: { includeResolved?: boolean }) =>
+    get<FleetIssue[]>(`/api/fleets/${id}/issues`, params as Params),
+  support: (id: string) => get<SupportTicket[]>(`/api/fleets/${id}/support`),
+  replySupport: (id: string, ticketId: string, body: string, resolve?: boolean) =>
+    post<SupportTicket>(`/api/fleets/${id}/support/${ticketId}/reply`, { body, resolve }),
 };
 
 // ── /api/cockpit (ADMIN-only founder summary) ────────────────────────────

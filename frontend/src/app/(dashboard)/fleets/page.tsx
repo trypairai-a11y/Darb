@@ -22,7 +22,7 @@ import { fleetsApi, unwrapList } from "@/lib/darbApi";
 import type { FleetProfile, FleetStatementRow, FleetUser } from "@/types/darb";
 import BackToSetup from "@/components/shared/BackToSetup";
 import { useI18n } from "@/i18n/I18nProvider";
-import { formatKwd, formatNumber, formatPercent, localeTag } from "@/i18n/format";
+import { formatDate, formatKwd, formatNumber, formatPercent, localeTag } from "@/i18n/format";
 import type { Locale } from "@/i18n/messages";
 
 type FleetRow = FleetProfile & { _count?: { drivers?: number; users?: number } };
@@ -231,6 +231,182 @@ function PortalLoginsSection({ fleet }: { fleet: FleetRow }) {
           </div>
         </form>
       )}
+    </section>
+  );
+}
+
+/**
+ * Revision 12 — the review queue.
+ *
+ * The fleet portal never writes a live record: everything a delivery company
+ * wants arrives here as a request, and approving it is what creates the driver,
+ * flips the status or marks the document valid. Sits at the TOP of the panel,
+ * above the scorecard, because somebody on the other end is waiting on it.
+ */
+function RequestsSection({ fleet }: { fleet: FleetRow }) {
+  const { t, locale } = useI18n();
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const [busy, setBusy] = useState<string | null>(null);
+  const [rejecting, setRejecting] = useState<string | null>(null);
+  const [reason, setReason] = useState("");
+
+  const requestsQuery = useQuery({
+    queryKey: ["darb", "fleets", fleet.id, "requests"],
+    queryFn: () => fleetsApi.requests(fleet.id, { status: "PENDING" }),
+  });
+
+  const refresh = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["darb", "fleets", fleet.id, "requests"] });
+    await queryClient.invalidateQueries({ queryKey: ["darb", "fleets"] });
+  };
+
+  const fail = (err: unknown) =>
+    toast.error(
+      (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+        t("toast.failedSave"),
+    );
+
+  async function approve(reqId: string) {
+    setBusy(reqId);
+    try {
+      await fleetsApi.approveRequest(fleet.id, reqId);
+      toast.success(t("toast.saved"));
+      await refresh();
+    } catch (err) {
+      fail(err);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function reject(reqId: string) {
+    setBusy(reqId);
+    try {
+      await fleetsApi.rejectRequest(fleet.id, reqId, reason.trim());
+      toast.success(t("toast.saved"));
+      setRejecting(null);
+      setReason("");
+      await refresh();
+    } catch (err) {
+      fail(err);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function openDoc(docId: string) {
+    try {
+      const { url } = await fleetsApi.documentUrl(docId);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch {
+      toast.error(t("errors.loadingData"));
+    }
+  }
+
+  const requests = requestsQuery.data ?? [];
+  if (requestsQuery.isLoading || requests.length === 0) return null;
+
+  return (
+    <section className="space-y-3 pb-5 mb-5 border-b border-sand-200">
+      <h3 className="text-sm font-medium text-sand-900">
+        {t("fleetPortal.requestsTitle")} ({requests.length})
+      </h3>
+
+      <ul className="space-y-3">
+        {requests.map((r) => {
+          const payload = (r.payload ?? {}) as Record<string, any>;
+          return (
+            <li key={r.id} className="rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3">
+              <p className="text-sm font-medium text-sand-900" dir="auto">
+                {r.type.replace(/_/g, " ")}
+                {r.driver?.name ? ` · ${r.driver.name}` : payload.name ? ` · ${payload.name}` : ""}
+              </p>
+              <p className="text-xs text-sand-600 mt-0.5" dir="auto">
+                {r.type === "DRIVER_ONBOARD"
+                  ? `${payload.phone ?? ""} · ${payload.vehicleType ?? ""}`
+                  : r.type === "DRIVER_STATUS"
+                    ? `${payload.status ?? ""}${payload.reason ? ` · ${payload.reason}` : ""}`
+                    : payload.documentType
+                      ? String(payload.documentType).replace(/_/g, " ")
+                      : ""}
+              </p>
+              <p className="text-xs text-sand-500 mt-0.5">
+                {t("fleetPortal.submittedBy")}{" "}
+                {r.requestedBy?.name ?? r.requestedBy?.email ?? "n/a"} ·{" "}
+                {formatDate(r.createdAt, locale)}
+              </p>
+
+              {(r.documents ?? []).length > 0 && (
+                <ul className="flex flex-wrap gap-2 mt-2">
+                  {(r.documents ?? []).map((d) => (
+                    <li key={d.id}>
+                      <button
+                        type="button"
+                        onClick={() => d.fileKey && openDoc(d.id)}
+                        disabled={!d.fileKey}
+                        className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-full border border-sand-300 bg-white text-xs text-sand-700 disabled:opacity-60 hover:bg-sand-100"
+                      >
+                        {d.type.replace(/_/g, " ")}
+                        {d.expiryDate ? ` · ${formatDate(d.expiryDate, locale)}` : ""}
+                        {!d.fileKey ? ` · ${t("fleetPortal.noFile")}` : ""}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {rejecting === r.id ? (
+                <div className="mt-2.5 space-y-2">
+                  <input
+                    className="w-full px-3 h-9 rounded-xl bg-white border border-sand-300 text-sm"
+                    placeholder={t("fleetPortal.darbNote")}
+                    value={reason}
+                    dir="auto"
+                    onChange={(e) => setReason(e.target.value)}
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={busy === r.id || reason.trim().length < 5}
+                      onClick={() => reject(r.id)}
+                      className="h-9 px-3 rounded-full bg-red-600 text-white text-xs font-medium disabled:opacity-50"
+                    >
+                      {t("common.confirm")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setRejecting(null); setReason(""); }}
+                      className="h-9 px-3 rounded-full border border-sand-300 bg-white text-xs text-sand-700"
+                    >
+                      {t("common.cancel")}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-2 mt-2.5">
+                  <button
+                    type="button"
+                    disabled={busy === r.id}
+                    onClick={() => approve(r.id)}
+                    className="h-9 px-3 rounded-full bg-primary text-white text-xs font-medium disabled:opacity-50"
+                  >
+                    {t("common.approve")}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy === r.id}
+                    onClick={() => { setRejecting(r.id); setReason(""); }}
+                    className="h-9 px-3 rounded-full border border-sand-300 bg-white text-xs font-medium text-sand-700"
+                  >
+                    {t("common.reject")}
+                  </button>
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
     </section>
   );
 }
@@ -501,7 +677,12 @@ export default function FleetsPage() {
         title={selected?.name ?? ""}
         subtitle={t("cockpit.fleetName")}
       >
-        {selected && <ScorecardPanel fleet={selected} />}
+        {selected && (
+          <>
+            <RequestsSection fleet={selected} />
+            <ScorecardPanel fleet={selected} />
+          </>
+        )}
       </SlidePanel>
     </div>
   );

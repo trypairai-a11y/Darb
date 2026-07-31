@@ -806,6 +806,154 @@ export interface FleetDriverRow {
   vehicleRegStatus: string | null;
   healthCertStatus: string | null;
   rating: { avg: number | null; count: number };
+  /**
+   * Revision 12 — delivered orders today and across the last 7 days. A
+   * supervisor's first question about a driver is how much they worked, and it
+   * used to need a call to Darb.
+   */
+  ordersToday: number;
+  ordersLast7d: number;
+  /**
+   * A driver put forward but not yet approved. They have NO Driver row, so the
+   * row is drawn from the request itself and `id` is `pending:{requestId}`.
+   */
+  pending?: boolean;
+  requestId?: string;
+  submittedAt?: string;
+}
+
+// ── Revision 12: the fleet portal's request desk ──────────────────────────
+
+export type FleetDocumentStatus =
+  | "PENDING_REVIEW"
+  | "VALID"
+  | "REJECTED"
+  | "EXPIRED"
+  | "SUPERSEDED";
+
+export interface FleetDocument {
+  id: string;
+  fleetPartnerId: string;
+  driverId: string | null;
+  type: string;
+  fileKey: string | null;
+  fileName: string | null;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  expiryDate: string | null;
+  status: FleetDocumentStatus;
+  rejectionReason: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+  driver?: { id: string; name: string } | null;
+}
+
+export type FleetRequestType =
+  | "DRIVER_ONBOARD"
+  | "DRIVER_STATUS"
+  | "DRIVER_PROFILE"
+  | "DRIVER_DOCUMENT"
+  | "COMPANY_DOCUMENT";
+
+export type FleetRequestStatus = "PENDING" | "APPROVED" | "REJECTED" | "WITHDRAWN";
+
+export interface FleetChangeRequest {
+  id: string;
+  fleetPartnerId: string;
+  type: FleetRequestType;
+  driverId: string | null;
+  payload: Record<string, unknown>;
+  documentIds: string[];
+  status: FleetRequestStatus;
+  reviewNote: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+  driver?: { id: string; name: string; phone?: string } | null;
+  requestedBy?: { id: string; name: string | null; email: string } | null;
+  reviewedBy?: { id: string; name: string | null; email: string } | null;
+  /** Populated on the staff read so a reviewer sees the scans, not ids. */
+  documents?: FleetDocument[];
+}
+
+export type FleetIssueStatus = "OPEN" | "ACKNOWLEDGED" | "RESOLVED" | "ESCALATED";
+
+export interface FleetIssue {
+  id: string;
+  fleetPartnerId: string;
+  driverId: string | null;
+  type: "LATE_LOGIN" | "NO_ORDERS" | "RATING_DROP" | "DOC_EXPIRING" | "ACCEPTANCE_LOW";
+  severity: "LOW" | "MEDIUM" | "HIGH";
+  title: string;
+  detail: string;
+  data: Record<string, unknown> | null;
+  status: FleetIssueStatus;
+  openedAt: string;
+  acknowledgedAt: string | null;
+  resolvedAt: string | null;
+  resolutionNote: string | null;
+  driver?: { id: string; name: string; phone?: string } | null;
+  resolvedBy?: { id: string; name: string | null; email: string } | null;
+}
+
+export interface FleetDayCount {
+  date: string;
+  orders: number;
+}
+
+export interface FleetMonthActivity {
+  month: string;
+  days: FleetDayCount[];
+  totalOrders: number;
+  activeDays: number;
+  avgPerActiveDay: number | null;
+}
+
+export interface FleetDriverProfile {
+  driver: {
+    id: string;
+    name: string;
+    phone: string;
+    driverCode: string | null;
+    status: string;
+    vehicleType: string;
+    zone: string | null;
+    hireDate: string | null;
+    performanceTier: string | null;
+    throttledUntil: string | null;
+    civilIdExpiry: string | null; civilIdStatus: string | null;
+    drivingLicenseExpiry: string | null; drivingLicenseStatus: string | null;
+    vehicleRegExpiry: string | null; vehicleRegStatus: string | null;
+    vehicleInsuranceExpiry: string | null; vehicleInsuranceStatus: string | null;
+    healthCertExpiry: string | null; healthCertStatus: string | null;
+    workPermitExpiry: string | null; workPermitStatus: string | null;
+    foodHandlingCertExpiry: string | null; foodHandlingCertStatus: string | null;
+  };
+  rating: { avg: number | null; count: number };
+  documents: FleetDocument[];
+  requests: FleetChangeRequest[];
+  issues: FleetIssue[];
+  activity: FleetMonthActivity;
+  storageConfigured: boolean;
+}
+
+export interface FleetDocumentsPayload {
+  documents: FleetDocument[];
+  requiredTypes: string[];
+  /**
+   * False when R2 is not wired up on the backend. The portal says so plainly
+   * rather than showing a file picker that dies.
+   */
+  storageConfigured: boolean;
+}
+
+/** One document being submitted, after the browser has PUT it to R2. */
+export interface FleetDocumentInput {
+  type: string;
+  fileKey?: string | null;
+  fileName?: string | null;
+  mimeType?: string | null;
+  sizeBytes?: number | null;
+  expiryDate?: string | null;
 }
 
 export interface FleetScorecard {

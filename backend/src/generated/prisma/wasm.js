@@ -1852,6 +1852,66 @@ exports.Prisma.FleetPayoutStatementScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.FleetDocumentScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  fleetPartnerId: 'fleetPartnerId',
+  driverId: 'driverId',
+  type: 'type',
+  fileKey: 'fileKey',
+  fileName: 'fileName',
+  mimeType: 'mimeType',
+  sizeBytes: 'sizeBytes',
+  expiryDate: 'expiryDate',
+  status: 'status',
+  rejectionReason: 'rejectionReason',
+  uploadedById: 'uploadedById',
+  reviewedById: 'reviewedById',
+  reviewedAt: 'reviewedAt',
+  supersededById: 'supersededById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.FleetChangeRequestScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  fleetPartnerId: 'fleetPartnerId',
+  type: 'type',
+  driverId: 'driverId',
+  payload: 'payload',
+  documentIds: 'documentIds',
+  status: 'status',
+  requestedById: 'requestedById',
+  reviewedById: 'reviewedById',
+  reviewedAt: 'reviewedAt',
+  reviewNote: 'reviewNote',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.FleetIssueScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  fleetPartnerId: 'fleetPartnerId',
+  driverId: 'driverId',
+  type: 'type',
+  severity: 'severity',
+  title: 'title',
+  detail: 'detail',
+  data: 'data',
+  status: 'status',
+  dedupeKey: 'dedupeKey',
+  openedAt: 'openedAt',
+  acknowledgedAt: 'acknowledgedAt',
+  acknowledgedById: 'acknowledgedById',
+  resolvedAt: 'resolvedAt',
+  resolvedById: 'resolvedById',
+  resolutionNote: 'resolutionNote',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.UserInviteScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -1884,6 +1944,7 @@ exports.Prisma.SupportTicketScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
   vendorId: 'vendorId',
+  fleetPartnerId: 'fleetPartnerId',
   createdById: 'createdById',
   subject: 'subject',
   status: 'status',
@@ -2980,6 +3041,45 @@ exports.Prisma.FleetPayoutStatementOrderByRelevanceFieldEnum = {
   payoutTxId: 'payoutTxId'
 };
 
+exports.Prisma.FleetDocumentOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  fleetPartnerId: 'fleetPartnerId',
+  driverId: 'driverId',
+  type: 'type',
+  fileKey: 'fileKey',
+  fileName: 'fileName',
+  mimeType: 'mimeType',
+  rejectionReason: 'rejectionReason',
+  uploadedById: 'uploadedById',
+  reviewedById: 'reviewedById',
+  supersededById: 'supersededById'
+};
+
+exports.Prisma.FleetChangeRequestOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  fleetPartnerId: 'fleetPartnerId',
+  driverId: 'driverId',
+  documentIds: 'documentIds',
+  requestedById: 'requestedById',
+  reviewedById: 'reviewedById',
+  reviewNote: 'reviewNote'
+};
+
+exports.Prisma.FleetIssueOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  fleetPartnerId: 'fleetPartnerId',
+  driverId: 'driverId',
+  title: 'title',
+  detail: 'detail',
+  dedupeKey: 'dedupeKey',
+  acknowledgedById: 'acknowledgedById',
+  resolvedById: 'resolvedById',
+  resolutionNote: 'resolutionNote'
+};
+
 exports.Prisma.UserInviteOrderByRelevanceFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -3004,6 +3104,7 @@ exports.Prisma.SupportTicketOrderByRelevanceFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
   vendorId: 'vendorId',
+  fleetPartnerId: 'fleetPartnerId',
   createdById: 'createdById',
   subject: 'subject',
   orderId: 'orderId'
@@ -3465,6 +3566,50 @@ exports.WebhookEventStatus = exports.$Enums.WebhookEventStatus = {
   FAILED: 'FAILED'
 };
 
+exports.FleetDocumentStatus = exports.$Enums.FleetDocumentStatus = {
+  PENDING_REVIEW: 'PENDING_REVIEW',
+  VALID: 'VALID',
+  REJECTED: 'REJECTED',
+  EXPIRED: 'EXPIRED',
+  SUPERSEDED: 'SUPERSEDED'
+};
+
+exports.FleetChangeRequestType = exports.$Enums.FleetChangeRequestType = {
+  DRIVER_ONBOARD: 'DRIVER_ONBOARD',
+  DRIVER_STATUS: 'DRIVER_STATUS',
+  DRIVER_PROFILE: 'DRIVER_PROFILE',
+  DRIVER_DOCUMENT: 'DRIVER_DOCUMENT',
+  COMPANY_DOCUMENT: 'COMPANY_DOCUMENT'
+};
+
+exports.FleetChangeRequestStatus = exports.$Enums.FleetChangeRequestStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  WITHDRAWN: 'WITHDRAWN'
+};
+
+exports.FleetIssueType = exports.$Enums.FleetIssueType = {
+  LATE_LOGIN: 'LATE_LOGIN',
+  NO_ORDERS: 'NO_ORDERS',
+  RATING_DROP: 'RATING_DROP',
+  DOC_EXPIRING: 'DOC_EXPIRING',
+  ACCEPTANCE_LOW: 'ACCEPTANCE_LOW'
+};
+
+exports.FleetIssueSeverity = exports.$Enums.FleetIssueSeverity = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH'
+};
+
+exports.FleetIssueStatus = exports.$Enums.FleetIssueStatus = {
+  OPEN: 'OPEN',
+  ACKNOWLEDGED: 'ACKNOWLEDGED',
+  RESOLVED: 'RESOLVED',
+  ESCALATED: 'ESCALATED'
+};
+
 exports.AppSurface = exports.$Enums.AppSurface = {
   LIVE: 'LIVE',
   ORDERS: 'ORDERS',
@@ -3611,6 +3756,9 @@ exports.Prisma.ModelName = {
   Refund: 'Refund',
   FleetPartner: 'FleetPartner',
   FleetPayoutStatement: 'FleetPayoutStatement',
+  FleetDocument: 'FleetDocument',
+  FleetChangeRequest: 'FleetChangeRequest',
+  FleetIssue: 'FleetIssue',
   UserInvite: 'UserInvite',
   UserSurfacePermission: 'UserSurfacePermission',
   AccountManagerVendor: 'AccountManagerVendor',
