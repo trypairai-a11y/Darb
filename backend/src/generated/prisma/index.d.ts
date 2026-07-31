@@ -555,6 +555,22 @@ export type FleetPartner = $Result.DefaultSelection<Prisma.$FleetPartnerPayload>
  */
 export type FleetPayoutStatement = $Result.DefaultSelection<Prisma.$FleetPayoutStatementPayload>
 /**
+ * Model FleetPayoutInvoice
+ * Revision 13b (client note) — the stamped invoice a delivery company uploads
+ * when it confirms a payout statement.
+ * 
+ * Its own table rather than a FleetDocument: a company document is a licence
+ * Darb reviews for validity and expiry, and this is an accounting artefact
+ * bound one-to-one to a statement. Putting it in FleetDocument would have it
+ * appear on the Documents tab wearing a review status that means nothing here.
+ * 
+ * `fileKey` is a private R2 object when storage is configured. `fileData` is
+ * the fallback while it is not: production has no R2 yet, and a confirmation
+ * gate nobody can pass is worse than a megabyte in Postgres. One row per
+ * statement per month, so this is a dozen rows a year per company.
+ */
+export type FleetPayoutInvoice = $Result.DefaultSelection<Prisma.$FleetPayoutInvoicePayload>
+/**
  * Model FleetDocument
  * One table for both company and driver documents. `driverId` null means the
  * document belongs to the delivery company itself.
@@ -2816,6 +2832,16 @@ export class PrismaClient<
   get fleetPayoutStatement(): Prisma.FleetPayoutStatementDelegate<ExtArgs>;
 
   /**
+   * `prisma.fleetPayoutInvoice`: Exposes CRUD operations for the **FleetPayoutInvoice** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more FleetPayoutInvoices
+    * const fleetPayoutInvoices = await prisma.fleetPayoutInvoice.findMany()
+    * ```
+    */
+  get fleetPayoutInvoice(): Prisma.FleetPayoutInvoiceDelegate<ExtArgs>;
+
+  /**
    * `prisma.fleetDocument`: Exposes CRUD operations for the **FleetDocument** model.
     * Example usage:
     * ```ts
@@ -3453,6 +3479,7 @@ export namespace Prisma {
     Refund: 'Refund',
     FleetPartner: 'FleetPartner',
     FleetPayoutStatement: 'FleetPayoutStatement',
+    FleetPayoutInvoice: 'FleetPayoutInvoice',
     FleetDocument: 'FleetDocument',
     FleetChangeRequest: 'FleetChangeRequest',
     FleetIssue: 'FleetIssue',
@@ -3477,7 +3504,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "tenant" | "company" | "ownerGroup" | "user" | "driver" | "driverRestriction" | "driverInventory" | "recruitmentPipeline" | "vehicle" | "vehicleDriverAssignment" | "shift" | "attendanceRecord" | "orderLog" | "cashRecord" | "cashTransaction" | "pendingDuesLedger" | "vehicleInspection" | "maintenanceRecord" | "device" | "sim" | "capturedOrder" | "locationLog" | "appUsageLog" | "deviceCommand" | "aiScore" | "alert" | "aiDigest" | "auditLog" | "ticket" | "leaveRequest" | "talabatSession" | "talabatViolationEvent" | "talabatDelivery" | "keetaDailyMetrics" | "ingestRun" | "deliverooDailyMetrics" | "talabatDailyMetrics" | "platformSettings" | "platformInventory" | "americanaDailyOrders" | "americanaChain" | "americanaStore" | "americanaContract" | "americanaChainRate" | "driverBatchHistory" | "americanaStoreAssignment" | "americanaDailyIngestion" | "kpiDefinition" | "kpiRecord" | "notification" | "notificationDelivery" | "notificationRule" | "courierOnlineSession" | "violation" | "penalty" | "appeal" | "orderEvent" | "aiInsight" | "demandHeatmap" | "deliveryArea" | "courierAttendanceSlot" | "keetaAvailableShiftSlot" | "shiftComplianceConfig" | "partner" | "partnerBankAccount" | "incentiveTargetRound" | "incentiveGoal" | "incentiveTier" | "courierIncentivePayout" | "billing" | "taxInvoice" | "paymentWithdrawal" | "agentRunLog" | "agentToolCall" | "pendingAgentAction" | "agentAction" | "agentMemory" | "pinnedView" | "performanceSnapshot" | "metricEvent" | "chatThread" | "chatMessage" | "scheduledBriefing" | "vendor" | "vendorBranch" | "deliveryZone" | "zoneSurcharge" | "deliveryPlan" | "deliveryPlanZoneRate" | "deliveryPlanKmTier" | "distanceCache" | "fulfillmentSettings" | "deliveryOrder" | "dispatchOffer" | "walletAccount" | "walletTransaction" | "walletEntry" | "remittance" | "walletReconciliationRun" | "incident" | "foodicsConnection" | "webhookEvent" | "apiKey" | "orderRating" | "vendorStatement" | "refund" | "fleetPartner" | "fleetPayoutStatement" | "fleetDocument" | "fleetChangeRequest" | "fleetIssue" | "userInvite" | "userSurfacePermission" | "accountManagerVendor" | "supportTicket" | "supportTicketMessage" | "vendorTopUp"
+      modelProps: "tenant" | "company" | "ownerGroup" | "user" | "driver" | "driverRestriction" | "driverInventory" | "recruitmentPipeline" | "vehicle" | "vehicleDriverAssignment" | "shift" | "attendanceRecord" | "orderLog" | "cashRecord" | "cashTransaction" | "pendingDuesLedger" | "vehicleInspection" | "maintenanceRecord" | "device" | "sim" | "capturedOrder" | "locationLog" | "appUsageLog" | "deviceCommand" | "aiScore" | "alert" | "aiDigest" | "auditLog" | "ticket" | "leaveRequest" | "talabatSession" | "talabatViolationEvent" | "talabatDelivery" | "keetaDailyMetrics" | "ingestRun" | "deliverooDailyMetrics" | "talabatDailyMetrics" | "platformSettings" | "platformInventory" | "americanaDailyOrders" | "americanaChain" | "americanaStore" | "americanaContract" | "americanaChainRate" | "driverBatchHistory" | "americanaStoreAssignment" | "americanaDailyIngestion" | "kpiDefinition" | "kpiRecord" | "notification" | "notificationDelivery" | "notificationRule" | "courierOnlineSession" | "violation" | "penalty" | "appeal" | "orderEvent" | "aiInsight" | "demandHeatmap" | "deliveryArea" | "courierAttendanceSlot" | "keetaAvailableShiftSlot" | "shiftComplianceConfig" | "partner" | "partnerBankAccount" | "incentiveTargetRound" | "incentiveGoal" | "incentiveTier" | "courierIncentivePayout" | "billing" | "taxInvoice" | "paymentWithdrawal" | "agentRunLog" | "agentToolCall" | "pendingAgentAction" | "agentAction" | "agentMemory" | "pinnedView" | "performanceSnapshot" | "metricEvent" | "chatThread" | "chatMessage" | "scheduledBriefing" | "vendor" | "vendorBranch" | "deliveryZone" | "zoneSurcharge" | "deliveryPlan" | "deliveryPlanZoneRate" | "deliveryPlanKmTier" | "distanceCache" | "fulfillmentSettings" | "deliveryOrder" | "dispatchOffer" | "walletAccount" | "walletTransaction" | "walletEntry" | "remittance" | "walletReconciliationRun" | "incident" | "foodicsConnection" | "webhookEvent" | "apiKey" | "orderRating" | "vendorStatement" | "refund" | "fleetPartner" | "fleetPayoutStatement" | "fleetPayoutInvoice" | "fleetDocument" | "fleetChangeRequest" | "fleetIssue" | "userInvite" | "userSurfacePermission" | "accountManagerVendor" | "supportTicket" | "supportTicketMessage" | "vendorTopUp"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -11041,6 +11068,76 @@ export namespace Prisma {
           }
         }
       }
+      FleetPayoutInvoice: {
+        payload: Prisma.$FleetPayoutInvoicePayload<ExtArgs>
+        fields: Prisma.FleetPayoutInvoiceFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.FleetPayoutInvoiceFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetPayoutInvoicePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.FleetPayoutInvoiceFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetPayoutInvoicePayload>
+          }
+          findFirst: {
+            args: Prisma.FleetPayoutInvoiceFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetPayoutInvoicePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.FleetPayoutInvoiceFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetPayoutInvoicePayload>
+          }
+          findMany: {
+            args: Prisma.FleetPayoutInvoiceFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetPayoutInvoicePayload>[]
+          }
+          create: {
+            args: Prisma.FleetPayoutInvoiceCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetPayoutInvoicePayload>
+          }
+          createMany: {
+            args: Prisma.FleetPayoutInvoiceCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.FleetPayoutInvoiceCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetPayoutInvoicePayload>[]
+          }
+          delete: {
+            args: Prisma.FleetPayoutInvoiceDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetPayoutInvoicePayload>
+          }
+          update: {
+            args: Prisma.FleetPayoutInvoiceUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetPayoutInvoicePayload>
+          }
+          deleteMany: {
+            args: Prisma.FleetPayoutInvoiceDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.FleetPayoutInvoiceUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.FleetPayoutInvoiceUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetPayoutInvoicePayload>
+          }
+          aggregate: {
+            args: Prisma.FleetPayoutInvoiceAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFleetPayoutInvoice>
+          }
+          groupBy: {
+            args: Prisma.FleetPayoutInvoiceGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FleetPayoutInvoiceGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.FleetPayoutInvoiceCountArgs<ExtArgs>
+            result: $Utils.Optional<FleetPayoutInvoiceCountAggregateOutputType> | number
+          }
+        }
+      }
       FleetDocument: {
         payload: Prisma.$FleetDocumentPayload<ExtArgs>
         fields: Prisma.FleetDocumentFieldRefs
@@ -11921,6 +12018,7 @@ export namespace Prisma {
     refunds: number
     fleetPartners: number
     fleetPayoutStatements: number
+    fleetPayoutInvoices: number
     deliveryPlans: number
     distanceCacheEntries: number
     userInvites: number
@@ -12023,6 +12121,7 @@ export namespace Prisma {
     refunds?: boolean | TenantCountOutputTypeCountRefundsArgs
     fleetPartners?: boolean | TenantCountOutputTypeCountFleetPartnersArgs
     fleetPayoutStatements?: boolean | TenantCountOutputTypeCountFleetPayoutStatementsArgs
+    fleetPayoutInvoices?: boolean | TenantCountOutputTypeCountFleetPayoutInvoicesArgs
     deliveryPlans?: boolean | TenantCountOutputTypeCountDeliveryPlansArgs
     distanceCacheEntries?: boolean | TenantCountOutputTypeCountDistanceCacheEntriesArgs
     userInvites?: boolean | TenantCountOutputTypeCountUserInvitesArgs
@@ -12672,6 +12771,13 @@ export namespace Prisma {
   /**
    * TenantCountOutputType without action
    */
+  export type TenantCountOutputTypeCountFleetPayoutInvoicesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FleetPayoutInvoiceWhereInput
+  }
+
+  /**
+   * TenantCountOutputType without action
+   */
   export type TenantCountOutputTypeCountDeliveryPlansArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DeliveryPlanWhereInput
   }
@@ -12875,6 +12981,7 @@ export namespace Prisma {
     reviewedFleetChanges: number
     acknowledgedFleetIssues: number
     resolvedFleetIssues: number
+    uploadedPayoutInvoices: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -12901,6 +13008,7 @@ export namespace Prisma {
     reviewedFleetChanges?: boolean | UserCountOutputTypeCountReviewedFleetChangesArgs
     acknowledgedFleetIssues?: boolean | UserCountOutputTypeCountAcknowledgedFleetIssuesArgs
     resolvedFleetIssues?: boolean | UserCountOutputTypeCountResolvedFleetIssuesArgs
+    uploadedPayoutInvoices?: boolean | UserCountOutputTypeCountUploadedPayoutInvoicesArgs
   }
 
   // Custom InputTypes
@@ -13073,6 +13181,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountResolvedFleetIssuesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: FleetIssueWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountUploadedPayoutInvoicesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FleetPayoutInvoiceWhereInput
   }
 
 
@@ -14637,6 +14752,7 @@ export namespace Prisma {
     changeRequests: number
     issues: number
     supportTickets: number
+    payoutInvoices: number
   }
 
   export type FleetPartnerCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -14647,6 +14763,7 @@ export namespace Prisma {
     changeRequests?: boolean | FleetPartnerCountOutputTypeCountChangeRequestsArgs
     issues?: boolean | FleetPartnerCountOutputTypeCountIssuesArgs
     supportTickets?: boolean | FleetPartnerCountOutputTypeCountSupportTicketsArgs
+    payoutInvoices?: boolean | FleetPartnerCountOutputTypeCountPayoutInvoicesArgs
   }
 
   // Custom InputTypes
@@ -14707,6 +14824,13 @@ export namespace Prisma {
    */
   export type FleetPartnerCountOutputTypeCountSupportTicketsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SupportTicketWhereInput
+  }
+
+  /**
+   * FleetPartnerCountOutputType without action
+   */
+  export type FleetPartnerCountOutputTypeCountPayoutInvoicesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FleetPayoutInvoiceWhereInput
   }
 
 
@@ -15102,6 +15226,7 @@ export namespace Prisma {
     refunds?: boolean | Tenant$refundsArgs<ExtArgs>
     fleetPartners?: boolean | Tenant$fleetPartnersArgs<ExtArgs>
     fleetPayoutStatements?: boolean | Tenant$fleetPayoutStatementsArgs<ExtArgs>
+    fleetPayoutInvoices?: boolean | Tenant$fleetPayoutInvoicesArgs<ExtArgs>
     deliveryPlans?: boolean | Tenant$deliveryPlansArgs<ExtArgs>
     distanceCacheEntries?: boolean | Tenant$distanceCacheEntriesArgs<ExtArgs>
     userInvites?: boolean | Tenant$userInvitesArgs<ExtArgs>
@@ -15241,6 +15366,7 @@ export namespace Prisma {
     refunds?: boolean | Tenant$refundsArgs<ExtArgs>
     fleetPartners?: boolean | Tenant$fleetPartnersArgs<ExtArgs>
     fleetPayoutStatements?: boolean | Tenant$fleetPayoutStatementsArgs<ExtArgs>
+    fleetPayoutInvoices?: boolean | Tenant$fleetPayoutInvoicesArgs<ExtArgs>
     deliveryPlans?: boolean | Tenant$deliveryPlansArgs<ExtArgs>
     distanceCacheEntries?: boolean | Tenant$distanceCacheEntriesArgs<ExtArgs>
     userInvites?: boolean | Tenant$userInvitesArgs<ExtArgs>
@@ -15349,6 +15475,7 @@ export namespace Prisma {
       refunds: Prisma.$RefundPayload<ExtArgs>[]
       fleetPartners: Prisma.$FleetPartnerPayload<ExtArgs>[]
       fleetPayoutStatements: Prisma.$FleetPayoutStatementPayload<ExtArgs>[]
+      fleetPayoutInvoices: Prisma.$FleetPayoutInvoicePayload<ExtArgs>[]
       deliveryPlans: Prisma.$DeliveryPlanPayload<ExtArgs>[]
       distanceCacheEntries: Prisma.$DistanceCachePayload<ExtArgs>[]
       userInvites: Prisma.$UserInvitePayload<ExtArgs>[]
@@ -15830,6 +15957,7 @@ export namespace Prisma {
     refunds<T extends Tenant$refundsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$refundsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RefundPayload<ExtArgs>, T, "findMany"> | Null>
     fleetPartners<T extends Tenant$fleetPartnersArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$fleetPartnersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetPartnerPayload<ExtArgs>, T, "findMany"> | Null>
     fleetPayoutStatements<T extends Tenant$fleetPayoutStatementsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$fleetPayoutStatementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetPayoutStatementPayload<ExtArgs>, T, "findMany"> | Null>
+    fleetPayoutInvoices<T extends Tenant$fleetPayoutInvoicesArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$fleetPayoutInvoicesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetPayoutInvoicePayload<ExtArgs>, T, "findMany"> | Null>
     deliveryPlans<T extends Tenant$deliveryPlansArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$deliveryPlansArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeliveryPlanPayload<ExtArgs>, T, "findMany"> | Null>
     distanceCacheEntries<T extends Tenant$distanceCacheEntriesArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$distanceCacheEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DistanceCachePayload<ExtArgs>, T, "findMany"> | Null>
     userInvites<T extends Tenant$userInvitesArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$userInvitesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserInvitePayload<ExtArgs>, T, "findMany"> | Null>
@@ -18004,6 +18132,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: FleetPayoutStatementScalarFieldEnum | FleetPayoutStatementScalarFieldEnum[]
+  }
+
+  /**
+   * Tenant.fleetPayoutInvoices
+   */
+  export type Tenant$fleetPayoutInvoicesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetPayoutInvoice
+     */
+    select?: FleetPayoutInvoiceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetPayoutInvoiceInclude<ExtArgs> | null
+    where?: FleetPayoutInvoiceWhereInput
+    orderBy?: FleetPayoutInvoiceOrderByWithRelationInput | FleetPayoutInvoiceOrderByWithRelationInput[]
+    cursor?: FleetPayoutInvoiceWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FleetPayoutInvoiceScalarFieldEnum | FleetPayoutInvoiceScalarFieldEnum[]
   }
 
   /**
@@ -20747,6 +20895,7 @@ export namespace Prisma {
     reviewedFleetChanges?: boolean | User$reviewedFleetChangesArgs<ExtArgs>
     acknowledgedFleetIssues?: boolean | User$acknowledgedFleetIssuesArgs<ExtArgs>
     resolvedFleetIssues?: boolean | User$resolvedFleetIssuesArgs<ExtArgs>
+    uploadedPayoutInvoices?: boolean | User$uploadedPayoutInvoicesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -20834,6 +20983,7 @@ export namespace Prisma {
     reviewedFleetChanges?: boolean | User$reviewedFleetChangesArgs<ExtArgs>
     acknowledgedFleetIssues?: boolean | User$acknowledgedFleetIssuesArgs<ExtArgs>
     resolvedFleetIssues?: boolean | User$resolvedFleetIssuesArgs<ExtArgs>
+    uploadedPayoutInvoices?: boolean | User$uploadedPayoutInvoicesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -20875,6 +21025,7 @@ export namespace Prisma {
       reviewedFleetChanges: Prisma.$FleetChangeRequestPayload<ExtArgs>[]
       acknowledgedFleetIssues: Prisma.$FleetIssuePayload<ExtArgs>[]
       resolvedFleetIssues: Prisma.$FleetIssuePayload<ExtArgs>[]
+      uploadedPayoutInvoices: Prisma.$FleetPayoutInvoicePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -21291,6 +21442,7 @@ export namespace Prisma {
     reviewedFleetChanges<T extends User$reviewedFleetChangesArgs<ExtArgs> = {}>(args?: Subset<T, User$reviewedFleetChangesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetChangeRequestPayload<ExtArgs>, T, "findMany"> | Null>
     acknowledgedFleetIssues<T extends User$acknowledgedFleetIssuesArgs<ExtArgs> = {}>(args?: Subset<T, User$acknowledgedFleetIssuesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetIssuePayload<ExtArgs>, T, "findMany"> | Null>
     resolvedFleetIssues<T extends User$resolvedFleetIssuesArgs<ExtArgs> = {}>(args?: Subset<T, User$resolvedFleetIssuesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetIssuePayload<ExtArgs>, T, "findMany"> | Null>
+    uploadedPayoutInvoices<T extends User$uploadedPayoutInvoicesArgs<ExtArgs> = {}>(args?: Subset<T, User$uploadedPayoutInvoicesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetPayoutInvoicePayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -22177,6 +22329,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: FleetIssueScalarFieldEnum | FleetIssueScalarFieldEnum[]
+  }
+
+  /**
+   * User.uploadedPayoutInvoices
+   */
+  export type User$uploadedPayoutInvoicesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetPayoutInvoice
+     */
+    select?: FleetPayoutInvoiceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetPayoutInvoiceInclude<ExtArgs> | null
+    where?: FleetPayoutInvoiceWhereInput
+    orderBy?: FleetPayoutInvoiceOrderByWithRelationInput | FleetPayoutInvoiceOrderByWithRelationInput[]
+    cursor?: FleetPayoutInvoiceWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FleetPayoutInvoiceScalarFieldEnum | FleetPayoutInvoiceScalarFieldEnum[]
   }
 
   /**
@@ -134209,6 +134381,7 @@ export namespace Prisma {
     changeRequests?: boolean | FleetPartner$changeRequestsArgs<ExtArgs>
     issues?: boolean | FleetPartner$issuesArgs<ExtArgs>
     supportTickets?: boolean | FleetPartner$supportTicketsArgs<ExtArgs>
+    payoutInvoices?: boolean | FleetPartner$payoutInvoicesArgs<ExtArgs>
     _count?: boolean | FleetPartnerCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["fleetPartner"]>
 
@@ -134260,6 +134433,7 @@ export namespace Prisma {
     changeRequests?: boolean | FleetPartner$changeRequestsArgs<ExtArgs>
     issues?: boolean | FleetPartner$issuesArgs<ExtArgs>
     supportTickets?: boolean | FleetPartner$supportTicketsArgs<ExtArgs>
+    payoutInvoices?: boolean | FleetPartner$payoutInvoicesArgs<ExtArgs>
     _count?: boolean | FleetPartnerCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type FleetPartnerIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -134279,6 +134453,7 @@ export namespace Prisma {
       changeRequests: Prisma.$FleetChangeRequestPayload<ExtArgs>[]
       issues: Prisma.$FleetIssuePayload<ExtArgs>[]
       supportTickets: Prisma.$SupportTicketPayload<ExtArgs>[]
+      payoutInvoices: Prisma.$FleetPayoutInvoicePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -134669,6 +134844,7 @@ export namespace Prisma {
     changeRequests<T extends FleetPartner$changeRequestsArgs<ExtArgs> = {}>(args?: Subset<T, FleetPartner$changeRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetChangeRequestPayload<ExtArgs>, T, "findMany"> | Null>
     issues<T extends FleetPartner$issuesArgs<ExtArgs> = {}>(args?: Subset<T, FleetPartner$issuesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetIssuePayload<ExtArgs>, T, "findMany"> | Null>
     supportTickets<T extends FleetPartner$supportTicketsArgs<ExtArgs> = {}>(args?: Subset<T, FleetPartner$supportTicketsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SupportTicketPayload<ExtArgs>, T, "findMany"> | Null>
+    payoutInvoices<T extends FleetPartner$payoutInvoicesArgs<ExtArgs> = {}>(args?: Subset<T, FleetPartner$payoutInvoicesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetPayoutInvoicePayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -135186,6 +135362,26 @@ export namespace Prisma {
   }
 
   /**
+   * FleetPartner.payoutInvoices
+   */
+  export type FleetPartner$payoutInvoicesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetPayoutInvoice
+     */
+    select?: FleetPayoutInvoiceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetPayoutInvoiceInclude<ExtArgs> | null
+    where?: FleetPayoutInvoiceWhereInput
+    orderBy?: FleetPayoutInvoiceOrderByWithRelationInput | FleetPayoutInvoiceOrderByWithRelationInput[]
+    cursor?: FleetPayoutInvoiceWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FleetPayoutInvoiceScalarFieldEnum | FleetPayoutInvoiceScalarFieldEnum[]
+  }
+
+  /**
    * FleetPartner without action
    */
   export type FleetPartnerDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -135504,6 +135700,7 @@ export namespace Prisma {
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     fleet?: boolean | FleetPartnerDefaultArgs<ExtArgs>
+    invoice?: boolean | FleetPayoutStatement$invoiceArgs<ExtArgs>
   }, ExtArgs["result"]["fleetPayoutStatement"]>
 
   export type FleetPayoutStatementSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -135551,6 +135748,7 @@ export namespace Prisma {
   export type FleetPayoutStatementInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     fleet?: boolean | FleetPartnerDefaultArgs<ExtArgs>
+    invoice?: boolean | FleetPayoutStatement$invoiceArgs<ExtArgs>
   }
   export type FleetPayoutStatementIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
@@ -135562,6 +135760,10 @@ export namespace Prisma {
     objects: {
       tenant: Prisma.$TenantPayload<ExtArgs>
       fleet: Prisma.$FleetPartnerPayload<ExtArgs>
+      /**
+       * Revision 13b — the company-stamped invoice that confirmation requires.
+       */
+      invoice: Prisma.$FleetPayoutInvoicePayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -135957,6 +136159,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     fleet<T extends FleetPartnerDefaultArgs<ExtArgs> = {}>(args?: Subset<T, FleetPartnerDefaultArgs<ExtArgs>>): Prisma__FleetPartnerClient<$Result.GetResult<Prisma.$FleetPartnerPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    invoice<T extends FleetPayoutStatement$invoiceArgs<ExtArgs> = {}>(args?: Subset<T, FleetPayoutStatement$invoiceArgs<ExtArgs>>): Prisma__FleetPayoutInvoiceClient<$Result.GetResult<Prisma.$FleetPayoutInvoicePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -136321,6 +136524,21 @@ export namespace Prisma {
   }
 
   /**
+   * FleetPayoutStatement.invoice
+   */
+  export type FleetPayoutStatement$invoiceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetPayoutInvoice
+     */
+    select?: FleetPayoutInvoiceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetPayoutInvoiceInclude<ExtArgs> | null
+    where?: FleetPayoutInvoiceWhereInput
+  }
+
+  /**
    * FleetPayoutStatement without action
    */
   export type FleetPayoutStatementDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -136332,6 +136550,1078 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: FleetPayoutStatementInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model FleetPayoutInvoice
+   */
+
+  export type AggregateFleetPayoutInvoice = {
+    _count: FleetPayoutInvoiceCountAggregateOutputType | null
+    _avg: FleetPayoutInvoiceAvgAggregateOutputType | null
+    _sum: FleetPayoutInvoiceSumAggregateOutputType | null
+    _min: FleetPayoutInvoiceMinAggregateOutputType | null
+    _max: FleetPayoutInvoiceMaxAggregateOutputType | null
+  }
+
+  export type FleetPayoutInvoiceAvgAggregateOutputType = {
+    sizeBytes: number | null
+  }
+
+  export type FleetPayoutInvoiceSumAggregateOutputType = {
+    sizeBytes: number | null
+  }
+
+  export type FleetPayoutInvoiceMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    fleetPartnerId: string | null
+    statementId: string | null
+    fileName: string | null
+    mimeType: string | null
+    sizeBytes: number | null
+    fileKey: string | null
+    fileData: Buffer | null
+    uploadedById: string | null
+    uploadedAt: Date | null
+  }
+
+  export type FleetPayoutInvoiceMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    fleetPartnerId: string | null
+    statementId: string | null
+    fileName: string | null
+    mimeType: string | null
+    sizeBytes: number | null
+    fileKey: string | null
+    fileData: Buffer | null
+    uploadedById: string | null
+    uploadedAt: Date | null
+  }
+
+  export type FleetPayoutInvoiceCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    fleetPartnerId: number
+    statementId: number
+    fileName: number
+    mimeType: number
+    sizeBytes: number
+    fileKey: number
+    fileData: number
+    uploadedById: number
+    uploadedAt: number
+    _all: number
+  }
+
+
+  export type FleetPayoutInvoiceAvgAggregateInputType = {
+    sizeBytes?: true
+  }
+
+  export type FleetPayoutInvoiceSumAggregateInputType = {
+    sizeBytes?: true
+  }
+
+  export type FleetPayoutInvoiceMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    fleetPartnerId?: true
+    statementId?: true
+    fileName?: true
+    mimeType?: true
+    sizeBytes?: true
+    fileKey?: true
+    fileData?: true
+    uploadedById?: true
+    uploadedAt?: true
+  }
+
+  export type FleetPayoutInvoiceMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    fleetPartnerId?: true
+    statementId?: true
+    fileName?: true
+    mimeType?: true
+    sizeBytes?: true
+    fileKey?: true
+    fileData?: true
+    uploadedById?: true
+    uploadedAt?: true
+  }
+
+  export type FleetPayoutInvoiceCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    fleetPartnerId?: true
+    statementId?: true
+    fileName?: true
+    mimeType?: true
+    sizeBytes?: true
+    fileKey?: true
+    fileData?: true
+    uploadedById?: true
+    uploadedAt?: true
+    _all?: true
+  }
+
+  export type FleetPayoutInvoiceAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FleetPayoutInvoice to aggregate.
+     */
+    where?: FleetPayoutInvoiceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FleetPayoutInvoices to fetch.
+     */
+    orderBy?: FleetPayoutInvoiceOrderByWithRelationInput | FleetPayoutInvoiceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: FleetPayoutInvoiceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FleetPayoutInvoices from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FleetPayoutInvoices.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned FleetPayoutInvoices
+    **/
+    _count?: true | FleetPayoutInvoiceCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: FleetPayoutInvoiceAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: FleetPayoutInvoiceSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: FleetPayoutInvoiceMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: FleetPayoutInvoiceMaxAggregateInputType
+  }
+
+  export type GetFleetPayoutInvoiceAggregateType<T extends FleetPayoutInvoiceAggregateArgs> = {
+        [P in keyof T & keyof AggregateFleetPayoutInvoice]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateFleetPayoutInvoice[P]>
+      : GetScalarType<T[P], AggregateFleetPayoutInvoice[P]>
+  }
+
+
+
+
+  export type FleetPayoutInvoiceGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FleetPayoutInvoiceWhereInput
+    orderBy?: FleetPayoutInvoiceOrderByWithAggregationInput | FleetPayoutInvoiceOrderByWithAggregationInput[]
+    by: FleetPayoutInvoiceScalarFieldEnum[] | FleetPayoutInvoiceScalarFieldEnum
+    having?: FleetPayoutInvoiceScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: FleetPayoutInvoiceCountAggregateInputType | true
+    _avg?: FleetPayoutInvoiceAvgAggregateInputType
+    _sum?: FleetPayoutInvoiceSumAggregateInputType
+    _min?: FleetPayoutInvoiceMinAggregateInputType
+    _max?: FleetPayoutInvoiceMaxAggregateInputType
+  }
+
+  export type FleetPayoutInvoiceGroupByOutputType = {
+    id: string
+    tenantId: string
+    fleetPartnerId: string
+    statementId: string
+    fileName: string
+    mimeType: string
+    sizeBytes: number
+    fileKey: string | null
+    fileData: Buffer | null
+    uploadedById: string | null
+    uploadedAt: Date
+    _count: FleetPayoutInvoiceCountAggregateOutputType | null
+    _avg: FleetPayoutInvoiceAvgAggregateOutputType | null
+    _sum: FleetPayoutInvoiceSumAggregateOutputType | null
+    _min: FleetPayoutInvoiceMinAggregateOutputType | null
+    _max: FleetPayoutInvoiceMaxAggregateOutputType | null
+  }
+
+  type GetFleetPayoutInvoiceGroupByPayload<T extends FleetPayoutInvoiceGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<FleetPayoutInvoiceGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof FleetPayoutInvoiceGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], FleetPayoutInvoiceGroupByOutputType[P]>
+            : GetScalarType<T[P], FleetPayoutInvoiceGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type FleetPayoutInvoiceSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    fleetPartnerId?: boolean
+    statementId?: boolean
+    fileName?: boolean
+    mimeType?: boolean
+    sizeBytes?: boolean
+    fileKey?: boolean
+    fileData?: boolean
+    uploadedById?: boolean
+    uploadedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    fleet?: boolean | FleetPartnerDefaultArgs<ExtArgs>
+    statement?: boolean | FleetPayoutStatementDefaultArgs<ExtArgs>
+    uploadedBy?: boolean | FleetPayoutInvoice$uploadedByArgs<ExtArgs>
+  }, ExtArgs["result"]["fleetPayoutInvoice"]>
+
+  export type FleetPayoutInvoiceSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    fleetPartnerId?: boolean
+    statementId?: boolean
+    fileName?: boolean
+    mimeType?: boolean
+    sizeBytes?: boolean
+    fileKey?: boolean
+    fileData?: boolean
+    uploadedById?: boolean
+    uploadedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    fleet?: boolean | FleetPartnerDefaultArgs<ExtArgs>
+    statement?: boolean | FleetPayoutStatementDefaultArgs<ExtArgs>
+    uploadedBy?: boolean | FleetPayoutInvoice$uploadedByArgs<ExtArgs>
+  }, ExtArgs["result"]["fleetPayoutInvoice"]>
+
+  export type FleetPayoutInvoiceSelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    fleetPartnerId?: boolean
+    statementId?: boolean
+    fileName?: boolean
+    mimeType?: boolean
+    sizeBytes?: boolean
+    fileKey?: boolean
+    fileData?: boolean
+    uploadedById?: boolean
+    uploadedAt?: boolean
+  }
+
+  export type FleetPayoutInvoiceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    fleet?: boolean | FleetPartnerDefaultArgs<ExtArgs>
+    statement?: boolean | FleetPayoutStatementDefaultArgs<ExtArgs>
+    uploadedBy?: boolean | FleetPayoutInvoice$uploadedByArgs<ExtArgs>
+  }
+  export type FleetPayoutInvoiceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    fleet?: boolean | FleetPartnerDefaultArgs<ExtArgs>
+    statement?: boolean | FleetPayoutStatementDefaultArgs<ExtArgs>
+    uploadedBy?: boolean | FleetPayoutInvoice$uploadedByArgs<ExtArgs>
+  }
+
+  export type $FleetPayoutInvoicePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "FleetPayoutInvoice"
+    objects: {
+      tenant: Prisma.$TenantPayload<ExtArgs>
+      fleet: Prisma.$FleetPartnerPayload<ExtArgs>
+      statement: Prisma.$FleetPayoutStatementPayload<ExtArgs>
+      uploadedBy: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      fleetPartnerId: string
+      statementId: string
+      fileName: string
+      mimeType: string
+      sizeBytes: number
+      fileKey: string | null
+      fileData: Buffer | null
+      uploadedById: string | null
+      uploadedAt: Date
+    }, ExtArgs["result"]["fleetPayoutInvoice"]>
+    composites: {}
+  }
+
+  type FleetPayoutInvoiceGetPayload<S extends boolean | null | undefined | FleetPayoutInvoiceDefaultArgs> = $Result.GetResult<Prisma.$FleetPayoutInvoicePayload, S>
+
+  type FleetPayoutInvoiceCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<FleetPayoutInvoiceFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: FleetPayoutInvoiceCountAggregateInputType | true
+    }
+
+  export interface FleetPayoutInvoiceDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['FleetPayoutInvoice'], meta: { name: 'FleetPayoutInvoice' } }
+    /**
+     * Find zero or one FleetPayoutInvoice that matches the filter.
+     * @param {FleetPayoutInvoiceFindUniqueArgs} args - Arguments to find a FleetPayoutInvoice
+     * @example
+     * // Get one FleetPayoutInvoice
+     * const fleetPayoutInvoice = await prisma.fleetPayoutInvoice.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends FleetPayoutInvoiceFindUniqueArgs>(args: SelectSubset<T, FleetPayoutInvoiceFindUniqueArgs<ExtArgs>>): Prisma__FleetPayoutInvoiceClient<$Result.GetResult<Prisma.$FleetPayoutInvoicePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one FleetPayoutInvoice that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {FleetPayoutInvoiceFindUniqueOrThrowArgs} args - Arguments to find a FleetPayoutInvoice
+     * @example
+     * // Get one FleetPayoutInvoice
+     * const fleetPayoutInvoice = await prisma.fleetPayoutInvoice.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends FleetPayoutInvoiceFindUniqueOrThrowArgs>(args: SelectSubset<T, FleetPayoutInvoiceFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FleetPayoutInvoiceClient<$Result.GetResult<Prisma.$FleetPayoutInvoicePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first FleetPayoutInvoice that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetPayoutInvoiceFindFirstArgs} args - Arguments to find a FleetPayoutInvoice
+     * @example
+     * // Get one FleetPayoutInvoice
+     * const fleetPayoutInvoice = await prisma.fleetPayoutInvoice.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends FleetPayoutInvoiceFindFirstArgs>(args?: SelectSubset<T, FleetPayoutInvoiceFindFirstArgs<ExtArgs>>): Prisma__FleetPayoutInvoiceClient<$Result.GetResult<Prisma.$FleetPayoutInvoicePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first FleetPayoutInvoice that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetPayoutInvoiceFindFirstOrThrowArgs} args - Arguments to find a FleetPayoutInvoice
+     * @example
+     * // Get one FleetPayoutInvoice
+     * const fleetPayoutInvoice = await prisma.fleetPayoutInvoice.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends FleetPayoutInvoiceFindFirstOrThrowArgs>(args?: SelectSubset<T, FleetPayoutInvoiceFindFirstOrThrowArgs<ExtArgs>>): Prisma__FleetPayoutInvoiceClient<$Result.GetResult<Prisma.$FleetPayoutInvoicePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more FleetPayoutInvoices that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetPayoutInvoiceFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all FleetPayoutInvoices
+     * const fleetPayoutInvoices = await prisma.fleetPayoutInvoice.findMany()
+     * 
+     * // Get first 10 FleetPayoutInvoices
+     * const fleetPayoutInvoices = await prisma.fleetPayoutInvoice.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const fleetPayoutInvoiceWithIdOnly = await prisma.fleetPayoutInvoice.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends FleetPayoutInvoiceFindManyArgs>(args?: SelectSubset<T, FleetPayoutInvoiceFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetPayoutInvoicePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a FleetPayoutInvoice.
+     * @param {FleetPayoutInvoiceCreateArgs} args - Arguments to create a FleetPayoutInvoice.
+     * @example
+     * // Create one FleetPayoutInvoice
+     * const FleetPayoutInvoice = await prisma.fleetPayoutInvoice.create({
+     *   data: {
+     *     // ... data to create a FleetPayoutInvoice
+     *   }
+     * })
+     * 
+     */
+    create<T extends FleetPayoutInvoiceCreateArgs>(args: SelectSubset<T, FleetPayoutInvoiceCreateArgs<ExtArgs>>): Prisma__FleetPayoutInvoiceClient<$Result.GetResult<Prisma.$FleetPayoutInvoicePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many FleetPayoutInvoices.
+     * @param {FleetPayoutInvoiceCreateManyArgs} args - Arguments to create many FleetPayoutInvoices.
+     * @example
+     * // Create many FleetPayoutInvoices
+     * const fleetPayoutInvoice = await prisma.fleetPayoutInvoice.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends FleetPayoutInvoiceCreateManyArgs>(args?: SelectSubset<T, FleetPayoutInvoiceCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many FleetPayoutInvoices and returns the data saved in the database.
+     * @param {FleetPayoutInvoiceCreateManyAndReturnArgs} args - Arguments to create many FleetPayoutInvoices.
+     * @example
+     * // Create many FleetPayoutInvoices
+     * const fleetPayoutInvoice = await prisma.fleetPayoutInvoice.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many FleetPayoutInvoices and only return the `id`
+     * const fleetPayoutInvoiceWithIdOnly = await prisma.fleetPayoutInvoice.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends FleetPayoutInvoiceCreateManyAndReturnArgs>(args?: SelectSubset<T, FleetPayoutInvoiceCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetPayoutInvoicePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a FleetPayoutInvoice.
+     * @param {FleetPayoutInvoiceDeleteArgs} args - Arguments to delete one FleetPayoutInvoice.
+     * @example
+     * // Delete one FleetPayoutInvoice
+     * const FleetPayoutInvoice = await prisma.fleetPayoutInvoice.delete({
+     *   where: {
+     *     // ... filter to delete one FleetPayoutInvoice
+     *   }
+     * })
+     * 
+     */
+    delete<T extends FleetPayoutInvoiceDeleteArgs>(args: SelectSubset<T, FleetPayoutInvoiceDeleteArgs<ExtArgs>>): Prisma__FleetPayoutInvoiceClient<$Result.GetResult<Prisma.$FleetPayoutInvoicePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one FleetPayoutInvoice.
+     * @param {FleetPayoutInvoiceUpdateArgs} args - Arguments to update one FleetPayoutInvoice.
+     * @example
+     * // Update one FleetPayoutInvoice
+     * const fleetPayoutInvoice = await prisma.fleetPayoutInvoice.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends FleetPayoutInvoiceUpdateArgs>(args: SelectSubset<T, FleetPayoutInvoiceUpdateArgs<ExtArgs>>): Prisma__FleetPayoutInvoiceClient<$Result.GetResult<Prisma.$FleetPayoutInvoicePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more FleetPayoutInvoices.
+     * @param {FleetPayoutInvoiceDeleteManyArgs} args - Arguments to filter FleetPayoutInvoices to delete.
+     * @example
+     * // Delete a few FleetPayoutInvoices
+     * const { count } = await prisma.fleetPayoutInvoice.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends FleetPayoutInvoiceDeleteManyArgs>(args?: SelectSubset<T, FleetPayoutInvoiceDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FleetPayoutInvoices.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetPayoutInvoiceUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many FleetPayoutInvoices
+     * const fleetPayoutInvoice = await prisma.fleetPayoutInvoice.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends FleetPayoutInvoiceUpdateManyArgs>(args: SelectSubset<T, FleetPayoutInvoiceUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one FleetPayoutInvoice.
+     * @param {FleetPayoutInvoiceUpsertArgs} args - Arguments to update or create a FleetPayoutInvoice.
+     * @example
+     * // Update or create a FleetPayoutInvoice
+     * const fleetPayoutInvoice = await prisma.fleetPayoutInvoice.upsert({
+     *   create: {
+     *     // ... data to create a FleetPayoutInvoice
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the FleetPayoutInvoice we want to update
+     *   }
+     * })
+     */
+    upsert<T extends FleetPayoutInvoiceUpsertArgs>(args: SelectSubset<T, FleetPayoutInvoiceUpsertArgs<ExtArgs>>): Prisma__FleetPayoutInvoiceClient<$Result.GetResult<Prisma.$FleetPayoutInvoicePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of FleetPayoutInvoices.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetPayoutInvoiceCountArgs} args - Arguments to filter FleetPayoutInvoices to count.
+     * @example
+     * // Count the number of FleetPayoutInvoices
+     * const count = await prisma.fleetPayoutInvoice.count({
+     *   where: {
+     *     // ... the filter for the FleetPayoutInvoices we want to count
+     *   }
+     * })
+    **/
+    count<T extends FleetPayoutInvoiceCountArgs>(
+      args?: Subset<T, FleetPayoutInvoiceCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], FleetPayoutInvoiceCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a FleetPayoutInvoice.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetPayoutInvoiceAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends FleetPayoutInvoiceAggregateArgs>(args: Subset<T, FleetPayoutInvoiceAggregateArgs>): Prisma.PrismaPromise<GetFleetPayoutInvoiceAggregateType<T>>
+
+    /**
+     * Group by FleetPayoutInvoice.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetPayoutInvoiceGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends FleetPayoutInvoiceGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: FleetPayoutInvoiceGroupByArgs['orderBy'] }
+        : { orderBy?: FleetPayoutInvoiceGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, FleetPayoutInvoiceGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFleetPayoutInvoiceGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the FleetPayoutInvoice model
+   */
+  readonly fields: FleetPayoutInvoiceFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for FleetPayoutInvoice.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__FleetPayoutInvoiceClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    fleet<T extends FleetPartnerDefaultArgs<ExtArgs> = {}>(args?: Subset<T, FleetPartnerDefaultArgs<ExtArgs>>): Prisma__FleetPartnerClient<$Result.GetResult<Prisma.$FleetPartnerPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    statement<T extends FleetPayoutStatementDefaultArgs<ExtArgs> = {}>(args?: Subset<T, FleetPayoutStatementDefaultArgs<ExtArgs>>): Prisma__FleetPayoutStatementClient<$Result.GetResult<Prisma.$FleetPayoutStatementPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    uploadedBy<T extends FleetPayoutInvoice$uploadedByArgs<ExtArgs> = {}>(args?: Subset<T, FleetPayoutInvoice$uploadedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the FleetPayoutInvoice model
+   */ 
+  interface FleetPayoutInvoiceFieldRefs {
+    readonly id: FieldRef<"FleetPayoutInvoice", 'String'>
+    readonly tenantId: FieldRef<"FleetPayoutInvoice", 'String'>
+    readonly fleetPartnerId: FieldRef<"FleetPayoutInvoice", 'String'>
+    readonly statementId: FieldRef<"FleetPayoutInvoice", 'String'>
+    readonly fileName: FieldRef<"FleetPayoutInvoice", 'String'>
+    readonly mimeType: FieldRef<"FleetPayoutInvoice", 'String'>
+    readonly sizeBytes: FieldRef<"FleetPayoutInvoice", 'Int'>
+    readonly fileKey: FieldRef<"FleetPayoutInvoice", 'String'>
+    readonly fileData: FieldRef<"FleetPayoutInvoice", 'Bytes'>
+    readonly uploadedById: FieldRef<"FleetPayoutInvoice", 'String'>
+    readonly uploadedAt: FieldRef<"FleetPayoutInvoice", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * FleetPayoutInvoice findUnique
+   */
+  export type FleetPayoutInvoiceFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetPayoutInvoice
+     */
+    select?: FleetPayoutInvoiceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetPayoutInvoiceInclude<ExtArgs> | null
+    /**
+     * Filter, which FleetPayoutInvoice to fetch.
+     */
+    where: FleetPayoutInvoiceWhereUniqueInput
+  }
+
+  /**
+   * FleetPayoutInvoice findUniqueOrThrow
+   */
+  export type FleetPayoutInvoiceFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetPayoutInvoice
+     */
+    select?: FleetPayoutInvoiceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetPayoutInvoiceInclude<ExtArgs> | null
+    /**
+     * Filter, which FleetPayoutInvoice to fetch.
+     */
+    where: FleetPayoutInvoiceWhereUniqueInput
+  }
+
+  /**
+   * FleetPayoutInvoice findFirst
+   */
+  export type FleetPayoutInvoiceFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetPayoutInvoice
+     */
+    select?: FleetPayoutInvoiceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetPayoutInvoiceInclude<ExtArgs> | null
+    /**
+     * Filter, which FleetPayoutInvoice to fetch.
+     */
+    where?: FleetPayoutInvoiceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FleetPayoutInvoices to fetch.
+     */
+    orderBy?: FleetPayoutInvoiceOrderByWithRelationInput | FleetPayoutInvoiceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FleetPayoutInvoices.
+     */
+    cursor?: FleetPayoutInvoiceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FleetPayoutInvoices from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FleetPayoutInvoices.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FleetPayoutInvoices.
+     */
+    distinct?: FleetPayoutInvoiceScalarFieldEnum | FleetPayoutInvoiceScalarFieldEnum[]
+  }
+
+  /**
+   * FleetPayoutInvoice findFirstOrThrow
+   */
+  export type FleetPayoutInvoiceFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetPayoutInvoice
+     */
+    select?: FleetPayoutInvoiceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetPayoutInvoiceInclude<ExtArgs> | null
+    /**
+     * Filter, which FleetPayoutInvoice to fetch.
+     */
+    where?: FleetPayoutInvoiceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FleetPayoutInvoices to fetch.
+     */
+    orderBy?: FleetPayoutInvoiceOrderByWithRelationInput | FleetPayoutInvoiceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FleetPayoutInvoices.
+     */
+    cursor?: FleetPayoutInvoiceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FleetPayoutInvoices from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FleetPayoutInvoices.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FleetPayoutInvoices.
+     */
+    distinct?: FleetPayoutInvoiceScalarFieldEnum | FleetPayoutInvoiceScalarFieldEnum[]
+  }
+
+  /**
+   * FleetPayoutInvoice findMany
+   */
+  export type FleetPayoutInvoiceFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetPayoutInvoice
+     */
+    select?: FleetPayoutInvoiceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetPayoutInvoiceInclude<ExtArgs> | null
+    /**
+     * Filter, which FleetPayoutInvoices to fetch.
+     */
+    where?: FleetPayoutInvoiceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FleetPayoutInvoices to fetch.
+     */
+    orderBy?: FleetPayoutInvoiceOrderByWithRelationInput | FleetPayoutInvoiceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing FleetPayoutInvoices.
+     */
+    cursor?: FleetPayoutInvoiceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FleetPayoutInvoices from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FleetPayoutInvoices.
+     */
+    skip?: number
+    distinct?: FleetPayoutInvoiceScalarFieldEnum | FleetPayoutInvoiceScalarFieldEnum[]
+  }
+
+  /**
+   * FleetPayoutInvoice create
+   */
+  export type FleetPayoutInvoiceCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetPayoutInvoice
+     */
+    select?: FleetPayoutInvoiceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetPayoutInvoiceInclude<ExtArgs> | null
+    /**
+     * The data needed to create a FleetPayoutInvoice.
+     */
+    data: XOR<FleetPayoutInvoiceCreateInput, FleetPayoutInvoiceUncheckedCreateInput>
+  }
+
+  /**
+   * FleetPayoutInvoice createMany
+   */
+  export type FleetPayoutInvoiceCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many FleetPayoutInvoices.
+     */
+    data: FleetPayoutInvoiceCreateManyInput | FleetPayoutInvoiceCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * FleetPayoutInvoice createManyAndReturn
+   */
+  export type FleetPayoutInvoiceCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetPayoutInvoice
+     */
+    select?: FleetPayoutInvoiceSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many FleetPayoutInvoices.
+     */
+    data: FleetPayoutInvoiceCreateManyInput | FleetPayoutInvoiceCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetPayoutInvoiceIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * FleetPayoutInvoice update
+   */
+  export type FleetPayoutInvoiceUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetPayoutInvoice
+     */
+    select?: FleetPayoutInvoiceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetPayoutInvoiceInclude<ExtArgs> | null
+    /**
+     * The data needed to update a FleetPayoutInvoice.
+     */
+    data: XOR<FleetPayoutInvoiceUpdateInput, FleetPayoutInvoiceUncheckedUpdateInput>
+    /**
+     * Choose, which FleetPayoutInvoice to update.
+     */
+    where: FleetPayoutInvoiceWhereUniqueInput
+  }
+
+  /**
+   * FleetPayoutInvoice updateMany
+   */
+  export type FleetPayoutInvoiceUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update FleetPayoutInvoices.
+     */
+    data: XOR<FleetPayoutInvoiceUpdateManyMutationInput, FleetPayoutInvoiceUncheckedUpdateManyInput>
+    /**
+     * Filter which FleetPayoutInvoices to update
+     */
+    where?: FleetPayoutInvoiceWhereInput
+  }
+
+  /**
+   * FleetPayoutInvoice upsert
+   */
+  export type FleetPayoutInvoiceUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetPayoutInvoice
+     */
+    select?: FleetPayoutInvoiceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetPayoutInvoiceInclude<ExtArgs> | null
+    /**
+     * The filter to search for the FleetPayoutInvoice to update in case it exists.
+     */
+    where: FleetPayoutInvoiceWhereUniqueInput
+    /**
+     * In case the FleetPayoutInvoice found by the `where` argument doesn't exist, create a new FleetPayoutInvoice with this data.
+     */
+    create: XOR<FleetPayoutInvoiceCreateInput, FleetPayoutInvoiceUncheckedCreateInput>
+    /**
+     * In case the FleetPayoutInvoice was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<FleetPayoutInvoiceUpdateInput, FleetPayoutInvoiceUncheckedUpdateInput>
+  }
+
+  /**
+   * FleetPayoutInvoice delete
+   */
+  export type FleetPayoutInvoiceDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetPayoutInvoice
+     */
+    select?: FleetPayoutInvoiceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetPayoutInvoiceInclude<ExtArgs> | null
+    /**
+     * Filter which FleetPayoutInvoice to delete.
+     */
+    where: FleetPayoutInvoiceWhereUniqueInput
+  }
+
+  /**
+   * FleetPayoutInvoice deleteMany
+   */
+  export type FleetPayoutInvoiceDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FleetPayoutInvoices to delete
+     */
+    where?: FleetPayoutInvoiceWhereInput
+  }
+
+  /**
+   * FleetPayoutInvoice.uploadedBy
+   */
+  export type FleetPayoutInvoice$uploadedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * FleetPayoutInvoice without action
+   */
+  export type FleetPayoutInvoiceDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetPayoutInvoice
+     */
+    select?: FleetPayoutInvoiceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetPayoutInvoiceInclude<ExtArgs> | null
   }
 
 
@@ -147921,6 +149211,23 @@ export namespace Prisma {
   export type FleetPayoutStatementScalarFieldEnum = (typeof FleetPayoutStatementScalarFieldEnum)[keyof typeof FleetPayoutStatementScalarFieldEnum]
 
 
+  export const FleetPayoutInvoiceScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    fleetPartnerId: 'fleetPartnerId',
+    statementId: 'statementId',
+    fileName: 'fileName',
+    mimeType: 'mimeType',
+    sizeBytes: 'sizeBytes',
+    fileKey: 'fileKey',
+    fileData: 'fileData',
+    uploadedById: 'uploadedById',
+    uploadedAt: 'uploadedAt'
+  };
+
+  export type FleetPayoutInvoiceScalarFieldEnum = (typeof FleetPayoutInvoiceScalarFieldEnum)[keyof typeof FleetPayoutInvoiceScalarFieldEnum]
+
+
   export const FleetDocumentScalarFieldEnum: {
     id: 'id',
     tenantId: 'tenantId',
@@ -149483,6 +150790,20 @@ export namespace Prisma {
   export type FleetPayoutStatementOrderByRelevanceFieldEnum = (typeof FleetPayoutStatementOrderByRelevanceFieldEnum)[keyof typeof FleetPayoutStatementOrderByRelevanceFieldEnum]
 
 
+  export const FleetPayoutInvoiceOrderByRelevanceFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    fleetPartnerId: 'fleetPartnerId',
+    statementId: 'statementId',
+    fileName: 'fileName',
+    mimeType: 'mimeType',
+    fileKey: 'fileKey',
+    uploadedById: 'uploadedById'
+  };
+
+  export type FleetPayoutInvoiceOrderByRelevanceFieldEnum = (typeof FleetPayoutInvoiceOrderByRelevanceFieldEnum)[keyof typeof FleetPayoutInvoiceOrderByRelevanceFieldEnum]
+
+
   export const FleetDocumentOrderByRelevanceFieldEnum: {
     id: 'id',
     tenantId: 'tenantId',
@@ -150474,6 +151795,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Bytes'
+   */
+  export type BytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes'>
+    
+
+
+  /**
+   * Reference to a field of type 'Bytes[]'
+   */
+  export type ListBytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes[]'>
+    
+
+
+  /**
    * Reference to a field of type 'FleetDocumentStatus'
    */
   export type EnumFleetDocumentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FleetDocumentStatus'>
@@ -150739,6 +152074,7 @@ export namespace Prisma {
     refunds?: RefundListRelationFilter
     fleetPartners?: FleetPartnerListRelationFilter
     fleetPayoutStatements?: FleetPayoutStatementListRelationFilter
+    fleetPayoutInvoices?: FleetPayoutInvoiceListRelationFilter
     deliveryPlans?: DeliveryPlanListRelationFilter
     distanceCacheEntries?: DistanceCacheListRelationFilter
     userInvites?: UserInviteListRelationFilter
@@ -150857,6 +152193,7 @@ export namespace Prisma {
     refunds?: RefundOrderByRelationAggregateInput
     fleetPartners?: FleetPartnerOrderByRelationAggregateInput
     fleetPayoutStatements?: FleetPayoutStatementOrderByRelationAggregateInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceOrderByRelationAggregateInput
     deliveryPlans?: DeliveryPlanOrderByRelationAggregateInput
     distanceCacheEntries?: DistanceCacheOrderByRelationAggregateInput
     userInvites?: UserInviteOrderByRelationAggregateInput
@@ -150979,6 +152316,7 @@ export namespace Prisma {
     refunds?: RefundListRelationFilter
     fleetPartners?: FleetPartnerListRelationFilter
     fleetPayoutStatements?: FleetPayoutStatementListRelationFilter
+    fleetPayoutInvoices?: FleetPayoutInvoiceListRelationFilter
     deliveryPlans?: DeliveryPlanListRelationFilter
     distanceCacheEntries?: DistanceCacheListRelationFilter
     userInvites?: UserInviteListRelationFilter
@@ -151269,6 +152607,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestListRelationFilter
     acknowledgedFleetIssues?: FleetIssueListRelationFilter
     resolvedFleetIssues?: FleetIssueListRelationFilter
+    uploadedPayoutInvoices?: FleetPayoutInvoiceListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -151322,6 +152661,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestOrderByRelationAggregateInput
     acknowledgedFleetIssues?: FleetIssueOrderByRelationAggregateInput
     resolvedFleetIssues?: FleetIssueOrderByRelationAggregateInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceOrderByRelationAggregateInput
     _relevance?: UserOrderByRelevanceInput
   }
 
@@ -151379,6 +152719,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestListRelationFilter
     acknowledgedFleetIssues?: FleetIssueListRelationFilter
     resolvedFleetIssues?: FleetIssueListRelationFilter
+    uploadedPayoutInvoices?: FleetPayoutInvoiceListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -162133,6 +163474,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestListRelationFilter
     issues?: FleetIssueListRelationFilter
     supportTickets?: SupportTicketListRelationFilter
+    payoutInvoices?: FleetPayoutInvoiceListRelationFilter
   }
 
   export type FleetPartnerOrderByWithRelationInput = {
@@ -162160,6 +163502,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestOrderByRelationAggregateInput
     issues?: FleetIssueOrderByRelationAggregateInput
     supportTickets?: SupportTicketOrderByRelationAggregateInput
+    payoutInvoices?: FleetPayoutInvoiceOrderByRelationAggregateInput
     _relevance?: FleetPartnerOrderByRelevanceInput
   }
 
@@ -162191,6 +163534,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestListRelationFilter
     issues?: FleetIssueListRelationFilter
     supportTickets?: SupportTicketListRelationFilter
+    payoutInvoices?: FleetPayoutInvoiceListRelationFilter
   }, "id">
 
   export type FleetPartnerOrderByWithAggregationInput = {
@@ -162260,6 +163604,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"FleetPayoutStatement"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     fleet?: XOR<FleetPartnerRelationFilter, FleetPartnerWhereInput>
+    invoice?: XOR<FleetPayoutInvoiceNullableRelationFilter, FleetPayoutInvoiceWhereInput> | null
   }
 
   export type FleetPayoutStatementOrderByWithRelationInput = {
@@ -162282,6 +163627,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     tenant?: TenantOrderByWithRelationInput
     fleet?: FleetPartnerOrderByWithRelationInput
+    invoice?: FleetPayoutInvoiceOrderByWithRelationInput
     _relevance?: FleetPayoutStatementOrderByRelevanceInput
   }
 
@@ -162309,6 +163655,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"FleetPayoutStatement"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     fleet?: XOR<FleetPartnerRelationFilter, FleetPartnerWhereInput>
+    invoice?: XOR<FleetPayoutInvoiceNullableRelationFilter, FleetPayoutInvoiceWhereInput> | null
   }, "id" | "tenantId_fleetPartnerId_periodStart">
 
   export type FleetPayoutStatementOrderByWithAggregationInput = {
@@ -162357,6 +163704,103 @@ export namespace Prisma {
     disputeTicketId?: StringNullableWithAggregatesFilter<"FleetPayoutStatement"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"FleetPayoutStatement"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"FleetPayoutStatement"> | Date | string
+  }
+
+  export type FleetPayoutInvoiceWhereInput = {
+    AND?: FleetPayoutInvoiceWhereInput | FleetPayoutInvoiceWhereInput[]
+    OR?: FleetPayoutInvoiceWhereInput[]
+    NOT?: FleetPayoutInvoiceWhereInput | FleetPayoutInvoiceWhereInput[]
+    id?: StringFilter<"FleetPayoutInvoice"> | string
+    tenantId?: StringFilter<"FleetPayoutInvoice"> | string
+    fleetPartnerId?: StringFilter<"FleetPayoutInvoice"> | string
+    statementId?: StringFilter<"FleetPayoutInvoice"> | string
+    fileName?: StringFilter<"FleetPayoutInvoice"> | string
+    mimeType?: StringFilter<"FleetPayoutInvoice"> | string
+    sizeBytes?: IntFilter<"FleetPayoutInvoice"> | number
+    fileKey?: StringNullableFilter<"FleetPayoutInvoice"> | string | null
+    fileData?: BytesNullableFilter<"FleetPayoutInvoice"> | Buffer | null
+    uploadedById?: StringNullableFilter<"FleetPayoutInvoice"> | string | null
+    uploadedAt?: DateTimeFilter<"FleetPayoutInvoice"> | Date | string
+    tenant?: XOR<TenantRelationFilter, TenantWhereInput>
+    fleet?: XOR<FleetPartnerRelationFilter, FleetPartnerWhereInput>
+    statement?: XOR<FleetPayoutStatementRelationFilter, FleetPayoutStatementWhereInput>
+    uploadedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+  }
+
+  export type FleetPayoutInvoiceOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    fleetPartnerId?: SortOrder
+    statementId?: SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    sizeBytes?: SortOrder
+    fileKey?: SortOrderInput | SortOrder
+    fileData?: SortOrderInput | SortOrder
+    uploadedById?: SortOrderInput | SortOrder
+    uploadedAt?: SortOrder
+    tenant?: TenantOrderByWithRelationInput
+    fleet?: FleetPartnerOrderByWithRelationInput
+    statement?: FleetPayoutStatementOrderByWithRelationInput
+    uploadedBy?: UserOrderByWithRelationInput
+    _relevance?: FleetPayoutInvoiceOrderByRelevanceInput
+  }
+
+  export type FleetPayoutInvoiceWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    statementId?: string
+    AND?: FleetPayoutInvoiceWhereInput | FleetPayoutInvoiceWhereInput[]
+    OR?: FleetPayoutInvoiceWhereInput[]
+    NOT?: FleetPayoutInvoiceWhereInput | FleetPayoutInvoiceWhereInput[]
+    tenantId?: StringFilter<"FleetPayoutInvoice"> | string
+    fleetPartnerId?: StringFilter<"FleetPayoutInvoice"> | string
+    fileName?: StringFilter<"FleetPayoutInvoice"> | string
+    mimeType?: StringFilter<"FleetPayoutInvoice"> | string
+    sizeBytes?: IntFilter<"FleetPayoutInvoice"> | number
+    fileKey?: StringNullableFilter<"FleetPayoutInvoice"> | string | null
+    fileData?: BytesNullableFilter<"FleetPayoutInvoice"> | Buffer | null
+    uploadedById?: StringNullableFilter<"FleetPayoutInvoice"> | string | null
+    uploadedAt?: DateTimeFilter<"FleetPayoutInvoice"> | Date | string
+    tenant?: XOR<TenantRelationFilter, TenantWhereInput>
+    fleet?: XOR<FleetPartnerRelationFilter, FleetPartnerWhereInput>
+    statement?: XOR<FleetPayoutStatementRelationFilter, FleetPayoutStatementWhereInput>
+    uploadedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+  }, "id" | "statementId">
+
+  export type FleetPayoutInvoiceOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    fleetPartnerId?: SortOrder
+    statementId?: SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    sizeBytes?: SortOrder
+    fileKey?: SortOrderInput | SortOrder
+    fileData?: SortOrderInput | SortOrder
+    uploadedById?: SortOrderInput | SortOrder
+    uploadedAt?: SortOrder
+    _count?: FleetPayoutInvoiceCountOrderByAggregateInput
+    _avg?: FleetPayoutInvoiceAvgOrderByAggregateInput
+    _max?: FleetPayoutInvoiceMaxOrderByAggregateInput
+    _min?: FleetPayoutInvoiceMinOrderByAggregateInput
+    _sum?: FleetPayoutInvoiceSumOrderByAggregateInput
+  }
+
+  export type FleetPayoutInvoiceScalarWhereWithAggregatesInput = {
+    AND?: FleetPayoutInvoiceScalarWhereWithAggregatesInput | FleetPayoutInvoiceScalarWhereWithAggregatesInput[]
+    OR?: FleetPayoutInvoiceScalarWhereWithAggregatesInput[]
+    NOT?: FleetPayoutInvoiceScalarWhereWithAggregatesInput | FleetPayoutInvoiceScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"FleetPayoutInvoice"> | string
+    tenantId?: StringWithAggregatesFilter<"FleetPayoutInvoice"> | string
+    fleetPartnerId?: StringWithAggregatesFilter<"FleetPayoutInvoice"> | string
+    statementId?: StringWithAggregatesFilter<"FleetPayoutInvoice"> | string
+    fileName?: StringWithAggregatesFilter<"FleetPayoutInvoice"> | string
+    mimeType?: StringWithAggregatesFilter<"FleetPayoutInvoice"> | string
+    sizeBytes?: IntWithAggregatesFilter<"FleetPayoutInvoice"> | number
+    fileKey?: StringNullableWithAggregatesFilter<"FleetPayoutInvoice"> | string | null
+    fileData?: BytesNullableWithAggregatesFilter<"FleetPayoutInvoice"> | Buffer | null
+    uploadedById?: StringNullableWithAggregatesFilter<"FleetPayoutInvoice"> | string | null
+    uploadedAt?: DateTimeWithAggregatesFilter<"FleetPayoutInvoice"> | Date | string
   }
 
   export type FleetDocumentWhereInput = {
@@ -163321,6 +164765,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -163439,6 +164884,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -163557,6 +165003,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -163675,6 +165122,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -163976,6 +165424,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -164024,6 +165473,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUpdateInput = {
@@ -164072,6 +165522,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -164120,6 +165571,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -175908,6 +177360,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestCreateNestedManyWithoutFleetInput
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerUncheckedCreateInput = {
@@ -175933,6 +177386,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutFleetInput
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerUpdateInput = {
@@ -175958,6 +177412,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateInput = {
@@ -175983,6 +177438,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
   }
 
   export type FleetPartnerCreateManyInput = {
@@ -176055,6 +177511,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutFleetPayoutStatementsInput
     fleet: FleetPartnerCreateNestedOneWithoutStatementsInput
+    invoice?: FleetPayoutInvoiceCreateNestedOneWithoutStatementInput
   }
 
   export type FleetPayoutStatementUncheckedCreateInput = {
@@ -176075,6 +177532,7 @@ export namespace Prisma {
     disputeTicketId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    invoice?: FleetPayoutInvoiceUncheckedCreateNestedOneWithoutStatementInput
   }
 
   export type FleetPayoutStatementUpdateInput = {
@@ -176095,6 +177553,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutFleetPayoutStatementsNestedInput
     fleet?: FleetPartnerUpdateOneRequiredWithoutStatementsNestedInput
+    invoice?: FleetPayoutInvoiceUpdateOneWithoutStatementNestedInput
   }
 
   export type FleetPayoutStatementUncheckedUpdateInput = {
@@ -176115,6 +177574,7 @@ export namespace Prisma {
     disputeTicketId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    invoice?: FleetPayoutInvoiceUncheckedUpdateOneWithoutStatementNestedInput
   }
 
   export type FleetPayoutStatementCreateManyInput = {
@@ -176173,6 +177633,100 @@ export namespace Prisma {
     disputeTicketId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FleetPayoutInvoiceCreateInput = {
+    id?: string
+    fileName: string
+    mimeType: string
+    sizeBytes: number
+    fileKey?: string | null
+    fileData?: Buffer | null
+    uploadedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutFleetPayoutInvoicesInput
+    fleet: FleetPartnerCreateNestedOneWithoutPayoutInvoicesInput
+    statement: FleetPayoutStatementCreateNestedOneWithoutInvoiceInput
+    uploadedBy?: UserCreateNestedOneWithoutUploadedPayoutInvoicesInput
+  }
+
+  export type FleetPayoutInvoiceUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    fleetPartnerId: string
+    statementId: string
+    fileName: string
+    mimeType: string
+    sizeBytes: number
+    fileKey?: string | null
+    fileData?: Buffer | null
+    uploadedById?: string | null
+    uploadedAt?: Date | string
+  }
+
+  export type FleetPayoutInvoiceUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutFleetPayoutInvoicesNestedInput
+    fleet?: FleetPartnerUpdateOneRequiredWithoutPayoutInvoicesNestedInput
+    statement?: FleetPayoutStatementUpdateOneRequiredWithoutInvoiceNestedInput
+    uploadedBy?: UserUpdateOneWithoutUploadedPayoutInvoicesNestedInput
+  }
+
+  export type FleetPayoutInvoiceUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    fleetPartnerId?: StringFieldUpdateOperationsInput | string
+    statementId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
+    uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FleetPayoutInvoiceCreateManyInput = {
+    id?: string
+    tenantId: string
+    fleetPartnerId: string
+    statementId: string
+    fileName: string
+    mimeType: string
+    sizeBytes: number
+    fileKey?: string | null
+    fileData?: Buffer | null
+    uploadedById?: string | null
+    uploadedAt?: Date | string
+  }
+
+  export type FleetPayoutInvoiceUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FleetPayoutInvoiceUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    fleetPartnerId?: StringFieldUpdateOperationsInput | string
+    statementId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
+    uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type FleetDocumentCreateInput = {
@@ -177726,6 +179280,12 @@ export namespace Prisma {
     none?: FleetPayoutStatementWhereInput
   }
 
+  export type FleetPayoutInvoiceListRelationFilter = {
+    every?: FleetPayoutInvoiceWhereInput
+    some?: FleetPayoutInvoiceWhereInput
+    none?: FleetPayoutInvoiceWhereInput
+  }
+
   export type DeliveryPlanListRelationFilter = {
     every?: DeliveryPlanWhereInput
     some?: DeliveryPlanWhereInput
@@ -178144,6 +179704,10 @@ export namespace Prisma {
   }
 
   export type FleetPayoutStatementOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type FleetPayoutInvoiceOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -186598,6 +188162,11 @@ export namespace Prisma {
     isNot?: FleetPartnerWhereInput
   }
 
+  export type FleetPayoutInvoiceNullableRelationFilter = {
+    is?: FleetPayoutInvoiceWhereInput | null
+    isNot?: FleetPayoutInvoiceWhereInput | null
+  }
+
   export type FleetPayoutStatementOrderByRelevanceInput = {
     fields: FleetPayoutStatementOrderByRelevanceFieldEnum | FleetPayoutStatementOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -186680,6 +188249,84 @@ export namespace Prisma {
     deliveredOrders?: SortOrder
     feePerOrderKwd?: SortOrder
     totalKwd?: SortOrder
+  }
+
+  export type BytesNullableFilter<$PrismaModel = never> = {
+    equals?: Buffer | BytesFieldRefInput<$PrismaModel> | null
+    in?: Buffer[] | ListBytesFieldRefInput<$PrismaModel> | null
+    notIn?: Buffer[] | ListBytesFieldRefInput<$PrismaModel> | null
+    not?: NestedBytesNullableFilter<$PrismaModel> | Buffer | null
+  }
+
+  export type FleetPayoutStatementRelationFilter = {
+    is?: FleetPayoutStatementWhereInput
+    isNot?: FleetPayoutStatementWhereInput
+  }
+
+  export type FleetPayoutInvoiceOrderByRelevanceInput = {
+    fields: FleetPayoutInvoiceOrderByRelevanceFieldEnum | FleetPayoutInvoiceOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type FleetPayoutInvoiceCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    fleetPartnerId?: SortOrder
+    statementId?: SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    sizeBytes?: SortOrder
+    fileKey?: SortOrder
+    fileData?: SortOrder
+    uploadedById?: SortOrder
+    uploadedAt?: SortOrder
+  }
+
+  export type FleetPayoutInvoiceAvgOrderByAggregateInput = {
+    sizeBytes?: SortOrder
+  }
+
+  export type FleetPayoutInvoiceMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    fleetPartnerId?: SortOrder
+    statementId?: SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    sizeBytes?: SortOrder
+    fileKey?: SortOrder
+    fileData?: SortOrder
+    uploadedById?: SortOrder
+    uploadedAt?: SortOrder
+  }
+
+  export type FleetPayoutInvoiceMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    fleetPartnerId?: SortOrder
+    statementId?: SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    sizeBytes?: SortOrder
+    fileKey?: SortOrder
+    fileData?: SortOrder
+    uploadedById?: SortOrder
+    uploadedAt?: SortOrder
+  }
+
+  export type FleetPayoutInvoiceSumOrderByAggregateInput = {
+    sizeBytes?: SortOrder
+  }
+
+  export type BytesNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Buffer | BytesFieldRefInput<$PrismaModel> | null
+    in?: Buffer[] | ListBytesFieldRefInput<$PrismaModel> | null
+    notIn?: Buffer[] | ListBytesFieldRefInput<$PrismaModel> | null
+    not?: NestedBytesNullableWithAggregatesFilter<$PrismaModel> | Buffer | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedBytesNullableFilter<$PrismaModel>
+    _max?: NestedBytesNullableFilter<$PrismaModel>
   }
 
   export type EnumFleetDocumentStatusFilter<$PrismaModel = never> = {
@@ -187993,6 +189640,13 @@ export namespace Prisma {
     connect?: FleetPayoutStatementWhereUniqueInput | FleetPayoutStatementWhereUniqueInput[]
   }
 
+  export type FleetPayoutInvoiceCreateNestedManyWithoutTenantInput = {
+    create?: XOR<FleetPayoutInvoiceCreateWithoutTenantInput, FleetPayoutInvoiceUncheckedCreateWithoutTenantInput> | FleetPayoutInvoiceCreateWithoutTenantInput[] | FleetPayoutInvoiceUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: FleetPayoutInvoiceCreateOrConnectWithoutTenantInput | FleetPayoutInvoiceCreateOrConnectWithoutTenantInput[]
+    createMany?: FleetPayoutInvoiceCreateManyTenantInputEnvelope
+    connect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+  }
+
   export type DeliveryPlanCreateNestedManyWithoutTenantInput = {
     create?: XOR<DeliveryPlanCreateWithoutTenantInput, DeliveryPlanUncheckedCreateWithoutTenantInput> | DeliveryPlanCreateWithoutTenantInput[] | DeliveryPlanUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: DeliveryPlanCreateOrConnectWithoutTenantInput | DeliveryPlanCreateOrConnectWithoutTenantInput[]
@@ -188696,6 +190350,13 @@ export namespace Prisma {
     connectOrCreate?: FleetPayoutStatementCreateOrConnectWithoutTenantInput | FleetPayoutStatementCreateOrConnectWithoutTenantInput[]
     createMany?: FleetPayoutStatementCreateManyTenantInputEnvelope
     connect?: FleetPayoutStatementWhereUniqueInput | FleetPayoutStatementWhereUniqueInput[]
+  }
+
+  export type FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput = {
+    create?: XOR<FleetPayoutInvoiceCreateWithoutTenantInput, FleetPayoutInvoiceUncheckedCreateWithoutTenantInput> | FleetPayoutInvoiceCreateWithoutTenantInput[] | FleetPayoutInvoiceUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: FleetPayoutInvoiceCreateOrConnectWithoutTenantInput | FleetPayoutInvoiceCreateOrConnectWithoutTenantInput[]
+    createMany?: FleetPayoutInvoiceCreateManyTenantInputEnvelope
+    connect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
   }
 
   export type DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput = {
@@ -190068,6 +191729,20 @@ export namespace Prisma {
     update?: FleetPayoutStatementUpdateWithWhereUniqueWithoutTenantInput | FleetPayoutStatementUpdateWithWhereUniqueWithoutTenantInput[]
     updateMany?: FleetPayoutStatementUpdateManyWithWhereWithoutTenantInput | FleetPayoutStatementUpdateManyWithWhereWithoutTenantInput[]
     deleteMany?: FleetPayoutStatementScalarWhereInput | FleetPayoutStatementScalarWhereInput[]
+  }
+
+  export type FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<FleetPayoutInvoiceCreateWithoutTenantInput, FleetPayoutInvoiceUncheckedCreateWithoutTenantInput> | FleetPayoutInvoiceCreateWithoutTenantInput[] | FleetPayoutInvoiceUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: FleetPayoutInvoiceCreateOrConnectWithoutTenantInput | FleetPayoutInvoiceCreateOrConnectWithoutTenantInput[]
+    upsert?: FleetPayoutInvoiceUpsertWithWhereUniqueWithoutTenantInput | FleetPayoutInvoiceUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: FleetPayoutInvoiceCreateManyTenantInputEnvelope
+    set?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    disconnect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    delete?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    connect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    update?: FleetPayoutInvoiceUpdateWithWhereUniqueWithoutTenantInput | FleetPayoutInvoiceUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: FleetPayoutInvoiceUpdateManyWithWhereWithoutTenantInput | FleetPayoutInvoiceUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: FleetPayoutInvoiceScalarWhereInput | FleetPayoutInvoiceScalarWhereInput[]
   }
 
   export type DeliveryPlanUpdateManyWithoutTenantNestedInput = {
@@ -191476,6 +193151,20 @@ export namespace Prisma {
     deleteMany?: FleetPayoutStatementScalarWhereInput | FleetPayoutStatementScalarWhereInput[]
   }
 
+  export type FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<FleetPayoutInvoiceCreateWithoutTenantInput, FleetPayoutInvoiceUncheckedCreateWithoutTenantInput> | FleetPayoutInvoiceCreateWithoutTenantInput[] | FleetPayoutInvoiceUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: FleetPayoutInvoiceCreateOrConnectWithoutTenantInput | FleetPayoutInvoiceCreateOrConnectWithoutTenantInput[]
+    upsert?: FleetPayoutInvoiceUpsertWithWhereUniqueWithoutTenantInput | FleetPayoutInvoiceUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: FleetPayoutInvoiceCreateManyTenantInputEnvelope
+    set?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    disconnect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    delete?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    connect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    update?: FleetPayoutInvoiceUpdateWithWhereUniqueWithoutTenantInput | FleetPayoutInvoiceUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: FleetPayoutInvoiceUpdateManyWithWhereWithoutTenantInput | FleetPayoutInvoiceUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: FleetPayoutInvoiceScalarWhereInput | FleetPayoutInvoiceScalarWhereInput[]
+  }
+
   export type DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput = {
     create?: XOR<DeliveryPlanCreateWithoutTenantInput, DeliveryPlanUncheckedCreateWithoutTenantInput> | DeliveryPlanCreateWithoutTenantInput[] | DeliveryPlanUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: DeliveryPlanCreateOrConnectWithoutTenantInput | DeliveryPlanCreateOrConnectWithoutTenantInput[]
@@ -192173,6 +193862,13 @@ export namespace Prisma {
     connect?: FleetIssueWhereUniqueInput | FleetIssueWhereUniqueInput[]
   }
 
+  export type FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput = {
+    create?: XOR<FleetPayoutInvoiceCreateWithoutUploadedByInput, FleetPayoutInvoiceUncheckedCreateWithoutUploadedByInput> | FleetPayoutInvoiceCreateWithoutUploadedByInput[] | FleetPayoutInvoiceUncheckedCreateWithoutUploadedByInput[]
+    connectOrCreate?: FleetPayoutInvoiceCreateOrConnectWithoutUploadedByInput | FleetPayoutInvoiceCreateOrConnectWithoutUploadedByInput[]
+    createMany?: FleetPayoutInvoiceCreateManyUploadedByInputEnvelope
+    connect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+  }
+
   export type CompanyUncheckedCreateNestedManyWithoutAccountManagerInput = {
     create?: XOR<CompanyCreateWithoutAccountManagerInput, CompanyUncheckedCreateWithoutAccountManagerInput> | CompanyCreateWithoutAccountManagerInput[] | CompanyUncheckedCreateWithoutAccountManagerInput[]
     connectOrCreate?: CompanyCreateOrConnectWithoutAccountManagerInput | CompanyCreateOrConnectWithoutAccountManagerInput[]
@@ -192332,6 +194028,13 @@ export namespace Prisma {
     connectOrCreate?: FleetIssueCreateOrConnectWithoutResolvedByInput | FleetIssueCreateOrConnectWithoutResolvedByInput[]
     createMany?: FleetIssueCreateManyResolvedByInputEnvelope
     connect?: FleetIssueWhereUniqueInput | FleetIssueWhereUniqueInput[]
+  }
+
+  export type FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput = {
+    create?: XOR<FleetPayoutInvoiceCreateWithoutUploadedByInput, FleetPayoutInvoiceUncheckedCreateWithoutUploadedByInput> | FleetPayoutInvoiceCreateWithoutUploadedByInput[] | FleetPayoutInvoiceUncheckedCreateWithoutUploadedByInput[]
+    connectOrCreate?: FleetPayoutInvoiceCreateOrConnectWithoutUploadedByInput | FleetPayoutInvoiceCreateOrConnectWithoutUploadedByInput[]
+    createMany?: FleetPayoutInvoiceCreateManyUploadedByInputEnvelope
+    connect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
   }
 
   export type EnumUserRoleFieldUpdateOperationsInput = {
@@ -192708,6 +194411,20 @@ export namespace Prisma {
     deleteMany?: FleetIssueScalarWhereInput | FleetIssueScalarWhereInput[]
   }
 
+  export type FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput = {
+    create?: XOR<FleetPayoutInvoiceCreateWithoutUploadedByInput, FleetPayoutInvoiceUncheckedCreateWithoutUploadedByInput> | FleetPayoutInvoiceCreateWithoutUploadedByInput[] | FleetPayoutInvoiceUncheckedCreateWithoutUploadedByInput[]
+    connectOrCreate?: FleetPayoutInvoiceCreateOrConnectWithoutUploadedByInput | FleetPayoutInvoiceCreateOrConnectWithoutUploadedByInput[]
+    upsert?: FleetPayoutInvoiceUpsertWithWhereUniqueWithoutUploadedByInput | FleetPayoutInvoiceUpsertWithWhereUniqueWithoutUploadedByInput[]
+    createMany?: FleetPayoutInvoiceCreateManyUploadedByInputEnvelope
+    set?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    disconnect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    delete?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    connect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    update?: FleetPayoutInvoiceUpdateWithWhereUniqueWithoutUploadedByInput | FleetPayoutInvoiceUpdateWithWhereUniqueWithoutUploadedByInput[]
+    updateMany?: FleetPayoutInvoiceUpdateManyWithWhereWithoutUploadedByInput | FleetPayoutInvoiceUpdateManyWithWhereWithoutUploadedByInput[]
+    deleteMany?: FleetPayoutInvoiceScalarWhereInput | FleetPayoutInvoiceScalarWhereInput[]
+  }
+
   export type CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput = {
     create?: XOR<CompanyCreateWithoutAccountManagerInput, CompanyUncheckedCreateWithoutAccountManagerInput> | CompanyCreateWithoutAccountManagerInput[] | CompanyUncheckedCreateWithoutAccountManagerInput[]
     connectOrCreate?: CompanyCreateOrConnectWithoutAccountManagerInput | CompanyCreateOrConnectWithoutAccountManagerInput[]
@@ -193028,6 +194745,20 @@ export namespace Prisma {
     update?: FleetIssueUpdateWithWhereUniqueWithoutResolvedByInput | FleetIssueUpdateWithWhereUniqueWithoutResolvedByInput[]
     updateMany?: FleetIssueUpdateManyWithWhereWithoutResolvedByInput | FleetIssueUpdateManyWithWhereWithoutResolvedByInput[]
     deleteMany?: FleetIssueScalarWhereInput | FleetIssueScalarWhereInput[]
+  }
+
+  export type FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput = {
+    create?: XOR<FleetPayoutInvoiceCreateWithoutUploadedByInput, FleetPayoutInvoiceUncheckedCreateWithoutUploadedByInput> | FleetPayoutInvoiceCreateWithoutUploadedByInput[] | FleetPayoutInvoiceUncheckedCreateWithoutUploadedByInput[]
+    connectOrCreate?: FleetPayoutInvoiceCreateOrConnectWithoutUploadedByInput | FleetPayoutInvoiceCreateOrConnectWithoutUploadedByInput[]
+    upsert?: FleetPayoutInvoiceUpsertWithWhereUniqueWithoutUploadedByInput | FleetPayoutInvoiceUpsertWithWhereUniqueWithoutUploadedByInput[]
+    createMany?: FleetPayoutInvoiceCreateManyUploadedByInputEnvelope
+    set?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    disconnect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    delete?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    connect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    update?: FleetPayoutInvoiceUpdateWithWhereUniqueWithoutUploadedByInput | FleetPayoutInvoiceUpdateWithWhereUniqueWithoutUploadedByInput[]
+    updateMany?: FleetPayoutInvoiceUpdateManyWithWhereWithoutUploadedByInput | FleetPayoutInvoiceUpdateManyWithWhereWithoutUploadedByInput[]
+    deleteMany?: FleetPayoutInvoiceScalarWhereInput | FleetPayoutInvoiceScalarWhereInput[]
   }
 
   export type TenantCreateNestedOneWithoutDriversInput = {
@@ -201253,6 +202984,13 @@ export namespace Prisma {
     connect?: SupportTicketWhereUniqueInput | SupportTicketWhereUniqueInput[]
   }
 
+  export type FleetPayoutInvoiceCreateNestedManyWithoutFleetInput = {
+    create?: XOR<FleetPayoutInvoiceCreateWithoutFleetInput, FleetPayoutInvoiceUncheckedCreateWithoutFleetInput> | FleetPayoutInvoiceCreateWithoutFleetInput[] | FleetPayoutInvoiceUncheckedCreateWithoutFleetInput[]
+    connectOrCreate?: FleetPayoutInvoiceCreateOrConnectWithoutFleetInput | FleetPayoutInvoiceCreateOrConnectWithoutFleetInput[]
+    createMany?: FleetPayoutInvoiceCreateManyFleetInputEnvelope
+    connect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+  }
+
   export type DriverUncheckedCreateNestedManyWithoutFleetPartnerInput = {
     create?: XOR<DriverCreateWithoutFleetPartnerInput, DriverUncheckedCreateWithoutFleetPartnerInput> | DriverCreateWithoutFleetPartnerInput[] | DriverUncheckedCreateWithoutFleetPartnerInput[]
     connectOrCreate?: DriverCreateOrConnectWithoutFleetPartnerInput | DriverCreateOrConnectWithoutFleetPartnerInput[]
@@ -201300,6 +203038,13 @@ export namespace Prisma {
     connectOrCreate?: SupportTicketCreateOrConnectWithoutFleetInput | SupportTicketCreateOrConnectWithoutFleetInput[]
     createMany?: SupportTicketCreateManyFleetInputEnvelope
     connect?: SupportTicketWhereUniqueInput | SupportTicketWhereUniqueInput[]
+  }
+
+  export type FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput = {
+    create?: XOR<FleetPayoutInvoiceCreateWithoutFleetInput, FleetPayoutInvoiceUncheckedCreateWithoutFleetInput> | FleetPayoutInvoiceCreateWithoutFleetInput[] | FleetPayoutInvoiceUncheckedCreateWithoutFleetInput[]
+    connectOrCreate?: FleetPayoutInvoiceCreateOrConnectWithoutFleetInput | FleetPayoutInvoiceCreateOrConnectWithoutFleetInput[]
+    createMany?: FleetPayoutInvoiceCreateManyFleetInputEnvelope
+    connect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
   }
 
   export type TenantUpdateOneRequiredWithoutFleetPartnersNestedInput = {
@@ -201418,6 +203163,20 @@ export namespace Prisma {
     deleteMany?: SupportTicketScalarWhereInput | SupportTicketScalarWhereInput[]
   }
 
+  export type FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput = {
+    create?: XOR<FleetPayoutInvoiceCreateWithoutFleetInput, FleetPayoutInvoiceUncheckedCreateWithoutFleetInput> | FleetPayoutInvoiceCreateWithoutFleetInput[] | FleetPayoutInvoiceUncheckedCreateWithoutFleetInput[]
+    connectOrCreate?: FleetPayoutInvoiceCreateOrConnectWithoutFleetInput | FleetPayoutInvoiceCreateOrConnectWithoutFleetInput[]
+    upsert?: FleetPayoutInvoiceUpsertWithWhereUniqueWithoutFleetInput | FleetPayoutInvoiceUpsertWithWhereUniqueWithoutFleetInput[]
+    createMany?: FleetPayoutInvoiceCreateManyFleetInputEnvelope
+    set?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    disconnect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    delete?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    connect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    update?: FleetPayoutInvoiceUpdateWithWhereUniqueWithoutFleetInput | FleetPayoutInvoiceUpdateWithWhereUniqueWithoutFleetInput[]
+    updateMany?: FleetPayoutInvoiceUpdateManyWithWhereWithoutFleetInput | FleetPayoutInvoiceUpdateManyWithWhereWithoutFleetInput[]
+    deleteMany?: FleetPayoutInvoiceScalarWhereInput | FleetPayoutInvoiceScalarWhereInput[]
+  }
+
   export type DriverUncheckedUpdateManyWithoutFleetPartnerNestedInput = {
     create?: XOR<DriverCreateWithoutFleetPartnerInput, DriverUncheckedCreateWithoutFleetPartnerInput> | DriverCreateWithoutFleetPartnerInput[] | DriverUncheckedCreateWithoutFleetPartnerInput[]
     connectOrCreate?: DriverCreateOrConnectWithoutFleetPartnerInput | DriverCreateOrConnectWithoutFleetPartnerInput[]
@@ -201516,6 +203275,20 @@ export namespace Prisma {
     deleteMany?: SupportTicketScalarWhereInput | SupportTicketScalarWhereInput[]
   }
 
+  export type FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput = {
+    create?: XOR<FleetPayoutInvoiceCreateWithoutFleetInput, FleetPayoutInvoiceUncheckedCreateWithoutFleetInput> | FleetPayoutInvoiceCreateWithoutFleetInput[] | FleetPayoutInvoiceUncheckedCreateWithoutFleetInput[]
+    connectOrCreate?: FleetPayoutInvoiceCreateOrConnectWithoutFleetInput | FleetPayoutInvoiceCreateOrConnectWithoutFleetInput[]
+    upsert?: FleetPayoutInvoiceUpsertWithWhereUniqueWithoutFleetInput | FleetPayoutInvoiceUpsertWithWhereUniqueWithoutFleetInput[]
+    createMany?: FleetPayoutInvoiceCreateManyFleetInputEnvelope
+    set?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    disconnect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    delete?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    connect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+    update?: FleetPayoutInvoiceUpdateWithWhereUniqueWithoutFleetInput | FleetPayoutInvoiceUpdateWithWhereUniqueWithoutFleetInput[]
+    updateMany?: FleetPayoutInvoiceUpdateManyWithWhereWithoutFleetInput | FleetPayoutInvoiceUpdateManyWithWhereWithoutFleetInput[]
+    deleteMany?: FleetPayoutInvoiceScalarWhereInput | FleetPayoutInvoiceScalarWhereInput[]
+  }
+
   export type TenantCreateNestedOneWithoutFleetPayoutStatementsInput = {
     create?: XOR<TenantCreateWithoutFleetPayoutStatementsInput, TenantUncheckedCreateWithoutFleetPayoutStatementsInput>
     connectOrCreate?: TenantCreateOrConnectWithoutFleetPayoutStatementsInput
@@ -201526,6 +203299,18 @@ export namespace Prisma {
     create?: XOR<FleetPartnerCreateWithoutStatementsInput, FleetPartnerUncheckedCreateWithoutStatementsInput>
     connectOrCreate?: FleetPartnerCreateOrConnectWithoutStatementsInput
     connect?: FleetPartnerWhereUniqueInput
+  }
+
+  export type FleetPayoutInvoiceCreateNestedOneWithoutStatementInput = {
+    create?: XOR<FleetPayoutInvoiceCreateWithoutStatementInput, FleetPayoutInvoiceUncheckedCreateWithoutStatementInput>
+    connectOrCreate?: FleetPayoutInvoiceCreateOrConnectWithoutStatementInput
+    connect?: FleetPayoutInvoiceWhereUniqueInput
+  }
+
+  export type FleetPayoutInvoiceUncheckedCreateNestedOneWithoutStatementInput = {
+    create?: XOR<FleetPayoutInvoiceCreateWithoutStatementInput, FleetPayoutInvoiceUncheckedCreateWithoutStatementInput>
+    connectOrCreate?: FleetPayoutInvoiceCreateOrConnectWithoutStatementInput
+    connect?: FleetPayoutInvoiceWhereUniqueInput
   }
 
   export type TenantUpdateOneRequiredWithoutFleetPayoutStatementsNestedInput = {
@@ -201542,6 +203327,88 @@ export namespace Prisma {
     upsert?: FleetPartnerUpsertWithoutStatementsInput
     connect?: FleetPartnerWhereUniqueInput
     update?: XOR<XOR<FleetPartnerUpdateToOneWithWhereWithoutStatementsInput, FleetPartnerUpdateWithoutStatementsInput>, FleetPartnerUncheckedUpdateWithoutStatementsInput>
+  }
+
+  export type FleetPayoutInvoiceUpdateOneWithoutStatementNestedInput = {
+    create?: XOR<FleetPayoutInvoiceCreateWithoutStatementInput, FleetPayoutInvoiceUncheckedCreateWithoutStatementInput>
+    connectOrCreate?: FleetPayoutInvoiceCreateOrConnectWithoutStatementInput
+    upsert?: FleetPayoutInvoiceUpsertWithoutStatementInput
+    disconnect?: FleetPayoutInvoiceWhereInput | boolean
+    delete?: FleetPayoutInvoiceWhereInput | boolean
+    connect?: FleetPayoutInvoiceWhereUniqueInput
+    update?: XOR<XOR<FleetPayoutInvoiceUpdateToOneWithWhereWithoutStatementInput, FleetPayoutInvoiceUpdateWithoutStatementInput>, FleetPayoutInvoiceUncheckedUpdateWithoutStatementInput>
+  }
+
+  export type FleetPayoutInvoiceUncheckedUpdateOneWithoutStatementNestedInput = {
+    create?: XOR<FleetPayoutInvoiceCreateWithoutStatementInput, FleetPayoutInvoiceUncheckedCreateWithoutStatementInput>
+    connectOrCreate?: FleetPayoutInvoiceCreateOrConnectWithoutStatementInput
+    upsert?: FleetPayoutInvoiceUpsertWithoutStatementInput
+    disconnect?: FleetPayoutInvoiceWhereInput | boolean
+    delete?: FleetPayoutInvoiceWhereInput | boolean
+    connect?: FleetPayoutInvoiceWhereUniqueInput
+    update?: XOR<XOR<FleetPayoutInvoiceUpdateToOneWithWhereWithoutStatementInput, FleetPayoutInvoiceUpdateWithoutStatementInput>, FleetPayoutInvoiceUncheckedUpdateWithoutStatementInput>
+  }
+
+  export type TenantCreateNestedOneWithoutFleetPayoutInvoicesInput = {
+    create?: XOR<TenantCreateWithoutFleetPayoutInvoicesInput, TenantUncheckedCreateWithoutFleetPayoutInvoicesInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutFleetPayoutInvoicesInput
+    connect?: TenantWhereUniqueInput
+  }
+
+  export type FleetPartnerCreateNestedOneWithoutPayoutInvoicesInput = {
+    create?: XOR<FleetPartnerCreateWithoutPayoutInvoicesInput, FleetPartnerUncheckedCreateWithoutPayoutInvoicesInput>
+    connectOrCreate?: FleetPartnerCreateOrConnectWithoutPayoutInvoicesInput
+    connect?: FleetPartnerWhereUniqueInput
+  }
+
+  export type FleetPayoutStatementCreateNestedOneWithoutInvoiceInput = {
+    create?: XOR<FleetPayoutStatementCreateWithoutInvoiceInput, FleetPayoutStatementUncheckedCreateWithoutInvoiceInput>
+    connectOrCreate?: FleetPayoutStatementCreateOrConnectWithoutInvoiceInput
+    connect?: FleetPayoutStatementWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutUploadedPayoutInvoicesInput = {
+    create?: XOR<UserCreateWithoutUploadedPayoutInvoicesInput, UserUncheckedCreateWithoutUploadedPayoutInvoicesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutUploadedPayoutInvoicesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type NullableBytesFieldUpdateOperationsInput = {
+    set?: Buffer | null
+  }
+
+  export type TenantUpdateOneRequiredWithoutFleetPayoutInvoicesNestedInput = {
+    create?: XOR<TenantCreateWithoutFleetPayoutInvoicesInput, TenantUncheckedCreateWithoutFleetPayoutInvoicesInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutFleetPayoutInvoicesInput
+    upsert?: TenantUpsertWithoutFleetPayoutInvoicesInput
+    connect?: TenantWhereUniqueInput
+    update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutFleetPayoutInvoicesInput, TenantUpdateWithoutFleetPayoutInvoicesInput>, TenantUncheckedUpdateWithoutFleetPayoutInvoicesInput>
+  }
+
+  export type FleetPartnerUpdateOneRequiredWithoutPayoutInvoicesNestedInput = {
+    create?: XOR<FleetPartnerCreateWithoutPayoutInvoicesInput, FleetPartnerUncheckedCreateWithoutPayoutInvoicesInput>
+    connectOrCreate?: FleetPartnerCreateOrConnectWithoutPayoutInvoicesInput
+    upsert?: FleetPartnerUpsertWithoutPayoutInvoicesInput
+    connect?: FleetPartnerWhereUniqueInput
+    update?: XOR<XOR<FleetPartnerUpdateToOneWithWhereWithoutPayoutInvoicesInput, FleetPartnerUpdateWithoutPayoutInvoicesInput>, FleetPartnerUncheckedUpdateWithoutPayoutInvoicesInput>
+  }
+
+  export type FleetPayoutStatementUpdateOneRequiredWithoutInvoiceNestedInput = {
+    create?: XOR<FleetPayoutStatementCreateWithoutInvoiceInput, FleetPayoutStatementUncheckedCreateWithoutInvoiceInput>
+    connectOrCreate?: FleetPayoutStatementCreateOrConnectWithoutInvoiceInput
+    upsert?: FleetPayoutStatementUpsertWithoutInvoiceInput
+    connect?: FleetPayoutStatementWhereUniqueInput
+    update?: XOR<XOR<FleetPayoutStatementUpdateToOneWithWhereWithoutInvoiceInput, FleetPayoutStatementUpdateWithoutInvoiceInput>, FleetPayoutStatementUncheckedUpdateWithoutInvoiceInput>
+  }
+
+  export type UserUpdateOneWithoutUploadedPayoutInvoicesNestedInput = {
+    create?: XOR<UserCreateWithoutUploadedPayoutInvoicesInput, UserUncheckedCreateWithoutUploadedPayoutInvoicesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutUploadedPayoutInvoicesInput
+    upsert?: UserUpsertWithoutUploadedPayoutInvoicesInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutUploadedPayoutInvoicesInput, UserUpdateWithoutUploadedPayoutInvoicesInput>, UserUncheckedUpdateWithoutUploadedPayoutInvoicesInput>
   }
 
   export type TenantCreateNestedOneWithoutFleetDocumentsInput = {
@@ -203387,6 +205254,23 @@ export namespace Prisma {
     _max?: NestedEnumWebhookEventStatusFilter<$PrismaModel>
   }
 
+  export type NestedBytesNullableFilter<$PrismaModel = never> = {
+    equals?: Buffer | BytesFieldRefInput<$PrismaModel> | null
+    in?: Buffer[] | ListBytesFieldRefInput<$PrismaModel> | null
+    notIn?: Buffer[] | ListBytesFieldRefInput<$PrismaModel> | null
+    not?: NestedBytesNullableFilter<$PrismaModel> | Buffer | null
+  }
+
+  export type NestedBytesNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Buffer | BytesFieldRefInput<$PrismaModel> | null
+    in?: Buffer[] | ListBytesFieldRefInput<$PrismaModel> | null
+    notIn?: Buffer[] | ListBytesFieldRefInput<$PrismaModel> | null
+    not?: NestedBytesNullableWithAggregatesFilter<$PrismaModel> | Buffer | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedBytesNullableFilter<$PrismaModel>
+    _max?: NestedBytesNullableFilter<$PrismaModel>
+  }
+
   export type NestedEnumFleetDocumentStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.FleetDocumentStatus | EnumFleetDocumentStatusFieldRefInput<$PrismaModel>
     in?: $Enums.FleetDocumentStatus[] | ListEnumFleetDocumentStatusFieldRefInput<$PrismaModel>
@@ -203663,6 +205547,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutTenantInput = {
@@ -203710,6 +205595,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutTenantInput = {
@@ -207564,6 +209450,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestCreateNestedManyWithoutFleetInput
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutTenantInput = {
@@ -207588,6 +209475,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutFleetInput
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutTenantInput = {
@@ -207617,6 +209505,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     fleet: FleetPartnerCreateNestedOneWithoutStatementsInput
+    invoice?: FleetPayoutInvoiceCreateNestedOneWithoutStatementInput
   }
 
   export type FleetPayoutStatementUncheckedCreateWithoutTenantInput = {
@@ -207636,6 +209525,7 @@ export namespace Prisma {
     disputeTicketId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    invoice?: FleetPayoutInvoiceUncheckedCreateNestedOneWithoutStatementInput
   }
 
   export type FleetPayoutStatementCreateOrConnectWithoutTenantInput = {
@@ -207645,6 +209535,42 @@ export namespace Prisma {
 
   export type FleetPayoutStatementCreateManyTenantInputEnvelope = {
     data: FleetPayoutStatementCreateManyTenantInput | FleetPayoutStatementCreateManyTenantInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type FleetPayoutInvoiceCreateWithoutTenantInput = {
+    id?: string
+    fileName: string
+    mimeType: string
+    sizeBytes: number
+    fileKey?: string | null
+    fileData?: Buffer | null
+    uploadedAt?: Date | string
+    fleet: FleetPartnerCreateNestedOneWithoutPayoutInvoicesInput
+    statement: FleetPayoutStatementCreateNestedOneWithoutInvoiceInput
+    uploadedBy?: UserCreateNestedOneWithoutUploadedPayoutInvoicesInput
+  }
+
+  export type FleetPayoutInvoiceUncheckedCreateWithoutTenantInput = {
+    id?: string
+    fleetPartnerId: string
+    statementId: string
+    fileName: string
+    mimeType: string
+    sizeBytes: number
+    fileKey?: string | null
+    fileData?: Buffer | null
+    uploadedById?: string | null
+    uploadedAt?: Date | string
+  }
+
+  export type FleetPayoutInvoiceCreateOrConnectWithoutTenantInput = {
+    where: FleetPayoutInvoiceWhereUniqueInput
+    create: XOR<FleetPayoutInvoiceCreateWithoutTenantInput, FleetPayoutInvoiceUncheckedCreateWithoutTenantInput>
+  }
+
+  export type FleetPayoutInvoiceCreateManyTenantInputEnvelope = {
+    data: FleetPayoutInvoiceCreateManyTenantInput | FleetPayoutInvoiceCreateManyTenantInput[]
     skipDuplicates?: boolean
   }
 
@@ -211287,6 +213213,39 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"FleetPayoutStatement"> | Date | string
   }
 
+  export type FleetPayoutInvoiceUpsertWithWhereUniqueWithoutTenantInput = {
+    where: FleetPayoutInvoiceWhereUniqueInput
+    update: XOR<FleetPayoutInvoiceUpdateWithoutTenantInput, FleetPayoutInvoiceUncheckedUpdateWithoutTenantInput>
+    create: XOR<FleetPayoutInvoiceCreateWithoutTenantInput, FleetPayoutInvoiceUncheckedCreateWithoutTenantInput>
+  }
+
+  export type FleetPayoutInvoiceUpdateWithWhereUniqueWithoutTenantInput = {
+    where: FleetPayoutInvoiceWhereUniqueInput
+    data: XOR<FleetPayoutInvoiceUpdateWithoutTenantInput, FleetPayoutInvoiceUncheckedUpdateWithoutTenantInput>
+  }
+
+  export type FleetPayoutInvoiceUpdateManyWithWhereWithoutTenantInput = {
+    where: FleetPayoutInvoiceScalarWhereInput
+    data: XOR<FleetPayoutInvoiceUpdateManyMutationInput, FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantInput>
+  }
+
+  export type FleetPayoutInvoiceScalarWhereInput = {
+    AND?: FleetPayoutInvoiceScalarWhereInput | FleetPayoutInvoiceScalarWhereInput[]
+    OR?: FleetPayoutInvoiceScalarWhereInput[]
+    NOT?: FleetPayoutInvoiceScalarWhereInput | FleetPayoutInvoiceScalarWhereInput[]
+    id?: StringFilter<"FleetPayoutInvoice"> | string
+    tenantId?: StringFilter<"FleetPayoutInvoice"> | string
+    fleetPartnerId?: StringFilter<"FleetPayoutInvoice"> | string
+    statementId?: StringFilter<"FleetPayoutInvoice"> | string
+    fileName?: StringFilter<"FleetPayoutInvoice"> | string
+    mimeType?: StringFilter<"FleetPayoutInvoice"> | string
+    sizeBytes?: IntFilter<"FleetPayoutInvoice"> | number
+    fileKey?: StringNullableFilter<"FleetPayoutInvoice"> | string | null
+    fileData?: BytesNullableFilter<"FleetPayoutInvoice"> | Buffer | null
+    uploadedById?: StringNullableFilter<"FleetPayoutInvoice"> | string | null
+    uploadedAt?: DateTimeFilter<"FleetPayoutInvoice"> | Date | string
+  }
+
   export type DeliveryPlanUpsertWithWhereUniqueWithoutTenantInput = {
     where: DeliveryPlanWhereUniqueInput
     update: XOR<DeliveryPlanUpdateWithoutTenantInput, DeliveryPlanUncheckedUpdateWithoutTenantInput>
@@ -211722,6 +213681,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -211839,6 +213799,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -211930,6 +213891,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutManagedCompaniesInput = {
@@ -211977,6 +213939,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutManagedCompaniesInput = {
@@ -212454,6 +214417,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -212571,6 +214535,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -212674,6 +214639,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutManagedCompaniesInput = {
@@ -212721,6 +214687,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type DriverUpsertWithWhereUniqueWithoutCompanyInput = {
@@ -212892,6 +214859,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -213009,6 +214977,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -213048,6 +215017,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestCreateNestedManyWithoutFleetInput
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutOwnerGroupInput = {
@@ -213072,6 +215042,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutFleetInput
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutOwnerGroupInput = {
@@ -213173,6 +215144,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutOwnerGroupInput = {
@@ -213220,6 +215192,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutOwnerGroupInput = {
@@ -213348,6 +215321,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -213465,6 +215439,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -213630,6 +215605,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -213747,6 +215723,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -213841,6 +215818,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestCreateNestedManyWithoutFleetInput
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutUsersInput = {
@@ -213865,6 +215843,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutFleetInput
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutUsersInput = {
@@ -215078,6 +217057,42 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type FleetPayoutInvoiceCreateWithoutUploadedByInput = {
+    id?: string
+    fileName: string
+    mimeType: string
+    sizeBytes: number
+    fileKey?: string | null
+    fileData?: Buffer | null
+    uploadedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutFleetPayoutInvoicesInput
+    fleet: FleetPartnerCreateNestedOneWithoutPayoutInvoicesInput
+    statement: FleetPayoutStatementCreateNestedOneWithoutInvoiceInput
+  }
+
+  export type FleetPayoutInvoiceUncheckedCreateWithoutUploadedByInput = {
+    id?: string
+    tenantId: string
+    fleetPartnerId: string
+    statementId: string
+    fileName: string
+    mimeType: string
+    sizeBytes: number
+    fileKey?: string | null
+    fileData?: Buffer | null
+    uploadedAt?: Date | string
+  }
+
+  export type FleetPayoutInvoiceCreateOrConnectWithoutUploadedByInput = {
+    where: FleetPayoutInvoiceWhereUniqueInput
+    create: XOR<FleetPayoutInvoiceCreateWithoutUploadedByInput, FleetPayoutInvoiceUncheckedCreateWithoutUploadedByInput>
+  }
+
+  export type FleetPayoutInvoiceCreateManyUploadedByInputEnvelope = {
+    data: FleetPayoutInvoiceCreateManyUploadedByInput | FleetPayoutInvoiceCreateManyUploadedByInput[]
+    skipDuplicates?: boolean
+  }
+
   export type TenantUpsertWithoutUsersInput = {
     update: XOR<TenantUpdateWithoutUsersInput, TenantUncheckedUpdateWithoutUsersInput>
     create: XOR<TenantCreateWithoutUsersInput, TenantUncheckedCreateWithoutUsersInput>
@@ -215194,6 +217209,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -215311,6 +217327,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -215417,6 +217434,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutUsersInput = {
@@ -215441,6 +217459,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
   }
 
   export type OwnerGroupUpsertWithoutUsersInput = {
@@ -215911,6 +217930,22 @@ export namespace Prisma {
     data: XOR<FleetIssueUpdateManyMutationInput, FleetIssueUncheckedUpdateManyWithoutResolvedByInput>
   }
 
+  export type FleetPayoutInvoiceUpsertWithWhereUniqueWithoutUploadedByInput = {
+    where: FleetPayoutInvoiceWhereUniqueInput
+    update: XOR<FleetPayoutInvoiceUpdateWithoutUploadedByInput, FleetPayoutInvoiceUncheckedUpdateWithoutUploadedByInput>
+    create: XOR<FleetPayoutInvoiceCreateWithoutUploadedByInput, FleetPayoutInvoiceUncheckedCreateWithoutUploadedByInput>
+  }
+
+  export type FleetPayoutInvoiceUpdateWithWhereUniqueWithoutUploadedByInput = {
+    where: FleetPayoutInvoiceWhereUniqueInput
+    data: XOR<FleetPayoutInvoiceUpdateWithoutUploadedByInput, FleetPayoutInvoiceUncheckedUpdateWithoutUploadedByInput>
+  }
+
+  export type FleetPayoutInvoiceUpdateManyWithWhereWithoutUploadedByInput = {
+    where: FleetPayoutInvoiceScalarWhereInput
+    data: XOR<FleetPayoutInvoiceUpdateManyMutationInput, FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByInput>
+  }
+
   export type TenantCreateWithoutDriversInput = {
     id?: string
     name: string
@@ -216016,6 +218051,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -216133,6 +218169,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -216234,6 +218271,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutSupervisedDriversInput = {
@@ -216281,6 +218319,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutSupervisedDriversInput = {
@@ -216310,6 +218349,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestCreateNestedManyWithoutFleetInput
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutDriversInput = {
@@ -216334,6 +218374,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutFleetInput
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutDriversInput = {
@@ -218581,6 +220622,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -218698,6 +220740,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -218811,6 +220854,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSupervisedDriversInput = {
@@ -218858,6 +220902,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type FleetPartnerUpsertWithoutDriversInput = {
@@ -218893,6 +220938,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutDriversInput = {
@@ -218917,6 +220963,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
   }
 
   export type DriverInventoryUpsertWithWhereUniqueWithoutDriverInput = {
@@ -219945,6 +221992,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -220062,6 +222110,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -220384,6 +222433,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -220501,6 +222551,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -221197,6 +223248,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -221314,6 +223366,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -221486,6 +223539,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -221603,6 +223657,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -221765,6 +223820,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -221882,6 +223938,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -222491,6 +224548,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -222608,6 +224666,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -223061,6 +225120,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -223178,6 +225238,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -223561,6 +225622,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -223678,6 +225740,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -224057,6 +226120,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -224174,6 +226238,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -224666,6 +226731,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -224783,6 +226849,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -225143,6 +227210,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -225260,6 +227328,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -225647,6 +227716,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -225764,6 +227834,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -226147,6 +228218,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -226264,6 +228336,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -226651,6 +228724,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -226768,6 +228842,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -227151,6 +229226,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -227268,6 +229344,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -227590,6 +229667,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -227707,6 +229785,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -228019,6 +230098,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -228136,6 +230216,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -228458,6 +230539,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -228575,6 +230657,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -228887,6 +230970,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -229004,6 +231088,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -229326,6 +231411,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -229443,6 +231529,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -229755,6 +231842,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -229872,6 +231960,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -230255,6 +232344,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -230372,6 +232462,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -230751,6 +232842,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -230868,6 +232960,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -231312,6 +233405,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -231429,6 +233523,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -232489,6 +234584,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -232606,6 +234702,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -232977,6 +235074,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -233094,6 +235192,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -234914,6 +237013,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutIssuedCommandsInput = {
@@ -234961,6 +237061,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutIssuedCommandsInput = {
@@ -235079,6 +237180,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutIssuedCommandsInput = {
@@ -235126,6 +237228,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type TenantCreateWithoutAiScoresInput = {
@@ -235233,6 +237336,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -235350,6 +237454,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -235672,6 +237777,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -235789,6 +237895,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -236101,6 +238208,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -236218,6 +238326,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -236530,6 +238639,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutAcknowledgedAlertsInput = {
@@ -236577,6 +238687,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutAcknowledgedAlertsInput = {
@@ -236700,6 +238811,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -236817,6 +238929,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -237147,6 +239260,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAcknowledgedAlertsInput = {
@@ -237194,6 +239308,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type TenantCreateWithoutAiDigestsInput = {
@@ -237301,6 +239416,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -237418,6 +239534,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -237551,6 +239668,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -237668,6 +239786,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -237785,6 +239904,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -237902,6 +240022,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -238035,6 +240156,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -238152,6 +240274,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -238269,6 +240392,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -238386,6 +240510,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -238637,6 +240762,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutSubmittedTicketsInput = {
@@ -238684,6 +240810,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutSubmittedTicketsInput = {
@@ -238736,6 +240863,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutAssignedTicketsInput = {
@@ -238783,6 +240911,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutAssignedTicketsInput = {
@@ -239195,6 +241324,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -239312,6 +241442,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -239575,6 +241706,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSubmittedTicketsInput = {
@@ -239622,6 +241754,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUpsertWithoutAssignedTicketsInput = {
@@ -239680,6 +241813,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignedTicketsInput = {
@@ -239727,6 +241861,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type CompanyUpsertWithoutTicketsInput = {
@@ -240141,6 +242276,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -240258,6 +242394,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -240509,6 +242646,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutReviewedLeavesInput = {
@@ -240556,6 +242694,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutReviewedLeavesInput = {
@@ -240679,6 +242818,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -240796,6 +242936,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -241059,6 +243200,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReviewedLeavesInput = {
@@ -241106,6 +243248,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type TenantCreateWithoutTalabatSessionsInput = {
@@ -241213,6 +243356,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -241330,6 +243474,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -241797,6 +243942,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -241914,6 +244060,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -242329,6 +244476,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -242446,6 +244594,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -242835,6 +244984,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -242952,6 +245102,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -243861,6 +246012,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -243978,6 +246130,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -244300,6 +246453,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -244417,6 +246571,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -244729,6 +246884,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -244846,6 +247002,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -244979,6 +247136,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -245096,6 +247254,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -245213,6 +247372,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -245330,6 +247490,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -245652,6 +247813,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -245769,6 +247931,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -246081,6 +248244,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -246198,6 +248362,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -246520,6 +248685,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -246637,6 +248803,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -246949,6 +249116,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -247066,6 +249234,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -247199,6 +249368,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -247316,6 +249486,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -247433,6 +249604,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -247550,6 +249722,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -247683,6 +249856,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -247800,6 +249974,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -247917,6 +250092,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -248034,6 +250210,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -248434,6 +250611,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -248551,6 +250729,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -248953,6 +251132,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -249070,6 +251250,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -249337,6 +251518,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -249454,6 +251636,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -249619,6 +251802,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -249736,6 +251920,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -249986,6 +252171,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -250103,6 +252289,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -250289,6 +252476,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -250406,6 +252594,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -250575,6 +252764,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -250692,6 +252882,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -250825,6 +253016,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -250942,6 +253134,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -251074,6 +253267,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutCreatedAmericanaRatesInput = {
@@ -251121,6 +253315,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutCreatedAmericanaRatesInput = {
@@ -251244,6 +253439,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -251361,6 +253557,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -251511,6 +253708,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedAmericanaRatesInput = {
@@ -251558,6 +253756,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type TenantCreateWithoutDriverBatchHistoryInput = {
@@ -251665,6 +253864,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -251782,6 +253982,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -252104,6 +254305,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -252221,6 +254423,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -252533,6 +254736,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -252650,6 +254854,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -253019,6 +255224,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -253136,6 +255342,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -253501,6 +255708,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -253618,6 +255826,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -253751,6 +255960,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -253868,6 +256078,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -253985,6 +256196,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -254102,6 +256314,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -254271,6 +256484,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -254388,6 +256602,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -254521,6 +256736,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -254638,6 +256854,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -254995,6 +257212,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -255112,6 +257330,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -255465,6 +257684,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -255582,6 +257802,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -255644,6 +257865,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -255691,6 +257913,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -255814,6 +258037,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -255931,6 +258155,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -255999,6 +258224,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -256046,6 +258272,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type TenantCreateWithoutNotificationDeliveriesInput = {
@@ -256153,6 +258380,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -256270,6 +258498,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -256403,6 +258632,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -256520,6 +258750,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -256637,6 +258868,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -256754,6 +258986,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -256887,6 +259120,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -257004,6 +259238,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -257121,6 +259356,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -257238,6 +259474,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -257560,6 +259797,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -257677,6 +259915,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -257989,6 +260228,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -258106,6 +260346,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -258495,6 +260736,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -258612,6 +260854,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -258956,6 +261199,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -259073,6 +261317,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -259444,6 +261689,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -259561,6 +261807,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -259889,6 +262136,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -260006,6 +262254,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -260188,6 +262437,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -260305,6 +262555,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -260477,6 +262728,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -260594,6 +262846,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -260727,6 +262980,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -260844,6 +263098,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -260961,6 +263216,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -261078,6 +263334,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -261400,6 +263657,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -261517,6 +263775,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -261829,6 +264088,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -261946,6 +264206,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -262079,6 +264340,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -262196,6 +264458,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -262313,6 +264576,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -262430,6 +264694,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -262563,6 +264828,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -262680,6 +264946,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -262797,6 +265064,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -262914,6 +265182,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -263236,6 +265505,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -263353,6 +265623,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -263665,6 +265936,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -263782,6 +266054,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -263915,6 +266188,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -264032,6 +266306,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -264149,6 +266424,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -264266,6 +266542,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -264399,6 +266676,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -264516,6 +266794,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -264633,6 +266912,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -264750,6 +267030,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -265001,6 +267282,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -265118,6 +267400,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -265360,6 +267643,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -265477,6 +267761,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -265731,6 +268016,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -265848,6 +268134,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -266241,6 +268528,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -266358,6 +268646,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -266719,6 +269008,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -266836,6 +269126,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -267193,6 +269484,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -267310,6 +269602,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -267547,6 +269840,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -267664,6 +269958,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -267875,6 +270170,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -267992,6 +270288,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -268166,6 +270463,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -268283,6 +270581,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -268447,6 +270746,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -268564,6 +270864,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -268738,6 +271039,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -268855,6 +271157,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -269019,6 +271322,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -269136,6 +271440,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -269443,6 +271748,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -269560,6 +271866,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -269856,6 +272163,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -269973,6 +272281,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -270153,6 +272462,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -270270,6 +272580,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -270440,6 +272751,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -270557,6 +272869,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -270619,6 +272932,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutApprovedAgentActionsInput = {
@@ -270666,6 +272980,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutApprovedAgentActionsInput = {
@@ -270880,6 +273195,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -270997,6 +273313,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -271065,6 +273382,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutApprovedAgentActionsInput = {
@@ -271112,6 +273430,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type AgentRunLogUpsertWithoutAgentActionsInput = {
@@ -271288,6 +273607,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -271405,6 +273725,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -271585,6 +273906,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -271702,6 +274024,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -271872,6 +274195,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -271989,6 +274313,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -272051,6 +274376,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutPinnedViewsInput = {
@@ -272098,6 +274424,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutPinnedViewsInput = {
@@ -272221,6 +274548,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -272338,6 +274666,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -272406,6 +274735,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPinnedViewsInput = {
@@ -272453,6 +274783,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type TenantCreateWithoutPerformanceSnapshotsInput = {
@@ -272560,6 +274891,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -272677,6 +275009,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -272999,6 +275332,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -273116,6 +275450,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -273428,6 +275763,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -273545,6 +275881,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -273607,6 +275944,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutMetricEventsInput = {
@@ -273654,6 +275992,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutMetricEventsInput = {
@@ -273777,6 +276116,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -273894,6 +276234,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -273962,6 +276303,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMetricEventsInput = {
@@ -274009,6 +276351,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type TenantCreateWithoutChatThreadsInput = {
@@ -274116,6 +276459,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -274233,6 +276577,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -274295,6 +276640,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutChatThreadsInput = {
@@ -274342,6 +276688,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutChatThreadsInput = {
@@ -274548,6 +276895,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -274665,6 +277013,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -274733,6 +277082,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutChatThreadsInput = {
@@ -274780,6 +277130,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type ScheduledBriefingUpsertWithoutThreadsInput = {
@@ -274948,6 +277299,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -275065,6 +277417,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -275290,6 +277643,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -275407,6 +277761,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -275628,6 +277983,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -275745,6 +278101,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -275807,6 +278164,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutScheduledBriefingsInput = {
@@ -275854,6 +278212,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutScheduledBriefingsInput = {
@@ -276015,6 +278374,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -276132,6 +278492,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -276200,6 +278561,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutScheduledBriefingsInput = {
@@ -276247,6 +278609,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type ChatThreadUpsertWithWhereUniqueWithoutBriefingInput = {
@@ -276370,6 +278733,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -276487,6 +278851,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -276599,6 +278964,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutVendorInput = {
@@ -276646,6 +279012,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutVendorInput = {
@@ -277168,6 +279535,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -277285,6 +279653,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -277620,6 +279989,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -277737,6 +280107,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -278048,6 +280419,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutBranchInput = {
@@ -278095,6 +280467,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutBranchInput = {
@@ -278223,6 +280596,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -278340,6 +280714,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -278644,6 +281019,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -278761,6 +281137,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -279284,6 +281661,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -279401,6 +281779,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -279644,6 +282023,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -279761,6 +282141,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -279992,6 +282373,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -280109,6 +282491,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -280337,6 +282720,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
@@ -280454,6 +282838,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
@@ -280757,6 +283142,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
@@ -280874,6 +283260,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
@@ -281421,6 +283808,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
@@ -281538,6 +283926,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
@@ -281671,6 +284060,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
@@ -281788,6 +284178,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
@@ -281904,6 +284295,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -282021,6 +284413,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -282154,6 +284547,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -282271,6 +284665,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -282388,6 +284783,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -282505,6 +284901,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -283173,6 +285570,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -283290,6 +285688,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -283924,6 +286323,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -284041,6 +286441,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -284470,6 +286871,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -284587,6 +286989,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -285012,6 +287415,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -285129,6 +287533,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -285292,6 +287697,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -285409,6 +287815,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -285542,6 +287949,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -285659,6 +288067,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -285822,6 +288231,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -285939,6 +288349,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -286072,6 +288483,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -286189,6 +288601,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -286376,6 +288789,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -286493,6 +288907,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -286676,6 +289091,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -286793,6 +289209,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -287115,6 +289532,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -287232,6 +289650,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -287544,6 +289963,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -287661,6 +290081,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -287794,6 +290215,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -287911,6 +290333,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -288028,6 +290451,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -288145,6 +290569,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -288574,6 +290999,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -288691,6 +291117,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -289116,6 +291543,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -289233,6 +291661,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -289421,6 +291850,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -289538,6 +291968,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -289716,6 +292147,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -289833,6 +292265,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -290021,6 +292454,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -290138,6 +292572,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -290316,6 +292751,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -290433,6 +292869,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -290862,6 +293299,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -290979,6 +293417,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -291404,6 +293843,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -291521,6 +293961,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -291709,6 +294150,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -291826,6 +294268,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -292004,6 +294447,7 @@ export namespace Prisma {
     vendorStatements?: VendorStatementCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -292121,6 +294565,7 @@ export namespace Prisma {
     vendorStatements?: VendorStatementUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -292416,6 +294861,7 @@ export namespace Prisma {
     vendorStatements?: VendorStatementUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -292533,6 +294979,7 @@ export namespace Prisma {
     vendorStatements?: VendorStatementUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -292824,6 +295271,7 @@ export namespace Prisma {
     vendorStatements?: VendorStatementCreateNestedManyWithoutTenantInput
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -292941,6 +295389,7 @@ export namespace Prisma {
     vendorStatements?: VendorStatementUncheckedCreateNestedManyWithoutTenantInput
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -293226,6 +295675,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutFleetPartnerInput = {
@@ -293273,6 +295723,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutFleetPartnerInput = {
@@ -293302,6 +295753,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutFleetPayoutStatementsInput
+    invoice?: FleetPayoutInvoiceCreateNestedOneWithoutStatementInput
   }
 
   export type FleetPayoutStatementUncheckedCreateWithoutFleetInput = {
@@ -293321,6 +295773,7 @@ export namespace Prisma {
     disputeTicketId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    invoice?: FleetPayoutInvoiceUncheckedCreateNestedOneWithoutStatementInput
   }
 
   export type FleetPayoutStatementCreateOrConnectWithoutFleetInput = {
@@ -293515,6 +295968,42 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type FleetPayoutInvoiceCreateWithoutFleetInput = {
+    id?: string
+    fileName: string
+    mimeType: string
+    sizeBytes: number
+    fileKey?: string | null
+    fileData?: Buffer | null
+    uploadedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutFleetPayoutInvoicesInput
+    statement: FleetPayoutStatementCreateNestedOneWithoutInvoiceInput
+    uploadedBy?: UserCreateNestedOneWithoutUploadedPayoutInvoicesInput
+  }
+
+  export type FleetPayoutInvoiceUncheckedCreateWithoutFleetInput = {
+    id?: string
+    tenantId: string
+    statementId: string
+    fileName: string
+    mimeType: string
+    sizeBytes: number
+    fileKey?: string | null
+    fileData?: Buffer | null
+    uploadedById?: string | null
+    uploadedAt?: Date | string
+  }
+
+  export type FleetPayoutInvoiceCreateOrConnectWithoutFleetInput = {
+    where: FleetPayoutInvoiceWhereUniqueInput
+    create: XOR<FleetPayoutInvoiceCreateWithoutFleetInput, FleetPayoutInvoiceUncheckedCreateWithoutFleetInput>
+  }
+
+  export type FleetPayoutInvoiceCreateManyFleetInputEnvelope = {
+    data: FleetPayoutInvoiceCreateManyFleetInput | FleetPayoutInvoiceCreateManyFleetInput[]
+    skipDuplicates?: boolean
+  }
+
   export type TenantUpsertWithoutFleetPartnersInput = {
     update: XOR<TenantUpdateWithoutFleetPartnersInput, TenantUncheckedUpdateWithoutFleetPartnersInput>
     create: XOR<TenantCreateWithoutFleetPartnersInput, TenantUncheckedCreateWithoutFleetPartnersInput>
@@ -293631,6 +296120,7 @@ export namespace Prisma {
     vendorStatements?: VendorStatementUpdateManyWithoutTenantNestedInput
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -293748,6 +296238,7 @@ export namespace Prisma {
     vendorStatements?: VendorStatementUncheckedUpdateManyWithoutTenantNestedInput
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -293907,6 +296398,22 @@ export namespace Prisma {
     data: XOR<SupportTicketUpdateManyMutationInput, SupportTicketUncheckedUpdateManyWithoutFleetInput>
   }
 
+  export type FleetPayoutInvoiceUpsertWithWhereUniqueWithoutFleetInput = {
+    where: FleetPayoutInvoiceWhereUniqueInput
+    update: XOR<FleetPayoutInvoiceUpdateWithoutFleetInput, FleetPayoutInvoiceUncheckedUpdateWithoutFleetInput>
+    create: XOR<FleetPayoutInvoiceCreateWithoutFleetInput, FleetPayoutInvoiceUncheckedCreateWithoutFleetInput>
+  }
+
+  export type FleetPayoutInvoiceUpdateWithWhereUniqueWithoutFleetInput = {
+    where: FleetPayoutInvoiceWhereUniqueInput
+    data: XOR<FleetPayoutInvoiceUpdateWithoutFleetInput, FleetPayoutInvoiceUncheckedUpdateWithoutFleetInput>
+  }
+
+  export type FleetPayoutInvoiceUpdateManyWithWhereWithoutFleetInput = {
+    where: FleetPayoutInvoiceScalarWhereInput
+    data: XOR<FleetPayoutInvoiceUpdateManyMutationInput, FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetInput>
+  }
+
   export type TenantCreateWithoutFleetPayoutStatementsInput = {
     id?: string
     name: string
@@ -294012,6 +296519,7 @@ export namespace Prisma {
     vendorStatements?: VendorStatementCreateNestedManyWithoutTenantInput
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -294129,6 +296637,7 @@ export namespace Prisma {
     vendorStatements?: VendorStatementUncheckedCreateNestedManyWithoutTenantInput
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -294168,6 +296677,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestCreateNestedManyWithoutFleetInput
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutStatementsInput = {
@@ -294192,11 +296702,43 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutFleetInput
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutStatementsInput = {
     where: FleetPartnerWhereUniqueInput
     create: XOR<FleetPartnerCreateWithoutStatementsInput, FleetPartnerUncheckedCreateWithoutStatementsInput>
+  }
+
+  export type FleetPayoutInvoiceCreateWithoutStatementInput = {
+    id?: string
+    fileName: string
+    mimeType: string
+    sizeBytes: number
+    fileKey?: string | null
+    fileData?: Buffer | null
+    uploadedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutFleetPayoutInvoicesInput
+    fleet: FleetPartnerCreateNestedOneWithoutPayoutInvoicesInput
+    uploadedBy?: UserCreateNestedOneWithoutUploadedPayoutInvoicesInput
+  }
+
+  export type FleetPayoutInvoiceUncheckedCreateWithoutStatementInput = {
+    id?: string
+    tenantId: string
+    fleetPartnerId: string
+    fileName: string
+    mimeType: string
+    sizeBytes: number
+    fileKey?: string | null
+    fileData?: Buffer | null
+    uploadedById?: string | null
+    uploadedAt?: Date | string
+  }
+
+  export type FleetPayoutInvoiceCreateOrConnectWithoutStatementInput = {
+    where: FleetPayoutInvoiceWhereUniqueInput
+    create: XOR<FleetPayoutInvoiceCreateWithoutStatementInput, FleetPayoutInvoiceUncheckedCreateWithoutStatementInput>
   }
 
   export type TenantUpsertWithoutFleetPayoutStatementsInput = {
@@ -294315,6 +296857,7 @@ export namespace Prisma {
     vendorStatements?: VendorStatementUpdateManyWithoutTenantNestedInput
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -294432,6 +296975,7 @@ export namespace Prisma {
     vendorStatements?: VendorStatementUncheckedUpdateManyWithoutTenantNestedInput
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -294477,6 +297021,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutStatementsInput = {
@@ -294501,6 +297046,952 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
+  }
+
+  export type FleetPayoutInvoiceUpsertWithoutStatementInput = {
+    update: XOR<FleetPayoutInvoiceUpdateWithoutStatementInput, FleetPayoutInvoiceUncheckedUpdateWithoutStatementInput>
+    create: XOR<FleetPayoutInvoiceCreateWithoutStatementInput, FleetPayoutInvoiceUncheckedCreateWithoutStatementInput>
+    where?: FleetPayoutInvoiceWhereInput
+  }
+
+  export type FleetPayoutInvoiceUpdateToOneWithWhereWithoutStatementInput = {
+    where?: FleetPayoutInvoiceWhereInput
+    data: XOR<FleetPayoutInvoiceUpdateWithoutStatementInput, FleetPayoutInvoiceUncheckedUpdateWithoutStatementInput>
+  }
+
+  export type FleetPayoutInvoiceUpdateWithoutStatementInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutFleetPayoutInvoicesNestedInput
+    fleet?: FleetPartnerUpdateOneRequiredWithoutPayoutInvoicesNestedInput
+    uploadedBy?: UserUpdateOneWithoutUploadedPayoutInvoicesNestedInput
+  }
+
+  export type FleetPayoutInvoiceUncheckedUpdateWithoutStatementInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    fleetPartnerId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
+    uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TenantCreateWithoutFleetPayoutInvoicesInput = {
+    id?: string
+    name: string
+    subscriptionPlan?: $Enums.SubscriptionPlan
+    designPartner?: boolean
+    monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    companies?: CompanyCreateNestedManyWithoutTenantInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
+    shifts?: ShiftCreateNestedManyWithoutTenantInput
+    attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
+    orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
+    cashRecords?: CashRecordCreateNestedManyWithoutTenantInput
+    cashTransactions?: CashTransactionCreateNestedManyWithoutTenantInput
+    pendingDuesLedgers?: PendingDuesLedgerCreateNestedManyWithoutTenantInput
+    vehicleInspections?: VehicleInspectionCreateNestedManyWithoutTenantInput
+    maintenanceRecords?: MaintenanceRecordCreateNestedManyWithoutTenantInput
+    aiScores?: AiScoreCreateNestedManyWithoutTenantInput
+    alerts?: AlertCreateNestedManyWithoutTenantInput
+    aiDigests?: AiDigestCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogCreateNestedManyWithoutTenantInput
+    tickets?: TicketCreateNestedManyWithoutTenantInput
+    leaveRequests?: LeaveRequestCreateNestedManyWithoutTenantInput
+    recruitmentPipeline?: RecruitmentPipelineCreateNestedManyWithoutTenantInput
+    vehicles?: VehicleCreateNestedManyWithoutTenantInput
+    talabatSessions?: TalabatSessionCreateNestedManyWithoutTenantInput
+    talabatViolationEvents?: TalabatViolationEventCreateNestedManyWithoutTenantInput
+    talabatDailyMetrics?: TalabatDailyMetricsCreateNestedManyWithoutTenantInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsCreateNestedManyWithoutTenantInput
+    keetaDailyMetrics?: KeetaDailyMetricsCreateNestedManyWithoutTenantInput
+    americanaDailyOrders?: AmericanaDailyOrdersCreateNestedManyWithoutTenantInput
+    kpiDefinitions?: KpiDefinitionCreateNestedManyWithoutTenantInput
+    kpiRecords?: KpiRecordCreateNestedManyWithoutTenantInput
+    platformSettings?: PlatformSettingsCreateNestedManyWithoutTenantInput
+    platformInventory?: PlatformInventoryCreateNestedManyWithoutTenantInput
+    notifications?: NotificationCreateNestedManyWithoutTenantInput
+    notificationRules?: NotificationRuleCreateNestedManyWithoutTenantInput
+    notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
+    driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
+    courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
+    violations?: ViolationCreateNestedManyWithoutTenantInput
+    penalties?: PenaltyCreateNestedManyWithoutTenantInput
+    appeals?: AppealCreateNestedManyWithoutTenantInput
+    orderEvents?: OrderEventCreateNestedManyWithoutTenantInput
+    aiInsights?: AiInsightCreateNestedManyWithoutTenantInput
+    demandHeatmaps?: DemandHeatmapCreateNestedManyWithoutTenantInput
+    courierAttendanceSlots?: CourierAttendanceSlotCreateNestedManyWithoutTenantInput
+    shiftComplianceConfig?: ShiftComplianceConfigCreateNestedOneWithoutTenantInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotCreateNestedManyWithoutTenantInput
+    deliveryAreas?: DeliveryAreaCreateNestedManyWithoutTenantInput
+    partners?: PartnerCreateNestedManyWithoutTenantInput
+    incentiveTargetRounds?: IncentiveTargetRoundCreateNestedManyWithoutTenantInput
+    courierIncentivePayouts?: CourierIncentivePayoutCreateNestedManyWithoutTenantInput
+    billings?: BillingCreateNestedManyWithoutTenantInput
+    taxInvoices?: TaxInvoiceCreateNestedManyWithoutTenantInput
+    paymentWithdrawals?: PaymentWithdrawalCreateNestedManyWithoutTenantInput
+    agentRunLogs?: AgentRunLogCreateNestedManyWithoutTenantInput
+    pendingAgentActions?: PendingAgentActionCreateNestedManyWithoutTenantInput
+    agentActions?: AgentActionCreateNestedManyWithoutTenantInput
+    agentMemories?: AgentMemoryCreateNestedManyWithoutTenantInput
+    pinnedViews?: PinnedViewCreateNestedManyWithoutTenantInput
+    performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutTenantInput
+    metricEvents?: MetricEventCreateNestedManyWithoutTenantInput
+    chatThreads?: ChatThreadCreateNestedManyWithoutTenantInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutTenantInput
+    scheduledBriefings?: ScheduledBriefingCreateNestedManyWithoutTenantInput
+    ingestRuns?: IngestRunCreateNestedManyWithoutTenantInput
+    americanaChains?: AmericanaChainCreateNestedManyWithoutTenantInput
+    americanaStores?: AmericanaStoreCreateNestedManyWithoutTenantInput
+    americanaContracts?: AmericanaContractCreateNestedManyWithoutTenantInput
+    americanaChainRates?: AmericanaChainRateCreateNestedManyWithoutTenantInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
+    americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
+    sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
+    vendors?: VendorCreateNestedManyWithoutTenantInput
+    vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
+    deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
+    zoneSurcharges?: ZoneSurchargeCreateNestedManyWithoutTenantInput
+    fulfillmentSettings?: FulfillmentSettingsCreateNestedOneWithoutTenantInput
+    deliveryOrders?: DeliveryOrderCreateNestedManyWithoutTenantInput
+    dispatchOffers?: DispatchOfferCreateNestedManyWithoutTenantInput
+    walletAccounts?: WalletAccountCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
+    walletEntries?: WalletEntryCreateNestedManyWithoutTenantInput
+    remittances?: RemittanceCreateNestedManyWithoutTenantInput
+    walletReconciliationRuns?: WalletReconciliationRunCreateNestedManyWithoutTenantInput
+    incidents?: IncidentCreateNestedManyWithoutTenantInput
+    foodicsConnections?: FoodicsConnectionCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
+    orderRatings?: OrderRatingCreateNestedManyWithoutTenantInput
+    vendorStatements?: VendorStatementCreateNestedManyWithoutTenantInput
+    refunds?: RefundCreateNestedManyWithoutTenantInput
+    fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
+    fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
+    distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
+    userInvites?: UserInviteCreateNestedManyWithoutTenantInput
+    userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
+    accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
+    supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
+    fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
+    fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantUncheckedCreateWithoutFleetPayoutInvoicesInput = {
+    id?: string
+    name: string
+    subscriptionPlan?: $Enums.SubscriptionPlan
+    designPartner?: boolean
+    monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
+    shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
+    attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
+    orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
+    cashRecords?: CashRecordUncheckedCreateNestedManyWithoutTenantInput
+    cashTransactions?: CashTransactionUncheckedCreateNestedManyWithoutTenantInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedCreateNestedManyWithoutTenantInput
+    vehicleInspections?: VehicleInspectionUncheckedCreateNestedManyWithoutTenantInput
+    maintenanceRecords?: MaintenanceRecordUncheckedCreateNestedManyWithoutTenantInput
+    aiScores?: AiScoreUncheckedCreateNestedManyWithoutTenantInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutTenantInput
+    aiDigests?: AiDigestUncheckedCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutTenantInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutTenantInput
+    leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutTenantInput
+    recruitmentPipeline?: RecruitmentPipelineUncheckedCreateNestedManyWithoutTenantInput
+    vehicles?: VehicleUncheckedCreateNestedManyWithoutTenantInput
+    talabatSessions?: TalabatSessionUncheckedCreateNestedManyWithoutTenantInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedCreateNestedManyWithoutTenantInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedCreateNestedManyWithoutTenantInput
+    kpiDefinitions?: KpiDefinitionUncheckedCreateNestedManyWithoutTenantInput
+    kpiRecords?: KpiRecordUncheckedCreateNestedManyWithoutTenantInput
+    platformSettings?: PlatformSettingsUncheckedCreateNestedManyWithoutTenantInput
+    platformInventory?: PlatformInventoryUncheckedCreateNestedManyWithoutTenantInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutTenantInput
+    notificationRules?: NotificationRuleUncheckedCreateNestedManyWithoutTenantInput
+    notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
+    driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
+    violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
+    penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
+    appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
+    orderEvents?: OrderEventUncheckedCreateNestedManyWithoutTenantInput
+    aiInsights?: AiInsightUncheckedCreateNestedManyWithoutTenantInput
+    demandHeatmaps?: DemandHeatmapUncheckedCreateNestedManyWithoutTenantInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedCreateNestedManyWithoutTenantInput
+    shiftComplianceConfig?: ShiftComplianceConfigUncheckedCreateNestedOneWithoutTenantInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUncheckedCreateNestedManyWithoutTenantInput
+    deliveryAreas?: DeliveryAreaUncheckedCreateNestedManyWithoutTenantInput
+    partners?: PartnerUncheckedCreateNestedManyWithoutTenantInput
+    incentiveTargetRounds?: IncentiveTargetRoundUncheckedCreateNestedManyWithoutTenantInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedCreateNestedManyWithoutTenantInput
+    billings?: BillingUncheckedCreateNestedManyWithoutTenantInput
+    taxInvoices?: TaxInvoiceUncheckedCreateNestedManyWithoutTenantInput
+    paymentWithdrawals?: PaymentWithdrawalUncheckedCreateNestedManyWithoutTenantInput
+    agentRunLogs?: AgentRunLogUncheckedCreateNestedManyWithoutTenantInput
+    pendingAgentActions?: PendingAgentActionUncheckedCreateNestedManyWithoutTenantInput
+    agentActions?: AgentActionUncheckedCreateNestedManyWithoutTenantInput
+    agentMemories?: AgentMemoryUncheckedCreateNestedManyWithoutTenantInput
+    pinnedViews?: PinnedViewUncheckedCreateNestedManyWithoutTenantInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutTenantInput
+    metricEvents?: MetricEventUncheckedCreateNestedManyWithoutTenantInput
+    chatThreads?: ChatThreadUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    scheduledBriefings?: ScheduledBriefingUncheckedCreateNestedManyWithoutTenantInput
+    ingestRuns?: IngestRunUncheckedCreateNestedManyWithoutTenantInput
+    americanaChains?: AmericanaChainUncheckedCreateNestedManyWithoutTenantInput
+    americanaStores?: AmericanaStoreUncheckedCreateNestedManyWithoutTenantInput
+    americanaContracts?: AmericanaContractUncheckedCreateNestedManyWithoutTenantInput
+    americanaChainRates?: AmericanaChainRateUncheckedCreateNestedManyWithoutTenantInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
+    sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
+    vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
+    vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
+    deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
+    zoneSurcharges?: ZoneSurchargeUncheckedCreateNestedManyWithoutTenantInput
+    fulfillmentSettings?: FulfillmentSettingsUncheckedCreateNestedOneWithoutTenantInput
+    deliveryOrders?: DeliveryOrderUncheckedCreateNestedManyWithoutTenantInput
+    dispatchOffers?: DispatchOfferUncheckedCreateNestedManyWithoutTenantInput
+    walletAccounts?: WalletAccountUncheckedCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
+    walletEntries?: WalletEntryUncheckedCreateNestedManyWithoutTenantInput
+    remittances?: RemittanceUncheckedCreateNestedManyWithoutTenantInput
+    walletReconciliationRuns?: WalletReconciliationRunUncheckedCreateNestedManyWithoutTenantInput
+    incidents?: IncidentUncheckedCreateNestedManyWithoutTenantInput
+    foodicsConnections?: FoodicsConnectionUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
+    orderRatings?: OrderRatingUncheckedCreateNestedManyWithoutTenantInput
+    vendorStatements?: VendorStatementUncheckedCreateNestedManyWithoutTenantInput
+    refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
+    fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
+    distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
+    userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
+    userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
+    accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
+    supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
+    fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
+    fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantCreateOrConnectWithoutFleetPayoutInvoicesInput = {
+    where: TenantWhereUniqueInput
+    create: XOR<TenantCreateWithoutFleetPayoutInvoicesInput, TenantUncheckedCreateWithoutFleetPayoutInvoicesInput>
+  }
+
+  export type FleetPartnerCreateWithoutPayoutInvoicesInput = {
+    id?: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    contactEmail?: string | null
+    flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
+    minOnlineHoursPerDay?: number | null
+    minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
+    disciplineStatus?: string
+    disciplineNote?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutFleetPartnersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutFleetsInput
+    drivers?: DriverCreateNestedManyWithoutFleetPartnerInput
+    users?: UserCreateNestedManyWithoutFleetPartnerInput
+    statements?: FleetPayoutStatementCreateNestedManyWithoutFleetInput
+    documents?: FleetDocumentCreateNestedManyWithoutFleetInput
+    changeRequests?: FleetChangeRequestCreateNestedManyWithoutFleetInput
+    issues?: FleetIssueCreateNestedManyWithoutFleetInput
+    supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
+  }
+
+  export type FleetPartnerUncheckedCreateWithoutPayoutInvoicesInput = {
+    id?: string
+    tenantId: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    contactEmail?: string | null
+    flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
+    minOnlineHoursPerDay?: number | null
+    minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
+    disciplineStatus?: string
+    disciplineNote?: string | null
+    isActive?: boolean
+    ownerGroupId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    drivers?: DriverUncheckedCreateNestedManyWithoutFleetPartnerInput
+    users?: UserUncheckedCreateNestedManyWithoutFleetPartnerInput
+    statements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutFleetInput
+    documents?: FleetDocumentUncheckedCreateNestedManyWithoutFleetInput
+    changeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutFleetInput
+    issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
+    supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
+  }
+
+  export type FleetPartnerCreateOrConnectWithoutPayoutInvoicesInput = {
+    where: FleetPartnerWhereUniqueInput
+    create: XOR<FleetPartnerCreateWithoutPayoutInvoicesInput, FleetPartnerUncheckedCreateWithoutPayoutInvoicesInput>
+  }
+
+  export type FleetPayoutStatementCreateWithoutInvoiceInput = {
+    id?: string
+    periodStart: Date | string
+    periodEnd: Date | string
+    deliveredOrders: number
+    feePerOrderKwd: Decimal | DecimalJsLike | number | string
+    totalKwd: Decimal | DecimalJsLike | number | string
+    status?: string
+    payoutTxId?: string | null
+    confirmedAt?: Date | string | null
+    confirmedById?: string | null
+    disputedAt?: Date | string | null
+    disputeReason?: string | null
+    disputeTicketId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutFleetPayoutStatementsInput
+    fleet: FleetPartnerCreateNestedOneWithoutStatementsInput
+  }
+
+  export type FleetPayoutStatementUncheckedCreateWithoutInvoiceInput = {
+    id?: string
+    tenantId: string
+    fleetPartnerId: string
+    periodStart: Date | string
+    periodEnd: Date | string
+    deliveredOrders: number
+    feePerOrderKwd: Decimal | DecimalJsLike | number | string
+    totalKwd: Decimal | DecimalJsLike | number | string
+    status?: string
+    payoutTxId?: string | null
+    confirmedAt?: Date | string | null
+    confirmedById?: string | null
+    disputedAt?: Date | string | null
+    disputeReason?: string | null
+    disputeTicketId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FleetPayoutStatementCreateOrConnectWithoutInvoiceInput = {
+    where: FleetPayoutStatementWhereUniqueInput
+    create: XOR<FleetPayoutStatementCreateWithoutInvoiceInput, FleetPayoutStatementUncheckedCreateWithoutInvoiceInput>
+  }
+
+  export type UserCreateWithoutUploadedPayoutInvoicesInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    passwordHash: string
+    name: string
+    role?: $Enums.UserRole
+    isSuperAdmin?: boolean
+    jobGrade?: string | null
+    vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: boolean
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutUsersInput
+    vendor?: VendorCreateNestedOneWithoutUsersInput
+    fleetPartner?: FleetPartnerCreateNestedOneWithoutUsersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutUsersInput
+    branch?: VendorBranchCreateNestedOneWithoutPortalUsersInput
+    managedCompanies?: CompanyCreateNestedManyWithoutAccountManagerInput
+    supervisedDrivers?: DriverCreateNestedManyWithoutSupervisorInput
+    issuedCommands?: DeviceCommandCreateNestedManyWithoutIssuedByInput
+    acknowledgedAlerts?: AlertCreateNestedManyWithoutAcknowledgedByInput
+    reviewedLeaves?: LeaveRequestCreateNestedManyWithoutReviewedByInput
+    assignedTickets?: TicketCreateNestedManyWithoutAssignedToInput
+    submittedTickets?: TicketCreateNestedManyWithoutSubmitterUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    createdAmericanaRates?: AmericanaChainRateCreateNestedManyWithoutCreatedByUserInput
+    approvedAgentActions?: AgentActionCreateNestedManyWithoutApproverInput
+    pinnedViews?: PinnedViewCreateNestedManyWithoutUserInput
+    metricEvents?: MetricEventCreateNestedManyWithoutUserInput
+    chatThreads?: ChatThreadCreateNestedManyWithoutUserInput
+    scheduledBriefings?: ScheduledBriefingCreateNestedManyWithoutCreatorInput
+    invites?: UserInviteCreateNestedManyWithoutUserInput
+    surfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutUserInput
+    managedVendors?: AccountManagerVendorCreateNestedManyWithoutUserInput
+    uploadedFleetDocuments?: FleetDocumentCreateNestedManyWithoutUploadedByInput
+    reviewedFleetDocuments?: FleetDocumentCreateNestedManyWithoutReviewedByInput
+    requestedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutRequestedByInput
+    reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
+    acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
+    resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+  }
+
+  export type UserUncheckedCreateWithoutUploadedPayoutInvoicesInput = {
+    id?: string
+    tenantId: string
+    email: string
+    phone?: string | null
+    passwordHash: string
+    name: string
+    role?: $Enums.UserRole
+    isSuperAdmin?: boolean
+    jobGrade?: string | null
+    vendorId?: string | null
+    fleetPartnerId?: string | null
+    ownerGroupId?: string | null
+    branchId?: string | null
+    vendorRole?: string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: boolean
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    managedCompanies?: CompanyUncheckedCreateNestedManyWithoutAccountManagerInput
+    supervisedDrivers?: DriverUncheckedCreateNestedManyWithoutSupervisorInput
+    issuedCommands?: DeviceCommandUncheckedCreateNestedManyWithoutIssuedByInput
+    acknowledgedAlerts?: AlertUncheckedCreateNestedManyWithoutAcknowledgedByInput
+    reviewedLeaves?: LeaveRequestUncheckedCreateNestedManyWithoutReviewedByInput
+    assignedTickets?: TicketUncheckedCreateNestedManyWithoutAssignedToInput
+    submittedTickets?: TicketUncheckedCreateNestedManyWithoutSubmitterUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    createdAmericanaRates?: AmericanaChainRateUncheckedCreateNestedManyWithoutCreatedByUserInput
+    approvedAgentActions?: AgentActionUncheckedCreateNestedManyWithoutApproverInput
+    pinnedViews?: PinnedViewUncheckedCreateNestedManyWithoutUserInput
+    metricEvents?: MetricEventUncheckedCreateNestedManyWithoutUserInput
+    chatThreads?: ChatThreadUncheckedCreateNestedManyWithoutUserInput
+    scheduledBriefings?: ScheduledBriefingUncheckedCreateNestedManyWithoutCreatorInput
+    invites?: UserInviteUncheckedCreateNestedManyWithoutUserInput
+    surfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutUserInput
+    managedVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutUserInput
+    uploadedFleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutUploadedByInput
+    reviewedFleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutReviewedByInput
+    requestedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
+    acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
+    resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+  }
+
+  export type UserCreateOrConnectWithoutUploadedPayoutInvoicesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutUploadedPayoutInvoicesInput, UserUncheckedCreateWithoutUploadedPayoutInvoicesInput>
+  }
+
+  export type TenantUpsertWithoutFleetPayoutInvoicesInput = {
+    update: XOR<TenantUpdateWithoutFleetPayoutInvoicesInput, TenantUncheckedUpdateWithoutFleetPayoutInvoicesInput>
+    create: XOR<TenantCreateWithoutFleetPayoutInvoicesInput, TenantUncheckedCreateWithoutFleetPayoutInvoicesInput>
+    where?: TenantWhereInput
+  }
+
+  export type TenantUpdateToOneWithWhereWithoutFleetPayoutInvoicesInput = {
+    where?: TenantWhereInput
+    data: XOR<TenantUpdateWithoutFleetPayoutInvoicesInput, TenantUncheckedUpdateWithoutFleetPayoutInvoicesInput>
+  }
+
+  export type TenantUpdateWithoutFleetPayoutInvoicesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    subscriptionPlan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+    designPartner?: BoolFieldUpdateOperationsInput | boolean
+    monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    companies?: CompanyUpdateManyWithoutTenantNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
+    shifts?: ShiftUpdateManyWithoutTenantNestedInput
+    attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
+    orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
+    cashRecords?: CashRecordUpdateManyWithoutTenantNestedInput
+    cashTransactions?: CashTransactionUpdateManyWithoutTenantNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUpdateManyWithoutTenantNestedInput
+    vehicleInspections?: VehicleInspectionUpdateManyWithoutTenantNestedInput
+    maintenanceRecords?: MaintenanceRecordUpdateManyWithoutTenantNestedInput
+    aiScores?: AiScoreUpdateManyWithoutTenantNestedInput
+    alerts?: AlertUpdateManyWithoutTenantNestedInput
+    aiDigests?: AiDigestUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutTenantNestedInput
+    tickets?: TicketUpdateManyWithoutTenantNestedInput
+    leaveRequests?: LeaveRequestUpdateManyWithoutTenantNestedInput
+    recruitmentPipeline?: RecruitmentPipelineUpdateManyWithoutTenantNestedInput
+    vehicles?: VehicleUpdateManyWithoutTenantNestedInput
+    talabatSessions?: TalabatSessionUpdateManyWithoutTenantNestedInput
+    talabatViolationEvents?: TalabatViolationEventUpdateManyWithoutTenantNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUpdateManyWithoutTenantNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUpdateManyWithoutTenantNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUpdateManyWithoutTenantNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUpdateManyWithoutTenantNestedInput
+    kpiDefinitions?: KpiDefinitionUpdateManyWithoutTenantNestedInput
+    kpiRecords?: KpiRecordUpdateManyWithoutTenantNestedInput
+    platformSettings?: PlatformSettingsUpdateManyWithoutTenantNestedInput
+    platformInventory?: PlatformInventoryUpdateManyWithoutTenantNestedInput
+    notifications?: NotificationUpdateManyWithoutTenantNestedInput
+    notificationRules?: NotificationRuleUpdateManyWithoutTenantNestedInput
+    notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
+    driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
+    violations?: ViolationUpdateManyWithoutTenantNestedInput
+    penalties?: PenaltyUpdateManyWithoutTenantNestedInput
+    appeals?: AppealUpdateManyWithoutTenantNestedInput
+    orderEvents?: OrderEventUpdateManyWithoutTenantNestedInput
+    aiInsights?: AiInsightUpdateManyWithoutTenantNestedInput
+    demandHeatmaps?: DemandHeatmapUpdateManyWithoutTenantNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUpdateManyWithoutTenantNestedInput
+    shiftComplianceConfig?: ShiftComplianceConfigUpdateOneWithoutTenantNestedInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUpdateManyWithoutTenantNestedInput
+    deliveryAreas?: DeliveryAreaUpdateManyWithoutTenantNestedInput
+    partners?: PartnerUpdateManyWithoutTenantNestedInput
+    incentiveTargetRounds?: IncentiveTargetRoundUpdateManyWithoutTenantNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUpdateManyWithoutTenantNestedInput
+    billings?: BillingUpdateManyWithoutTenantNestedInput
+    taxInvoices?: TaxInvoiceUpdateManyWithoutTenantNestedInput
+    paymentWithdrawals?: PaymentWithdrawalUpdateManyWithoutTenantNestedInput
+    agentRunLogs?: AgentRunLogUpdateManyWithoutTenantNestedInput
+    pendingAgentActions?: PendingAgentActionUpdateManyWithoutTenantNestedInput
+    agentActions?: AgentActionUpdateManyWithoutTenantNestedInput
+    agentMemories?: AgentMemoryUpdateManyWithoutTenantNestedInput
+    pinnedViews?: PinnedViewUpdateManyWithoutTenantNestedInput
+    performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutTenantNestedInput
+    metricEvents?: MetricEventUpdateManyWithoutTenantNestedInput
+    chatThreads?: ChatThreadUpdateManyWithoutTenantNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutTenantNestedInput
+    scheduledBriefings?: ScheduledBriefingUpdateManyWithoutTenantNestedInput
+    ingestRuns?: IngestRunUpdateManyWithoutTenantNestedInput
+    americanaChains?: AmericanaChainUpdateManyWithoutTenantNestedInput
+    americanaStores?: AmericanaStoreUpdateManyWithoutTenantNestedInput
+    americanaContracts?: AmericanaContractUpdateManyWithoutTenantNestedInput
+    americanaChainRates?: AmericanaChainRateUpdateManyWithoutTenantNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
+    sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
+    vendors?: VendorUpdateManyWithoutTenantNestedInput
+    vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
+    deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
+    zoneSurcharges?: ZoneSurchargeUpdateManyWithoutTenantNestedInput
+    fulfillmentSettings?: FulfillmentSettingsUpdateOneWithoutTenantNestedInput
+    deliveryOrders?: DeliveryOrderUpdateManyWithoutTenantNestedInput
+    dispatchOffers?: DispatchOfferUpdateManyWithoutTenantNestedInput
+    walletAccounts?: WalletAccountUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
+    walletEntries?: WalletEntryUpdateManyWithoutTenantNestedInput
+    remittances?: RemittanceUpdateManyWithoutTenantNestedInput
+    walletReconciliationRuns?: WalletReconciliationRunUpdateManyWithoutTenantNestedInput
+    incidents?: IncidentUpdateManyWithoutTenantNestedInput
+    foodicsConnections?: FoodicsConnectionUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
+    orderRatings?: OrderRatingUpdateManyWithoutTenantNestedInput
+    vendorStatements?: VendorStatementUpdateManyWithoutTenantNestedInput
+    refunds?: RefundUpdateManyWithoutTenantNestedInput
+    fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
+    fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
+    distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
+    userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
+    userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
+    accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
+    supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
+    fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
+    fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
+  }
+
+  export type TenantUncheckedUpdateWithoutFleetPayoutInvoicesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    subscriptionPlan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+    designPartner?: BoolFieldUpdateOperationsInput | boolean
+    monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
+    shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
+    attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
+    orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
+    cashRecords?: CashRecordUncheckedUpdateManyWithoutTenantNestedInput
+    cashTransactions?: CashTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleInspections?: VehicleInspectionUncheckedUpdateManyWithoutTenantNestedInput
+    maintenanceRecords?: MaintenanceRecordUncheckedUpdateManyWithoutTenantNestedInput
+    aiScores?: AiScoreUncheckedUpdateManyWithoutTenantNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutTenantNestedInput
+    aiDigests?: AiDigestUncheckedUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutTenantNestedInput
+    leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutTenantNestedInput
+    recruitmentPipeline?: RecruitmentPipelineUncheckedUpdateManyWithoutTenantNestedInput
+    vehicles?: VehicleUncheckedUpdateManyWithoutTenantNestedInput
+    talabatSessions?: TalabatSessionUncheckedUpdateManyWithoutTenantNestedInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedUpdateManyWithoutTenantNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedUpdateManyWithoutTenantNestedInput
+    kpiDefinitions?: KpiDefinitionUncheckedUpdateManyWithoutTenantNestedInput
+    kpiRecords?: KpiRecordUncheckedUpdateManyWithoutTenantNestedInput
+    platformSettings?: PlatformSettingsUncheckedUpdateManyWithoutTenantNestedInput
+    platformInventory?: PlatformInventoryUncheckedUpdateManyWithoutTenantNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutTenantNestedInput
+    notificationRules?: NotificationRuleUncheckedUpdateManyWithoutTenantNestedInput
+    notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
+    driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
+    violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
+    penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
+    appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
+    orderEvents?: OrderEventUncheckedUpdateManyWithoutTenantNestedInput
+    aiInsights?: AiInsightUncheckedUpdateManyWithoutTenantNestedInput
+    demandHeatmaps?: DemandHeatmapUncheckedUpdateManyWithoutTenantNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedUpdateManyWithoutTenantNestedInput
+    shiftComplianceConfig?: ShiftComplianceConfigUncheckedUpdateOneWithoutTenantNestedInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryAreas?: DeliveryAreaUncheckedUpdateManyWithoutTenantNestedInput
+    partners?: PartnerUncheckedUpdateManyWithoutTenantNestedInput
+    incentiveTargetRounds?: IncentiveTargetRoundUncheckedUpdateManyWithoutTenantNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedUpdateManyWithoutTenantNestedInput
+    billings?: BillingUncheckedUpdateManyWithoutTenantNestedInput
+    taxInvoices?: TaxInvoiceUncheckedUpdateManyWithoutTenantNestedInput
+    paymentWithdrawals?: PaymentWithdrawalUncheckedUpdateManyWithoutTenantNestedInput
+    agentRunLogs?: AgentRunLogUncheckedUpdateManyWithoutTenantNestedInput
+    pendingAgentActions?: PendingAgentActionUncheckedUpdateManyWithoutTenantNestedInput
+    agentActions?: AgentActionUncheckedUpdateManyWithoutTenantNestedInput
+    agentMemories?: AgentMemoryUncheckedUpdateManyWithoutTenantNestedInput
+    pinnedViews?: PinnedViewUncheckedUpdateManyWithoutTenantNestedInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutTenantNestedInput
+    metricEvents?: MetricEventUncheckedUpdateManyWithoutTenantNestedInput
+    chatThreads?: ChatThreadUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    scheduledBriefings?: ScheduledBriefingUncheckedUpdateManyWithoutTenantNestedInput
+    ingestRuns?: IngestRunUncheckedUpdateManyWithoutTenantNestedInput
+    americanaChains?: AmericanaChainUncheckedUpdateManyWithoutTenantNestedInput
+    americanaStores?: AmericanaStoreUncheckedUpdateManyWithoutTenantNestedInput
+    americanaContracts?: AmericanaContractUncheckedUpdateManyWithoutTenantNestedInput
+    americanaChainRates?: AmericanaChainRateUncheckedUpdateManyWithoutTenantNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
+    sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
+    vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
+    vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
+    zoneSurcharges?: ZoneSurchargeUncheckedUpdateManyWithoutTenantNestedInput
+    fulfillmentSettings?: FulfillmentSettingsUncheckedUpdateOneWithoutTenantNestedInput
+    deliveryOrders?: DeliveryOrderUncheckedUpdateManyWithoutTenantNestedInput
+    dispatchOffers?: DispatchOfferUncheckedUpdateManyWithoutTenantNestedInput
+    walletAccounts?: WalletAccountUncheckedUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    walletEntries?: WalletEntryUncheckedUpdateManyWithoutTenantNestedInput
+    remittances?: RemittanceUncheckedUpdateManyWithoutTenantNestedInput
+    walletReconciliationRuns?: WalletReconciliationRunUncheckedUpdateManyWithoutTenantNestedInput
+    incidents?: IncidentUncheckedUpdateManyWithoutTenantNestedInput
+    foodicsConnections?: FoodicsConnectionUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
+    orderRatings?: OrderRatingUncheckedUpdateManyWithoutTenantNestedInput
+    vendorStatements?: VendorStatementUncheckedUpdateManyWithoutTenantNestedInput
+    refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
+    distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
+    userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
+    userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
+    accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
+    supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
+    fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
+    fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
+  }
+
+  export type FleetPartnerUpsertWithoutPayoutInvoicesInput = {
+    update: XOR<FleetPartnerUpdateWithoutPayoutInvoicesInput, FleetPartnerUncheckedUpdateWithoutPayoutInvoicesInput>
+    create: XOR<FleetPartnerCreateWithoutPayoutInvoicesInput, FleetPartnerUncheckedCreateWithoutPayoutInvoicesInput>
+    where?: FleetPartnerWhereInput
+  }
+
+  export type FleetPartnerUpdateToOneWithWhereWithoutPayoutInvoicesInput = {
+    where?: FleetPartnerWhereInput
+    data: XOR<FleetPartnerUpdateWithoutPayoutInvoicesInput, FleetPartnerUncheckedUpdateWithoutPayoutInvoicesInput>
+  }
+
+  export type FleetPartnerUpdateWithoutPayoutInvoicesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
+    minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
+    disciplineStatus?: StringFieldUpdateOperationsInput | string
+    disciplineNote?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutFleetPartnersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutFleetsNestedInput
+    drivers?: DriverUpdateManyWithoutFleetPartnerNestedInput
+    users?: UserUpdateManyWithoutFleetPartnerNestedInput
+    statements?: FleetPayoutStatementUpdateManyWithoutFleetNestedInput
+    documents?: FleetDocumentUpdateManyWithoutFleetNestedInput
+    changeRequests?: FleetChangeRequestUpdateManyWithoutFleetNestedInput
+    issues?: FleetIssueUpdateManyWithoutFleetNestedInput
+    supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
+  }
+
+  export type FleetPartnerUncheckedUpdateWithoutPayoutInvoicesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
+    minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
+    disciplineStatus?: StringFieldUpdateOperationsInput | string
+    disciplineNote?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    drivers?: DriverUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    users?: UserUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    statements?: FleetPayoutStatementUncheckedUpdateManyWithoutFleetNestedInput
+    documents?: FleetDocumentUncheckedUpdateManyWithoutFleetNestedInput
+    changeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutFleetNestedInput
+    issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
+    supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
+  }
+
+  export type FleetPayoutStatementUpsertWithoutInvoiceInput = {
+    update: XOR<FleetPayoutStatementUpdateWithoutInvoiceInput, FleetPayoutStatementUncheckedUpdateWithoutInvoiceInput>
+    create: XOR<FleetPayoutStatementCreateWithoutInvoiceInput, FleetPayoutStatementUncheckedCreateWithoutInvoiceInput>
+    where?: FleetPayoutStatementWhereInput
+  }
+
+  export type FleetPayoutStatementUpdateToOneWithWhereWithoutInvoiceInput = {
+    where?: FleetPayoutStatementWhereInput
+    data: XOR<FleetPayoutStatementUpdateWithoutInvoiceInput, FleetPayoutStatementUncheckedUpdateWithoutInvoiceInput>
+  }
+
+  export type FleetPayoutStatementUpdateWithoutInvoiceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    periodStart?: DateTimeFieldUpdateOperationsInput | Date | string
+    periodEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveredOrders?: IntFieldUpdateOperationsInput | number
+    feePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: StringFieldUpdateOperationsInput | string
+    payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    disputedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    disputeReason?: NullableStringFieldUpdateOperationsInput | string | null
+    disputeTicketId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutFleetPayoutStatementsNestedInput
+    fleet?: FleetPartnerUpdateOneRequiredWithoutStatementsNestedInput
+  }
+
+  export type FleetPayoutStatementUncheckedUpdateWithoutInvoiceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    fleetPartnerId?: StringFieldUpdateOperationsInput | string
+    periodStart?: DateTimeFieldUpdateOperationsInput | Date | string
+    periodEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveredOrders?: IntFieldUpdateOperationsInput | number
+    feePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: StringFieldUpdateOperationsInput | string
+    payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    disputedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    disputeReason?: NullableStringFieldUpdateOperationsInput | string | null
+    disputeTicketId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUpsertWithoutUploadedPayoutInvoicesInput = {
+    update: XOR<UserUpdateWithoutUploadedPayoutInvoicesInput, UserUncheckedUpdateWithoutUploadedPayoutInvoicesInput>
+    create: XOR<UserCreateWithoutUploadedPayoutInvoicesInput, UserUncheckedCreateWithoutUploadedPayoutInvoicesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutUploadedPayoutInvoicesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutUploadedPayoutInvoicesInput, UserUncheckedUpdateWithoutUploadedPayoutInvoicesInput>
+  }
+
+  export type UserUpdateWithoutUploadedPayoutInvoicesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
+    jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    vendor?: VendorUpdateOneWithoutUsersNestedInput
+    fleetPartner?: FleetPartnerUpdateOneWithoutUsersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutUsersNestedInput
+    branch?: VendorBranchUpdateOneWithoutPortalUsersNestedInput
+    managedCompanies?: CompanyUpdateManyWithoutAccountManagerNestedInput
+    supervisedDrivers?: DriverUpdateManyWithoutSupervisorNestedInput
+    issuedCommands?: DeviceCommandUpdateManyWithoutIssuedByNestedInput
+    acknowledgedAlerts?: AlertUpdateManyWithoutAcknowledgedByNestedInput
+    reviewedLeaves?: LeaveRequestUpdateManyWithoutReviewedByNestedInput
+    assignedTickets?: TicketUpdateManyWithoutAssignedToNestedInput
+    submittedTickets?: TicketUpdateManyWithoutSubmitterUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    createdAmericanaRates?: AmericanaChainRateUpdateManyWithoutCreatedByUserNestedInput
+    approvedAgentActions?: AgentActionUpdateManyWithoutApproverNestedInput
+    pinnedViews?: PinnedViewUpdateManyWithoutUserNestedInput
+    metricEvents?: MetricEventUpdateManyWithoutUserNestedInput
+    chatThreads?: ChatThreadUpdateManyWithoutUserNestedInput
+    scheduledBriefings?: ScheduledBriefingUpdateManyWithoutCreatorNestedInput
+    invites?: UserInviteUpdateManyWithoutUserNestedInput
+    surfacePermissions?: UserSurfacePermissionUpdateManyWithoutUserNestedInput
+    managedVendors?: AccountManagerVendorUpdateManyWithoutUserNestedInput
+    uploadedFleetDocuments?: FleetDocumentUpdateManyWithoutUploadedByNestedInput
+    reviewedFleetDocuments?: FleetDocumentUpdateManyWithoutReviewedByNestedInput
+    requestedFleetChanges?: FleetChangeRequestUpdateManyWithoutRequestedByNestedInput
+    reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
+    acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
+    resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutUploadedPayoutInvoicesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    isSuperAdmin?: BoolFieldUpdateOperationsInput | boolean
+    jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorId?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managedCompanies?: CompanyUncheckedUpdateManyWithoutAccountManagerNestedInput
+    supervisedDrivers?: DriverUncheckedUpdateManyWithoutSupervisorNestedInput
+    issuedCommands?: DeviceCommandUncheckedUpdateManyWithoutIssuedByNestedInput
+    acknowledgedAlerts?: AlertUncheckedUpdateManyWithoutAcknowledgedByNestedInput
+    reviewedLeaves?: LeaveRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+    assignedTickets?: TicketUncheckedUpdateManyWithoutAssignedToNestedInput
+    submittedTickets?: TicketUncheckedUpdateManyWithoutSubmitterUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    createdAmericanaRates?: AmericanaChainRateUncheckedUpdateManyWithoutCreatedByUserNestedInput
+    approvedAgentActions?: AgentActionUncheckedUpdateManyWithoutApproverNestedInput
+    pinnedViews?: PinnedViewUncheckedUpdateManyWithoutUserNestedInput
+    metricEvents?: MetricEventUncheckedUpdateManyWithoutUserNestedInput
+    chatThreads?: ChatThreadUncheckedUpdateManyWithoutUserNestedInput
+    scheduledBriefings?: ScheduledBriefingUncheckedUpdateManyWithoutCreatorNestedInput
+    invites?: UserInviteUncheckedUpdateManyWithoutUserNestedInput
+    surfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutUserNestedInput
+    managedVendors?: AccountManagerVendorUncheckedUpdateManyWithoutUserNestedInput
+    uploadedFleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutUploadedByNestedInput
+    reviewedFleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutReviewedByNestedInput
+    requestedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+    acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
+    resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
   }
 
   export type TenantCreateWithoutFleetDocumentsInput = {
@@ -294609,6 +298100,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -294726,6 +298218,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -294764,6 +298257,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestCreateNestedManyWithoutFleetInput
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutDocumentsInput = {
@@ -294788,6 +298282,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutFleetInput
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutDocumentsInput = {
@@ -295029,6 +298524,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutUploadedFleetDocumentsInput = {
@@ -295076,6 +298572,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutUploadedFleetDocumentsInput = {
@@ -295128,6 +298625,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutReviewedFleetDocumentsInput = {
@@ -295175,6 +298673,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutReviewedFleetDocumentsInput = {
@@ -295299,6 +298798,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -295416,6 +298916,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -295460,6 +298961,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutDocumentsInput = {
@@ -295484,6 +298986,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
   }
 
   export type DriverUpsertWithoutFleetDocumentsInput = {
@@ -295737,6 +299240,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUploadedFleetDocumentsInput = {
@@ -295784,6 +299288,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUpsertWithoutReviewedFleetDocumentsInput = {
@@ -295842,6 +299347,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReviewedFleetDocumentsInput = {
@@ -295889,6 +299395,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type TenantCreateWithoutFleetChangeRequestsInput = {
@@ -295997,6 +299504,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -296114,6 +299622,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -296152,6 +299661,7 @@ export namespace Prisma {
     documents?: FleetDocumentCreateNestedManyWithoutFleetInput
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutChangeRequestsInput = {
@@ -296176,6 +299686,7 @@ export namespace Prisma {
     documents?: FleetDocumentUncheckedCreateNestedManyWithoutFleetInput
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutChangeRequestsInput = {
@@ -296417,6 +299928,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutRequestedFleetChangesInput = {
@@ -296464,6 +299976,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutRequestedFleetChangesInput = {
@@ -296516,6 +300029,7 @@ export namespace Prisma {
     requestedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutRequestedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutReviewedFleetChangesInput = {
@@ -296563,6 +300077,7 @@ export namespace Prisma {
     requestedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutReviewedFleetChangesInput = {
@@ -296687,6 +300202,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -296804,6 +300320,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -296848,6 +300365,7 @@ export namespace Prisma {
     documents?: FleetDocumentUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutChangeRequestsInput = {
@@ -296872,6 +300390,7 @@ export namespace Prisma {
     documents?: FleetDocumentUncheckedUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
   }
 
   export type DriverUpsertWithoutFleetChangeRequestsInput = {
@@ -297125,6 +300644,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRequestedFleetChangesInput = {
@@ -297172,6 +300692,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUpsertWithoutReviewedFleetChangesInput = {
@@ -297230,6 +300751,7 @@ export namespace Prisma {
     requestedFleetChanges?: FleetChangeRequestUpdateManyWithoutRequestedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReviewedFleetChangesInput = {
@@ -297277,6 +300799,7 @@ export namespace Prisma {
     requestedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type TenantCreateWithoutFleetIssuesInput = {
@@ -297385,6 +300908,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -297502,6 +301026,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -297540,6 +301065,7 @@ export namespace Prisma {
     documents?: FleetDocumentCreateNestedManyWithoutFleetInput
     changeRequests?: FleetChangeRequestCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutIssuesInput = {
@@ -297564,6 +301090,7 @@ export namespace Prisma {
     documents?: FleetDocumentUncheckedCreateNestedManyWithoutFleetInput
     changeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutIssuesInput = {
@@ -297805,6 +301332,7 @@ export namespace Prisma {
     requestedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutRequestedByInput
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutAcknowledgedFleetIssuesInput = {
@@ -297852,6 +301380,7 @@ export namespace Prisma {
     requestedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutAcknowledgedFleetIssuesInput = {
@@ -297904,6 +301433,7 @@ export namespace Prisma {
     requestedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutRequestedByInput
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutResolvedFleetIssuesInput = {
@@ -297951,6 +301481,7 @@ export namespace Prisma {
     requestedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutResolvedFleetIssuesInput = {
@@ -298075,6 +301606,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -298192,6 +301724,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -298236,6 +301769,7 @@ export namespace Prisma {
     documents?: FleetDocumentUpdateManyWithoutFleetNestedInput
     changeRequests?: FleetChangeRequestUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutIssuesInput = {
@@ -298260,6 +301794,7 @@ export namespace Prisma {
     documents?: FleetDocumentUncheckedUpdateManyWithoutFleetNestedInput
     changeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
   }
 
   export type DriverUpsertWithoutFleetIssuesInput = {
@@ -298513,6 +302048,7 @@ export namespace Prisma {
     requestedFleetChanges?: FleetChangeRequestUpdateManyWithoutRequestedByNestedInput
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAcknowledgedFleetIssuesInput = {
@@ -298560,6 +302096,7 @@ export namespace Prisma {
     requestedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUpsertWithoutResolvedFleetIssuesInput = {
@@ -298618,6 +302155,7 @@ export namespace Prisma {
     requestedFleetChanges?: FleetChangeRequestUpdateManyWithoutRequestedByNestedInput
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutResolvedFleetIssuesInput = {
@@ -298665,6 +302203,7 @@ export namespace Prisma {
     requestedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type TenantCreateWithoutUserInvitesInput = {
@@ -298773,6 +302312,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
@@ -298890,6 +302430,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
@@ -298951,6 +302492,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutInvitesInput = {
@@ -298998,6 +302540,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutInvitesInput = {
@@ -299122,6 +302665,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
@@ -299239,6 +302783,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
@@ -299306,6 +302851,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInvitesInput = {
@@ -299353,6 +302899,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type TenantCreateWithoutUserSurfacePermissionsInput = {
@@ -299461,6 +303008,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -299578,6 +303126,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -299639,6 +303188,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutSurfacePermissionsInput = {
@@ -299686,6 +303236,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutSurfacePermissionsInput = {
@@ -299810,6 +303361,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -299927,6 +303479,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -299994,6 +303547,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSurfacePermissionsInput = {
@@ -300041,6 +303595,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type TenantCreateWithoutAccountManagerVendorsInput = {
@@ -300149,6 +303704,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -300266,6 +303822,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -300327,6 +303884,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutManagedVendorsInput = {
@@ -300374,6 +303932,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
     acknowledgedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutAcknowledgedByInput
     resolvedFleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutResolvedByInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutManagedVendorsInput = {
@@ -300553,6 +304112,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -300670,6 +304230,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -300737,6 +304298,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutManagedVendorsInput = {
@@ -300784,6 +304346,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type VendorUpsertWithoutAccountManagersInput = {
@@ -300953,6 +304516,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -301070,6 +304634,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -301163,6 +304728,7 @@ export namespace Prisma {
     documents?: FleetDocumentCreateNestedManyWithoutFleetInput
     changeRequests?: FleetChangeRequestCreateNestedManyWithoutFleetInput
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutSupportTicketsInput = {
@@ -301187,6 +304753,7 @@ export namespace Prisma {
     documents?: FleetDocumentUncheckedCreateNestedManyWithoutFleetInput
     changeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutFleetInput
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutSupportTicketsInput = {
@@ -301339,6 +304906,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -301456,6 +305024,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -301561,6 +305130,7 @@ export namespace Prisma {
     documents?: FleetDocumentUpdateManyWithoutFleetNestedInput
     changeRequests?: FleetChangeRequestUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutSupportTicketsInput = {
@@ -301585,6 +305155,7 @@ export namespace Prisma {
     documents?: FleetDocumentUncheckedUpdateManyWithoutFleetNestedInput
     changeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
   }
 
   export type SupportTicketMessageUpsertWithWhereUniqueWithoutTicketInput = {
@@ -301794,6 +305365,7 @@ export namespace Prisma {
     refunds?: RefundCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteCreateNestedManyWithoutTenantInput
@@ -301911,6 +305483,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
     fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
     deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
     distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
     userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
@@ -302099,6 +305672,7 @@ export namespace Prisma {
     refunds?: RefundUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
@@ -302216,6 +305790,7 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
     fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
     fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
     deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
     distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
     userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
@@ -303705,6 +307280,19 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type FleetPayoutInvoiceCreateManyTenantInput = {
+    id?: string
+    fleetPartnerId: string
+    statementId: string
+    fileName: string
+    mimeType: string
+    sizeBytes: number
+    fileKey?: string | null
+    fileData?: Buffer | null
+    uploadedById?: string | null
+    uploadedAt?: Date | string
+  }
+
   export type DeliveryPlanCreateManyTenantInput = {
     id?: string
     name: string
@@ -303927,6 +307515,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTenantInput = {
@@ -303974,6 +307563,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutTenantInput = {
@@ -308276,6 +311866,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutTenantInput = {
@@ -308300,6 +311891,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateManyWithoutTenantInput = {
@@ -308336,6 +311928,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     fleet?: FleetPartnerUpdateOneRequiredWithoutStatementsNestedInput
+    invoice?: FleetPayoutInvoiceUpdateOneWithoutStatementNestedInput
   }
 
   export type FleetPayoutStatementUncheckedUpdateWithoutTenantInput = {
@@ -308355,6 +311948,7 @@ export namespace Prisma {
     disputeTicketId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    invoice?: FleetPayoutInvoiceUncheckedUpdateOneWithoutStatementNestedInput
   }
 
   export type FleetPayoutStatementUncheckedUpdateManyWithoutTenantInput = {
@@ -308374,6 +311968,45 @@ export namespace Prisma {
     disputeTicketId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FleetPayoutInvoiceUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fleet?: FleetPartnerUpdateOneRequiredWithoutPayoutInvoicesNestedInput
+    statement?: FleetPayoutStatementUpdateOneRequiredWithoutInvoiceNestedInput
+    uploadedBy?: UserUpdateOneWithoutUploadedPayoutInvoicesNestedInput
+  }
+
+  export type FleetPayoutInvoiceUncheckedUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fleetPartnerId?: StringFieldUpdateOperationsInput | string
+    statementId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
+    uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fleetPartnerId?: StringFieldUpdateOperationsInput | string
+    statementId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
+    uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DeliveryPlanUpdateWithoutTenantInput = {
@@ -309374,6 +313007,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutOwnerGroupInput = {
@@ -309398,6 +313032,7 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateManyWithoutOwnerGroupInput = {
@@ -309509,6 +313144,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOwnerGroupInput = {
@@ -309556,6 +313192,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutOwnerGroupInput = {
@@ -309977,6 +313614,19 @@ export namespace Prisma {
     resolutionNote?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type FleetPayoutInvoiceCreateManyUploadedByInput = {
+    id?: string
+    tenantId: string
+    fleetPartnerId: string
+    statementId: string
+    fileName: string
+    mimeType: string
+    sizeBytes: number
+    fileKey?: string | null
+    fileData?: Buffer | null
+    uploadedAt?: Date | string
   }
 
   export type CompanyUpdateWithoutAccountManagerInput = {
@@ -311276,6 +314926,45 @@ export namespace Prisma {
     resolutionNote?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FleetPayoutInvoiceUpdateWithoutUploadedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutFleetPayoutInvoicesNestedInput
+    fleet?: FleetPartnerUpdateOneRequiredWithoutPayoutInvoicesNestedInput
+    statement?: FleetPayoutStatementUpdateOneRequiredWithoutInvoiceNestedInput
+  }
+
+  export type FleetPayoutInvoiceUncheckedUpdateWithoutUploadedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    fleetPartnerId?: StringFieldUpdateOperationsInput | string
+    statementId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    fleetPartnerId?: StringFieldUpdateOperationsInput | string
+    statementId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DriverInventoryCreateManyDriverInput = {
@@ -317025,6 +320714,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutVendorInput = {
@@ -317072,6 +320762,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutVendorInput = {
@@ -317751,6 +321442,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBranchInput = {
@@ -317798,6 +321490,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutBranchInput = {
@@ -319062,6 +322755,19 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type FleetPayoutInvoiceCreateManyFleetInput = {
+    id?: string
+    tenantId: string
+    statementId: string
+    fileName: string
+    mimeType: string
+    sizeBytes: number
+    fileKey?: string | null
+    fileData?: Buffer | null
+    uploadedById?: string | null
+    uploadedAt?: Date | string
+  }
+
   export type DriverUpdateWithoutFleetPartnerInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -319336,6 +323042,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFleetPartnerInput = {
@@ -319383,6 +323090,7 @@ export namespace Prisma {
     reviewedFleetChanges?: FleetChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
+    uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutFleetPartnerInput = {
@@ -319426,6 +323134,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutFleetPayoutStatementsNestedInput
+    invoice?: FleetPayoutInvoiceUpdateOneWithoutStatementNestedInput
   }
 
   export type FleetPayoutStatementUncheckedUpdateWithoutFleetInput = {
@@ -319445,6 +323154,7 @@ export namespace Prisma {
     disputeTicketId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    invoice?: FleetPayoutInvoiceUncheckedUpdateOneWithoutStatementNestedInput
   }
 
   export type FleetPayoutStatementUncheckedUpdateManyWithoutFleetInput = {
@@ -319676,6 +323386,45 @@ export namespace Prisma {
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FleetPayoutInvoiceUpdateWithoutFleetInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutFleetPayoutInvoicesNestedInput
+    statement?: FleetPayoutStatementUpdateOneRequiredWithoutInvoiceNestedInput
+    uploadedBy?: UserUpdateOneWithoutUploadedPayoutInvoicesNestedInput
+  }
+
+  export type FleetPayoutInvoiceUncheckedUpdateWithoutFleetInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    statementId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
+    uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    statementId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
+    uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SupportTicketMessageCreateManyTicketInput = {
@@ -320275,6 +324024,10 @@ export namespace Prisma {
      * @deprecated Use FleetPayoutStatementDefaultArgs instead
      */
     export type FleetPayoutStatementArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = FleetPayoutStatementDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use FleetPayoutInvoiceDefaultArgs instead
+     */
+    export type FleetPayoutInvoiceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = FleetPayoutInvoiceDefaultArgs<ExtArgs>
     /**
      * @deprecated Use FleetDocumentDefaultArgs instead
      */

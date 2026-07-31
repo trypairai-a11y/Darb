@@ -15,7 +15,7 @@
 // control, so nobody is shown a button that answers 403.
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { SlidersHorizontal, UserPlus } from "lucide-react";
+import { SlidersHorizontal, UserCheck, UserPlus, UserX } from "lucide-react";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
@@ -78,8 +78,6 @@ export default function FleetTeamPage() {
   // lands rather than flashing and vanishing.
   const isOwner = (meQuery.data?.portalRole ?? "OWNER") === "OWNER";
   const companies = teamQuery.data?.companies ?? [];
-  // A single-company fleet has nothing to scope, so the picker stays away.
-  const showCompanyPicker = companies.length > 1;
 
   const fail = (err: unknown) =>
     toast.error(
@@ -137,6 +135,7 @@ export default function FleetTeamPage() {
   async function toggleActive(u: FleetTeamUser) {
     try {
       await fleetApi.updateTeamUser(u.id, { isActive: !(u.isActive ?? true) });
+      toast.success(t("fleetPortal.deactivated"));
       await queryClient.invalidateQueries({ queryKey: ["darb", "fleet", "team"] });
     } catch (err) {
       fail(err);
@@ -274,18 +273,41 @@ export default function FleetTeamPage() {
                 // The endpoint refuses it too.
                 <span className="text-xs text-sand-500">{t("vendorTeam.cannotEditSelf")}</span>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditing(row);
-                    setEditTabs(row.fleetTabs ?? null);
-                    setEditCompanies(row.fleetPartnerIds ?? null);
-                  }}
-                  className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors"
-                >
-                  <SlidersHorizontal size={12} aria-hidden="true" />
-                  {t("vendorTeam.editAccess")}
-                </button>
+                <span className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditing(row);
+                      setEditTabs(row.fleetTabs ?? null);
+                      setEditCompanies(row.fleetPartnerIds ?? null);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors"
+                  >
+                    <SlidersHorizontal size={12} aria-hidden="true" />
+                    {t("vendorTeam.editAccess")}
+                  </button>
+                  {/* Client note: switching somebody off was only ever a click
+                      on the Active badge, which nobody reads as a button. It
+                      is a named action now, and it says which way it goes. */}
+                  <button
+                    type="button"
+                    onClick={() => void toggleActive(row)}
+                    className={
+                      row.isActive === false
+                        ? "inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill border border-sand-300 text-xs font-medium text-sand-700 hover:bg-sand-100"
+                        : "inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill border border-red-200 text-xs font-medium text-red-700 hover:bg-red-50"
+                    }
+                  >
+                    {row.isActive === false ? (
+                      <UserCheck size={12} aria-hidden="true" />
+                    ) : (
+                      <UserX size={12} aria-hidden="true" />
+                    )}
+                    {row.isActive === false
+                      ? t("fleetPortal.activate")
+                      : t("fleetPortal.deactivate")}
+                  </button>
+                </span>
               ),
           },
         ]}
@@ -360,13 +382,15 @@ export default function FleetTeamPage() {
             <p className="mt-1.5 text-xs text-sand-600">{t(ROLE_HINT[form.fleetRole])}</p>
           </div>
 
-          {showCompanyPicker && (
-            <CompanyPicker
-              companies={companies}
-              value={form.companies}
-              onChange={(next) => setForm({ ...form, companies: next })}
-            />
-          )}
+          {/* Client note: the panel has to ask whether this person covers every
+              company or one of them. It used to hide itself for a fleet with a
+              single company, which is exactly when somebody reads the omission
+              as the question never having been asked. */}
+          <CompanyPicker
+            companies={companies}
+            value={form.companies}
+            onChange={(next) => setForm({ ...form, companies: next })}
+          />
 
           <FleetTabPicker
             fleetRole={form.fleetRole}
@@ -400,13 +424,11 @@ export default function FleetTeamPage() {
               </p>
             </div>
 
-            {showCompanyPicker && (
-              <CompanyPicker
-                companies={companies}
-                value={editCompanies}
-                onChange={setEditCompanies}
-              />
-            )}
+            <CompanyPicker
+              companies={companies}
+              value={editCompanies}
+              onChange={setEditCompanies}
+            />
 
             <FleetTabPicker
               fleetRole={editing.fleetRole}
@@ -459,7 +481,7 @@ function CompanyPicker({
   return (
     <div>
       <span className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
-        {t("fleetTeam.companies")}
+        {t("fleetTeam.access")} *
       </span>
       <div className="flex flex-wrap gap-2">
         <button
@@ -494,7 +516,9 @@ function CompanyPicker({
           );
         })}
       </div>
-      <p className="mt-2 text-xs text-sand-600">{t("fleetTeam.companiesHint")}</p>
+      <p className="mt-2 text-xs text-sand-600">
+        {companies.length > 1 ? t("fleetTeam.companiesHint") : t("fleetTeam.oneCompanyHint")}
+      </p>
     </div>
   );
 }

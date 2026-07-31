@@ -1015,6 +1015,46 @@ export interface FleetScorecard {
   utilisation: number | null;
   avgRating: number | null;
   ratingCount: number;
+
+  // Revision 13b — the KPIs the client asked for on top of the five above.
+  // Optional so an older server does not blank the page.
+  activeDrivers?: number;
+  ordersPerDriver?: number | null;
+  ordersPerOnlineHour?: number | null;
+  medianDeliveryMinutes?: number | null;
+  failedOrders?: number;
+  failureRate?: number | null;
+  slaBreaches?: number;
+  earningsKwd?: string;
+  offersDeclined?: number;
+  offersExpired?: number;
+  /** The two ends of the driver list over the same window. */
+  drivers?: FleetDriverComparison;
+}
+
+/** One driver's slice of the scorecard window. */
+export interface FleetDriverScore {
+  driverId: string;
+  name: string;
+  driverCode: string | null;
+  vehicleType: string;
+  deliveredOrders: number;
+  onTimeRate: number | null;
+  acceptanceRate: number | null;
+  avgRating: number | null;
+  ratingCount: number;
+  onlineHours: number;
+  /** 0..100: on-time 40, acceptance 30, rating 30, re-weighted around missing
+   *  components so a driver with no ratings is not punished for it. */
+  score: number | null;
+}
+
+export interface FleetDriverComparison {
+  top: FleetDriverScore[];
+  /** Worst first, so the row that needs a phone call is at the top. */
+  bottom: FleetDriverScore[];
+  unranked: number;
+  minOrders: number;
 }
 
 export interface FleetStatementRow {
@@ -1030,9 +1070,59 @@ export interface FleetStatementRow {
    */
   status: "FINAL" | "CONFIRMED" | "DISPUTED" | "PAID";
   confirmedAt?: string | null;
+  /** Revision 13b — set once the company has uploaded its stamped invoice. */
+  invoice?: FleetPayoutInvoiceMeta | null;
   disputedAt?: string | null;
   disputeReason?: string | null;
   disputeTicketId?: string | null;
+}
+
+/**
+ * Revision 13b (client note) — what one payout statement was built from.
+ *
+ * The client asked to see the invoice detail before confirming: a period, a
+ * count and a total is a number to take on faith, and this is the order-by-order
+ * working behind it.
+ */
+export interface FleetStatementDetail {
+  statement: FleetStatementRow & {
+    invoice: FleetPayoutInvoiceMeta | null;
+  };
+  orders: Array<{
+    id: string;
+    orderNumber: string;
+    deliveredAt: string;
+    vendorName: string | null;
+    driverName: string | null;
+    driverCode: string | null;
+    feeKwd: string;
+  }>;
+  /** What the statement was cut on, and what the query returns today. A gap
+   *  means orders were re-stated after the month closed. */
+  countedOrders: number;
+  listedOrders: number;
+  storageConfigured: boolean;
+}
+
+/** The stamped invoice a confirmation carries. Never the bytes. */
+export interface FleetPayoutInvoiceMeta {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  uploadedAt: string;
+}
+
+/**
+ * One stamped invoice on its way up. `dataBase64` while R2 is unconfigured,
+ * `fileKey` once it is; the server prefers the key and stores no bytes then.
+ */
+export interface FleetInvoiceUpload {
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  dataBase64?: string;
+  fileKey?: string;
 }
 
 export interface FleetEarnings {

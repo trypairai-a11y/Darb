@@ -38,6 +38,65 @@ export interface FleetScorecard {
   utilisation: number | null; // 0..1 vs contract
   avgRating: number | null;
   ratingCount: number;
+
+  // ── Revision 13b (client note: "add more KPIs here") ───────────────────
+  //
+  // Five numbers a supervisor asks for next, each derived from rows that
+  // already exist. Nothing here needed a new write path or a cache.
+
+  /** Drivers who delivered at least one order. The roster count above says how
+   *  many are on the books; this says how many actually worked. */
+  activeDrivers: number;
+  /** Delivered orders per driver who worked. Productivity per head. */
+  ordersPerDriver: number | null;
+  /** Delivered orders per online hour. Productivity per hour, which is the
+   *  one that moves when a company floods the zone with idle drivers. */
+  ordersPerOnlineHour: number | null;
+  /** Median minutes from dispatch to delivery, so one 4-hour outlier does not
+   *  redraw the number the way a mean does. */
+  medianDeliveryMinutes: number | null;
+  /** Orders that never arrived (FAILED or RETURNED) as a share of everything
+   *  assigned to this fleet in the window. */
+  failedOrders: number;
+  failureRate: number | null;
+  /** Delivered orders the driver was late on. The complement of on-time, in
+   *  the unit a conversation with a driver actually uses. */
+  slaBreaches: number;
+  /** What the period is worth to the company at its flat fee, so the
+   *  scorecard and the payout tab stop being two different conversations. */
+  earningsKwd: string;
+  /** Offers this fleet declined or let expire. Acceptance rate as a count. */
+  offersDeclined: number;
+  offersExpired: number;
+}
+
+/** One driver's slice of the same window. */
+export interface FleetDriverScore {
+  driverId: string;
+  name: string;
+  driverCode: string | null;
+  vehicleType: string;
+  deliveredOrders: number;
+  onTimeRate: number | null;
+  acceptanceRate: number | null;
+  avgRating: number | null;
+  ratingCount: number;
+  onlineHours: number;
+  /** 0..100. On-time 40, acceptance 30, rating 30, and null where a driver has
+   *  not done enough for the component to mean anything. */
+  score: number | null;
+}
+
+export interface FleetDriverComparison {
+  /** Ranked best first. At most three. */
+  top: FleetDriverScore[];
+  /** Ranked worst first, so the row that needs a phone call is at the top. */
+  bottom: FleetDriverScore[];
+  /** Drivers with too little activity in the window to rank at all, kept as a
+   *  count so "why is my driver in neither list" has an answer. */
+  unranked: number;
+  /** The minimum delivered orders a driver needed to be ranked. */
+  minOrders: number;
 }
 
 export async function getFleetScorecard(
@@ -47,7 +106,7 @@ export async function getFleetScorecard(
 ): Promise<FleetScorecard> {
   const fleet = await prisma.fleetPartner.findFirst({
     where: { id: fleetPartnerId, tenantId },
-    select: { id: true, minOnlineHoursPerDay: true },
+    select: { id: true, minOnlineHoursPerDay: true, flatFeePerOrderKwd: true },
   });
   if (!fleet) throw new Error("Fleet partner not found");
 
@@ -71,6 +130,16 @@ export async function getFleetScorecard(
       utilisation: null,
       avgRating: null,
       ratingCount: 0,
+      activeDrivers: 0,
+      ordersPerDriver: null,
+      ordersPerOnlineHour: null,
+      medianDeliveryMinutes: null,
+      failedOrders: 0,
+      failureRate: null,
+      slaBreaches: 0,
+      earningsKwd: "0.000",
+      offersDeclined: 0,
+      offersExpired: 0,
     };
   }
 
@@ -112,7 +181,7 @@ export async function getFleetScorecard(
         driverId: { in: driverIds },
         startTime: { gte: range.from, lt: range.to },
       },
-      select: { startTime: true, endTime: true },
+      select: { driverId: true, startTime: true, endTime: true },
     }),
     prisma.orderRating.aggregate({
       where: {
@@ -134,7 +203,21 @@ export async function getFleetScorecard(
       status: "DELIVERED",
       deliveredAt: { gte: range.from, lt: range.to },
     },
-    select: { deliveredAt: true, slaDeadline: true },
+    // driverId and assignedAt ride along for the per-driver comparison and the
+    // median delivery time; both were already in this row.
+    select: { driverId: true, deliveredAt: true, slaDeadline: true, assignedAt: true },
+  });
+
+  // Orders assigned to this fleet that never arrived. Counted over the same
+  // window by when they were assigned, because a FAILED order has no
+  // deliveredAt to measure from.
+  const failedOrders = await prisma.deliveryOrder.count({
+    where: {
+      tenantId,
+      driverId: { in: driverIds },
+      status: { in: ["FAILED", "RETURNED"] },
+      assignedAt: { gte: range.from, lt: range.to },
+    },
   });
   void onTime; // superseded by the row pass above
   const withSla = deliveredRows.filter((r) => r.slaDeadline && r.deliveredAt);
@@ -160,6 +243,26 @@ export async function getFleetScorecard(
       ? Math.round(fleet.minOnlineHoursPerDay * days * driverIds.length * 10) / 10
       : null;
 
+  // Revision 13b — the five the client asked for, from rows already in hand.
+  const activeDrivers = new Set(
+    deliveredRows.map((r) => r.driverId).filter(Boolean) as string[],
+  ).size;
+
+  // Median, not mean: one driver who forgot to close an order at midnight
+  // would otherwise redraw the whole number.
+  const durations = deliveredRows
+    .filter((r) => r.assignedAt && r.deliveredAt)
+    .map((r) => ((r.deliveredAt as Date).getTime() - (r.assignedAt as Date).getTime()) / 60_000)
+    .filter((m) => m > 0 && m < 24 * 60)
+    .sort((a, b) => a - b);
+  const medianDeliveryMinutes =
+    durations.length > 0
+      ? Math.round(durations[Math.floor(durations.length / 2)] * 10) / 10
+      : null;
+
+  const feePerOrder = Number(fleet.flatFeePerOrderKwd ?? 1.1);
+  const assignedTotal = delivered + failedOrders;
+
   return {
     fleetPartnerId,
     ...period,
@@ -175,6 +278,20 @@ export async function getFleetScorecard(
         : null,
     avgRating: ratingAgg._avg.stars != null ? Number(ratingAgg._avg.stars.toFixed(2)) : null,
     ratingCount: ratingAgg._count._all,
+
+    activeDrivers,
+    ordersPerDriver:
+      activeDrivers > 0 ? Number((delivered / activeDrivers).toFixed(1)) : null,
+    ordersPerOnlineHour:
+      onlineHours > 0 ? Number((delivered / onlineHours).toFixed(2)) : null,
+    medianDeliveryMinutes,
+    failedOrders,
+    failureRate:
+      assignedTotal > 0 ? Number((failedOrders / assignedTotal).toFixed(3)) : null,
+    slaBreaches: withSla.length - onTimeCount,
+    earningsKwd: (delivered * feePerOrder).toFixed(3),
+    offersDeclined: counts.DECLINED ?? 0,
+    offersExpired: counts.EXPIRED ?? 0,
   };
 }
 

@@ -1860,6 +1860,20 @@ exports.Prisma.FleetPayoutStatementScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.FleetPayoutInvoiceScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  fleetPartnerId: 'fleetPartnerId',
+  statementId: 'statementId',
+  fileName: 'fileName',
+  mimeType: 'mimeType',
+  sizeBytes: 'sizeBytes',
+  fileKey: 'fileKey',
+  fileData: 'fileData',
+  uploadedById: 'uploadedById',
+  uploadedAt: 'uploadedAt'
+};
+
 exports.Prisma.FleetDocumentScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -3053,6 +3067,17 @@ exports.Prisma.FleetPayoutStatementOrderByRelevanceFieldEnum = {
   disputeTicketId: 'disputeTicketId'
 };
 
+exports.Prisma.FleetPayoutInvoiceOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  fleetPartnerId: 'fleetPartnerId',
+  statementId: 'statementId',
+  fileName: 'fileName',
+  mimeType: 'mimeType',
+  fileKey: 'fileKey',
+  uploadedById: 'uploadedById'
+};
+
 exports.Prisma.FleetDocumentOrderByRelevanceFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -3768,6 +3793,7 @@ exports.Prisma.ModelName = {
   Refund: 'Refund',
   FleetPartner: 'FleetPartner',
   FleetPayoutStatement: 'FleetPayoutStatement',
+  FleetPayoutInvoice: 'FleetPayoutInvoice',
   FleetDocument: 'FleetDocument',
   FleetChangeRequest: 'FleetChangeRequest',
   FleetIssue: 'FleetIssue',

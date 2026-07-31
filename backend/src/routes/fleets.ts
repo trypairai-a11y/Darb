@@ -23,6 +23,8 @@ import { WalletError } from "../services/wallet/walletService";
 import { previousMonthPeriod } from "../services/wallet/vendorSettlementService";
 import { parseLocalDate, parseLocalDateEnd } from "../utils/date";
 import { presignGetUrl } from "../services/r2Service";
+import { sendInvoice } from "../services/fleet/fleetInvoiceService";
+import { getFleetDriverComparison } from "../services/fleet/fleetDriverScoreService";
 import {
   approveFleetRequest,
   rejectFleetRequest,
@@ -638,8 +640,14 @@ router.get("/:id/users", rbac("ADMIN"), async (req: Request, res: Response) => {
  */
 router.get("/:id/scorecard", rbac(...READ), async (req: Request, res: Response) => {
   try {
-    const scorecard = await getFleetScorecard(req.user!.tenantId, req.params.id, parseRange(req));
-    res.json(scorecard);
+    const range = parseRange(req);
+    // Same payload the partner sees on their own portal, so a Darb supervisor
+    // and a delivery company are reading one document.
+    const [scorecard, drivers] = await Promise.all([
+      getFleetScorecard(req.user!.tenantId, req.params.id, range),
+      getFleetDriverComparison(req.user!.tenantId, req.params.id, range),
+    ]);
+    res.json({ ...scorecard, drivers });
   } catch (err: any) {
     if (err instanceof RangeError) { res.status(400).json({ error: err.message }); return; }
     if (/not found/i.test(err.message)) { res.status(404).json({ error: err.message }); return; }
@@ -679,6 +687,14 @@ router.get("/:id/statements", rbac(...READ), async (req: Request, res: Response)
   try {
     const rows = await prisma.fleetPayoutStatement.findMany({
       where: { tenantId: req.user!.tenantId, fleetPartnerId: req.params.id },
+      // Revision 13b — an accountant about to pay wants the company's own
+      // stamped invoice in front of them, so the row carries whether there is
+      // one. Never the bytes: this is a list.
+      include: {
+        invoice: {
+          select: { id: true, fileName: true, mimeType: true, sizeBytes: true, uploadedAt: true },
+        },
+      },
       orderBy: { periodStart: "desc" },
       take: 24,
     });
@@ -758,6 +774,29 @@ router.get("/documents/:docId/url", rbac(...READ), async (req: Request, res: Res
     if (!doc) { res.status(404).json({ error: "Document not found" }); return; }
     if (!doc.fileKey) { res.status(404).json({ error: "No file on this document" }); return; }
     res.json({ url: await presignGetUrl(doc.fileKey, 3600) });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/fleets/statements/{id}/invoice:
+ *   get:
+ *     tags: [Fleets]
+ *     summary: The stamped invoice the delivery company confirmed with
+ *     description: >
+ *       Revision 13b. Confirmation IS this document, so the person about to
+ *       move the money can read it without asking the company to email it
+ *       again. Scoped by tenant; another tenant's invoice is a 404.
+ */
+router.get("/statements/:id/invoice", rbac(...READ), async (req: Request, res: Response) => {
+  try {
+    const invoice = await prisma.fleetPayoutInvoice.findFirst({
+      where: { statementId: req.params.id, tenantId: req.user!.tenantId },
+    });
+    if (!invoice) { res.status(404).json({ error: "No invoice on this statement" }); return; }
+    await sendInvoice(res, invoice);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

@@ -493,6 +493,7 @@ model Tenant {
   refunds                   Refund[]
   fleetPartners             FleetPartner[]
   fleetPayoutStatements     FleetPayoutStatement[]
+  fleetPayoutInvoices       FleetPayoutInvoice[]
   // Revision 4 — delivery plans (#7), invites and per-surface access (#12).
   deliveryPlans             DeliveryPlan[]
   distanceCacheEntries      DistanceCache[]
@@ -641,6 +642,7 @@ model User {
   reviewedFleetChanges    FleetChangeRequest[]    @relation("FleetRequestReviewer")
   acknowledgedFleetIssues FleetIssue[]            @relation("FleetIssueAcknowledger")
   resolvedFleetIssues     FleetIssue[]            @relation("FleetIssueResolver")
+  uploadedPayoutInvoices  FleetPayoutInvoice[]    @relation("FleetPayoutInvoiceUploader")
 
   @@index([tenantId])
 }
@@ -3475,6 +3477,7 @@ model FleetPartner {
   changeRequests FleetChangeRequest[]
   issues         FleetIssue[]
   supportTickets SupportTicket[]
+  payoutInvoices FleetPayoutInvoice[]
 
   @@index([tenantId, isActive])
   @@index([tenantId, ownerGroupId])
@@ -3509,11 +3512,46 @@ model FleetPayoutStatement {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  tenant Tenant       @relation(fields: [tenantId], references: [id])
-  fleet  FleetPartner @relation(fields: [fleetPartnerId], references: [id])
+  tenant  Tenant              @relation(fields: [tenantId], references: [id])
+  fleet   FleetPartner        @relation(fields: [fleetPartnerId], references: [id])
+  /// Revision 13b — the company-stamped invoice that confirmation requires.
+  invoice FleetPayoutInvoice?
 
   @@unique([tenantId, fleetPartnerId, periodStart])
   @@index([tenantId, periodStart])
+}
+
+/// Revision 13b (client note) — the stamped invoice a delivery company uploads
+/// when it confirms a payout statement.
+///
+/// Its own table rather than a FleetDocument: a company document is a licence
+/// Darb reviews for validity and expiry, and this is an accounting artefact
+/// bound one-to-one to a statement. Putting it in FleetDocument would have it
+/// appear on the Documents tab wearing a review status that means nothing here.
+///
+/// `fileKey` is a private R2 object when storage is configured. `fileData` is
+/// the fallback while it is not: production has no R2 yet, and a confirmation
+/// gate nobody can pass is worse than a megabyte in Postgres. One row per
+/// statement per month, so this is a dozen rows a year per company.
+model FleetPayoutInvoice {
+  id             String   @id @default(uuid())
+  tenantId       String
+  fleetPartnerId String
+  statementId    String   @unique
+  fileName       String
+  mimeType       String
+  sizeBytes      Int
+  fileKey        String?
+  fileData       Bytes?
+  uploadedById   String?
+  uploadedAt     DateTime @default(now())
+
+  tenant     Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fleet      FleetPartner         @relation(fields: [fleetPartnerId], references: [id], onDelete: Cascade)
+  statement  FleetPayoutStatement @relation(fields: [statementId], references: [id], onDelete: Cascade)
+  uploadedBy User?                @relation("FleetPayoutInvoiceUploader", fields: [uploadedById], references: [id])
+
+  @@index([tenantId, fleetPartnerId])
 }
 
 // ─── Revision 12: the fleet portal becomes a request desk ───────────────────

@@ -2098,6 +2098,45 @@ export interface Messages {
     payBlockedUnconfirmed: string;
     payNow: string;
     payoutPosted: string;
+    /** Revision 13b — see the invoice, then confirm it with a stamped one. */
+    reviewAndConfirm: string;
+    viewStatement: string;
+    stampedInvoice: string;
+    stampedInvoiceHint: string;
+    attachInvoice: string;
+    invoiceTooBig: string;
+    invoiceRequired: string;
+    orderCountDrift: string;
+    viewInvoice: string;
+    noInvoiceYet: string;
+    /** Revision 13b — more KPIs, and the two ends of the driver list. */
+    slaBreaches: string;
+    declined: string;
+    expired: string;
+    avgRating: string;
+    ratings: string;
+    activeDrivers: string;
+    ofRoster: string;
+    ordersPerDriver: string;
+    ordersPerHour: string;
+    medianDeliveryTime: string;
+    minutes: string;
+    failedOrders: string;
+    ofAssigned: string;
+    earningsInPeriod: string;
+    driverComparison: string;
+    driverComparisonHint: string;
+    topThree: string;
+    bottomThree: string;
+    theGap: string;
+    onTime: string;
+    accepted: string;
+    notEnoughToRank: string;
+    noBottomThree: string;
+    unrankedDrivers: string;
+    deactivate: string;
+    activate: string;
+    deactivated: string;
   };
   /** Revision 13 (#6) — the delivery company's own team. */
   fleetTeam: {
@@ -2114,8 +2153,10 @@ export interface Messages {
     hintOperations: string;
     hintFinance: string;
     companies: string;
+    access: string;
     allCompanies: string;
     companiesHint: string;
+    oneCompanyHint: string;
     tabs: string;
     tabsInherit: string;
     tabsCustom: string;
@@ -4383,6 +4424,46 @@ export const en: Messages = {
     payBlockedUnconfirmed: "The delivery company has not confirmed this statement yet.",
     payNow: "Pay",
     payoutPosted: "Payout posted. The statement is paid.",
+    reviewAndConfirm: "Review and confirm",
+    viewStatement: "View",
+    stampedInvoice: "Your stamped invoice",
+    stampedInvoiceHint:
+      "Confirming means sending Darb your own invoice for this period, stamped by the company. PDF or photo, up to 3 MB.",
+    attachInvoice: "Attach stamped invoice",
+    invoiceTooBig: "That file is over 3 MB. Send a smaller scan.",
+    invoiceRequired: "Attach your stamped invoice to confirm this statement.",
+    orderCountDrift:
+      "This statement was cut on {counted} orders and {listed} are listed today. Dispute it if the difference matters.",
+    viewInvoice: "Stamped invoice",
+    noInvoiceYet: "Not confirmed yet",
+    slaBreaches: "late",
+    declined: "declined",
+    expired: "expired",
+    avgRating: "Customer rating",
+    ratings: "ratings",
+    activeDrivers: "Drivers who worked",
+    ofRoster: "On the roster",
+    ordersPerDriver: "Orders per driver",
+    ordersPerHour: "Orders per online hour",
+    medianDeliveryTime: "Median delivery time",
+    minutes: "min",
+    failedOrders: "Failed or returned",
+    ofAssigned: "of assigned",
+    earningsInPeriod: "Earned this period",
+    driverComparison: "Best and worst drivers",
+    driverComparisonHint:
+      "Scored on on-time (40), acceptance (30) and customer rating (30). A driver needs {n} deliveries in the period to be ranked.",
+    topThree: "Top 3",
+    bottomThree: "Bottom 3",
+    theGap: "The gap between them",
+    onTime: "On-time",
+    accepted: "Accepted",
+    notEnoughToRank: "Not enough deliveries in this period to rank anyone.",
+    noBottomThree: "Every ranked driver is in the top three.",
+    unrankedDrivers: "{count} drivers had fewer than {n} deliveries and are not ranked.",
+    deactivate: "Deactivate",
+    activate: "Activate",
+    deactivated: "Access updated.",
   },
   fleetTeam: {
     title: "Team",
@@ -4398,9 +4479,12 @@ export const en: Messages = {
     hintOperations: "Drivers, issues and documents. No payouts.",
     hintFinance: "Payouts and the scorecard. Nothing about drivers.",
     companies: "Companies",
+    access: "Company access",
     allCompanies: "All companies",
     companiesHint:
       "Which of your delivery companies this person can act for. All companies keeps them working when you add another.",
+    oneCompanyHint:
+      "This login covers your company. Adding another delivery company to your account lets you scope people to one of them.",
     tabs: "Tabs",
     tabsInherit: "Whatever the role opens",
     tabsCustom: "Choose the tabs",
@@ -6651,6 +6735,46 @@ export const ar: Messages = {
     payBlockedUnconfirmed: "لم تؤكد شركة التوصيل هذا الكشف بعد.",
     payNow: "صرف",
     payoutPosted: "تم صرف المستحقات وإغلاق الكشف.",
+    reviewAndConfirm: "مراجعة وتأكيد",
+    viewStatement: "عرض",
+    stampedInvoice: "فاتورتك المختومة",
+    stampedInvoiceHint:
+      "التأكيد يعني إرسال فاتورتك عن هذه الفترة مختومة بختم الشركة. ملف PDF أو صورة، حتى 3 ميجابايت.",
+    attachInvoice: "إرفاق الفاتورة المختومة",
+    invoiceTooBig: "حجم الملف يتجاوز 3 ميجابايت. أرسل نسخة أصغر.",
+    invoiceRequired: "أرفق فاتورتك المختومة لتأكيد هذا الكشف.",
+    orderCountDrift:
+      "صدر هذا الكشف على {counted} طلب ويظهر اليوم {listed}. سجّل اعتراضك إذا كان الفرق مهماً.",
+    viewInvoice: "الفاتورة المختومة",
+    noInvoiceYet: "لم يتم التأكيد بعد",
+    slaBreaches: "متأخر",
+    declined: "مرفوض",
+    expired: "منتهي",
+    avgRating: "تقييم العملاء",
+    ratings: "تقييم",
+    activeDrivers: "السائقون الذين عملوا",
+    ofRoster: "على القائمة",
+    ordersPerDriver: "طلبات لكل سائق",
+    ordersPerHour: "طلبات لكل ساعة اتصال",
+    medianDeliveryTime: "وسيط زمن التوصيل",
+    minutes: "دقيقة",
+    failedOrders: "فاشلة أو مرتجعة",
+    ofAssigned: "من المسندة",
+    earningsInPeriod: "أرباح الفترة",
+    driverComparison: "أفضل وأضعف السائقين",
+    driverComparisonHint:
+      "التقييم على الالتزام بالوقت (40) وقبول الطلبات (30) وتقييم العملاء (30). يحتاج السائق {n} عمليات توصيل في الفترة ليدخل الترتيب.",
+    topThree: "أفضل 3",
+    bottomThree: "أضعف 3",
+    theGap: "الفارق بينهم",
+    onTime: "في الوقت",
+    accepted: "مقبول",
+    notEnoughToRank: "لا توجد عمليات توصيل كافية في هذه الفترة للترتيب.",
+    noBottomThree: "كل السائقين المصنفين ضمن الأفضل ثلاثة.",
+    unrankedDrivers: "{count} سائقين لديهم أقل من {n} عمليات توصيل وخارج الترتيب.",
+    deactivate: "إيقاف",
+    activate: "تفعيل",
+    deactivated: "تم تحديث الصلاحية.",
   },
   fleetTeam: {
     title: "الفريق",
@@ -6666,9 +6790,12 @@ export const ar: Messages = {
     hintOperations: "السائقون والملاحظات والمستندات. بدون المستحقات.",
     hintFinance: "المستحقات وبطاقة الأداء. لا شيء عن السائقين.",
     companies: "الشركات",
+    access: "صلاحية الشركات",
     allCompanies: "كل الشركات",
     companiesHint:
       "أي من شركات التوصيل التابعة لك يمكن لهذا الشخص العمل عليها. اختيار كل الشركات يبقيه فعّالاً عند إضافة شركة جديدة.",
+    oneCompanyHint:
+      "هذا الحساب يغطي شركتك. عند إضافة شركة توصيل أخرى إلى حسابك يمكنك تخصيص كل شخص لشركة بعينها.",
     tabs: "الأقسام",
     tabsInherit: "حسب الدور",
     tabsCustom: "تحديد الأقسام",

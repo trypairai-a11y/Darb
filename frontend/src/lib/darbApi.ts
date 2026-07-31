@@ -53,6 +53,8 @@ import type {
   FleetTab,
   FleetTeamPayload,
   FleetTeamUser,
+  FleetStatementDetail,
+  FleetInvoiceUpload,
   CockpitSummary,
   SupportTicket,
   SupportTicketType,
@@ -147,6 +149,26 @@ export async function fetchAllPages<T>(
     if (!pagination || page >= pagination.totalPages) break;
   }
   return out;
+}
+
+/**
+ * Fetch a file through the authed instance and hand back an object URL.
+ *
+ * Revision 13b. A stamped payout invoice may live in R2 (the endpoint
+ * redirects to a signed URL) or in Postgres (the endpoint sends the bytes).
+ * Both arrive here as a blob, so the caller opens one kind of link either way,
+ * and neither needs a second endpoint that hands out a URL.
+ */
+async function getBlob(url: string): Promise<{ objectUrl: string; type: string }> {
+  const scope = inspectParams(url);
+  const { data, headers } = await api.get<Blob>(url, {
+    params: clean(scope ?? undefined),
+    responseType: "blob",
+  });
+  return {
+    objectUrl: URL.createObjectURL(data),
+    type: String(headers["content-type"] ?? "application/octet-stream"),
+  };
 }
 
 async function post<T>(url: string, body?: unknown): Promise<T> {
@@ -585,11 +607,26 @@ export const fleetApi = {
   // ── Revision 13 (#8): the company signs off its own payout ─────────────
   // Darb cannot process a statement the delivery company has not confirmed;
   // the refusal lives in postFleetPayout, so it holds for the cron too.
-  confirmStatement: (id: string) =>
-    post<{ ok: true }>(`/api/fleet/statements/${id}/confirm`),
+
+  /** The orders a statement was built from, so nobody confirms a bare total. */
+  statementDetail: (id: string) =>
+    get<FleetStatementDetail>(`/api/fleet/statements/${id}`),
+  /**
+   * Confirmation IS the stamped invoice (client note on revision 13). The file
+   * travels inline as base64 while R2 is unconfigured, and as an object key
+   * once it is; the server prefers the key and stores nothing inline then.
+   */
+  confirmStatement: (id: string, invoice?: FleetInvoiceUpload) =>
+    post<{ ok: true }>(`/api/fleet/statements/${id}/confirm`, invoice ?? {}),
   /** Sets DISPUTED and opens a Payout support ticket carrying the figures. */
   disputeStatement: (id: string, reason: string) =>
     post<{ ok: true; ticketId: string }>(`/api/fleet/statements/${id}/dispute`, { reason }),
+  /**
+   * The stamped invoice itself. Fetched as a blob through the authed axios
+   * instance rather than opened as a URL: the endpoint needs the bearer token,
+   * and a new tab would not carry it.
+   */
+  statementInvoice: (id: string) => getBlob(`/api/fleet/statements/${id}/invoice`),
 
   // ── Revision 13 (#6): the delivery company's own team ──────────────────
   team: () => get<FleetTeamPayload>("/api/fleet/team"),
@@ -706,6 +743,9 @@ export const fleetsApi = {
    * button beside this is disabled for the same reason rather than for a
    * different one.
    */
+  /** The stamped invoice the company confirmed with. See fleetApi's note. */
+  statementInvoice: (statementId: string) =>
+    getBlob(`/api/fleets/statements/${statementId}/invoice`),
   payStatement: (statementId: string) =>
     post<{ ok: true; transactionId: string | null; replay: boolean }>(
       `/api/fleets/statements/${statementId}/payout`,

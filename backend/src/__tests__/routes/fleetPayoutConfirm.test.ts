@@ -22,6 +22,10 @@ prisma.fleetPayoutStatement = prisma.fleetPayoutStatement ?? {
   findFirst: jest.fn(), findMany: jest.fn(), update: jest.fn(), updateMany: jest.fn(),
 };
 prisma.supportTicket = prisma.supportTicket ?? { create: jest.fn() };
+prisma.fleetPayoutInvoice = prisma.fleetPayoutInvoice ?? {
+  findFirst: jest.fn(), upsert: jest.fn(), create: jest.fn(),
+};
+prisma.deliveryOrder = prisma.deliveryOrder ?? { findMany: jest.fn(), count: jest.fn() };
 prisma.user = prisma.user ?? {
   findFirst: jest.fn(), findUnique: jest.fn(), findMany: jest.fn(),
   create: jest.fn(), update: jest.fn(),
@@ -60,6 +64,13 @@ function money(value: number) {
   };
 }
 
+/** A one-pixel PNG is enough: this suite is about the gate, not the file. */
+const STAMPED_INVOICE = {
+  fileName: "june-invoice.pdf",
+  mimeType: "application/pdf",
+  dataBase64: Buffer.from("%PDF-1.4 stamped").toString("base64"),
+};
+
 const STATEMENT = {
   id: "st-1",
   tenantId: "t-1",
@@ -84,8 +95,11 @@ describe("Fleet payout confirmation", () => {
   // ─── Confirming ──────────────────────────────────────────────────────────
 
   test("confirming a FINAL statement stamps who and when", async () => {
+    prisma.fleetPayoutStatement.findFirst.mockResolvedValue({ ...STATEMENT, invoice: null });
     prisma.fleetPayoutStatement.updateMany.mockResolvedValue({ count: 1 });
-    const res = await request(makeApp()).post("/api/fleet/statements/st-1/confirm");
+    const res = await request(makeApp())
+      .post("/api/fleet/statements/st-1/confirm")
+      .send(STAMPED_INVOICE);
 
     expect(res.status).toBe(200);
     expect(prisma.fleetPayoutStatement.updateMany).toHaveBeenCalledWith(
@@ -101,17 +115,80 @@ describe("Fleet payout confirmation", () => {
   });
 
   test("confirming twice is a 409, not a second stamp", async () => {
+    prisma.fleetPayoutStatement.findFirst.mockResolvedValue({ ...STATEMENT, invoice: null });
     prisma.fleetPayoutStatement.updateMany.mockResolvedValue({ count: 0 });
-    const res = await request(makeApp()).post("/api/fleet/statements/st-1/confirm");
+    const res = await request(makeApp())
+      .post("/api/fleet/statements/st-1/confirm")
+      .send(STAMPED_INVOICE);
     expect(res.status).toBe(409);
   });
 
-  test("another fleet's statement simply does not match", async () => {
-    prisma.fleetPayoutStatement.updateMany.mockResolvedValue({ count: 0 });
-    await request(makeApp()).post("/api/fleet/statements/st-elsewhere/confirm");
-    expect(prisma.fleetPayoutStatement.updateMany).toHaveBeenCalledWith(
+  test("another fleet's statement is a 404, not somebody else's confirmation", async () => {
+    prisma.fleetPayoutStatement.findFirst.mockResolvedValue(null);
+    const res = await request(makeApp())
+      .post("/api/fleet/statements/st-elsewhere/confirm")
+      .send(STAMPED_INVOICE);
+    expect(res.status).toBe(404);
+    expect(prisma.fleetPayoutStatement.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ fleetPartnerId: "f-1" }),
+      }),
+    );
+  });
+
+  // ─── Revision 13b: confirmation IS the stamped invoice ───────────────────
+
+  test("confirming with no invoice is refused, and names why", async () => {
+    prisma.fleetPayoutStatement.findFirst.mockResolvedValue({ ...STATEMENT, invoice: null });
+    const res = await request(makeApp()).post("/api/fleet/statements/st-1/confirm").send({});
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("INVOICE_REQUIRED");
+    expect(prisma.fleetPayoutStatement.updateMany).not.toHaveBeenCalled();
+  });
+
+  test("the invoice is stored before the status moves", async () => {
+    prisma.fleetPayoutStatement.findFirst.mockResolvedValue({ ...STATEMENT, invoice: null });
+    prisma.fleetPayoutStatement.updateMany.mockResolvedValue({ count: 1 });
+    await request(makeApp()).post("/api/fleet/statements/st-1/confirm").send(STAMPED_INVOICE);
+
+    expect(prisma.fleetPayoutInvoice.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { statementId: "st-1" },
+        create: expect.objectContaining({
+          fleetPartnerId: "f-1",
+          fileName: "june-invoice.pdf",
+          mimeType: "application/pdf",
+        }),
+      }),
+    );
+    // A statement that reads CONFIRMED with no invoice behind it is the one
+    // outcome this endpoint must never leave.
+    const upsertOrder = prisma.fleetPayoutInvoice.upsert.mock.invocationCallOrder[0];
+    const statusOrder = prisma.fleetPayoutStatement.updateMany.mock.invocationCallOrder[0];
+    expect(upsertOrder).toBeLessThan(statusOrder);
+  });
+
+  test("a file that is not a PDF or an image is refused", async () => {
+    prisma.fleetPayoutStatement.findFirst.mockResolvedValue({ ...STATEMENT, invoice: null });
+    const res = await request(makeApp())
+      .post("/api/fleet/statements/st-1/confirm")
+      .send({ ...STAMPED_INVOICE, mimeType: "application/zip" });
+    expect(res.status).toBe(400);
+    expect(prisma.fleetPayoutInvoice.upsert).not.toHaveBeenCalled();
+  });
+
+  test("re-confirming after a dispute replaces the file rather than stacking two", async () => {
+    prisma.fleetPayoutStatement.findFirst.mockResolvedValue({
+      ...STATEMENT, status: "DISPUTED", invoice: { id: "inv-1" },
+    });
+    prisma.fleetPayoutStatement.updateMany.mockResolvedValue({ count: 1 });
+    const res = await request(makeApp())
+      .post("/api/fleet/statements/st-1/confirm")
+      .send({ ...STAMPED_INVOICE, fileName: "june-invoice-v2.pdf" });
+    expect(res.status).toBe(200);
+    expect(prisma.fleetPayoutInvoice.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: expect.objectContaining({ fileName: "june-invoice-v2.pdf" }),
       }),
     );
   });

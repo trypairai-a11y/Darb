@@ -12,6 +12,7 @@ import { tenantScope } from "../middleware/tenantScope";
 import { rbac } from "../middleware/rbac";
 import { fleetScope } from "../middleware/fleetScope";
 import { getFleetScorecard } from "../services/fleetService";
+import { getFleetDriverComparison } from "../services/fleet/fleetDriverScoreService";
 import { getDriverRating } from "../services/ratingService";
 import { parseLocalDate, parseLocalDateEnd } from "../utils/date";
 import { presignPutUrl, presignGetUrl } from "../services/r2Service";
@@ -29,6 +30,7 @@ import {
   rosterActivity,
   driverMonthActivity,
 } from "../services/fleet/fleetActivityService";
+import { readInvoiceInput, sendInvoice } from "../services/fleet/fleetInvoiceService";
 import {
   FLEET_TABS,
   FleetPortalRole,
@@ -392,8 +394,14 @@ router.get("/scorecard", requireFleetTab("SCORECARD"), async (req: Request, res:
       res.status(400).json({ error: "`from` and `to` must be YYYY-MM-DD dates, `from` first" });
       return;
     }
-    const scorecard = await getFleetScorecard(ctx.tenantId, ctx.fleetPartnerId, { from, to });
-    res.json(scorecard);
+    // Revision 13b — the averages, plus the two ends of the driver list. An
+    // average never names anybody, and naming somebody is what makes a
+    // scorecard something a supervisor can act on.
+    const [scorecard, drivers] = await Promise.all([
+      getFleetScorecard(ctx.tenantId, ctx.fleetPartnerId, { from, to }),
+      getFleetDriverComparison(ctx.tenantId, ctx.fleetPartnerId, { from, to }),
+    ]);
+    res.json({ ...scorecard, drivers });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -1433,10 +1441,129 @@ router.post("/support/:id/cancel", requireFleetTab("SUPPORT"), async (req: Reque
 
 /**
  * @swagger
+ * /api/fleet/statements/{id}:
+ *   get:
+ *     tags: [Fleet Portal]
+ *     summary: One statement, with the orders it was built from
+ *     description: >
+ *       Client note on revision 13: the delivery company has to see what it is
+ *       confirming. A period, a count and a total is a number to take on faith;
+ *       this is the order-by-order working behind it.
+ */
+router.get(
+  "/statements/:id",
+  requireFleetTab("PAYOUTS"),
+  async (req: Request, res: Response) => {
+    try {
+      const ctx = await fleetContext(req);
+      if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+
+      const statement = await prisma.fleetPayoutStatement.findFirst({
+        where: {
+          id: req.params.id,
+          tenantId: ctx.tenantId,
+          fleetPartnerId: ctx.fleetPartnerId,
+        },
+        include: {
+          invoice: {
+            // Never the bytes. This payload is a screen, not a download.
+            select: {
+              id: true, fileName: true, mimeType: true, sizeBytes: true, uploadedAt: true,
+            },
+          },
+        },
+      });
+      if (!statement) { res.status(404).json({ error: "Statement not found" }); return; }
+
+      // The same orders the statement was cut from: delivered inside the
+      // period by a driver of this fleet. Recomputed rather than stored,
+      // because the fee is snapshotted on the statement and the orders behind
+      // it cannot change after delivery.
+      const orders = await prisma.deliveryOrder.findMany({
+        where: {
+          tenantId: ctx.tenantId,
+          status: "DELIVERED",
+          deliveredAt: { gte: statement.periodStart, lt: statement.periodEnd },
+          driver: { fleetPartnerId: ctx.fleetPartnerId },
+        },
+        select: {
+          id: true, orderNumber: true, deliveredAt: true,
+          vendor: { select: { name: true } },
+          driver: { select: { id: true, name: true, driverCode: true } },
+        },
+        orderBy: { deliveredAt: "asc" },
+        take: 2000,
+      });
+
+      const fee = statement.feePerOrderKwd;
+      res.json({
+        statement: {
+          ...statement,
+          feePerOrderKwd: fee.toFixed(3),
+          totalKwd: statement.totalKwd.toFixed(3),
+        },
+        orders: orders.map((o) => ({
+          id: o.id,
+          orderNumber: o.orderNumber,
+          deliveredAt: o.deliveredAt,
+          vendorName: o.vendor?.name ?? null,
+          driverName: o.driver?.name ?? null,
+          driverCode: o.driver?.driverCode ?? null,
+          feeKwd: fee.toFixed(3),
+        })),
+        // The count on the statement is the one that was paid on; a difference
+        // here means orders were re-stated after the month closed, and the
+        // company should see that rather than have it quietly reconciled.
+        countedOrders: statement.deliveredOrders,
+        listedOrders: orders.length,
+        storageConfigured: isStorageConfigured(),
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+/**
+ * @swagger
+ * /api/fleet/statements/{id}/invoice:
+ *   get:
+ *     tags: [Fleet Portal]
+ *     summary: Download the stamped invoice this company uploaded
+ */
+router.get(
+  "/statements/:id/invoice",
+  requireFleetTab("PAYOUTS"),
+  async (req: Request, res: Response) => {
+    try {
+      const ctx = await fleetContext(req);
+      if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+      const invoice = await prisma.fleetPayoutInvoice.findFirst({
+        where: {
+          statementId: req.params.id,
+          tenantId: ctx.tenantId,
+          fleetPartnerId: ctx.fleetPartnerId,
+        },
+      });
+      if (!invoice) { res.status(404).json({ error: "No invoice on this statement" }); return; }
+      await sendInvoice(res, invoice);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+/**
+ * @swagger
  * /api/fleet/statements/{id}/confirm:
  *   post:
  *     tags: [Fleet Portal]
- *     summary: The delivery company agrees with a payout statement
+ *     summary: Confirm a payout statement by uploading the stamped invoice
+ *     description: >
+ *       Client note on revision 13: confirmation IS the stamped invoice. A
+ *       button click is a claim; the company's own stamped invoice is the
+ *       document Darb's accountant can file against the transfer, so the file
+ *       is required and the status only moves once it is stored.
  */
 router.post(
   "/statements/:id/confirm",
@@ -1445,11 +1572,61 @@ router.post(
     try {
       const ctx = await fleetContext(req);
       if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+
+      const statement = await prisma.fleetPayoutStatement.findFirst({
+        where: {
+          id: req.params.id,
+          tenantId: ctx.tenantId,
+          fleetPartnerId: ctx.fleetPartnerId,
+        },
+        include: { invoice: { select: { id: true } } },
+      });
+      if (!statement) { res.status(404).json({ error: "Statement not found" }); return; }
+
+      const parsed = readInvoiceInput(req.body);
+      if (!parsed.value && !statement.invoice) {
+        res.status(400).json({
+          error: parsed.error ?? "Attach your stamped invoice to confirm this statement",
+          code: "INVOICE_REQUIRED",
+        });
+        return;
+      }
+      if (req.body?.fileName && !parsed.value) {
+        // They tried to attach something and it was not usable. Say so rather
+        // than confirming on a previous month's file.
+        res.status(400).json({ error: parsed.error });
+        return;
+      }
+
+      // Store the invoice first. A statement that reads CONFIRMED with no
+      // invoice behind it is the one outcome this endpoint must never leave.
+      if (parsed.value) {
+        const data = {
+          tenantId: ctx.tenantId,
+          fleetPartnerId: ctx.fleetPartnerId,
+          statementId: statement.id,
+          fileName: parsed.value.fileName,
+          mimeType: parsed.value.mimeType,
+          sizeBytes: parsed.value.sizeBytes,
+          fileKey: parsed.value.fileKey,
+          fileData: parsed.value.fileData,
+          uploadedById: req.user!.userId,
+          uploadedAt: new Date(),
+        };
+        // Re-confirming after a dispute replaces the file rather than stacking
+        // two invoices against one month.
+        await prisma.fleetPayoutInvoice.upsert({
+          where: { statementId: statement.id },
+          create: data,
+          update: data,
+        });
+      }
+
       // Status-guarded claim, same discipline as the request desk: two people
       // in the same office hitting Confirm must not both stamp it.
       const claimed = await prisma.fleetPayoutStatement.updateMany({
         where: {
-          id: req.params.id,
+          id: statement.id,
           tenantId: ctx.tenantId,
           fleetPartnerId: ctx.fleetPartnerId,
           status: { in: ["FINAL", "DISPUTED"] },
