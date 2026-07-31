@@ -19,5 +19,21 @@
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "src/**/__tests__/**", "src/**/*.test.ts"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/**/__tests__/**",
+    "src/**/*.test.ts",
+    "src/routes/keeta*.ts",
+    "src/routes/americana*.ts",
+    "src/routes/talabat.ts",
+    "src/routes/deliveroo.ts",
+    "src/queues/keeta*.ts",
+    "src/queues/americana*.ts",
+    "src/queues/onboardingBackwash*.ts",
+    "src/queues/pullChunk*.ts",
+    "src/services/americana*.ts",
+    "src/services/keeta*.ts",
+    "src/services/ingest/**"
+  ]
 }
