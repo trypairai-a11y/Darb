@@ -238,3 +238,83 @@ Gate is "no NEW failing suites", per the house rule about the legacy red suites.
 - Renaming the `WALLET` ticket enum.
 - Per-company payout statements for a group. A statement belongs to one
   `FleetPartner` and always did; the team feature scopes who can see it.
+
+---
+
+# Revision 13b: four notes from the client's walkthrough
+
+Date: 2026-07-31 (same day, after the client reviewed revision 13)
+Status: built, awaiting a deploy window
+
+## 1. See the invoice before confirming it
+
+Confirming from a table row was the objection: nobody signs an invoice they
+have not read. A statement row opens a panel carrying the orders the total was
+built from (order number, driver, delivered at, fee), with a CSV export.
+
+The panel also states **the count the month was cut on beside the count that
+lists today**. A difference means orders were re-stated after the month closed.
+That is the company's to dispute, not Darb's to quietly reconcile, so it is
+said out loud rather than smoothed over.
+
+## 2. Confirmation IS the stamped invoice
+
+`POST /api/fleet/statements/:id/confirm` requires the company's own invoice for
+the period, stamped. No file, no confirmation: it answers 400 with
+`code: "INVOICE_REQUIRED"`.
+
+**The file is stored before the status moves.** A statement reading CONFIRMED
+with no invoice behind it is the one outcome this endpoint must never leave.
+Re-confirming after a dispute upserts, so one month never carries two invoices.
+
+Darb reads it back at `GET /api/fleets/statements/:id/invoice`, so the person
+about to move the money has the document in front of them instead of asking for
+it by email.
+
+### Where the file lives
+
+`FleetPayoutInvoice`, its own table rather than a `FleetDocument`: a company
+document is a licence Darb reviews for validity and expiry, and this is an
+accounting artefact bound one-to-one to a statement.
+
+Two stores, and the reason is stated plainly. R2 when it is configured, a
+`bytea` column when it is not, capped at 3 MB (Vercel refuses a body over
+4.5 MB, and base64 adds a third). **Production has no R2 yet**, and a
+confirmation gate nobody can pass would be a worse answer than a megabyte in
+Postgres. The code prefers `fileKey`, so new invoices stop carrying bytes the
+day storage is switched on and nothing needs migrating.
+
+## 3. Add user asks about company access, always
+
+The company picker hid itself when a fleet had a single company, which is
+exactly when the omission reads as the question never having been asked. It is
+always rendered now, and a single-company fleet gets a line saying so.
+
+Deactivating a login was only ever a click on the Active badge, which nobody
+reads as a control. It is a named button now, red, saying which way it goes.
+
+## 4. The scorecard says more than five averages
+
+An average never names anybody, which is why five of them were not something a
+supervisor could act on.
+
+Six more KPIs, all derived from rows that already existed: drivers who worked
+(against the roster count), orders per driver, orders per online hour, median
+delivery time (median, so one order left open overnight does not redraw it),
+failed or returned with its rate, and what the period earned at the flat fee.
+
+Underneath, **Top 3 against Bottom 3**:
+
+- Score = on-time 40 + acceptance 30 + rating 30, out of 100.
+- **A missing component is dropped and the weights re-normalised**, never scored
+  zero. Otherwise every new joiner with no customer ratings sits in the bottom
+  three by construction.
+- **Five deliveries in the window to be ranked at all.** One bad afternoon is
+  not a track record, and a bottom three built from it is a scorecard people
+  learn to ignore. Everyone below the bar is counted as "unranked" on screen so
+  "why is my driver in neither list" has an answer.
+- The gap between the two groups is stated in plain numbers under the columns,
+  because two tables side by side still leave the reader doing the subtraction.
+
+The same payload goes to the staff scorecard, so Darb and the delivery company
+are reading one document.
