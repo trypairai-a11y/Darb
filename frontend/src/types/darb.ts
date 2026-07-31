@@ -1097,6 +1097,15 @@ export interface FleetStatementDetail {
     driverCode: string | null;
     feeKwd: string;
   }>;
+  /** How many each driver did, most first. The question a statement gets
+   *  asked as soon as somebody sees the total. */
+  byDriver: Array<{
+    driverId: string;
+    name: string;
+    driverCode: string | null;
+    orders: number;
+    totalKwd: string;
+  }>;
   /** What the statement was cut on, and what the query returns today. A gap
    *  means orders were re-stated after the month closed. */
   countedOrders: number;

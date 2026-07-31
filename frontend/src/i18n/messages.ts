@@ -2107,6 +2107,9 @@ export interface Messages {
     invoiceTooBig: string;
     invoiceRequired: string;
     orderCountDrift: string;
+    ordersByDriver: string;
+    importInvoice: string;
+    noInvoiceOnStatement: string;
     viewInvoice: string;
     noInvoiceYet: string;
     /** Revision 13b — more KPIs, and the two ends of the driver list. */
@@ -4434,6 +4437,9 @@ export const en: Messages = {
     invoiceRequired: "Attach your stamped invoice to confirm this statement.",
     orderCountDrift:
       "This statement was cut on {counted} orders and {listed} are listed today. Dispute it if the difference matters.",
+    ordersByDriver: "Orders by driver",
+    importInvoice: "Invoice",
+    noInvoiceOnStatement: "No invoice yet",
     viewInvoice: "Stamped invoice",
     noInvoiceYet: "Not confirmed yet",
     slaBreaches: "late",
@@ -6745,6 +6751,9 @@ export const ar: Messages = {
     invoiceRequired: "أرفق فاتورتك المختومة لتأكيد هذا الكشف.",
     orderCountDrift:
       "صدر هذا الكشف على {counted} طلب ويظهر اليوم {listed}. سجّل اعتراضك إذا كان الفرق مهماً.",
+    ordersByDriver: "الطلبات حسب السائق",
+    importInvoice: "الفاتورة",
+    noInvoiceOnStatement: "لا توجد فاتورة بعد",
     viewInvoice: "الفاتورة المختومة",
     noInvoiceYet: "لم يتم التأكيد بعد",
     slaBreaches: "متأخر",

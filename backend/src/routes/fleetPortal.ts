@@ -1496,6 +1496,27 @@ router.get(
       });
 
       const fee = statement.feePerOrderKwd;
+
+      // Client note: the statement should say how many each driver did. The
+      // order list answers it only by counting rows by hand, which is the work
+      // a statement exists to have done already.
+      const byDriver = new Map<
+        string,
+        { driverId: string; name: string; driverCode: string | null; orders: number }
+      >();
+      for (const o of orders) {
+        const id = o.driver?.id ?? "unassigned";
+        const row = byDriver.get(id) ?? {
+          driverId: id,
+          name: o.driver?.name ?? "n/a",
+          driverCode: o.driver?.driverCode ?? null,
+          orders: 0,
+        };
+        row.orders += 1;
+        byDriver.set(id, row);
+      }
+      const feeNumber = Number(fee);
+
       res.json({
         statement: {
           ...statement,
@@ -1511,6 +1532,11 @@ router.get(
           driverCode: o.driver?.driverCode ?? null,
           feeKwd: fee.toFixed(3),
         })),
+        // Ordered by who did the most, because that is the order the question
+        // "who carried this month" is asked in.
+        byDriver: [...byDriver.values()]
+          .sort((a, b) => b.orders - a.orders)
+          .map((d) => ({ ...d, totalKwd: (d.orders * feeNumber).toFixed(3) })),
         // The count on the statement is the one that was paid on; a difference
         // here means orders were re-stated after the month closed, and the
         // company should see that rather than have it quietly reconciled.

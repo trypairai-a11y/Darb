@@ -369,6 +369,37 @@ export default function FleetPayoutsPage() {
                         .replace("{listed}", String(detailQuery.data.listedOrders))}
                     </p>
                   )}
+                {/* Client note: how many each driver did. Asked as soon as
+                    anybody reads the total, and previously answerable only by
+                    counting rows in the list underneath. */}
+                {(detailQuery.data?.byDriver ?? []).length > 0 && (
+                  <div className="rounded-xl border border-sand-200 overflow-hidden">
+                    <p className="px-3 py-2 text-xs font-medium text-sand-700 bg-sand-50 border-b border-sand-200">
+                      {t("fleetPortal.ordersByDriver")}
+                    </p>
+                    <div className="max-h-56 overflow-y-auto">
+                      <table className="w-full">
+                        <tbody>
+                          {(detailQuery.data?.byDriver ?? []).map((d) => (
+                            <tr key={d.driverId} className="border-b border-sand-200 last:border-0">
+                              <td dir="auto" className="px-3 py-2 text-xs">{d.name}</td>
+                              <td dir="ltr" className="px-3 py-2 text-xs font-mono text-sand-500">
+                                {d.driverCode ?? "n/a"}
+                              </td>
+                              <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end">
+                                {formatNumber(d.orders, locale)}
+                              </td>
+                              <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end font-medium">
+                                {formatKwd(d.totalKwd, locale)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
                 <div className="rounded-xl border border-sand-200 overflow-hidden">
                   <div className="max-h-72 overflow-y-auto">
                     <table className="w-full">

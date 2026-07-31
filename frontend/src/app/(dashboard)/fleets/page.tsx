@@ -7,7 +7,7 @@ import Link from "next/link";
 // acceptable on this staff-only page).
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eye, Download, Plus } from "lucide-react";
+import { Eye, Download, FileText, Plus } from "lucide-react";
 import { downloadBlob } from "@/utils/downloadBlob";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
@@ -450,6 +450,23 @@ function ScorecardPanel({ fleet }: { fleet: FleetRow }) {
     queryFn: () => fleetsApi.statements(fleet.id),
   });
 
+  /**
+   * Open the invoice the delivery company confirmed with.
+   *
+   * Client note: Darb needs the company's own stamped invoice in front of it,
+   * not a promise that one exists. Fetched with the bearer token and shown,
+   * because the endpoint is authed and a plain link in a new tab would not
+   * carry it.
+   */
+  async function openInvoice(statementId: string) {
+    try {
+      const { objectUrl } = await fleetsApi.statementInvoice(statementId);
+      window.open(objectUrl, "_blank", "noopener,noreferrer");
+    } catch {
+      toast.error(t("fleetPortal.noInvoiceOnStatement"));
+    }
+  }
+
   async function payStatement(statementId: string) {
     setPaying(statementId);
     try {
@@ -572,6 +589,24 @@ function ScorecardPanel({ fleet }: { fleet: FleetRow }) {
                     {formatKwd(row.totalKwd, locale)}
                   </span>
                   <StatusBadge status={row.status} />
+                  {/* Client note: the stamped invoice the company confirmed
+                      with, one click from the row about to be paid. Absent
+                      until they confirm, and it says so rather than offering a
+                      button that 404s. */}
+                  {row.invoice ? (
+                    <button
+                      type="button"
+                      onClick={() => void openInvoice(row.id)}
+                      className="inline-flex items-center gap-1.5 h-8 px-3 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200"
+                    >
+                      <FileText size={12} aria-hidden="true" />
+                      {t("fleetPortal.importInvoice")}
+                    </button>
+                  ) : (
+                    <span className="text-xs text-sand-500">
+                      {t("fleetPortal.noInvoiceOnStatement")}
+                    </span>
+                  )}
                   {/* Revision 13 (#8). The delivery company confirms before
                       Darb processes it, so the button says why it cannot be
                       pressed rather than answering 400 after the click. The
