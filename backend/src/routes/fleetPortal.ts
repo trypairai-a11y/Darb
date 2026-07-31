@@ -3,7 +3,9 @@
 // vendorPortal). Containment: middleware/fleetContainment fences FLEET
 // tokens to /api/auth + /api/fleet + /api/events.
 
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, NextFunction } from "express";
+import bcrypt from "bcryptjs";
+import { Prisma } from "../generated/prisma";
 import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
@@ -27,11 +29,123 @@ import {
   rosterActivity,
   driverMonthActivity,
 } from "../services/fleet/fleetActivityService";
+import {
+  FLEET_TABS,
+  FleetPortalRole,
+  FleetTab,
+  effectiveFleetTabs,
+  isFleetPortalRole,
+  isFleetTab,
+  normaliseFleetRole,
+  parseFleetPartnerIds,
+  parseFleetTabs,
+} from "../services/fleet/fleetTabService";
 
 const router = Router();
 // ADMIN is admitted only so fleetScope can decide: it lets an admin read a
 // named partner's portal and refuses everything else. See fleetScope.
 router.use(authMiddleware, tenantScope, rbac("FLEET", "ADMIN"), fleetScope);
+
+/**
+ * Who this caller is, read from the User row rather than from their token
+ * (revision 13, #6 — the rule revision 11 #5 settled on the merchant side).
+ *
+ * A token is minted once and carries whatever was true that day. If the role
+ * and the company list came off the JWT, an owner who moved somebody to
+ * payouts-only would change nothing until that person's token expired, and the
+ * rail would keep drawing entries the server refuses. One query, resolved once
+ * per request by middleware, so every helper below stays synchronous.
+ */
+interface FleetIdentity {
+  fleetRole: FleetPortalRole;
+  tabs: FleetTab[];
+  /** The companies inside the group this login may act for, null = all of them. */
+  partnerIds: string[] | null;
+  displayName: string;
+}
+
+function fleetIdentityOf(req: Request): FleetIdentity | null {
+  return (req as { _fleetIdentity?: FleetIdentity })._fleetIdentity ?? null;
+}
+
+/**
+ * An inspecting ADMIN is not a fleet login and has no row to read here. They
+ * are already fenced to read-only by fleetScope, so they get no identity and
+ * every gate below stands aside for them rather than inventing an answer.
+ */
+async function loadFleetIdentity(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    if (req.user?.role !== "FLEET") { next(); return; }
+    const row = await prisma.user.findFirst({
+      where: { id: req.user.userId, tenantId: req.user.tenantId },
+      select: {
+        fleetRole: true, fleetTabs: true, fleetPartnerIds: true,
+        name: true, email: true,
+      },
+    });
+    (req as { _fleetIdentity?: FleetIdentity })._fleetIdentity = {
+      fleetRole: normaliseFleetRole(row?.fleetRole),
+      tabs: effectiveFleetTabs(row?.fleetRole, row?.fleetTabs),
+      partnerIds: parseFleetPartnerIds(row?.fleetPartnerIds),
+      displayName: row?.name?.trim() || row?.email || req.user.email,
+    };
+    next();
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+router.use(loadFleetIdentity);
+
+function fleetRoleOf(req: Request): FleetPortalRole {
+  return fleetIdentityOf(req)?.fleetRole ?? "OWNER";
+}
+
+/** Guard a route to a set of portal sub-roles. */
+function requireFleetRole(...allowed: FleetPortalRole[]) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    // No identity means an inspecting admin, already read-only by fleetScope.
+    if (!fleetIdentityOf(req)) { next(); return; }
+    if (!allowed.includes(fleetRoleOf(req))) {
+      res.status(403).json({ error: "Not permitted for this portal role" });
+      return;
+    }
+    next();
+  };
+}
+
+/**
+ * Guard a route to one portal tab.
+ *
+ * The refusal names itself and names the tab, exactly as the merchant portal's
+ * does (revision 11, #7): the portal locks that one rail entry from the code
+ * rather than guessing the tab from a URL, so a refused tab shows a padlock and
+ * not "Request failed with status code 403". The role-based 403 above
+ * deliberately carries no code — a supervisor refused the Add login button has
+ * not lost the Team tab.
+ */
+function requireFleetTab(tab: FleetTab) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const identity = fleetIdentityOf(req);
+    if (identity && !identity.tabs.includes(tab)) {
+      res
+        .status(403)
+        .json({ error: "This tab is not part of your access", code: "TAB_NOT_GRANTED", tab });
+      return;
+    }
+    next();
+  };
+}
+
+/** The tab list an owner posted, or undefined when they sent none. */
+function readFleetTabsInput(raw: unknown): FleetTab[] | null | undefined {
+  if (raw === undefined) return undefined;
+  // Explicit null resets the user back to whatever their role opens.
+  if (raw === null) return null;
+  if (!Array.isArray(raw)) return undefined;
+  const chosen = raw.filter(isFleetTab);
+  return FLEET_TABS.filter((tab) => chosen.includes(tab));
+}
 
 /**
  * Resolve which fleet partner this request is acting as.
@@ -45,6 +159,11 @@ router.use(authMiddleware, tenantScope, rbac("FLEET", "ADMIN"), fleetScope);
  *
  * A user with no ownerGroupId behaves exactly as before: pinned to the single
  * fleetPartnerId baked into its token.
+ *
+ * Revision 13 (#6) adds one narrowing on top: a team login carrying
+ * `fleetPartnerIds` may only act for the companies on that list, intersected
+ * with the group. The list is a fence, not a preference — a login scoped to
+ * Marina cannot reach Sidra by editing a query string.
  */
 async function fleetContext(
   req: Request,
@@ -52,17 +171,21 @@ async function fleetContext(
   const { tenantId } = req.user!;
   const tokenPartnerId = (req.user as { fleetPartnerId?: string }).fleetPartnerId;
   const ownerGroupId = (req.user as { ownerGroupId?: string }).ownerGroupId;
+  const scopedIds = fleetIdentityOf(req)?.partnerIds ?? null;
 
   if (!ownerGroupId) {
     if (!tokenPartnerId) return null;
     return { tenantId, fleetPartnerId: tokenPartnerId };
   }
 
-  const allowed = await prisma.fleetPartner.findMany({
+  const group = await prisma.fleetPartner.findMany({
     where: { tenantId, ownerGroupId },
     select: { id: true },
     orderBy: { name: "asc" },
   });
+  // The intersection, and never the union: a scope list naming a company
+  // outside the group cannot add it.
+  const allowed = scopedIds ? group.filter((f) => scopedIds.includes(f.id)) : group;
   const allowedIds = new Set(allowed.map((f) => f.id));
   if (allowedIds.size === 0) {
     if (!tokenPartnerId) return null;
@@ -99,7 +222,7 @@ router.get("/companies", async (req: Request, res: Response) => {
     const ownerGroupId = (req.user as { ownerGroupId?: string }).ownerGroupId;
     const tokenPartnerId = (req.user as { fleetPartnerId?: string }).fleetPartnerId;
 
-    const partners = ownerGroupId
+    const group = ownerGroupId
       ? await prisma.fleetPartner.findMany({
           where: { tenantId, ownerGroupId },
           select: { id: true, name: true, disciplineStatus: true },
@@ -111,6 +234,12 @@ router.get("/companies", async (req: Request, res: Response) => {
             select: { id: true, name: true, disciplineStatus: true },
           })
         : [];
+
+    // Revision 13 (#6). The switcher shows what this login may act for, not
+    // what the group owns: offering a company every request then falls back
+    // out of would look like a broken switcher rather than a fence.
+    const scopedIds = fleetIdentityOf(req)?.partnerIds ?? null;
+    const partners = scopedIds ? group.filter((f) => scopedIds.includes(f.id)) : group;
 
     const ctx = await fleetContext(req);
     res.json({ activeFleetPartnerId: ctx?.fleetPartnerId ?? null, partners });
@@ -139,7 +268,15 @@ router.get("/me", async (req: Request, res: Response) => {
       },
     });
     if (!fleet) { res.status(404).json({ error: "Fleet partner not found" }); return; }
-    res.json(fleet);
+    // Revision 13 (#6). The caller's own role and tab list ride along, so the
+    // rail and the route fence agree with the server instead of 403ing after
+    // the click. Same contract as /api/vendor/me's portalRole + portalTabs.
+    const identity = fleetIdentityOf(req);
+    res.json({
+      ...fleet,
+      portalRole: identity?.fleetRole ?? null,
+      portalTabs: identity?.tabs ?? null,
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -152,7 +289,7 @@ router.get("/me", async (req: Request, res: Response) => {
  *     tags: [Fleet Portal]
  *     summary: Roster — the fleet's own drivers with doc statuses and ratings
  */
-router.get("/drivers", async (req: Request, res: Response) => {
+router.get("/drivers", requireFleetTab("ROSTER"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -160,6 +297,11 @@ router.get("/drivers", async (req: Request, res: Response) => {
       where: { tenantId: ctx.tenantId, fleetPartnerId: ctx.fleetPartnerId },
       select: {
         id: true, name: true, phone: true, status: true, vehicleType: true,
+        // Revision 13 (#3) — the Darb-issued identifier the roster now shows.
+        // A driver Darb has not approved does not have one: it is issued at
+        // approval, and inventing it earlier would put a Darb number on
+        // somebody who may be rejected.
+        driverCode: true,
         performanceTier: true, throttledUntil: true,
         civilIdStatus: true, civilIdExpiry: true,
         drivingLicenseStatus: true, drivingLicenseExpiry: true,
@@ -198,6 +340,7 @@ router.get("/drivers", async (req: Request, res: Response) => {
           pending: true,
           name: p.name ?? "",
           phone: p.phone ?? "",
+          driverCode: null,
           status: "PENDING_REVIEW",
           vehicleType: p.vehicleType ?? "MOTORCYCLE",
           performanceTier: null,
@@ -232,7 +375,7 @@ router.get("/drivers", async (req: Request, res: Response) => {
  *     tags: [Fleet Portal]
  *     summary: The fleet's own performance scorecard (default: last 30 days)
  */
-router.get("/scorecard", async (req: Request, res: Response) => {
+router.get("/scorecard", requireFleetTab("SCORECARD"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -263,7 +406,7 @@ router.get("/scorecard", async (req: Request, res: Response) => {
  *     tags: [Fleet Portal]
  *     summary: The fleet's monthly payout statements
  */
-router.get("/statements", async (req: Request, res: Response) => {
+router.get("/statements", requireFleetTab("PAYOUTS"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -285,7 +428,7 @@ router.get("/statements", async (req: Request, res: Response) => {
  *     tags: [Fleet Portal]
  *     summary: Per-order earnings for a month (delivered orders x flat fee)
  */
-router.get("/earnings", async (req: Request, res: Response) => {
+router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -348,6 +491,61 @@ router.get("/earnings", async (req: Request, res: Response) => {
 // fleetScope already fences an inspecting ADMIN to GET, so none of the writes
 // here need to re-check the role: a non-FLEET caller cannot reach them.
 
+/**
+ * The dates a status request has to carry (revision 13, #4 and #5).
+ *
+ * Leave needs both ends of it: a delivery company that says a driver is off
+ * without saying until when has moved the phone call, not removed it, and Darb
+ * cannot plan a zone around it. A resignation needs the last working day
+ * because that is the day the driver stops counting towards the payout.
+ *
+ * Date-only strings (YYYY-MM-DD), stored as given rather than as timestamps:
+ * these are calendar days in Kuwait, not instants, and a timezone conversion
+ * on a leave date is how a driver comes back a day early on one screen.
+ */
+function readStatusDates(
+  status: string,
+  input: { leaveStartDate?: string; returnDate?: string; lastWorkingDate?: string },
+): { value?: Record<string, string | null>; error?: string } {
+  const isDate = (v: unknown): v is string =>
+    typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
+
+  if (status === "LEAVE") {
+    if (!isDate(input.leaveStartDate)) {
+      return { error: "A leave start date is required (YYYY-MM-DD)" };
+    }
+    if (!isDate(input.returnDate)) {
+      return { error: "A return date is required (YYYY-MM-DD)" };
+    }
+    if (input.returnDate < input.leaveStartDate) {
+      return { error: "The return date cannot be before the leave date" };
+    }
+    return {
+      value: {
+        leaveStartDate: input.leaveStartDate,
+        returnDate: input.returnDate,
+        lastWorkingDate: null,
+      },
+    };
+  }
+
+  if (status === "TERMINATED") {
+    if (!isDate(input.lastWorkingDate)) {
+      return { error: "A last working date is required (YYYY-MM-DD)" };
+    }
+    return {
+      value: {
+        lastWorkingDate: input.lastWorkingDate,
+        leaveStartDate: null,
+        returnDate: null,
+      },
+    };
+  }
+
+  // Coming back to ACTIVE needs no date: the request itself is the date.
+  return { value: {} };
+}
+
 /** Shared 403 for a driver that is not this fleet's to touch. */
 async function ownDriverOr404(
   ctx: { tenantId: string; fleetPartnerId: string },
@@ -365,7 +563,7 @@ async function ownDriverOr404(
  *     tags: [Fleet Portal]
  *     summary: The delivery company's own documents (revision 12)
  */
-router.get("/documents", async (req: Request, res: Response) => {
+router.get("/documents", requireFleetTab("DOCUMENTS"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -395,7 +593,7 @@ router.get("/documents", async (req: Request, res: Response) => {
  *       file picker that dies. Same posture as WhatsApp and the payment
  *       gateway elsewhere in this codebase.
  */
-router.post("/documents/upload-url", async (req: Request, res: Response) => {
+router.post("/documents/upload-url", requireFleetTab("DOCUMENTS"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -438,7 +636,7 @@ router.post("/documents/upload-url", async (req: Request, res: Response) => {
  *     tags: [Fleet Portal]
  *     summary: Short-lived signed GET for a document the fleet owns
  */
-router.get("/documents/:id/url", async (req: Request, res: Response) => {
+router.get("/documents/:id/url", requireFleetTab("DOCUMENTS"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -504,7 +702,7 @@ function readDocInput(body: any): DocInputResult {
  *     tags: [Fleet Portal]
  *     summary: Record a company document after upload and open a request
  */
-router.post("/documents", async (req: Request, res: Response) => {
+router.post("/documents", requireFleetTab("DOCUMENTS"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -551,7 +749,7 @@ router.post("/documents", async (req: Request, res: Response) => {
  *     tags: [Fleet Portal]
  *     summary: One driver's profile — details, documents, activity, open requests
  */
-router.get("/drivers/:id", async (req: Request, res: Response) => {
+router.get("/drivers/:id", requireFleetTab("ROSTER"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -614,7 +812,7 @@ router.get("/drivers/:id", async (req: Request, res: Response) => {
  *     tags: [Fleet Portal]
  *     summary: Day-by-day delivered order counts for one month
  */
-router.get("/drivers/:id/activity", async (req: Request, res: Response) => {
+router.get("/drivers/:id/activity", requireFleetTab("ROSTER"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -643,7 +841,7 @@ router.get("/drivers/:id/activity", async (req: Request, res: Response) => {
  *       what stops a rejected submission leaving a half-driver in the dispatch
  *       candidate pool.
  */
-router.post("/drivers", async (req: Request, res: Response) => {
+router.post("/drivers", requireFleetTab("ROSTER"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -736,7 +934,7 @@ router.post("/drivers", async (req: Request, res: Response) => {
  *     tags: [Fleet Portal]
  *     summary: Ask Darb for a status, details or document change on a driver
  */
-router.post("/drivers/:id/requests", async (req: Request, res: Response) => {
+router.post("/drivers/:id/requests", requireFleetTab("ROSTER"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -750,17 +948,35 @@ router.post("/drivers/:id/requests", async (req: Request, res: Response) => {
     });
 
     if (type === "DRIVER_STATUS") {
-      const { status, reason } = req.body as { status?: string; reason?: string };
+      const { status, reason, leaveStartDate, returnDate, lastWorkingDate } = req.body as {
+        status?: string; reason?: string;
+        leaveStartDate?: string; returnDate?: string; lastWorkingDate?: string;
+      };
       if (!status || !(REQUESTABLE_STATUSES as readonly string[]).includes(status)) {
         res.status(400).json({ error: `status must be one of ${REQUESTABLE_STATUSES.join(", ")}` });
         return;
       }
+
+      // Revision 13 (#4, #5). "Amit is on leave" used to reach Darb with no
+      // idea when he goes or comes back, and a resignation with no last day is
+      // a payout question nobody can answer. Required here as well as in the
+      // form: the form is a convenience, this is the contract.
+      const dates = readStatusDates(status, {
+        leaveStartDate, returnDate, lastWorkingDate,
+      });
+      if (dates.error) { res.status(400).json({ error: dates.error }); return; }
+
       const request = await createFleetRequest({
         tenantId: ctx.tenantId,
         fleetPartnerId: ctx.fleetPartnerId,
         type: "DRIVER_STATUS",
         driverId: driver.id,
-        payload: { status, reason: reason ?? null, driverName: driver.name },
+        payload: {
+          status,
+          reason: reason ?? null,
+          driverName: driver.name,
+          ...dates.value,
+        },
         requestedById: req.user!.userId,
         fleetName: fleet?.name,
       });
@@ -841,7 +1057,7 @@ router.post("/drivers/:id/requests", async (req: Request, res: Response) => {
  *       strands them. The cost is real and deliberate — phone is the driver
  *       app's sign-in identity, so this can log a driver out of the app.
  */
-router.patch("/drivers/:id/phone", async (req: Request, res: Response) => {
+router.patch("/drivers/:id/phone", requireFleetTab("ROSTER"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -880,7 +1096,7 @@ router.patch("/drivers/:id/phone", async (req: Request, res: Response) => {
  *     tags: [Fleet Portal]
  *     summary: The fleet's own submissions and what Darb decided
  */
-router.get("/requests", async (req: Request, res: Response) => {
+router.get("/requests", requireFleetTab("ROSTER"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -908,7 +1124,7 @@ router.get("/requests", async (req: Request, res: Response) => {
  *     tags: [Fleet Portal]
  *     summary: Pull a request back before Darb has decided
  */
-router.post("/requests/:id/withdraw", async (req: Request, res: Response) => {
+router.post("/requests/:id/withdraw", requireFleetTab("ROSTER"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -938,7 +1154,7 @@ router.post("/requests/:id/withdraw", async (req: Request, res: Response) => {
  *     tags: [Fleet Portal]
  *     summary: Delivery issues Darb has raised against this fleet (revision 12)
  */
-router.get("/issues", async (req: Request, res: Response) => {
+router.get("/issues", requireFleetTab("ISSUES"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -967,7 +1183,7 @@ router.get("/issues", async (req: Request, res: Response) => {
  *     tags: [Fleet Portal]
  *     summary: The supervisor takes ownership of an issue
  */
-router.post("/issues/:id/acknowledge", async (req: Request, res: Response) => {
+router.post("/issues/:id/acknowledge", requireFleetTab("ISSUES"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -1005,7 +1221,7 @@ router.post("/issues/:id/acknowledge", async (req: Request, res: Response) => {
  *       is a button that gets clicked to clear a badge, and the point of this
  *       tab is that somebody actually called the driver.
  */
-router.post("/issues/:id/resolve", async (req: Request, res: Response) => {
+router.post("/issues/:id/resolve", requireFleetTab("ISSUES"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -1052,7 +1268,7 @@ router.post("/issues/:id/resolve", async (req: Request, res: Response) => {
  *     tags: [Fleet Portal]
  *     summary: The fleet's support requests
  */
-router.get("/support", async (req: Request, res: Response) => {
+router.get("/support", requireFleetTab("SUPPORT"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -1075,7 +1291,7 @@ router.get("/support", async (req: Request, res: Response) => {
  *     tags: [Fleet Portal]
  *     summary: Raise a support request with Darb
  */
-router.post("/support", async (req: Request, res: Response) => {
+router.post("/support", requireFleetTab("SUPPORT"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -1123,7 +1339,7 @@ router.post("/support", async (req: Request, res: Response) => {
  *     tags: [Fleet Portal]
  *     summary: Add a message to an existing request
  */
-router.post("/support/:id/reply", async (req: Request, res: Response) => {
+router.post("/support/:id/reply", requireFleetTab("SUPPORT"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -1172,7 +1388,7 @@ router.post("/support/:id/reply", async (req: Request, res: Response) => {
  *     tags: [Fleet Portal]
  *     summary: Withdraw a request. CANCELLED, not RESOLVED.
  */
-router.post("/support/:id/cancel", async (req: Request, res: Response) => {
+router.post("/support/:id/cancel", requireFleetTab("SUPPORT"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -1203,5 +1419,409 @@ router.post("/support/:id/cancel", async (req: Request, res: Response) => {
     res.status(400).json({ error: err.message });
   }
 });
+
+// ─── Revision 13 (#8): the company confirms its own payout ───────────────────
+//
+// Darb used to move a statement from FINAL to PAID on its own. The client asked
+// for the delivery company to agree with the figure first, which is reasonable:
+// it is their invoice, and a month they never saw is a month they argue about
+// after the transfer instead of before it.
+//
+// FINAL -> CONFIRMED -> PAID, with a dispute back to FINAL's side of the line.
+// The gate that actually stops a payment lives in postFleetPayout, not here, so
+// the cron and a script are bound by it too.
+
+/**
+ * @swagger
+ * /api/fleet/statements/{id}/confirm:
+ *   post:
+ *     tags: [Fleet Portal]
+ *     summary: The delivery company agrees with a payout statement
+ */
+router.post(
+  "/statements/:id/confirm",
+  requireFleetTab("PAYOUTS"),
+  async (req: Request, res: Response) => {
+    try {
+      const ctx = await fleetContext(req);
+      if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+      // Status-guarded claim, same discipline as the request desk: two people
+      // in the same office hitting Confirm must not both stamp it.
+      const claimed = await prisma.fleetPayoutStatement.updateMany({
+        where: {
+          id: req.params.id,
+          tenantId: ctx.tenantId,
+          fleetPartnerId: ctx.fleetPartnerId,
+          status: { in: ["FINAL", "DISPUTED"] },
+        },
+        data: {
+          status: "CONFIRMED",
+          confirmedAt: new Date(),
+          confirmedById: req.user!.userId,
+        },
+      });
+      if (claimed.count === 0) {
+        res.status(409).json({ error: "That statement is already confirmed or paid" });
+        return;
+      }
+      res.json({ ok: true });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  },
+);
+
+/**
+ * @swagger
+ * /api/fleet/statements/{id}/dispute:
+ *   post:
+ *     tags: [Fleet Portal]
+ *     summary: The delivery company disagrees, with a reason, and Darb hears it
+ *     description: >
+ *       Opens a support ticket carrying the period and the total. A dispute
+ *       that only sets a flag is a flag somebody has to notice; a ticket lands
+ *       in the inbox Darb already triages.
+ */
+router.post(
+  "/statements/:id/dispute",
+  requireFleetTab("PAYOUTS"),
+  async (req: Request, res: Response) => {
+    try {
+      const ctx = await fleetContext(req);
+      if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+
+      const { reason } = req.body as { reason?: string };
+      if (!reason || reason.trim().length < 10) {
+        res.status(400).json({ error: "Say what is wrong with the statement" });
+        return;
+      }
+
+      const statement = await prisma.fleetPayoutStatement.findFirst({
+        where: {
+          id: req.params.id,
+          tenantId: ctx.tenantId,
+          fleetPartnerId: ctx.fleetPartnerId,
+        },
+      });
+      if (!statement) { res.status(404).json({ error: "Statement not found" }); return; }
+      if (statement.status === "PAID") {
+        res.status(409).json({ error: "That statement has already been paid" });
+        return;
+      }
+
+      const period = statement.periodStart.toISOString().slice(0, 7);
+      const ticket = await prisma.supportTicket.create({
+        data: {
+          tenantId: ctx.tenantId,
+          vendorId: null,
+          fleetPartnerId: ctx.fleetPartnerId,
+          createdById: req.user!.userId,
+          subject: `Payout query: ${period}`,
+          // The enum stays WALLET; the fleet portal renders it as "Payout"
+          // (revision 13, #7). One table is what lets Darb triage merchants and
+          // delivery companies in one inbox.
+          type: "WALLET",
+          messages: {
+            create: {
+              tenantId: ctx.tenantId,
+              author: "FLEET",
+              authorName: fleetIdentityOf(req)?.displayName ?? req.user!.email ?? null,
+              body:
+                `${statement.deliveredOrders} orders x ${statement.feePerOrderKwd.toFixed(3)} KWD ` +
+                `= ${statement.totalKwd.toFixed(3)} KWD for ${period}.\n\n${reason.trim()}`,
+            },
+          },
+        },
+      });
+
+      const claimed = await prisma.fleetPayoutStatement.updateMany({
+        where: {
+          id: statement.id,
+          tenantId: ctx.tenantId,
+          fleetPartnerId: ctx.fleetPartnerId,
+          status: { in: ["FINAL", "CONFIRMED"] },
+        },
+        data: {
+          status: "DISPUTED",
+          disputedAt: new Date(),
+          disputeReason: reason.trim(),
+          disputeTicketId: ticket.id,
+          // A disputed statement is not a confirmed one. Clearing the stamp is
+          // what stops a company confirming, disputing, and still being paid on
+          // the strength of the earlier click.
+          confirmedAt: null,
+          confirmedById: null,
+        },
+      });
+      if (claimed.count === 0) {
+        res.status(409).json({ error: "That statement has already been paid" });
+        return;
+      }
+
+      res.status(201).json({ ok: true, ticketId: ticket.id });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  },
+);
+
+// ─── Revision 13 (#6): the delivery company's own team ───────────────────────
+//
+// The mirror of the merchant portal's Team page, with branches replaced by the
+// other delivery companies in the same owner group. Darb could always create a
+// fleet's logins and the fleet could not, which made Darb the bottleneck for
+// something an owner should do themselves.
+//
+// OWNER-only on the writes, on the endpoint as well as in the UI. A supervisor
+// who could mint an owner login could grant themselves everything, so this is
+// the one capability a tab list cannot hand over.
+
+/**
+ * @swagger
+ * /api/fleet/team:
+ *   get:
+ *     tags: [Fleet Portal]
+ *     summary: The delivery company's own portal logins
+ */
+router.get("/team", requireFleetTab("TEAM"), async (req: Request, res: Response) => {
+  try {
+    const ctx = await fleetContext(req);
+    if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+    const ownerGroupId = (req.user as { ownerGroupId?: string }).ownerGroupId ?? null;
+
+    // The team is the group's, not one company's: a login scoped to Marina is
+    // still the same owner's employee and belongs on this list.
+    const companies = await prisma.fleetPartner.findMany({
+      where: ownerGroupId
+        ? { tenantId: ctx.tenantId, ownerGroupId }
+        : { tenantId: ctx.tenantId, id: ctx.fleetPartnerId },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    });
+    const companyIds = companies.map((c) => c.id);
+
+    const users = await prisma.user.findMany({
+      where: {
+        tenantId: ctx.tenantId,
+        role: "FLEET",
+        fleetPartnerId: { in: companyIds },
+      },
+      select: {
+        id: true, email: true, name: true, phone: true,
+        fleetRole: true, fleetTabs: true, fleetPartnerIds: true,
+        fleetPartnerId: true, isActive: true, createdAt: true,
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    res.json({
+      companies,
+      users: users.map((u) => ({
+        ...u,
+        fleetRole: normaliseFleetRole(u.fleetRole),
+        fleetTabs: parseFleetTabs(u.fleetTabs),
+        effectiveTabs: effectiveFleetTabs(u.fleetRole, u.fleetTabs),
+        // Null means every company in the group, which is what the page prints
+        // rather than listing them all back at somebody who did not choose.
+        fleetPartnerIds: parseFleetPartnerIds(u.fleetPartnerIds),
+      })),
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/** The company-scope list an owner posted, validated against their own group. */
+function readPartnerIdsInput(raw: unknown, groupIds: string[]): string[] | null | undefined {
+  if (raw === undefined) return undefined;
+  if (raw === null) return null;
+  if (!Array.isArray(raw)) return undefined;
+  const chosen = groupIds.filter((id) => raw.includes(id));
+  // Choosing every company is the same as choosing none of them in particular,
+  // and storing it as null keeps a login working when the group gains a company.
+  return chosen.length === 0 || chosen.length === groupIds.length ? null : chosen;
+}
+
+/**
+ * @swagger
+ * /api/fleet/team:
+ *   post:
+ *     tags: [Fleet Portal]
+ *     summary: Add a portal login for this delivery company (OWNER only)
+ */
+router.post(
+  "/team",
+  requireFleetRole("OWNER"),
+  requireFleetTab("TEAM"),
+  async (req: Request, res: Response) => {
+    try {
+      const ctx = await fleetContext(req);
+      if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+      const ownerGroupId = (req.user as { ownerGroupId?: string }).ownerGroupId ?? null;
+
+      const { email, password, name, phone, fleetRole, fleetTabs, fleetPartnerIds } = req.body as {
+        email?: string; password?: string; name?: string; phone?: string;
+        fleetRole?: string; fleetTabs?: unknown; fleetPartnerIds?: unknown;
+      };
+
+      if (!name || name.trim().length < 2) {
+        res.status(400).json({ error: "A name is required" }); return;
+      }
+      if (!email || !/^\S+@\S+\.\S+$/.test(email.trim())) {
+        res.status(400).json({ error: "A valid email is required" }); return;
+      }
+      if (!password || password.length < 8) {
+        res.status(400).json({ error: "The password must be at least 8 characters" }); return;
+      }
+      if (!isFleetPortalRole(fleetRole)) {
+        res.status(400).json({ error: "Role must be OWNER, OPERATIONS or FINANCE" }); return;
+      }
+
+      const existing = await prisma.user.findUnique({ where: { email: email.trim() } });
+      if (existing) { res.status(400).json({ error: "That email already has a login" }); return; }
+
+      const group = await prisma.fleetPartner.findMany({
+        where: ownerGroupId
+          ? { tenantId: ctx.tenantId, ownerGroupId }
+          : { tenantId: ctx.tenantId, id: ctx.fleetPartnerId },
+        select: { id: true },
+      });
+      const groupIds = group.map((g) => g.id);
+      const scoped = readPartnerIdsInput(fleetPartnerIds, groupIds) ?? null;
+      const tabs = readFleetTabsInput(fleetTabs);
+
+      const user = await prisma.user.create({
+        data: {
+          tenantId: ctx.tenantId,
+          email: email.trim(),
+          passwordHash: await bcrypt.hash(password, 12),
+          name: name.trim(),
+          phone: phone?.trim() || null,
+          role: "FLEET",
+          // The new login's home company is the one the owner is acting as, and
+          // the group is what lets them switch — the same two fields every
+          // fleet login has carried since revision 1.
+          fleetPartnerId: scoped ? scoped[0] : ctx.fleetPartnerId,
+          ownerGroupId,
+          fleetRole,
+          fleetTabs: tabs === undefined || tabs === null ? undefined : tabs,
+          fleetPartnerIds: scoped ?? undefined,
+        },
+        select: {
+          id: true, email: true, name: true, phone: true, fleetRole: true,
+          fleetTabs: true, fleetPartnerIds: true, fleetPartnerId: true,
+          isActive: true, createdAt: true,
+        },
+      });
+
+      res.status(201).json({
+        ...user,
+        fleetRole: normaliseFleetRole(user.fleetRole),
+        fleetTabs: parseFleetTabs(user.fleetTabs),
+        effectiveTabs: effectiveFleetTabs(user.fleetRole, user.fleetTabs),
+        fleetPartnerIds: parseFleetPartnerIds(user.fleetPartnerIds),
+      });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  },
+);
+
+/**
+ * @swagger
+ * /api/fleet/team/{id}:
+ *   patch:
+ *     tags: [Fleet Portal]
+ *     summary: Change what one login opens, or switch it off (OWNER only)
+ */
+router.patch(
+  "/team/:id",
+  requireFleetRole("OWNER"),
+  requireFleetTab("TEAM"),
+  async (req: Request, res: Response) => {
+    try {
+      const ctx = await fleetContext(req);
+      if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+      const ownerGroupId = (req.user as { ownerGroupId?: string }).ownerGroupId ?? null;
+
+      // An owner cannot narrow their own access: it would be a way to lock the
+      // company out of the only screen that could undo it.
+      if (req.params.id === req.user!.userId) {
+        res.status(400).json({ error: "You cannot change your own access" });
+        return;
+      }
+
+      const group = await prisma.fleetPartner.findMany({
+        where: ownerGroupId
+          ? { tenantId: ctx.tenantId, ownerGroupId }
+          : { tenantId: ctx.tenantId, id: ctx.fleetPartnerId },
+        select: { id: true },
+      });
+      const groupIds = group.map((g) => g.id);
+
+      const target = await prisma.user.findFirst({
+        where: {
+          id: req.params.id,
+          tenantId: ctx.tenantId,
+          role: "FLEET",
+          fleetPartnerId: { in: groupIds },
+        },
+        select: { id: true },
+      });
+      if (!target) { res.status(404).json({ error: "That login is not on your team" }); return; }
+
+      const data: Record<string, unknown> = {};
+      if (typeof req.body.name === "string" && req.body.name.trim()) {
+        data.name = req.body.name.trim();
+      }
+      if (typeof req.body.phone === "string") data.phone = req.body.phone.trim() || null;
+      if (typeof req.body.isActive === "boolean") data.isActive = req.body.isActive;
+      if (req.body.fleetRole !== undefined) {
+        if (!isFleetPortalRole(req.body.fleetRole)) {
+          res.status(400).json({ error: "Role must be OWNER, OPERATIONS or FINANCE" });
+          return;
+        }
+        data.fleetRole = req.body.fleetRole;
+      }
+      if ("fleetTabs" in req.body) {
+        const tabs = readFleetTabsInput(req.body.fleetTabs);
+        // Prisma.DbNull, not null: a JSON column needs the database null to
+        // clear an override back to "inherit the role".
+        if (tabs !== undefined) data.fleetTabs = tabs === null ? Prisma.DbNull : tabs;
+      }
+      if ("fleetPartnerIds" in req.body) {
+        const scoped = readPartnerIdsInput(req.body.fleetPartnerIds, groupIds);
+        if (scoped !== undefined) {
+          data.fleetPartnerIds = scoped === null ? Prisma.DbNull : scoped;
+          if (scoped) data.fleetPartnerId = scoped[0];
+        }
+      }
+      if (Object.keys(data).length === 0) {
+        res.status(400).json({ error: "Nothing to change" });
+        return;
+      }
+
+      const user = await prisma.user.update({
+        where: { id: target.id },
+        data,
+        select: {
+          id: true, email: true, name: true, phone: true, fleetRole: true,
+          fleetTabs: true, fleetPartnerIds: true, fleetPartnerId: true,
+          isActive: true, createdAt: true,
+        },
+      });
+
+      res.json({
+        ...user,
+        fleetRole: normaliseFleetRole(user.fleetRole),
+        fleetTabs: parseFleetTabs(user.fleetTabs),
+        effectiveTabs: effectiveFleetTabs(user.fleetRole, user.fleetTabs),
+        fleetPartnerIds: parseFleetPartnerIds(user.fleetPartnerIds),
+      });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  },
+);
 
 export default router;

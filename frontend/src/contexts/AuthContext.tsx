@@ -1,6 +1,8 @@
 "use client";
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import api, { setAccessToken } from "@/lib/api";
+import { resetVendorAccess } from "@/lib/vendorAccess";
+import { resetFleetAccess } from "@/lib/fleetAccess";
 import { usePathname } from "next/navigation";
 
 interface User {
@@ -108,6 +110,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await api.post("/api/auth/logout");
     setAccessToken(null);
     setUser(null);
+    // Whatever the last login was refused says nothing about the next one, and
+    // this store only ever adds restrictions (revision 11 #7).
+    resetVendorAccess();
+    resetFleetAccess();
   }
 
   return (

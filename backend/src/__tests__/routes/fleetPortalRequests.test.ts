@@ -60,6 +60,18 @@ prisma.supportTicket = prisma.supportTicket ?? {
   updateMany: jest.fn(),
 };
 prisma.supportTicketMessage = prisma.supportTicketMessage ?? { create: jest.fn() };
+// Revision 13 (#6) — the router resolves the caller's role, tab list and
+// company scope from their User row on every request rather than from the JWT.
+// An unmocked read means every route below 500s, so the model is stubbed here;
+// resetAllMocks leaves it answering undefined, which is the inherit case and is
+// exactly how every fleet login that existed before revision 13 behaves.
+prisma.user = prisma.user ?? {
+  findFirst: jest.fn(),
+  findUnique: jest.fn(),
+  findMany: jest.fn(),
+  create: jest.fn(),
+  update: jest.fn(),
+};
 prisma.orderRating = prisma.orderRating ?? {
   aggregate: jest.fn(),
   groupBy: jest.fn(),
@@ -233,7 +245,12 @@ describe("Fleet portal request desk", () => {
     prisma.driver.findFirst.mockResolvedValue(OWN_DRIVER);
     const res = await request(makeApp())
       .post("/api/fleet/drivers/d-1/requests")
-      .send({ type: "DRIVER_STATUS", status: "TERMINATED", reason: "Left the company" });
+      .send({
+        type: "DRIVER_STATUS",
+        status: "TERMINATED",
+        reason: "Left the company",
+        lastWorkingDate: "2026-08-14",
+      });
 
     expect(res.status).toBe(201);
     expect(prisma.driver.update).not.toHaveBeenCalled();
@@ -242,6 +259,73 @@ describe("Fleet portal request desk", () => {
         data: expect.objectContaining({ type: "DRIVER_STATUS", driverId: "d-1" }),
       }),
     );
+  });
+
+  // ─── Revision 13 (#4, #5): the dates that make a request actionable ──────
+
+  test("a resignation with no last working date is refused", async () => {
+    prisma.driver.findFirst.mockResolvedValue(OWN_DRIVER);
+    const res = await request(makeApp())
+      .post("/api/fleet/drivers/d-1/requests")
+      .send({ type: "DRIVER_STATUS", status: "TERMINATED", reason: "Left" });
+    expect(res.status).toBe(400);
+    expect(prisma.fleetChangeRequest.create).not.toHaveBeenCalled();
+  });
+
+  test("leave carries both ends of it, and they reach the payload", async () => {
+    prisma.driver.findFirst.mockResolvedValue(OWN_DRIVER);
+    const res = await request(makeApp())
+      .post("/api/fleet/drivers/d-1/requests")
+      .send({
+        type: "DRIVER_STATUS",
+        status: "LEAVE",
+        leaveStartDate: "2026-08-01",
+        returnDate: "2026-08-20",
+      });
+
+    expect(res.status).toBe(201);
+    expect(prisma.fleetChangeRequest.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          payload: expect.objectContaining({
+            status: "LEAVE",
+            leaveStartDate: "2026-08-01",
+            returnDate: "2026-08-20",
+          }),
+        }),
+      }),
+    );
+  });
+
+  test("leave with no return date is refused: Darb cannot plan around it", async () => {
+    prisma.driver.findFirst.mockResolvedValue(OWN_DRIVER);
+    const res = await request(makeApp())
+      .post("/api/fleet/drivers/d-1/requests")
+      .send({ type: "DRIVER_STATUS", status: "LEAVE", leaveStartDate: "2026-08-01" });
+    expect(res.status).toBe(400);
+    expect(prisma.fleetChangeRequest.create).not.toHaveBeenCalled();
+  });
+
+  test("a return date before the leave date is refused", async () => {
+    prisma.driver.findFirst.mockResolvedValue(OWN_DRIVER);
+    const res = await request(makeApp())
+      .post("/api/fleet/drivers/d-1/requests")
+      .send({
+        type: "DRIVER_STATUS",
+        status: "LEAVE",
+        leaveStartDate: "2026-08-20",
+        returnDate: "2026-08-01",
+      });
+    expect(res.status).toBe(400);
+    expect(prisma.fleetChangeRequest.create).not.toHaveBeenCalled();
+  });
+
+  test("coming back to ACTIVE needs no dates", async () => {
+    prisma.driver.findFirst.mockResolvedValue(OWN_DRIVER);
+    const res = await request(makeApp())
+      .post("/api/fleet/drivers/d-1/requests")
+      .send({ type: "DRIVER_STATUS", status: "ACTIVE" });
+    expect(res.status).toBe(201);
   });
 
   test("a status the fleet may not ask for is refused", async () => {

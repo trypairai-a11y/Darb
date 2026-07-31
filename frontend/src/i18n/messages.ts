@@ -2063,6 +2063,71 @@ export interface Messages {
     addPortalLogin: string;
     createPortalLogin: string;
     portalLoginCreated: string;
+    // Revision 13 — the client's eight edits.
+    navTeam: string;
+    /** #3 — the roster's counts and the Darb-issued driver id. */
+    totalDrivers: string;
+    carDrivers: string;
+    bikeDrivers: string;
+    pendingApproval: string;
+    darbId: string;
+    /** #2 — the import button, always on the panel. */
+    importFile: string;
+    importOff: string;
+    /** #4 and #5 — when the driver goes, comes back, and finishes. */
+    leaveStartDate: string;
+    returnDate: string;
+    returnBeforeLeave: string;
+    lastWorkingDate: string;
+    /** #7 — Wallet reads as Payout on this side. */
+    requestType: string;
+    ticketTypeTechnical: string;
+    ticketTypeOrder: string;
+    ticketTypePayout: string;
+    ticketTypeOther: string;
+    /** #8 — the company signs the statement off before Darb pays it. */
+    confirmPayout: string;
+    disputePayout: string;
+    confirmHint: string;
+    disputeHint: string;
+    disputeReason: string;
+    statementConfirmed: string;
+    statementDisputed: string;
+    awaitingDarb: string;
+    /** Staff side of #8, on /fleets. */
+    payBlockedUnconfirmed: string;
+    payNow: string;
+    payoutPosted: string;
+  };
+  /** Revision 13 (#6) — the delivery company's own team. */
+  fleetTeam: {
+    title: string;
+    subtitle: string;
+    add: string;
+    created: string;
+    empty: string;
+    accessSaved: string;
+    roleOWNER: string;
+    roleOPERATIONS: string;
+    roleFINANCE: string;
+    hintOwner: string;
+    hintOperations: string;
+    hintFinance: string;
+    companies: string;
+    allCompanies: string;
+    companiesHint: string;
+    tabs: string;
+    tabsInherit: string;
+    tabsCustom: string;
+    tabsHint: string;
+    tabsEmpty: string;
+    tabROSTER: string;
+    tabISSUES: string;
+    tabDOCUMENTS: string;
+    tabSCORECARD: string;
+    tabPAYOUTS: string;
+    tabSUPPORT: string;
+    tabTEAM: string;
   };
   period: {
     today: string;
@@ -4287,6 +4352,67 @@ export const en: Messages = {
     addPortalLogin: "Add portal login",
     createPortalLogin: "Create login",
     portalLoginCreated: "Portal login created.",
+    navTeam: "Team",
+    totalDrivers: "Total drivers",
+    carDrivers: "Car",
+    bikeDrivers: "Bike",
+    pendingApproval: "Pending Darb review",
+    darbId: "Darb ID",
+    importFile: "Import file",
+    importOff:
+      "Uploads switch on when Darb enables document storage. Record the expiry date now and Darb will ask for the file.",
+    leaveStartDate: "Leave date",
+    returnDate: "Returns on",
+    returnBeforeLeave: "The return date cannot be before the leave date.",
+    lastWorkingDate: "Last working date",
+    requestType: "Request type",
+    ticketTypeTechnical: "Technical",
+    ticketTypeOrder: "Order",
+    ticketTypePayout: "Payout",
+    ticketTypeOther: "Other",
+    confirmPayout: "Confirm",
+    disputePayout: "Dispute",
+    confirmHint:
+      "Darb pays a statement once you have confirmed it. If a figure looks wrong, dispute it and say why.",
+    disputeHint:
+      "This opens a payout request with Darb carrying the period, the order count and the total.",
+    disputeReason: "What is wrong with it",
+    statementConfirmed: "Statement confirmed. Darb will process the payout.",
+    statementDisputed: "Sent to Darb. Your payout request is open.",
+    awaitingDarb: "Waiting on Darb",
+    payBlockedUnconfirmed: "The delivery company has not confirmed this statement yet.",
+    payNow: "Pay",
+    payoutPosted: "Payout posted. The statement is paid.",
+  },
+  fleetTeam: {
+    title: "Team",
+    subtitle: "Who from your company can sign in, and what each of them opens.",
+    add: "Add user",
+    created: "Login created.",
+    empty: "No logins yet.",
+    accessSaved: "Access saved.",
+    roleOWNER: "Owner",
+    roleOPERATIONS: "Operations",
+    roleFINANCE: "Finance",
+    hintOwner: "Everything, including adding and removing logins.",
+    hintOperations: "Drivers, issues and documents. No payouts.",
+    hintFinance: "Payouts and the scorecard. Nothing about drivers.",
+    companies: "Companies",
+    allCompanies: "All companies",
+    companiesHint:
+      "Which of your delivery companies this person can act for. All companies keeps them working when you add another.",
+    tabs: "Tabs",
+    tabsInherit: "Whatever the role opens",
+    tabsCustom: "Choose the tabs",
+    tabsHint: "Tabs decide which screens open. Only an owner can add or edit a login.",
+    tabsEmpty: "This person would open nothing. Pick at least one tab.",
+    tabROSTER: "Drivers",
+    tabISSUES: "Issues",
+    tabDOCUMENTS: "Documents",
+    tabSCORECARD: "Scorecard",
+    tabPAYOUTS: "Payouts",
+    tabSUPPORT: "Support",
+    tabTEAM: "Team",
   },
   period: {
     today: "Today",
@@ -6495,6 +6621,66 @@ export const ar: Messages = {
     addPortalLogin: "إضافة حساب بوابة",
     createPortalLogin: "إنشاء الحساب",
     portalLoginCreated: "تم إنشاء حساب البوابة.",
+    navTeam: "الفريق",
+    totalDrivers: "إجمالي السائقين",
+    carDrivers: "سيارة",
+    bikeDrivers: "دراجة",
+    pendingApproval: "بانتظار مراجعة درب",
+    darbId: "معرّف درب",
+    importFile: "إرفاق ملف",
+    importOff:
+      "يبدأ الرفع عندما تفعّل درب تخزين المستندات. سجّل تاريخ الانتهاء الآن وسوف تطلب درب الملف لاحقاً.",
+    leaveStartDate: "تاريخ بدء الإجازة",
+    returnDate: "تاريخ العودة",
+    returnBeforeLeave: "لا يمكن أن يسبق تاريخ العودة تاريخ بدء الإجازة.",
+    lastWorkingDate: "آخر يوم عمل",
+    requestType: "نوع الطلب",
+    ticketTypeTechnical: "تقني",
+    ticketTypeOrder: "طلب توصيل",
+    ticketTypePayout: "المستحقات",
+    ticketTypeOther: "أخرى",
+    confirmPayout: "تأكيد",
+    disputePayout: "اعتراض",
+    confirmHint:
+      "تصرف درب كشف المستحقات بعد تأكيدك له. إذا بدا أي رقم غير صحيح، سجّل اعتراضك واذكر السبب.",
+    disputeHint: "يفتح هذا طلباً لدى درب يحمل الفترة وعدد الطلبات والإجمالي.",
+    disputeReason: "ما الخطأ في الكشف",
+    statementConfirmed: "تم تأكيد الكشف. ستقوم درب بصرف المستحقات.",
+    statementDisputed: "أُرسل إلى درب. طلب المستحقات مفتوح الآن.",
+    awaitingDarb: "بانتظار درب",
+    payBlockedUnconfirmed: "لم تؤكد شركة التوصيل هذا الكشف بعد.",
+    payNow: "صرف",
+    payoutPosted: "تم صرف المستحقات وإغلاق الكشف.",
+  },
+  fleetTeam: {
+    title: "الفريق",
+    subtitle: "من في شركتك يمكنه الدخول، وما الذي يفتحه كل واحد منهم.",
+    add: "إضافة مستخدم",
+    created: "تم إنشاء الحساب.",
+    empty: "لا توجد حسابات بعد.",
+    accessSaved: "تم حفظ الصلاحيات.",
+    roleOWNER: "المالك",
+    roleOPERATIONS: "العمليات",
+    roleFINANCE: "المالية",
+    hintOwner: "كل شيء، بما في ذلك إضافة الحسابات وإيقافها.",
+    hintOperations: "السائقون والملاحظات والمستندات. بدون المستحقات.",
+    hintFinance: "المستحقات وبطاقة الأداء. لا شيء عن السائقين.",
+    companies: "الشركات",
+    allCompanies: "كل الشركات",
+    companiesHint:
+      "أي من شركات التوصيل التابعة لك يمكن لهذا الشخص العمل عليها. اختيار كل الشركات يبقيه فعّالاً عند إضافة شركة جديدة.",
+    tabs: "الأقسام",
+    tabsInherit: "حسب الدور",
+    tabsCustom: "تحديد الأقسام",
+    tabsHint: "الأقسام تحدد الشاشات التي تُفتح. إضافة الحسابات وتعديلها للمالك وحده.",
+    tabsEmpty: "لن يفتح هذا الشخص أي شاشة. اختر قسماً واحداً على الأقل.",
+    tabROSTER: "السائقون",
+    tabISSUES: "الملاحظات",
+    tabDOCUMENTS: "المستندات",
+    tabSCORECARD: "بطاقة الأداء",
+    tabPAYOUTS: "المستحقات",
+    tabSUPPORT: "الدعم",
+    tabTEAM: "الفريق",
   },
   period: {
     today: "اليوم",

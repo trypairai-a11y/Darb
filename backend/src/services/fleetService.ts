@@ -231,8 +231,18 @@ export async function generateFleetStatements(
 }
 
 /**
- * Pay a FINAL statement: post FLEET_PAYOUT (idempotent per statement) and
- * mark PAID atomically. Zero-order statements flip to PAID with no posting.
+ * Pay a CONFIRMED statement: post FLEET_PAYOUT (idempotent per statement) and
+ * mark PAID atomically.
+ *
+ * Revision 13 (#8) — the delivery company confirms the figure before Darb
+ * processes it. The gate lives here rather than in the route so the staff
+ * button, a cron and a script are all bound by the same rule: paying a month a
+ * subcontractor never agreed to is an argument after the transfer instead of
+ * before it.
+ *
+ * Zero-total statements are the one exception and still flip to PAID with no
+ * posting and no confirmation. There is nothing to disagree with about KD
+ * 0.000, and holding a payroll run open for it would be theatre.
  */
 export async function postFleetPayout(args: {
   tenantId: string;
@@ -254,6 +264,14 @@ export async function postFleetPayout(args: {
         data: { status: "PAID" },
       });
       return null;
+    }
+
+    if (statement.status !== "CONFIRMED") {
+      throw new WalletError(
+        statement.status === "DISPUTED"
+          ? "The delivery company has disputed this statement. Settle the query before paying it."
+          : "The delivery company has not confirmed this statement yet.",
+      );
     }
 
     const revenue = await ensureAccount(tx, tenantId, "PLATFORM_REVENUE");

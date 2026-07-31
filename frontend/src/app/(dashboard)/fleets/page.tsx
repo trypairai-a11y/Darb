@@ -414,8 +414,12 @@ function RequestsSection({ fleet }: { fleet: FleetRow }) {
 function ScorecardPanel({ fleet }: { fleet: FleetRow }) {
   const { t, locale } = useI18n();
   const toast = useToast();
-  const { isAdmin } = useRole();
+  const { isAdmin, hasRole } = useRole();
   const [downloading, setDownloading] = useState(false);
+  // Revision 13 (#8). The endpoint is ACCOUNTANT+; showing the button to
+  // anyone else would only produce a 403 they cannot act on.
+  const canPay = hasRole("ACCOUNTANT");
+  const [paying, setPaying] = useState<string | null>(null);
 
   /**
    * A scorecard with no stated period is not a report, it is a number nobody
@@ -445,6 +449,22 @@ function ScorecardPanel({ fleet }: { fleet: FleetRow }) {
     queryKey: ["darb", "fleets", fleet.id, "statements"],
     queryFn: () => fleetsApi.statements(fleet.id),
   });
+
+  async function payStatement(statementId: string) {
+    setPaying(statementId);
+    try {
+      await fleetsApi.payStatement(statementId);
+      toast.success(t("fleetPortal.payoutPosted"));
+      await statementsQuery.refetch();
+    } catch (err) {
+      toast.error(
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+          t("toast.failedSave"),
+      );
+    } finally {
+      setPaying(null);
+    }
+  }
 
   const s = scorecardQuery.data;
   const statements = unwrapList<FleetStatementRow>(statementsQuery.data);
@@ -552,6 +572,25 @@ function ScorecardPanel({ fleet }: { fleet: FleetRow }) {
                     {formatKwd(row.totalKwd, locale)}
                   </span>
                   <StatusBadge status={row.status} />
+                  {/* Revision 13 (#8). The delivery company confirms before
+                      Darb processes it, so the button says why it cannot be
+                      pressed rather than answering 400 after the click. The
+                      server refuses an unconfirmed statement either way. */}
+                  {canPay && row.status !== "PAID" && (
+                    <button
+                      type="button"
+                      disabled={row.status !== "CONFIRMED" || paying === row.id}
+                      title={
+                        row.status === "CONFIRMED"
+                          ? undefined
+                          : t("fleetPortal.payBlockedUnconfirmed")
+                      }
+                      onClick={() => void payStatement(row.id)}
+                      className="h-8 px-3 rounded-pill bg-primary text-white text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {t("fleetPortal.payNow")}
+                    </button>
+                  )}
                 </div>
               </li>
             ))}

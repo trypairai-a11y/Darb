@@ -15,11 +15,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { TriangleAlert, UserPlus, Upload } from "lucide-react";
+import { TriangleAlert, UserPlus } from "lucide-react";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import SlidePanel from "@/components/shared/SlidePanel";
+import DocumentFileField from "@/components/fleet/DocumentFileField";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/Toast";
 import { fleetApi, uploadFleetDocument } from "@/lib/darbApi";
@@ -42,6 +43,26 @@ function docsSummary(d: FleetDriverRow): string {
 
 function isThrottled(d: FleetDriverRow): boolean {
   return !!d.throttledUntil && new Date(d.throttledUntil).getTime() > Date.now();
+}
+
+/**
+ * Revision 13 (#3) — the counts the client asked for, off the rows themselves.
+ *
+ * Computed here rather than returned by the API because this endpoint returns
+ * every driver in one answer with no pagination, so a tile derived from the
+ * same array cannot disagree with the table underneath it. A pending driver is
+ * counted in its own tile and left out of the total: somebody Darb has not
+ * approved is not on the road, and a total that included them would be a number
+ * the fleet plans staffing against and gets wrong.
+ */
+function rosterSummary(rows: FleetDriverRow[]) {
+  const live = rows.filter((d) => !d.pending);
+  return {
+    total: live.length,
+    car: live.filter((d) => d.vehicleType === "CAR").length,
+    bike: live.filter((d) => d.vehicleType !== "CAR").length,
+    pending: rows.length - live.length,
+  };
 }
 
 export default function FleetRosterPage() {
@@ -72,6 +93,14 @@ export default function FleetRosterPage() {
     queryFn: () => fleetApi.issues(),
     refetchInterval: 120_000,
   });
+  // Only for storageConfigured, which decides whether the import buttons on the
+  // Add driver panel can do anything. Cheap, cached, and shared with the
+  // Documents screen.
+  const documentsQuery = useQuery({
+    queryKey: ["darb", "fleet", "documents"],
+    queryFn: () => fleetApi.documents(),
+    staleTime: 5 * 60_000,
+  });
 
   if (meQuery.isLoading || driversQuery.isLoading) {
     return <PageSkeleton statCards={0} tableRows={8} tableCols={9} />;
@@ -90,6 +119,10 @@ export default function FleetRosterPage() {
   const fleet = meQuery.data;
   const drivers = driversQuery.data ?? [];
   const openIssues = issuesQuery.data?.openCount ?? 0;
+  const summary = rosterSummary(drivers);
+  // The same flag the driver profile reads, so the import button on this panel
+  // and the one on that one say the same thing about storage.
+  const storageConfigured = documentsQuery.data?.storageConfigured ?? false;
 
   function resetForm() {
     setName(""); setPhone(""); setVehicleType("MOTORCYCLE"); setZone("");
@@ -181,8 +214,44 @@ export default function FleetRosterPage() {
         </button>
       )}
 
+      {/* Revision 13 (#3) — total, split by vehicle, and what is waiting on
+          Darb. The pending tile is the one a supervisor actually chases. */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: t("fleetPortal.totalDrivers"), value: summary.total },
+          { label: t("fleetPortal.carDrivers"), value: summary.car },
+          { label: t("fleetPortal.bikeDrivers"), value: summary.bike },
+          { label: t("fleetPortal.pendingApproval"), value: summary.pending, warn: true },
+        ].map((tile) => (
+          <div
+            key={tile.label}
+            className={
+              tile.warn && tile.value > 0
+                ? "rounded-xl border border-amber-200 bg-amber-50 px-4 py-3"
+                : "rounded-xl border border-sand-200 bg-white px-4 py-3"
+            }
+          >
+            <p className="text-xs text-sand-500">{tile.label}</p>
+            <p className="text-xl font-display text-sand-900 tabular-nums" dir="ltr">
+              {formatNumber(tile.value, locale)}
+            </p>
+          </div>
+        ))}
+      </div>
+
       <DataTable
         columns={[
+          {
+            // Revision 13 (#3). The Darb-issued id finance searches by. A
+            // pending driver has none: it is issued when Darb approves.
+            key: "driverCode",
+            label: t("fleetPortal.darbId"),
+            render: (value: string | null) => (
+              <span dir="ltr" className="font-mono text-xs tabular-nums">
+                {value || "n/a"}
+              </span>
+            ),
+          },
           {
             key: "name",
             label: t("fleetPortal.driverName"),
@@ -306,6 +375,11 @@ export default function FleetRosterPage() {
 
           <div className="pt-2 border-t border-sand-200 space-y-3">
             <p className="text-xs font-medium text-sand-700">{t("fleetPortal.driverDocuments")}</p>
+            {/* The compact fields have no room for their own note, so the
+                reason storage is off is said once for the group. */}
+            {!storageConfigured && (
+              <p className="text-xs text-sand-500" dir="auto">{t("fleetPortal.importOff")}</p>
+            )}
             {ONBOARD_DOCS.map((type) => (
               <div key={type} className="space-y-1.5">
                 <span className="text-xs text-sand-600">{type.replace(/_/g, " ")}</span>
@@ -316,19 +390,14 @@ export default function FleetRosterPage() {
                     value={expiries[type] ?? ""}
                     onChange={(e) => setExpiries((p) => ({ ...p, [type]: e.target.value }))}
                   />
-                  <label className="inline-flex items-center gap-1.5 h-10 px-3 rounded-xl border border-sand-300 text-xs text-sand-700 cursor-pointer shrink-0 hover:bg-sand-100">
-                    <Upload size={14} aria-hidden="true" />
-                    {files[type] ? files[type].name.slice(0, 14) : t("fleetPortal.uploadFile")}
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/jpeg,image/png,image/webp,application/pdf"
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) setFiles((p) => ({ ...p, [type]: f }));
-                      }}
-                    />
-                  </label>
+                  <DocumentFileField
+                    compact
+                    file={files[type] ?? null}
+                    storageConfigured={storageConfigured}
+                    onChange={(f) => {
+                      if (f) setFiles((p) => ({ ...p, [type]: f }));
+                    }}
+                  />
                 </div>
               </div>
             ))}

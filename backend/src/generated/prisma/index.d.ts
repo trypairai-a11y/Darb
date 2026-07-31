@@ -20456,6 +20456,7 @@ export namespace Prisma {
     ownerGroupId: string | null
     branchId: string | null
     vendorRole: string | null
+    fleetRole: string | null
     isActive: boolean | null
     lastLoginAt: Date | null
     createdAt: Date | null
@@ -20477,6 +20478,7 @@ export namespace Prisma {
     ownerGroupId: string | null
     branchId: string | null
     vendorRole: string | null
+    fleetRole: string | null
     isActive: boolean | null
     lastLoginAt: Date | null
     createdAt: Date | null
@@ -20499,6 +20501,9 @@ export namespace Prisma {
     branchId: number
     vendorRole: number
     vendorTabs: number
+    fleetRole: number
+    fleetTabs: number
+    fleetPartnerIds: number
     isActive: number
     lastLoginAt: number
     createdAt: number
@@ -20522,6 +20527,7 @@ export namespace Prisma {
     ownerGroupId?: true
     branchId?: true
     vendorRole?: true
+    fleetRole?: true
     isActive?: true
     lastLoginAt?: true
     createdAt?: true
@@ -20543,6 +20549,7 @@ export namespace Prisma {
     ownerGroupId?: true
     branchId?: true
     vendorRole?: true
+    fleetRole?: true
     isActive?: true
     lastLoginAt?: true
     createdAt?: true
@@ -20565,6 +20572,9 @@ export namespace Prisma {
     branchId?: true
     vendorRole?: true
     vendorTabs?: true
+    fleetRole?: true
+    fleetTabs?: true
+    fleetPartnerIds?: true
     isActive?: true
     lastLoginAt?: true
     createdAt?: true
@@ -20660,6 +20670,9 @@ export namespace Prisma {
     branchId: string | null
     vendorRole: string | null
     vendorTabs: JsonValue | null
+    fleetRole: string | null
+    fleetTabs: JsonValue | null
+    fleetPartnerIds: JsonValue | null
     isActive: boolean
     lastLoginAt: Date | null
     createdAt: Date
@@ -20699,6 +20712,9 @@ export namespace Prisma {
     branchId?: boolean
     vendorRole?: boolean
     vendorTabs?: boolean
+    fleetRole?: boolean
+    fleetTabs?: boolean
+    fleetPartnerIds?: boolean
     isActive?: boolean
     lastLoginAt?: boolean
     createdAt?: boolean
@@ -20750,6 +20766,9 @@ export namespace Prisma {
     branchId?: boolean
     vendorRole?: boolean
     vendorTabs?: boolean
+    fleetRole?: boolean
+    fleetTabs?: boolean
+    fleetPartnerIds?: boolean
     isActive?: boolean
     lastLoginAt?: boolean
     createdAt?: boolean
@@ -20777,6 +20796,9 @@ export namespace Prisma {
     branchId?: boolean
     vendorRole?: boolean
     vendorTabs?: boolean
+    fleetRole?: boolean
+    fleetTabs?: boolean
+    fleetPartnerIds?: boolean
     isActive?: boolean
     lastLoginAt?: boolean
     createdAt?: boolean
@@ -20870,6 +20892,9 @@ export namespace Prisma {
       branchId: string | null
       vendorRole: string | null
       vendorTabs: Prisma.JsonValue | null
+      fleetRole: string | null
+      fleetTabs: Prisma.JsonValue | null
+      fleetPartnerIds: Prisma.JsonValue | null
       isActive: boolean
       lastLoginAt: Date | null
       createdAt: Date
@@ -21310,6 +21335,9 @@ export namespace Prisma {
     readonly branchId: FieldRef<"User", 'String'>
     readonly vendorRole: FieldRef<"User", 'String'>
     readonly vendorTabs: FieldRef<"User", 'Json'>
+    readonly fleetRole: FieldRef<"User", 'String'>
+    readonly fleetTabs: FieldRef<"User", 'Json'>
+    readonly fleetPartnerIds: FieldRef<"User", 'Json'>
     readonly isActive: FieldRef<"User", 'Boolean'>
     readonly lastLoginAt: FieldRef<"User", 'DateTime'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
@@ -135207,6 +135235,11 @@ export namespace Prisma {
     totalKwd: Decimal | null
     status: string | null
     payoutTxId: string | null
+    confirmedAt: Date | null
+    confirmedById: string | null
+    disputedAt: Date | null
+    disputeReason: string | null
+    disputeTicketId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -135222,6 +135255,11 @@ export namespace Prisma {
     totalKwd: Decimal | null
     status: string | null
     payoutTxId: string | null
+    confirmedAt: Date | null
+    confirmedById: string | null
+    disputedAt: Date | null
+    disputeReason: string | null
+    disputeTicketId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -135237,6 +135275,11 @@ export namespace Prisma {
     totalKwd: number
     status: number
     payoutTxId: number
+    confirmedAt: number
+    confirmedById: number
+    disputedAt: number
+    disputeReason: number
+    disputeTicketId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -135266,6 +135309,11 @@ export namespace Prisma {
     totalKwd?: true
     status?: true
     payoutTxId?: true
+    confirmedAt?: true
+    confirmedById?: true
+    disputedAt?: true
+    disputeReason?: true
+    disputeTicketId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -135281,6 +135329,11 @@ export namespace Prisma {
     totalKwd?: true
     status?: true
     payoutTxId?: true
+    confirmedAt?: true
+    confirmedById?: true
+    disputedAt?: true
+    disputeReason?: true
+    disputeTicketId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -135296,6 +135349,11 @@ export namespace Prisma {
     totalKwd?: true
     status?: true
     payoutTxId?: true
+    confirmedAt?: true
+    confirmedById?: true
+    disputedAt?: true
+    disputeReason?: true
+    disputeTicketId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -135398,6 +135456,11 @@ export namespace Prisma {
     totalKwd: Decimal
     status: string
     payoutTxId: string | null
+    confirmedAt: Date | null
+    confirmedById: string | null
+    disputedAt: Date | null
+    disputeReason: string | null
+    disputeTicketId: string | null
     createdAt: Date
     updatedAt: Date
     _count: FleetPayoutStatementCountAggregateOutputType | null
@@ -135432,6 +135495,11 @@ export namespace Prisma {
     totalKwd?: boolean
     status?: boolean
     payoutTxId?: boolean
+    confirmedAt?: boolean
+    confirmedById?: boolean
+    disputedAt?: boolean
+    disputeReason?: boolean
+    disputeTicketId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
@@ -135449,6 +135517,11 @@ export namespace Prisma {
     totalKwd?: boolean
     status?: boolean
     payoutTxId?: boolean
+    confirmedAt?: boolean
+    confirmedById?: boolean
+    disputedAt?: boolean
+    disputeReason?: boolean
+    disputeTicketId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
@@ -135466,6 +135539,11 @@ export namespace Prisma {
     totalKwd?: boolean
     status?: boolean
     payoutTxId?: boolean
+    confirmedAt?: boolean
+    confirmedById?: boolean
+    disputedAt?: boolean
+    disputeReason?: boolean
+    disputeTicketId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -135494,8 +135572,23 @@ export namespace Prisma {
       deliveredOrders: number
       feePerOrderKwd: Prisma.Decimal
       totalKwd: Prisma.Decimal
+      /**
+       * Revision 13 (#8) — FINAL | CONFIRMED | DISPUTED | PAID. The delivery
+       * company confirms a statement before Darb processes it; postFleetPayout
+       * refuses anything that is not CONFIRMED, so the gate holds for the cron
+       * and a script as well as the staff button.
+       */
       status: string
       payoutTxId: string | null
+      confirmedAt: Date | null
+      confirmedById: string | null
+      disputedAt: Date | null
+      disputeReason: string | null
+      /**
+       * The SupportTicket a dispute opened, so the disagreement lands in the
+       * inbox Darb already triages rather than in a WhatsApp thread.
+       */
+      disputeTicketId: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["fleetPayoutStatement"]>
@@ -135903,6 +135996,11 @@ export namespace Prisma {
     readonly totalKwd: FieldRef<"FleetPayoutStatement", 'Decimal'>
     readonly status: FieldRef<"FleetPayoutStatement", 'String'>
     readonly payoutTxId: FieldRef<"FleetPayoutStatement", 'String'>
+    readonly confirmedAt: FieldRef<"FleetPayoutStatement", 'DateTime'>
+    readonly confirmedById: FieldRef<"FleetPayoutStatement", 'String'>
+    readonly disputedAt: FieldRef<"FleetPayoutStatement", 'DateTime'>
+    readonly disputeReason: FieldRef<"FleetPayoutStatement", 'String'>
+    readonly disputeTicketId: FieldRef<"FleetPayoutStatement", 'String'>
     readonly createdAt: FieldRef<"FleetPayoutStatement", 'DateTime'>
     readonly updatedAt: FieldRef<"FleetPayoutStatement", 'DateTime'>
   }
@@ -145827,6 +145925,9 @@ export namespace Prisma {
     branchId: 'branchId',
     vendorRole: 'vendorRole',
     vendorTabs: 'vendorTabs',
+    fleetRole: 'fleetRole',
+    fleetTabs: 'fleetTabs',
+    fleetPartnerIds: 'fleetPartnerIds',
     isActive: 'isActive',
     lastLoginAt: 'lastLoginAt',
     createdAt: 'createdAt',
@@ -147808,6 +147909,11 @@ export namespace Prisma {
     totalKwd: 'totalKwd',
     status: 'status',
     payoutTxId: 'payoutTxId',
+    confirmedAt: 'confirmedAt',
+    confirmedById: 'confirmedById',
+    disputedAt: 'disputedAt',
+    disputeReason: 'disputeReason',
+    disputeTicketId: 'disputeTicketId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -148064,7 +148170,8 @@ export namespace Prisma {
     fleetPartnerId: 'fleetPartnerId',
     ownerGroupId: 'ownerGroupId',
     branchId: 'branchId',
-    vendorRole: 'vendorRole'
+    vendorRole: 'vendorRole',
+    fleetRole: 'fleetRole'
   };
 
   export type UserOrderByRelevanceFieldEnum = (typeof UserOrderByRelevanceFieldEnum)[keyof typeof UserOrderByRelevanceFieldEnum]
@@ -149367,7 +149474,10 @@ export namespace Prisma {
     tenantId: 'tenantId',
     fleetPartnerId: 'fleetPartnerId',
     status: 'status',
-    payoutTxId: 'payoutTxId'
+    payoutTxId: 'payoutTxId',
+    confirmedById: 'confirmedById',
+    disputeReason: 'disputeReason',
+    disputeTicketId: 'disputeTicketId'
   };
 
   export type FleetPayoutStatementOrderByRelevanceFieldEnum = (typeof FleetPayoutStatementOrderByRelevanceFieldEnum)[keyof typeof FleetPayoutStatementOrderByRelevanceFieldEnum]
@@ -151124,6 +151234,9 @@ export namespace Prisma {
     branchId?: StringNullableFilter<"User"> | string | null
     vendorRole?: StringNullableFilter<"User"> | string | null
     vendorTabs?: JsonNullableFilter<"User">
+    fleetRole?: StringNullableFilter<"User"> | string | null
+    fleetTabs?: JsonNullableFilter<"User">
+    fleetPartnerIds?: JsonNullableFilter<"User">
     isActive?: BoolFilter<"User"> | boolean
     lastLoginAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -151174,6 +151287,9 @@ export namespace Prisma {
     branchId?: SortOrderInput | SortOrder
     vendorRole?: SortOrderInput | SortOrder
     vendorTabs?: SortOrderInput | SortOrder
+    fleetRole?: SortOrderInput | SortOrder
+    fleetTabs?: SortOrderInput | SortOrder
+    fleetPartnerIds?: SortOrderInput | SortOrder
     isActive?: SortOrder
     lastLoginAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -151228,6 +151344,9 @@ export namespace Prisma {
     branchId?: StringNullableFilter<"User"> | string | null
     vendorRole?: StringNullableFilter<"User"> | string | null
     vendorTabs?: JsonNullableFilter<"User">
+    fleetRole?: StringNullableFilter<"User"> | string | null
+    fleetTabs?: JsonNullableFilter<"User">
+    fleetPartnerIds?: JsonNullableFilter<"User">
     isActive?: BoolFilter<"User"> | boolean
     lastLoginAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -151278,6 +151397,9 @@ export namespace Prisma {
     branchId?: SortOrderInput | SortOrder
     vendorRole?: SortOrderInput | SortOrder
     vendorTabs?: SortOrderInput | SortOrder
+    fleetRole?: SortOrderInput | SortOrder
+    fleetTabs?: SortOrderInput | SortOrder
+    fleetPartnerIds?: SortOrderInput | SortOrder
     isActive?: SortOrder
     lastLoginAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -151306,6 +151428,9 @@ export namespace Prisma {
     branchId?: StringNullableWithAggregatesFilter<"User"> | string | null
     vendorRole?: StringNullableWithAggregatesFilter<"User"> | string | null
     vendorTabs?: JsonNullableWithAggregatesFilter<"User">
+    fleetRole?: StringNullableWithAggregatesFilter<"User"> | string | null
+    fleetTabs?: JsonNullableWithAggregatesFilter<"User">
+    fleetPartnerIds?: JsonNullableWithAggregatesFilter<"User">
     isActive?: BoolWithAggregatesFilter<"User"> | boolean
     lastLoginAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -162126,6 +162251,11 @@ export namespace Prisma {
     totalKwd?: DecimalFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string
     status?: StringFilter<"FleetPayoutStatement"> | string
     payoutTxId?: StringNullableFilter<"FleetPayoutStatement"> | string | null
+    confirmedAt?: DateTimeNullableFilter<"FleetPayoutStatement"> | Date | string | null
+    confirmedById?: StringNullableFilter<"FleetPayoutStatement"> | string | null
+    disputedAt?: DateTimeNullableFilter<"FleetPayoutStatement"> | Date | string | null
+    disputeReason?: StringNullableFilter<"FleetPayoutStatement"> | string | null
+    disputeTicketId?: StringNullableFilter<"FleetPayoutStatement"> | string | null
     createdAt?: DateTimeFilter<"FleetPayoutStatement"> | Date | string
     updatedAt?: DateTimeFilter<"FleetPayoutStatement"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
@@ -162143,6 +162273,11 @@ export namespace Prisma {
     totalKwd?: SortOrder
     status?: SortOrder
     payoutTxId?: SortOrderInput | SortOrder
+    confirmedAt?: SortOrderInput | SortOrder
+    confirmedById?: SortOrderInput | SortOrder
+    disputedAt?: SortOrderInput | SortOrder
+    disputeReason?: SortOrderInput | SortOrder
+    disputeTicketId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     tenant?: TenantOrderByWithRelationInput
@@ -162165,6 +162300,11 @@ export namespace Prisma {
     totalKwd?: DecimalFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string
     status?: StringFilter<"FleetPayoutStatement"> | string
     payoutTxId?: StringNullableFilter<"FleetPayoutStatement"> | string | null
+    confirmedAt?: DateTimeNullableFilter<"FleetPayoutStatement"> | Date | string | null
+    confirmedById?: StringNullableFilter<"FleetPayoutStatement"> | string | null
+    disputedAt?: DateTimeNullableFilter<"FleetPayoutStatement"> | Date | string | null
+    disputeReason?: StringNullableFilter<"FleetPayoutStatement"> | string | null
+    disputeTicketId?: StringNullableFilter<"FleetPayoutStatement"> | string | null
     createdAt?: DateTimeFilter<"FleetPayoutStatement"> | Date | string
     updatedAt?: DateTimeFilter<"FleetPayoutStatement"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
@@ -162182,6 +162322,11 @@ export namespace Prisma {
     totalKwd?: SortOrder
     status?: SortOrder
     payoutTxId?: SortOrderInput | SortOrder
+    confirmedAt?: SortOrderInput | SortOrder
+    confirmedById?: SortOrderInput | SortOrder
+    disputedAt?: SortOrderInput | SortOrder
+    disputeReason?: SortOrderInput | SortOrder
+    disputeTicketId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: FleetPayoutStatementCountOrderByAggregateInput
@@ -162205,6 +162350,11 @@ export namespace Prisma {
     totalKwd?: DecimalWithAggregatesFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string
     status?: StringWithAggregatesFilter<"FleetPayoutStatement"> | string
     payoutTxId?: StringNullableWithAggregatesFilter<"FleetPayoutStatement"> | string | null
+    confirmedAt?: DateTimeNullableWithAggregatesFilter<"FleetPayoutStatement"> | Date | string | null
+    confirmedById?: StringNullableWithAggregatesFilter<"FleetPayoutStatement"> | string | null
+    disputedAt?: DateTimeNullableWithAggregatesFilter<"FleetPayoutStatement"> | Date | string | null
+    disputeReason?: StringNullableWithAggregatesFilter<"FleetPayoutStatement"> | string | null
+    disputeTicketId?: StringNullableWithAggregatesFilter<"FleetPayoutStatement"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"FleetPayoutStatement"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"FleetPayoutStatement"> | Date | string
   }
@@ -163791,6 +163941,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -163841,6 +163994,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -163881,6 +164037,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -163931,6 +164090,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -163976,6 +164138,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -163993,6 +164158,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -164015,6 +164183,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -175875,6 +176046,11 @@ export namespace Prisma {
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
+    confirmedAt?: Date | string | null
+    confirmedById?: string | null
+    disputedAt?: Date | string | null
+    disputeReason?: string | null
+    disputeTicketId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutFleetPayoutStatementsInput
@@ -175892,6 +176068,11 @@ export namespace Prisma {
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
+    confirmedAt?: Date | string | null
+    confirmedById?: string | null
+    disputedAt?: Date | string | null
+    disputeReason?: string | null
+    disputeTicketId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -175905,6 +176086,11 @@ export namespace Prisma {
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    disputedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    disputeReason?: NullableStringFieldUpdateOperationsInput | string | null
+    disputeTicketId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutFleetPayoutStatementsNestedInput
@@ -175922,6 +176108,11 @@ export namespace Prisma {
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    disputedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    disputeReason?: NullableStringFieldUpdateOperationsInput | string | null
+    disputeTicketId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -175937,6 +176128,11 @@ export namespace Prisma {
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
+    confirmedAt?: Date | string | null
+    confirmedById?: string | null
+    disputedAt?: Date | string | null
+    disputeReason?: string | null
+    disputeTicketId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -175950,6 +176146,11 @@ export namespace Prisma {
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    disputedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    disputeReason?: NullableStringFieldUpdateOperationsInput | string | null
+    disputeTicketId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -175965,6 +176166,11 @@ export namespace Prisma {
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    disputedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    disputeReason?: NullableStringFieldUpdateOperationsInput | string | null
+    disputeTicketId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -178414,6 +178620,9 @@ export namespace Prisma {
     branchId?: SortOrder
     vendorRole?: SortOrder
     vendorTabs?: SortOrder
+    fleetRole?: SortOrder
+    fleetTabs?: SortOrder
+    fleetPartnerIds?: SortOrder
     isActive?: SortOrder
     lastLoginAt?: SortOrder
     createdAt?: SortOrder
@@ -178435,6 +178644,7 @@ export namespace Prisma {
     ownerGroupId?: SortOrder
     branchId?: SortOrder
     vendorRole?: SortOrder
+    fleetRole?: SortOrder
     isActive?: SortOrder
     lastLoginAt?: SortOrder
     createdAt?: SortOrder
@@ -178456,6 +178666,7 @@ export namespace Prisma {
     ownerGroupId?: SortOrder
     branchId?: SortOrder
     vendorRole?: SortOrder
+    fleetRole?: SortOrder
     isActive?: SortOrder
     lastLoginAt?: SortOrder
     createdAt?: SortOrder
@@ -186410,6 +186621,11 @@ export namespace Prisma {
     totalKwd?: SortOrder
     status?: SortOrder
     payoutTxId?: SortOrder
+    confirmedAt?: SortOrder
+    confirmedById?: SortOrder
+    disputedAt?: SortOrder
+    disputeReason?: SortOrder
+    disputeTicketId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -186431,6 +186647,11 @@ export namespace Prisma {
     totalKwd?: SortOrder
     status?: SortOrder
     payoutTxId?: SortOrder
+    confirmedAt?: SortOrder
+    confirmedById?: SortOrder
+    disputedAt?: SortOrder
+    disputeReason?: SortOrder
+    disputeTicketId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -186446,6 +186667,11 @@ export namespace Prisma {
     totalKwd?: SortOrder
     status?: SortOrder
     payoutTxId?: SortOrder
+    confirmedAt?: SortOrder
+    confirmedById?: SortOrder
+    disputedAt?: SortOrder
+    disputeReason?: SortOrder
+    disputeTicketId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -203403,6 +203629,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -203451,6 +203680,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -207377,6 +207609,11 @@ export namespace Prisma {
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
+    confirmedAt?: Date | string | null
+    confirmedById?: string | null
+    disputedAt?: Date | string | null
+    disputeReason?: string | null
+    disputeTicketId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     fleet: FleetPartnerCreateNestedOneWithoutStatementsInput
@@ -207392,6 +207629,11 @@ export namespace Prisma {
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
+    confirmedAt?: Date | string | null
+    confirmedById?: string | null
+    disputedAt?: Date | string | null
+    disputeReason?: string | null
+    disputeTicketId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -207844,6 +208086,9 @@ export namespace Prisma {
     branchId?: StringNullableFilter<"User"> | string | null
     vendorRole?: StringNullableFilter<"User"> | string | null
     vendorTabs?: JsonNullableFilter<"User">
+    fleetRole?: StringNullableFilter<"User"> | string | null
+    fleetTabs?: JsonNullableFilter<"User">
+    fleetPartnerIds?: JsonNullableFilter<"User">
     isActive?: BoolFilter<"User"> | boolean
     lastLoginAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -211033,6 +211278,11 @@ export namespace Prisma {
     totalKwd?: DecimalFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string
     status?: StringFilter<"FleetPayoutStatement"> | string
     payoutTxId?: StringNullableFilter<"FleetPayoutStatement"> | string | null
+    confirmedAt?: DateTimeNullableFilter<"FleetPayoutStatement"> | Date | string | null
+    confirmedById?: StringNullableFilter<"FleetPayoutStatement"> | string | null
+    disputedAt?: DateTimeNullableFilter<"FleetPayoutStatement"> | Date | string | null
+    disputeReason?: StringNullableFilter<"FleetPayoutStatement"> | string | null
+    disputeTicketId?: StringNullableFilter<"FleetPayoutStatement"> | string | null
     createdAt?: DateTimeFilter<"FleetPayoutStatement"> | Date | string
     updatedAt?: DateTimeFilter<"FleetPayoutStatement"> | Date | string
   }
@@ -211646,6 +211896,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -211695,6 +211948,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -212384,6 +212640,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -212433,6 +212692,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -212877,6 +213139,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -212925,6 +213190,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -215932,6 +216200,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -215981,6 +216252,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -218503,6 +218777,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -218552,6 +218829,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -234600,6 +234880,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -234649,6 +234932,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -234759,6 +235045,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -234808,6 +235097,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -236204,6 +236496,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -236253,6 +236548,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -236815,6 +237113,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -236864,6 +237165,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -238299,6 +238603,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -238348,6 +238655,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -238392,6 +238702,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -238441,6 +238754,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -239225,6 +239541,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -239274,6 +239593,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -239324,6 +239646,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -239373,6 +239698,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -240147,6 +240475,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -240196,6 +240527,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -240691,6 +241025,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -240740,6 +241077,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -250700,6 +251040,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -250749,6 +251092,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -251131,6 +251477,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -251180,6 +251529,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -255258,6 +255610,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -255307,6 +255662,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -255607,6 +255965,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -255656,6 +256017,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -270221,6 +270585,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -270270,6 +270637,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -270661,6 +271031,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -270710,6 +271083,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -271641,6 +272017,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -271690,6 +272069,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -271990,6 +272372,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -272039,6 +272424,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -273185,6 +273573,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -273234,6 +273625,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -273534,6 +273928,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -273583,6 +273980,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -273861,6 +274261,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -273910,6 +274313,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -274293,6 +274699,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -274342,6 +274751,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -275361,6 +275773,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -275410,6 +275825,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -275748,6 +276166,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -275797,6 +276218,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -276141,6 +276565,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -276189,6 +276616,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -277584,6 +278014,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -277632,6 +278065,9 @@ export namespace Prisma {
     ownerGroupId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -292756,6 +293192,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -292804,6 +293243,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -292852,6 +293294,11 @@ export namespace Prisma {
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
+    confirmedAt?: Date | string | null
+    confirmedById?: string | null
+    disputedAt?: Date | string | null
+    disputeReason?: string | null
+    disputeTicketId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutFleetPayoutStatementsInput
@@ -292867,6 +293314,11 @@ export namespace Prisma {
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
+    confirmedAt?: Date | string | null
+    confirmedById?: string | null
+    disputedAt?: Date | string | null
+    disputeReason?: string | null
+    disputeTicketId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -294543,6 +294995,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -294592,6 +295047,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -294636,6 +295094,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -294685,6 +295146,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -295239,6 +295703,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -295288,6 +295755,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -295338,6 +295808,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -295387,6 +295860,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -295907,6 +296383,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -295956,6 +296435,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -296000,6 +296482,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -296049,6 +296534,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -296603,6 +297091,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -296652,6 +297143,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -296702,6 +297196,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -296751,6 +297248,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -297271,6 +297771,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -297320,6 +297823,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -297364,6 +297870,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -297413,6 +297922,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -297967,6 +298479,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -298016,6 +298531,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -298066,6 +298584,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -298115,6 +298636,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -298393,6 +298917,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -298442,6 +298969,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -298742,6 +299272,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -298791,6 +299324,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -299069,6 +299605,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -299118,6 +299657,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -299418,6 +299960,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -299467,6 +300012,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -299745,6 +300293,9 @@ export namespace Prisma {
     jobGrade?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -299794,6 +300345,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -300149,6 +300703,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -300198,6 +300755,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -301756,6 +302316,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -303133,6 +303696,11 @@ export namespace Prisma {
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
+    confirmedAt?: Date | string | null
+    confirmedById?: string | null
+    disputedAt?: Date | string | null
+    disputeReason?: string | null
+    disputeTicketId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -303325,6 +303893,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -303373,6 +303944,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -303417,6 +303991,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -307751,6 +308328,11 @@ export namespace Prisma {
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    disputedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    disputeReason?: NullableStringFieldUpdateOperationsInput | string | null
+    disputeTicketId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     fleet?: FleetPartnerUpdateOneRequiredWithoutStatementsNestedInput
@@ -307766,6 +308348,11 @@ export namespace Prisma {
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    disputedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    disputeReason?: NullableStringFieldUpdateOperationsInput | string | null
+    disputeTicketId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -307780,6 +308367,11 @@ export namespace Prisma {
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    disputedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    disputeReason?: NullableStringFieldUpdateOperationsInput | string | null
+    disputeTicketId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -308751,6 +309343,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -308880,6 +309475,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -308928,6 +309526,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -308972,6 +309573,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -316183,6 +316787,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -316384,6 +316991,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -316432,6 +317042,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -316476,6 +317089,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -316932,6 +317548,9 @@ export namespace Prisma {
     ownerGroupId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -317098,6 +317717,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -317146,6 +317768,9 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -317190,6 +317815,9 @@ export namespace Prisma {
     ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -318336,6 +318964,9 @@ export namespace Prisma {
     branchId?: string | null
     vendorRole?: string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
@@ -318352,6 +318983,11 @@ export namespace Prisma {
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
+    confirmedAt?: Date | string | null
+    confirmedById?: string | null
+    disputedAt?: Date | string | null
+    disputeReason?: string | null
+    disputeTicketId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -318666,6 +319302,9 @@ export namespace Prisma {
     jobGrade?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -318714,6 +319353,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -318758,6 +319400,9 @@ export namespace Prisma {
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
     vendorRole?: NullableStringFieldUpdateOperationsInput | string | null
     vendorTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetRole?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetTabs?: NullableJsonNullValueInput | InputJsonValue
+    fleetPartnerIds?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -318773,6 +319418,11 @@ export namespace Prisma {
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    disputedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    disputeReason?: NullableStringFieldUpdateOperationsInput | string | null
+    disputeTicketId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutFleetPayoutStatementsNestedInput
@@ -318788,6 +319438,11 @@ export namespace Prisma {
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    disputedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    disputeReason?: NullableStringFieldUpdateOperationsInput | string | null
+    disputeTicketId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -318802,6 +319457,11 @@ export namespace Prisma {
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    disputedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    disputeReason?: NullableStringFieldUpdateOperationsInput | string | null
+    disputeTicketId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

@@ -1,4 +1,6 @@
 import axios from "axios";
+import { noteVendorForbidden } from "./vendorAccess";
+import { noteFleetForbidden } from "./fleetAccess";
 
 const api = axios.create({
   baseURL: "",
@@ -54,6 +56,16 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    // Revision 11 (#7). When the merchant-portal tab gate refuses, it says so
+    // in the body. Recording it here means the rail locks that entry and the
+    // screen explains itself, wherever the request came from, instead of each
+    // screen showing its own "something went wrong".
+    if (error.response?.status === 403) {
+      noteVendorForbidden(error.response?.data);
+      // Revision 13 (#6). The fleet portal's gate answers with the same code
+      // and its own tab names, so each store ignores the other's refusals.
+      noteFleetForbidden(error.response?.data);
+    }
     if (error.response?.status === 401 && !originalRequest._retry && !isRefreshRequest(originalRequest)) {
       originalRequest._retry = true;
       try {

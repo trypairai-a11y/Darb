@@ -212,16 +212,22 @@ export default function FleetSupportPage() {
       <SlidePanel open={open} onClose={() => setOpen(false)} title={t("fleetPortal.newRequest")}>
         <div className="space-y-4">
           <label className="block">
-            <span className="text-xs font-medium text-sand-700">{t("fleetPortal.documentType")}</span>
+            <span className="text-xs font-medium text-sand-700">{t("fleetPortal.requestType")}</span>
             <select
               className={inputClass}
               value={type}
               onChange={(e) => setType(e.target.value as SupportTicketType)}
             >
-              <option value="TECHNICAL">TECHNICAL</option>
-              <option value="ORDER">ORDER</option>
-              <option value="WALLET">WALLET</option>
-              <option value="OTHER">OTHER</option>
+              <option value="TECHNICAL">{t("fleetPortal.ticketTypeTechnical")}</option>
+              <option value="ORDER">{t("fleetPortal.ticketTypeOrder")}</option>
+              {/* Revision 13 (#7). The value stays WALLET — one SupportTicket
+                  table is what lets Darb triage merchants and delivery
+                  companies in one inbox, and renaming an enum to fix a word on
+                  one dropdown would migrate that inbox for nothing. The label
+                  is what the client asked for, and it matches this portal's own
+                  Payouts tab rather than the merchant side's Wallet. */}
+              <option value="WALLET">{t("fleetPortal.ticketTypePayout")}</option>
+              <option value="OTHER">{t("fleetPortal.ticketTypeOther")}</option>
             </select>
           </label>
           <label className="block">

@@ -17,7 +17,7 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  ArrowLeft, ExternalLink, Phone, TriangleAlert, Upload, UserMinus, CalendarOff, RotateCcw,
+  ArrowLeft, ExternalLink, Phone, TriangleAlert, UserMinus, CalendarOff, RotateCcw,
 } from "lucide-react";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
@@ -25,6 +25,7 @@ import { PageSkeleton } from "@/components/shared/Skeleton";
 import SlidePanel from "@/components/shared/SlidePanel";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/Toast";
+import DocumentFileField from "@/components/fleet/DocumentFileField";
 import { fleetApi, uploadFleetDocument } from "@/lib/darbApi";
 import type { FleetDocument } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -63,6 +64,12 @@ export default function FleetDriverProfilePage() {
   const [docFile, setDocFile] = useState<File | null>(null);
   const [newPhone, setNewPhone] = useState("");
   const [reason, setReason] = useState("");
+  // Revision 13 (#4, #5). A leave request with no dates and a resignation with
+  // no last day are both a phone call Darb has to make anyway, which is the
+  // work this screen exists to remove.
+  const [leaveStart, setLeaveStart] = useState("");
+  const [returnDate, setReturnDate] = useState("");
+  const [lastWorkingDate, setLastWorkingDate] = useState("");
 
   const profileQuery = useQuery({
     queryKey: ["darb", "fleet", "driver", driverId, month],
@@ -127,10 +134,19 @@ export default function FleetDriverProfilePage() {
       await fleetApi.requestDriverStatus(driverId, {
         status: statusOpen,
         reason: reason.trim() || undefined,
+        // Sent only for the status that requires them. The endpoint validates
+        // the same rule, so a stale tab cannot post a leave with no end.
+        ...(statusOpen === "LEAVE"
+          ? { leaveStartDate: leaveStart, returnDate }
+          : {}),
+        ...(statusOpen === "TERMINATED" ? { lastWorkingDate } : {}),
       });
       toast.success(t("fleetPortal.statusRequested"));
       setStatusOpen(null);
       setReason("");
+      setLeaveStart("");
+      setReturnDate("");
+      setLastWorkingDate("");
       await refresh();
     } catch (err) {
       fail(err);
@@ -394,18 +410,15 @@ export default function FleetDriverProfilePage() {
               onChange={(e) => setDocExpiry(e.target.value)}
             />
           </label>
-          {storageConfigured && (
-            <label className="flex items-center gap-2 h-10 px-3 rounded-xl border border-sand-300 text-sm text-sand-700 cursor-pointer hover:bg-sand-100">
-              <Upload size={15} aria-hidden="true" />
-              {docFile ? docFile.name : t("fleetPortal.uploadFile")}
-              <input
-                type="file"
-                className="hidden"
-                accept="image/jpeg,image/png,image/webp,application/pdf"
-                onChange={(e) => setDocFile(e.target.files?.[0] ?? null)}
-              />
-            </label>
-          )}
+          {/* Revision 13 (#2). The import button the client asked for, always
+              on the panel: it used to disappear entirely when Darb had not
+              switched storage on, which is what "there must be an import
+              button" was reporting. */}
+          <DocumentFileField
+            file={docFile}
+            onChange={setDocFile}
+            storageConfigured={storageConfigured}
+          />
           <button
             type="button"
             disabled={saving || (!docFile && !docExpiry)}
@@ -430,6 +443,55 @@ export default function FleetDriverProfilePage() {
         subtitle={driver.name}
       >
         <div className="space-y-4">
+          {/* Revision 13 (#4). Both ends of the leave: "he is off" without a
+              return date is something Darb cannot plan a zone around. */}
+          {statusOpen === "LEAVE" && (
+            <>
+              <label className="block">
+                <span className="text-xs font-medium text-sand-700">
+                  {t("fleetPortal.leaveStartDate")} *
+                </span>
+                <input
+                  type="date"
+                  className={inputClass}
+                  value={leaveStart}
+                  onChange={(e) => setLeaveStart(e.target.value)}
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-medium text-sand-700">
+                  {t("fleetPortal.returnDate")} *
+                </span>
+                <input
+                  type="date"
+                  className={inputClass}
+                  min={leaveStart || undefined}
+                  value={returnDate}
+                  onChange={(e) => setReturnDate(e.target.value)}
+                />
+              </label>
+              {leaveStart && returnDate && returnDate < leaveStart && (
+                <p className="text-xs text-red-600">{t("fleetPortal.returnBeforeLeave")}</p>
+              )}
+            </>
+          )}
+
+          {/* Revision 13 (#5). The last working day is the day the driver stops
+              counting towards the payout, so it is not optional. */}
+          {statusOpen === "TERMINATED" && (
+            <label className="block">
+              <span className="text-xs font-medium text-sand-700">
+                {t("fleetPortal.lastWorkingDate")} *
+              </span>
+              <input
+                type="date"
+                className={inputClass}
+                value={lastWorkingDate}
+                onChange={(e) => setLastWorkingDate(e.target.value)}
+              />
+            </label>
+          )}
+
           <label className="block">
             <span className="text-xs font-medium text-sand-700">{t("fleetPortal.reasonOptional")}</span>
             <textarea
@@ -442,7 +504,12 @@ export default function FleetDriverProfilePage() {
           </label>
           <button
             type="button"
-            disabled={saving}
+            disabled={
+              saving ||
+              (statusOpen === "LEAVE" &&
+                (!leaveStart || !returnDate || returnDate < leaveStart)) ||
+              (statusOpen === "TERMINATED" && !lastWorkingDate)
+            }
             onClick={submitStatus}
             className="w-full h-10 rounded-full bg-primary text-white text-sm font-medium disabled:opacity-50"
           >

@@ -7,11 +7,12 @@
 // still accepts an expiry date, rather than showing a file picker that dies.
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { FilePlus2, ExternalLink, Upload } from "lucide-react";
+import { FilePlus2, ExternalLink } from "lucide-react";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import SlidePanel from "@/components/shared/SlidePanel";
+import DocumentFileField from "@/components/fleet/DocumentFileField";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/Toast";
 import { fleetApi, uploadFleetDocument } from "@/lib/darbApi";
@@ -225,20 +226,13 @@ export default function FleetDocumentsPage() {
             />
           </label>
 
-          {storageOn ? (
-            <label className="flex items-center gap-2 h-10 px-3 rounded-xl border border-sand-300 text-sm text-sand-700 cursor-pointer hover:bg-sand-100">
-              <Upload size={15} aria-hidden="true" />
-              {file ? file.name : t("fleetPortal.uploadFile")}
-              <input
-                type="file"
-                className="hidden"
-                accept="image/jpeg,image/png,image/webp,application/pdf"
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              />
-            </label>
-          ) : (
-            <p className="text-xs text-sand-500">{t("fleetPortal.storageOff")}</p>
-          )}
+          {/* Revision 13 (#2). Always here, disabled with a reason when Darb
+              has not switched storage on, rather than absent. */}
+          <DocumentFileField
+            file={file}
+            onChange={setFile}
+            storageConfigured={storageOn}
+          />
 
           <button
             type="button"

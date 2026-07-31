@@ -776,6 +776,49 @@ export interface FleetProfile {
   minDriversOnline: Record<string, number> | null;
   disciplineStatus: "OK" | "WARNED" | "THROTTLED" | "SUSPENDED" | "REMOVED";
   isActive: boolean;
+  /**
+   * Revision 13 (#6) — the caller's own role and tab list, so the rail and the
+   * route fence agree with the server instead of 403ing after the click. Null
+   * for an inspecting admin, who is not a fleet login and has no row to read.
+   */
+  portalRole?: FleetPortalRole | null;
+  portalTabs?: FleetTab[] | null;
+}
+
+/** Revision 13 (#6) — the fleet portal's own tabs and roles. */
+export type FleetTab =
+  | "ROSTER"
+  | "ISSUES"
+  | "DOCUMENTS"
+  | "SCORECARD"
+  | "PAYOUTS"
+  | "SUPPORT"
+  | "TEAM";
+
+export type FleetPortalRole = "OWNER" | "OPERATIONS" | "FINANCE";
+
+/**
+ * One login on a delivery company's own team. The vendor portal's branch
+ * scoping becomes company scoping: `fleetPartnerIds` null means every company
+ * in the owner group.
+ */
+export interface FleetTeamUser {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+  fleetRole: FleetPortalRole;
+  fleetTabs: FleetTab[] | null;
+  effectiveTabs: FleetTab[];
+  fleetPartnerIds: string[] | null;
+  fleetPartnerId: string | null;
+  isActive?: boolean;
+  createdAt?: string;
+}
+
+export interface FleetTeamPayload {
+  companies: Array<{ id: string; name: string }>;
+  users: FleetTeamUser[];
 }
 
 /**
@@ -797,6 +840,8 @@ export interface FleetDriverRow {
   id: string;
   name: string;
   phone: string;
+  /** Revision 13 (#3) — the Darb-issued id. Null until Darb approves. */
+  driverCode: string | null;
   status: string;
   vehicleType: string;
   performanceTier: string | null;
@@ -979,7 +1024,15 @@ export interface FleetStatementRow {
   deliveredOrders: number;
   feePerOrderKwd: string;
   totalKwd: string;
-  status: "FINAL" | "PAID";
+  /**
+   * Revision 13 (#8) — the delivery company confirms before Darb pays.
+   * postFleetPayout refuses anything that is not CONFIRMED.
+   */
+  status: "FINAL" | "CONFIRMED" | "DISPUTED" | "PAID";
+  confirmedAt?: string | null;
+  disputedAt?: string | null;
+  disputeReason?: string | null;
+  disputeTicketId?: string | null;
 }
 
 export interface FleetEarnings {

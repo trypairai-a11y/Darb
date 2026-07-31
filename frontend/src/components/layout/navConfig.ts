@@ -14,7 +14,7 @@
 // anything). A section with no `i18n` renders no heading.
 import type { LucideIcon } from "lucide-react";
 import type { UserRole } from "@/hooks/useRole";
-import type { VendorTab } from "@/types/darb";
+import type { FleetTab, VendorTab } from "@/types/darb";
 import {
   LifeBuoy,
   Radio,
@@ -30,6 +30,7 @@ import {
   History,
   FileText,
   TriangleAlert,
+  UserCog,
 } from "lucide-react";
 
 export interface NavItem {
@@ -66,6 +67,14 @@ export interface NavItem {
    * list the server gates each endpoint on.
    */
   vendorTab?: VendorTab;
+  /**
+   * Revision 13 (#6) — the fleet-portal tab this entry belongs to, and the
+   * mirror of vendorTab above. The Sidebar checks it against the tabs
+   * /api/fleet/me returns for the caller, which is the same list the server
+   * gates each /api/fleet endpoint on, and draws a refused entry locked rather
+   * than dropping it.
+   */
+  fleetTab?: FleetTab;
 }
 
 export interface NavSection {
@@ -191,12 +200,17 @@ export const NAV_SECTIONS: NavSection[] = [
       // Revision 12 — five entries, ordered by how often a supervisor opens
       // them. Issues sits high because it is the only one where somebody is
       // waiting on the delivery company to pick up a phone.
-      { i18n: "fleetPortal.navRoster", path: "/fleet-portal", icon: Users },
-      { i18n: "fleetPortal.navIssues", path: "/fleet-portal/issues", icon: TriangleAlert },
-      { i18n: "fleetPortal.navDocuments", path: "/fleet-portal/documents", icon: FileText },
-      { i18n: "fleetPortal.navScorecard", path: "/fleet-portal/scorecard", icon: Gauge },
-      { i18n: "fleetPortal.navPayouts", path: "/fleet-portal/payouts", icon: Truck },
-      { i18n: "fleetPortal.navSupport", path: "/fleet-portal/support", icon: LifeBuoy },
+      { i18n: "fleetPortal.navRoster", path: "/fleet-portal", icon: Users, fleetTab: "ROSTER" },
+      { i18n: "fleetPortal.navIssues", path: "/fleet-portal/issues", icon: TriangleAlert, fleetTab: "ISSUES" },
+      { i18n: "fleetPortal.navDocuments", path: "/fleet-portal/documents", icon: FileText, fleetTab: "DOCUMENTS" },
+      { i18n: "fleetPortal.navScorecard", path: "/fleet-portal/scorecard", icon: Gauge, fleetTab: "SCORECARD" },
+      { i18n: "fleetPortal.navPayouts", path: "/fleet-portal/payouts", icon: Truck, fleetTab: "PAYOUTS" },
+      { i18n: "fleetPortal.navSupport", path: "/fleet-portal/support", icon: LifeBuoy, fleetTab: "SUPPORT" },
+      // Revision 13 (#6). Governed by the tab alone, never by a second role
+      // gate on top of it: that is the mistake revision 11 (#9) found on the
+      // merchant side, where an owner ticked Team for somebody and the entry
+      // still refused to appear.
+      { i18n: "fleetPortal.navTeam", path: "/fleet-portal/team", icon: UserCog, fleetTab: "TEAM" },
     ],
   },
 ];

@@ -179,6 +179,9 @@ exports.Prisma.UserScalarFieldEnum = {
   branchId: 'branchId',
   vendorRole: 'vendorRole',
   vendorTabs: 'vendorTabs',
+  fleetRole: 'fleetRole',
+  fleetTabs: 'fleetTabs',
+  fleetPartnerIds: 'fleetPartnerIds',
   isActive: 'isActive',
   lastLoginAt: 'lastLoginAt',
   createdAt: 'createdAt',
@@ -1848,6 +1851,11 @@ exports.Prisma.FleetPayoutStatementScalarFieldEnum = {
   totalKwd: 'totalKwd',
   status: 'status',
   payoutTxId: 'payoutTxId',
+  confirmedAt: 'confirmedAt',
+  confirmedById: 'confirmedById',
+  disputedAt: 'disputedAt',
+  disputeReason: 'disputeReason',
+  disputeTicketId: 'disputeTicketId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -2047,7 +2055,8 @@ exports.Prisma.UserOrderByRelevanceFieldEnum = {
   fleetPartnerId: 'fleetPartnerId',
   ownerGroupId: 'ownerGroupId',
   branchId: 'branchId',
-  vendorRole: 'vendorRole'
+  vendorRole: 'vendorRole',
+  fleetRole: 'fleetRole'
 };
 
 exports.Prisma.DriverOrderByRelevanceFieldEnum = {
@@ -3038,7 +3047,10 @@ exports.Prisma.FleetPayoutStatementOrderByRelevanceFieldEnum = {
   tenantId: 'tenantId',
   fleetPartnerId: 'fleetPartnerId',
   status: 'status',
-  payoutTxId: 'payoutTxId'
+  payoutTxId: 'payoutTxId',
+  confirmedById: 'confirmedById',
+  disputeReason: 'disputeReason',
+  disputeTicketId: 'disputeTicketId'
 };
 
 exports.Prisma.FleetDocumentOrderByRelevanceFieldEnum = {

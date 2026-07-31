@@ -49,6 +49,10 @@ import type {
   FleetDriverProfile,
   FleetIssue,
   FleetMonthActivity,
+  FleetPortalRole,
+  FleetTab,
+  FleetTeamPayload,
+  FleetTeamUser,
   CockpitSummary,
   SupportTicket,
   SupportTicketType,
@@ -508,7 +512,18 @@ export const fleetApi = {
     body,
   ),
 
-  requestDriverStatus: (id: string, body: { status: string; reason?: string }) =>
+  requestDriverStatus: (
+    id: string,
+    body: {
+      status: string;
+      reason?: string;
+      // Revision 13 (#4, #5). Required by the endpoint for LEAVE and
+      // TERMINATED respectively, as calendar dates (YYYY-MM-DD).
+      leaveStartDate?: string;
+      returnDate?: string;
+      lastWorkingDate?: string;
+    },
+  ) =>
     post<FleetChangeRequest>(`/api/fleet/drivers/${id}/requests`, {
       type: "DRIVER_STATUS",
       ...body,
@@ -566,6 +581,38 @@ export const fleetApi = {
   replyTicket: (id: string, body: string) =>
     post<SupportTicket>(`/api/fleet/support/${id}/reply`, { body }),
   cancelTicket: (id: string) => post<{ ok: true }>(`/api/fleet/support/${id}/cancel`),
+
+  // ── Revision 13 (#8): the company signs off its own payout ─────────────
+  // Darb cannot process a statement the delivery company has not confirmed;
+  // the refusal lives in postFleetPayout, so it holds for the cron too.
+  confirmStatement: (id: string) =>
+    post<{ ok: true }>(`/api/fleet/statements/${id}/confirm`),
+  /** Sets DISPUTED and opens a Payout support ticket carrying the figures. */
+  disputeStatement: (id: string, reason: string) =>
+    post<{ ok: true; ticketId: string }>(`/api/fleet/statements/${id}/dispute`, { reason }),
+
+  // ── Revision 13 (#6): the delivery company's own team ──────────────────
+  team: () => get<FleetTeamPayload>("/api/fleet/team"),
+  createTeamUser: (body: {
+    name: string;
+    email: string;
+    password: string;
+    phone?: string;
+    fleetRole: FleetPortalRole;
+    fleetTabs?: FleetTab[] | null;
+    fleetPartnerIds?: string[] | null;
+  }) => post<FleetTeamUser>("/api/fleet/team", body),
+  updateTeamUser: (
+    id: string,
+    body: {
+      name?: string;
+      phone?: string;
+      isActive?: boolean;
+      fleetRole?: FleetPortalRole;
+      fleetTabs?: FleetTab[] | null;
+      fleetPartnerIds?: string[] | null;
+    },
+  ) => patch<FleetTeamUser>(`/api/fleet/team/${id}`, body),
 };
 
 /**
@@ -652,6 +699,17 @@ export const fleetsApi = {
   support: (id: string) => get<SupportTicket[]>(`/api/fleets/${id}/support`),
   replySupport: (id: string, ticketId: string, body: string, resolve?: boolean) =>
     post<SupportTicket>(`/api/fleets/${id}/support/${ticketId}/reply`, { body, resolve }),
+
+  /**
+   * Revision 13 (#8). Posts FLEET_PAYOUT and marks the statement PAID.
+   * The server refuses anything the delivery company has not confirmed, so the
+   * button beside this is disabled for the same reason rather than for a
+   * different one.
+   */
+  payStatement: (statementId: string) =>
+    post<{ ok: true; transactionId: string | null; replay: boolean }>(
+      `/api/fleets/statements/${statementId}/payout`,
+    ),
 };
 
 // ── /api/cockpit (ADMIN-only founder summary) ────────────────────────────

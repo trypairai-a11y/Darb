@@ -562,42 +562,52 @@ model OwnerGroup {
 
 // 3. User
 model User {
-  id             String    @id @default(uuid())
-  tenantId       String
-  email          String    @unique
-  phone          String?
-  passwordHash   String
-  name           String
-  role           UserRole  @default(VIEWER)
+  id              String    @id @default(uuid())
+  tenantId        String
+  email           String    @unique
+  phone           String?
+  passwordHash    String
+  name            String
+  role            UserRole  @default(VIEWER)
   // Phase 2 Wave 1 — super-admin flag. Read on every request from the DB
   // (NOT from JWT) by the requireSuperAdmin middleware to prevent stale-flag
   // attacks (T-02-06).
-  isSuperAdmin   Boolean   @default(false)
-  jobGrade       String? // e.g. "Team Leader", "Supervisor", "Senior Supervisor", "Area Manager"
+  isSuperAdmin    Boolean   @default(false)
+  jobGrade        String? // e.g. "Team Leader", "Supervisor", "Senior Supervisor", "Area Manager"
   // Darb 2.0 — set for role=VENDOR users; scopes the vendor portal (vendorId
   // comes from the JWT, never from the client).
-  vendorId       String?
+  vendorId        String?
   // Darb 2.0 PRD — set for role=FLEET users; scopes the fleet portal
   // (fleetPartnerId comes from the JWT, never from the client).
-  fleetPartnerId String?
+  fleetPartnerId  String?
   // Revision 1 (#15/#27) — a FLEET login scoped to an owner group rather than a
   // single partner. When set, the user may switch between every fleet in the
   // group; fleetPartnerId is then the default/last-used partner, not a fence.
-  ownerGroupId   String?
+  ownerGroupId    String?
   // Revision 1 (#9) — vendor portal users are created per branch with a role.
   // branchId is null for vendor-wide roles (OWNER, FINANCE).
-  branchId       String?
-  vendorRole     String? // OWNER | FINANCE | ORDER_TRACKING
+  branchId        String?
+  vendorRole      String? // OWNER | FINANCE | ORDER_TRACKING
   // Revision 10 (#6) — per-user tab access inside the merchant portal, as a
   // JSON array of tab keys (ORDERS | WALLET | GROW | SUPPORT | TEAM |
   // SETTINGS). NULL means "inherit whatever this vendorRole opens by default",
   // which is what every existing shop login does, so this ships with no
   // backfill. An explicit [] means no tabs at all.
-  vendorTabs     Json?
-  isActive       Boolean   @default(true)
-  lastLoginAt    DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  vendorTabs      Json?
+  // Revision 13 (#6) — the fleet portal's own team, the mirror of the merchant
+  // portal's. fleetRole is OWNER | OPERATIONS | FINANCE and NULL reads as
+  // OWNER, so every login that existed before this keeps opening everything it
+  // already could. fleetTabs REPLACES the role's default tab list (null =
+  // inherit). fleetPartnerIds narrows an owner-group login to a subset of the
+  // group's companies (null = the whole group), which is what the vendor
+  // portal's branchId does for a shop.
+  fleetRole       String?
+  fleetTabs       Json?
+  fleetPartnerIds Json?
+  isActive        Boolean   @default(true)
+  lastLoginAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   tenant                  Tenant                  @relation(fields: [tenantId], references: [id])
   vendor                  Vendor?                 @relation(fields: [vendorId], references: [id])
@@ -3475,18 +3485,29 @@ model FleetPartner {
 //      so a rate change never rewrites history. Payment posts a FLEET_PAYOUT
 //      wallet transaction.
 model FleetPayoutStatement {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   tenantId        String
   fleetPartnerId  String
   periodStart     DateTime
   periodEnd       DateTime // exclusive
   deliveredOrders Int
-  feePerOrderKwd  Decimal  @db.Decimal(10, 3)
-  totalKwd        Decimal  @db.Decimal(10, 3)
-  status          String   @default("FINAL") // FINAL | PAID
+  feePerOrderKwd  Decimal   @db.Decimal(10, 3)
+  totalKwd        Decimal   @db.Decimal(10, 3)
+  /// Revision 13 (#8) — FINAL | CONFIRMED | DISPUTED | PAID. The delivery
+  /// company confirms a statement before Darb processes it; postFleetPayout
+  /// refuses anything that is not CONFIRMED, so the gate holds for the cron
+  /// and a script as well as the staff button.
+  status          String    @default("FINAL")
   payoutTxId      String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  confirmedAt     DateTime?
+  confirmedById   String?
+  disputedAt      DateTime?
+  disputeReason   String?
+  /// The SupportTicket a dispute opened, so the disagreement lands in the
+  /// inbox Darb already triages rather than in a WhatsApp thread.
+  disputeTicketId String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   tenant Tenant       @relation(fields: [tenantId], references: [id])
   fleet  FleetPartner @relation(fields: [fleetPartnerId], references: [id])

@@ -6,11 +6,14 @@ import { useSidebar } from "@/contexts/SidebarContext";
 import { useQuery } from "@tanstack/react-query";
 import { useRole } from "@/hooks/useRole";
 import { useAuth } from "@/contexts/AuthContext";
-import { vendorApi } from "@/lib/darbApi";
+import { fleetApi, vendorApi } from "@/lib/darbApi";
 import { roleDefaultTabs } from "@/lib/vendorTabs";
+import { fleetRoleDefaultTabs } from "@/lib/fleetTabs";
+import { useDeniedVendorTabs } from "@/lib/vendorAccess";
+import { useDeniedFleetTabs } from "@/lib/fleetAccess";
 import { useI18n } from "@/i18n/I18nProvider";
 import LanguageSwitcher from "./LanguageSwitcher";
-import { PanelLeftClose } from "lucide-react";
+import { Lock, PanelLeftClose } from "lucide-react";
 import {
   NAV_SECTIONS,
   buildIsActive,
@@ -49,6 +52,46 @@ export default function Sidebar() {
   // rail showed before per-user tabs existed, so the worst case is one entry
   // appearing for a moment before it is taken away, rather than an empty rail.
   const vendorTabs = meQuery.data?.portalTabs ?? roleDefaultTabs(vendorRole);
+  // Revision 11 (#7). Anything the server has already refused this session is
+  // locked whatever the list above says: the 403 happened, so the list is the
+  // thing that is wrong.
+  const deniedTabs = useDeniedVendorTabs();
+
+  /**
+   * Revision 13 (#6) — the same three lines for the fleet portal.
+   *
+   * A delivery company's logins now have roles and a tab list of their own, so
+   * the fleet rail cannot be a fixed seven entries any more than the merchant
+   * rail could be a fixed six.
+   */
+  const fleetMeQuery = useQuery({
+    queryKey: ["darb", "fleet", "me"],
+    queryFn: () => fleetApi.me(),
+    enabled: role === "FLEET",
+    staleTime: 60_000,
+  });
+  const fleetRole = fleetMeQuery.data?.portalRole ?? "OWNER";
+  const fleetTabs = fleetMeQuery.data?.portalTabs ?? fleetRoleDefaultTabs(fleetRole);
+  const deniedFleetTabs = useDeniedFleetTabs();
+
+  /**
+   * True when this login may not open the screen behind a rail entry.
+   *
+   * Such an entry is drawn locked rather than dropped. The client asked for one
+   * or the other, and locked is the one that answers the question a merchant
+   * actually has: an entry that quietly disappears reads as a bug in the portal,
+   * while a greyed row with a padlock says the tab exists and somebody has to
+   * grant it.
+   */
+  const isLocked = (item: NavItem): boolean => {
+    if (role === "VENDOR" && item.vendorTab) {
+      return deniedTabs.includes(item.vendorTab) || !vendorTabs.includes(item.vendorTab);
+    }
+    if (role === "FLEET" && item.fleetTab) {
+      return deniedFleetTabs.includes(item.fleetTab) || !fleetTabs.includes(item.fleetTab);
+    }
+    return false;
+  };
 
   const sectionVisible = (section: NavSection): boolean => {
     if (section.roles) return section.roles.includes(role);
@@ -66,16 +109,33 @@ export default function Sidebar() {
           (!item.minRole || hasRole(item.minRole)) &&
           // A vendor login only sees the entries its portal role can open.
           // Staff are unaffected: no staff item carries vendorRoles.
-          (!item.vendorRoles || (role === "VENDOR" && item.vendorRoles.includes(vendorRole))) &&
-          // …and only the tabs its own access includes. Both gates apply, so
-          // Team stays owner-only even if somebody is granted the TEAM tab.
-          (!item.vendorTab || role !== "VENDOR" || vendorTabs.includes(item.vendorTab)),
+          (!item.vendorRoles || (role === "VENDOR" && item.vendorRoles.includes(vendorRole))),
+        // The tab gate is NOT a filter any more — see isLocked above. An entry
+        // this login cannot open stays in the rail wearing a padlock, so the
+        // answer to "where did Wallet go" is on the screen instead of missing.
       ),
     }))
     .filter((section) => section.items.length > 0);
   const isActive = buildIsActive(visibleSections, pathname);
 
-  const renderItem = (item: NavItem) => (
+  const renderItem = (item: NavItem) =>
+    isLocked(item) ? (
+      <div
+        key={item.path}
+        aria-disabled="true"
+        title={t("vendorPortal.tabLocked")}
+        className="flex items-center gap-3 px-3.5 py-2.5 rounded-pill text-[15px] font-medium mb-1 text-sand-400 dark:text-secondary/50 cursor-not-allowed select-none"
+      >
+        <item.icon size={18} aria-hidden="true" />
+        {!collapsed && (
+          <>
+            <span className="flex-1">{t(item.i18n)}</span>
+            <Lock size={13} aria-hidden="true" />
+            <span className="sr-only">{t("vendorPortal.tabLocked")}</span>
+          </>
+        )}
+      </div>
+    ) : (
     <Link
       key={item.path}
       href={item.path}
@@ -90,7 +150,7 @@ export default function Sidebar() {
       <item.icon size={18} aria-hidden="true" />
       {!collapsed && <span className="flex-1">{t(item.i18n)}</span>}
     </Link>
-  );
+    );
 
   // Revision #7: the rail used to be a solid forest-green block, which the
   // client read as heavy and unfriendly. It is now the same light surface as

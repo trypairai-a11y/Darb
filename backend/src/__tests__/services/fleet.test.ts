@@ -126,7 +126,10 @@ describe("postFleetPayout", () => {
     deliveredOrders: 100,
     feePerOrderKwd: D("1.100"),
     totalKwd: D("110.000"),
-    status: "FINAL",
+    // Revision 13 (#8) — Darb cannot pay a statement the delivery company has
+    // not confirmed, so the fixture that gets paid is a confirmed one. The
+    // refusal itself has its own suite (routes/fleetPayoutConfirm.test.ts).
+    status: "CONFIRMED",
   };
 
   test("legs: PLATFORM_REVENUE DEBIT (fleet cost) / PLATFORM_CLEARING CREDIT (cash out); marks PAID", async () => {

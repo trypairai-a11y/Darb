@@ -562,75 +562,85 @@ model OwnerGroup {
 
 // 3. User
 model User {
-  id             String    @id @default(uuid())
-  tenantId       String
-  email          String    @unique
-  phone          String?
-  passwordHash   String
-  name           String
-  role           UserRole  @default(VIEWER)
+  id              String    @id @default(uuid())
+  tenantId        String
+  email           String    @unique
+  phone           String?
+  passwordHash    String
+  name            String
+  role            UserRole  @default(VIEWER)
   // Phase 2 Wave 1 — super-admin flag. Read on every request from the DB
   // (NOT from JWT) by the requireSuperAdmin middleware to prevent stale-flag
   // attacks (T-02-06).
-  isSuperAdmin   Boolean   @default(false)
-  jobGrade       String? // e.g. "Team Leader", "Supervisor", "Senior Supervisor", "Area Manager"
+  isSuperAdmin    Boolean   @default(false)
+  jobGrade        String? // e.g. "Team Leader", "Supervisor", "Senior Supervisor", "Area Manager"
   // Darb 2.0 — set for role=VENDOR users; scopes the vendor portal (vendorId
   // comes from the JWT, never from the client).
-  vendorId       String?
+  vendorId        String?
   // Darb 2.0 PRD — set for role=FLEET users; scopes the fleet portal
   // (fleetPartnerId comes from the JWT, never from the client).
-  fleetPartnerId String?
+  fleetPartnerId  String?
   // Revision 1 (#15/#27) — a FLEET login scoped to an owner group rather than a
   // single partner. When set, the user may switch between every fleet in the
   // group; fleetPartnerId is then the default/last-used partner, not a fence.
-  ownerGroupId   String?
+  ownerGroupId    String?
   // Revision 1 (#9) — vendor portal users are created per branch with a role.
   // branchId is null for vendor-wide roles (OWNER, FINANCE).
-  branchId       String?
-  vendorRole     String? // OWNER | FINANCE | ORDER_TRACKING
+  branchId        String?
+  vendorRole      String? // OWNER | FINANCE | ORDER_TRACKING
   // Revision 10 (#6) — per-user tab access inside the merchant portal, as a
   // JSON array of tab keys (ORDERS | WALLET | GROW | SUPPORT | TEAM |
   // SETTINGS). NULL means "inherit whatever this vendorRole opens by default",
   // which is what every existing shop login does, so this ships with no
   // backfill. An explicit [] means no tabs at all.
-  vendorTabs     Json?
-  isActive       Boolean   @default(true)
-  lastLoginAt    DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  vendorTabs      Json?
+  // Revision 13 (#6) — the fleet portal's own team, the mirror of the merchant
+  // portal's. fleetRole is OWNER | OPERATIONS | FINANCE and NULL reads as
+  // OWNER, so every login that existed before this keeps opening everything it
+  // already could. fleetTabs REPLACES the role's default tab list (null =
+  // inherit). fleetPartnerIds narrows an owner-group login to a subset of the
+  // group's companies (null = the whole group), which is what the vendor
+  // portal's branchId does for a shop.
+  fleetRole       String?
+  fleetTabs       Json?
+  fleetPartnerIds Json?
+  isActive        Boolean   @default(true)
+  lastLoginAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  tenant                Tenant                  @relation(fields: [tenantId], references: [id])
-  vendor                Vendor?                 @relation(fields: [vendorId], references: [id])
-  fleetPartner          FleetPartner?           @relation(fields: [fleetPartnerId], references: [id])
-  ownerGroup            OwnerGroup?             @relation(fields: [ownerGroupId], references: [id])
-  branch                VendorBranch?           @relation("BranchPortalUser", fields: [branchId], references: [id])
-  managedCompanies      Company[]               @relation("CompanyAccountManager")
-  supervisedDrivers     Driver[]                @relation("DriverSupervisor")
-  issuedCommands        DeviceCommand[]         @relation("CommandIssuer")
-  acknowledgedAlerts    Alert[]                 @relation("AlertAcknowledger")
-  reviewedLeaves        LeaveRequest[]          @relation("LeaveReviewer")
-  assignedTickets       Ticket[]                @relation("TicketAssignee")
-  submittedTickets      Ticket[]                @relation("TicketSubmitterUser")
-  notifications         Notification[]
-  createdAmericanaRates AmericanaChainRate[]    @relation("AmericanaChainRateCreator")
-  approvedAgentActions  AgentAction[]           @relation("AgentActionApprover")
-  pinnedViews           PinnedView[]            @relation("PinnedViewOwner")
-  metricEvents          MetricEvent[]           @relation("MetricEventActor")
+  tenant                  Tenant                  @relation(fields: [tenantId], references: [id])
+  vendor                  Vendor?                 @relation(fields: [vendorId], references: [id])
+  fleetPartner            FleetPartner?           @relation(fields: [fleetPartnerId], references: [id])
+  ownerGroup              OwnerGroup?             @relation(fields: [ownerGroupId], references: [id])
+  branch                  VendorBranch?           @relation("BranchPortalUser", fields: [branchId], references: [id])
+  managedCompanies        Company[]               @relation("CompanyAccountManager")
+  supervisedDrivers       Driver[]                @relation("DriverSupervisor")
+  issuedCommands          DeviceCommand[]         @relation("CommandIssuer")
+  acknowledgedAlerts      Alert[]                 @relation("AlertAcknowledger")
+  reviewedLeaves          LeaveRequest[]          @relation("LeaveReviewer")
+  assignedTickets         Ticket[]                @relation("TicketAssignee")
+  submittedTickets        Ticket[]                @relation("TicketSubmitterUser")
+  notifications           Notification[]
+  createdAmericanaRates   AmericanaChainRate[]    @relation("AmericanaChainRateCreator")
+  approvedAgentActions    AgentAction[]           @relation("AgentActionApprover")
+  pinnedViews             PinnedView[]            @relation("PinnedViewOwner")
+  metricEvents            MetricEvent[]           @relation("MetricEventActor")
   // Phase 4 Wave 1 — chat ownership + briefing authorship.
-  chatThreads           ChatThread[]            @relation("ChatThreadOwner")
-  scheduledBriefings    ScheduledBriefing[]     @relation("ScheduledBriefingCreator")
+  chatThreads             ChatThread[]            @relation("ChatThreadOwner")
+  scheduledBriefings      ScheduledBriefing[]     @relation("ScheduledBriefingCreator")
   // Revision 4 (#12) — self-service password on invite, per-surface access,
   // and the merchants an account manager owns.
-  invites               UserInvite[]
-  surfacePermissions    UserSurfacePermission[]
-  managedVendors        AccountManagerVendor[]
+  invites                 UserInvite[]
+  surfacePermissions      UserSurfacePermission[]
+  managedVendors          AccountManagerVendor[]
   // Revision 12 — fleet portal request desk authorship.
-  uploadedFleetDocuments FleetDocument[]      @relation("FleetDocumentUploader")
-  reviewedFleetDocuments FleetDocument[]      @relation("FleetDocumentReviewer")
-  requestedFleetChanges  FleetChangeRequest[] @relation("FleetRequestRequester")
-  reviewedFleetChanges   FleetChangeRequest[] @relation("FleetRequestReviewer")
-  acknowledgedFleetIssues FleetIssue[]        @relation("FleetIssueAcknowledger")
-  resolvedFleetIssues     FleetIssue[]        @relation("FleetIssueResolver")
+  uploadedFleetDocuments  FleetDocument[]         @relation("FleetDocumentUploader")
+  reviewedFleetDocuments  FleetDocument[]         @relation("FleetDocumentReviewer")
+  requestedFleetChanges   FleetChangeRequest[]    @relation("FleetRequestRequester")
+  reviewedFleetChanges    FleetChangeRequest[]    @relation("FleetRequestReviewer")
+  acknowledgedFleetIssues FleetIssue[]            @relation("FleetIssueAcknowledger")
+  resolvedFleetIssues     FleetIssue[]            @relation("FleetIssueResolver")
 
   @@index([tenantId])
 }
@@ -2832,8 +2842,8 @@ model Vendor {
   deliveryPlan      DeliveryPlan?          @relation(fields: [deliveryPlanId], references: [id])
   accountManagers   AccountManagerVendor[]
 
-  supportTickets    SupportTicket[]
-  topUps            VendorTopUp[]
+  supportTickets SupportTicket[]
+  topUps         VendorTopUp[]
 
   @@unique([tenantId, code])
   @@index([tenantId, isActive])
@@ -2873,7 +2883,7 @@ model VendorBranch {
   deliveryPlan DeliveryPlan?   @relation(fields: [deliveryPlanId], references: [id])
   orders       DeliveryOrder[]
   // Revision 1 (#9) — portal users scoped to this branch.
-  portalUsers User[]          @relation("BranchPortalUser")
+  portalUsers  User[]          @relation("BranchPortalUser")
 
   @@unique([tenantId, foodicsBranchId])
   @@index([tenantId])
@@ -2949,19 +2959,19 @@ enum DeliveryPlanType {
 }
 
 model DeliveryPlan {
-  id        String           @id @default(uuid())
-  tenantId  String
-  name      String // client-facing, e.g. "Pharmacy standard"
-  type      DeliveryPlanType
+  id              String           @id @default(uuid())
+  tenantId        String
+  name            String // client-facing, e.g. "Pharmacy standard"
+  type            DeliveryPlanType
   // Revision 5 (#7). The intra-zone flat fee belongs to the plan, not to the
   // tenant: "whenever we create a plan, the intra-zone flat fee will be with
   // each plan". NULL on a by-zone plan falls back to the origin==dest cell of
   // the grid, which is where the value used to live, so plans written before
   // this column keep pricing exactly as they did.
-  intraZoneFeeKwd Decimal? @db.Decimal(10, 3)
-  isActive  Boolean          @default(true)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  intraZoneFeeKwd Decimal?         @db.Decimal(10, 3)
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
   tenant    Tenant                 @relation(fields: [tenantId], references: [id])
   zoneRates DeliveryPlanZoneRate[]
@@ -3455,11 +3465,11 @@ model FleetPartner {
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
-  tenant     Tenant                 @relation(fields: [tenantId], references: [id])
-  ownerGroup OwnerGroup?            @relation(fields: [ownerGroupId], references: [id])
-  drivers    Driver[]
-  users      User[]
-  statements FleetPayoutStatement[]
+  tenant         Tenant                 @relation(fields: [tenantId], references: [id])
+  ownerGroup     OwnerGroup?            @relation(fields: [ownerGroupId], references: [id])
+  drivers        Driver[]
+  users          User[]
+  statements     FleetPayoutStatement[]
   // Revision 12 — the portal's request desk.
   documents      FleetDocument[]
   changeRequests FleetChangeRequest[]
@@ -3475,18 +3485,29 @@ model FleetPartner {
 //      so a rate change never rewrites history. Payment posts a FLEET_PAYOUT
 //      wallet transaction.
 model FleetPayoutStatement {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   tenantId        String
   fleetPartnerId  String
   periodStart     DateTime
   periodEnd       DateTime // exclusive
   deliveredOrders Int
-  feePerOrderKwd  Decimal  @db.Decimal(10, 3)
-  totalKwd        Decimal  @db.Decimal(10, 3)
-  status          String   @default("FINAL") // FINAL | PAID
+  feePerOrderKwd  Decimal   @db.Decimal(10, 3)
+  totalKwd        Decimal   @db.Decimal(10, 3)
+  /// Revision 13 (#8) — FINAL | CONFIRMED | DISPUTED | PAID. The delivery
+  /// company confirms a statement before Darb processes it; postFleetPayout
+  /// refuses anything that is not CONFIRMED, so the gate holds for the cron
+  /// and a script as well as the staff button.
+  status          String    @default("FINAL")
   payoutTxId      String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  confirmedAt     DateTime?
+  confirmedById   String?
+  disputedAt      DateTime?
+  disputeReason   String?
+  /// The SupportTicket a dispute opened, so the disagreement lands in the
+  /// inbox Darb already triages rather than in a WhatsApp thread.
+  disputeTicketId String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   tenant Tenant       @relation(fields: [tenantId], references: [id])
   fleet  FleetPartner @relation(fields: [fleetPartnerId], references: [id])
@@ -3523,37 +3544,37 @@ enum FleetDocumentStatus {
 /// One table for both company and driver documents. `driverId` null means the
 /// document belongs to the delivery company itself.
 model FleetDocument {
-  id             String              @id @default(uuid())
-  tenantId       String
-  fleetPartnerId String
+  id              String              @id @default(uuid())
+  tenantId        String
+  fleetPartnerId  String
   /// Null until a DRIVER_ONBOARD request is approved and the Driver exists.
-  driverId       String?
+  driverId        String?
   /// Company: TRADE_LICENSE | COMMERCIAL_REG | CIVIL_INSURANCE | VAT_CERT
   /// Driver:  CIVIL_ID | DRIVING_LICENSE | VEHICLE_REG | VEHICLE_INSURANCE |
   ///          HEALTH_CERT | WORK_PERMIT | FOOD_HANDLING
-  type           String
+  type            String
   /// Private R2 object key. Never a public URL: reads go through a signed GET.
   /// Null when the fleet submitted an expiry date with no file, which is what
   /// the portal falls back to while R2 is unconfigured.
-  fileKey        String?
-  fileName       String?
-  mimeType       String?
-  sizeBytes      Int?
-  expiryDate     DateTime?
-  status         FleetDocumentStatus @default(PENDING_REVIEW)
+  fileKey         String?
+  fileName        String?
+  mimeType        String?
+  sizeBytes       Int?
+  expiryDate      DateTime?
+  status          FleetDocumentStatus @default(PENDING_REVIEW)
   rejectionReason String?
-  uploadedById   String?
-  reviewedById   String?
-  reviewedAt     DateTime?
-  supersededById String?
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
+  uploadedById    String?
+  reviewedById    String?
+  reviewedAt      DateTime?
+  supersededById  String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
 
-  tenant     Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  fleet      FleetPartner  @relation(fields: [fleetPartnerId], references: [id], onDelete: Cascade)
-  driver     Driver?       @relation(fields: [driverId], references: [id], onDelete: SetNull)
-  uploadedBy User?         @relation("FleetDocumentUploader", fields: [uploadedById], references: [id])
-  reviewedBy User?         @relation("FleetDocumentReviewer", fields: [reviewedById], references: [id])
+  tenant     Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fleet      FleetPartner @relation(fields: [fleetPartnerId], references: [id], onDelete: Cascade)
+  driver     Driver?      @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  uploadedBy User?        @relation("FleetDocumentUploader", fields: [uploadedById], references: [id])
+  reviewedBy User?        @relation("FleetDocumentReviewer", fields: [reviewedById], references: [id])
 
   @@index([tenantId, fleetPartnerId, status])
   @@index([tenantId, driverId, type])
@@ -3639,29 +3660,29 @@ enum FleetIssueSeverity {
 /// tab and not a ticket type: a supervisor works an inbox of things Darb has
 /// noticed, calls the driver, and records what they did about it.
 model FleetIssue {
-  id             String             @id @default(uuid())
-  tenantId       String
-  fleetPartnerId String
-  driverId       String?
-  type           FleetIssueType
-  severity       FleetIssueSeverity @default(MEDIUM)
-  title          String
-  detail         String
-  data           Json?
-  status         FleetIssueStatus   @default(OPEN)
+  id               String             @id @default(uuid())
+  tenantId         String
+  fleetPartnerId   String
+  driverId         String?
+  type             FleetIssueType
+  severity         FleetIssueSeverity @default(MEDIUM)
+  title            String
+  detail           String
+  data             Json?
+  status           FleetIssueStatus   @default(OPEN)
   /// `{type}:{driverId}:{YYYY-MM-DD}`, or `{type}:{driverId}` for standing
   /// ones. What stops the nightly sweep raising the same issue every night.
-  dedupeKey      String
-  openedAt       DateTime           @default(now())
-  acknowledgedAt DateTime?
+  dedupeKey        String
+  openedAt         DateTime           @default(now())
+  acknowledgedAt   DateTime?
   acknowledgedById String?
-  resolvedAt     DateTime?
-  resolvedById   String?
+  resolvedAt       DateTime?
+  resolvedById     String?
   /// Required to resolve. An acknowledge button with no account of the fix is
   /// a button that gets clicked to clear a badge.
-  resolutionNote String?
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
+  resolutionNote   String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
 
   tenant         Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   fleet          FleetPartner @relation(fields: [fleetPartnerId], references: [id], onDelete: Cascade)
@@ -3752,7 +3773,6 @@ model AccountManagerVendor {
   @@index([tenantId, vendorId])
 }
 
-
 /// Revision 8 (#6) — a shop's support requests.
 ///
 /// Raised from the vendor portal by any of the three shop roles, including
@@ -3760,24 +3780,24 @@ model AccountManagerVendor {
 /// one goes wrong. Kept deliberately small: a subject, a body, an optional
 /// order it is about, and a thread of replies from both sides.
 model SupportTicket {
-  id        String              @id @default(uuid())
-  tenantId  String
+  id             String              @id @default(uuid())
+  tenantId       String
   /// Revision 12 — exactly ONE of vendorId / fleetPartnerId is set. Making
   /// vendorId nullable rather than adding a second ticket table keeps Darb on
   /// one support inbox; a duplicate table would have meant a second triage
   /// screen nobody remembers to open.
-  vendorId  String?
+  vendorId       String?
   fleetPartnerId String?
   /// Who raised it, so the shop can see which of its own people asked.
-  createdById String?
-  subject   String
-  status    SupportTicketStatus @default(OPEN)
+  createdById    String?
+  subject        String
+  status         SupportTicketStatus @default(OPEN)
   /// Revision 9 (#6) — what the request is about, in the shop's own terms.
-  type      SupportTicketType   @default(OTHER)
+  type           SupportTicketType   @default(OTHER)
   /// The order this is about, when it is about one.
-  orderId   String?
-  createdAt DateTime            @default(now())
-  updatedAt DateTime            @updatedAt
+  orderId        String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
 
   tenant   Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   vendor   Vendor?                @relation(fields: [vendorId], references: [id], onDelete: Cascade)
@@ -3790,14 +3810,14 @@ model SupportTicket {
 }
 
 model SupportTicketMessage {
-  id        String   @id @default(uuid())
-  tenantId  String
-  ticketId  String
+  id         String   @id @default(uuid())
+  tenantId   String
+  ticketId   String
   /// VENDOR or DARB — which side of the conversation this came from.
-  author    String
+  author     String
   authorName String?
-  body      String
-  createdAt DateTime @default(now())
+  body       String
+  createdAt  DateTime @default(now())
 
   ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
