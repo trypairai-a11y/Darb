@@ -190,33 +190,37 @@ async function nextOrderNumber(
   const prefix = `DRB-${vendorCode}-`;
 
   /**
-   * The sequence is found by MAX, and MAX on a text column is lexicographic.
+   * The maximum is taken NUMERICALLY, in the database, and that is the fix.
    *
-   * At four digits that was a wall, not a wobble: once `DRB-X-10000` existed,
-   * "9999" sorted above "10000", so `last` stayed 9999 forever, `nextNum` was
-   * always 10000, and every order for that merchant failed on the unique
-   * constraint — permanently, after the retry. A shop doing 50 a day reached it
-   * inside seven months.
+   * This function has now hit the same wall twice for the same reason: someone
+   * reasoned about a text column as though it sorted like numbers. The first
+   * time, "9999" sorted above "10000" at four digits, so the sequence stuck
+   * forever. The second time, the widening to six digits carried a comment
+   * claiming legacy 4-digit numbers "sort below every 6-digit one because they
+   * are shorter strings". They do not. Comparison is character by character, so
+   * "0169" beats "000170" at the second character, and every legacy row
+   * outranked the first new-format one.
    *
-   * Six digits moves the wall to a million, and the ordering is only correct
-   * while the width is fixed, so the padding and the scan width have to agree.
-   * Legacy 4-digit numbers still parse: they are shorter strings, so they sort
-   * below every 6-digit one and the MAX lands on the new format as soon as one
-   * exists. The first order after this change continues from the old maximum.
+   * The consequence was total rather than cosmetic: `ORDER BY ... DESC LIMIT 50`
+   * returned only 4-digit rows, the highest read 169, the next number was
+   * "000170", and that already existed. Every order for that merchant failed on
+   * the unique constraint, permanently, including the retry. Al Dawaa Pharmacy
+   * was dead in production the moment its first six-digit order existed.
+   *
+   * Casting the suffix to an integer and letting Postgres take the MAX removes
+   * the class, not the instance: it is correct whatever the padding width is
+   * today, whatever it was historically, and whatever it becomes next. The
+   * regex guard keeps a malformed suffix from turning the cast into an error.
    */
   const WIDTH = 6;
-  const rows = await tx.deliveryOrder.findMany({
-    where: { tenantId, orderNumber: { startsWith: prefix } },
-    orderBy: { orderNumber: "desc" },
-    select: { orderNumber: true },
-    // The old 4-digit rows sort above nothing useful, so take enough to be sure
-    // the true maximum is in hand rather than trusting one lexicographic row.
-    take: 50,
-  });
-  const highest = rows.reduce((max, r) => {
-    const n = parseInt(r.orderNumber.slice(prefix.length), 10);
-    return Number.isFinite(n) && n > max ? n : max;
-  }, 0);
+  const rows = await tx.$queryRaw<Array<{ highest: number | null }>>`
+    SELECT MAX(CAST(SUBSTRING("orderNumber" FROM ${prefix.length + 1}) AS INTEGER)) AS highest
+    FROM "DeliveryOrder"
+    WHERE "tenantId" = ${tenantId}
+      AND "orderNumber" LIKE ${prefix + "%"}
+      AND SUBSTRING("orderNumber" FROM ${prefix.length + 1}) ~ '^[0-9]+$'
+  `;
+  const highest = Number(rows[0]?.highest ?? 0) || 0;
   return `${prefix}${String(highest + 1).padStart(WIDTH, "0")}`;
 }
 

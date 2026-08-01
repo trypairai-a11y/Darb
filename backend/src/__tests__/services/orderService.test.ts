@@ -108,12 +108,22 @@ function primeHappyCreate(lastOrderNumber: string | null = null) {
   prisma.vendorBranch.findFirst.mockResolvedValue({ id: "b-1" });
   quoteDelivery.mockResolvedValue(GOOD_QUOTE);
 
-  // The sequence lookup reads several rows now and takes the numeric maximum,
-  // because a lexicographic MAX on a text column wedged the whole vendor at
-  // 10000. findMany serves it; findFirst still serves the re-fetch by id.
-  prisma.deliveryOrder.findMany.mockImplementation(async ({ where }: any) =>
-    where?.orderNumber && lastOrderNumber ? [{ orderNumber: lastOrderNumber }] : [],
-  );
+  /**
+   * The sequence lookup is a raw query now, and it has to be.
+   *
+   * Reading rows back and taking a numeric max in JS still depended on the
+   * database's ORDER BY putting the true maximum inside the window, and on a
+   * text column it does not: "0169" sorts above "000170", so a vendor's first
+   * six-digit order made every later one collide forever. Postgres takes the
+   * MAX over the suffix cast to an integer, so the mock answers in that shape.
+   */
+  prisma.$queryRaw.mockImplementation(async () => [
+    {
+      highest: lastOrderNumber
+        ? parseInt(lastOrderNumber.slice(lastOrderNumber.lastIndexOf("-") + 1), 10)
+        : null,
+    },
+  ]);
   prisma.deliveryOrder.findFirst.mockImplementation(async ({ where }: any) => {
     if (where.orderNumber) {
       return lastOrderNumber ? { orderNumber: lastOrderNumber } : null;
@@ -198,6 +208,43 @@ describe("createDeliveryOrder", () => {
 
     const data = prisma.deliveryOrder.create.mock.calls[0][0].data;
     expect(data.orderNumber).toBe("DRB-BRGB-000008");
+  });
+
+  /**
+   * The regression this locks down took a live merchant offline.
+   *
+   * Al Dawaa Pharmacy's numbers ran DRB-DWPH-0001..0169 in the old 4-digit
+   * format. Its first 6-digit order, DRB-DWPH-000170, was created fine. Every
+   * order after it failed on the unique constraint, permanently, because the
+   * sequence was read from a text column's ORDER BY: "0169" sorts above
+   * "000170" at the second character, so the window held only legacy rows, the
+   * max read 169, and the next number was one that already existed.
+   *
+   * The mixed-width case is therefore the case worth testing, not the tidy one.
+   */
+  test("a vendor mid-way through a width change continues past the highest number, not into it", async () => {
+    primeHappyCreate();
+    // What the database now answers: the true numeric maximum across both
+    // formats, which is the 6-digit row rather than the larger-looking legacy
+    // string beside it.
+    prisma.$queryRaw.mockResolvedValue([{ highest: 170 }]);
+
+    await createDeliveryOrder(CREATE_INPUT);
+
+    const data = prisma.deliveryOrder.create.mock.calls[0][0].data;
+    expect(data.orderNumber).toBe("DRB-BRGB-000171");
+  });
+
+  test("the very first order for a vendor starts at 1", async () => {
+    primeHappyCreate();
+    // MAX over no rows is SQL NULL, which must read as "nothing yet" and not
+    // as NaN: a NaN here would put the literal string "NaN" in an order number.
+    prisma.$queryRaw.mockResolvedValue([{ highest: null }]);
+
+    await createDeliveryOrder(CREATE_INPUT);
+
+    const data = prisma.deliveryOrder.create.mock.calls[0][0].data;
+    expect(data.orderNumber).toBe("DRB-BRGB-000001");
   });
 
   test("paused vendor → REJECTED VENDOR_PAUSED persisted and returned; no quote, no dispatch", async () => {

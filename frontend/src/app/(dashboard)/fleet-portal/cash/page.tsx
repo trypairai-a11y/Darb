@@ -436,7 +436,22 @@ export default function FleetCashPage() {
               </table>
             </div>
 
-            <footer className="px-5 py-4 border-t border-sand-200 flex items-center justify-between gap-3 flex-wrap">
+            {/*
+              Sticky, and that is the whole point of it.
+
+              The client reported "there is no button to clear the deposits for
+              the drivers". There was: this one. But it sat under a table of 36
+              drivers, so pressing "Fill every driver" and scrolling the list
+              never brought it into view, and the screen read as a form with no
+              way to submit it. Pinning the bar to the bottom of the viewport
+              means the running total and the action travel with the rows they
+              describe, which is also where somebody checking their arithmetic
+              wants them.
+            */}
+            <footer
+              data-testid="fleet-settle-bar"
+              className="sticky bottom-0 z-10 px-5 py-4 border-t border-sand-200 bg-card/95 backdrop-blur rounded-b-2xl flex items-center justify-between gap-3 flex-wrap"
+            >
               <div className="text-sm">
                 <span className="text-sand-600">{t("fleetCash.settling")}: </span>
                 <span dir="ltr" className="tabular-nums font-medium text-sand-900">
@@ -446,6 +461,9 @@ export default function FleetCashPage() {
                   {" "}
                   / {formatKwd(data?.balanceKwd ?? "0", locale)}
                 </span>
+                {totals.count > 0 && (
+                  <span className="text-sand-600"> ({totals.count})</span>
+                )}
                 {totals.overBalance && (
                   <p className="text-xs text-red-600 mt-1" dir="auto">
                     {t("fleetCash.overBalance")}
@@ -454,6 +472,7 @@ export default function FleetCashPage() {
               </div>
               <button
                 type="button"
+                data-testid="fleet-settle-submit"
                 onClick={settle}
                 disabled={!canSettle}
                 className="inline-flex items-center gap-1.5 h-10 px-4 rounded-pill bg-forest-600 text-white text-sm font-medium hover:bg-forest-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"

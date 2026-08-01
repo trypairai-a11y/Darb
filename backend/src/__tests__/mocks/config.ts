@@ -194,6 +194,11 @@ export const prisma = {
     findMany: jest.fn(),
   },
   $transaction: jest.fn(),
+  // Order numbering takes its MAX in the database, casting the suffix to an
+  // integer, because a text column's ORDER BY put "0169" above "000170" and
+  // wedged a vendor's sequence permanently. Defaults to an empty result so a
+  // suite that never primes it reads as "no orders yet" rather than throwing.
+  $queryRaw: jest.fn().mockResolvedValue([]),
 };
 
 export const redis = null;
