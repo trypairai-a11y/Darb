@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator, Image, Platform, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View,
+  ActivityIndicator, Image, Platform, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View,
 } from "react-native";
 import { Redirect, useRouter } from "expo-router";
 import { CameraView, useCameraPermissions } from "expo-camera";
@@ -9,7 +9,7 @@ import * as Location from "expo-location";
 import * as Haptics from "expo-haptics";
 import { Camera as CameraIcon, Check, CircleCheck } from "lucide-react-native";
 import { isApiError, postPod } from "../../src/api/client";
-import { Button, NavBar, Screen, Segmented } from "../../src/components/hig";
+import { Button, NavBar, Screen } from "../../src/components/hig";
 import { formatKwd } from "../../src/i18n/format";
 import { t as tr } from "../../src/i18n/strings";
 import { enqueueEvent, flushEventOutbox } from "../../src/services/eventOutbox";
@@ -283,12 +283,6 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     borderWidth: 1, borderColor: "rgba(255,184,77,0.22)", ...continuous,
   },
   codConfirmRow: { flexDirection: "row", alignItems: "center", gap: space.md, marginTop: space.md },
-  pinRow: { flexDirection: "row", justifyContent: "center", gap: space.md, marginTop: space.lg },
-  pinBox: {
-    width: 62, height: 74, borderRadius: radius.field, borderWidth: 2, borderColor: c.gray4,
-    backgroundColor: c.groupedSecondary, alignItems: "center", justifyContent: "center", ...continuous,
-  },
-  hiddenInput: { position: "absolute", opacity: 0, height: 1, width: 1 },
   captureCard: {
     marginTop: space.lg, height: 180, borderRadius: radius.card, borderWidth: 2, borderStyle: "dashed",
     borderColor: c.gray4, backgroundColor: c.groupedSecondary, alignItems: "center", justifyContent: "center", ...continuous,
