@@ -157,7 +157,7 @@ export default function FleetPayoutsPage() {
     const body = rows
       .map(
         (d) => `<tr><td>${esc(d.name)}</td><td class="mono">${esc(d.driverCode ?? "n/a")}</td>` +
-          `<td class="num">${d.orders}</td><td class="num">KD ${esc(d.totalKwd)}</td></tr>`,
+          `<td class="num">${d.orders}</td><td class="num">${esc(formatKwd(d.totalKwd, locale))}</td></tr>`,
       )
       .join("");
 
@@ -187,8 +187,8 @@ export default function FleetPayoutsPage() {
 <p class="sub">${esc(t("fleetPortal.payoutsTitle"))} &middot; Darb</p>
 <div class="totals">
   <div><span>${esc(t("fleetPortal.orders"))}</span><b>${row.deliveredOrders}</b></div>
-  <div><span>${esc(t("fleetPortal.feePerOrder"))}</span><b>KD ${esc(row.feePerOrderKwd)}</b></div>
-  <div><span>${esc(t("fleetPortal.total"))}</span><b>KD ${esc(row.totalKwd)}</b></div>
+  <div><span>${esc(t("fleetPortal.feePerOrder"))}</span><b>${esc(formatKwd(row.feePerOrderKwd, locale))}</b></div>
+  <div><span>${esc(t("fleetPortal.total"))}</span><b>${esc(formatKwd(row.totalKwd, locale))}</b></div>
 </div>
 <table>
   <thead><tr>
@@ -200,7 +200,7 @@ export default function FleetPayoutsPage() {
   <tbody>${body}</tbody>
   <tfoot><tr><td colspan="2">${esc(t("fleetPortal.total"))}</td>
     <td class="num">${row.deliveredOrders}</td>
-    <td class="num">KD ${esc(row.totalKwd)}</td></tr></tfoot>
+    <td class="num">${esc(formatKwd(row.totalKwd, locale))}</td></tr></tfoot>
 </table>
 <div class="sign"><div>${esc(t("fleetPortal.companyStamp"))}</div><div>${esc(t("fleetPortal.dateSigned"))}</div></div>
 </body></html>`);
@@ -226,6 +226,10 @@ export default function FleetPayoutsPage() {
       await fleetApi.disputeStatement(disputing.id, reason.trim());
       toast.success(t("fleetPortal.statementDisputed"));
       setDisputing(null);
+      // The panel holds a snapshot of the row, so leaving it open kept showing
+      // FINAL and kept offering Dispute — and the second click opened a second
+      // support ticket.
+      setOpenRow(null);
       setReason("");
       await refresh();
     } catch (err) {

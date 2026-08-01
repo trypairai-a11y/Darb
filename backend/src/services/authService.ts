@@ -152,31 +152,21 @@ export class AuthService {
     return { accessToken: this.generateAccessToken(payload) };
   }
 
+  /**
+   * Demo sign-in. Reachable only when DEMO_LOGIN_ENABLED is "true" (the route
+   * 404s otherwise), and it will no longer CREATE the account it signs in as:
+   * a missing demo user now fails rather than quietly minting a fresh ADMIN.
+   */
   static async demoLogin() {
     // Prefer the seeded admin user which is always in the correct tenant with data
     let user = await prisma.user.findUnique({ where: { email: "osama@fleet.kw" } });
 
-    if (!user) {
-      // Fallback: find tenant with the most drivers (the real seeded one)
-      const tenant = await prisma.tenant.findFirst({
-        where: { name: "Osama Fleet Management" },
-        include: { _count: { select: { drivers: true } } },
-        orderBy: { drivers: { _count: "desc" } },
-      }) || await prisma.tenant.create({
-        data: { name: "Demo Fleet", subscriptionPlan: "FREE" },
-      });
-
-      const passwordHash = await bcrypt.hash("demo123", 12);
-      user = await prisma.user.create({
-        data: {
-          email: "demo@fleet.kw",
-          passwordHash,
-          name: "Demo User",
-          tenantId: tenant.id,
-          role: "ADMIN",
-          isActive: true,
-        },
-      });
+    // It used to create a tenant and an ADMIN here when the seeded user was
+    // absent. An endpoint that takes no credentials must not be able to bring a
+    // privileged account into existence, so a missing demo user is now an
+    // error: seed the demo tenant instead.
+    if (!user || !user.isActive) {
+      throw new Error("Demo sign-in is not available on this environment");
     }
 
     await prisma.user.update({

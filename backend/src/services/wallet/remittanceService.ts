@@ -63,13 +63,33 @@ export async function recordRemittance(
     });
     if (!driver) throw new RemittanceError("Driver not found");
 
-    // The upsert row-locks nothing yet; the balance check below is enforced
-    // again implicitly by the atomic decrement inside postLedgerTransaction
-    // running in this same transaction.
     const driverAccount = await ensureAccount(tx, tenantId, "DRIVER_CASH", {
       driverId: input.driverId,
     });
-    if (amount.greaterThan(driverAccount.balanceKwd)) {
+
+    /**
+     * Claim the balance under a row lock, do not merely read it.
+     *
+     * The old comment here said the atomic decrement inside
+     * postLedgerTransaction re-enforced the check above. It does not: an atomic
+     * `increment` serializes writers but has no non-negative constraint, so two
+     * hand-ins of KD 50 against a KD 60 balance both passed the read and both
+     * posted, leaving DRIVER_CASH at -40 and clearing overstated by 50. A
+     * double-submitted cash-desk form is enough, because each submit creates
+     * its own Remittance and therefore its own idempotency key — the ledger's
+     * replay guard cannot see it.
+     *
+     * A guarded updateMany is the same discipline as the order FSM: it takes
+     * the row lock, evaluates `balanceKwd >= amount` under it, and count 0
+     * means somebody else got there first. The lock is held to the end of this
+     * transaction, so the posting below moves the balance while the loser waits
+     * and then re-reads a balance that is genuinely short.
+     */
+    const held = await tx.walletAccount.updateMany({
+      where: { id: driverAccount.id, balanceKwd: { gte: amount } },
+      data: { updatedAt: new Date() },
+    });
+    if (held.count === 0) {
       throw new RemittanceError(
         `Amount exceeds driver cash balance (KD ${toKwdString(driverAccount.balanceKwd)})`
       );

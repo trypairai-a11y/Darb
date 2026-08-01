@@ -22,46 +22,17 @@ const refreshCookieOptions: CookieOptions = {
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
-/**
- * @swagger
- * /api/auth/register:
- *   post:
- *     tags: [Auth]
- *     summary: Register a new user
- *     security: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [email, password, name, tenantId]
- *             properties:
- *               email: { type: string, format: email }
- *               password: { type: string, minLength: 8 }
- *               name: { type: string }
- *               phone: { type: string }
- *               tenantId: { type: string, format: uuid }
- *               role: { type: string, enum: [ADMIN, OPS_MANAGER, SUPERVISOR, ACCOUNTANT, VIEWER] }
- *     responses:
- *       201:
- *         description: User created
- *       400:
- *         description: Validation error or email already in use
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- */
-router.post("/register", async (req: Request, res: Response) => {
-  try {
-    const { email, password, name, phone, tenantId, role } = req.body;
-    const user = await AuthService.register({ email, password, name, phone, tenantId, role });
-    res.status(201).json(user);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
-});
+// `POST /api/auth/register` was removed (security review, 2026-08).
+//
+// It was public, took `tenantId` and `role` straight from the request body and
+// wrote them into the User row, so anyone who could read a tenant id — every
+// portal user can, it is a claim in their own JWT — could mint themselves an
+// ADMIN and sign in with it. ADMIN is never gated by requireSurface, so that
+// was the whole tenant: wallets, orders, merchants, fleets.
+//
+// Staff accounts are created at POST /api/users (ADMIN only, invite-based, no
+// admin-set password), which is where they belonged all along. Nothing in this
+// repository called this route.
 
 /**
  * @swagger
@@ -138,6 +109,13 @@ router.post("/verify-otp", async (req: Request, res: Response) => {
  */
 router.post("/demo", async (_req: Request, res: Response) => {
   try {
+    // Credential-free sign-in, so it is off unless somebody deliberately turns
+    // it on. It used to be reachable in production, where it handed an ADMIN
+    // access token and a 7-day refresh cookie to an empty POST body.
+    if (process.env.DEMO_LOGIN_ENABLED !== "true") {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
     const result = await AuthService.demoLogin();
     res.cookie("refreshToken", result.refreshToken, refreshCookieOptions);
     res.json({ accessToken: result.accessToken, user: result.user });

@@ -40,7 +40,11 @@ router.post("/register", async (req: Request, res: Response) => {
   try {
     const { enrollmentCode, imei, model, osVersion } = req.body;
     const normalizedCode = String(enrollmentCode || "").trim();
-    const isDemoCode = normalizedCode.toUpperCase() === "DEMO";
+    // The DEMO code resolves a real ACTIVE driver and hands back their device
+    // token to an unauthenticated caller, so it is off unless somebody turns it
+    // on. Same switch as the demo login (security review, 2026-08).
+    const isDemoCode =
+      normalizedCode.toUpperCase() === "DEMO" && process.env.DEMO_LOGIN_ENABLED === "true";
 
     const demoTenant = isDemoCode
       ? await prisma.tenant.findFirst({ where: { name: "Osama Fleet Management" } })
@@ -75,6 +79,14 @@ router.post("/register", async (req: Request, res: Response) => {
     const existingImeiDevice = existingDriverDevice
       ? null
       : await prisma.device.findUnique({ where: { imei: deviceImei } });
+
+    // A device already enrolled to a DIFFERENT driver is not ours to take over.
+    // Re-pointing it used to be allowed, which let anyone who could reach this
+    // endpoint detach a working driver's handset by replaying their IMEI.
+    if (existingImeiDevice && existingImeiDevice.driverId !== driver.id) {
+      res.status(409).json({ error: "That device is already enrolled to another driver" });
+      return;
+    }
     const existingDevice = existingDriverDevice || existingImeiDevice;
 
     const device = existingDevice

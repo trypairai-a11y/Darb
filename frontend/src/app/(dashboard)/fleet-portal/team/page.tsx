@@ -134,8 +134,9 @@ export default function FleetTeamPage() {
 
   async function toggleActive(u: FleetTeamUser) {
     try {
-      await fleetApi.updateTeamUser(u.id, { isActive: !(u.isActive ?? true) });
-      toast.success(t("fleetPortal.deactivated"));
+      const next = !(u.isActive ?? true);
+      await fleetApi.updateTeamUser(u.id, { isActive: next });
+      toast.success(next ? t("fleetPortal.activated") : t("fleetPortal.deactivatedOk"));
       await queryClient.invalidateQueries({ queryKey: ["darb", "fleet", "team"] });
     } catch (err) {
       fail(err);

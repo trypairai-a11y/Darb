@@ -274,4 +274,76 @@ describe("Fleet portal team and tab access", () => {
     expect(res.status).toBe(404);
     expect(prisma.user.update).not.toHaveBeenCalled();
   });
+
+  // ─── Revision 13c: the fence holds on writes, not only on reads ──────────
+
+  test("a company-scoped owner cannot mint a login for a sibling company", async () => {
+    // The escalation this closes: an owner scoped to Marina created an OWNER
+    // login for Sidra with a password of their choosing, then signed in as it.
+    identity({ fleetRole: "OWNER", fleetTabs: null, fleetPartnerIds: ["f-2"] });
+    prisma.user.findUnique.mockResolvedValue(null);
+    prisma.user.create.mockImplementation(async ({ data }: any) => ({
+      id: "u-new", createdAt: new Date(), isActive: true, ...data,
+    }));
+
+    const res = await request(makeApp())
+      .post("/api/fleet/team")
+      .send({
+        name: "Ghost", email: "ghost@sidra.kw", password: "longenough1",
+        fleetRole: "OWNER", fleetPartnerIds: ["f-1"],
+      });
+
+    expect(res.status).toBe(400);
+    expect(prisma.user.create).not.toHaveBeenCalled();
+  });
+
+  test("a scoped owner's new login inherits their fence when they name no company", async () => {
+    identity({ fleetRole: "OWNER", fleetTabs: null, fleetPartnerIds: ["f-2"] });
+    prisma.user.findUnique.mockResolvedValue(null);
+    prisma.user.create.mockImplementation(async ({ data }: any) => ({
+      id: "u-new", createdAt: new Date(), isActive: true, ...data,
+    }));
+
+    await request(makeApp())
+      .post("/api/fleet/team")
+      .send({
+        name: "Colleague", email: "c@marina.kw", password: "longenough1",
+        fleetRole: "OPERATIONS",
+      });
+
+    expect(prisma.user.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ fleetPartnerIds: ["f-2"] }),
+      }),
+    );
+  });
+
+  test("a scope naming only companies that are not the caller's is refused, not widened", async () => {
+    // It used to store null, which means EVERY company: one stale id in a
+    // cached picker handed a finance login the whole group's payouts.
+    identity({ fleetRole: "OWNER", fleetTabs: null, fleetPartnerIds: null });
+    prisma.user.findUnique.mockResolvedValue(null);
+
+    const res = await request(makeApp())
+      .post("/api/fleet/team")
+      .send({
+        name: "Rania", email: "rania@sidra.kw", password: "longenough1",
+        fleetRole: "FINANCE", fleetPartnerIds: ["f-not-in-this-group"],
+      });
+
+    expect(res.status).toBe(400);
+    expect(prisma.user.create).not.toHaveBeenCalled();
+  });
+
+  test("a deactivated login is refused, without waiting for its token to expire", async () => {
+    identity({ fleetRole: "OWNER", fleetTabs: null, fleetPartnerIds: null, isActive: false });
+    const res = await request(makeApp()).get("/api/fleet/statements");
+    expect(res.status).toBe(403);
+  });
+
+  test("a token whose user row is gone gets nothing, not everything", async () => {
+    identity(null);
+    const res = await request(makeApp()).get("/api/fleet/drivers");
+    expect(res.status).toBe(401);
+  });
 });

@@ -5,6 +5,7 @@ import multer from "multer";
 import bcrypt from "bcryptjs";
 import { Prisma } from "../generated/prisma";
 import { prisma } from "../config";
+import { parseLocalDate, parseLocalDateEnd } from "../utils/date";
 import { trackingUrl } from "../services/customerMessagingService";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
@@ -1251,6 +1252,27 @@ router.get("/wallet/entries", requireVendorTab("WALLET"), async (req: Request, r
       where.createdAt = {
         gte: new Date(Date.UTC(year, monthIdx, 1)),
         lt: new Date(Date.UTC(year, monthIdx + 1, 1)),
+      };
+    }
+
+    // A date range, which is what the statement export on /vendor/wallet has
+    // been sending all along. Nothing read it, so a shop downloading
+    // "statement-2026-06-01-to-2026-06-30.csv" got its ENTIRE ledger under that
+    // name, and the running-balance column could not tie to the statement it
+    // was named after. A file that is confidently labelled and silently
+    // unfiltered is worse than no export.
+    const dateFrom = typeof req.query.dateFrom === "string" ? req.query.dateFrom : undefined;
+    const dateTo = typeof req.query.dateTo === "string" ? req.query.dateTo : undefined;
+    if (!month && (dateFrom || dateTo)) {
+      const from = dateFrom ? parseLocalDate(dateFrom) : null;
+      const to = dateTo ? parseLocalDateEnd(dateTo) : null;
+      if ((from && Number.isNaN(from.getTime())) || (to && Number.isNaN(to.getTime()))) {
+        res.status(400).json({ error: "dateFrom and dateTo must be YYYY-MM-DD dates" });
+        return;
+      }
+      where.createdAt = {
+        ...(from ? { gte: from } : {}),
+        ...(to ? { lte: to } : {}),
       };
     }
 

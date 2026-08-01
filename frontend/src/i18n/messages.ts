@@ -2144,6 +2144,8 @@ export interface Messages {
     deactivate: string;
     activate: string;
     deactivated: string;
+    activated: string;
+    deactivatedOk: string;
   };
   /** Revision 13 (#6) — the delivery company's own team. */
   fleetTeam: {
@@ -4478,6 +4480,8 @@ export const en: Messages = {
     deactivate: "Deactivate",
     activate: "Activate",
     deactivated: "Access updated.",
+    activated: "Login switched on.",
+    deactivatedOk: "Login switched off.",
   },
   fleetTeam: {
     title: "Team",
@@ -6796,6 +6800,8 @@ export const ar: Messages = {
     deactivate: "إيقاف",
     activate: "تفعيل",
     deactivated: "تم تحديث الصلاحية.",
+    activated: "تم تفعيل الحساب.",
+    deactivatedOk: "تم إيقاف الحساب.",
   },
   fleetTeam: {
     title: "الفريق",

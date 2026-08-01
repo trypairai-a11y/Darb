@@ -128,6 +128,12 @@ const OWN_DRIVER = {
 describe("Fleet portal request desk", () => {
   beforeEach(() => {
     resetAllMocks();
+    // loadFleetIdentity fails closed now: a FLEET token whose User row cannot be
+    // read is answered 401 rather than normalised to an owner with every tab.
+    prisma.user.findFirst.mockResolvedValue({
+      fleetRole: "OWNER", fleetTabs: null, fleetPartnerIds: null,
+      isActive: true, name: "Sidra Fleet Manager", email: "ops@sidra.kw",
+    });
     prisma.fleetPartner.findFirst.mockResolvedValue({ id: "f-1", name: "Sidra Delivery Co" });
     prisma.fleetChangeRequest.create.mockImplementation(async ({ data }: any) => ({
       id: "req-1",

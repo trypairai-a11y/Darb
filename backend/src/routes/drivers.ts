@@ -755,7 +755,11 @@ router.get("/:id/file", async (req: Request, res: Response) => {
         supervisor: { select: { id: true, name: true, phone: true, email: true } },
         device: {
           select: {
-            id: true,
+            // `Device.id` is deliberately NOT here. It is the bearer token the
+            // driver-agent API authenticates with (routes/agent.ts), so
+            // returning it on a staff read handed every authenticated role —
+            // including CASH_COLLECTOR and VIEWER — the ability to act as any
+            // driver: accept offers, mark orders delivered, move cash.
             imei: true,
             model: true,
             osVersion: true,
@@ -1027,7 +1031,7 @@ router.get("/:id/file", async (req: Request, res: Response) => {
         area: activeSession?.area ?? driver.zone ?? null,
         device: driver.device
           ? {
-              id: driver.device.id,
+              // No `id`: it is the driver-agent bearer token, not a handle.
               model: driver.device.model,
               osVersion: driver.device.osVersion,
               agentVersion: driver.device.agentVersion,
@@ -1150,7 +1154,7 @@ router.get("/:id/file", async (req: Request, res: Response) => {
           : null,
         device: driver.device
           ? {
-              id: driver.device.id,
+              // No `id`: it is the driver-agent bearer token, not a handle.
               imei: driver.device.imei,
               model: driver.device.model,
               osVersion: driver.device.osVersion,

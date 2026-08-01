@@ -188,8 +188,17 @@ describe("confirmTopUp", () => {
           return { id: where.id, balanceKwd: next };
         }),
       },
-      walletTransaction: { create: jest.fn(async ({ data }: any) => ({ id: "wtx-1", ...data })) },
+      walletTransaction: {
+        create: jest.fn(async ({ data }: any) => ({ id: "wtx-1", ...data })),
+        // The claim now happens INSIDE the transaction, and the repair path
+        // asks whether this top-up was ever posted before posting it.
+        findFirst: jest.fn(async () => null),
+      },
       walletEntry: { create: jest.fn(async ({ data }: any) => ({ id: "we-1", ...data })) },
+      vendorTopUp: {
+        updateMany: jest.fn(async (args: any) => p.vendorTopUp.updateMany(args)),
+        findFirst: jest.fn(async (args: any) => p.vendorTopUp.findFirst(args)),
+      },
     };
     p.$transaction = jest.fn(async (fn: any) => fn(tx));
     return { tx, balances };
@@ -198,7 +207,7 @@ describe("confirmTopUp", () => {
   it("credits VENDOR_PAYABLE and debits clearing, keyed so a replay cannot double-credit", async () => {
     const { tx, balances } = primeLedger();
     p.vendorTopUp.updateMany.mockResolvedValue({ count: 1 });
-    p.vendorTopUp.findFirstOrThrow.mockResolvedValue({
+    p.vendorTopUp.findFirst.mockResolvedValue({
       id: "tu-1",
       vendorId: VENDOR,
       amountKwd: D("25.000"),
@@ -234,11 +243,15 @@ describe("confirmTopUp", () => {
     expect(balances.get("acc:PLATFORM_CLEARING")!.toFixed(3)).toBe("25.000");
   });
 
-  it("a replayed webhook is a no-op: the row is already PAID and nothing posts again", async () => {
+  it("a replayed webhook is a no-op when the credit is already on the ledger", async () => {
     const { tx } = primeLedger();
     // The compare-and-set claims nothing the second time round.
     p.vendorTopUp.updateMany.mockResolvedValue({ count: 0 });
-    p.vendorTopUp.findFirst.mockResolvedValue({ status: "PAID" });
+    p.vendorTopUp.findFirst.mockResolvedValue({
+      id: "tu-1", vendorId: VENDOR, amountKwd: D("25.000"),
+      reference: "TOPUP-1", status: "PAID",
+    });
+    tx.walletTransaction.findFirst.mockResolvedValue({ id: "wtx-existing" });
 
     const result = await confirmTopUp({ tenantId: TENANT, topUpId: "tu-1" });
 
@@ -246,10 +259,54 @@ describe("confirmTopUp", () => {
     expect(tx.walletTransaction.create).not.toHaveBeenCalled();
   });
 
+  it("a replay REPAIRS a top-up that was marked PAID but never credited", async () => {
+    // The failure this ordering fix exists for: the row was flipped to PAID and
+    // the posting never happened, because the two used to be separate
+    // transactions. The gateway's retry used to return alreadyPaid and post
+    // nothing, so the merchant had paid and the ledger had never heard of it.
+    const { tx, balances } = primeLedger();
+    p.vendorTopUp.updateMany.mockResolvedValue({ count: 0 });
+    p.vendorTopUp.findFirst.mockResolvedValue({
+      id: "tu-1", vendorId: VENDOR, amountKwd: D("25.000"),
+      reference: "TOPUP-1", status: "PAID",
+    });
+    tx.walletTransaction.findFirst.mockResolvedValue(null); // nothing was posted
+
+    const result = await confirmTopUp({ tenantId: TENANT, topUpId: "tu-1" });
+
+    expect(result).toEqual({ ok: true, alreadyPaid: true });
+    expect(tx.walletTransaction.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ idempotencyKey: "topup:tu-1", type: "TOP_UP" }),
+      }),
+    );
+    expect(balances.get(`acc:VENDOR:${VENDOR}`)?.toFixed(3)).toBe("25.000");
+  });
+
+  it("the claim and the credit are one transaction", async () => {
+    // Not decoration: separate transactions are how a PAID-but-uncredited
+    // top-up came to exist in the first place.
+    const { tx } = primeLedger();
+    p.vendorTopUp.updateMany.mockResolvedValue({ count: 1 });
+    p.vendorTopUp.findFirst.mockResolvedValue({
+      id: "tu-1", vendorId: VENDOR, amountKwd: D("25.000"),
+      reference: "TOPUP-1", status: "PAID",
+    });
+
+    await confirmTopUp({ tenantId: TENANT, topUpId: "tu-1" });
+
+    // The status flip went through the transaction client, not the bare one.
+    expect(tx.vendorTopUp.updateMany).toHaveBeenCalled();
+    expect(tx.walletTransaction.create).toHaveBeenCalled();
+  });
+
   it("a cancelled top-up cannot be credited", async () => {
     const { tx } = primeLedger();
     p.vendorTopUp.updateMany.mockResolvedValue({ count: 0 });
-    p.vendorTopUp.findFirst.mockResolvedValue({ status: "CANCELLED" });
+    p.vendorTopUp.findFirst.mockResolvedValue({
+      id: "tu-1", vendorId: VENDOR, amountKwd: D("25.000"),
+      reference: "TOPUP-1", status: "CANCELLED",
+    });
 
     const result = await confirmTopUp({ tenantId: TENANT, topUpId: "tu-1" });
 

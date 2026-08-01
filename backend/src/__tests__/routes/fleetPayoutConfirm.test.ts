@@ -25,6 +25,7 @@ prisma.supportTicket = prisma.supportTicket ?? { create: jest.fn() };
 prisma.fleetPayoutInvoice = prisma.fleetPayoutInvoice ?? {
   findFirst: jest.fn(), upsert: jest.fn(), create: jest.fn(),
 };
+prisma.walletTransaction = prisma.walletTransaction ?? { findFirst: jest.fn(), create: jest.fn() };
 prisma.deliveryOrder = prisma.deliveryOrder ?? { findMany: jest.fn(), count: jest.fn() };
 prisma.user = prisma.user ?? {
   findFirst: jest.fn(), findUnique: jest.fn(), findMany: jest.fn(),
@@ -88,8 +89,12 @@ describe("Fleet payout confirmation", () => {
     resetAllMocks();
     prisma.fleetPartner.findFirst.mockResolvedValue({ id: "f-1", name: "Sidra Delivery Co" });
     prisma.user.findFirst.mockResolvedValue({
-      fleetRole: "OWNER", fleetTabs: null, fleetPartnerIds: null, name: "Owner",
+      fleetRole: "OWNER", fleetTabs: null, fleetPartnerIds: null,
+      isActive: true, name: "Owner",
     });
+    // Confirm now writes the invoice and the status flip in ONE transaction, so
+    // the route needs the same stub the service-level tests use.
+    prisma.$transaction.mockImplementation(async (fn: any) => fn(prisma));
   });
 
   // ─── Confirming ──────────────────────────────────────────────────────────
@@ -234,6 +239,33 @@ describe("Fleet payout confirmation", () => {
         }),
       }),
     );
+  });
+
+  test("confirming a PAID statement does not touch the stamped invoice", async () => {
+    // The upsert used to run before the status guard, so a confirm on an
+    // already-paid month answered 409 having already replaced the document
+    // Darb filed against the transfer.
+    prisma.fleetPayoutStatement.findFirst.mockResolvedValue({
+      ...STATEMENT, status: "PAID", invoice: { id: "inv-1" },
+    });
+    const res = await request(makeApp())
+      .post("/api/fleet/statements/st-1/confirm")
+      .send(STAMPED_INVOICE);
+
+    expect(res.status).toBe(409);
+    expect(prisma.fleetPayoutInvoice.upsert).not.toHaveBeenCalled();
+  });
+
+  test("re-confirming a DISPUTED statement needs a fresh file", async () => {
+    prisma.fleetPayoutStatement.findFirst.mockResolvedValue({
+      ...STATEMENT, status: "DISPUTED", invoice: { id: "inv-1" },
+    });
+    const res = await request(makeApp())
+      .post("/api/fleet/statements/st-1/confirm")
+      .send({});
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("INVOICE_REQUIRED");
   });
 
   test("a paid statement cannot be disputed after the fact", async () => {

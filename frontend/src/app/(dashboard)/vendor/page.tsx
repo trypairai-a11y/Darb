@@ -20,7 +20,7 @@ import SlaCountdown from "@/components/darb/SlaCountdown";
 import { useVendorBranch } from "@/contexts/VendorBranchContext";
 import BranchFilter from "@/components/vendor/BranchFilter";
 import { useDarbEvents } from "@/hooks/useDarbEvents";
-import { vendorApi, unwrapList } from "@/lib/darbApi";
+import { fetchAllPages, vendorApi, unwrapList } from "@/lib/darbApi";
 import type {
   DarbLiveEvent,
   DeliveryOrder,
@@ -296,7 +296,15 @@ export default function VendorBoardPage() {
   // showed the previous branch's board until something else invalidated it.
   const ordersQuery = useQuery({
     queryKey: [...ORDERS_KEY, branchId],
-    queryFn: () => vendorApi.orders({ limit: 200, branchId: branchId ?? undefined }),
+    // Paged to the end, not `limit: 200`. getPagination clamps limit to 100, so
+    // the board silently kept only the newest 100 orders across every status:
+    // "Orders today" capped, the Delivered tab went short, and a scheduled
+    // order sitting in CREATED dropped off the Incoming column as soon as 100
+    // newer orders existed, while the state machine happily kept it alive.
+    queryFn: () =>
+      fetchAllPages<DeliveryOrder>((params) =>
+        vendorApi.orders({ ...params, branchId: branchId ?? undefined }),
+      ),
     // SSE keeps the cache fresh while connected; poll only as a fallback.
     refetchInterval: connected ? false : 15_000,
   });

@@ -82,14 +82,28 @@ async function loadFleetIdentity(req: Request, res: Response, next: NextFunction
       where: { id: req.user.userId, tenantId: req.user.tenantId },
       select: {
         fleetRole: true, fleetTabs: true, fleetPartnerIds: true,
-        name: true, email: true,
+        isActive: true, name: true, email: true,
       },
     });
+    // Fail closed. A missing row used to normalise to OWNER with every tab, so
+    // a token whose user had been deleted got MORE access than one whose user
+    // exists. And `isActive` is read here because authMiddleware never touches
+    // the database: without this, switching a login off in the Team tab did
+    // nothing until the token expired, while the owner watched the badge go
+    // grey and believed it.
+    if (!row) {
+      res.status(401).json({ error: "This login no longer exists" });
+      return;
+    }
+    if (row.isActive === false) {
+      res.status(403).json({ error: "This login has been switched off" });
+      return;
+    }
     (req as { _fleetIdentity?: FleetIdentity })._fleetIdentity = {
-      fleetRole: normaliseFleetRole(row?.fleetRole),
-      tabs: effectiveFleetTabs(row?.fleetRole, row?.fleetTabs),
-      partnerIds: parseFleetPartnerIds(row?.fleetPartnerIds),
-      displayName: row?.name?.trim() || row?.email || req.user.email,
+      fleetRole: normaliseFleetRole(row.fleetRole),
+      tabs: effectiveFleetTabs(row.fleetRole, row.fleetTabs),
+      partnerIds: parseFleetPartnerIds(row.fleetPartnerIds),
+      displayName: row.name?.trim() || row.email || req.user.email,
     };
     next();
   } catch (err: any) {
@@ -449,7 +463,7 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
       : new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
     const end = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 1));
 
-    const [fleet, orders] = await Promise.all([
+    const [fleet, orders, deliveredCount] = await Promise.all([
       prisma.fleetPartner.findFirst({
         where: { id: ctx.fleetPartnerId, tenantId: ctx.tenantId },
         select: { flatFeePerOrderKwd: true },
@@ -468,6 +482,17 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
         orderBy: { deliveredAt: "desc" },
         take: 1000,
       }),
+      // Counted, not measured off the list above. The headline used to be
+      // `orders.length`, so a fleet past 1000 orders in a month watched its
+      // running earnings freeze at KD 1100.000 and quietly understate.
+      prisma.deliveryOrder.count({
+        where: {
+          tenantId: ctx.tenantId,
+          status: "DELIVERED",
+          deliveredAt: { gte: start, lt: end },
+          driver: { fleetPartnerId: ctx.fleetPartnerId },
+        },
+      }),
     ]);
 
     const fee = Number(fleet?.flatFeePerOrderKwd ?? 1.1);
@@ -475,8 +500,11 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
       periodStart: start,
       periodEnd: end,
       feePerOrderKwd: fee.toFixed(3),
-      deliveredOrders: orders.length,
-      totalKwd: (orders.length * fee).toFixed(3),
+      deliveredOrders: deliveredCount,
+      totalKwd: (deliveredCount * fee).toFixed(3),
+      // The list is capped; the figures above are not. Say so rather than let
+      // a truncated table look like the whole month.
+      listTruncated: orders.length < deliveredCount,
       orders: orders.map((o) => ({
         id: o.id,
         orderNumber: o.orderNumber,
@@ -679,10 +707,16 @@ interface DocInputResult {
   error?: string;
 }
 
-function readDocInput(body: any): DocInputResult {
+function readDocInput(body: any, keyPrefix?: string): DocInputResult {
   const { type, fileKey, fileName, mimeType, sizeBytes, expiryDate } = body ?? {};
   if (!type || (!isCompanyDocType(type) && !isDriverDocType(type))) {
     return { error: "Unknown document type" };
+  }
+  // Same fence as the invoice: a document row carries the key the download
+  // endpoint later presigns, so a key from outside this fleet's own prefix
+  // would be a read of somebody else's object.
+  if (typeof fileKey === "string" && fileKey.length > 0 && keyPrefix && !fileKey.startsWith(keyPrefix)) {
+    return { error: "That file does not belong to this account" };
   }
   if (!fileKey && !expiryDate) {
     return { error: "Give a file or an expiry date" };
@@ -714,7 +748,7 @@ router.post("/documents", requireFleetTab("DOCUMENTS"), async (req: Request, res
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
-    const parsed = readDocInput(req.body);
+    const parsed = readDocInput(req.body, `${ctx.tenantId}/fleet/${ctx.fleetPartnerId}/`);
     if (!parsed.value) { res.status(400).json({ error: parsed.error }); return; }
     if (!isCompanyDocType(parsed.value.type)) {
       res.status(400).json({ error: "That is a driver document. Upload it from the driver's profile." });
@@ -884,7 +918,7 @@ router.post("/drivers", requireFleetTab("ROSTER"), async (req: Request, res: Res
 
     const docInputs: any[] = [];
     for (const raw of Array.isArray(documents) ? documents : []) {
-      const parsed = readDocInput(raw);
+      const parsed = readDocInput(raw, `${ctx.tenantId}/fleet/${ctx.fleetPartnerId}/`);
       if (!parsed.value) { res.status(400).json({ error: parsed.error }); return; }
       if (!isDriverDocType(parsed.value.type)) {
         res.status(400).json({ error: `${parsed.value.type} is a company document` });
@@ -1017,7 +1051,10 @@ router.post("/drivers/:id/requests", requireFleetTab("ROSTER"), async (req: Requ
       // `type` on this endpoint names the KIND of request, so the document's
       // own type arrives as `documentType`. Reading `type` here would label
       // every driver document "DRIVER_DOCUMENT".
-      const parsed = readDocInput({ ...req.body, type: req.body?.documentType });
+      const parsed = readDocInput(
+        { ...req.body, type: req.body?.documentType },
+        `${ctx.tenantId}/fleet/${ctx.fleetPartnerId}/`,
+      );
       if (!parsed.value) { res.status(400).json({ error: parsed.error }); return; }
       if (!isDriverDocType(parsed.value.type)) {
         res.status(400).json({ error: `${parsed.value.type} is a company document` });
@@ -1609,8 +1646,22 @@ router.post(
       });
       if (!statement) { res.status(404).json({ error: "Statement not found" }); return; }
 
-      const parsed = readInvoiceInput(req.body);
-      if (!parsed.value && !statement.invoice) {
+      // Refuse a decided statement BEFORE touching the file. The upsert used to
+      // run first, so confirming an already-PAID month answered 409 while
+      // having already replaced the stamped invoice Darb filed against the
+      // transfer — the one artefact this endpoint exists to preserve.
+      if (statement.status !== "FINAL" && statement.status !== "DISPUTED") {
+        res.status(409).json({ error: "That statement is already confirmed or paid" });
+        return;
+      }
+
+      const parsed = readInvoiceInput(
+        req.body,
+        `${ctx.tenantId}/fleet/${ctx.fleetPartnerId}/`,
+      );
+      // A re-confirmation after a dispute needs a fresh file: the company is
+      // being asked to stand behind the figure a second time.
+      if (!parsed.value && (statement.status === "DISPUTED" || !statement.invoice)) {
         res.status(400).json({
           error: parsed.error ?? "Attach your stamped invoice to confirm this statement",
           code: "INVOICE_REQUIRED",
@@ -1624,10 +1675,11 @@ router.post(
         return;
       }
 
-      // Store the invoice first. A statement that reads CONFIRMED with no
-      // invoice behind it is the one outcome this endpoint must never leave.
-      if (parsed.value) {
-        const data = {
+      // One transaction: the file and the status move together, so neither a
+      // lost race nor a dead lambda can leave them disagreeing.
+      const claimed = await prisma.$transaction(async (tx) => {
+        if (parsed.value) {
+          const data = {
           tenantId: ctx.tenantId,
           fleetPartnerId: ctx.fleetPartnerId,
           statementId: statement.id,
@@ -1636,32 +1688,33 @@ router.post(
           sizeBytes: parsed.value.sizeBytes,
           fileKey: parsed.value.fileKey,
           fileData: parsed.value.fileData,
-          uploadedById: req.user!.userId,
-          uploadedAt: new Date(),
-        };
-        // Re-confirming after a dispute replaces the file rather than stacking
-        // two invoices against one month.
-        await prisma.fleetPayoutInvoice.upsert({
-          where: { statementId: statement.id },
-          create: data,
-          update: data,
-        });
-      }
+            uploadedById: req.user!.userId,
+            uploadedAt: new Date(),
+          };
+          // Re-confirming after a dispute replaces the file rather than
+          // stacking two invoices against one month.
+          await tx.fleetPayoutInvoice.upsert({
+            where: { statementId: statement.id },
+            create: data,
+            update: data,
+          });
+        }
 
-      // Status-guarded claim, same discipline as the request desk: two people
-      // in the same office hitting Confirm must not both stamp it.
-      const claimed = await prisma.fleetPayoutStatement.updateMany({
-        where: {
-          id: statement.id,
-          tenantId: ctx.tenantId,
-          fleetPartnerId: ctx.fleetPartnerId,
-          status: { in: ["FINAL", "DISPUTED"] },
-        },
-        data: {
-          status: "CONFIRMED",
-          confirmedAt: new Date(),
-          confirmedById: req.user!.userId,
-        },
+        // Status-guarded claim, same discipline as the request desk: two people
+        // in the same office hitting Confirm must not both stamp it.
+        return tx.fleetPayoutStatement.updateMany({
+          where: {
+            id: statement.id,
+            tenantId: ctx.tenantId,
+            fleetPartnerId: ctx.fleetPartnerId,
+            status: { in: ["FINAL", "DISPUTED"] },
+          },
+          data: {
+            status: "CONFIRMED",
+            confirmedAt: new Date(),
+            confirmedById: req.user!.userId,
+          },
+        });
       });
       if (claimed.count === 0) {
         res.status(409).json({ error: "That statement is already confirmed or paid" });
@@ -1790,18 +1843,14 @@ router.get("/team", requireFleetTab("TEAM"), async (req: Request, res: Response)
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
-    const ownerGroupId = (req.user as { ownerGroupId?: string }).ownerGroupId ?? null;
-
-    // The team is the group's, not one company's: a login scoped to Marina is
-    // still the same owner's employee and belongs on this list.
+    // The team is the caller's companies, not the whole group: somebody scoped
+    // to Marina administers Marina's logins and sees Marina's colleagues.
+    const companyIds = await callerCompanyIds(req, ctx);
     const companies = await prisma.fleetPartner.findMany({
-      where: ownerGroupId
-        ? { tenantId: ctx.tenantId, ownerGroupId }
-        : { tenantId: ctx.tenantId, id: ctx.fleetPartnerId },
+      where: { tenantId: ctx.tenantId, id: { in: companyIds } },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     });
-    const companyIds = companies.map((c) => c.id);
 
     const users = await prisma.user.findMany({
       where: {
@@ -1834,15 +1883,55 @@ router.get("/team", requireFleetTab("TEAM"), async (req: Request, res: Response)
   }
 });
 
-/** The company-scope list an owner posted, validated against their own group. */
-function readPartnerIdsInput(raw: unknown, groupIds: string[]): string[] | null | undefined {
-  if (raw === undefined) return undefined;
-  if (raw === null) return null;
-  if (!Array.isArray(raw)) return undefined;
-  const chosen = groupIds.filter((id) => raw.includes(id));
-  // Choosing every company is the same as choosing none of them in particular,
-  // and storing it as null keeps a login working when the group gains a company.
-  return chosen.length === 0 || chosen.length === groupIds.length ? null : chosen;
+/**
+ * The companies the CALLER may act for: their owner group, narrowed by their
+ * own `fleetPartnerIds`.
+ *
+ * This is the same intersection `fleetContext` computes, and it exists because
+ * the Team endpoints used to compute the group on their own without it. That
+ * gap let an owner scoped to one company mint a login for a sibling company and
+ * sign in as it — a fence that holds on reads and not on writes is not a fence.
+ */
+async function callerCompanyIds(
+  req: Request,
+  ctx: { tenantId: string; fleetPartnerId: string },
+): Promise<string[]> {
+  const ownerGroupId = (req.user as { ownerGroupId?: string }).ownerGroupId ?? null;
+  const group = await prisma.fleetPartner.findMany({
+    where: ownerGroupId
+      ? { tenantId: ctx.tenantId, ownerGroupId }
+      : { tenantId: ctx.tenantId, id: ctx.fleetPartnerId },
+    select: { id: true },
+    orderBy: { name: "asc" },
+  });
+  const scoped = fleetIdentityOf(req)?.partnerIds ?? null;
+  const ids = scoped ? group.filter((g) => scoped.includes(g.id)) : group;
+  // A caller whose scope resolves to nothing gets nothing, not everything.
+  return ids.map((g) => g.id);
+}
+
+/**
+ * The company-scope list an owner posted, validated against what the CALLER
+ * may act for.
+ *
+ * `null` means "every company the caller has", and only an explicit null or a
+ * full-house selection produces it. An empty result from a non-empty submission
+ * is an error rather than null: a picker holding one stale id would otherwise
+ * quietly grant the whole group instead of the one company that was meant.
+ */
+function readPartnerIdsInput(
+  raw: unknown,
+  allowedIds: string[],
+): { value?: string[] | null; error?: string; absent?: true } {
+  if (raw === undefined) return { absent: true };
+  if (raw === null) return { value: null };
+  if (!Array.isArray(raw)) return { absent: true };
+  if (raw.length === 0) return { value: null };
+  const chosen = allowedIds.filter((id) => raw.includes(id));
+  if (chosen.length === 0) {
+    return { error: "None of those companies are yours to assign" };
+  }
+  return { value: chosen.length === allowedIds.length ? null : chosen };
 }
 
 /**
@@ -1861,6 +1950,11 @@ router.post(
       const ctx = await fleetContext(req);
       if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
       const ownerGroupId = (req.user as { ownerGroupId?: string }).ownerGroupId ?? null;
+      const allowedIds = await callerCompanyIds(req, ctx);
+      if (allowedIds.length === 0) {
+        res.status(403).json({ error: "Your login is not scoped to any company" });
+        return;
+      }
 
       const { email, password, name, phone, fleetRole, fleetTabs, fleetPartnerIds } = req.body as {
         email?: string; password?: string; name?: string; phone?: string;
@@ -1883,14 +1977,13 @@ router.post(
       const existing = await prisma.user.findUnique({ where: { email: email.trim() } });
       if (existing) { res.status(400).json({ error: "That email already has a login" }); return; }
 
-      const group = await prisma.fleetPartner.findMany({
-        where: ownerGroupId
-          ? { tenantId: ctx.tenantId, ownerGroupId }
-          : { tenantId: ctx.tenantId, id: ctx.fleetPartnerId },
-        select: { id: true },
-      });
-      const groupIds = group.map((g) => g.id);
-      const scoped = readPartnerIdsInput(fleetPartnerIds, groupIds) ?? null;
+      const parsedScope = readPartnerIdsInput(fleetPartnerIds, allowedIds);
+      if (parsedScope.error) { res.status(400).json({ error: parsedScope.error }); return; }
+      // A new login inherits the caller's own fence when they name no companies:
+      // an owner of one company cannot create a colleague who reaches further
+      // than they do.
+      const callerScoped = fleetIdentityOf(req)?.partnerIds ?? null;
+      const scoped = parsedScope.value ?? callerScoped ?? null;
       const tabs = readFleetTabsInput(fleetTabs);
 
       const user = await prisma.user.create({
@@ -1945,8 +2038,6 @@ router.patch(
     try {
       const ctx = await fleetContext(req);
       if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
-      const ownerGroupId = (req.user as { ownerGroupId?: string }).ownerGroupId ?? null;
-
       // An owner cannot narrow their own access: it would be a way to lock the
       // company out of the only screen that could undo it.
       if (req.params.id === req.user!.userId) {
@@ -1954,20 +2045,20 @@ router.patch(
         return;
       }
 
-      const group = await prisma.fleetPartner.findMany({
-        where: ownerGroupId
-          ? { tenantId: ctx.tenantId, ownerGroupId }
-          : { tenantId: ctx.tenantId, id: ctx.fleetPartnerId },
-        select: { id: true },
-      });
-      const groupIds = group.map((g) => g.id);
+      const allowedIds = await callerCompanyIds(req, ctx);
+      if (allowedIds.length === 0) {
+        res.status(403).json({ error: "Your login is not scoped to any company" });
+        return;
+      }
 
+      // Scoped to what the caller may act for, so somebody who administers one
+      // company cannot edit a sibling company's login.
       const target = await prisma.user.findFirst({
         where: {
           id: req.params.id,
           tenantId: ctx.tenantId,
           role: "FLEET",
-          fleetPartnerId: { in: groupIds },
+          fleetPartnerId: { in: allowedIds },
         },
         select: { id: true },
       });
@@ -1993,8 +2084,12 @@ router.patch(
         if (tabs !== undefined) data.fleetTabs = tabs === null ? Prisma.DbNull : tabs;
       }
       if ("fleetPartnerIds" in req.body) {
-        const scoped = readPartnerIdsInput(req.body.fleetPartnerIds, groupIds);
-        if (scoped !== undefined) {
+        const parsedScope = readPartnerIdsInput(req.body.fleetPartnerIds, allowedIds);
+        if (parsedScope.error) { res.status(400).json({ error: parsedScope.error }); return; }
+        if (!parsedScope.absent) {
+          // "All companies" from a scoped caller means all of THEIR companies,
+          // never the group's.
+          const scoped = parsedScope.value ?? fleetIdentityOf(req)?.partnerIds ?? null;
           data.fleetPartnerIds = scoped === null ? Prisma.DbNull : scoped;
           if (scoped) data.fleetPartnerId = scoped[0];
         }

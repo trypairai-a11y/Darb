@@ -53,7 +53,7 @@ export interface InvoiceInputResult {
  * reads as "no invoice attached" rather than as an error, because a statement
  * that already has one may be re-confirmed after a dispute.
  */
-export function readInvoiceInput(body: any): InvoiceInputResult {
+export function readInvoiceInput(body: any, keyPrefix?: string): InvoiceInputResult {
   const { fileName, mimeType, fileKey, dataBase64 } = body ?? {};
   if (!fileName && !fileKey && !dataBase64) return {};
 
@@ -65,6 +65,13 @@ export function readInvoiceInput(body: any): InvoiceInputResult {
   }
 
   if (typeof fileKey === "string" && fileKey.length > 0) {
+    // The PUT we sign always lives under `${tenantId}/fleet/${fleetPartnerId}/`
+    // (routes/fleetPortal.ts). Nothing used to check that the key coming BACK
+    // was under the same prefix, so a caller could name any object in the
+    // bucket and have the download endpoint presign a GET for it.
+    if (keyPrefix && !fileKey.startsWith(keyPrefix)) {
+      return { error: "That file does not belong to this account" };
+    }
     const sizeBytes = typeof body.sizeBytes === "number" ? body.sizeBytes : 0;
     if (sizeBytes > INVOICE_MAX_BYTES) return { error: "The invoice must be under 3 MB" };
     return {

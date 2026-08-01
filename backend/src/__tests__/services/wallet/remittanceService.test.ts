@@ -34,6 +34,14 @@ function makeTx(driverBalance: string | number) {
         balances.set(where.id, next);
         return { id: where.id, balanceKwd: next };
       }),
+      // The guarded claim: the real one takes a row lock and evaluates
+      // `balanceKwd >= amount` under it. Here the double just answers the same
+      // question the database would.
+      updateMany: jest.fn(async ({ where }: any) => {
+        const have = balances.get(where.id) ?? D(0);
+        const need = where.balanceKwd?.gte;
+        return { count: need === undefined || have.greaterThanOrEqualTo(need) ? 1 : 0 };
+      }),
     },
     remittance: {
       create: jest.fn(async ({ data }: any) => ({
@@ -130,5 +138,29 @@ describe("recordRemittance", () => {
     expect(Number(balances.get("acc:PLATFORM_CLEARING"))).toBe(3);
     expect(Number(result.balanceKwd)).toBe(2);
     expect(result.remittance.id).toBe("rem-1");
+  });
+
+  it("a second hand-in against the same balance is refused, not overdrawn", async () => {
+    // The defect this guard exists for: two KD 50 hand-ins against KD 60 both
+    // passed the plain read and both posted, leaving the driver at -40.
+    const { tx, balances } = makeTx("60.000");
+
+    await recordRemittance(
+      "test-tenant-id",
+      { driverId: "drv-1", amountKwd: "50.000", method: "CASH" },
+      "user-1",
+    );
+
+    await expect(
+      recordRemittance(
+        "test-tenant-id",
+        { driverId: "drv-1", amountKwd: "50.000", method: "CASH" },
+        "user-1",
+      ),
+    ).rejects.toThrow(RemittanceError);
+
+    // 60 - 50, and never below zero.
+    expect(balances.get("acc:DRIVER:drv-1")?.toFixed(3)).toBe("10.000");
+    expect(tx.remittance.create).toHaveBeenCalledTimes(1);
   });
 });

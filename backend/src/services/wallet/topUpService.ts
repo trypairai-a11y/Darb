@@ -266,29 +266,20 @@ export async function confirmTopUp(opts: {
   providerRef?: string | null;
   provider?: string | null;
 }): Promise<{ ok: boolean; alreadyPaid: boolean }> {
-  const claimed = await prisma.vendorTopUp.updateMany({
-    where: { id: opts.topUpId, tenantId: opts.tenantId, status: "PENDING" },
-    data: {
-      status: "PAID",
-      paidAt: new Date(),
-      ...(opts.providerRef ? { providerRef: opts.providerRef } : {}),
-      ...(opts.provider ? { provider: opts.provider } : {}),
-    },
-  });
-  if (claimed.count === 0) {
-    const existing = await prisma.vendorTopUp.findFirst({
-      where: { id: opts.topUpId, tenantId: opts.tenantId },
-      select: { status: true },
-    });
-    return { ok: existing?.status === "PAID", alreadyPaid: existing?.status === "PAID" };
-  }
-
-  const row = await prisma.vendorTopUp.findFirstOrThrow({
-    where: { id: opts.topUpId, tenantId: opts.tenantId },
-    select: { id: true, vendorId: true, amountKwd: true, reference: true },
-  });
-
-  await prisma.$transaction(async (tx) => {
+  /**
+   * The claim and the credit are ONE transaction.
+   *
+   * They used to be two: the row was flipped to PAID, and only then was the
+   * ledger posted. A gateway webhook that died in between — a cold lambda, a
+   * pooler blip — left a top-up marked PAID with no money in the wallet, and
+   * the gateway's retry took the `alreadyPaid` branch and posted nothing. The
+   * merchant had paid, the ledger had never heard of it, and nothing in the
+   * nightly reconciliation looks for that shape.
+   */
+  const postCredit = async (
+    tx: Prisma.TransactionClient,
+    row: { id: string; vendorId: string; amountKwd: Prisma.Decimal; reference: string },
+  ) => {
     const vendorAccount = await ensureAccount(tx, opts.tenantId, "VENDOR_PAYABLE", {
       vendorId: row.vendorId,
     });
@@ -313,9 +304,44 @@ export async function confirmTopUp(opts: {
         },
       ],
     });
+  };
+
+  const result = await prisma.$transaction(async (tx) => {
+    const claimed = await tx.vendorTopUp.updateMany({
+      where: { id: opts.topUpId, tenantId: opts.tenantId, status: "PENDING" },
+      data: {
+        status: "PAID",
+        paidAt: new Date(),
+        ...(opts.providerRef ? { providerRef: opts.providerRef } : {}),
+        ...(opts.provider ? { provider: opts.provider } : {}),
+      },
+    });
+
+    const row = await tx.vendorTopUp.findFirst({
+      where: { id: opts.topUpId, tenantId: opts.tenantId },
+      select: { id: true, vendorId: true, amountKwd: true, reference: true, status: true },
+    });
+    if (!row) return { ok: false, alreadyPaid: false };
+
+    if (claimed.count === 0) {
+      // Somebody else claimed it, or it was claimed before this fix existed.
+      // Repair rather than shrug: if the posting is genuinely missing, make it.
+      // Checked by key rather than caught as a unique violation, because a
+      // P2002 inside an interactive transaction aborts the whole transaction.
+      if (row.status !== "PAID") return { ok: false, alreadyPaid: false };
+      const posted = await tx.walletTransaction.findFirst({
+        where: { tenantId: opts.tenantId, idempotencyKey: `topup:${row.id}` },
+        select: { id: true },
+      });
+      if (!posted) await postCredit(tx, row);
+      return { ok: true, alreadyPaid: true };
+    }
+
+    await postCredit(tx, row);
+    return { ok: true, alreadyPaid: false };
   });
 
-  return { ok: true, alreadyPaid: false };
+  return result;
 }
 
 /** Give up on a pending top-up. Never touches a paid one. */
