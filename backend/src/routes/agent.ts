@@ -66,7 +66,19 @@ router.post("/register", async (req: Request, res: Response) => {
      * upwards and collect the fleet. The legacy platform ids stay accepted so
      * drivers already enrolled on them are not stranded.
      */
-    const normalizedPhone = String(phone || "").replace(/[\s-]/g, "").trim();
+    /**
+     * The phone may arrive in its own field, or inside the code box.
+     *
+     * A driver on an older build has one input, so "DRB-0065 55123456" and
+     * "DRB-0065/55123456" have to work as well as two separate fields. Version
+     * skew between this API and an app store build is permanent, not a
+     * transitional state, so the parse belongs here rather than in a release
+     * note nobody reads.
+     */
+    const combined = /[\s,/|]+/.test(normalizedCode) ? normalizedCode.split(/[\s,/|]+/) : null;
+    const codePart = combined ? combined[0] : normalizedCode;
+    const phoneFromCode = combined ? combined.slice(1).join("") : "";
+    const normalizedPhone = String(phone || phoneFromCode).replace(/[\s-]/g, "").trim();
     const driver = await prisma.driver.findFirst({
       where: isDemoCode
         ? {
@@ -78,8 +90,8 @@ router.post("/register", async (req: Request, res: Response) => {
           ? {
               phone: { endsWith: normalizedPhone.slice(-8) },
               OR: [
-                { driverCode: { equals: normalizedCode, mode: "insensitive" } },
-                { platformDriverId: normalizedCode },
+                { driverCode: { equals: codePart, mode: "insensitive" } },
+                { platformDriverId: codePart },
               ],
             }
           : // No phone, no enrolment. Stated as its own case so the error below
