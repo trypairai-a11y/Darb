@@ -55,22 +55,29 @@ describe("period helpers", () => {
 });
 
 describe("generateMonthlyStatements", () => {
-  test("statement math: closing = opening + codNet − prepaidFees − refunds", async () => {
+  test("closing balance is the ledger's, so an in-period adjustment is not dropped", async () => {
+    // It used to be opening + codNet - prepaidFees - refunds, and those three
+    // are the only types componentSums recognises. A TOP_UP, a VENDOR_PAYOUT or
+    // an ADJUSTMENT in the period fell through and the statement diverged from
+    // the real balance — and postVendorPayout pays this figure, so a mid-period
+    // payout got paid twice.
     const p = prisma as any;
     p.walletAccount.findMany.mockResolvedValue([
       { id: "acc-1", ownerKey: "VENDOR:v-1" },
     ]);
     p.vendorStatement.findFirst.mockResolvedValue(null);
-    p.walletEntry.findFirst.mockResolvedValue({ runningBalanceKwd: D("10.000") });
+    // Opening (last entry BEFORE the period) vs closing (last entry INSIDE it).
+    p.walletEntry.findFirst.mockImplementation(async ({ where }: any) =>
+      where.createdAt?.lt && !where.createdAt?.gte
+        ? { runningBalanceKwd: D("10.000") }
+        : { runningBalanceKwd: D("-82.750") },
+    );
     p.walletEntry.findMany.mockResolvedValue([
-      // COD: two credits of vendor share
       { direction: "CREDIT", amountKwd: D("3.750"), transaction: { type: "COD_SETTLEMENT" } },
       { direction: "CREDIT", amountKwd: D("7.500"), transaction: { type: "COD_SETTLEMENT" } },
-      // Prepaid fee debit
       { direction: "DEBIT", amountKwd: D("1.250"), transaction: { type: "PREPAID_SETTLEMENT" } },
-      // Refund clawback
       { direction: "DEBIT", amountKwd: D("3.750"), transaction: { type: "REFUND" } },
-      // Unrelated type must be ignored
+      // The movement the old formula ignored. 16.250 - 99.000 = -82.750.
       { direction: "DEBIT", amountKwd: D("99.000"), transaction: { type: "ADJUSTMENT" } },
     ]);
     p.vendorStatement.create.mockImplementation(async ({ data }: any) => ({ id: "st-1", ...data }));
@@ -81,11 +88,13 @@ describe("generateMonthlyStatements", () => {
     const data = p.vendorStatement.create.mock.calls[0][0].data;
     expect(data.vendorId).toBe("v-1");
     expect(data.openingBalanceKwd.toFixed(3)).toBe("10.000");
+    // The breakdown still reports the three it understands.
     expect(data.codNetKwd.toFixed(3)).toBe("11.250");
     expect(data.prepaidFeesKwd.toFixed(3)).toBe("1.250");
     expect(data.refundsKwd.toFixed(3)).toBe("3.750");
-    // 10 + 11.25 − 1.25 − 3.75 = 16.25
-    expect(data.closingBalanceKwd.toFixed(3)).toBe("16.250");
+    // And the closing figure is the account's own, adjustment included — not
+    // the 16.250 the three components alone would have produced.
+    expect(data.closingBalanceKwd.toFixed(3)).toBe("-82.750");
   });
 
   test("idempotent: an existing (vendor, period) statement is left untouched", async () => {

@@ -113,10 +113,48 @@ export async function generateMonthlyStatements(
       });
       const opening = lastBefore?.runningBalanceKwd ?? ZERO;
       const sums = await componentSums(tenantId, account.id, period);
-      const closing = opening
+
+      /**
+       * The closing balance is the ledger's, not the sum of three components.
+       *
+       * It used to be `opening + codNet - prepaidFees - refunds`, and
+       * componentSums only recognises those three transaction types. A
+       * VENDOR_PAYABLE account also receives TOP_UP (added in revision 10),
+       * VENDOR_PAYOUT and ADJUSTMENT, all of which fell through its `default:
+       * break`. So any in-period top-up, off-cycle payout or admin correction
+       * made this figure diverge from the real balance — and postVendorPayout
+       * pays exactly this figure, so a mid-period payout was not subtracted and
+       * got paid a second time. One statement's closing also stopped equalling
+       * the next one's opening, which is how it would have been noticed
+       * eventually, one reconciliation at a time.
+       *
+       * The last running balance inside the period is the account's own answer
+       * and needs no arithmetic. The three component sums stay as the
+       * presentation breakdown; when they do not add up to it, the difference
+       * is logged rather than silently absorbed, because that difference is
+       * exactly the top-up or payout the old formula was dropping.
+       */
+      const lastInPeriod = await prisma.walletEntry.findFirst({
+        where: {
+          tenantId,
+          accountId: account.id,
+          createdAt: { gte: period.start, lt: period.end },
+        },
+        orderBy: { createdAt: "desc" },
+        select: { runningBalanceKwd: true },
+      });
+      const closing = lastInPeriod?.runningBalanceKwd ?? opening;
+      const explained = opening
         .plus(sums.codNetKwd)
         .minus(sums.prepaidFeesKwd)
         .minus(sums.refundsKwd);
+      const unexplained = closing.minus(explained);
+      if (!unexplained.isZero()) {
+        logger.info(
+          { tenantId, vendorId, unexplainedKwd: unexplained.toFixed(3) },
+          "vendorStatement: period contains movements outside COD/prepaid/refund (top-up, payout or adjustment)",
+        );
+      }
 
       await prisma.vendorStatement.create({
         data: {

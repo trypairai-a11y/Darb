@@ -188,15 +188,36 @@ async function nextOrderNumber(
   vendorCode: string,
 ): Promise<string> {
   const prefix = `DRB-${vendorCode}-`;
-  const last = await tx.deliveryOrder.findFirst({
+
+  /**
+   * The sequence is found by MAX, and MAX on a text column is lexicographic.
+   *
+   * At four digits that was a wall, not a wobble: once `DRB-X-10000` existed,
+   * "9999" sorted above "10000", so `last` stayed 9999 forever, `nextNum` was
+   * always 10000, and every order for that merchant failed on the unique
+   * constraint — permanently, after the retry. A shop doing 50 a day reached it
+   * inside seven months.
+   *
+   * Six digits moves the wall to a million, and the ordering is only correct
+   * while the width is fixed, so the padding and the scan width have to agree.
+   * Legacy 4-digit numbers still parse: they are shorter strings, so they sort
+   * below every 6-digit one and the MAX lands on the new format as soon as one
+   * exists. The first order after this change continues from the old maximum.
+   */
+  const WIDTH = 6;
+  const rows = await tx.deliveryOrder.findMany({
     where: { tenantId, orderNumber: { startsWith: prefix } },
     orderBy: { orderNumber: "desc" },
     select: { orderNumber: true },
+    // The old 4-digit rows sort above nothing useful, so take enough to be sure
+    // the true maximum is in hand rather than trusting one lexicographic row.
+    take: 50,
   });
-  const nextNum = last
-    ? parseInt(last.orderNumber.slice(prefix.length), 10) + 1
-    : 1;
-  return `${prefix}${String(nextNum).padStart(4, "0")}`;
+  const highest = rows.reduce((max, r) => {
+    const n = parseInt(r.orderNumber.slice(prefix.length), 10);
+    return Number.isFinite(n) && n > max ? n : max;
+  }, 0);
+  return `${prefix}${String(highest + 1).padStart(WIDTH, "0")}`;
 }
 
 /** 4 random digits (leading zeros allowed), crypto-sourced. */

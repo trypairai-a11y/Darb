@@ -108,8 +108,12 @@ function primeHappyCreate(lastOrderNumber: string | null = null) {
   prisma.vendorBranch.findFirst.mockResolvedValue({ id: "b-1" });
   quoteDelivery.mockResolvedValue(GOOD_QUOTE);
 
-  // findFirst serves BOTH the orderNumber-sequence lookup (where.orderNumber)
-  // and the post-transition re-fetch (where.id).
+  // The sequence lookup reads several rows now and takes the numeric maximum,
+  // because a lexicographic MAX on a text column wedged the whole vendor at
+  // 10000. findMany serves it; findFirst still serves the re-fetch by id.
+  prisma.deliveryOrder.findMany.mockImplementation(async ({ where }: any) =>
+    where?.orderNumber && lastOrderNumber ? [{ orderNumber: lastOrderNumber }] : [],
+  );
   prisma.deliveryOrder.findFirst.mockImplementation(async ({ where }: any) => {
     if (where.orderNumber) {
       return lastOrderNumber ? { orderNumber: lastOrderNumber } : null;
@@ -162,8 +166,8 @@ describe("createDeliveryOrder", () => {
     expect(data.orderTotalKwd.toFixed(3)).toBe("5.000");
 
     // orderNumber format "DRB-{vendorCode}-{seq}" (zero-padded seq).
-    expect(data.orderNumber).toBe("DRB-BRGB-0001");
-    expect(data.orderNumber).toMatch(/^DRB-BRGB-\d{4}$/);
+    expect(data.orderNumber).toBe("DRB-BRGB-000001");
+    expect(data.orderNumber).toMatch(/^DRB-BRGB-\d{6}$/);
 
     // podPin: exactly 4 digits (leading zeros allowed).
     expect(data.podPin).toMatch(/^\d{4}$/);
@@ -188,18 +192,19 @@ describe("createDeliveryOrder", () => {
   });
 
   test("orderNumber increments from the tenant/vendor max (ticketNumber pattern)", async () => {
-    primeHappyCreate("DRB-BRGB-0007");
+    primeHappyCreate("DRB-BRGB-000007");
 
     await createDeliveryOrder(CREATE_INPUT);
 
     const data = prisma.deliveryOrder.create.mock.calls[0][0].data;
-    expect(data.orderNumber).toBe("DRB-BRGB-0008");
+    expect(data.orderNumber).toBe("DRB-BRGB-000008");
   });
 
   test("paused vendor → REJECTED VENDOR_PAUSED persisted and returned; no quote, no dispatch", async () => {
     prisma.vendor.findFirst.mockResolvedValue({ ...VENDOR, isPaused: true });
     prisma.vendorBranch.findFirst.mockResolvedValue({ id: "b-1" });
     prisma.deliveryOrder.findFirst.mockResolvedValue(null); // seq lookup
+    prisma.deliveryOrder.findMany.mockResolvedValue([]); // seq lookup reads rows now
     prisma.deliveryOrder.create.mockImplementation(async ({ data }: any) => ({
       id: "ord-r",
       ...data,
@@ -226,6 +231,7 @@ describe("createDeliveryOrder", () => {
     prisma.vendor.findFirst.mockResolvedValue({ ...VENDOR, isPaused: false });
     prisma.vendorBranch.findFirst.mockResolvedValue({ id: "b-1", isPaused: true });
     prisma.deliveryOrder.findFirst.mockResolvedValue(null); // seq lookup
+    prisma.deliveryOrder.findMany.mockResolvedValue([]); // seq lookup reads rows now
     prisma.deliveryOrder.create.mockImplementation(async ({ data }: any) => ({
       id: "ord-bp",
       ...data,
@@ -243,7 +249,7 @@ describe("createDeliveryOrder", () => {
   test("an un-paused branch on an un-paused vendor is unaffected", async () => {
     // The regression that matters: every existing branch defaults to false, so
     // this ships with no backfill and nobody's intake changes.
-    primeHappyCreate("DRB-BRGB-0007");
+    primeHappyCreate("DRB-BRGB-000007");
     prisma.vendorBranch.findFirst.mockResolvedValue({ id: "b-1", isPaused: false });
 
     const order = await createDeliveryOrder(CREATE_INPUT);
@@ -262,6 +268,7 @@ describe("createDeliveryOrder", () => {
     prisma.vendorBranch.findFirst.mockResolvedValue({ id: "b-1" });
     quoteDelivery.mockResolvedValue({ ok: false, reason });
     prisma.deliveryOrder.findFirst.mockResolvedValue(null); // seq lookup
+    prisma.deliveryOrder.findMany.mockResolvedValue([]); // seq lookup reads rows now
     prisma.deliveryOrder.create.mockImplementation(async ({ data }: any) => ({
       id: "ord-r",
       ...data,
@@ -286,6 +293,7 @@ describe("createDeliveryOrder", () => {
     prisma.vendorBranch.findFirst.mockResolvedValue({ id: "b-1" });
     quoteDelivery.mockResolvedValue({ ok: false, reason: "OUT_OF_ZONE_DROPOFF" });
     prisma.deliveryOrder.findFirst.mockResolvedValue(null);
+    prisma.deliveryOrder.findMany.mockResolvedValue([]);
     prisma.deliveryOrder.create.mockImplementation(async ({ data }: any) => ({
       id: "ord-r",
       ...data,
@@ -315,6 +323,7 @@ describe("createDeliveryOrder", () => {
     prisma.vendorBranch.findFirst.mockResolvedValue({ id: "b-1" });
     quoteDelivery.mockResolvedValue({ ok: false, reason: "OUT_OF_ZONE_DROPOFF" });
     prisma.deliveryOrder.findFirst.mockResolvedValue(null);
+    prisma.deliveryOrder.findMany.mockResolvedValue([]);
     prisma.deliveryOrder.create.mockImplementation(async ({ data }: any) => ({
       id: "ord-r",
       ...data,
@@ -347,7 +356,7 @@ describe("createDeliveryOrder", () => {
 const PICKED_UP_ORDER = {
   id: "ord-1",
   tenantId: TENANT,
-  orderNumber: "DRB-BRGB-0001",
+  orderNumber: "DRB-BRGB-000001",
   vendorId: "v-1",
   branchId: "b-1",
   driverId: "drv-1",
@@ -597,7 +606,7 @@ describe("scheduled orders", () => {
   test("sweepScheduledOrders advances only due CREATED orders and enqueues dispatch", async () => {
     prisma.deliveryOrder.findMany = prisma.deliveryOrder.findMany ?? jest.fn();
     prisma.deliveryOrder.findMany.mockResolvedValue([
-      { id: "ord-s1", tenantId: TENANT, orderNumber: "DRB-BRGB-0009", vendorId: "v-1", deliveryFeeKwd: D("1.250") },
+      { id: "ord-s1", tenantId: TENANT, orderNumber: "DRB-BRGB-000009", vendorId: "v-1", deliveryFeeKwd: D("1.250") },
     ]);
     prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 1 });
     prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
@@ -613,7 +622,7 @@ describe("scheduled orders", () => {
 
   test("sweepScheduledOrders skips an order cancelled meanwhile (guard count 0) without failing the sweep", async () => {
     prisma.deliveryOrder.findMany.mockResolvedValue([
-      { id: "ord-s2", tenantId: TENANT, orderNumber: "DRB-BRGB-0010", vendorId: "v-1", deliveryFeeKwd: null },
+      { id: "ord-s2", tenantId: TENANT, orderNumber: "DRB-BRGB-000010", vendorId: "v-1", deliveryFeeKwd: null },
     ]);
     prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 0 });
 
@@ -632,7 +641,7 @@ describe("returnToMerchant", () => {
   const FAILED_ORDER = {
     id: "ord-1",
     tenantId: TENANT,
-    orderNumber: "DRB-BRGB-0001",
+    orderNumber: "DRB-BRGB-000001",
     vendorId: "v-1",
     driverId: "drv-1",
     status: "FAILED",
