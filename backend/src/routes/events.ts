@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 import { JwtPayload } from "../middleware/auth";
 import { subscribe, DarbEvent } from "../services/eventBus";
+import { prisma } from "../config";
 
 const router = Router();
 
@@ -31,22 +32,70 @@ function sseAuth(req: Request, res: Response, next: NextFunction): void {
 
 router.use(sseAuth);
 
+/** What a non-staff connection is allowed to see, resolved once at connect. */
+export interface EventScope {
+  /** The FLEET connection's own drivers. Empty set means it sees no driver. */
+  driverIds?: Set<string>;
+}
+
+/** Staff roles get the tenant firehose. Everything else is scoped or refused. */
+const STAFF_ROLES = new Set([
+  "ADMIN",
+  "OPS_MANAGER",
+  "SUPERVISOR",
+  "ACCOUNTANT",
+  "ACCOUNT_MANAGER",
+  "VIEWER",
+]);
+
 /**
- * Darb 2.0 vendor SSE scoping (plan §A7). Staff connections receive the
- * tenant firehose (unchanged). VENDOR connections receive ONLY `order.*`
- * events whose payload.vendorId matches the vendorId baked into their JWT —
- * everything else (driver GPS, wallet, incidents, other vendors' orders) is
- * dropped server-side. Exported for the events tenant-isolation test.
+ * Who may see which event.
+ *
+ * VENDOR was scoped to its own `order.*` from the start (plan §A7). Every other
+ * non-staff role fell through `role !== "VENDOR" → true` and received the whole
+ * tenant firehose, which for a FLEET login meant every merchant's orders and
+ * fees, `sos.raised`, `remittance.recorded`, `wallet.reconciliation_failed` —
+ * and `driver.location` for RIVAL delivery companies' drivers. Darb's fleet
+ * partners are subcontractors who compete with each other; that stream was a
+ * live feed of one another's operations.
+ *
+ * So this fails closed now: a role is either staff, or it is on this list with
+ * an explicit reason, or it sees nothing.
  */
 export function eventVisibleTo(
   user: Pick<JwtPayload, "role" | "vendorId">,
-  event: DarbEvent
+  event: DarbEvent,
+  scope?: EventScope,
 ): boolean {
-  if (user.role !== "VENDOR") return true; // staff: tenant firehose, unchanged
-  if (!user.vendorId) return false; // malformed vendor token — fail closed
-  if (!event.type.startsWith("order.")) return false;
-  const payloadVendorId = (event.payload as { vendorId?: unknown } | undefined)?.vendorId;
-  return payloadVendorId === user.vendorId;
+  if (STAFF_ROLES.has(user.role)) return true; // staff: tenant firehose, unchanged
+
+  if (user.role === "VENDOR") {
+    if (!user.vendorId) return false; // malformed vendor token — fail closed
+    if (!event.type.startsWith("order.")) return false;
+    const payloadVendorId = (event.payload as { vendorId?: unknown } | undefined)?.vendorId;
+    return payloadVendorId === user.vendorId;
+  }
+
+  if (user.role === "FLEET") {
+    // Only what one of this company's OWN drivers is doing. Not the merchant
+    // behind the order, not money, not another fleet's driver.
+    const driverIds = scope?.driverIds;
+    if (!driverIds || driverIds.size === 0) return false;
+    const isDriverShaped =
+      event.type.startsWith("driver.") ||
+      event.type.startsWith("offer.") ||
+      event.type.startsWith("order.");
+    if (!isDriverShaped) return false;
+    const payloadDriverId = (event.payload as { driverId?: unknown } | undefined)?.driverId;
+    return typeof payloadDriverId === "string" && driverIds.has(payloadDriverId);
+  }
+
+  if (user.role === "CASH_COLLECTOR") {
+    // The cash desk's own subject, and nothing else on the platform.
+    return event.type === "remittance.recorded";
+  }
+
+  return false;
 }
 
 /**
@@ -65,8 +114,36 @@ export function eventVisibleTo(
  *   event: alert
  *   data: {"type":"alert","tenantId":"...","payload":{...},"timestamp":"..."}
  */
-router.get("/", (req: Request, res: Response) => {
+router.get("/", async (req: Request, res: Response) => {
   const tenantId = req.user!.tenantId;
+  const user = req.user!;
+
+  /**
+   * A FLEET connection needs to know which drivers are its own, and that is a
+   * database question. Resolved once here rather than per event: the filter
+   * runs on every publish and must stay synchronous.
+   *
+   * The set is a snapshot for the life of the connection. A driver approved
+   * mid-stream appears on the next reconnect, which EventSource does by itself
+   * and Vercel forces anyway when the function times out.
+   */
+  let scope: EventScope | undefined;
+  if (user.role === "FLEET") {
+    const fleetPartnerId = (user as { fleetPartnerId?: string }).fleetPartnerId;
+    const ownerGroupId = (user as { ownerGroupId?: string }).ownerGroupId;
+    const drivers = fleetPartnerId || ownerGroupId
+      ? await prisma.driver.findMany({
+          where: {
+            tenantId,
+            ...(ownerGroupId
+              ? { fleetPartner: { ownerGroupId } }
+              : { fleetPartnerId: fleetPartnerId! }),
+          },
+          select: { id: true },
+        })
+      : [];
+    scope = { driverIds: new Set(drivers.map((d) => d.id)) };
+  }
 
   // SSE headers
   res.writeHead(200, {
@@ -84,10 +161,10 @@ router.get("/", (req: Request, res: Response) => {
   // Send initial connection confirmation
   res.write(`event: connected\ndata: ${JSON.stringify({ tenantId, timestamp: new Date().toISOString() })}\n\n`);
 
-  // Subscribe to tenant events (vendor connections get a filtered view)
-  const user = req.user!;
+  // Subscribe to tenant events. Staff get the firehose; every other role is
+  // filtered, and a role this function does not know sees nothing.
   const unsubscribe = subscribe(tenantId, (event: DarbEvent) => {
-    if (!eventVisibleTo(user, event)) return;
+    if (!eventVisibleTo(user, event, scope)) return;
     res.write(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`);
   });
 

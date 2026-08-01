@@ -185,4 +185,59 @@ describe("Darb 2.0 §A7: vendor SSE event scoping (eventVisibleTo)", () => {
     }
     expect(eventVisibleTo(staffUser, mkEvent("offer.expired", {}))).toBe(true);
   });
+
+  // ─── Fleet and cash-desk scoping ─────────────────────────────────────────
+  //
+  // These roles used to fall through `role !== "VENDOR" → true` and receive the
+  // entire tenant firehose. For a delivery company that meant every merchant's
+  // orders and fees, the money events, and driver.location for the drivers of
+  // the fleets it competes with.
+
+  const fleetUser = { role: "FLEET", vendorId: undefined };
+  const ownDrivers = { driverIds: new Set(["d-mine-1", "d-mine-2"]) };
+
+  test("a fleet sees its own drivers and nobody else's", () => {
+    expect(
+      eventVisibleTo(fleetUser, mkEvent("driver.location", { driverId: "d-mine-1" }), ownDrivers),
+    ).toBe(true);
+    expect(
+      eventVisibleTo(fleetUser, mkEvent("driver.location", { driverId: "d-rival" }), ownDrivers),
+    ).toBe(false);
+  });
+
+  test("a fleet sees an order only through its own driver, never the merchant's", () => {
+    expect(
+      eventVisibleTo(fleetUser, mkEvent("order.delivered", { driverId: "d-mine-2", vendorId: "vend-1" }), ownDrivers),
+    ).toBe(true);
+    // The same order before it is assigned carries no driver of theirs.
+    expect(
+      eventVisibleTo(fleetUser, mkEvent("order.created", { vendorId: "vend-1" }), ownDrivers),
+    ).toBe(false);
+  });
+
+  test("a fleet never sees money, incidents or SOS", () => {
+    const noisy = ["remittance.recorded", "wallet.reconciliation_failed", "incident.updated", "sos.raised"] as const;
+    for (const type of noisy) {
+      expect(eventVisibleTo(fleetUser, mkEvent(type, { driverId: "d-mine-1" }), ownDrivers)).toBe(false);
+    }
+  });
+
+  test("a fleet connection with no resolved drivers sees nothing", () => {
+    expect(
+      eventVisibleTo(fleetUser, mkEvent("driver.location", { driverId: "d-mine-1" })),
+    ).toBe(false);
+  });
+
+  test("the cash desk sees hand-ins and nothing else", () => {
+    const collector = { role: "CASH_COLLECTOR", vendorId: undefined };
+    expect(eventVisibleTo(collector, mkEvent("remittance.recorded", { driverId: "d1" }))).toBe(true);
+    expect(eventVisibleTo(collector, mkEvent("driver.location", { driverId: "d1" }))).toBe(false);
+    expect(eventVisibleTo(collector, mkEvent("order.created", { vendorId: "vend-1" }))).toBe(false);
+  });
+
+  test("a role this function does not know sees nothing", () => {
+    expect(
+      eventVisibleTo({ role: "SOMETHING_NEW" as any, vendorId: undefined }, mkEvent("order.created", {})),
+    ).toBe(false);
+  });
 });
