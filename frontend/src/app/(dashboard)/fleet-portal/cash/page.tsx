@@ -16,7 +16,7 @@
 // one outcome neither side can reconcile afterwards.
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Banknote, Check, Wallet, X } from "lucide-react";
+import { Banknote, Check, ExternalLink, Link2, Wallet, X } from "lucide-react";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
@@ -24,11 +24,9 @@ import StatCard from "@/components/shared/StatCard";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/Toast";
 import { fleetApi } from "@/lib/darbApi";
-import type { FleetCashDriver, FleetDeposit, FleetDepositMethod } from "@/types/darb";
+import type { FleetCashDriver, FleetDeposit } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDateTime, formatKwd } from "@/i18n/format";
-
-const METHODS: FleetDepositMethod[] = ["CASH", "BANK_TRANSFER", "AL_MUZAINI"];
 
 export default function FleetCashPage() {
   const { t, locale } = useI18n();
@@ -36,7 +34,6 @@ export default function FleetCashPage() {
   const queryClient = useQueryClient();
 
   const [amount, setAmount] = useState("");
-  const [method, setMethod] = useState<FleetDepositMethod>("CASH");
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
   /** driverId → the amount typed for that driver. Absent means not settling. */
@@ -110,13 +107,18 @@ export default function FleetCashPage() {
     try {
       const deposit = await fleetApi.createDeposit({
         amountKwd: value.toFixed(3),
-        method,
         note: note.trim() || undefined,
       });
       toast.success(`${t("fleetCash.depositSubmitted")} ${deposit.reference}`);
       setAmount("");
       setNote("");
       await refresh();
+      // The link IS the deposit, so open it rather than leaving the company to
+      // hunt for it in a table it has not scrolled to yet. A blocked popup is
+      // survivable: the Pay button on the row below goes to the same place.
+      if (deposit.paymentUrl) {
+        window.open(deposit.paymentUrl, "_blank", "noopener,noreferrer");
+      }
     } catch (err) {
       fail(err);
     } finally {
@@ -234,18 +236,6 @@ export default function FleetCashPage() {
               className="h-10 w-40 px-3 rounded-xl border border-sand-300 bg-card text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-forest-500"
             />
           </label>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-secondary">{t("fleetCash.method")}</span>
-            <select
-              value={method}
-              onChange={(e) => setMethod(e.target.value as FleetDepositMethod)}
-              className="h-10 px-3 rounded-xl border border-sand-300 bg-card text-sm focus:outline-none focus:ring-2 focus:ring-forest-500"
-            >
-              {METHODS.map((m) => (
-                <option key={m} value={m}>{t(`fleetCash.method${m}`)}</option>
-              ))}
-            </select>
-          </label>
           <label className="flex flex-col gap-1.5 flex-1 min-w-[200px]">
             <span className="text-xs font-medium text-secondary">{t("fleetCash.note")}</span>
             <input
@@ -259,10 +249,12 @@ export default function FleetCashPage() {
           </label>
           <button
             type="button"
+            data-testid="fleet-deposit-create-link"
             onClick={submitDeposit}
             disabled={saving || !amount || Number(amount) <= 0}
-            className="h-10 px-4 rounded-pill bg-forest-600 text-white text-sm font-medium hover:bg-forest-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="inline-flex items-center gap-1.5 h-10 px-4 rounded-pill bg-forest-600 text-white text-sm font-medium hover:bg-forest-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
+            <Link2 size={14} aria-hidden="true" />
             {t("fleetCash.submitDeposit")}
           </button>
         </div>
@@ -286,11 +278,6 @@ export default function FleetCashPage() {
                       {formatKwd(value, locale)}
                     </span>
                   ),
-                },
-                {
-                  key: "method",
-                  label: t("fleetCash.method"),
-                  render: (value: string) => <span>{t(`fleetCash.method${value}`)}</span>,
                 },
                 {
                   key: "createdAt",
@@ -320,16 +307,31 @@ export default function FleetCashPage() {
                   label: "",
                   sortable: false,
                   render: (_v: unknown, row: FleetDeposit) =>
-                    // Only a deposit Darb has not acted on can be taken back.
+                    // Only a deposit Darb has not acted on can be paid or taken
+                    // back. The link is the deposit, so Pay comes first.
                     row.status === "PENDING" ? (
-                      <button
-                        type="button"
-                        onClick={() => cancelDeposit(row)}
-                        className="inline-flex items-center gap-1.5 h-8 px-3 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200"
-                      >
-                        <X size={12} aria-hidden="true" />
-                        {t("fleetCash.withdraw")}
-                      </button>
+                      <span className="flex items-center gap-2">
+                        {row.paymentUrl && (
+                          <a
+                            href={row.paymentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            data-testid="fleet-deposit-pay-link"
+                            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-pill bg-forest-600 text-white text-xs font-medium hover:bg-forest-700"
+                          >
+                            <ExternalLink size={12} aria-hidden="true" />
+                            {t("fleetCash.payNow")}
+                          </a>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => cancelDeposit(row)}
+                          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200"
+                        >
+                          <X size={12} aria-hidden="true" />
+                          {t("fleetCash.withdraw")}
+                        </button>
+                      </span>
                     ) : (
                       <span className="text-xs text-sand-500">n/a</span>
                     ),

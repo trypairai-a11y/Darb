@@ -69,7 +69,13 @@ export default function PayView({ token }: { token: string }) {
     );
   }
 
+  // Revision 14b — the deposit rail calls a landed payment CONFIRMED, the
+  // top-up rail calls it PAID. Both mean the same thing here: stop offering to
+  // pay, and say it has arrived.
   const settled = payload.status !== "PENDING";
+  const landed = payload.status === "PAID" || payload.status === "CONFIRMED";
+  const isDeposit = payload.kind === "FLEET_DEPOSIT";
+  const payer = payload.payerName ?? payload.vendorName;
 
   return (
     <main className="min-h-screen flex items-center justify-center p-6 bg-sand-100">
@@ -78,14 +84,16 @@ export default function PayView({ token }: { token: string }) {
           <div className="h-9 w-9 shrink-0 rounded-pill bg-primary-soft flex items-center justify-center text-primary">
             <Wallet size={16} aria-hidden="true" />
           </div>
-          <h1 className="font-display text-lg text-sand-900">{t("vendorPortal.payTitle")}</h1>
+          <h1 className="font-display text-lg text-sand-900">
+            {isDeposit ? t("vendorPortal.payDepositTitle") : t("vendorPortal.payTitle")}
+          </h1>
         </div>
 
         <dl className="space-y-3 text-sm">
           <div className="flex items-center justify-between gap-3">
             <dt className="text-sand-600">{t("vendorPortal.payFor")}</dt>
             <dd dir="auto" className="font-medium text-sand-900">
-              {payload.vendorName}
+              {payer}
             </dd>
           </div>
           <div className="flex items-center justify-between gap-3">
@@ -102,13 +110,13 @@ export default function PayView({ token }: { token: string }) {
           </div>
         </dl>
 
-        {payload.status === "PAID" && (
+        {landed && (
           <p className="flex items-center gap-2.5 px-4 py-3 rounded-xl border border-green-200 bg-green-50 text-sm text-green-800">
             <CheckCircle2 size={15} aria-hidden="true" />
             {t("vendorPortal.payPaid")}
           </p>
         )}
-        {payload.status === "CANCELLED" && (
+        {(payload.status === "CANCELLED" || payload.status === "REJECTED") && (
           <p className="px-4 py-3 rounded-xl border border-sand-200 bg-sand-100 text-sm text-sand-700">
             {t("vendorPortal.payCancelled")}
           </p>

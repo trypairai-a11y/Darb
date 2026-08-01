@@ -42,6 +42,14 @@ jest.mock("../../services/notificationService", () => ({
   createViolationNotifications: jest.fn().mockResolvedValue(undefined),
 }));
 
+/**
+ * Revision 14b — the link is built from the portal base URL, so a deploy with
+ * none produces a deposit with a null paymentUrl: a Pay button that goes
+ * nowhere. Production sets it; the test sets it too, because asserting against
+ * the null would have locked in the broken shape as though it were expected.
+ */
+process.env.PUBLIC_PORTAL_BASE_URL = "https://darbkw.vercel.app";
+
 import fleetPortalRouter from "../../routes/fleetPortal";
 
 const FLEET_USER = {
@@ -123,7 +131,7 @@ describe("The CASH tab fence", () => {
 });
 
 describe("Submitting a deposit", () => {
-  test("creates a PENDING row and credits nothing", async () => {
+  test("creates a PENDING row with a payment link, and credits nothing", async () => {
     identity("FINANCE");
     prisma.fleetCashDeposit.create.mockImplementation(async ({ data }: any) => ({
       id: "dep-1",
@@ -138,34 +146,46 @@ describe("Submitting a deposit", () => {
 
     const res = await request(makeApp())
       .post("/api/fleet/cash/deposits")
-      .send({ amountKwd: "500", method: "BANK_TRANSFER", note: "NBK transfer" });
+      .send({ amountKwd: "500", note: "NBK transfer" });
 
     expect(res.status).toBe(201);
     expect(res.body.status).toBe("PENDING");
     expect(res.body.reference).toMatch(/^DEP-[0-9A-F]{6}$/);
-    // The whole point of the two-step: submitting is not paying.
+    // Revision 14b — the link IS the deposit. A response with no link is a
+    // button that does nothing, which is what the client reported.
+    expect(res.body.paymentUrl).toMatch(/\/pay\/[a-f0-9]{32}$/);
+    // The whole point of the two-step: creating a link is not being paid.
     expect(prisma.walletTransaction.create).not.toHaveBeenCalled();
     expect(prisma.fleetCashDeposit.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ fleetPartnerId: "f-1", requestedById: "u-fleet" }),
+        data: expect.objectContaining({
+          fleetPartnerId: "f-1",
+          requestedById: "u-fleet",
+          // 128-bit, the only credential on the public /api/pay surface.
+          token: expect.stringMatching(/^[a-f0-9]{32}$/),
+          provider: "MANUAL",
+        }),
       }),
     );
   });
 
-  test("a bad method is refused before anything is written", async () => {
+  test("no method is required any more: the rail is the link", async () => {
     identity("FINANCE");
+    prisma.fleetCashDeposit.create.mockImplementation(async ({ data }: any) => ({
+      id: "dep-2", note: null, receiptUrl: null, status: "PENDING",
+      rejectReason: null, confirmedAt: null, createdAt: new Date(), ...data,
+    }));
     const res = await request(makeApp())
       .post("/api/fleet/cash/deposits")
-      .send({ amountKwd: "500", method: "CRYPTO" });
-    expect(res.status).toBe(400);
-    expect(prisma.fleetCashDeposit.create).not.toHaveBeenCalled();
+      .send({ amountKwd: "500" });
+    expect(res.status).toBe(201);
   });
 
   test("a zero amount is refused", async () => {
     identity("FINANCE");
     const res = await request(makeApp())
       .post("/api/fleet/cash/deposits")
-      .send({ amountKwd: "0", method: "CASH" });
+      .send({ amountKwd: "0" });
     expect(res.status).toBe(400);
     expect(prisma.fleetCashDeposit.create).not.toHaveBeenCalled();
   });

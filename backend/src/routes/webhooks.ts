@@ -30,6 +30,7 @@ import { extractFoodicsEnvelope } from "../services/foodics/mapper";
 import { enqueueFoodicsIngest } from "../queues/foodicsWorker";
 import { publishOrderEvent } from "../services/orderStateMachine";
 import { confirmTopUp } from "../services/wallet/topUpService";
+import { confirmFleetDeposit } from "../services/wallet/fleetCashService";
 
 const router = Router();
 
@@ -342,29 +343,59 @@ router.post("/payment/:secret", async (req: Request, res: Response) => {
       where: token ? { token } : { reference },
       select: { id: true, tenantId: true },
     });
-    if (!topUp) {
+
+    if (topUp) {
+      if (!paid) {
+        logger.info({ topUpId: topUp.id }, "payment webhook: not a paid status, ignoring");
+        res.status(200).json({ ok: true, credited: false });
+        return;
+      }
+      const result = await confirmTopUp({
+        tenantId: topUp.tenantId,
+        topUpId: topUp.id,
+        providerRef: typeof body.InvoiceId === "number" || typeof body.InvoiceId === "string"
+          ? String(body.InvoiceId)
+          : null,
+        provider: "MYFATOORAH",
+      });
+      res.status(200).json({ ok: result.ok, credited: !result.alreadyPaid });
+      return;
+    }
+
+    /**
+     * Revision 14b — a delivery company's deposit pays on the same rail, so the
+     * same callback has to be able to credit it. Without this the link would
+     * take the money and the company's balance would sit at zero until somebody
+     * noticed by hand, which is the failure the whole confirm step exists to
+     * make impossible.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const deposit = await (prisma as any).fleetCashDeposit.findFirst({
+      where: token ? { token } : { reference },
+      select: { id: true, tenantId: true },
+    });
+    if (!deposit) {
       // 200, not 404: a gateway that gets an error retries forever over a
       // payment we have no record of.
-      logger.warn({ token, reference }, "payment webhook: no matching top-up");
+      logger.warn({ token, reference }, "payment webhook: no matching top-up or deposit");
       res.status(200).json({ ok: true, matched: false });
       return;
     }
 
     if (!paid) {
-      logger.info({ topUpId: topUp.id }, "payment webhook: not a paid status, ignoring");
+      logger.info({ depositId: deposit.id }, "payment webhook: not a paid status, ignoring");
       res.status(200).json({ ok: true, credited: false });
       return;
     }
 
-    const result = await confirmTopUp({
-      tenantId: topUp.tenantId,
-      topUpId: topUp.id,
-      providerRef: typeof body.InvoiceId === "number" || typeof body.InvoiceId === "string"
-        ? String(body.InvoiceId)
-        : null,
-      provider: "MYFATOORAH",
+    // actorId is the gateway rather than a person: nobody at Darb counted this
+    // one, and the audit trail should not imply somebody did.
+    const result = await confirmFleetDeposit({
+      tenantId: deposit.tenantId,
+      depositId: deposit.id,
+      actorId: "gateway",
     });
-    res.status(200).json({ ok: result.ok, credited: !result.alreadyPaid });
+    res.status(200).json({ ok: result.ok, credited: !result.alreadyConfirmed });
   } catch (err) {
     logger.error({ err }, "payment webhook failed");
     res.status(500).json({ error: "Webhook processing failed" });

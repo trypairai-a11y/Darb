@@ -3952,12 +3952,24 @@ model FleetCashDeposit {
   /// Which of the company's own logins submitted it.
   requestedById  String?
   amountKwd      Decimal                @db.Decimal(10, 3)
-  method         DepositMethod          @default(CASH)
+  method         DepositMethod          @default(BANK_TRANSFER)
   /// Human-quotable reference, e.g. "DEP-4F2A19".
   reference      String
   note           String?
   /// The company's own transfer slip or receipt photo, when there is one.
   receiptUrl     String?
+  /// Revision 14b — the client asked for deposits to be paid by link only,
+  /// exactly as a merchant tops up. 128-bit random, the only credential on the
+  /// public /api/pay surface, and unique so a token resolves to one deposit.
+  token          String?                @unique
+  /// Where the company was sent to pay: the gateway's hosted checkout when one
+  /// is configured, otherwise the Darb-hosted page carrying the amount and the
+  /// reference. Never a dead button.
+  paymentUrl     String?
+  /// The gateway's own id for this payment, once it has issued one.
+  providerRef    String?
+  /// "MYFATOORAH" | "MANUAL" — which rail actually took the money.
+  provider       String?
   status         FleetCashDepositStatus @default(PENDING)
   /// The accountant's decision. rejectReason is required to reject: a refused
   /// deposit with no account of why is a company left guessing.

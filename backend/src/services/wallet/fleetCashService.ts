@@ -41,6 +41,10 @@ import {
   toKwdString,
   WalletError,
 } from "./walletService";
+// Revision 14b — one gateway integration, not two. The merchant top-up owns the
+// MyFatoorah call; a second copy here is how the two rails drift apart the day
+// somebody changes a header.
+import { payUrl, requestGatewayLink } from "./topUpService";
 
 /** Validation failure — routes map instances to HTTP 400. */
 export class FleetCashError extends WalletError {}
@@ -71,6 +75,11 @@ const MAX_DEPOSIT_KWD = new Prisma.Decimal(50_000);
 /** Short reference a human can read down a phone line. */
 function generateReference(): string {
   return `DEP-${randomBytes(3).toString("hex").toUpperCase()}`;
+}
+
+/** 128-bit random, url-safe. Same shape as the top-up and tracking tokens. */
+function generateToken(): string {
+  return randomBytes(16).toString("hex");
 }
 
 // ─── Reading ─────────────────────────────────────────────────────────────────
@@ -190,6 +199,9 @@ export interface FleetDepositRow {
   rejectReason: string | null;
   confirmedAt: Date | null;
   createdAt: Date;
+  /** Where to pay. Null only on rows created before links existed. */
+  paymentUrl?: string | null;
+  provider?: string | null;
 }
 
 function serializeDeposit(row: {
@@ -204,6 +216,8 @@ function serializeDeposit(row: {
   rejectReason: string | null;
   confirmedAt: Date | null;
   createdAt: Date;
+  paymentUrl?: string | null;
+  provider?: string | null;
   fleetPartner?: { name: string } | null;
 }): FleetDepositRow {
   return {
@@ -219,19 +233,74 @@ function serializeDeposit(row: {
     rejectReason: row.rejectReason,
     confirmedAt: row.confirmedAt,
     createdAt: row.createdAt,
+    paymentUrl: row.paymentUrl ?? null,
+    provider: row.provider ?? null,
   };
 }
 
 /**
- * Record the intent to pay. Credits NOTHING — an accountant confirming receipt
- * is the only thing that moves the balance, which is the whole point of the
- * two-step and the reason the portal says so on the form.
+ * The public payload behind one deposit link. Never leaks anything else.
+ *
+ * Same discipline as `readTopUpByToken`: the amount, the reference, who is
+ * paying and whether it has landed. Never the company's balance, never its
+ * drivers, never what Darb owes it.
+ */
+export async function readFleetDepositByToken(token: string): Promise<{
+  id: string;
+  reference: string;
+  amountKwd: string;
+  status: string;
+  payerName: string;
+  gatewayUrl: string | null;
+} | null> {
+  const row = await prisma.fleetCashDeposit.findFirst({
+    where: { token },
+    select: {
+      id: true,
+      reference: true,
+      amountKwd: true,
+      status: true,
+      provider: true,
+      paymentUrl: true,
+      fleetPartner: { select: { name: true } },
+    },
+  });
+  if (!row) return null;
+  return {
+    id: row.id,
+    reference: row.reference,
+    amountKwd: toKwdString(row.amountKwd),
+    status: row.status,
+    payerName: row.fleetPartner.name,
+    // Only a real gateway link is worth redirecting to. Handing back our own
+    // page here would send the browser round in a circle.
+    gatewayUrl: row.provider === "MYFATOORAH" ? row.paymentUrl : null,
+  };
+}
+
+/**
+ * Record the intent to pay and hand back a link.
+ *
+ * Revision 14b, at the client's request: a deposit is paid by LINK and nothing
+ * else. The method picker is gone. What replaces it is the rail a merchant
+ * already tops up on, so there is one payment story on the platform rather than
+ * one for shops and an envelope for delivery companies.
+ *
+ * With a gateway configured the link is its hosted checkout; without one it is
+ * the Darb-hosted page for the token, which carries the amount and a quotable
+ * reference. Either way the company leaves with something it can open, forward
+ * or pay from a phone.
+ *
+ * It still credits NOTHING. The gateway's webhook or an accountant confirming
+ * receipt is the only thing that moves the balance, which is why the form says
+ * so and why a "I have paid" button does not exist on either rail.
  */
 export async function createFleetDeposit(opts: {
   tenantId: string;
   fleetPartnerId: string;
   amountKwd: string | number;
-  method: FleetDepositMethod;
+  /** Optional, and no longer asked for: a link settles as a transfer. */
+  method?: FleetDepositMethod;
   note?: string | null;
   receiptUrl?: string | null;
   requestedById?: string | null;
@@ -248,9 +317,21 @@ export async function createFleetDeposit(opts: {
   if (amount.greaterThan(MAX_DEPOSIT_KWD)) {
     throw new FleetCashError("Amount is too large. Contact Darb to settle a sum this size.");
   }
-  if (!isFleetDepositMethod(opts.method)) {
-    throw new FleetCashError("Method must be CASH, BANK_TRANSFER or AL_MUZAINI");
-  }
+
+  const fleet = await prisma.fleetPartner.findFirst({
+    where: { id: opts.fleetPartnerId, tenantId: opts.tenantId },
+    select: { name: true },
+  });
+  if (!fleet) throw new FleetCashError("Delivery company not found");
+
+  const token = generateToken();
+  const reference = generateReference();
+  const gateway = await requestGatewayLink({
+    amountKwd: amount,
+    reference,
+    vendorName: fleet.name,
+    callbackUrl: payUrl(token),
+  });
 
   const row = await prisma.fleetCashDeposit.create({
     data: {
@@ -258,8 +339,14 @@ export async function createFleetDeposit(opts: {
       fleetPartnerId: opts.fleetPartnerId,
       requestedById: opts.requestedById ?? null,
       amountKwd: amount.toDecimalPlaces(3),
-      method: opts.method,
-      reference: generateReference(),
+      method: opts.method && isFleetDepositMethod(opts.method) ? opts.method : "BANK_TRANSFER",
+      reference,
+      token,
+      // With no gateway the link is our own page, which is still a link the
+      // company can open, forward or pay from a phone.
+      paymentUrl: gateway?.url ?? payUrl(token),
+      providerRef: gateway?.providerRef ?? null,
+      provider: gateway ? "MYFATOORAH" : "MANUAL",
       note: opts.note?.trim() || null,
       receiptUrl: opts.receiptUrl ?? null,
     },

@@ -700,15 +700,15 @@ router.post("/cash/deposits", requireFleetTab("CASH"), async (req: Request, res:
       note?: string;
       receiptUrl?: string;
     };
-    if (!isFleetDepositMethod(method)) {
-      res.status(400).json({ error: "Method must be CASH, BANK_TRANSFER or AL_MUZAINI" });
-      return;
-    }
+    // Revision 14b — the method picker is gone: a deposit is paid by link and
+    // nothing else. A method is still accepted so an older portal bundle in
+    // somebody's tab keeps working, but it is no longer required and no longer
+    // asked for.
     const deposit = await createFleetDeposit({
       tenantId: ctx.tenantId,
       fleetPartnerId: ctx.fleetPartnerId,
       amountKwd: amountKwd ?? 0,
-      method,
+      method: isFleetDepositMethod(method) ? method : undefined,
       note,
       receiptUrl,
       requestedById: req.user?.userId ?? null,

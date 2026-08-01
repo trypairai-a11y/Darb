@@ -651,11 +651,12 @@ export const fleetApi = {
   // money has been Darb's since that confirmation.
   cash: () => get<FleetCashPayload>("/api/fleet/cash"),
   cashSettlements: () => get<FleetCashSettlement[]>("/api/fleet/cash/settlements"),
-  createDeposit: (body: {
-    amountKwd: string;
-    method: FleetDepositMethod;
-    note?: string;
-  }) => post<FleetDeposit>("/api/fleet/cash/deposits", body),
+  /**
+   * Revision 14b — no method: a deposit is paid by link and nothing else. The
+   * response carries the link to open.
+   */
+  createDeposit: (body: { amountKwd: string; note?: string }) =>
+    post<FleetDeposit>("/api/fleet/cash/deposits", body),
   cancelDeposit: (id: string) =>
     post<{ ok: true }>(`/api/fleet/cash/deposits/${id}/cancel`),
   /** All or nothing: one bad line settles none of them. */

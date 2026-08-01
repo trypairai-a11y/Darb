@@ -5,11 +5,24 @@
 // the backend by middleware.ts.
 
 export interface PayPayload {
+  /**
+   * Revision 14b — one public page serves both rails. A merchant topping up its
+   * wallet and a delivery company depositing the cash its drivers collected pay
+   * exactly the same way, so building a second page would have meant securing
+   * and rate-limiting the same surface twice.
+   *
+   * Optional because an older cached bundle predates it; absent reads as TOP_UP,
+   * which is what every link in the wild was until now.
+   */
+  kind?: "TOP_UP" | "FLEET_DEPOSIT";
   reference: string;
   amountKwd: string;
-  status: "PENDING" | "PAID" | "CANCELLED" | "FAILED";
+  /** CONFIRMED is the deposit rail's word for PAID. */
+  status: "PENDING" | "PAID" | "CONFIRMED" | "CANCELLED" | "REJECTED" | "FAILED";
+  /** Who is paying: the shop, or the delivery company. */
+  payerName?: string;
   vendorName: string;
-  vendorCode: string;
+  vendorCode: string | null;
   /** The gateway's hosted checkout, when a gateway issued one. Null otherwise. */
   gatewayUrl: string | null;
 }

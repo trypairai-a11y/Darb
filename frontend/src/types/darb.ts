@@ -891,6 +891,13 @@ export interface FleetDeposit {
   rejectReason: string | null;
   confirmedAt: string | null;
   createdAt: string;
+  /**
+   * Revision 14b — where to pay. The gateway's checkout when one is configured,
+   * otherwise the Darb-hosted page carrying the amount and the reference. Null
+   * only on rows created before deposits were paid by link.
+   */
+  paymentUrl?: string | null;
+  provider?: string | null;
 }
 
 export interface FleetCashDriver {

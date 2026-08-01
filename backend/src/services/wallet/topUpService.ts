@@ -135,9 +135,10 @@ export async function suggestTopUp(tenantId: string, vendorId: string): Promise<
  * not configured, or when it refuses: a failed gateway call must still leave the
  * merchant with a usable link (our own page) rather than a dead button.
  */
-async function requestGatewayLink(opts: {
+export async function requestGatewayLink(opts: {
   amountKwd: Prisma.Decimal;
   reference: string;
+  /** Who is paying. A shop for a top-up, a delivery company for a deposit. */
   vendorName: string;
   callbackUrl: string | null;
 }): Promise<{ url: string; providerRef: string } | null> {

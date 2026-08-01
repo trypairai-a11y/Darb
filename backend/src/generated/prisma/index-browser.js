@@ -2014,6 +2014,10 @@ exports.Prisma.FleetCashDepositScalarFieldEnum = {
   reference: 'reference',
   note: 'note',
   receiptUrl: 'receiptUrl',
+  token: 'token',
+  paymentUrl: 'paymentUrl',
+  providerRef: 'providerRef',
+  provider: 'provider',
   status: 'status',
   confirmedById: 'confirmedById',
   confirmedAt: 'confirmedAt',
@@ -3196,6 +3200,10 @@ exports.Prisma.FleetCashDepositOrderByRelevanceFieldEnum = {
   reference: 'reference',
   note: 'note',
   receiptUrl: 'receiptUrl',
+  token: 'token',
+  paymentUrl: 'paymentUrl',
+  providerRef: 'providerRef',
+  provider: 'provider',
   confirmedById: 'confirmedById',
   rejectReason: 'rejectReason'
 };

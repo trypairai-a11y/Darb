@@ -1563,6 +1563,8 @@ export interface Messages {
     pausedBranches: string;
     pauseNoneSelected: string;
     payTitle: string;
+    /** Revision 14b — the same page, when a delivery company is the one paying. */
+    payDepositTitle: string;
     payFor: string;
     payAmount: string;
     payReference: string;
@@ -1945,6 +1947,10 @@ export interface Messages {
     depositRejected: string;
     rejectReasonLabel: string;
     rejectReasonRequired: string;
+    /** Revision 14b — deposits are paid by link, so the rail replaces the method. */
+    paidVia: string;
+    viaGateway: string;
+    viaTransfer: string;
   };
   /** Revision 14 — the delivery company's own cash account with Darb. */
   fleetCash: {
@@ -1963,6 +1969,8 @@ export interface Messages {
     note: string;
     notePlaceholder: string;
     submitDeposit: string;
+    /** Revision 14b — the link is the deposit. */
+    payNow: string;
     depositSubmitted: string;
     depositWithdrawn: string;
     reference: string;
@@ -3963,6 +3971,7 @@ export const en: Messages = {
     pausedBranches: "Paused branches",
     pauseNoneSelected: "Pick a branch above to pause it on its own.",
     payTitle: "Top up your Darb wallet",
+    payDepositTitle: "Pay Darb your drivers' collected cash",
     payFor: "For",
     payAmount: "Amount",
     payReference: "Reference",
@@ -4351,6 +4360,9 @@ export const en: Messages = {
     depositRejected: "Deposit rejected.",
     rejectReasonLabel: "Why is it refused?",
     rejectReasonRequired: "A reason is required to reject a deposit.",
+    paidVia: "Paid via",
+    viaGateway: "Card or KNET",
+    viaTransfer: "Transfer, quoting the reference",
   },
   fleetCash: {
     title: "Cash account",
@@ -4361,16 +4373,17 @@ export const en: Messages = {
     awaitingDarb: "Awaiting Darb",
     depositTitle: "New deposit",
     depositHint:
-      "This tells Darb the money is on its way. Nothing is credited until an accountant confirms it arrived.",
+      "Enter an amount and we will create a payment link. Nothing is credited until the payment lands and Darb confirms it.",
     amount: "Amount",
     method: "Method",
     methodCASH: "Cash",
     methodBANK_TRANSFER: "Bank transfer",
     methodAL_MUZAINI: "Al Muzaini",
     note: "Note",
-    notePlaceholder: "Transfer reference, who delivered it, anything Darb should know",
-    submitDeposit: "Submit deposit",
-    depositSubmitted: "Deposit submitted. Reference",
+    notePlaceholder: "Anything Darb should know about this payment",
+    submitDeposit: "Create payment link",
+    payNow: "Pay",
+    depositSubmitted: "Payment link created. Reference",
     depositWithdrawn: "Deposit withdrawn.",
     reference: "Reference",
     submittedAt: "Submitted",
@@ -6351,6 +6364,7 @@ export const ar: Messages = {
     pausedBranches: "الفروع الموقوفة",
     pauseNoneSelected: "اختر فرعا أعلاه لإيقافه بمفرده.",
     payTitle: "إيداع في محفظة Darb",
+    payDepositTitle: "سدّد لدرب النقد الذي جمعه سائقوك",
     payFor: "لحساب",
     payAmount: "المبلغ",
     payReference: "المرجع",
@@ -6727,6 +6741,9 @@ export const ar: Messages = {
     depositRejected: "تم رفض الإيداع.",
     rejectReasonLabel: "ما سبب الرفض؟",
     rejectReasonRequired: "السبب مطلوب لرفض الإيداع.",
+    paidVia: "طريقة الدفع",
+    viaGateway: "بطاقة أو كي نت",
+    viaTransfer: "تحويل مع ذكر الرقم المرجعي",
   },
   fleetCash: {
     title: "حساب النقد",
@@ -6735,16 +6752,18 @@ export const ar: Messages = {
     driversHolding: "بحوزة سائقيك",
     awaitingDarb: "بانتظار درب",
     depositTitle: "إيداع جديد",
-    depositHint: "هذا يبلغ درب أن المبلغ في الطريق. لا يُضاف أي رصيد حتى يؤكّد المحاسب استلامه.",
+    depositHint:
+      "أدخل المبلغ وسننشئ رابط دفع. لا يُضاف أي رصيد حتى تصل الدفعة ويؤكّدها درب.",
     amount: "المبلغ",
     method: "الطريقة",
     methodCASH: "نقداً",
     methodBANK_TRANSFER: "تحويل بنكي",
     methodAL_MUZAINI: "المزيني",
     note: "ملاحظة",
-    notePlaceholder: "رقم التحويل، من سلّم المبلغ، أو أي شيء يلزم درب معرفته",
-    submitDeposit: "إرسال الإيداع",
-    depositSubmitted: "تم إرسال الإيداع. الرقم المرجعي",
+    notePlaceholder: "أي شيء يلزم درب معرفته عن هذه الدفعة",
+    submitDeposit: "إنشاء رابط دفع",
+    payNow: "ادفع",
+    depositSubmitted: "تم إنشاء رابط الدفع. الرقم المرجعي",
     depositWithdrawn: "تم سحب الإيداع.",
     reference: "الرقم المرجعي",
     submittedAt: "أُرسل",

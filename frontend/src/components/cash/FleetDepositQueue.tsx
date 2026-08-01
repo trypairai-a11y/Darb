@@ -126,9 +126,16 @@ export default function FleetDepositQueue({ status = "PENDING" }: FleetDepositQu
             ),
           },
           {
-            key: "method",
-            label: t("fleetCash.method"),
-            render: (value: string) => <span>{t(`fleetCash.method${value}`)}</span>,
+            // Revision 14b — deposits are paid by link, so what an accountant
+            // needs is the rail that took the money, not a method the company
+            // no longer picks.
+            key: "provider",
+            label: t("cashDesk.paidVia"),
+            render: (value: string | null) => (
+              <span className="text-sm">
+                {value === "MYFATOORAH" ? t("cashDesk.viaGateway") : t("cashDesk.viaTransfer")}
+              </span>
+            ),
           },
           {
             key: "createdAt",

@@ -147406,6 +147406,10 @@ export namespace Prisma {
     reference: string | null
     note: string | null
     receiptUrl: string | null
+    token: string | null
+    paymentUrl: string | null
+    providerRef: string | null
+    provider: string | null
     status: $Enums.FleetCashDepositStatus | null
     confirmedById: string | null
     confirmedAt: Date | null
@@ -147424,6 +147428,10 @@ export namespace Prisma {
     reference: string | null
     note: string | null
     receiptUrl: string | null
+    token: string | null
+    paymentUrl: string | null
+    providerRef: string | null
+    provider: string | null
     status: $Enums.FleetCashDepositStatus | null
     confirmedById: string | null
     confirmedAt: Date | null
@@ -147442,6 +147450,10 @@ export namespace Prisma {
     reference: number
     note: number
     receiptUrl: number
+    token: number
+    paymentUrl: number
+    providerRef: number
+    provider: number
     status: number
     confirmedById: number
     confirmedAt: number
@@ -147470,6 +147482,10 @@ export namespace Prisma {
     reference?: true
     note?: true
     receiptUrl?: true
+    token?: true
+    paymentUrl?: true
+    providerRef?: true
+    provider?: true
     status?: true
     confirmedById?: true
     confirmedAt?: true
@@ -147488,6 +147504,10 @@ export namespace Prisma {
     reference?: true
     note?: true
     receiptUrl?: true
+    token?: true
+    paymentUrl?: true
+    providerRef?: true
+    provider?: true
     status?: true
     confirmedById?: true
     confirmedAt?: true
@@ -147506,6 +147526,10 @@ export namespace Prisma {
     reference?: true
     note?: true
     receiptUrl?: true
+    token?: true
+    paymentUrl?: true
+    providerRef?: true
+    provider?: true
     status?: true
     confirmedById?: true
     confirmedAt?: true
@@ -147611,6 +147635,10 @@ export namespace Prisma {
     reference: string
     note: string | null
     receiptUrl: string | null
+    token: string | null
+    paymentUrl: string | null
+    providerRef: string | null
+    provider: string | null
     status: $Enums.FleetCashDepositStatus
     confirmedById: string | null
     confirmedAt: Date | null
@@ -147648,6 +147676,10 @@ export namespace Prisma {
     reference?: boolean
     note?: boolean
     receiptUrl?: boolean
+    token?: boolean
+    paymentUrl?: boolean
+    providerRef?: boolean
+    provider?: boolean
     status?: boolean
     confirmedById?: boolean
     confirmedAt?: boolean
@@ -147668,6 +147700,10 @@ export namespace Prisma {
     reference?: boolean
     note?: boolean
     receiptUrl?: boolean
+    token?: boolean
+    paymentUrl?: boolean
+    providerRef?: boolean
+    provider?: boolean
     status?: boolean
     confirmedById?: boolean
     confirmedAt?: boolean
@@ -147688,6 +147724,10 @@ export namespace Prisma {
     reference?: boolean
     note?: boolean
     receiptUrl?: boolean
+    token?: boolean
+    paymentUrl?: boolean
+    providerRef?: boolean
+    provider?: boolean
     status?: boolean
     confirmedById?: boolean
     confirmedAt?: boolean
@@ -147730,6 +147770,26 @@ export namespace Prisma {
        * The company's own transfer slip or receipt photo, when there is one.
        */
       receiptUrl: string | null
+      /**
+       * Revision 14b — the client asked for deposits to be paid by link only,
+       * exactly as a merchant tops up. 128-bit random, the only credential on the
+       * public /api/pay surface, and unique so a token resolves to one deposit.
+       */
+      token: string | null
+      /**
+       * Where the company was sent to pay: the gateway's hosted checkout when one
+       * is configured, otherwise the Darb-hosted page carrying the amount and the
+       * reference. Never a dead button.
+       */
+      paymentUrl: string | null
+      /**
+       * The gateway's own id for this payment, once it has issued one.
+       */
+      providerRef: string | null
+      /**
+       * "MYFATOORAH" | "MANUAL" — which rail actually took the money.
+       */
+      provider: string | null
       status: $Enums.FleetCashDepositStatus
       /**
        * The accountant's decision. rejectReason is required to reject: a refused
@@ -148144,6 +148204,10 @@ export namespace Prisma {
     readonly reference: FieldRef<"FleetCashDeposit", 'String'>
     readonly note: FieldRef<"FleetCashDeposit", 'String'>
     readonly receiptUrl: FieldRef<"FleetCashDeposit", 'String'>
+    readonly token: FieldRef<"FleetCashDeposit", 'String'>
+    readonly paymentUrl: FieldRef<"FleetCashDeposit", 'String'>
+    readonly providerRef: FieldRef<"FleetCashDeposit", 'String'>
+    readonly provider: FieldRef<"FleetCashDeposit", 'String'>
     readonly status: FieldRef<"FleetCashDeposit", 'FleetCashDepositStatus'>
     readonly confirmedById: FieldRef<"FleetCashDeposit", 'String'>
     readonly confirmedAt: FieldRef<"FleetCashDeposit", 'DateTime'>
@@ -150742,6 +150806,10 @@ export namespace Prisma {
     reference: 'reference',
     note: 'note',
     receiptUrl: 'receiptUrl',
+    token: 'token',
+    paymentUrl: 'paymentUrl',
+    providerRef: 'providerRef',
+    provider: 'provider',
     status: 'status',
     confirmedById: 'confirmedById',
     confirmedAt: 'confirmedAt',
@@ -152299,6 +152367,10 @@ export namespace Prisma {
     reference: 'reference',
     note: 'note',
     receiptUrl: 'receiptUrl',
+    token: 'token',
+    paymentUrl: 'paymentUrl',
+    providerRef: 'providerRef',
+    provider: 'provider',
     confirmedById: 'confirmedById',
     rejectReason: 'rejectReason'
   };
@@ -166088,6 +166160,10 @@ export namespace Prisma {
     reference?: StringFilter<"FleetCashDeposit"> | string
     note?: StringNullableFilter<"FleetCashDeposit"> | string | null
     receiptUrl?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    token?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    paymentUrl?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    providerRef?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    provider?: StringNullableFilter<"FleetCashDeposit"> | string | null
     status?: EnumFleetCashDepositStatusFilter<"FleetCashDeposit"> | $Enums.FleetCashDepositStatus
     confirmedById?: StringNullableFilter<"FleetCashDeposit"> | string | null
     confirmedAt?: DateTimeNullableFilter<"FleetCashDeposit"> | Date | string | null
@@ -166108,6 +166184,10 @@ export namespace Prisma {
     reference?: SortOrder
     note?: SortOrderInput | SortOrder
     receiptUrl?: SortOrderInput | SortOrder
+    token?: SortOrderInput | SortOrder
+    paymentUrl?: SortOrderInput | SortOrder
+    providerRef?: SortOrderInput | SortOrder
+    provider?: SortOrderInput | SortOrder
     status?: SortOrder
     confirmedById?: SortOrderInput | SortOrder
     confirmedAt?: SortOrderInput | SortOrder
@@ -166121,6 +166201,7 @@ export namespace Prisma {
 
   export type FleetCashDepositWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    token?: string
     AND?: FleetCashDepositWhereInput | FleetCashDepositWhereInput[]
     OR?: FleetCashDepositWhereInput[]
     NOT?: FleetCashDepositWhereInput | FleetCashDepositWhereInput[]
@@ -166132,6 +166213,9 @@ export namespace Prisma {
     reference?: StringFilter<"FleetCashDeposit"> | string
     note?: StringNullableFilter<"FleetCashDeposit"> | string | null
     receiptUrl?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    paymentUrl?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    providerRef?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    provider?: StringNullableFilter<"FleetCashDeposit"> | string | null
     status?: EnumFleetCashDepositStatusFilter<"FleetCashDeposit"> | $Enums.FleetCashDepositStatus
     confirmedById?: StringNullableFilter<"FleetCashDeposit"> | string | null
     confirmedAt?: DateTimeNullableFilter<"FleetCashDeposit"> | Date | string | null
@@ -166140,7 +166224,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"FleetCashDeposit"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     fleetPartner?: XOR<FleetPartnerRelationFilter, FleetPartnerWhereInput>
-  }, "id">
+  }, "id" | "token">
 
   export type FleetCashDepositOrderByWithAggregationInput = {
     id?: SortOrder
@@ -166152,6 +166236,10 @@ export namespace Prisma {
     reference?: SortOrder
     note?: SortOrderInput | SortOrder
     receiptUrl?: SortOrderInput | SortOrder
+    token?: SortOrderInput | SortOrder
+    paymentUrl?: SortOrderInput | SortOrder
+    providerRef?: SortOrderInput | SortOrder
+    provider?: SortOrderInput | SortOrder
     status?: SortOrder
     confirmedById?: SortOrderInput | SortOrder
     confirmedAt?: SortOrderInput | SortOrder
@@ -166178,6 +166266,10 @@ export namespace Prisma {
     reference?: StringWithAggregatesFilter<"FleetCashDeposit"> | string
     note?: StringNullableWithAggregatesFilter<"FleetCashDeposit"> | string | null
     receiptUrl?: StringNullableWithAggregatesFilter<"FleetCashDeposit"> | string | null
+    token?: StringNullableWithAggregatesFilter<"FleetCashDeposit"> | string | null
+    paymentUrl?: StringNullableWithAggregatesFilter<"FleetCashDeposit"> | string | null
+    providerRef?: StringNullableWithAggregatesFilter<"FleetCashDeposit"> | string | null
+    provider?: StringNullableWithAggregatesFilter<"FleetCashDeposit"> | string | null
     status?: EnumFleetCashDepositStatusWithAggregatesFilter<"FleetCashDeposit"> | $Enums.FleetCashDepositStatus
     confirmedById?: StringNullableWithAggregatesFilter<"FleetCashDeposit"> | string | null
     confirmedAt?: DateTimeNullableWithAggregatesFilter<"FleetCashDeposit"> | Date | string | null
@@ -180161,6 +180253,10 @@ export namespace Prisma {
     reference: string
     note?: string | null
     receiptUrl?: string | null
+    token?: string | null
+    paymentUrl?: string | null
+    providerRef?: string | null
+    provider?: string | null
     status?: $Enums.FleetCashDepositStatus
     confirmedById?: string | null
     confirmedAt?: Date | string | null
@@ -180181,6 +180277,10 @@ export namespace Prisma {
     reference: string
     note?: string | null
     receiptUrl?: string | null
+    token?: string | null
+    paymentUrl?: string | null
+    providerRef?: string | null
+    provider?: string | null
     status?: $Enums.FleetCashDepositStatus
     confirmedById?: string | null
     confirmedAt?: Date | string | null
@@ -180197,6 +180297,10 @@ export namespace Prisma {
     reference?: StringFieldUpdateOperationsInput | string
     note?: NullableStringFieldUpdateOperationsInput | string | null
     receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    token?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -180217,6 +180321,10 @@ export namespace Prisma {
     reference?: StringFieldUpdateOperationsInput | string
     note?: NullableStringFieldUpdateOperationsInput | string | null
     receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    token?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -180235,6 +180343,10 @@ export namespace Prisma {
     reference: string
     note?: string | null
     receiptUrl?: string | null
+    token?: string | null
+    paymentUrl?: string | null
+    providerRef?: string | null
+    provider?: string | null
     status?: $Enums.FleetCashDepositStatus
     confirmedById?: string | null
     confirmedAt?: Date | string | null
@@ -180251,6 +180363,10 @@ export namespace Prisma {
     reference?: StringFieldUpdateOperationsInput | string
     note?: NullableStringFieldUpdateOperationsInput | string | null
     receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    token?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -180269,6 +180385,10 @@ export namespace Prisma {
     reference?: StringFieldUpdateOperationsInput | string
     note?: NullableStringFieldUpdateOperationsInput | string | null
     receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    token?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -190710,6 +190830,10 @@ export namespace Prisma {
     reference?: SortOrder
     note?: SortOrder
     receiptUrl?: SortOrder
+    token?: SortOrder
+    paymentUrl?: SortOrder
+    providerRef?: SortOrder
+    provider?: SortOrder
     status?: SortOrder
     confirmedById?: SortOrder
     confirmedAt?: SortOrder
@@ -190732,6 +190856,10 @@ export namespace Prisma {
     reference?: SortOrder
     note?: SortOrder
     receiptUrl?: SortOrder
+    token?: SortOrder
+    paymentUrl?: SortOrder
+    providerRef?: SortOrder
+    provider?: SortOrder
     status?: SortOrder
     confirmedById?: SortOrder
     confirmedAt?: SortOrder
@@ -190750,6 +190878,10 @@ export namespace Prisma {
     reference?: SortOrder
     note?: SortOrder
     receiptUrl?: SortOrder
+    token?: SortOrder
+    paymentUrl?: SortOrder
+    providerRef?: SortOrder
+    provider?: SortOrder
     status?: SortOrder
     confirmedById?: SortOrder
     confirmedAt?: SortOrder
@@ -211772,6 +211904,10 @@ export namespace Prisma {
     reference: string
     note?: string | null
     receiptUrl?: string | null
+    token?: string | null
+    paymentUrl?: string | null
+    providerRef?: string | null
+    provider?: string | null
     status?: $Enums.FleetCashDepositStatus
     confirmedById?: string | null
     confirmedAt?: Date | string | null
@@ -211790,6 +211926,10 @@ export namespace Prisma {
     reference: string
     note?: string | null
     receiptUrl?: string | null
+    token?: string | null
+    paymentUrl?: string | null
+    providerRef?: string | null
+    provider?: string | null
     status?: $Enums.FleetCashDepositStatus
     confirmedById?: string | null
     confirmedAt?: Date | string | null
@@ -215497,6 +215637,10 @@ export namespace Prisma {
     reference?: StringFilter<"FleetCashDeposit"> | string
     note?: StringNullableFilter<"FleetCashDeposit"> | string | null
     receiptUrl?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    token?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    paymentUrl?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    providerRef?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    provider?: StringNullableFilter<"FleetCashDeposit"> | string | null
     status?: EnumFleetCashDepositStatusFilter<"FleetCashDeposit"> | $Enums.FleetCashDepositStatus
     confirmedById?: StringNullableFilter<"FleetCashDeposit"> | string | null
     confirmedAt?: DateTimeNullableFilter<"FleetCashDeposit"> | Date | string | null
@@ -298570,6 +298714,10 @@ export namespace Prisma {
     reference: string
     note?: string | null
     receiptUrl?: string | null
+    token?: string | null
+    paymentUrl?: string | null
+    providerRef?: string | null
+    provider?: string | null
     status?: $Enums.FleetCashDepositStatus
     confirmedById?: string | null
     confirmedAt?: Date | string | null
@@ -298588,6 +298736,10 @@ export namespace Prisma {
     reference: string
     note?: string | null
     receiptUrl?: string | null
+    token?: string | null
+    paymentUrl?: string | null
+    providerRef?: string | null
+    provider?: string | null
     status?: $Enums.FleetCashDepositStatus
     confirmedById?: string | null
     confirmedAt?: Date | string | null
@@ -310750,6 +310902,10 @@ export namespace Prisma {
     reference: string
     note?: string | null
     receiptUrl?: string | null
+    token?: string | null
+    paymentUrl?: string | null
+    providerRef?: string | null
+    provider?: string | null
     status?: $Enums.FleetCashDepositStatus
     confirmedById?: string | null
     confirmedAt?: Date | string | null
@@ -315645,6 +315801,10 @@ export namespace Prisma {
     reference?: StringFieldUpdateOperationsInput | string
     note?: NullableStringFieldUpdateOperationsInput | string | null
     receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    token?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -315663,6 +315823,10 @@ export namespace Prisma {
     reference?: StringFieldUpdateOperationsInput | string
     note?: NullableStringFieldUpdateOperationsInput | string | null
     receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    token?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -315680,6 +315844,10 @@ export namespace Prisma {
     reference?: StringFieldUpdateOperationsInput | string
     note?: NullableStringFieldUpdateOperationsInput | string | null
     receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    token?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -326235,6 +326403,10 @@ export namespace Prisma {
     reference: string
     note?: string | null
     receiptUrl?: string | null
+    token?: string | null
+    paymentUrl?: string | null
+    providerRef?: string | null
+    provider?: string | null
     status?: $Enums.FleetCashDepositStatus
     confirmedById?: string | null
     confirmedAt?: Date | string | null
@@ -326922,6 +327094,10 @@ export namespace Prisma {
     reference?: StringFieldUpdateOperationsInput | string
     note?: NullableStringFieldUpdateOperationsInput | string | null
     receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    token?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -326940,6 +327116,10 @@ export namespace Prisma {
     reference?: StringFieldUpdateOperationsInput | string
     note?: NullableStringFieldUpdateOperationsInput | string | null
     receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    token?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -326957,6 +327137,10 @@ export namespace Prisma {
     reference?: StringFieldUpdateOperationsInput | string
     note?: NullableStringFieldUpdateOperationsInput | string | null
     receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    token?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    providerRef?: NullableStringFieldUpdateOperationsInput | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
