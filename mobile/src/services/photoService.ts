@@ -47,7 +47,9 @@ async function readAsBase64(uri: string): Promise<string> {
     });
   }
   const FileSystem = await import("expo-file-system");
-  return FileSystem.readAsStringAsync(uri, { encoding: "base64" as any });
+  // ReadingOptions accepts the plain literal, so no cast is needed and the
+  // compiler actually checks this call.
+  return FileSystem.readAsStringAsync(uri, { encoding: "base64" });
 }
 
 export async function uploadDeliveryPhoto(args: UploadDeliveryPhotoArgs): Promise<{ key: string }> {
