@@ -26,6 +26,8 @@ export interface UploadDeliveryPhotoArgs {
   uri: string;
   latitude: number;
   longitude: number;
+  /** Arrival at the merchant, versus the handover this was built for. */
+  phase?: "ARRIVED_AT_PICKUP";
 }
 
 export async function uploadDeliveryPhoto(args: UploadDeliveryPhotoArgs): Promise<{ key: string }> {
@@ -75,6 +77,7 @@ export async function uploadDeliveryPhoto(args: UploadDeliveryPhotoArgs): Promis
     capturedAt,
     latitude: args.latitude,
     longitude: args.longitude,
+    ...(args.phase ? { phase: args.phase } : {}),
   });
 
   return { key: presign.key };

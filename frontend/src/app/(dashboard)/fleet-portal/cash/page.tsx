@@ -23,6 +23,7 @@ import { PageSkeleton } from "@/components/shared/Skeleton";
 import StatCard from "@/components/shared/StatCard";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/Toast";
+import ConfirmModal from "@/components/shared/ConfirmModal";
 import { fleetApi } from "@/lib/darbApi";
 import type { FleetCashDriver, FleetDeposit } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -38,6 +39,17 @@ export default function FleetCashPage() {
   const [saving, setSaving] = useState(false);
   /** driverId → the amount typed for that driver. Absent means not settling. */
   const [lines, setLines] = useState<Record<string, string>>({});
+  /**
+   * Settlement asks first (client report, 2026-08-01).
+   *
+   * The batch settle sat beside Fill every driver, same pill, same size, one
+   * press apart. The client pressed it expecting to fill and moved KD 1,420.084
+   * across 37 drivers instantly. Nothing on the fleet side can undo that: a
+   * settlement is a posted ledger entry, and the reversal is an accountant at
+   * Darb writing a compensating one. An irreversible action that adjacent to a
+   * harmless one has to stop and ask.
+   */
+  const [confirming, setConfirming] = useState(false);
 
   const cashQuery = useQuery({
     queryKey: ["darb", "fleet", "cash"],
@@ -137,6 +149,7 @@ export default function FleetCashPage() {
   }
 
   async function settle() {
+    setConfirming(false);
     const payload = Object.entries(lines)
       .map(([driverId, raw]) => ({ driverId, amountKwd: Number(raw) }))
       .filter((l) => Number.isFinite(l.amountKwd) && l.amountKwd > 0)
@@ -376,7 +389,7 @@ export default function FleetCashPage() {
               <button
                 type="button"
                 data-testid="fleet-settle-clear-all"
-                onClick={settle}
+                onClick={() => setConfirming(true)}
                 disabled={!canSettle}
                 className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-pill bg-forest-600 text-white text-xs font-medium hover:bg-forest-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
@@ -496,7 +509,7 @@ export default function FleetCashPage() {
               <button
                 type="button"
                 data-testid="fleet-settle-submit"
-                onClick={settle}
+                onClick={() => setConfirming(true)}
                 disabled={!canSettle}
                 className="inline-flex items-center gap-1.5 h-10 px-4 rounded-pill bg-forest-600 text-white text-sm font-medium hover:bg-forest-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
@@ -507,6 +520,26 @@ export default function FleetCashPage() {
           </>
         )}
       </section>
+
+      {/*
+        The dialog names the money and the number of drivers, because "are you
+        sure" answers nothing. What makes this settlement worth stopping for is
+        that the company cannot undo it: reversing one is a compensating entry
+        an accountant at Darb has to write.
+      */}
+      <ConfirmModal
+        open={confirming}
+        title={t("fleetCash.confirmTitle")}
+        message={`${t("fleetCash.confirmBody")} ${formatKwd(
+          totals.total.toFixed(3),
+          locale,
+        )} / ${totals.count}`}
+        confirmLabel={t("fleetCash.settleButton")}
+        variant="warning"
+        loading={saving}
+        onConfirm={settle}
+        onCancel={() => setConfirming(false)}
+      />
 
       {/* ── What has been settled ─────────────────────────────────────── */}
       {settlements.length > 0 && (

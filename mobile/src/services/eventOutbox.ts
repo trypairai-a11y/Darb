@@ -41,7 +41,14 @@ import { uploadDeliveryPhoto } from "./photoService";
 import { hydrateNow } from "./offerChannel";
 import { useDriverStore } from "../store/driverStore";
 
-export type EventKind = "ORDER_STATUS" | "POD" | "INCIDENT";
+/**
+ * ARRIVAL_PHOTO (client request, 2026-08-01): the driver photographs the
+ * restaurant when they arrive. It goes through the outbox rather than straight
+ * up, for the same reason POD does: a driver standing in a basement car park
+ * with no signal must still be able to finish the step, and the proof must not
+ * be the thing that is lost.
+ */
+export type EventKind = "ORDER_STATUS" | "POD" | "INCIDENT" | "ARRIVAL_PHOTO";
 
 export interface OrderStatusEventPayload {
   orderId: string;
@@ -71,7 +78,19 @@ export interface IncidentEventPayload {
   photoUris?: string[];
 }
 
-type EventPayload = OrderStatusEventPayload | PodEventPayload | IncidentEventPayload;
+/** The arrival photo carries only what the upload needs. */
+export interface ArrivalPhotoEventPayload {
+  orderId: string;
+  photoUri: string;
+  lat: number;
+  lng: number;
+}
+
+type EventPayload =
+  | OrderStatusEventPayload
+  | PodEventPayload
+  | IncidentEventPayload
+  | ArrivalPhotoEventPayload;
 
 interface EventRow {
   id: number;
@@ -175,6 +194,21 @@ async function deliverRow(row: EventRow): Promise<void> {
       idempotencyKey: row.idempotencyKey,
       lat: p.lat,
       lng: p.lng,
+    });
+    return;
+  }
+
+  if (row.kind === "ARRIVAL_PHOTO") {
+    const p = payload as ArrivalPhotoEventPayload;
+    // uploadDeliveryPhoto records the metadata itself, so a success here is the
+    // whole event. The retry re-uploads: an arrival photo is small and a
+    // duplicate is harmless, unlike a POD which also moves the order.
+    await uploadDeliveryPhoto({
+      orderId: p.orderId,
+      uri: p.photoUri,
+      latitude: p.lat,
+      longitude: p.lng,
+      phase: "ARRIVED_AT_PICKUP",
     });
     return;
   }

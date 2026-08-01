@@ -88,6 +88,13 @@ export default function DeliveryScreen() {
     }
     const next = nextStage(order.stage);
     if (!next) return;
+    // Arriving at the restaurant needs a photo before the step counts (client
+    // request, 2026-08-01). The capture screen advances the stage itself, so
+    // this returns rather than falling through and advancing twice.
+    if (next === "ARRIVED_AT_PICKUP") {
+      router.push("/delivery/arrival");
+      return;
+    }
     setAdvancing(true);
     try {
       const coords = await bestEffortCoords();

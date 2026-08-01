@@ -245,6 +245,11 @@ export async function recordDeliveryPhotoMetadata(payload: {
   capturedAt: string;
   latitude: number;
   longitude: number;
+  /**
+   * Which moment this proves. Absent means the handover, which is what every
+   * photo meant before drivers started photographing their arrival too.
+   */
+  phase?: "ARRIVED_AT_PICKUP";
 }): Promise<{ ok: true }> {
   return agentFetch("/api/agent/delivery-photo", {
     method: "POST",

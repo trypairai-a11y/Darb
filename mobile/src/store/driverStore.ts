@@ -30,17 +30,46 @@ import {
 } from "../api/client";
 import { computeClockSkewMs } from "../utils/countdown";
 
+/**
+ * Four steps, not five (client request, 2026-08-01).
+ *
+ * "Order picked up" and "Heading to customer" described one state and the
+ * client asked for one of them to go. PICKED_UP is the one that had to stay:
+ * it is the milestone the server runs the real FSM transition on
+ * (ASSIGNED -> PICKED_UP in routes/agentDelivery.ts), so a driver who never
+ * sends it leaves the order stuck in ASSIGNED and the POD flow refuses.
+ * HEADING_TO_DROPOFF was only ever a phase-rank bump, and the server already
+ * accepts ARRIVED_AT_DROPOFF straight after PICKED_UP.
+ */
 export const STAGE_ORDER: OrderStage[] = [
   "HEADING_TO_PICKUP",
   "ARRIVED_AT_PICKUP",
   "PICKED_UP",
-  "HEADING_TO_DROPOFF",
   "ARRIVED_AT_DROPOFF",
 ];
 
+/**
+ * A stage this build no longer has, mapped to the one that replaced it.
+ *
+ * HEADING_TO_DROPOFF left STAGE_ORDER, but a driver who was mid-delivery when
+ * the app updated still has it in their persisted store, and the server may
+ * echo it back. Without this it resolves to index -1, which is BELOW every real
+ * stage, so the monotonic guard in advanceOrder stops guarding: any earlier
+ * stage would look like progress and the order would visibly walk backwards.
+ */
+const LEGACY_STAGE_ALIAS: Record<string, OrderStage> = {
+  HEADING_TO_DROPOFF: "PICKED_UP",
+};
+
+export function canonicalStage(stage: OrderStage | null | undefined): OrderStage | null {
+  if (!stage) return null;
+  return LEGACY_STAGE_ALIAS[stage] ?? stage;
+}
+
 export function stageIndex(stage: OrderStage | null | undefined): number {
-  if (!stage) return -1;
-  return STAGE_ORDER.indexOf(stage);
+  const canonical = canonicalStage(stage);
+  if (!canonical) return -1;
+  return STAGE_ORDER.indexOf(canonical);
 }
 
 export function nextStage(stage: OrderStage): OrderStage | null {
@@ -67,9 +96,10 @@ function normalizeLockout(raw: AgentStateResponse["lockout"], wallet?: AgentWall
 
 /** Derive a client stage from a server order (server `stage` wins; else map coarse status). */
 function serverStage(order: AgentActiveOrder): OrderStage {
-  if (order.stage && STAGE_ORDER.includes(order.stage)) return order.stage;
+  const canonical = canonicalStage(order.stage);
+  if (canonical && STAGE_ORDER.includes(canonical)) return canonical;
   const status = (order.status || "").toUpperCase();
-  if (status === "PICKED_UP") return "HEADING_TO_DROPOFF";
+  if (status === "PICKED_UP") return "PICKED_UP";
   return "HEADING_TO_PICKUP";
 }
 

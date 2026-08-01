@@ -1981,8 +1981,11 @@ export interface Messages {
     settleTitle: string;
     settleHint: string;
     fillAll: string;
-    /** Undo for Fill every driver (client request). */
+    /** The batch settle beside Fill every driver (client request). */
     clearAll: string;
+    /** Settling is irreversible from the fleet side, so it asks first. */
+    confirmTitle: string;
+    confirmBody: string;
     cashOnHand: string;
     settleAmount: string;
     inFull: string;
@@ -4397,6 +4400,8 @@ export const en: Messages = {
       "Spends your deposited balance. It applies at once, and all the lines go through together or none of them do.",
     fillAll: "Fill every driver",
     clearAll: "Clear all lines",
+    confirmTitle: "Settle cash for these drivers?",
+    confirmBody: "This pays the amounts below out of your deposited balance and cannot be undone from here. Total and drivers:",
     cashOnHand: "Carrying",
     settleAmount: "Settle",
     inFull: "In full",
@@ -6777,6 +6782,8 @@ export const ar: Messages = {
     settleHint: "يُخصم من رصيدك المودع. يُطبّق فوراً، وتمرّ كل البنود معاً أو لا يمرّ أي منها.",
     fillAll: "تعبئة كل السائقين",
     clearAll: "مسح كل البنود",
+    confirmTitle: "تسديد النقد لهؤلاء السائقين؟",
+    confirmBody: "سيُخصم المبلغ من رصيدك المودع ولا يمكن التراجع عنه من هنا. الإجمالي وعدد السائقين:",
     cashOnHand: "بحوزته",
     settleAmount: "المبلغ المسدّد",
     inFull: "بالكامل",

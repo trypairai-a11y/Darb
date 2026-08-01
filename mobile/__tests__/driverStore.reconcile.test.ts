@@ -9,7 +9,7 @@
  *   - setAvailability is optimistic; a 409 rolls back and surfaces the reason
  */
 
-import { useDriverStore, stageIndex, nextStage } from "../src/store/driverStore";
+import { useDriverStore, stageIndex, nextStage, STAGE_ORDER } from "../src/store/driverStore";
 import { __mockApi as mockApi, ApiError } from "./mocks/api-client";
 
 const NOW_ISO = () => new Date().toISOString();
@@ -62,7 +62,9 @@ describe("hydrate — order stage reconciliation", () => {
       activeOrder: { id: "ord1", status: "PICKED_UP", stage: "HEADING_TO_DROPOFF" },
       serverTime: NOW_ISO(),
     });
-    expect(useDriverStore.getState().activeOrder?.stage).toBe("HEADING_TO_DROPOFF");
+    // Four steps now: the server's HEADING_TO_DROPOFF folds into PICKED_UP,
+    // which is the milestone the server's own FSM turns on.
+    expect(useDriverStore.getState().activeOrder?.stage).toBe("PICKED_UP");
   });
 
   test("locally-optimistic stage AHEAD of the server is PRESERVED", () => {
@@ -110,10 +112,40 @@ describe("hydrate — order stage reconciliation", () => {
     useDriverStore.setState({
       activeOrder: { id: "ord1", status: "PICKED_UP", stage: "HEADING_TO_DROPOFF" } as any,
     });
+    // A stage this build dropped must still rank as PICKED_UP, or the guard
+    // reads it as -1 and lets the order walk backwards on a driver who was
+    // mid-delivery when the app updated.
     useDriverStore.getState().advanceOrder("ARRIVED_AT_PICKUP"); // earlier stage
     expect(useDriverStore.getState().activeOrder?.stage).toBe("HEADING_TO_DROPOFF");
     useDriverStore.getState().advanceOrder("ARRIVED_AT_DROPOFF"); // later stage
     expect(useDriverStore.getState().activeOrder?.stage).toBe("ARRIVED_AT_DROPOFF");
+  });
+});
+
+describe("the removed stage (client request, 2026-08-01)", () => {
+  test("a driver mid-delivery on the old build does not walk backwards", () => {
+    // HEADING_TO_DROPOFF left STAGE_ORDER but survives in a persisted store.
+    // If it resolved to -1 the monotonic guard would treat EVERY stage as
+    // progress, and the step list would show the driver back at the restaurant.
+    useDriverStore.setState({
+      activeOrder: { id: "ord1", status: "PICKED_UP", stage: "HEADING_TO_DROPOFF" } as any,
+    });
+    useDriverStore.getState().advanceOrder("HEADING_TO_PICKUP");
+    expect(useDriverStore.getState().activeOrder?.stage).toBe("HEADING_TO_DROPOFF");
+  });
+
+  test("the server echoing the removed stage lands on a step that exists", () => {
+    useDriverStore.setState({
+      activeOrder: { id: "ord1", status: "ASSIGNED", stage: "HEADING_TO_PICKUP" } as any,
+    });
+    useDriverStore.getState().hydrate({
+      availability: "BUSY",
+      activeOrder: { id: "ord1", status: "PICKED_UP", stage: "HEADING_TO_DROPOFF" },
+      serverTime: NOW_ISO(),
+    });
+    const stage = useDriverStore.getState().activeOrder?.stage;
+    expect(stage).toBe("PICKED_UP");
+    expect(STAGE_ORDER).toContain(stage);
   });
 });
 

@@ -1100,7 +1100,7 @@ router.post(
  */
 router.post("/delivery-photo", async (req: Request, res: Response) => {
   try {
-    const { deviceId, orderId, key, capturedAt, latitude, longitude } =
+    const { deviceId, orderId, key, capturedAt, latitude, longitude, phase } =
       req.body as {
         deviceId?: string;
         orderId?: string;
@@ -1108,6 +1108,14 @@ router.post("/delivery-photo", async (req: Request, res: Response) => {
         capturedAt?: string;
         latitude?: number;
         longitude?: number;
+        /**
+         * Which moment the photo proves (client request, 2026-08-01). Drivers
+         * now photograph their arrival at the restaurant as well as the
+         * handover, and an event log that cannot tell the two apart is a log
+         * nobody can answer a dispute from. Absent reads as the handover, which
+         * is what every photo before this was.
+         */
+        phase?: string;
       };
     if (!deviceId || !orderId || !key || !capturedAt) {
       res
@@ -1147,8 +1155,11 @@ router.post("/delivery-photo", async (req: Request, res: Response) => {
       data: {
         tenantId,
         orderId,
-        action: "DELIVERY_PHOTO",
-        description: "Courier delivery photo captured",
+        action: phase === "ARRIVED_AT_PICKUP" ? "ARRIVAL_PHOTO" : "DELIVERY_PHOTO",
+        description:
+          phase === "ARRIVED_AT_PICKUP"
+            ? "Courier arrival photo captured at the merchant"
+            : "Courier delivery photo captured",
         operator: device.driver.name ?? null,
         operatorId: device.driver.id,
         timestamp: new Date(capturedAt),
@@ -1156,6 +1167,7 @@ router.post("/delivery-photo", async (req: Request, res: Response) => {
           photoKey: key,
           latitude,
           longitude,
+          ...(phase ? { phase } : {}),
         },
       },
     });
