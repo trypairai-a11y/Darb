@@ -226,8 +226,38 @@ export async function requestUploadUrl(payload: {
   deviceId: string;
   orderId: string;
   contentType?: string;
-}): Promise<{ url: string; key: string; expiresInSec: number }> {
+}): Promise<{
+  /**
+   * "R2" hands back a presigned PUT. "INLINE" means the environment has no
+   * object storage and the bytes go to /photo-inline instead. Older servers
+   * send neither, which reads as R2 because that was the only mode.
+   */
+  mode?: "R2" | "INLINE";
+  url: string | null;
+  key: string;
+  expiresInSec?: number;
+}> {
   return agentFetch("/api/agent/upload-url", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * Send the photo itself, for environments with no object storage.
+ *
+ * The fallback exists because a photo became the only way to complete a
+ * delivery: with no storage the presign failed, the POD queued forever and no
+ * driver could finish a job.
+ */
+export async function uploadPhotoInline(payload: {
+  deviceId: string;
+  key: string;
+  orderId: string;
+  dataBase64: string;
+  contentType?: string;
+}): Promise<{ ok: true; key: string }> {
+  return agentFetch("/api/agent/photo-inline", {
     method: "POST",
     body: JSON.stringify(payload),
   });

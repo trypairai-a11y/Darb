@@ -555,7 +555,7 @@ export type FleetPartner = $Result.DefaultSelection<Prisma.$FleetPartnerPayload>
  */
 export type FleetPayoutStatement = $Result.DefaultSelection<Prisma.$FleetPayoutStatementPayload>
 /**
- * Model FleetPayoutInvoice
+ * Model DeliveryPhoto
  * Revision 13b (client note) — the stamped invoice a delivery company uploads
  * when it confirms a payout statement.
  * 
@@ -568,6 +568,11 @@ export type FleetPayoutStatement = $Result.DefaultSelection<Prisma.$FleetPayoutS
  * the fallback while it is not: production has no R2 yet, and a confirmation
  * gate nobody can pass is worse than a megabyte in Postgres. One row per
  * statement per month, so this is a dozen rows a year per company.
+ */
+export type DeliveryPhoto = $Result.DefaultSelection<Prisma.$DeliveryPhotoPayload>
+/**
+ * Model FleetPayoutInvoice
+ * 
  */
 export type FleetPayoutInvoice = $Result.DefaultSelection<Prisma.$FleetPayoutInvoicePayload>
 /**
@@ -2854,6 +2859,16 @@ export class PrismaClient<
   get fleetPayoutStatement(): Prisma.FleetPayoutStatementDelegate<ExtArgs>;
 
   /**
+   * `prisma.deliveryPhoto`: Exposes CRUD operations for the **DeliveryPhoto** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more DeliveryPhotos
+    * const deliveryPhotos = await prisma.deliveryPhoto.findMany()
+    * ```
+    */
+  get deliveryPhoto(): Prisma.DeliveryPhotoDelegate<ExtArgs>;
+
+  /**
    * `prisma.fleetPayoutInvoice`: Exposes CRUD operations for the **FleetPayoutInvoice** model.
     * Example usage:
     * ```ts
@@ -3511,6 +3526,7 @@ export namespace Prisma {
     Refund: 'Refund',
     FleetPartner: 'FleetPartner',
     FleetPayoutStatement: 'FleetPayoutStatement',
+    DeliveryPhoto: 'DeliveryPhoto',
     FleetPayoutInvoice: 'FleetPayoutInvoice',
     FleetDocument: 'FleetDocument',
     FleetChangeRequest: 'FleetChangeRequest',
@@ -3537,7 +3553,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "tenant" | "company" | "ownerGroup" | "user" | "driver" | "driverRestriction" | "driverInventory" | "recruitmentPipeline" | "vehicle" | "vehicleDriverAssignment" | "shift" | "attendanceRecord" | "orderLog" | "cashRecord" | "cashTransaction" | "pendingDuesLedger" | "vehicleInspection" | "maintenanceRecord" | "device" | "sim" | "capturedOrder" | "locationLog" | "appUsageLog" | "deviceCommand" | "aiScore" | "alert" | "aiDigest" | "auditLog" | "ticket" | "leaveRequest" | "talabatSession" | "talabatViolationEvent" | "talabatDelivery" | "keetaDailyMetrics" | "ingestRun" | "deliverooDailyMetrics" | "talabatDailyMetrics" | "platformSettings" | "platformInventory" | "americanaDailyOrders" | "americanaChain" | "americanaStore" | "americanaContract" | "americanaChainRate" | "driverBatchHistory" | "americanaStoreAssignment" | "americanaDailyIngestion" | "kpiDefinition" | "kpiRecord" | "notification" | "notificationDelivery" | "notificationRule" | "courierOnlineSession" | "violation" | "penalty" | "appeal" | "orderEvent" | "aiInsight" | "demandHeatmap" | "deliveryArea" | "courierAttendanceSlot" | "keetaAvailableShiftSlot" | "shiftComplianceConfig" | "partner" | "partnerBankAccount" | "incentiveTargetRound" | "incentiveGoal" | "incentiveTier" | "courierIncentivePayout" | "billing" | "taxInvoice" | "paymentWithdrawal" | "agentRunLog" | "agentToolCall" | "pendingAgentAction" | "agentAction" | "agentMemory" | "pinnedView" | "performanceSnapshot" | "metricEvent" | "chatThread" | "chatMessage" | "scheduledBriefing" | "vendor" | "vendorBranch" | "deliveryZone" | "zoneSurcharge" | "deliveryPlan" | "deliveryPlanZoneRate" | "deliveryPlanKmTier" | "distanceCache" | "fulfillmentSettings" | "deliveryOrder" | "dispatchOffer" | "walletAccount" | "walletTransaction" | "walletEntry" | "remittance" | "walletReconciliationRun" | "incident" | "foodicsConnection" | "webhookEvent" | "apiKey" | "orderRating" | "vendorStatement" | "refund" | "fleetPartner" | "fleetPayoutStatement" | "fleetPayoutInvoice" | "fleetDocument" | "fleetChangeRequest" | "fleetIssue" | "userInvite" | "userSurfacePermission" | "accountManagerVendor" | "supportTicket" | "supportTicketMessage" | "vendorTopUp" | "fleetCashDeposit"
+      modelProps: "tenant" | "company" | "ownerGroup" | "user" | "driver" | "driverRestriction" | "driverInventory" | "recruitmentPipeline" | "vehicle" | "vehicleDriverAssignment" | "shift" | "attendanceRecord" | "orderLog" | "cashRecord" | "cashTransaction" | "pendingDuesLedger" | "vehicleInspection" | "maintenanceRecord" | "device" | "sim" | "capturedOrder" | "locationLog" | "appUsageLog" | "deviceCommand" | "aiScore" | "alert" | "aiDigest" | "auditLog" | "ticket" | "leaveRequest" | "talabatSession" | "talabatViolationEvent" | "talabatDelivery" | "keetaDailyMetrics" | "ingestRun" | "deliverooDailyMetrics" | "talabatDailyMetrics" | "platformSettings" | "platformInventory" | "americanaDailyOrders" | "americanaChain" | "americanaStore" | "americanaContract" | "americanaChainRate" | "driverBatchHistory" | "americanaStoreAssignment" | "americanaDailyIngestion" | "kpiDefinition" | "kpiRecord" | "notification" | "notificationDelivery" | "notificationRule" | "courierOnlineSession" | "violation" | "penalty" | "appeal" | "orderEvent" | "aiInsight" | "demandHeatmap" | "deliveryArea" | "courierAttendanceSlot" | "keetaAvailableShiftSlot" | "shiftComplianceConfig" | "partner" | "partnerBankAccount" | "incentiveTargetRound" | "incentiveGoal" | "incentiveTier" | "courierIncentivePayout" | "billing" | "taxInvoice" | "paymentWithdrawal" | "agentRunLog" | "agentToolCall" | "pendingAgentAction" | "agentAction" | "agentMemory" | "pinnedView" | "performanceSnapshot" | "metricEvent" | "chatThread" | "chatMessage" | "scheduledBriefing" | "vendor" | "vendorBranch" | "deliveryZone" | "zoneSurcharge" | "deliveryPlan" | "deliveryPlanZoneRate" | "deliveryPlanKmTier" | "distanceCache" | "fulfillmentSettings" | "deliveryOrder" | "dispatchOffer" | "walletAccount" | "walletTransaction" | "walletEntry" | "remittance" | "walletReconciliationRun" | "incident" | "foodicsConnection" | "webhookEvent" | "apiKey" | "orderRating" | "vendorStatement" | "refund" | "fleetPartner" | "fleetPayoutStatement" | "deliveryPhoto" | "fleetPayoutInvoice" | "fleetDocument" | "fleetChangeRequest" | "fleetIssue" | "userInvite" | "userSurfacePermission" | "accountManagerVendor" | "supportTicket" | "supportTicketMessage" | "vendorTopUp" | "fleetCashDeposit"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -11101,6 +11117,76 @@ export namespace Prisma {
           }
         }
       }
+      DeliveryPhoto: {
+        payload: Prisma.$DeliveryPhotoPayload<ExtArgs>
+        fields: Prisma.DeliveryPhotoFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DeliveryPhotoFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeliveryPhotoPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DeliveryPhotoFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeliveryPhotoPayload>
+          }
+          findFirst: {
+            args: Prisma.DeliveryPhotoFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeliveryPhotoPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DeliveryPhotoFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeliveryPhotoPayload>
+          }
+          findMany: {
+            args: Prisma.DeliveryPhotoFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeliveryPhotoPayload>[]
+          }
+          create: {
+            args: Prisma.DeliveryPhotoCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeliveryPhotoPayload>
+          }
+          createMany: {
+            args: Prisma.DeliveryPhotoCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DeliveryPhotoCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeliveryPhotoPayload>[]
+          }
+          delete: {
+            args: Prisma.DeliveryPhotoDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeliveryPhotoPayload>
+          }
+          update: {
+            args: Prisma.DeliveryPhotoUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeliveryPhotoPayload>
+          }
+          deleteMany: {
+            args: Prisma.DeliveryPhotoDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DeliveryPhotoUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.DeliveryPhotoUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeliveryPhotoPayload>
+          }
+          aggregate: {
+            args: Prisma.DeliveryPhotoAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDeliveryPhoto>
+          }
+          groupBy: {
+            args: Prisma.DeliveryPhotoGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DeliveryPhotoGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DeliveryPhotoCountArgs<ExtArgs>
+            result: $Utils.Optional<DeliveryPhotoCountAggregateOutputType> | number
+          }
+        }
+      }
       FleetPayoutInvoice: {
         payload: Prisma.$FleetPayoutInvoicePayload<ExtArgs>
         fields: Prisma.FleetPayoutInvoiceFieldRefs
@@ -12130,6 +12216,7 @@ export namespace Prisma {
     supportTickets: number
     vendorTopUps: number
     fleetCashDeposits: number
+    deliveryPhotos: number
     fleetDocuments: number
     fleetChangeRequests: number
     fleetIssues: number
@@ -12234,6 +12321,7 @@ export namespace Prisma {
     supportTickets?: boolean | TenantCountOutputTypeCountSupportTicketsArgs
     vendorTopUps?: boolean | TenantCountOutputTypeCountVendorTopUpsArgs
     fleetCashDeposits?: boolean | TenantCountOutputTypeCountFleetCashDepositsArgs
+    deliveryPhotos?: boolean | TenantCountOutputTypeCountDeliveryPhotosArgs
     fleetDocuments?: boolean | TenantCountOutputTypeCountFleetDocumentsArgs
     fleetChangeRequests?: boolean | TenantCountOutputTypeCountFleetChangeRequestsArgs
     fleetIssues?: boolean | TenantCountOutputTypeCountFleetIssuesArgs
@@ -12934,6 +13022,13 @@ export namespace Prisma {
    */
   export type TenantCountOutputTypeCountFleetCashDepositsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: FleetCashDepositWhereInput
+  }
+
+  /**
+   * TenantCountOutputType without action
+   */
+  export type TenantCountOutputTypeCountDeliveryPhotosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DeliveryPhotoWhereInput
   }
 
   /**
@@ -15374,6 +15469,7 @@ export namespace Prisma {
     supportTickets?: boolean | Tenant$supportTicketsArgs<ExtArgs>
     vendorTopUps?: boolean | Tenant$vendorTopUpsArgs<ExtArgs>
     fleetCashDeposits?: boolean | Tenant$fleetCashDepositsArgs<ExtArgs>
+    deliveryPhotos?: boolean | Tenant$deliveryPhotosArgs<ExtArgs>
     fleetDocuments?: boolean | Tenant$fleetDocumentsArgs<ExtArgs>
     fleetChangeRequests?: boolean | Tenant$fleetChangeRequestsArgs<ExtArgs>
     fleetIssues?: boolean | Tenant$fleetIssuesArgs<ExtArgs>
@@ -15515,6 +15611,7 @@ export namespace Prisma {
     supportTickets?: boolean | Tenant$supportTicketsArgs<ExtArgs>
     vendorTopUps?: boolean | Tenant$vendorTopUpsArgs<ExtArgs>
     fleetCashDeposits?: boolean | Tenant$fleetCashDepositsArgs<ExtArgs>
+    deliveryPhotos?: boolean | Tenant$deliveryPhotosArgs<ExtArgs>
     fleetDocuments?: boolean | Tenant$fleetDocumentsArgs<ExtArgs>
     fleetChangeRequests?: boolean | Tenant$fleetChangeRequestsArgs<ExtArgs>
     fleetIssues?: boolean | Tenant$fleetIssuesArgs<ExtArgs>
@@ -15625,6 +15722,7 @@ export namespace Prisma {
       supportTickets: Prisma.$SupportTicketPayload<ExtArgs>[]
       vendorTopUps: Prisma.$VendorTopUpPayload<ExtArgs>[]
       fleetCashDeposits: Prisma.$FleetCashDepositPayload<ExtArgs>[]
+      deliveryPhotos: Prisma.$DeliveryPhotoPayload<ExtArgs>[]
       fleetDocuments: Prisma.$FleetDocumentPayload<ExtArgs>[]
       fleetChangeRequests: Prisma.$FleetChangeRequestPayload<ExtArgs>[]
       fleetIssues: Prisma.$FleetIssuePayload<ExtArgs>[]
@@ -16108,6 +16206,7 @@ export namespace Prisma {
     supportTickets<T extends Tenant$supportTicketsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$supportTicketsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SupportTicketPayload<ExtArgs>, T, "findMany"> | Null>
     vendorTopUps<T extends Tenant$vendorTopUpsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$vendorTopUpsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorTopUpPayload<ExtArgs>, T, "findMany"> | Null>
     fleetCashDeposits<T extends Tenant$fleetCashDepositsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$fleetCashDepositsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetCashDepositPayload<ExtArgs>, T, "findMany"> | Null>
+    deliveryPhotos<T extends Tenant$deliveryPhotosArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$deliveryPhotosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeliveryPhotoPayload<ExtArgs>, T, "findMany"> | Null>
     fleetDocuments<T extends Tenant$fleetDocumentsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$fleetDocumentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetDocumentPayload<ExtArgs>, T, "findMany"> | Null>
     fleetChangeRequests<T extends Tenant$fleetChangeRequestsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$fleetChangeRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetChangeRequestPayload<ExtArgs>, T, "findMany"> | Null>
     fleetIssues<T extends Tenant$fleetIssuesArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$fleetIssuesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetIssuePayload<ExtArgs>, T, "findMany"> | Null>
@@ -18455,6 +18554,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: FleetCashDepositScalarFieldEnum | FleetCashDepositScalarFieldEnum[]
+  }
+
+  /**
+   * Tenant.deliveryPhotos
+   */
+  export type Tenant$deliveryPhotosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeliveryPhoto
+     */
+    select?: DeliveryPhotoSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeliveryPhotoInclude<ExtArgs> | null
+    where?: DeliveryPhotoWhereInput
+    orderBy?: DeliveryPhotoOrderByWithRelationInput | DeliveryPhotoOrderByWithRelationInput[]
+    cursor?: DeliveryPhotoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DeliveryPhotoScalarFieldEnum | DeliveryPhotoScalarFieldEnum[]
   }
 
   /**
@@ -136868,6 +136987,1025 @@ export namespace Prisma {
 
 
   /**
+   * Model DeliveryPhoto
+   */
+
+  export type AggregateDeliveryPhoto = {
+    _count: DeliveryPhotoCountAggregateOutputType | null
+    _avg: DeliveryPhotoAvgAggregateOutputType | null
+    _sum: DeliveryPhotoSumAggregateOutputType | null
+    _min: DeliveryPhotoMinAggregateOutputType | null
+    _max: DeliveryPhotoMaxAggregateOutputType | null
+  }
+
+  export type DeliveryPhotoAvgAggregateOutputType = {
+    sizeBytes: number | null
+  }
+
+  export type DeliveryPhotoSumAggregateOutputType = {
+    sizeBytes: number | null
+  }
+
+  export type DeliveryPhotoMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    key: string | null
+    orderId: string | null
+    driverId: string | null
+    mimeType: string | null
+    sizeBytes: number | null
+    data: Buffer | null
+    createdAt: Date | null
+  }
+
+  export type DeliveryPhotoMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    key: string | null
+    orderId: string | null
+    driverId: string | null
+    mimeType: string | null
+    sizeBytes: number | null
+    data: Buffer | null
+    createdAt: Date | null
+  }
+
+  export type DeliveryPhotoCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    key: number
+    orderId: number
+    driverId: number
+    mimeType: number
+    sizeBytes: number
+    data: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type DeliveryPhotoAvgAggregateInputType = {
+    sizeBytes?: true
+  }
+
+  export type DeliveryPhotoSumAggregateInputType = {
+    sizeBytes?: true
+  }
+
+  export type DeliveryPhotoMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    key?: true
+    orderId?: true
+    driverId?: true
+    mimeType?: true
+    sizeBytes?: true
+    data?: true
+    createdAt?: true
+  }
+
+  export type DeliveryPhotoMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    key?: true
+    orderId?: true
+    driverId?: true
+    mimeType?: true
+    sizeBytes?: true
+    data?: true
+    createdAt?: true
+  }
+
+  export type DeliveryPhotoCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    key?: true
+    orderId?: true
+    driverId?: true
+    mimeType?: true
+    sizeBytes?: true
+    data?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type DeliveryPhotoAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DeliveryPhoto to aggregate.
+     */
+    where?: DeliveryPhotoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DeliveryPhotos to fetch.
+     */
+    orderBy?: DeliveryPhotoOrderByWithRelationInput | DeliveryPhotoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DeliveryPhotoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DeliveryPhotos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DeliveryPhotos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned DeliveryPhotos
+    **/
+    _count?: true | DeliveryPhotoCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: DeliveryPhotoAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: DeliveryPhotoSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DeliveryPhotoMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DeliveryPhotoMaxAggregateInputType
+  }
+
+  export type GetDeliveryPhotoAggregateType<T extends DeliveryPhotoAggregateArgs> = {
+        [P in keyof T & keyof AggregateDeliveryPhoto]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDeliveryPhoto[P]>
+      : GetScalarType<T[P], AggregateDeliveryPhoto[P]>
+  }
+
+
+
+
+  export type DeliveryPhotoGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DeliveryPhotoWhereInput
+    orderBy?: DeliveryPhotoOrderByWithAggregationInput | DeliveryPhotoOrderByWithAggregationInput[]
+    by: DeliveryPhotoScalarFieldEnum[] | DeliveryPhotoScalarFieldEnum
+    having?: DeliveryPhotoScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DeliveryPhotoCountAggregateInputType | true
+    _avg?: DeliveryPhotoAvgAggregateInputType
+    _sum?: DeliveryPhotoSumAggregateInputType
+    _min?: DeliveryPhotoMinAggregateInputType
+    _max?: DeliveryPhotoMaxAggregateInputType
+  }
+
+  export type DeliveryPhotoGroupByOutputType = {
+    id: string
+    tenantId: string
+    key: string
+    orderId: string
+    driverId: string | null
+    mimeType: string
+    sizeBytes: number
+    data: Buffer
+    createdAt: Date
+    _count: DeliveryPhotoCountAggregateOutputType | null
+    _avg: DeliveryPhotoAvgAggregateOutputType | null
+    _sum: DeliveryPhotoSumAggregateOutputType | null
+    _min: DeliveryPhotoMinAggregateOutputType | null
+    _max: DeliveryPhotoMaxAggregateOutputType | null
+  }
+
+  type GetDeliveryPhotoGroupByPayload<T extends DeliveryPhotoGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DeliveryPhotoGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DeliveryPhotoGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DeliveryPhotoGroupByOutputType[P]>
+            : GetScalarType<T[P], DeliveryPhotoGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DeliveryPhotoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    key?: boolean
+    orderId?: boolean
+    driverId?: boolean
+    mimeType?: boolean
+    sizeBytes?: boolean
+    data?: boolean
+    createdAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["deliveryPhoto"]>
+
+  export type DeliveryPhotoSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    key?: boolean
+    orderId?: boolean
+    driverId?: boolean
+    mimeType?: boolean
+    sizeBytes?: boolean
+    data?: boolean
+    createdAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["deliveryPhoto"]>
+
+  export type DeliveryPhotoSelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    key?: boolean
+    orderId?: boolean
+    driverId?: boolean
+    mimeType?: boolean
+    sizeBytes?: boolean
+    data?: boolean
+    createdAt?: boolean
+  }
+
+  export type DeliveryPhotoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }
+  export type DeliveryPhotoIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }
+
+  export type $DeliveryPhotoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "DeliveryPhoto"
+    objects: {
+      tenant: Prisma.$TenantPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      /**
+       * The storage key the rest of the system already passes around, so a photo
+       * stored here is addressed exactly like one stored in R2.
+       */
+      key: string
+      orderId: string
+      driverId: string | null
+      mimeType: string
+      sizeBytes: number
+      data: Buffer
+      createdAt: Date
+    }, ExtArgs["result"]["deliveryPhoto"]>
+    composites: {}
+  }
+
+  type DeliveryPhotoGetPayload<S extends boolean | null | undefined | DeliveryPhotoDefaultArgs> = $Result.GetResult<Prisma.$DeliveryPhotoPayload, S>
+
+  type DeliveryPhotoCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<DeliveryPhotoFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: DeliveryPhotoCountAggregateInputType | true
+    }
+
+  export interface DeliveryPhotoDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['DeliveryPhoto'], meta: { name: 'DeliveryPhoto' } }
+    /**
+     * Find zero or one DeliveryPhoto that matches the filter.
+     * @param {DeliveryPhotoFindUniqueArgs} args - Arguments to find a DeliveryPhoto
+     * @example
+     * // Get one DeliveryPhoto
+     * const deliveryPhoto = await prisma.deliveryPhoto.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DeliveryPhotoFindUniqueArgs>(args: SelectSubset<T, DeliveryPhotoFindUniqueArgs<ExtArgs>>): Prisma__DeliveryPhotoClient<$Result.GetResult<Prisma.$DeliveryPhotoPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one DeliveryPhoto that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {DeliveryPhotoFindUniqueOrThrowArgs} args - Arguments to find a DeliveryPhoto
+     * @example
+     * // Get one DeliveryPhoto
+     * const deliveryPhoto = await prisma.deliveryPhoto.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DeliveryPhotoFindUniqueOrThrowArgs>(args: SelectSubset<T, DeliveryPhotoFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DeliveryPhotoClient<$Result.GetResult<Prisma.$DeliveryPhotoPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first DeliveryPhoto that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DeliveryPhotoFindFirstArgs} args - Arguments to find a DeliveryPhoto
+     * @example
+     * // Get one DeliveryPhoto
+     * const deliveryPhoto = await prisma.deliveryPhoto.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DeliveryPhotoFindFirstArgs>(args?: SelectSubset<T, DeliveryPhotoFindFirstArgs<ExtArgs>>): Prisma__DeliveryPhotoClient<$Result.GetResult<Prisma.$DeliveryPhotoPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first DeliveryPhoto that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DeliveryPhotoFindFirstOrThrowArgs} args - Arguments to find a DeliveryPhoto
+     * @example
+     * // Get one DeliveryPhoto
+     * const deliveryPhoto = await prisma.deliveryPhoto.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DeliveryPhotoFindFirstOrThrowArgs>(args?: SelectSubset<T, DeliveryPhotoFindFirstOrThrowArgs<ExtArgs>>): Prisma__DeliveryPhotoClient<$Result.GetResult<Prisma.$DeliveryPhotoPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more DeliveryPhotos that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DeliveryPhotoFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all DeliveryPhotos
+     * const deliveryPhotos = await prisma.deliveryPhoto.findMany()
+     * 
+     * // Get first 10 DeliveryPhotos
+     * const deliveryPhotos = await prisma.deliveryPhoto.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const deliveryPhotoWithIdOnly = await prisma.deliveryPhoto.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends DeliveryPhotoFindManyArgs>(args?: SelectSubset<T, DeliveryPhotoFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeliveryPhotoPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a DeliveryPhoto.
+     * @param {DeliveryPhotoCreateArgs} args - Arguments to create a DeliveryPhoto.
+     * @example
+     * // Create one DeliveryPhoto
+     * const DeliveryPhoto = await prisma.deliveryPhoto.create({
+     *   data: {
+     *     // ... data to create a DeliveryPhoto
+     *   }
+     * })
+     * 
+     */
+    create<T extends DeliveryPhotoCreateArgs>(args: SelectSubset<T, DeliveryPhotoCreateArgs<ExtArgs>>): Prisma__DeliveryPhotoClient<$Result.GetResult<Prisma.$DeliveryPhotoPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many DeliveryPhotos.
+     * @param {DeliveryPhotoCreateManyArgs} args - Arguments to create many DeliveryPhotos.
+     * @example
+     * // Create many DeliveryPhotos
+     * const deliveryPhoto = await prisma.deliveryPhoto.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DeliveryPhotoCreateManyArgs>(args?: SelectSubset<T, DeliveryPhotoCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many DeliveryPhotos and returns the data saved in the database.
+     * @param {DeliveryPhotoCreateManyAndReturnArgs} args - Arguments to create many DeliveryPhotos.
+     * @example
+     * // Create many DeliveryPhotos
+     * const deliveryPhoto = await prisma.deliveryPhoto.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many DeliveryPhotos and only return the `id`
+     * const deliveryPhotoWithIdOnly = await prisma.deliveryPhoto.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DeliveryPhotoCreateManyAndReturnArgs>(args?: SelectSubset<T, DeliveryPhotoCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeliveryPhotoPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a DeliveryPhoto.
+     * @param {DeliveryPhotoDeleteArgs} args - Arguments to delete one DeliveryPhoto.
+     * @example
+     * // Delete one DeliveryPhoto
+     * const DeliveryPhoto = await prisma.deliveryPhoto.delete({
+     *   where: {
+     *     // ... filter to delete one DeliveryPhoto
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DeliveryPhotoDeleteArgs>(args: SelectSubset<T, DeliveryPhotoDeleteArgs<ExtArgs>>): Prisma__DeliveryPhotoClient<$Result.GetResult<Prisma.$DeliveryPhotoPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one DeliveryPhoto.
+     * @param {DeliveryPhotoUpdateArgs} args - Arguments to update one DeliveryPhoto.
+     * @example
+     * // Update one DeliveryPhoto
+     * const deliveryPhoto = await prisma.deliveryPhoto.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DeliveryPhotoUpdateArgs>(args: SelectSubset<T, DeliveryPhotoUpdateArgs<ExtArgs>>): Prisma__DeliveryPhotoClient<$Result.GetResult<Prisma.$DeliveryPhotoPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more DeliveryPhotos.
+     * @param {DeliveryPhotoDeleteManyArgs} args - Arguments to filter DeliveryPhotos to delete.
+     * @example
+     * // Delete a few DeliveryPhotos
+     * const { count } = await prisma.deliveryPhoto.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DeliveryPhotoDeleteManyArgs>(args?: SelectSubset<T, DeliveryPhotoDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DeliveryPhotos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DeliveryPhotoUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many DeliveryPhotos
+     * const deliveryPhoto = await prisma.deliveryPhoto.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DeliveryPhotoUpdateManyArgs>(args: SelectSubset<T, DeliveryPhotoUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one DeliveryPhoto.
+     * @param {DeliveryPhotoUpsertArgs} args - Arguments to update or create a DeliveryPhoto.
+     * @example
+     * // Update or create a DeliveryPhoto
+     * const deliveryPhoto = await prisma.deliveryPhoto.upsert({
+     *   create: {
+     *     // ... data to create a DeliveryPhoto
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the DeliveryPhoto we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DeliveryPhotoUpsertArgs>(args: SelectSubset<T, DeliveryPhotoUpsertArgs<ExtArgs>>): Prisma__DeliveryPhotoClient<$Result.GetResult<Prisma.$DeliveryPhotoPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of DeliveryPhotos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DeliveryPhotoCountArgs} args - Arguments to filter DeliveryPhotos to count.
+     * @example
+     * // Count the number of DeliveryPhotos
+     * const count = await prisma.deliveryPhoto.count({
+     *   where: {
+     *     // ... the filter for the DeliveryPhotos we want to count
+     *   }
+     * })
+    **/
+    count<T extends DeliveryPhotoCountArgs>(
+      args?: Subset<T, DeliveryPhotoCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DeliveryPhotoCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a DeliveryPhoto.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DeliveryPhotoAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DeliveryPhotoAggregateArgs>(args: Subset<T, DeliveryPhotoAggregateArgs>): Prisma.PrismaPromise<GetDeliveryPhotoAggregateType<T>>
+
+    /**
+     * Group by DeliveryPhoto.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DeliveryPhotoGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DeliveryPhotoGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DeliveryPhotoGroupByArgs['orderBy'] }
+        : { orderBy?: DeliveryPhotoGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DeliveryPhotoGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDeliveryPhotoGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the DeliveryPhoto model
+   */
+  readonly fields: DeliveryPhotoFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for DeliveryPhoto.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DeliveryPhotoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the DeliveryPhoto model
+   */ 
+  interface DeliveryPhotoFieldRefs {
+    readonly id: FieldRef<"DeliveryPhoto", 'String'>
+    readonly tenantId: FieldRef<"DeliveryPhoto", 'String'>
+    readonly key: FieldRef<"DeliveryPhoto", 'String'>
+    readonly orderId: FieldRef<"DeliveryPhoto", 'String'>
+    readonly driverId: FieldRef<"DeliveryPhoto", 'String'>
+    readonly mimeType: FieldRef<"DeliveryPhoto", 'String'>
+    readonly sizeBytes: FieldRef<"DeliveryPhoto", 'Int'>
+    readonly data: FieldRef<"DeliveryPhoto", 'Bytes'>
+    readonly createdAt: FieldRef<"DeliveryPhoto", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * DeliveryPhoto findUnique
+   */
+  export type DeliveryPhotoFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeliveryPhoto
+     */
+    select?: DeliveryPhotoSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeliveryPhotoInclude<ExtArgs> | null
+    /**
+     * Filter, which DeliveryPhoto to fetch.
+     */
+    where: DeliveryPhotoWhereUniqueInput
+  }
+
+  /**
+   * DeliveryPhoto findUniqueOrThrow
+   */
+  export type DeliveryPhotoFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeliveryPhoto
+     */
+    select?: DeliveryPhotoSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeliveryPhotoInclude<ExtArgs> | null
+    /**
+     * Filter, which DeliveryPhoto to fetch.
+     */
+    where: DeliveryPhotoWhereUniqueInput
+  }
+
+  /**
+   * DeliveryPhoto findFirst
+   */
+  export type DeliveryPhotoFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeliveryPhoto
+     */
+    select?: DeliveryPhotoSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeliveryPhotoInclude<ExtArgs> | null
+    /**
+     * Filter, which DeliveryPhoto to fetch.
+     */
+    where?: DeliveryPhotoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DeliveryPhotos to fetch.
+     */
+    orderBy?: DeliveryPhotoOrderByWithRelationInput | DeliveryPhotoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DeliveryPhotos.
+     */
+    cursor?: DeliveryPhotoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DeliveryPhotos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DeliveryPhotos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DeliveryPhotos.
+     */
+    distinct?: DeliveryPhotoScalarFieldEnum | DeliveryPhotoScalarFieldEnum[]
+  }
+
+  /**
+   * DeliveryPhoto findFirstOrThrow
+   */
+  export type DeliveryPhotoFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeliveryPhoto
+     */
+    select?: DeliveryPhotoSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeliveryPhotoInclude<ExtArgs> | null
+    /**
+     * Filter, which DeliveryPhoto to fetch.
+     */
+    where?: DeliveryPhotoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DeliveryPhotos to fetch.
+     */
+    orderBy?: DeliveryPhotoOrderByWithRelationInput | DeliveryPhotoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DeliveryPhotos.
+     */
+    cursor?: DeliveryPhotoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DeliveryPhotos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DeliveryPhotos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DeliveryPhotos.
+     */
+    distinct?: DeliveryPhotoScalarFieldEnum | DeliveryPhotoScalarFieldEnum[]
+  }
+
+  /**
+   * DeliveryPhoto findMany
+   */
+  export type DeliveryPhotoFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeliveryPhoto
+     */
+    select?: DeliveryPhotoSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeliveryPhotoInclude<ExtArgs> | null
+    /**
+     * Filter, which DeliveryPhotos to fetch.
+     */
+    where?: DeliveryPhotoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DeliveryPhotos to fetch.
+     */
+    orderBy?: DeliveryPhotoOrderByWithRelationInput | DeliveryPhotoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing DeliveryPhotos.
+     */
+    cursor?: DeliveryPhotoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DeliveryPhotos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DeliveryPhotos.
+     */
+    skip?: number
+    distinct?: DeliveryPhotoScalarFieldEnum | DeliveryPhotoScalarFieldEnum[]
+  }
+
+  /**
+   * DeliveryPhoto create
+   */
+  export type DeliveryPhotoCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeliveryPhoto
+     */
+    select?: DeliveryPhotoSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeliveryPhotoInclude<ExtArgs> | null
+    /**
+     * The data needed to create a DeliveryPhoto.
+     */
+    data: XOR<DeliveryPhotoCreateInput, DeliveryPhotoUncheckedCreateInput>
+  }
+
+  /**
+   * DeliveryPhoto createMany
+   */
+  export type DeliveryPhotoCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many DeliveryPhotos.
+     */
+    data: DeliveryPhotoCreateManyInput | DeliveryPhotoCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DeliveryPhoto createManyAndReturn
+   */
+  export type DeliveryPhotoCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeliveryPhoto
+     */
+    select?: DeliveryPhotoSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many DeliveryPhotos.
+     */
+    data: DeliveryPhotoCreateManyInput | DeliveryPhotoCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeliveryPhotoIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * DeliveryPhoto update
+   */
+  export type DeliveryPhotoUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeliveryPhoto
+     */
+    select?: DeliveryPhotoSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeliveryPhotoInclude<ExtArgs> | null
+    /**
+     * The data needed to update a DeliveryPhoto.
+     */
+    data: XOR<DeliveryPhotoUpdateInput, DeliveryPhotoUncheckedUpdateInput>
+    /**
+     * Choose, which DeliveryPhoto to update.
+     */
+    where: DeliveryPhotoWhereUniqueInput
+  }
+
+  /**
+   * DeliveryPhoto updateMany
+   */
+  export type DeliveryPhotoUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update DeliveryPhotos.
+     */
+    data: XOR<DeliveryPhotoUpdateManyMutationInput, DeliveryPhotoUncheckedUpdateManyInput>
+    /**
+     * Filter which DeliveryPhotos to update
+     */
+    where?: DeliveryPhotoWhereInput
+  }
+
+  /**
+   * DeliveryPhoto upsert
+   */
+  export type DeliveryPhotoUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeliveryPhoto
+     */
+    select?: DeliveryPhotoSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeliveryPhotoInclude<ExtArgs> | null
+    /**
+     * The filter to search for the DeliveryPhoto to update in case it exists.
+     */
+    where: DeliveryPhotoWhereUniqueInput
+    /**
+     * In case the DeliveryPhoto found by the `where` argument doesn't exist, create a new DeliveryPhoto with this data.
+     */
+    create: XOR<DeliveryPhotoCreateInput, DeliveryPhotoUncheckedCreateInput>
+    /**
+     * In case the DeliveryPhoto was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DeliveryPhotoUpdateInput, DeliveryPhotoUncheckedUpdateInput>
+  }
+
+  /**
+   * DeliveryPhoto delete
+   */
+  export type DeliveryPhotoDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeliveryPhoto
+     */
+    select?: DeliveryPhotoSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeliveryPhotoInclude<ExtArgs> | null
+    /**
+     * Filter which DeliveryPhoto to delete.
+     */
+    where: DeliveryPhotoWhereUniqueInput
+  }
+
+  /**
+   * DeliveryPhoto deleteMany
+   */
+  export type DeliveryPhotoDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DeliveryPhotos to delete
+     */
+    where?: DeliveryPhotoWhereInput
+  }
+
+  /**
+   * DeliveryPhoto without action
+   */
+  export type DeliveryPhotoDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeliveryPhoto
+     */
+    select?: DeliveryPhotoSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeliveryPhotoInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model FleetPayoutInvoice
    */
 
@@ -150697,6 +151835,21 @@ export namespace Prisma {
   export type FleetPayoutStatementScalarFieldEnum = (typeof FleetPayoutStatementScalarFieldEnum)[keyof typeof FleetPayoutStatementScalarFieldEnum]
 
 
+  export const DeliveryPhotoScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    key: 'key',
+    orderId: 'orderId',
+    driverId: 'driverId',
+    mimeType: 'mimeType',
+    sizeBytes: 'sizeBytes',
+    data: 'data',
+    createdAt: 'createdAt'
+  };
+
+  export type DeliveryPhotoScalarFieldEnum = (typeof DeliveryPhotoScalarFieldEnum)[keyof typeof DeliveryPhotoScalarFieldEnum]
+
+
   export const FleetPayoutInvoiceScalarFieldEnum: {
     id: 'id',
     tenantId: 'tenantId',
@@ -152303,6 +153456,18 @@ export namespace Prisma {
   export type FleetPayoutStatementOrderByRelevanceFieldEnum = (typeof FleetPayoutStatementOrderByRelevanceFieldEnum)[keyof typeof FleetPayoutStatementOrderByRelevanceFieldEnum]
 
 
+  export const DeliveryPhotoOrderByRelevanceFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    key: 'key',
+    orderId: 'orderId',
+    driverId: 'driverId',
+    mimeType: 'mimeType'
+  };
+
+  export type DeliveryPhotoOrderByRelevanceFieldEnum = (typeof DeliveryPhotoOrderByRelevanceFieldEnum)[keyof typeof DeliveryPhotoOrderByRelevanceFieldEnum]
+
+
   export const FleetPayoutInvoiceOrderByRelevanceFieldEnum: {
     id: 'id',
     tenantId: 'tenantId',
@@ -153629,6 +154794,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketListRelationFilter
     vendorTopUps?: VendorTopUpListRelationFilter
     fleetCashDeposits?: FleetCashDepositListRelationFilter
+    deliveryPhotos?: DeliveryPhotoListRelationFilter
     fleetDocuments?: FleetDocumentListRelationFilter
     fleetChangeRequests?: FleetChangeRequestListRelationFilter
     fleetIssues?: FleetIssueListRelationFilter
@@ -153749,6 +154915,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketOrderByRelationAggregateInput
     vendorTopUps?: VendorTopUpOrderByRelationAggregateInput
     fleetCashDeposits?: FleetCashDepositOrderByRelationAggregateInput
+    deliveryPhotos?: DeliveryPhotoOrderByRelationAggregateInput
     fleetDocuments?: FleetDocumentOrderByRelationAggregateInput
     fleetChangeRequests?: FleetChangeRequestOrderByRelationAggregateInput
     fleetIssues?: FleetIssueOrderByRelationAggregateInput
@@ -153873,6 +155040,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketListRelationFilter
     vendorTopUps?: VendorTopUpListRelationFilter
     fleetCashDeposits?: FleetCashDepositListRelationFilter
+    deliveryPhotos?: DeliveryPhotoListRelationFilter
     fleetDocuments?: FleetDocumentListRelationFilter
     fleetChangeRequests?: FleetChangeRequestListRelationFilter
     fleetIssues?: FleetIssueListRelationFilter
@@ -165280,6 +166448,84 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"FleetPayoutStatement"> | Date | string
   }
 
+  export type DeliveryPhotoWhereInput = {
+    AND?: DeliveryPhotoWhereInput | DeliveryPhotoWhereInput[]
+    OR?: DeliveryPhotoWhereInput[]
+    NOT?: DeliveryPhotoWhereInput | DeliveryPhotoWhereInput[]
+    id?: StringFilter<"DeliveryPhoto"> | string
+    tenantId?: StringFilter<"DeliveryPhoto"> | string
+    key?: StringFilter<"DeliveryPhoto"> | string
+    orderId?: StringFilter<"DeliveryPhoto"> | string
+    driverId?: StringNullableFilter<"DeliveryPhoto"> | string | null
+    mimeType?: StringFilter<"DeliveryPhoto"> | string
+    sizeBytes?: IntFilter<"DeliveryPhoto"> | number
+    data?: BytesFilter<"DeliveryPhoto"> | Buffer
+    createdAt?: DateTimeFilter<"DeliveryPhoto"> | Date | string
+    tenant?: XOR<TenantRelationFilter, TenantWhereInput>
+  }
+
+  export type DeliveryPhotoOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    key?: SortOrder
+    orderId?: SortOrder
+    driverId?: SortOrderInput | SortOrder
+    mimeType?: SortOrder
+    sizeBytes?: SortOrder
+    data?: SortOrder
+    createdAt?: SortOrder
+    tenant?: TenantOrderByWithRelationInput
+    _relevance?: DeliveryPhotoOrderByRelevanceInput
+  }
+
+  export type DeliveryPhotoWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    key?: string
+    AND?: DeliveryPhotoWhereInput | DeliveryPhotoWhereInput[]
+    OR?: DeliveryPhotoWhereInput[]
+    NOT?: DeliveryPhotoWhereInput | DeliveryPhotoWhereInput[]
+    tenantId?: StringFilter<"DeliveryPhoto"> | string
+    orderId?: StringFilter<"DeliveryPhoto"> | string
+    driverId?: StringNullableFilter<"DeliveryPhoto"> | string | null
+    mimeType?: StringFilter<"DeliveryPhoto"> | string
+    sizeBytes?: IntFilter<"DeliveryPhoto"> | number
+    data?: BytesFilter<"DeliveryPhoto"> | Buffer
+    createdAt?: DateTimeFilter<"DeliveryPhoto"> | Date | string
+    tenant?: XOR<TenantRelationFilter, TenantWhereInput>
+  }, "id" | "key">
+
+  export type DeliveryPhotoOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    key?: SortOrder
+    orderId?: SortOrder
+    driverId?: SortOrderInput | SortOrder
+    mimeType?: SortOrder
+    sizeBytes?: SortOrder
+    data?: SortOrder
+    createdAt?: SortOrder
+    _count?: DeliveryPhotoCountOrderByAggregateInput
+    _avg?: DeliveryPhotoAvgOrderByAggregateInput
+    _max?: DeliveryPhotoMaxOrderByAggregateInput
+    _min?: DeliveryPhotoMinOrderByAggregateInput
+    _sum?: DeliveryPhotoSumOrderByAggregateInput
+  }
+
+  export type DeliveryPhotoScalarWhereWithAggregatesInput = {
+    AND?: DeliveryPhotoScalarWhereWithAggregatesInput | DeliveryPhotoScalarWhereWithAggregatesInput[]
+    OR?: DeliveryPhotoScalarWhereWithAggregatesInput[]
+    NOT?: DeliveryPhotoScalarWhereWithAggregatesInput | DeliveryPhotoScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"DeliveryPhoto"> | string
+    tenantId?: StringWithAggregatesFilter<"DeliveryPhoto"> | string
+    key?: StringWithAggregatesFilter<"DeliveryPhoto"> | string
+    orderId?: StringWithAggregatesFilter<"DeliveryPhoto"> | string
+    driverId?: StringNullableWithAggregatesFilter<"DeliveryPhoto"> | string | null
+    mimeType?: StringWithAggregatesFilter<"DeliveryPhoto"> | string
+    sizeBytes?: IntWithAggregatesFilter<"DeliveryPhoto"> | number
+    data?: BytesWithAggregatesFilter<"DeliveryPhoto"> | Buffer
+    createdAt?: DateTimeWithAggregatesFilter<"DeliveryPhoto"> | Date | string
+  }
+
   export type FleetPayoutInvoiceWhereInput = {
     AND?: FleetPayoutInvoiceWhereInput | FleetPayoutInvoiceWhereInput[]
     OR?: FleetPayoutInvoiceWhereInput[]
@@ -166479,6 +167725,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -166599,6 +167846,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -166719,6 +167967,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -166839,6 +168088,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -179368,6 +180618,89 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type DeliveryPhotoCreateInput = {
+    id?: string
+    key: string
+    orderId: string
+    driverId?: string | null
+    mimeType?: string
+    sizeBytes: number
+    data: Buffer
+    createdAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutDeliveryPhotosInput
+  }
+
+  export type DeliveryPhotoUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    key: string
+    orderId: string
+    driverId?: string | null
+    mimeType?: string
+    sizeBytes: number
+    data: Buffer
+    createdAt?: Date | string
+  }
+
+  export type DeliveryPhotoUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    data?: BytesFieldUpdateOperationsInput | Buffer
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutDeliveryPhotosNestedInput
+  }
+
+  export type DeliveryPhotoUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    data?: BytesFieldUpdateOperationsInput | Buffer
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DeliveryPhotoCreateManyInput = {
+    id?: string
+    tenantId: string
+    key: string
+    orderId: string
+    driverId?: string | null
+    mimeType?: string
+    sizeBytes: number
+    data: Buffer
+    createdAt?: Date | string
+  }
+
+  export type DeliveryPhotoUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    data?: BytesFieldUpdateOperationsInput | Buffer
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DeliveryPhotoUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    data?: BytesFieldUpdateOperationsInput | Buffer
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type FleetPayoutInvoiceCreateInput = {
     id?: string
     fileName: string
@@ -181219,6 +182552,12 @@ export namespace Prisma {
     none?: FleetCashDepositWhereInput
   }
 
+  export type DeliveryPhotoListRelationFilter = {
+    every?: DeliveryPhotoWhereInput
+    some?: DeliveryPhotoWhereInput
+    none?: DeliveryPhotoWhereInput
+  }
+
   export type FleetDocumentListRelationFilter = {
     every?: FleetDocumentWhereInput
     some?: FleetDocumentWhereInput
@@ -181631,6 +182970,10 @@ export namespace Prisma {
   }
 
   export type FleetCashDepositOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type DeliveryPhotoOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -190152,6 +191495,73 @@ export namespace Prisma {
     totalKwd?: SortOrder
   }
 
+  export type BytesFilter<$PrismaModel = never> = {
+    equals?: Buffer | BytesFieldRefInput<$PrismaModel>
+    in?: Buffer[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Buffer[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesFilter<$PrismaModel> | Buffer
+  }
+
+  export type DeliveryPhotoOrderByRelevanceInput = {
+    fields: DeliveryPhotoOrderByRelevanceFieldEnum | DeliveryPhotoOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type DeliveryPhotoCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    key?: SortOrder
+    orderId?: SortOrder
+    driverId?: SortOrder
+    mimeType?: SortOrder
+    sizeBytes?: SortOrder
+    data?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type DeliveryPhotoAvgOrderByAggregateInput = {
+    sizeBytes?: SortOrder
+  }
+
+  export type DeliveryPhotoMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    key?: SortOrder
+    orderId?: SortOrder
+    driverId?: SortOrder
+    mimeType?: SortOrder
+    sizeBytes?: SortOrder
+    data?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type DeliveryPhotoMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    key?: SortOrder
+    orderId?: SortOrder
+    driverId?: SortOrder
+    mimeType?: SortOrder
+    sizeBytes?: SortOrder
+    data?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type DeliveryPhotoSumOrderByAggregateInput = {
+    sizeBytes?: SortOrder
+  }
+
+  export type BytesWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Buffer | BytesFieldRefInput<$PrismaModel>
+    in?: Buffer[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Buffer[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesWithAggregatesFilter<$PrismaModel> | Buffer
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBytesFilter<$PrismaModel>
+    _max?: NestedBytesFilter<$PrismaModel>
+  }
+
   export type BytesNullableFilter<$PrismaModel = never> = {
     equals?: Buffer | BytesFieldRefInput<$PrismaModel> | null
     in?: Buffer[] | ListBytesFieldRefInput<$PrismaModel> | null
@@ -191701,6 +193111,13 @@ export namespace Prisma {
     connect?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
   }
 
+  export type DeliveryPhotoCreateNestedManyWithoutTenantInput = {
+    create?: XOR<DeliveryPhotoCreateWithoutTenantInput, DeliveryPhotoUncheckedCreateWithoutTenantInput> | DeliveryPhotoCreateWithoutTenantInput[] | DeliveryPhotoUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: DeliveryPhotoCreateOrConnectWithoutTenantInput | DeliveryPhotoCreateOrConnectWithoutTenantInput[]
+    createMany?: DeliveryPhotoCreateManyTenantInputEnvelope
+    connect?: DeliveryPhotoWhereUniqueInput | DeliveryPhotoWhereUniqueInput[]
+  }
+
   export type FleetDocumentCreateNestedManyWithoutTenantInput = {
     create?: XOR<FleetDocumentCreateWithoutTenantInput, FleetDocumentUncheckedCreateWithoutTenantInput> | FleetDocumentCreateWithoutTenantInput[] | FleetDocumentUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: FleetDocumentCreateOrConnectWithoutTenantInput | FleetDocumentCreateOrConnectWithoutTenantInput[]
@@ -192418,6 +193835,13 @@ export namespace Prisma {
     connectOrCreate?: FleetCashDepositCreateOrConnectWithoutTenantInput | FleetCashDepositCreateOrConnectWithoutTenantInput[]
     createMany?: FleetCashDepositCreateManyTenantInputEnvelope
     connect?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+  }
+
+  export type DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput = {
+    create?: XOR<DeliveryPhotoCreateWithoutTenantInput, DeliveryPhotoUncheckedCreateWithoutTenantInput> | DeliveryPhotoCreateWithoutTenantInput[] | DeliveryPhotoUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: DeliveryPhotoCreateOrConnectWithoutTenantInput | DeliveryPhotoCreateOrConnectWithoutTenantInput[]
+    createMany?: DeliveryPhotoCreateManyTenantInputEnvelope
+    connect?: DeliveryPhotoWhereUniqueInput | DeliveryPhotoWhereUniqueInput[]
   }
 
   export type FleetDocumentUncheckedCreateNestedManyWithoutTenantInput = {
@@ -193869,6 +195293,20 @@ export namespace Prisma {
     deleteMany?: FleetCashDepositScalarWhereInput | FleetCashDepositScalarWhereInput[]
   }
 
+  export type DeliveryPhotoUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<DeliveryPhotoCreateWithoutTenantInput, DeliveryPhotoUncheckedCreateWithoutTenantInput> | DeliveryPhotoCreateWithoutTenantInput[] | DeliveryPhotoUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: DeliveryPhotoCreateOrConnectWithoutTenantInput | DeliveryPhotoCreateOrConnectWithoutTenantInput[]
+    upsert?: DeliveryPhotoUpsertWithWhereUniqueWithoutTenantInput | DeliveryPhotoUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: DeliveryPhotoCreateManyTenantInputEnvelope
+    set?: DeliveryPhotoWhereUniqueInput | DeliveryPhotoWhereUniqueInput[]
+    disconnect?: DeliveryPhotoWhereUniqueInput | DeliveryPhotoWhereUniqueInput[]
+    delete?: DeliveryPhotoWhereUniqueInput | DeliveryPhotoWhereUniqueInput[]
+    connect?: DeliveryPhotoWhereUniqueInput | DeliveryPhotoWhereUniqueInput[]
+    update?: DeliveryPhotoUpdateWithWhereUniqueWithoutTenantInput | DeliveryPhotoUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: DeliveryPhotoUpdateManyWithWhereWithoutTenantInput | DeliveryPhotoUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: DeliveryPhotoScalarWhereInput | DeliveryPhotoScalarWhereInput[]
+  }
+
   export type FleetDocumentUpdateManyWithoutTenantNestedInput = {
     create?: XOR<FleetDocumentCreateWithoutTenantInput, FleetDocumentUncheckedCreateWithoutTenantInput> | FleetDocumentCreateWithoutTenantInput[] | FleetDocumentUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: FleetDocumentCreateOrConnectWithoutTenantInput | FleetDocumentCreateOrConnectWithoutTenantInput[]
@@ -195301,6 +196739,20 @@ export namespace Prisma {
     update?: FleetCashDepositUpdateWithWhereUniqueWithoutTenantInput | FleetCashDepositUpdateWithWhereUniqueWithoutTenantInput[]
     updateMany?: FleetCashDepositUpdateManyWithWhereWithoutTenantInput | FleetCashDepositUpdateManyWithWhereWithoutTenantInput[]
     deleteMany?: FleetCashDepositScalarWhereInput | FleetCashDepositScalarWhereInput[]
+  }
+
+  export type DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<DeliveryPhotoCreateWithoutTenantInput, DeliveryPhotoUncheckedCreateWithoutTenantInput> | DeliveryPhotoCreateWithoutTenantInput[] | DeliveryPhotoUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: DeliveryPhotoCreateOrConnectWithoutTenantInput | DeliveryPhotoCreateOrConnectWithoutTenantInput[]
+    upsert?: DeliveryPhotoUpsertWithWhereUniqueWithoutTenantInput | DeliveryPhotoUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: DeliveryPhotoCreateManyTenantInputEnvelope
+    set?: DeliveryPhotoWhereUniqueInput | DeliveryPhotoWhereUniqueInput[]
+    disconnect?: DeliveryPhotoWhereUniqueInput | DeliveryPhotoWhereUniqueInput[]
+    delete?: DeliveryPhotoWhereUniqueInput | DeliveryPhotoWhereUniqueInput[]
+    connect?: DeliveryPhotoWhereUniqueInput | DeliveryPhotoWhereUniqueInput[]
+    update?: DeliveryPhotoUpdateWithWhereUniqueWithoutTenantInput | DeliveryPhotoUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: DeliveryPhotoUpdateManyWithWhereWithoutTenantInput | DeliveryPhotoUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: DeliveryPhotoScalarWhereInput | DeliveryPhotoScalarWhereInput[]
   }
 
   export type FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput = {
@@ -205547,6 +206999,24 @@ export namespace Prisma {
     update?: XOR<XOR<FleetPayoutInvoiceUpdateToOneWithWhereWithoutStatementInput, FleetPayoutInvoiceUpdateWithoutStatementInput>, FleetPayoutInvoiceUncheckedUpdateWithoutStatementInput>
   }
 
+  export type TenantCreateNestedOneWithoutDeliveryPhotosInput = {
+    create?: XOR<TenantCreateWithoutDeliveryPhotosInput, TenantUncheckedCreateWithoutDeliveryPhotosInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutDeliveryPhotosInput
+    connect?: TenantWhereUniqueInput
+  }
+
+  export type BytesFieldUpdateOperationsInput = {
+    set?: Buffer
+  }
+
+  export type TenantUpdateOneRequiredWithoutDeliveryPhotosNestedInput = {
+    create?: XOR<TenantCreateWithoutDeliveryPhotosInput, TenantUncheckedCreateWithoutDeliveryPhotosInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutDeliveryPhotosInput
+    upsert?: TenantUpsertWithoutDeliveryPhotosInput
+    connect?: TenantWhereUniqueInput
+    update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutDeliveryPhotosInput, TenantUpdateWithoutDeliveryPhotosInput>, TenantUncheckedUpdateWithoutDeliveryPhotosInput>
+  }
+
   export type TenantCreateNestedOneWithoutFleetPayoutInvoicesInput = {
     create?: XOR<TenantCreateWithoutFleetPayoutInvoicesInput, TenantUncheckedCreateWithoutFleetPayoutInvoicesInput>
     connectOrCreate?: TenantCreateOrConnectWithoutFleetPayoutInvoicesInput
@@ -207482,6 +208952,23 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumWebhookEventStatusFilter<$PrismaModel>
     _max?: NestedEnumWebhookEventStatusFilter<$PrismaModel>
+  }
+
+  export type NestedBytesFilter<$PrismaModel = never> = {
+    equals?: Buffer | BytesFieldRefInput<$PrismaModel>
+    in?: Buffer[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Buffer[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesFilter<$PrismaModel> | Buffer
+  }
+
+  export type NestedBytesWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Buffer | BytesFieldRefInput<$PrismaModel>
+    in?: Buffer[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Buffer[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesWithAggregatesFilter<$PrismaModel> | Buffer
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBytesFilter<$PrismaModel>
+    _max?: NestedBytesFilter<$PrismaModel>
   }
 
   export type NestedBytesNullableFilter<$PrismaModel = never> = {
@@ -212109,6 +213596,38 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type DeliveryPhotoCreateWithoutTenantInput = {
+    id?: string
+    key: string
+    orderId: string
+    driverId?: string | null
+    mimeType?: string
+    sizeBytes: number
+    data: Buffer
+    createdAt?: Date | string
+  }
+
+  export type DeliveryPhotoUncheckedCreateWithoutTenantInput = {
+    id?: string
+    key: string
+    orderId: string
+    driverId?: string | null
+    mimeType?: string
+    sizeBytes: number
+    data: Buffer
+    createdAt?: Date | string
+  }
+
+  export type DeliveryPhotoCreateOrConnectWithoutTenantInput = {
+    where: DeliveryPhotoWhereUniqueInput
+    create: XOR<DeliveryPhotoCreateWithoutTenantInput, DeliveryPhotoUncheckedCreateWithoutTenantInput>
+  }
+
+  export type DeliveryPhotoCreateManyTenantInputEnvelope = {
+    data: DeliveryPhotoCreateManyTenantInput | DeliveryPhotoCreateManyTenantInput[]
+    skipDuplicates?: boolean
+  }
+
   export type FleetDocumentCreateWithoutTenantInput = {
     id?: string
     type: string
@@ -215811,6 +217330,37 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"FleetCashDeposit"> | Date | string
   }
 
+  export type DeliveryPhotoUpsertWithWhereUniqueWithoutTenantInput = {
+    where: DeliveryPhotoWhereUniqueInput
+    update: XOR<DeliveryPhotoUpdateWithoutTenantInput, DeliveryPhotoUncheckedUpdateWithoutTenantInput>
+    create: XOR<DeliveryPhotoCreateWithoutTenantInput, DeliveryPhotoUncheckedCreateWithoutTenantInput>
+  }
+
+  export type DeliveryPhotoUpdateWithWhereUniqueWithoutTenantInput = {
+    where: DeliveryPhotoWhereUniqueInput
+    data: XOR<DeliveryPhotoUpdateWithoutTenantInput, DeliveryPhotoUncheckedUpdateWithoutTenantInput>
+  }
+
+  export type DeliveryPhotoUpdateManyWithWhereWithoutTenantInput = {
+    where: DeliveryPhotoScalarWhereInput
+    data: XOR<DeliveryPhotoUpdateManyMutationInput, DeliveryPhotoUncheckedUpdateManyWithoutTenantInput>
+  }
+
+  export type DeliveryPhotoScalarWhereInput = {
+    AND?: DeliveryPhotoScalarWhereInput | DeliveryPhotoScalarWhereInput[]
+    OR?: DeliveryPhotoScalarWhereInput[]
+    NOT?: DeliveryPhotoScalarWhereInput | DeliveryPhotoScalarWhereInput[]
+    id?: StringFilter<"DeliveryPhoto"> | string
+    tenantId?: StringFilter<"DeliveryPhoto"> | string
+    key?: StringFilter<"DeliveryPhoto"> | string
+    orderId?: StringFilter<"DeliveryPhoto"> | string
+    driverId?: StringNullableFilter<"DeliveryPhoto"> | string | null
+    mimeType?: StringFilter<"DeliveryPhoto"> | string
+    sizeBytes?: IntFilter<"DeliveryPhoto"> | number
+    data?: BytesFilter<"DeliveryPhoto"> | Buffer
+    createdAt?: DateTimeFilter<"DeliveryPhoto"> | Date | string
+  }
+
   export type FleetDocumentUpsertWithWhereUniqueWithoutTenantInput = {
     where: FleetDocumentWhereUniqueInput
     update: XOR<FleetDocumentUpdateWithoutTenantInput, FleetDocumentUncheckedUpdateWithoutTenantInput>
@@ -216042,6 +217592,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -216161,6 +217712,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -216782,6 +218334,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -216901,6 +218454,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -217226,6 +218780,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -217345,6 +218900,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -217694,6 +219250,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -217813,6 +219370,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -217980,6 +219538,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -218099,6 +219658,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -219594,6 +221154,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -219713,6 +221274,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -220442,6 +222004,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -220561,6 +222124,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -223067,6 +224631,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -223186,6 +224751,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -224459,6 +226025,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -224578,6 +226145,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -224904,6 +226472,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -225023,6 +226592,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -225727,6 +227297,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -225846,6 +227417,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -226020,6 +227592,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -226139,6 +227712,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -226303,6 +227877,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -226422,6 +227997,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -227035,6 +228611,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -227154,6 +228731,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -227611,6 +229189,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -227730,6 +229309,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -228117,6 +229697,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -228236,6 +229817,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -228619,6 +230201,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -228738,6 +230321,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -229234,6 +230818,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -229353,6 +230938,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -229717,6 +231303,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -229836,6 +231423,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -230227,6 +231815,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -230346,6 +231935,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -230733,6 +232323,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -230852,6 +232443,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -231243,6 +232835,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -231362,6 +232955,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -231749,6 +233343,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -231868,6 +233463,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -232194,6 +233790,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -232313,6 +233910,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -232629,6 +234227,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -232748,6 +234347,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -233074,6 +234674,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -233193,6 +234794,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -233509,6 +235111,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -233628,6 +235231,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -233954,6 +235558,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -234073,6 +235678,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -234389,6 +235995,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -234508,6 +236115,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -234895,6 +236503,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -235014,6 +236623,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -235397,6 +237007,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -235516,6 +237127,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -235964,6 +237576,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -236083,6 +237696,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -237151,6 +238765,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -237270,6 +238885,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -237645,6 +239261,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -237764,6 +239381,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -239923,6 +241541,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -240042,6 +241661,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -240368,6 +241988,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -240487,6 +242108,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -240803,6 +242425,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -240922,6 +242545,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -241410,6 +243034,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -241529,6 +243154,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -242019,6 +243645,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -242138,6 +243765,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -242273,6 +243901,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -242392,6 +244021,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -242511,6 +244141,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -242630,6 +244261,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -242765,6 +244397,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -242884,6 +244517,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -243003,6 +244637,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -243122,6 +244757,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -243941,6 +245577,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -244060,6 +245697,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -244899,6 +246537,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -245018,6 +246657,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -245445,6 +247085,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -245564,6 +247205,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -245987,6 +247629,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -246106,6 +247749,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -246577,6 +248221,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -246696,6 +248341,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -247115,6 +248761,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -247234,6 +248881,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -247627,6 +249275,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -247746,6 +249395,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -248663,6 +250313,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -248782,6 +250433,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -249108,6 +250760,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -249227,6 +250880,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -249543,6 +251197,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -249662,6 +251317,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -249797,6 +251453,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -249916,6 +251573,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -250035,6 +251693,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -250154,6 +251813,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -250480,6 +252140,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -250599,6 +252260,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -250915,6 +252577,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -251034,6 +252697,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -251360,6 +253024,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -251479,6 +253144,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -251795,6 +253461,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -251914,6 +253581,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -252049,6 +253717,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -252168,6 +253837,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -252287,6 +253957,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -252406,6 +254077,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -252541,6 +254213,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -252660,6 +254333,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -252779,6 +254453,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -252898,6 +254573,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -253302,6 +254978,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -253421,6 +255098,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -253827,6 +255505,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -253946,6 +255625,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -254215,6 +255895,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -254334,6 +256015,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -254501,6 +256183,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -254620,6 +256303,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -254872,6 +256556,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -254991,6 +256676,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -255179,6 +256865,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -255298,6 +256985,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -255469,6 +257157,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -255588,6 +257277,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -255723,6 +257413,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -255842,6 +257533,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -256148,6 +257840,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -256267,6 +257960,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -256575,6 +258269,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -256694,6 +258389,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -257020,6 +258716,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -257139,6 +258836,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -257455,6 +259153,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -257574,6 +259273,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -257947,6 +259647,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -258066,6 +259767,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -258435,6 +260137,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -258554,6 +260257,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -258689,6 +260393,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -258808,6 +260513,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -258927,6 +260633,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -259046,6 +260753,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -259217,6 +260925,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -259336,6 +261045,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -259471,6 +261181,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -259590,6 +261301,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -259951,6 +261663,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -260070,6 +261783,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -260427,6 +262141,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -260546,6 +262261,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -260973,6 +262689,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -261092,6 +262809,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -261515,6 +263233,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -261634,6 +263353,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -261769,6 +263489,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -261888,6 +263609,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -262007,6 +263729,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -262126,6 +263849,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -262261,6 +263985,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -262380,6 +264105,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -262499,6 +264225,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -262618,6 +264345,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -262944,6 +264672,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -263063,6 +264792,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -263379,6 +265109,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -263498,6 +265229,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -263891,6 +265623,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -264010,6 +265743,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -264358,6 +266092,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -264477,6 +266212,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -264852,6 +266588,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -264971,6 +266708,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -265303,6 +267041,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -265422,6 +267161,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -265606,6 +267346,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -265725,6 +267466,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -265899,6 +267641,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -266018,6 +267761,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -266153,6 +267897,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -266272,6 +268017,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -266391,6 +268137,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -266510,6 +268257,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -266836,6 +268584,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -266955,6 +268704,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -267271,6 +269021,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -267390,6 +269141,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -267525,6 +269277,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -267644,6 +269397,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -267763,6 +269517,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -267882,6 +269637,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -268017,6 +269773,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -268136,6 +269893,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -268255,6 +270013,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -268374,6 +270133,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -268700,6 +270460,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -268819,6 +270580,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -269135,6 +270897,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -269254,6 +271017,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -269389,6 +271153,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -269508,6 +271273,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -269627,6 +271393,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -269746,6 +271513,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -269881,6 +271649,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -270000,6 +271769,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -270119,6 +271889,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -270238,6 +272009,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -270491,6 +272263,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -270610,6 +272383,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -270854,6 +272628,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -270973,6 +272748,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -271229,6 +273005,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -271348,6 +273125,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -271743,6 +273521,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -271862,6 +273641,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -272227,6 +274007,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -272346,6 +274127,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -272707,6 +274489,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -272826,6 +274609,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -273065,6 +274849,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -273184,6 +274969,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -273397,6 +275183,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -273516,6 +275303,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -273692,6 +275480,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -273811,6 +275600,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -273977,6 +275767,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -274096,6 +275887,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -274272,6 +276064,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -274391,6 +276184,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -274557,6 +276351,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -274676,6 +276471,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -274985,6 +276781,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -275104,6 +276901,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -275402,6 +277200,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -275521,6 +277320,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -275703,6 +277503,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -275822,6 +277623,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -275994,6 +277796,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -276113,6 +277916,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -276440,6 +278244,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -276559,6 +278364,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -276854,6 +278660,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -276973,6 +278780,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -277155,6 +278963,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -277274,6 +279083,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -277446,6 +279256,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -277565,6 +279376,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -277801,6 +279613,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -277920,6 +279733,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -278146,6 +279960,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -278265,6 +280080,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -278591,6 +280407,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -278710,6 +280527,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -279026,6 +280844,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -279145,6 +280964,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -279381,6 +281201,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -279500,6 +281321,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -279726,6 +281548,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -279845,6 +281668,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -280164,6 +281988,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -280283,6 +282108,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -280570,6 +282396,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -280689,6 +282516,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -280916,6 +282744,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -281035,6 +282864,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -281258,6 +283088,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -281377,6 +283208,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -281651,6 +283483,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -281770,6 +283603,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -282012,6 +283846,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -282131,6 +283966,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -282816,6 +284652,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -282935,6 +284772,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -283272,6 +285110,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -283391,6 +285230,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -283881,6 +285721,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -284000,6 +285841,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -284306,6 +286148,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -284425,6 +286268,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -284950,6 +286794,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -285069,6 +286914,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -285314,6 +287160,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -285433,6 +287280,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -285666,6 +287514,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -285785,6 +287634,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -286014,6 +287864,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -286133,6 +287984,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -286438,6 +288290,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -286557,6 +288410,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -287106,6 +288960,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -287225,6 +289080,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -287360,6 +289216,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -287479,6 +289336,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -287598,6 +289456,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -287717,6 +289576,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -287852,6 +289712,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -287971,6 +289832,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -288090,6 +289952,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -288209,6 +290072,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -288881,6 +290745,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -289000,6 +290865,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -289638,6 +291504,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -289757,6 +291624,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -290190,6 +292058,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -290309,6 +292178,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -290738,6 +292608,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -290857,6 +292728,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -291022,6 +292894,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -291141,6 +293014,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -291276,6 +293150,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -291395,6 +293270,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -291560,6 +293436,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -291679,6 +293556,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -291814,6 +293692,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -291933,6 +293812,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -292122,6 +294002,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -292241,6 +294122,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -292426,6 +294308,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -292545,6 +294428,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -292930,6 +294814,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -293049,6 +294934,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -293430,6 +295316,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -293549,6 +295436,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -293684,6 +295572,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -293803,6 +295692,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -293922,6 +295812,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -294041,6 +295932,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -294474,6 +296366,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -294593,6 +296486,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -295022,6 +296916,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -295141,6 +297036,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -295331,6 +297227,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -295450,6 +297347,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -295630,6 +297528,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -295749,6 +297648,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -295939,6 +297839,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -296058,6 +297959,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -296238,6 +298140,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -296357,6 +298260,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -296790,6 +298694,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -296909,6 +298814,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -297338,6 +299244,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -297457,6 +299364,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -297647,6 +299555,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -297766,6 +299675,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -297946,6 +299856,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -298065,6 +299976,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -298362,6 +300274,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -298481,6 +300394,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -298774,6 +300688,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -298893,6 +300808,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -299713,6 +301629,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -299832,6 +301749,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -300146,6 +302064,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -300265,6 +302184,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -300490,6 +302410,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -300609,6 +302530,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -300714,6 +302636,502 @@ export namespace Prisma {
     fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
     uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TenantCreateWithoutDeliveryPhotosInput = {
+    id?: string
+    name: string
+    subscriptionPlan?: $Enums.SubscriptionPlan
+    designPartner?: boolean
+    monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    companies?: CompanyCreateNestedManyWithoutTenantInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
+    shifts?: ShiftCreateNestedManyWithoutTenantInput
+    attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
+    orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
+    cashRecords?: CashRecordCreateNestedManyWithoutTenantInput
+    cashTransactions?: CashTransactionCreateNestedManyWithoutTenantInput
+    pendingDuesLedgers?: PendingDuesLedgerCreateNestedManyWithoutTenantInput
+    vehicleInspections?: VehicleInspectionCreateNestedManyWithoutTenantInput
+    maintenanceRecords?: MaintenanceRecordCreateNestedManyWithoutTenantInput
+    aiScores?: AiScoreCreateNestedManyWithoutTenantInput
+    alerts?: AlertCreateNestedManyWithoutTenantInput
+    aiDigests?: AiDigestCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogCreateNestedManyWithoutTenantInput
+    tickets?: TicketCreateNestedManyWithoutTenantInput
+    leaveRequests?: LeaveRequestCreateNestedManyWithoutTenantInput
+    recruitmentPipeline?: RecruitmentPipelineCreateNestedManyWithoutTenantInput
+    vehicles?: VehicleCreateNestedManyWithoutTenantInput
+    talabatSessions?: TalabatSessionCreateNestedManyWithoutTenantInput
+    talabatViolationEvents?: TalabatViolationEventCreateNestedManyWithoutTenantInput
+    talabatDailyMetrics?: TalabatDailyMetricsCreateNestedManyWithoutTenantInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsCreateNestedManyWithoutTenantInput
+    keetaDailyMetrics?: KeetaDailyMetricsCreateNestedManyWithoutTenantInput
+    americanaDailyOrders?: AmericanaDailyOrdersCreateNestedManyWithoutTenantInput
+    kpiDefinitions?: KpiDefinitionCreateNestedManyWithoutTenantInput
+    kpiRecords?: KpiRecordCreateNestedManyWithoutTenantInput
+    platformSettings?: PlatformSettingsCreateNestedManyWithoutTenantInput
+    platformInventory?: PlatformInventoryCreateNestedManyWithoutTenantInput
+    notifications?: NotificationCreateNestedManyWithoutTenantInput
+    notificationRules?: NotificationRuleCreateNestedManyWithoutTenantInput
+    notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
+    driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
+    courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
+    violations?: ViolationCreateNestedManyWithoutTenantInput
+    penalties?: PenaltyCreateNestedManyWithoutTenantInput
+    appeals?: AppealCreateNestedManyWithoutTenantInput
+    orderEvents?: OrderEventCreateNestedManyWithoutTenantInput
+    aiInsights?: AiInsightCreateNestedManyWithoutTenantInput
+    demandHeatmaps?: DemandHeatmapCreateNestedManyWithoutTenantInput
+    courierAttendanceSlots?: CourierAttendanceSlotCreateNestedManyWithoutTenantInput
+    shiftComplianceConfig?: ShiftComplianceConfigCreateNestedOneWithoutTenantInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotCreateNestedManyWithoutTenantInput
+    deliveryAreas?: DeliveryAreaCreateNestedManyWithoutTenantInput
+    partners?: PartnerCreateNestedManyWithoutTenantInput
+    incentiveTargetRounds?: IncentiveTargetRoundCreateNestedManyWithoutTenantInput
+    courierIncentivePayouts?: CourierIncentivePayoutCreateNestedManyWithoutTenantInput
+    billings?: BillingCreateNestedManyWithoutTenantInput
+    taxInvoices?: TaxInvoiceCreateNestedManyWithoutTenantInput
+    paymentWithdrawals?: PaymentWithdrawalCreateNestedManyWithoutTenantInput
+    agentRunLogs?: AgentRunLogCreateNestedManyWithoutTenantInput
+    pendingAgentActions?: PendingAgentActionCreateNestedManyWithoutTenantInput
+    agentActions?: AgentActionCreateNestedManyWithoutTenantInput
+    agentMemories?: AgentMemoryCreateNestedManyWithoutTenantInput
+    pinnedViews?: PinnedViewCreateNestedManyWithoutTenantInput
+    performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutTenantInput
+    metricEvents?: MetricEventCreateNestedManyWithoutTenantInput
+    chatThreads?: ChatThreadCreateNestedManyWithoutTenantInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutTenantInput
+    scheduledBriefings?: ScheduledBriefingCreateNestedManyWithoutTenantInput
+    ingestRuns?: IngestRunCreateNestedManyWithoutTenantInput
+    americanaChains?: AmericanaChainCreateNestedManyWithoutTenantInput
+    americanaStores?: AmericanaStoreCreateNestedManyWithoutTenantInput
+    americanaContracts?: AmericanaContractCreateNestedManyWithoutTenantInput
+    americanaChainRates?: AmericanaChainRateCreateNestedManyWithoutTenantInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
+    americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
+    sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
+    vendors?: VendorCreateNestedManyWithoutTenantInput
+    vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
+    deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
+    zoneSurcharges?: ZoneSurchargeCreateNestedManyWithoutTenantInput
+    fulfillmentSettings?: FulfillmentSettingsCreateNestedOneWithoutTenantInput
+    deliveryOrders?: DeliveryOrderCreateNestedManyWithoutTenantInput
+    dispatchOffers?: DispatchOfferCreateNestedManyWithoutTenantInput
+    walletAccounts?: WalletAccountCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
+    walletEntries?: WalletEntryCreateNestedManyWithoutTenantInput
+    remittances?: RemittanceCreateNestedManyWithoutTenantInput
+    walletReconciliationRuns?: WalletReconciliationRunCreateNestedManyWithoutTenantInput
+    incidents?: IncidentCreateNestedManyWithoutTenantInput
+    foodicsConnections?: FoodicsConnectionCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
+    orderRatings?: OrderRatingCreateNestedManyWithoutTenantInput
+    vendorStatements?: VendorStatementCreateNestedManyWithoutTenantInput
+    refunds?: RefundCreateNestedManyWithoutTenantInput
+    fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
+    fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
+    deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
+    distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
+    userInvites?: UserInviteCreateNestedManyWithoutTenantInput
+    userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
+    accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
+    supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
+    fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
+    fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantUncheckedCreateWithoutDeliveryPhotosInput = {
+    id?: string
+    name: string
+    subscriptionPlan?: $Enums.SubscriptionPlan
+    designPartner?: boolean
+    monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
+    shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
+    attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
+    orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
+    cashRecords?: CashRecordUncheckedCreateNestedManyWithoutTenantInput
+    cashTransactions?: CashTransactionUncheckedCreateNestedManyWithoutTenantInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedCreateNestedManyWithoutTenantInput
+    vehicleInspections?: VehicleInspectionUncheckedCreateNestedManyWithoutTenantInput
+    maintenanceRecords?: MaintenanceRecordUncheckedCreateNestedManyWithoutTenantInput
+    aiScores?: AiScoreUncheckedCreateNestedManyWithoutTenantInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutTenantInput
+    aiDigests?: AiDigestUncheckedCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutTenantInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutTenantInput
+    leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutTenantInput
+    recruitmentPipeline?: RecruitmentPipelineUncheckedCreateNestedManyWithoutTenantInput
+    vehicles?: VehicleUncheckedCreateNestedManyWithoutTenantInput
+    talabatSessions?: TalabatSessionUncheckedCreateNestedManyWithoutTenantInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedCreateNestedManyWithoutTenantInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedCreateNestedManyWithoutTenantInput
+    kpiDefinitions?: KpiDefinitionUncheckedCreateNestedManyWithoutTenantInput
+    kpiRecords?: KpiRecordUncheckedCreateNestedManyWithoutTenantInput
+    platformSettings?: PlatformSettingsUncheckedCreateNestedManyWithoutTenantInput
+    platformInventory?: PlatformInventoryUncheckedCreateNestedManyWithoutTenantInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutTenantInput
+    notificationRules?: NotificationRuleUncheckedCreateNestedManyWithoutTenantInput
+    notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
+    driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
+    violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
+    penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
+    appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
+    orderEvents?: OrderEventUncheckedCreateNestedManyWithoutTenantInput
+    aiInsights?: AiInsightUncheckedCreateNestedManyWithoutTenantInput
+    demandHeatmaps?: DemandHeatmapUncheckedCreateNestedManyWithoutTenantInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedCreateNestedManyWithoutTenantInput
+    shiftComplianceConfig?: ShiftComplianceConfigUncheckedCreateNestedOneWithoutTenantInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUncheckedCreateNestedManyWithoutTenantInput
+    deliveryAreas?: DeliveryAreaUncheckedCreateNestedManyWithoutTenantInput
+    partners?: PartnerUncheckedCreateNestedManyWithoutTenantInput
+    incentiveTargetRounds?: IncentiveTargetRoundUncheckedCreateNestedManyWithoutTenantInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedCreateNestedManyWithoutTenantInput
+    billings?: BillingUncheckedCreateNestedManyWithoutTenantInput
+    taxInvoices?: TaxInvoiceUncheckedCreateNestedManyWithoutTenantInput
+    paymentWithdrawals?: PaymentWithdrawalUncheckedCreateNestedManyWithoutTenantInput
+    agentRunLogs?: AgentRunLogUncheckedCreateNestedManyWithoutTenantInput
+    pendingAgentActions?: PendingAgentActionUncheckedCreateNestedManyWithoutTenantInput
+    agentActions?: AgentActionUncheckedCreateNestedManyWithoutTenantInput
+    agentMemories?: AgentMemoryUncheckedCreateNestedManyWithoutTenantInput
+    pinnedViews?: PinnedViewUncheckedCreateNestedManyWithoutTenantInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutTenantInput
+    metricEvents?: MetricEventUncheckedCreateNestedManyWithoutTenantInput
+    chatThreads?: ChatThreadUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    scheduledBriefings?: ScheduledBriefingUncheckedCreateNestedManyWithoutTenantInput
+    ingestRuns?: IngestRunUncheckedCreateNestedManyWithoutTenantInput
+    americanaChains?: AmericanaChainUncheckedCreateNestedManyWithoutTenantInput
+    americanaStores?: AmericanaStoreUncheckedCreateNestedManyWithoutTenantInput
+    americanaContracts?: AmericanaContractUncheckedCreateNestedManyWithoutTenantInput
+    americanaChainRates?: AmericanaChainRateUncheckedCreateNestedManyWithoutTenantInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
+    sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
+    vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
+    vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
+    deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
+    zoneSurcharges?: ZoneSurchargeUncheckedCreateNestedManyWithoutTenantInput
+    fulfillmentSettings?: FulfillmentSettingsUncheckedCreateNestedOneWithoutTenantInput
+    deliveryOrders?: DeliveryOrderUncheckedCreateNestedManyWithoutTenantInput
+    dispatchOffers?: DispatchOfferUncheckedCreateNestedManyWithoutTenantInput
+    walletAccounts?: WalletAccountUncheckedCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
+    walletEntries?: WalletEntryUncheckedCreateNestedManyWithoutTenantInput
+    remittances?: RemittanceUncheckedCreateNestedManyWithoutTenantInput
+    walletReconciliationRuns?: WalletReconciliationRunUncheckedCreateNestedManyWithoutTenantInput
+    incidents?: IncidentUncheckedCreateNestedManyWithoutTenantInput
+    foodicsConnections?: FoodicsConnectionUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
+    orderRatings?: OrderRatingUncheckedCreateNestedManyWithoutTenantInput
+    vendorStatements?: VendorStatementUncheckedCreateNestedManyWithoutTenantInput
+    refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
+    fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
+    distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
+    userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
+    userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
+    accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
+    supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
+    fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
+    fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantCreateOrConnectWithoutDeliveryPhotosInput = {
+    where: TenantWhereUniqueInput
+    create: XOR<TenantCreateWithoutDeliveryPhotosInput, TenantUncheckedCreateWithoutDeliveryPhotosInput>
+  }
+
+  export type TenantUpsertWithoutDeliveryPhotosInput = {
+    update: XOR<TenantUpdateWithoutDeliveryPhotosInput, TenantUncheckedUpdateWithoutDeliveryPhotosInput>
+    create: XOR<TenantCreateWithoutDeliveryPhotosInput, TenantUncheckedCreateWithoutDeliveryPhotosInput>
+    where?: TenantWhereInput
+  }
+
+  export type TenantUpdateToOneWithWhereWithoutDeliveryPhotosInput = {
+    where?: TenantWhereInput
+    data: XOR<TenantUpdateWithoutDeliveryPhotosInput, TenantUncheckedUpdateWithoutDeliveryPhotosInput>
+  }
+
+  export type TenantUpdateWithoutDeliveryPhotosInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    subscriptionPlan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+    designPartner?: BoolFieldUpdateOperationsInput | boolean
+    monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    companies?: CompanyUpdateManyWithoutTenantNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
+    shifts?: ShiftUpdateManyWithoutTenantNestedInput
+    attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
+    orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
+    cashRecords?: CashRecordUpdateManyWithoutTenantNestedInput
+    cashTransactions?: CashTransactionUpdateManyWithoutTenantNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUpdateManyWithoutTenantNestedInput
+    vehicleInspections?: VehicleInspectionUpdateManyWithoutTenantNestedInput
+    maintenanceRecords?: MaintenanceRecordUpdateManyWithoutTenantNestedInput
+    aiScores?: AiScoreUpdateManyWithoutTenantNestedInput
+    alerts?: AlertUpdateManyWithoutTenantNestedInput
+    aiDigests?: AiDigestUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutTenantNestedInput
+    tickets?: TicketUpdateManyWithoutTenantNestedInput
+    leaveRequests?: LeaveRequestUpdateManyWithoutTenantNestedInput
+    recruitmentPipeline?: RecruitmentPipelineUpdateManyWithoutTenantNestedInput
+    vehicles?: VehicleUpdateManyWithoutTenantNestedInput
+    talabatSessions?: TalabatSessionUpdateManyWithoutTenantNestedInput
+    talabatViolationEvents?: TalabatViolationEventUpdateManyWithoutTenantNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUpdateManyWithoutTenantNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUpdateManyWithoutTenantNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUpdateManyWithoutTenantNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUpdateManyWithoutTenantNestedInput
+    kpiDefinitions?: KpiDefinitionUpdateManyWithoutTenantNestedInput
+    kpiRecords?: KpiRecordUpdateManyWithoutTenantNestedInput
+    platformSettings?: PlatformSettingsUpdateManyWithoutTenantNestedInput
+    platformInventory?: PlatformInventoryUpdateManyWithoutTenantNestedInput
+    notifications?: NotificationUpdateManyWithoutTenantNestedInput
+    notificationRules?: NotificationRuleUpdateManyWithoutTenantNestedInput
+    notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
+    driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
+    violations?: ViolationUpdateManyWithoutTenantNestedInput
+    penalties?: PenaltyUpdateManyWithoutTenantNestedInput
+    appeals?: AppealUpdateManyWithoutTenantNestedInput
+    orderEvents?: OrderEventUpdateManyWithoutTenantNestedInput
+    aiInsights?: AiInsightUpdateManyWithoutTenantNestedInput
+    demandHeatmaps?: DemandHeatmapUpdateManyWithoutTenantNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUpdateManyWithoutTenantNestedInput
+    shiftComplianceConfig?: ShiftComplianceConfigUpdateOneWithoutTenantNestedInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUpdateManyWithoutTenantNestedInput
+    deliveryAreas?: DeliveryAreaUpdateManyWithoutTenantNestedInput
+    partners?: PartnerUpdateManyWithoutTenantNestedInput
+    incentiveTargetRounds?: IncentiveTargetRoundUpdateManyWithoutTenantNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUpdateManyWithoutTenantNestedInput
+    billings?: BillingUpdateManyWithoutTenantNestedInput
+    taxInvoices?: TaxInvoiceUpdateManyWithoutTenantNestedInput
+    paymentWithdrawals?: PaymentWithdrawalUpdateManyWithoutTenantNestedInput
+    agentRunLogs?: AgentRunLogUpdateManyWithoutTenantNestedInput
+    pendingAgentActions?: PendingAgentActionUpdateManyWithoutTenantNestedInput
+    agentActions?: AgentActionUpdateManyWithoutTenantNestedInput
+    agentMemories?: AgentMemoryUpdateManyWithoutTenantNestedInput
+    pinnedViews?: PinnedViewUpdateManyWithoutTenantNestedInput
+    performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutTenantNestedInput
+    metricEvents?: MetricEventUpdateManyWithoutTenantNestedInput
+    chatThreads?: ChatThreadUpdateManyWithoutTenantNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutTenantNestedInput
+    scheduledBriefings?: ScheduledBriefingUpdateManyWithoutTenantNestedInput
+    ingestRuns?: IngestRunUpdateManyWithoutTenantNestedInput
+    americanaChains?: AmericanaChainUpdateManyWithoutTenantNestedInput
+    americanaStores?: AmericanaStoreUpdateManyWithoutTenantNestedInput
+    americanaContracts?: AmericanaContractUpdateManyWithoutTenantNestedInput
+    americanaChainRates?: AmericanaChainRateUpdateManyWithoutTenantNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
+    sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
+    vendors?: VendorUpdateManyWithoutTenantNestedInput
+    vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
+    deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
+    zoneSurcharges?: ZoneSurchargeUpdateManyWithoutTenantNestedInput
+    fulfillmentSettings?: FulfillmentSettingsUpdateOneWithoutTenantNestedInput
+    deliveryOrders?: DeliveryOrderUpdateManyWithoutTenantNestedInput
+    dispatchOffers?: DispatchOfferUpdateManyWithoutTenantNestedInput
+    walletAccounts?: WalletAccountUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
+    walletEntries?: WalletEntryUpdateManyWithoutTenantNestedInput
+    remittances?: RemittanceUpdateManyWithoutTenantNestedInput
+    walletReconciliationRuns?: WalletReconciliationRunUpdateManyWithoutTenantNestedInput
+    incidents?: IncidentUpdateManyWithoutTenantNestedInput
+    foodicsConnections?: FoodicsConnectionUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
+    orderRatings?: OrderRatingUpdateManyWithoutTenantNestedInput
+    vendorStatements?: VendorStatementUpdateManyWithoutTenantNestedInput
+    refunds?: RefundUpdateManyWithoutTenantNestedInput
+    fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
+    fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
+    deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
+    distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
+    userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
+    userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
+    accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
+    supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
+    fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
+    fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
+  }
+
+  export type TenantUncheckedUpdateWithoutDeliveryPhotosInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    subscriptionPlan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+    designPartner?: BoolFieldUpdateOperationsInput | boolean
+    monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
+    shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
+    attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
+    orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
+    cashRecords?: CashRecordUncheckedUpdateManyWithoutTenantNestedInput
+    cashTransactions?: CashTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleInspections?: VehicleInspectionUncheckedUpdateManyWithoutTenantNestedInput
+    maintenanceRecords?: MaintenanceRecordUncheckedUpdateManyWithoutTenantNestedInput
+    aiScores?: AiScoreUncheckedUpdateManyWithoutTenantNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutTenantNestedInput
+    aiDigests?: AiDigestUncheckedUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutTenantNestedInput
+    leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutTenantNestedInput
+    recruitmentPipeline?: RecruitmentPipelineUncheckedUpdateManyWithoutTenantNestedInput
+    vehicles?: VehicleUncheckedUpdateManyWithoutTenantNestedInput
+    talabatSessions?: TalabatSessionUncheckedUpdateManyWithoutTenantNestedInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedUpdateManyWithoutTenantNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedUpdateManyWithoutTenantNestedInput
+    kpiDefinitions?: KpiDefinitionUncheckedUpdateManyWithoutTenantNestedInput
+    kpiRecords?: KpiRecordUncheckedUpdateManyWithoutTenantNestedInput
+    platformSettings?: PlatformSettingsUncheckedUpdateManyWithoutTenantNestedInput
+    platformInventory?: PlatformInventoryUncheckedUpdateManyWithoutTenantNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutTenantNestedInput
+    notificationRules?: NotificationRuleUncheckedUpdateManyWithoutTenantNestedInput
+    notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
+    driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
+    violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
+    penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
+    appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
+    orderEvents?: OrderEventUncheckedUpdateManyWithoutTenantNestedInput
+    aiInsights?: AiInsightUncheckedUpdateManyWithoutTenantNestedInput
+    demandHeatmaps?: DemandHeatmapUncheckedUpdateManyWithoutTenantNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedUpdateManyWithoutTenantNestedInput
+    shiftComplianceConfig?: ShiftComplianceConfigUncheckedUpdateOneWithoutTenantNestedInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryAreas?: DeliveryAreaUncheckedUpdateManyWithoutTenantNestedInput
+    partners?: PartnerUncheckedUpdateManyWithoutTenantNestedInput
+    incentiveTargetRounds?: IncentiveTargetRoundUncheckedUpdateManyWithoutTenantNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedUpdateManyWithoutTenantNestedInput
+    billings?: BillingUncheckedUpdateManyWithoutTenantNestedInput
+    taxInvoices?: TaxInvoiceUncheckedUpdateManyWithoutTenantNestedInput
+    paymentWithdrawals?: PaymentWithdrawalUncheckedUpdateManyWithoutTenantNestedInput
+    agentRunLogs?: AgentRunLogUncheckedUpdateManyWithoutTenantNestedInput
+    pendingAgentActions?: PendingAgentActionUncheckedUpdateManyWithoutTenantNestedInput
+    agentActions?: AgentActionUncheckedUpdateManyWithoutTenantNestedInput
+    agentMemories?: AgentMemoryUncheckedUpdateManyWithoutTenantNestedInput
+    pinnedViews?: PinnedViewUncheckedUpdateManyWithoutTenantNestedInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutTenantNestedInput
+    metricEvents?: MetricEventUncheckedUpdateManyWithoutTenantNestedInput
+    chatThreads?: ChatThreadUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    scheduledBriefings?: ScheduledBriefingUncheckedUpdateManyWithoutTenantNestedInput
+    ingestRuns?: IngestRunUncheckedUpdateManyWithoutTenantNestedInput
+    americanaChains?: AmericanaChainUncheckedUpdateManyWithoutTenantNestedInput
+    americanaStores?: AmericanaStoreUncheckedUpdateManyWithoutTenantNestedInput
+    americanaContracts?: AmericanaContractUncheckedUpdateManyWithoutTenantNestedInput
+    americanaChainRates?: AmericanaChainRateUncheckedUpdateManyWithoutTenantNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
+    sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
+    vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
+    vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
+    zoneSurcharges?: ZoneSurchargeUncheckedUpdateManyWithoutTenantNestedInput
+    fulfillmentSettings?: FulfillmentSettingsUncheckedUpdateOneWithoutTenantNestedInput
+    deliveryOrders?: DeliveryOrderUncheckedUpdateManyWithoutTenantNestedInput
+    dispatchOffers?: DispatchOfferUncheckedUpdateManyWithoutTenantNestedInput
+    walletAccounts?: WalletAccountUncheckedUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    walletEntries?: WalletEntryUncheckedUpdateManyWithoutTenantNestedInput
+    remittances?: RemittanceUncheckedUpdateManyWithoutTenantNestedInput
+    walletReconciliationRuns?: WalletReconciliationRunUncheckedUpdateManyWithoutTenantNestedInput
+    incidents?: IncidentUncheckedUpdateManyWithoutTenantNestedInput
+    foodicsConnections?: FoodicsConnectionUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
+    orderRatings?: OrderRatingUncheckedUpdateManyWithoutTenantNestedInput
+    vendorStatements?: VendorStatementUncheckedUpdateManyWithoutTenantNestedInput
+    refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
+    distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
+    userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
+    userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
+    accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
+    supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
+    fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
+    fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutFleetPayoutInvoicesInput = {
@@ -300830,6 +303248,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -300949,6 +303368,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -301289,6 +303709,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -301408,6 +303829,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -301751,6 +304173,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
   }
@@ -301870,6 +304293,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
   }
@@ -302457,6 +304881,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
   }
@@ -302576,6 +305001,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
   }
@@ -303171,6 +305597,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
   }
@@ -303290,6 +305717,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
   }
@@ -303877,6 +306305,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
   }
@@ -303996,6 +306425,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
   }
@@ -304591,6 +307021,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
   }
@@ -304710,6 +307141,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
   }
@@ -305297,6 +307729,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
   }
@@ -305416,6 +307849,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
   }
@@ -306010,6 +308444,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -306129,6 +308564,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -306365,6 +308801,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -306484,6 +308921,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -306710,6 +309148,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -306829,6 +309268,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -307065,6 +309505,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -307184,6 +309625,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -307410,6 +309852,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -307529,6 +309972,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -307820,6 +310264,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -307939,6 +310384,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -308226,6 +310672,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -308345,6 +310792,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -308622,6 +311070,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -308741,6 +311190,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -309087,6 +311537,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -309206,6 +311657,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -309396,6 +311848,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -309515,6 +311968,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -309695,6 +312149,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -309814,6 +312269,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPhotos?: DeliveryPhotoUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -310008,6 +312464,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -310127,6 +312584,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPhotos?: DeliveryPhotoUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -311721,6 +314179,17 @@ export namespace Prisma {
     rejectReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type DeliveryPhotoCreateManyTenantInput = {
+    id?: string
+    key: string
+    orderId: string
+    driverId?: string | null
+    mimeType?: string
+    sizeBytes: number
+    data: Buffer
+    createdAt?: Date | string
   }
 
   export type FleetDocumentCreateManyTenantInput = {
@@ -316668,6 +319137,39 @@ export namespace Prisma {
     rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DeliveryPhotoUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    data?: BytesFieldUpdateOperationsInput | Buffer
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DeliveryPhotoUncheckedUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    data?: BytesFieldUpdateOperationsInput | Buffer
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DeliveryPhotoUncheckedUpdateManyWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    mimeType?: StringFieldUpdateOperationsInput | string
+    sizeBytes?: IntFieldUpdateOperationsInput | number
+    data?: BytesFieldUpdateOperationsInput | Buffer
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type FleetDocumentUpdateWithoutTenantInput = {
@@ -328678,6 +331180,10 @@ export namespace Prisma {
      * @deprecated Use FleetPayoutStatementDefaultArgs instead
      */
     export type FleetPayoutStatementArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = FleetPayoutStatementDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use DeliveryPhotoDefaultArgs instead
+     */
+    export type DeliveryPhotoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DeliveryPhotoDefaultArgs<ExtArgs>
     /**
      * @deprecated Use FleetPayoutInvoiceDefaultArgs instead
      */

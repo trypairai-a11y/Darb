@@ -22,6 +22,23 @@
 import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
+/**
+ * Whether object storage is usable at all.
+ *
+ * Callers that have a fallback need to ASK rather than catch: a thrown "R2 not
+ * configured" is indistinguishable from a network failure, and the two deserve
+ * opposite responses. This one means "use the other store"; the other means
+ * "retry".
+ */
+export function isR2Configured(): boolean {
+  return Boolean(
+    process.env.R2_ENDPOINT &&
+      process.env.R2_ACCESS_KEY_ID &&
+      process.env.R2_SECRET_ACCESS_KEY &&
+      process.env.R2_BUCKET,
+  );
+}
+
 function getClient(): { s3: S3Client; bucket: string } {
   const endpoint = process.env.R2_ENDPOINT;
   const accessKeyId = process.env.R2_ACCESS_KEY_ID;

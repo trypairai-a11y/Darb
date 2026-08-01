@@ -36,6 +36,7 @@ import { enqueueDispatchStart } from "../queues/dispatchQueue";
 import { selectCandidates } from "../services/dispatch/dispatchEngine";
 import { DeliveryOrderStatus } from "../generated/prisma";
 import { randomInt } from "crypto";
+import { isR2Configured, presignGetUrl } from "../services/r2Service";
 
 const SUPERVISOR_PLUS = ["ADMIN", "OPS_MANAGER", "SUPERVISOR"];
 
@@ -371,6 +372,57 @@ router.get("/:id/candidates", rbac(...SUPERVISOR_PLUS), async (req: Request, res
 });
 
 // ─── Mutations ──────────────────────────────────────────────────────────────
+
+/**
+ * @swagger
+ * /api/delivery-orders/{id}/proof-photo:
+ *   get:
+ *     tags: [Delivery Orders]
+ *     summary: The proof-of-delivery photo, wherever it happens to be stored
+ */
+router.get("/:id/proof-photo", rbac(...SUPERVISOR_PLUS, "ACCOUNTANT"), async (req: Request, res: Response) => {
+  try {
+    const { tenantId } = req.user!;
+    const order = await prisma.deliveryOrder.findFirst({
+      where: { id: req.params.id, tenantId },
+      select: { proofPhotoUrl: true },
+    });
+    if (!order?.proofPhotoUrl) {
+      res.status(404).json({ error: "No proof photo on this order" });
+      return;
+    }
+
+    /**
+     * Two stores, one key, and the caller should not have to know which.
+     *
+     * A photo taken while R2 was unconfigured lives in the database; one taken
+     * after lives in R2. Without this, switching the credentials on would leave
+     * every earlier photo unreachable, which is exactly when somebody goes
+     * looking for one.
+     */
+    const inline = await prisma.deliveryPhoto.findFirst({
+      where: { tenantId, key: order.proofPhotoUrl },
+      select: { data: true, mimeType: true },
+    });
+    if (inline) {
+      res.setHeader("Content-Type", inline.mimeType);
+      res.setHeader("Cache-Control", "private, max-age=300");
+      res.send(Buffer.from(inline.data));
+      return;
+    }
+
+    if (!isR2Configured()) {
+      res.status(503).json({
+        error: "This photo is not stored here and object storage is not configured",
+        code: "STORAGE_NOT_CONFIGURED",
+      });
+      return;
+    }
+    res.json({ url: await presignGetUrl(order.proofPhotoUrl) });
+  } catch (err) {
+    handleOrderError(res, err);
+  }
+});
 
 /**
  * @swagger

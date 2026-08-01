@@ -6,7 +6,7 @@ import { ticketSlaDeadline } from "../utils/ticketSla";
 import { createTicketSubmittedNotification } from "../services/notificationService";
 import { publishEvent } from "../services/eventBus";
 import { logger } from "../config/logger";
-import { presignPutUrl } from "../services/r2Service";
+import { isR2Configured, presignPutUrl } from "../services/r2Service";
 import {
   agentLocationRateLimit,
   agentUploadRateLimit,
@@ -689,6 +689,79 @@ router.post("/equipment/:id/condition", async (req: Request, res: Response) => {
 
 /**
  * @swagger
+ * /api/agent/photo-inline:
+ *   post:
+ *     tags: [Driver App]
+ *     summary: Store a proof photo in the database when R2 is not configured
+ */
+router.post("/photo-inline", agentUploadRateLimit, async (req: Request, res: Response) => {
+  try {
+    const { deviceId, key, orderId, dataBase64, contentType } = req.body as {
+      deviceId?: string;
+      key?: string;
+      orderId?: string;
+      dataBase64?: string;
+      contentType?: string;
+    };
+    if (!deviceId || !key || !orderId || !dataBase64) {
+      res.status(400).json({ error: "deviceId, key, orderId, dataBase64 required" });
+      return;
+    }
+
+    const device = await prisma.device.findUnique({
+      where: { id: deviceId },
+      include: { driver: true },
+    });
+    if (!device || !device.driver) {
+      res.status(404).json({ error: "Device or driver not found" });
+      return;
+    }
+    const tenantId = device.driver.tenantId;
+
+    // Same guard the metadata route uses: the key is issued by us and scoped to
+    // the caller's tenant, so a key that is not is a forged one.
+    if (!String(key).startsWith(tenantId + "/")) {
+      res.status(403).json({ error: "key tenant mismatch" });
+      return;
+    }
+
+    // The payload arrives as a data URL or bare base64 depending on platform.
+    const base64 = String(dataBase64).includes(",")
+      ? String(dataBase64).slice(String(dataBase64).indexOf(",") + 1)
+      : String(dataBase64);
+    const data = Buffer.from(base64, "base64");
+    // The client compresses to roughly 200 KB. 3 MB is the same ceiling the
+    // stamped invoice uses and leaves room under Vercel's 4.5 MB body limit
+    // once base64 has added its third.
+    if (data.length === 0 || data.length > 3 * 1024 * 1024) {
+      res.status(400).json({ error: "Photo must be between 1 byte and 3MB" });
+      return;
+    }
+
+    // Upsert: the outbox retries, and a retry must not fail on the key it
+    // already wrote.
+    await prisma.deliveryPhoto.upsert({
+      where: { key },
+      create: {
+        tenantId,
+        key,
+        orderId,
+        driverId: device.driver.id,
+        mimeType: contentType === "image/png" ? "image/png" : "image/jpeg",
+        sizeBytes: data.length,
+        data,
+      },
+      update: {},
+    });
+
+    res.status(201).json({ ok: true, key });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
  * /api/agent/notifications:
  *   get:
  *     tags: [Driver App]
@@ -1078,8 +1151,24 @@ router.post(
       const tenantId = device.driver.tenantId;
 
       const key = `${tenantId}/${orderId}/${deviceId}/${Date.now()}.jpg`;
+
+      /**
+       * No object storage is not a dead end any more (2026-08-01).
+       *
+       * This used to presign unconditionally, so an environment without R2
+       * credentials threw here. That was survivable while the PIN existed; once
+       * a photo became the only way to complete a delivery it meant no driver
+       * could finish a job at all. Answering with mode INLINE tells the app to
+       * send the bytes to /photo-inline instead, and the key it will be stored
+       * under is the same key R2 would have used.
+       */
+      if (!isR2Configured()) {
+        res.json({ mode: "INLINE", key, url: null });
+        return;
+      }
+
       const url = await presignPutUrl(key, contentType, 300);
-      res.json({ url, key, expiresInSec: 300 });
+      res.json({ mode: "R2", url, key, expiresInSec: 300 });
     } catch (err: any) {
       res.status(400).json({ error: err.message });
     }

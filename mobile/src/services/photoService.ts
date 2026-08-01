@@ -19,7 +19,7 @@
 import { Platform } from "react-native";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as SecureStore from "./deviceStorage";
-import { recordDeliveryPhotoMetadata, requestUploadUrl } from "../api/client";
+import { recordDeliveryPhotoMetadata, requestUploadUrl, uploadPhotoInline } from "../api/client";
 
 export interface UploadDeliveryPhotoArgs {
   orderId: string;
@@ -28,6 +28,26 @@ export interface UploadDeliveryPhotoArgs {
   longitude: number;
   /** Arrival at the merchant, versus the handover this was built for. */
   phase?: "ARRIVED_AT_PICKUP";
+}
+
+/**
+ * Read a local image as base64 on either platform.
+ *
+ * FileSystem is the native path; on web the URI is a blob or data URL and
+ * FileReader is the only thing that can resolve it.
+ */
+async function readAsBase64(uri: string): Promise<string> {
+  if (Platform.OS === "web") {
+    const blob = await (await fetch(uri)).blob();
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("could not read photo"));
+      reader.onload = () => resolve(String(reader.result ?? ""));
+      reader.readAsDataURL(blob);
+    });
+  }
+  const FileSystem = await import("expo-file-system");
+  return FileSystem.readAsStringAsync(uri, { encoding: "base64" as any });
 }
 
 export async function uploadDeliveryPhoto(args: UploadDeliveryPhotoArgs): Promise<{ key: string }> {
@@ -60,13 +80,33 @@ export async function uploadDeliveryPhoto(args: UploadDeliveryPhotoArgs): Promis
     Platform.OS === "web"
       ? await (await fetch(compressed.uri)).blob()
       : ({ uri: compressed.uri, name: "delivery.jpg", type: "image/jpeg" } as any);
-  const putResponse = await fetch(presign.url, {
-    method: "PUT",
-    headers: { "Content-Type": "image/jpeg" },
-    body: putBody,
-  });
-  if (!putResponse.ok) {
-    throw new Error(`presigned PUT failed: HTTP ${putResponse.status}`);
+  /**
+   * Two stores, decided by the server.
+   *
+   * INLINE is what an environment with no R2 credentials answers. Before this
+   * existed the presign simply threw, and once a photo became the only way to
+   * complete a delivery that meant the POD queued forever and no driver could
+   * finish a job. The bytes are already compressed to roughly 200 KB by step 1,
+   * so base64 through Express is affordable for the fallback path.
+   */
+  if (presign.mode === "INLINE" || !presign.url) {
+    const base64 = await readAsBase64(compressed.uri);
+    await uploadPhotoInline({
+      deviceId,
+      key: presign.key,
+      orderId: args.orderId,
+      dataBase64: base64,
+      contentType: "image/jpeg",
+    });
+  } else {
+    const putResponse = await fetch(presign.url, {
+      method: "PUT",
+      headers: { "Content-Type": "image/jpeg" },
+      body: putBody,
+    });
+    if (!putResponse.ok) {
+      throw new Error(`presigned PUT failed: HTTP ${putResponse.status}`);
+    }
   }
 
   // Step 4: record the metadata so the backend can stitch the photo to the order.

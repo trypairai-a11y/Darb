@@ -507,6 +507,7 @@ model Tenant {
   supportTickets            SupportTicket[]
   vendorTopUps              VendorTopUp[]
   fleetCashDeposits         FleetCashDeposit[]
+  deliveryPhotos            DeliveryPhoto[]
   // Revision 12 — fleet portal request desk.
   fleetDocuments            FleetDocument[]
   fleetChangeRequests       FleetChangeRequest[]
@@ -3564,6 +3565,36 @@ model FleetPayoutStatement {
 /// the fallback while it is not: production has no R2 yet, and a confirmation
 /// gate nobody can pass is worse than a megabyte in Postgres. One row per
 /// statement per month, so this is a dozen rows a year per company.
+// D. DeliveryPhoto (2026-08-01) - proof-of-delivery and arrival photos when
+//    object storage is not configured.
+//
+//    Why this exists: removing the PIN made a photo the ONLY way to complete a
+//    delivery, and the photo path presigns a PUT to R2. On an environment with
+//    no R2 credentials that presign throws, the app queues the POD forever, and
+//    no driver can finish a job. A delivery platform that cannot complete a
+//    delivery is not degraded, it is stopped.
+//
+//    Same shape and the same reasoning as FleetPayoutInvoice: `fileKey` is
+//    preferred and these bytes are the fallback, so nothing needs migrating the
+//    day R2 is switched on.
+model DeliveryPhoto {
+  id        String   @id @default(uuid())
+  tenantId  String
+  /// The storage key the rest of the system already passes around, so a photo
+  /// stored here is addressed exactly like one stored in R2.
+  key       String   @unique
+  orderId   String
+  driverId  String?
+  mimeType  String   @default("image/jpeg")
+  sizeBytes Int
+  data      Bytes
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, orderId])
+}
+
 model FleetPayoutInvoice {
   id             String   @id @default(uuid())
   tenantId       String
