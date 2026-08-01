@@ -214,12 +214,23 @@ async function nextOrderNumber(
    * regex guard keeps a malformed suffix from turning the cast into an error.
    */
   const WIDTH = 6;
+  /**
+   * The ::integer casts on the offset are load-bearing, not decoration.
+   *
+   * Prisma binds a JS number as int8, and Postgres has substr(text, int4) but
+   * no substr(text, int8), so without the cast every call fails with 42883
+   * "function pg_catalog.substring(text, bigint) does not exist" — which is a
+   * harder outage than the bug this replaced, because it takes every vendor at
+   * once instead of one at a time. Caught in production; the local Postgres
+   * reproduces it exactly with PREPARE(bigint).
+   */
+  const offset = prefix.length + 1;
   const rows = await tx.$queryRaw<Array<{ highest: number | null }>>`
-    SELECT MAX(CAST(SUBSTRING("orderNumber" FROM ${prefix.length + 1}) AS INTEGER)) AS highest
+    SELECT MAX(CAST(SUBSTRING("orderNumber" FROM ${offset}::integer) AS INTEGER)) AS highest
     FROM "DeliveryOrder"
     WHERE "tenantId" = ${tenantId}
       AND "orderNumber" LIKE ${prefix + "%"}
-      AND SUBSTRING("orderNumber" FROM ${prefix.length + 1}) ~ '^[0-9]+$'
+      AND SUBSTRING("orderNumber" FROM ${offset}::integer) ~ '^[0-9]+$'
   `;
   const highest = Number(rows[0]?.highest ?? 0) || 0;
   return `${prefix}${String(highest + 1).padStart(WIDTH, "0")}`;
