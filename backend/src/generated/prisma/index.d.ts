@@ -636,6 +636,11 @@ export type SupportTicketMessage = $Result.DefaultSelection<Prisma.$SupportTicke
  * keyed on `topup:{id}` so a replayed webhook cannot double-credit.
  */
 export type VendorTopUp = $Result.DefaultSelection<Prisma.$VendorTopUpPayload>
+/**
+ * Model FleetCashDeposit
+ * 
+ */
+export type FleetCashDeposit = $Result.DefaultSelection<Prisma.$FleetCashDepositPayload>
 
 /**
  * Enums
@@ -795,7 +800,8 @@ export type OrderSource = (typeof OrderSource)[keyof typeof OrderSource]
 export const DepositMethod: {
   CASH: 'CASH',
   BANK_TRANSFER: 'BANK_TRANSFER',
-  AL_MUZAINI: 'AL_MUZAINI'
+  AL_MUZAINI: 'AL_MUZAINI',
+  FLEET_ACCOUNT: 'FLEET_ACCOUNT'
 };
 
 export type DepositMethod = (typeof DepositMethod)[keyof typeof DepositMethod]
@@ -1185,7 +1191,8 @@ export const WalletOwnerType: {
   DRIVER_CASH: 'DRIVER_CASH',
   VENDOR_PAYABLE: 'VENDOR_PAYABLE',
   PLATFORM_REVENUE: 'PLATFORM_REVENUE',
-  PLATFORM_CLEARING: 'PLATFORM_CLEARING'
+  PLATFORM_CLEARING: 'PLATFORM_CLEARING',
+  FLEET_CASH: 'FLEET_CASH'
 };
 
 export type WalletOwnerType = (typeof WalletOwnerType)[keyof typeof WalletOwnerType]
@@ -1200,6 +1207,7 @@ export const WalletTxType: {
   REFUND: 'REFUND',
   TIP: 'TIP',
   FLEET_PAYOUT: 'FLEET_PAYOUT',
+  FLEET_DEPOSIT: 'FLEET_DEPOSIT',
   TOP_UP: 'TOP_UP'
 };
 
@@ -1357,6 +1365,16 @@ export const VendorTopUpStatus: {
 };
 
 export type VendorTopUpStatus = (typeof VendorTopUpStatus)[keyof typeof VendorTopUpStatus]
+
+
+export const FleetCashDepositStatus: {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  REJECTED: 'REJECTED',
+  CANCELLED: 'CANCELLED'
+};
+
+export type FleetCashDepositStatus = (typeof FleetCashDepositStatus)[keyof typeof FleetCashDepositStatus]
 
 }
 
@@ -1627,6 +1645,10 @@ export const SupportTicketType: typeof $Enums.SupportTicketType
 export type VendorTopUpStatus = $Enums.VendorTopUpStatus
 
 export const VendorTopUpStatus: typeof $Enums.VendorTopUpStatus
+
+export type FleetCashDepositStatus = $Enums.FleetCashDepositStatus
+
+export const FleetCashDepositStatus: typeof $Enums.FleetCashDepositStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -2930,6 +2952,16 @@ export class PrismaClient<
     * ```
     */
   get vendorTopUp(): Prisma.VendorTopUpDelegate<ExtArgs>;
+
+  /**
+   * `prisma.fleetCashDeposit`: Exposes CRUD operations for the **FleetCashDeposit** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more FleetCashDeposits
+    * const fleetCashDeposits = await prisma.fleetCashDeposit.findMany()
+    * ```
+    */
+  get fleetCashDeposit(): Prisma.FleetCashDepositDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -3488,7 +3520,8 @@ export namespace Prisma {
     AccountManagerVendor: 'AccountManagerVendor',
     SupportTicket: 'SupportTicket',
     SupportTicketMessage: 'SupportTicketMessage',
-    VendorTopUp: 'VendorTopUp'
+    VendorTopUp: 'VendorTopUp',
+    FleetCashDeposit: 'FleetCashDeposit'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -3504,7 +3537,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "tenant" | "company" | "ownerGroup" | "user" | "driver" | "driverRestriction" | "driverInventory" | "recruitmentPipeline" | "vehicle" | "vehicleDriverAssignment" | "shift" | "attendanceRecord" | "orderLog" | "cashRecord" | "cashTransaction" | "pendingDuesLedger" | "vehicleInspection" | "maintenanceRecord" | "device" | "sim" | "capturedOrder" | "locationLog" | "appUsageLog" | "deviceCommand" | "aiScore" | "alert" | "aiDigest" | "auditLog" | "ticket" | "leaveRequest" | "talabatSession" | "talabatViolationEvent" | "talabatDelivery" | "keetaDailyMetrics" | "ingestRun" | "deliverooDailyMetrics" | "talabatDailyMetrics" | "platformSettings" | "platformInventory" | "americanaDailyOrders" | "americanaChain" | "americanaStore" | "americanaContract" | "americanaChainRate" | "driverBatchHistory" | "americanaStoreAssignment" | "americanaDailyIngestion" | "kpiDefinition" | "kpiRecord" | "notification" | "notificationDelivery" | "notificationRule" | "courierOnlineSession" | "violation" | "penalty" | "appeal" | "orderEvent" | "aiInsight" | "demandHeatmap" | "deliveryArea" | "courierAttendanceSlot" | "keetaAvailableShiftSlot" | "shiftComplianceConfig" | "partner" | "partnerBankAccount" | "incentiveTargetRound" | "incentiveGoal" | "incentiveTier" | "courierIncentivePayout" | "billing" | "taxInvoice" | "paymentWithdrawal" | "agentRunLog" | "agentToolCall" | "pendingAgentAction" | "agentAction" | "agentMemory" | "pinnedView" | "performanceSnapshot" | "metricEvent" | "chatThread" | "chatMessage" | "scheduledBriefing" | "vendor" | "vendorBranch" | "deliveryZone" | "zoneSurcharge" | "deliveryPlan" | "deliveryPlanZoneRate" | "deliveryPlanKmTier" | "distanceCache" | "fulfillmentSettings" | "deliveryOrder" | "dispatchOffer" | "walletAccount" | "walletTransaction" | "walletEntry" | "remittance" | "walletReconciliationRun" | "incident" | "foodicsConnection" | "webhookEvent" | "apiKey" | "orderRating" | "vendorStatement" | "refund" | "fleetPartner" | "fleetPayoutStatement" | "fleetPayoutInvoice" | "fleetDocument" | "fleetChangeRequest" | "fleetIssue" | "userInvite" | "userSurfacePermission" | "accountManagerVendor" | "supportTicket" | "supportTicketMessage" | "vendorTopUp"
+      modelProps: "tenant" | "company" | "ownerGroup" | "user" | "driver" | "driverRestriction" | "driverInventory" | "recruitmentPipeline" | "vehicle" | "vehicleDriverAssignment" | "shift" | "attendanceRecord" | "orderLog" | "cashRecord" | "cashTransaction" | "pendingDuesLedger" | "vehicleInspection" | "maintenanceRecord" | "device" | "sim" | "capturedOrder" | "locationLog" | "appUsageLog" | "deviceCommand" | "aiScore" | "alert" | "aiDigest" | "auditLog" | "ticket" | "leaveRequest" | "talabatSession" | "talabatViolationEvent" | "talabatDelivery" | "keetaDailyMetrics" | "ingestRun" | "deliverooDailyMetrics" | "talabatDailyMetrics" | "platformSettings" | "platformInventory" | "americanaDailyOrders" | "americanaChain" | "americanaStore" | "americanaContract" | "americanaChainRate" | "driverBatchHistory" | "americanaStoreAssignment" | "americanaDailyIngestion" | "kpiDefinition" | "kpiRecord" | "notification" | "notificationDelivery" | "notificationRule" | "courierOnlineSession" | "violation" | "penalty" | "appeal" | "orderEvent" | "aiInsight" | "demandHeatmap" | "deliveryArea" | "courierAttendanceSlot" | "keetaAvailableShiftSlot" | "shiftComplianceConfig" | "partner" | "partnerBankAccount" | "incentiveTargetRound" | "incentiveGoal" | "incentiveTier" | "courierIncentivePayout" | "billing" | "taxInvoice" | "paymentWithdrawal" | "agentRunLog" | "agentToolCall" | "pendingAgentAction" | "agentAction" | "agentMemory" | "pinnedView" | "performanceSnapshot" | "metricEvent" | "chatThread" | "chatMessage" | "scheduledBriefing" | "vendor" | "vendorBranch" | "deliveryZone" | "zoneSurcharge" | "deliveryPlan" | "deliveryPlanZoneRate" | "deliveryPlanKmTier" | "distanceCache" | "fulfillmentSettings" | "deliveryOrder" | "dispatchOffer" | "walletAccount" | "walletTransaction" | "walletEntry" | "remittance" | "walletReconciliationRun" | "incident" | "foodicsConnection" | "webhookEvent" | "apiKey" | "orderRating" | "vendorStatement" | "refund" | "fleetPartner" | "fleetPayoutStatement" | "fleetPayoutInvoice" | "fleetDocument" | "fleetChangeRequest" | "fleetIssue" | "userInvite" | "userSurfacePermission" | "accountManagerVendor" | "supportTicket" | "supportTicketMessage" | "vendorTopUp" | "fleetCashDeposit"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -11768,6 +11801,76 @@ export namespace Prisma {
           }
         }
       }
+      FleetCashDeposit: {
+        payload: Prisma.$FleetCashDepositPayload<ExtArgs>
+        fields: Prisma.FleetCashDepositFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.FleetCashDepositFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetCashDepositPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.FleetCashDepositFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetCashDepositPayload>
+          }
+          findFirst: {
+            args: Prisma.FleetCashDepositFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetCashDepositPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.FleetCashDepositFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetCashDepositPayload>
+          }
+          findMany: {
+            args: Prisma.FleetCashDepositFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetCashDepositPayload>[]
+          }
+          create: {
+            args: Prisma.FleetCashDepositCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetCashDepositPayload>
+          }
+          createMany: {
+            args: Prisma.FleetCashDepositCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.FleetCashDepositCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetCashDepositPayload>[]
+          }
+          delete: {
+            args: Prisma.FleetCashDepositDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetCashDepositPayload>
+          }
+          update: {
+            args: Prisma.FleetCashDepositUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetCashDepositPayload>
+          }
+          deleteMany: {
+            args: Prisma.FleetCashDepositDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.FleetCashDepositUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.FleetCashDepositUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetCashDepositPayload>
+          }
+          aggregate: {
+            args: Prisma.FleetCashDepositAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFleetCashDeposit>
+          }
+          groupBy: {
+            args: Prisma.FleetCashDepositGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FleetCashDepositGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.FleetCashDepositCountArgs<ExtArgs>
+            result: $Utils.Optional<FleetCashDepositCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -12026,6 +12129,7 @@ export namespace Prisma {
     accountManagerVendors: number
     supportTickets: number
     vendorTopUps: number
+    fleetCashDeposits: number
     fleetDocuments: number
     fleetChangeRequests: number
     fleetIssues: number
@@ -12129,6 +12233,7 @@ export namespace Prisma {
     accountManagerVendors?: boolean | TenantCountOutputTypeCountAccountManagerVendorsArgs
     supportTickets?: boolean | TenantCountOutputTypeCountSupportTicketsArgs
     vendorTopUps?: boolean | TenantCountOutputTypeCountVendorTopUpsArgs
+    fleetCashDeposits?: boolean | TenantCountOutputTypeCountFleetCashDepositsArgs
     fleetDocuments?: boolean | TenantCountOutputTypeCountFleetDocumentsArgs
     fleetChangeRequests?: boolean | TenantCountOutputTypeCountFleetChangeRequestsArgs
     fleetIssues?: boolean | TenantCountOutputTypeCountFleetIssuesArgs
@@ -12822,6 +12927,13 @@ export namespace Prisma {
    */
   export type TenantCountOutputTypeCountVendorTopUpsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: VendorTopUpWhereInput
+  }
+
+  /**
+   * TenantCountOutputType without action
+   */
+  export type TenantCountOutputTypeCountFleetCashDepositsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FleetCashDepositWhereInput
   }
 
   /**
@@ -14753,6 +14865,8 @@ export namespace Prisma {
     issues: number
     supportTickets: number
     payoutInvoices: number
+    cashDeposits: number
+    remittances: number
   }
 
   export type FleetPartnerCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -14764,6 +14878,8 @@ export namespace Prisma {
     issues?: boolean | FleetPartnerCountOutputTypeCountIssuesArgs
     supportTickets?: boolean | FleetPartnerCountOutputTypeCountSupportTicketsArgs
     payoutInvoices?: boolean | FleetPartnerCountOutputTypeCountPayoutInvoicesArgs
+    cashDeposits?: boolean | FleetPartnerCountOutputTypeCountCashDepositsArgs
+    remittances?: boolean | FleetPartnerCountOutputTypeCountRemittancesArgs
   }
 
   // Custom InputTypes
@@ -14831,6 +14947,20 @@ export namespace Prisma {
    */
   export type FleetPartnerCountOutputTypeCountPayoutInvoicesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: FleetPayoutInvoiceWhereInput
+  }
+
+  /**
+   * FleetPartnerCountOutputType without action
+   */
+  export type FleetPartnerCountOutputTypeCountCashDepositsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FleetCashDepositWhereInput
+  }
+
+  /**
+   * FleetPartnerCountOutputType without action
+   */
+  export type FleetPartnerCountOutputTypeCountRemittancesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RemittanceWhereInput
   }
 
 
@@ -15234,6 +15364,7 @@ export namespace Prisma {
     accountManagerVendors?: boolean | Tenant$accountManagerVendorsArgs<ExtArgs>
     supportTickets?: boolean | Tenant$supportTicketsArgs<ExtArgs>
     vendorTopUps?: boolean | Tenant$vendorTopUpsArgs<ExtArgs>
+    fleetCashDeposits?: boolean | Tenant$fleetCashDepositsArgs<ExtArgs>
     fleetDocuments?: boolean | Tenant$fleetDocumentsArgs<ExtArgs>
     fleetChangeRequests?: boolean | Tenant$fleetChangeRequestsArgs<ExtArgs>
     fleetIssues?: boolean | Tenant$fleetIssuesArgs<ExtArgs>
@@ -15374,6 +15505,7 @@ export namespace Prisma {
     accountManagerVendors?: boolean | Tenant$accountManagerVendorsArgs<ExtArgs>
     supportTickets?: boolean | Tenant$supportTicketsArgs<ExtArgs>
     vendorTopUps?: boolean | Tenant$vendorTopUpsArgs<ExtArgs>
+    fleetCashDeposits?: boolean | Tenant$fleetCashDepositsArgs<ExtArgs>
     fleetDocuments?: boolean | Tenant$fleetDocumentsArgs<ExtArgs>
     fleetChangeRequests?: boolean | Tenant$fleetChangeRequestsArgs<ExtArgs>
     fleetIssues?: boolean | Tenant$fleetIssuesArgs<ExtArgs>
@@ -15483,6 +15615,7 @@ export namespace Prisma {
       accountManagerVendors: Prisma.$AccountManagerVendorPayload<ExtArgs>[]
       supportTickets: Prisma.$SupportTicketPayload<ExtArgs>[]
       vendorTopUps: Prisma.$VendorTopUpPayload<ExtArgs>[]
+      fleetCashDeposits: Prisma.$FleetCashDepositPayload<ExtArgs>[]
       fleetDocuments: Prisma.$FleetDocumentPayload<ExtArgs>[]
       fleetChangeRequests: Prisma.$FleetChangeRequestPayload<ExtArgs>[]
       fleetIssues: Prisma.$FleetIssuePayload<ExtArgs>[]
@@ -15965,6 +16098,7 @@ export namespace Prisma {
     accountManagerVendors<T extends Tenant$accountManagerVendorsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$accountManagerVendorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountManagerVendorPayload<ExtArgs>, T, "findMany"> | Null>
     supportTickets<T extends Tenant$supportTicketsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$supportTicketsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SupportTicketPayload<ExtArgs>, T, "findMany"> | Null>
     vendorTopUps<T extends Tenant$vendorTopUpsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$vendorTopUpsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorTopUpPayload<ExtArgs>, T, "findMany"> | Null>
+    fleetCashDeposits<T extends Tenant$fleetCashDepositsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$fleetCashDepositsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetCashDepositPayload<ExtArgs>, T, "findMany"> | Null>
     fleetDocuments<T extends Tenant$fleetDocumentsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$fleetDocumentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetDocumentPayload<ExtArgs>, T, "findMany"> | Null>
     fleetChangeRequests<T extends Tenant$fleetChangeRequestsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$fleetChangeRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetChangeRequestPayload<ExtArgs>, T, "findMany"> | Null>
     fleetIssues<T extends Tenant$fleetIssuesArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$fleetIssuesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetIssuePayload<ExtArgs>, T, "findMany"> | Null>
@@ -18292,6 +18426,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: VendorTopUpScalarFieldEnum | VendorTopUpScalarFieldEnum[]
+  }
+
+  /**
+   * Tenant.fleetCashDeposits
+   */
+  export type Tenant$fleetCashDepositsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetCashDeposit
+     */
+    select?: FleetCashDepositSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetCashDepositInclude<ExtArgs> | null
+    where?: FleetCashDepositWhereInput
+    orderBy?: FleetCashDepositOrderByWithRelationInput | FleetCashDepositOrderByWithRelationInput[]
+    cursor?: FleetCashDepositWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FleetCashDepositScalarFieldEnum | FleetCashDepositScalarFieldEnum[]
   }
 
   /**
@@ -124915,6 +125069,7 @@ export namespace Prisma {
     method: $Enums.DepositMethod | null
     receiptUrl: string | null
     receivedById: string | null
+    fleetPartnerId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -124927,6 +125082,7 @@ export namespace Prisma {
     method: $Enums.DepositMethod | null
     receiptUrl: string | null
     receivedById: string | null
+    fleetPartnerId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -124939,6 +125095,7 @@ export namespace Prisma {
     method: number
     receiptUrl: number
     receivedById: number
+    fleetPartnerId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -124961,6 +125118,7 @@ export namespace Prisma {
     method?: true
     receiptUrl?: true
     receivedById?: true
+    fleetPartnerId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -124973,6 +125131,7 @@ export namespace Prisma {
     method?: true
     receiptUrl?: true
     receivedById?: true
+    fleetPartnerId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -124985,6 +125144,7 @@ export namespace Prisma {
     method?: true
     receiptUrl?: true
     receivedById?: true
+    fleetPartnerId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -125084,6 +125244,7 @@ export namespace Prisma {
     method: $Enums.DepositMethod
     receiptUrl: string | null
     receivedById: string | null
+    fleetPartnerId: string | null
     createdAt: Date
     updatedAt: Date
     _count: RemittanceCountAggregateOutputType | null
@@ -125115,10 +125276,12 @@ export namespace Prisma {
     method?: boolean
     receiptUrl?: boolean
     receivedById?: boolean
+    fleetPartnerId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     driver?: boolean | DriverDefaultArgs<ExtArgs>
+    fleetPartner?: boolean | Remittance$fleetPartnerArgs<ExtArgs>
   }, ExtArgs["result"]["remittance"]>
 
   export type RemittanceSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -125129,10 +125292,12 @@ export namespace Prisma {
     method?: boolean
     receiptUrl?: boolean
     receivedById?: boolean
+    fleetPartnerId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     driver?: boolean | DriverDefaultArgs<ExtArgs>
+    fleetPartner?: boolean | Remittance$fleetPartnerArgs<ExtArgs>
   }, ExtArgs["result"]["remittance"]>
 
   export type RemittanceSelectScalar = {
@@ -125143,6 +125308,7 @@ export namespace Prisma {
     method?: boolean
     receiptUrl?: boolean
     receivedById?: boolean
+    fleetPartnerId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -125150,10 +125316,12 @@ export namespace Prisma {
   export type RemittanceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     driver?: boolean | DriverDefaultArgs<ExtArgs>
+    fleetPartner?: boolean | Remittance$fleetPartnerArgs<ExtArgs>
   }
   export type RemittanceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     driver?: boolean | DriverDefaultArgs<ExtArgs>
+    fleetPartner?: boolean | Remittance$fleetPartnerArgs<ExtArgs>
   }
 
   export type $RemittancePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -125161,6 +125329,7 @@ export namespace Prisma {
     objects: {
       tenant: Prisma.$TenantPayload<ExtArgs>
       driver: Prisma.$DriverPayload<ExtArgs>
+      fleetPartner: Prisma.$FleetPartnerPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -125170,6 +125339,13 @@ export namespace Prisma {
       method: $Enums.DepositMethod
       receiptUrl: string | null
       receivedById: string | null
+      /**
+       * Revision 14 — set when the delivery company cleared this driver out of its
+       * own deposited cash account rather than the driver handing notes to Darb.
+       * Null is the original hand-in at the cash desk, which is why this is one
+       * table: a driver's cash history is one list whoever settled it.
+       */
+      fleetPartnerId: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["remittance"]>
@@ -125538,6 +125714,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     driver<T extends DriverDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DriverDefaultArgs<ExtArgs>>): Prisma__DriverClient<$Result.GetResult<Prisma.$DriverPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    fleetPartner<T extends Remittance$fleetPartnerArgs<ExtArgs> = {}>(args?: Subset<T, Remittance$fleetPartnerArgs<ExtArgs>>): Prisma__FleetPartnerClient<$Result.GetResult<Prisma.$FleetPartnerPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -125574,6 +125751,7 @@ export namespace Prisma {
     readonly method: FieldRef<"Remittance", 'DepositMethod'>
     readonly receiptUrl: FieldRef<"Remittance", 'String'>
     readonly receivedById: FieldRef<"Remittance", 'String'>
+    readonly fleetPartnerId: FieldRef<"Remittance", 'String'>
     readonly createdAt: FieldRef<"Remittance", 'DateTime'>
     readonly updatedAt: FieldRef<"Remittance", 'DateTime'>
   }
@@ -125891,6 +126069,21 @@ export namespace Prisma {
      * Filter which Remittances to delete
      */
     where?: RemittanceWhereInput
+  }
+
+  /**
+   * Remittance.fleetPartner
+   */
+  export type Remittance$fleetPartnerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetPartner
+     */
+    select?: FleetPartnerSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetPartnerInclude<ExtArgs> | null
+    where?: FleetPartnerWhereInput
   }
 
   /**
@@ -134382,6 +134575,8 @@ export namespace Prisma {
     issues?: boolean | FleetPartner$issuesArgs<ExtArgs>
     supportTickets?: boolean | FleetPartner$supportTicketsArgs<ExtArgs>
     payoutInvoices?: boolean | FleetPartner$payoutInvoicesArgs<ExtArgs>
+    cashDeposits?: boolean | FleetPartner$cashDepositsArgs<ExtArgs>
+    remittances?: boolean | FleetPartner$remittancesArgs<ExtArgs>
     _count?: boolean | FleetPartnerCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["fleetPartner"]>
 
@@ -134434,6 +134629,8 @@ export namespace Prisma {
     issues?: boolean | FleetPartner$issuesArgs<ExtArgs>
     supportTickets?: boolean | FleetPartner$supportTicketsArgs<ExtArgs>
     payoutInvoices?: boolean | FleetPartner$payoutInvoicesArgs<ExtArgs>
+    cashDeposits?: boolean | FleetPartner$cashDepositsArgs<ExtArgs>
+    remittances?: boolean | FleetPartner$remittancesArgs<ExtArgs>
     _count?: boolean | FleetPartnerCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type FleetPartnerIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -134454,6 +134651,8 @@ export namespace Prisma {
       issues: Prisma.$FleetIssuePayload<ExtArgs>[]
       supportTickets: Prisma.$SupportTicketPayload<ExtArgs>[]
       payoutInvoices: Prisma.$FleetPayoutInvoicePayload<ExtArgs>[]
+      cashDeposits: Prisma.$FleetCashDepositPayload<ExtArgs>[]
+      remittances: Prisma.$RemittancePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -134845,6 +135044,8 @@ export namespace Prisma {
     issues<T extends FleetPartner$issuesArgs<ExtArgs> = {}>(args?: Subset<T, FleetPartner$issuesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetIssuePayload<ExtArgs>, T, "findMany"> | Null>
     supportTickets<T extends FleetPartner$supportTicketsArgs<ExtArgs> = {}>(args?: Subset<T, FleetPartner$supportTicketsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SupportTicketPayload<ExtArgs>, T, "findMany"> | Null>
     payoutInvoices<T extends FleetPartner$payoutInvoicesArgs<ExtArgs> = {}>(args?: Subset<T, FleetPartner$payoutInvoicesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetPayoutInvoicePayload<ExtArgs>, T, "findMany"> | Null>
+    cashDeposits<T extends FleetPartner$cashDepositsArgs<ExtArgs> = {}>(args?: Subset<T, FleetPartner$cashDepositsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetCashDepositPayload<ExtArgs>, T, "findMany"> | Null>
+    remittances<T extends FleetPartner$remittancesArgs<ExtArgs> = {}>(args?: Subset<T, FleetPartner$remittancesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RemittancePayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -135379,6 +135580,46 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: FleetPayoutInvoiceScalarFieldEnum | FleetPayoutInvoiceScalarFieldEnum[]
+  }
+
+  /**
+   * FleetPartner.cashDeposits
+   */
+  export type FleetPartner$cashDepositsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetCashDeposit
+     */
+    select?: FleetCashDepositSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetCashDepositInclude<ExtArgs> | null
+    where?: FleetCashDepositWhereInput
+    orderBy?: FleetCashDepositOrderByWithRelationInput | FleetCashDepositOrderByWithRelationInput[]
+    cursor?: FleetCashDepositWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FleetCashDepositScalarFieldEnum | FleetCashDepositScalarFieldEnum[]
+  }
+
+  /**
+   * FleetPartner.remittances
+   */
+  export type FleetPartner$remittancesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Remittance
+     */
+    select?: RemittanceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RemittanceInclude<ExtArgs> | null
+    where?: RemittanceWhereInput
+    orderBy?: RemittanceOrderByWithRelationInput | RemittanceOrderByWithRelationInput[]
+    cursor?: RemittanceWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: RemittanceScalarFieldEnum | RemittanceScalarFieldEnum[]
   }
 
   /**
@@ -147136,6 +147377,1112 @@ export namespace Prisma {
 
 
   /**
+   * Model FleetCashDeposit
+   */
+
+  export type AggregateFleetCashDeposit = {
+    _count: FleetCashDepositCountAggregateOutputType | null
+    _avg: FleetCashDepositAvgAggregateOutputType | null
+    _sum: FleetCashDepositSumAggregateOutputType | null
+    _min: FleetCashDepositMinAggregateOutputType | null
+    _max: FleetCashDepositMaxAggregateOutputType | null
+  }
+
+  export type FleetCashDepositAvgAggregateOutputType = {
+    amountKwd: Decimal | null
+  }
+
+  export type FleetCashDepositSumAggregateOutputType = {
+    amountKwd: Decimal | null
+  }
+
+  export type FleetCashDepositMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    fleetPartnerId: string | null
+    requestedById: string | null
+    amountKwd: Decimal | null
+    method: $Enums.DepositMethod | null
+    reference: string | null
+    note: string | null
+    receiptUrl: string | null
+    status: $Enums.FleetCashDepositStatus | null
+    confirmedById: string | null
+    confirmedAt: Date | null
+    rejectReason: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type FleetCashDepositMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    fleetPartnerId: string | null
+    requestedById: string | null
+    amountKwd: Decimal | null
+    method: $Enums.DepositMethod | null
+    reference: string | null
+    note: string | null
+    receiptUrl: string | null
+    status: $Enums.FleetCashDepositStatus | null
+    confirmedById: string | null
+    confirmedAt: Date | null
+    rejectReason: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type FleetCashDepositCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    fleetPartnerId: number
+    requestedById: number
+    amountKwd: number
+    method: number
+    reference: number
+    note: number
+    receiptUrl: number
+    status: number
+    confirmedById: number
+    confirmedAt: number
+    rejectReason: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type FleetCashDepositAvgAggregateInputType = {
+    amountKwd?: true
+  }
+
+  export type FleetCashDepositSumAggregateInputType = {
+    amountKwd?: true
+  }
+
+  export type FleetCashDepositMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    fleetPartnerId?: true
+    requestedById?: true
+    amountKwd?: true
+    method?: true
+    reference?: true
+    note?: true
+    receiptUrl?: true
+    status?: true
+    confirmedById?: true
+    confirmedAt?: true
+    rejectReason?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type FleetCashDepositMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    fleetPartnerId?: true
+    requestedById?: true
+    amountKwd?: true
+    method?: true
+    reference?: true
+    note?: true
+    receiptUrl?: true
+    status?: true
+    confirmedById?: true
+    confirmedAt?: true
+    rejectReason?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type FleetCashDepositCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    fleetPartnerId?: true
+    requestedById?: true
+    amountKwd?: true
+    method?: true
+    reference?: true
+    note?: true
+    receiptUrl?: true
+    status?: true
+    confirmedById?: true
+    confirmedAt?: true
+    rejectReason?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type FleetCashDepositAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FleetCashDeposit to aggregate.
+     */
+    where?: FleetCashDepositWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FleetCashDeposits to fetch.
+     */
+    orderBy?: FleetCashDepositOrderByWithRelationInput | FleetCashDepositOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: FleetCashDepositWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FleetCashDeposits from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FleetCashDeposits.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned FleetCashDeposits
+    **/
+    _count?: true | FleetCashDepositCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: FleetCashDepositAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: FleetCashDepositSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: FleetCashDepositMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: FleetCashDepositMaxAggregateInputType
+  }
+
+  export type GetFleetCashDepositAggregateType<T extends FleetCashDepositAggregateArgs> = {
+        [P in keyof T & keyof AggregateFleetCashDeposit]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateFleetCashDeposit[P]>
+      : GetScalarType<T[P], AggregateFleetCashDeposit[P]>
+  }
+
+
+
+
+  export type FleetCashDepositGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FleetCashDepositWhereInput
+    orderBy?: FleetCashDepositOrderByWithAggregationInput | FleetCashDepositOrderByWithAggregationInput[]
+    by: FleetCashDepositScalarFieldEnum[] | FleetCashDepositScalarFieldEnum
+    having?: FleetCashDepositScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: FleetCashDepositCountAggregateInputType | true
+    _avg?: FleetCashDepositAvgAggregateInputType
+    _sum?: FleetCashDepositSumAggregateInputType
+    _min?: FleetCashDepositMinAggregateInputType
+    _max?: FleetCashDepositMaxAggregateInputType
+  }
+
+  export type FleetCashDepositGroupByOutputType = {
+    id: string
+    tenantId: string
+    fleetPartnerId: string
+    requestedById: string | null
+    amountKwd: Decimal
+    method: $Enums.DepositMethod
+    reference: string
+    note: string | null
+    receiptUrl: string | null
+    status: $Enums.FleetCashDepositStatus
+    confirmedById: string | null
+    confirmedAt: Date | null
+    rejectReason: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: FleetCashDepositCountAggregateOutputType | null
+    _avg: FleetCashDepositAvgAggregateOutputType | null
+    _sum: FleetCashDepositSumAggregateOutputType | null
+    _min: FleetCashDepositMinAggregateOutputType | null
+    _max: FleetCashDepositMaxAggregateOutputType | null
+  }
+
+  type GetFleetCashDepositGroupByPayload<T extends FleetCashDepositGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<FleetCashDepositGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof FleetCashDepositGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], FleetCashDepositGroupByOutputType[P]>
+            : GetScalarType<T[P], FleetCashDepositGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type FleetCashDepositSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    fleetPartnerId?: boolean
+    requestedById?: boolean
+    amountKwd?: boolean
+    method?: boolean
+    reference?: boolean
+    note?: boolean
+    receiptUrl?: boolean
+    status?: boolean
+    confirmedById?: boolean
+    confirmedAt?: boolean
+    rejectReason?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    fleetPartner?: boolean | FleetPartnerDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["fleetCashDeposit"]>
+
+  export type FleetCashDepositSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    fleetPartnerId?: boolean
+    requestedById?: boolean
+    amountKwd?: boolean
+    method?: boolean
+    reference?: boolean
+    note?: boolean
+    receiptUrl?: boolean
+    status?: boolean
+    confirmedById?: boolean
+    confirmedAt?: boolean
+    rejectReason?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    fleetPartner?: boolean | FleetPartnerDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["fleetCashDeposit"]>
+
+  export type FleetCashDepositSelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    fleetPartnerId?: boolean
+    requestedById?: boolean
+    amountKwd?: boolean
+    method?: boolean
+    reference?: boolean
+    note?: boolean
+    receiptUrl?: boolean
+    status?: boolean
+    confirmedById?: boolean
+    confirmedAt?: boolean
+    rejectReason?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type FleetCashDepositInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    fleetPartner?: boolean | FleetPartnerDefaultArgs<ExtArgs>
+  }
+  export type FleetCashDepositIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    fleetPartner?: boolean | FleetPartnerDefaultArgs<ExtArgs>
+  }
+
+  export type $FleetCashDepositPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "FleetCashDeposit"
+    objects: {
+      tenant: Prisma.$TenantPayload<ExtArgs>
+      fleetPartner: Prisma.$FleetPartnerPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      fleetPartnerId: string
+      /**
+       * Which of the company's own logins submitted it.
+       */
+      requestedById: string | null
+      amountKwd: Prisma.Decimal
+      method: $Enums.DepositMethod
+      /**
+       * Human-quotable reference, e.g. "DEP-4F2A19".
+       */
+      reference: string
+      note: string | null
+      /**
+       * The company's own transfer slip or receipt photo, when there is one.
+       */
+      receiptUrl: string | null
+      status: $Enums.FleetCashDepositStatus
+      /**
+       * The accountant's decision. rejectReason is required to reject: a refused
+       * deposit with no account of why is a company left guessing.
+       */
+      confirmedById: string | null
+      confirmedAt: Date | null
+      rejectReason: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["fleetCashDeposit"]>
+    composites: {}
+  }
+
+  type FleetCashDepositGetPayload<S extends boolean | null | undefined | FleetCashDepositDefaultArgs> = $Result.GetResult<Prisma.$FleetCashDepositPayload, S>
+
+  type FleetCashDepositCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<FleetCashDepositFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: FleetCashDepositCountAggregateInputType | true
+    }
+
+  export interface FleetCashDepositDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['FleetCashDeposit'], meta: { name: 'FleetCashDeposit' } }
+    /**
+     * Find zero or one FleetCashDeposit that matches the filter.
+     * @param {FleetCashDepositFindUniqueArgs} args - Arguments to find a FleetCashDeposit
+     * @example
+     * // Get one FleetCashDeposit
+     * const fleetCashDeposit = await prisma.fleetCashDeposit.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends FleetCashDepositFindUniqueArgs>(args: SelectSubset<T, FleetCashDepositFindUniqueArgs<ExtArgs>>): Prisma__FleetCashDepositClient<$Result.GetResult<Prisma.$FleetCashDepositPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one FleetCashDeposit that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {FleetCashDepositFindUniqueOrThrowArgs} args - Arguments to find a FleetCashDeposit
+     * @example
+     * // Get one FleetCashDeposit
+     * const fleetCashDeposit = await prisma.fleetCashDeposit.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends FleetCashDepositFindUniqueOrThrowArgs>(args: SelectSubset<T, FleetCashDepositFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FleetCashDepositClient<$Result.GetResult<Prisma.$FleetCashDepositPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first FleetCashDeposit that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetCashDepositFindFirstArgs} args - Arguments to find a FleetCashDeposit
+     * @example
+     * // Get one FleetCashDeposit
+     * const fleetCashDeposit = await prisma.fleetCashDeposit.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends FleetCashDepositFindFirstArgs>(args?: SelectSubset<T, FleetCashDepositFindFirstArgs<ExtArgs>>): Prisma__FleetCashDepositClient<$Result.GetResult<Prisma.$FleetCashDepositPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first FleetCashDeposit that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetCashDepositFindFirstOrThrowArgs} args - Arguments to find a FleetCashDeposit
+     * @example
+     * // Get one FleetCashDeposit
+     * const fleetCashDeposit = await prisma.fleetCashDeposit.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends FleetCashDepositFindFirstOrThrowArgs>(args?: SelectSubset<T, FleetCashDepositFindFirstOrThrowArgs<ExtArgs>>): Prisma__FleetCashDepositClient<$Result.GetResult<Prisma.$FleetCashDepositPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more FleetCashDeposits that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetCashDepositFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all FleetCashDeposits
+     * const fleetCashDeposits = await prisma.fleetCashDeposit.findMany()
+     * 
+     * // Get first 10 FleetCashDeposits
+     * const fleetCashDeposits = await prisma.fleetCashDeposit.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const fleetCashDepositWithIdOnly = await prisma.fleetCashDeposit.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends FleetCashDepositFindManyArgs>(args?: SelectSubset<T, FleetCashDepositFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetCashDepositPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a FleetCashDeposit.
+     * @param {FleetCashDepositCreateArgs} args - Arguments to create a FleetCashDeposit.
+     * @example
+     * // Create one FleetCashDeposit
+     * const FleetCashDeposit = await prisma.fleetCashDeposit.create({
+     *   data: {
+     *     // ... data to create a FleetCashDeposit
+     *   }
+     * })
+     * 
+     */
+    create<T extends FleetCashDepositCreateArgs>(args: SelectSubset<T, FleetCashDepositCreateArgs<ExtArgs>>): Prisma__FleetCashDepositClient<$Result.GetResult<Prisma.$FleetCashDepositPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many FleetCashDeposits.
+     * @param {FleetCashDepositCreateManyArgs} args - Arguments to create many FleetCashDeposits.
+     * @example
+     * // Create many FleetCashDeposits
+     * const fleetCashDeposit = await prisma.fleetCashDeposit.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends FleetCashDepositCreateManyArgs>(args?: SelectSubset<T, FleetCashDepositCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many FleetCashDeposits and returns the data saved in the database.
+     * @param {FleetCashDepositCreateManyAndReturnArgs} args - Arguments to create many FleetCashDeposits.
+     * @example
+     * // Create many FleetCashDeposits
+     * const fleetCashDeposit = await prisma.fleetCashDeposit.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many FleetCashDeposits and only return the `id`
+     * const fleetCashDepositWithIdOnly = await prisma.fleetCashDeposit.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends FleetCashDepositCreateManyAndReturnArgs>(args?: SelectSubset<T, FleetCashDepositCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetCashDepositPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a FleetCashDeposit.
+     * @param {FleetCashDepositDeleteArgs} args - Arguments to delete one FleetCashDeposit.
+     * @example
+     * // Delete one FleetCashDeposit
+     * const FleetCashDeposit = await prisma.fleetCashDeposit.delete({
+     *   where: {
+     *     // ... filter to delete one FleetCashDeposit
+     *   }
+     * })
+     * 
+     */
+    delete<T extends FleetCashDepositDeleteArgs>(args: SelectSubset<T, FleetCashDepositDeleteArgs<ExtArgs>>): Prisma__FleetCashDepositClient<$Result.GetResult<Prisma.$FleetCashDepositPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one FleetCashDeposit.
+     * @param {FleetCashDepositUpdateArgs} args - Arguments to update one FleetCashDeposit.
+     * @example
+     * // Update one FleetCashDeposit
+     * const fleetCashDeposit = await prisma.fleetCashDeposit.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends FleetCashDepositUpdateArgs>(args: SelectSubset<T, FleetCashDepositUpdateArgs<ExtArgs>>): Prisma__FleetCashDepositClient<$Result.GetResult<Prisma.$FleetCashDepositPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more FleetCashDeposits.
+     * @param {FleetCashDepositDeleteManyArgs} args - Arguments to filter FleetCashDeposits to delete.
+     * @example
+     * // Delete a few FleetCashDeposits
+     * const { count } = await prisma.fleetCashDeposit.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends FleetCashDepositDeleteManyArgs>(args?: SelectSubset<T, FleetCashDepositDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FleetCashDeposits.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetCashDepositUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many FleetCashDeposits
+     * const fleetCashDeposit = await prisma.fleetCashDeposit.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends FleetCashDepositUpdateManyArgs>(args: SelectSubset<T, FleetCashDepositUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one FleetCashDeposit.
+     * @param {FleetCashDepositUpsertArgs} args - Arguments to update or create a FleetCashDeposit.
+     * @example
+     * // Update or create a FleetCashDeposit
+     * const fleetCashDeposit = await prisma.fleetCashDeposit.upsert({
+     *   create: {
+     *     // ... data to create a FleetCashDeposit
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the FleetCashDeposit we want to update
+     *   }
+     * })
+     */
+    upsert<T extends FleetCashDepositUpsertArgs>(args: SelectSubset<T, FleetCashDepositUpsertArgs<ExtArgs>>): Prisma__FleetCashDepositClient<$Result.GetResult<Prisma.$FleetCashDepositPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of FleetCashDeposits.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetCashDepositCountArgs} args - Arguments to filter FleetCashDeposits to count.
+     * @example
+     * // Count the number of FleetCashDeposits
+     * const count = await prisma.fleetCashDeposit.count({
+     *   where: {
+     *     // ... the filter for the FleetCashDeposits we want to count
+     *   }
+     * })
+    **/
+    count<T extends FleetCashDepositCountArgs>(
+      args?: Subset<T, FleetCashDepositCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], FleetCashDepositCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a FleetCashDeposit.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetCashDepositAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends FleetCashDepositAggregateArgs>(args: Subset<T, FleetCashDepositAggregateArgs>): Prisma.PrismaPromise<GetFleetCashDepositAggregateType<T>>
+
+    /**
+     * Group by FleetCashDeposit.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetCashDepositGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends FleetCashDepositGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: FleetCashDepositGroupByArgs['orderBy'] }
+        : { orderBy?: FleetCashDepositGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, FleetCashDepositGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFleetCashDepositGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the FleetCashDeposit model
+   */
+  readonly fields: FleetCashDepositFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for FleetCashDeposit.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__FleetCashDepositClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    fleetPartner<T extends FleetPartnerDefaultArgs<ExtArgs> = {}>(args?: Subset<T, FleetPartnerDefaultArgs<ExtArgs>>): Prisma__FleetPartnerClient<$Result.GetResult<Prisma.$FleetPartnerPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the FleetCashDeposit model
+   */ 
+  interface FleetCashDepositFieldRefs {
+    readonly id: FieldRef<"FleetCashDeposit", 'String'>
+    readonly tenantId: FieldRef<"FleetCashDeposit", 'String'>
+    readonly fleetPartnerId: FieldRef<"FleetCashDeposit", 'String'>
+    readonly requestedById: FieldRef<"FleetCashDeposit", 'String'>
+    readonly amountKwd: FieldRef<"FleetCashDeposit", 'Decimal'>
+    readonly method: FieldRef<"FleetCashDeposit", 'DepositMethod'>
+    readonly reference: FieldRef<"FleetCashDeposit", 'String'>
+    readonly note: FieldRef<"FleetCashDeposit", 'String'>
+    readonly receiptUrl: FieldRef<"FleetCashDeposit", 'String'>
+    readonly status: FieldRef<"FleetCashDeposit", 'FleetCashDepositStatus'>
+    readonly confirmedById: FieldRef<"FleetCashDeposit", 'String'>
+    readonly confirmedAt: FieldRef<"FleetCashDeposit", 'DateTime'>
+    readonly rejectReason: FieldRef<"FleetCashDeposit", 'String'>
+    readonly createdAt: FieldRef<"FleetCashDeposit", 'DateTime'>
+    readonly updatedAt: FieldRef<"FleetCashDeposit", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * FleetCashDeposit findUnique
+   */
+  export type FleetCashDepositFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetCashDeposit
+     */
+    select?: FleetCashDepositSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetCashDepositInclude<ExtArgs> | null
+    /**
+     * Filter, which FleetCashDeposit to fetch.
+     */
+    where: FleetCashDepositWhereUniqueInput
+  }
+
+  /**
+   * FleetCashDeposit findUniqueOrThrow
+   */
+  export type FleetCashDepositFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetCashDeposit
+     */
+    select?: FleetCashDepositSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetCashDepositInclude<ExtArgs> | null
+    /**
+     * Filter, which FleetCashDeposit to fetch.
+     */
+    where: FleetCashDepositWhereUniqueInput
+  }
+
+  /**
+   * FleetCashDeposit findFirst
+   */
+  export type FleetCashDepositFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetCashDeposit
+     */
+    select?: FleetCashDepositSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetCashDepositInclude<ExtArgs> | null
+    /**
+     * Filter, which FleetCashDeposit to fetch.
+     */
+    where?: FleetCashDepositWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FleetCashDeposits to fetch.
+     */
+    orderBy?: FleetCashDepositOrderByWithRelationInput | FleetCashDepositOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FleetCashDeposits.
+     */
+    cursor?: FleetCashDepositWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FleetCashDeposits from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FleetCashDeposits.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FleetCashDeposits.
+     */
+    distinct?: FleetCashDepositScalarFieldEnum | FleetCashDepositScalarFieldEnum[]
+  }
+
+  /**
+   * FleetCashDeposit findFirstOrThrow
+   */
+  export type FleetCashDepositFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetCashDeposit
+     */
+    select?: FleetCashDepositSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetCashDepositInclude<ExtArgs> | null
+    /**
+     * Filter, which FleetCashDeposit to fetch.
+     */
+    where?: FleetCashDepositWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FleetCashDeposits to fetch.
+     */
+    orderBy?: FleetCashDepositOrderByWithRelationInput | FleetCashDepositOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FleetCashDeposits.
+     */
+    cursor?: FleetCashDepositWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FleetCashDeposits from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FleetCashDeposits.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FleetCashDeposits.
+     */
+    distinct?: FleetCashDepositScalarFieldEnum | FleetCashDepositScalarFieldEnum[]
+  }
+
+  /**
+   * FleetCashDeposit findMany
+   */
+  export type FleetCashDepositFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetCashDeposit
+     */
+    select?: FleetCashDepositSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetCashDepositInclude<ExtArgs> | null
+    /**
+     * Filter, which FleetCashDeposits to fetch.
+     */
+    where?: FleetCashDepositWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FleetCashDeposits to fetch.
+     */
+    orderBy?: FleetCashDepositOrderByWithRelationInput | FleetCashDepositOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing FleetCashDeposits.
+     */
+    cursor?: FleetCashDepositWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FleetCashDeposits from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FleetCashDeposits.
+     */
+    skip?: number
+    distinct?: FleetCashDepositScalarFieldEnum | FleetCashDepositScalarFieldEnum[]
+  }
+
+  /**
+   * FleetCashDeposit create
+   */
+  export type FleetCashDepositCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetCashDeposit
+     */
+    select?: FleetCashDepositSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetCashDepositInclude<ExtArgs> | null
+    /**
+     * The data needed to create a FleetCashDeposit.
+     */
+    data: XOR<FleetCashDepositCreateInput, FleetCashDepositUncheckedCreateInput>
+  }
+
+  /**
+   * FleetCashDeposit createMany
+   */
+  export type FleetCashDepositCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many FleetCashDeposits.
+     */
+    data: FleetCashDepositCreateManyInput | FleetCashDepositCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * FleetCashDeposit createManyAndReturn
+   */
+  export type FleetCashDepositCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetCashDeposit
+     */
+    select?: FleetCashDepositSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many FleetCashDeposits.
+     */
+    data: FleetCashDepositCreateManyInput | FleetCashDepositCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetCashDepositIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * FleetCashDeposit update
+   */
+  export type FleetCashDepositUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetCashDeposit
+     */
+    select?: FleetCashDepositSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetCashDepositInclude<ExtArgs> | null
+    /**
+     * The data needed to update a FleetCashDeposit.
+     */
+    data: XOR<FleetCashDepositUpdateInput, FleetCashDepositUncheckedUpdateInput>
+    /**
+     * Choose, which FleetCashDeposit to update.
+     */
+    where: FleetCashDepositWhereUniqueInput
+  }
+
+  /**
+   * FleetCashDeposit updateMany
+   */
+  export type FleetCashDepositUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update FleetCashDeposits.
+     */
+    data: XOR<FleetCashDepositUpdateManyMutationInput, FleetCashDepositUncheckedUpdateManyInput>
+    /**
+     * Filter which FleetCashDeposits to update
+     */
+    where?: FleetCashDepositWhereInput
+  }
+
+  /**
+   * FleetCashDeposit upsert
+   */
+  export type FleetCashDepositUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetCashDeposit
+     */
+    select?: FleetCashDepositSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetCashDepositInclude<ExtArgs> | null
+    /**
+     * The filter to search for the FleetCashDeposit to update in case it exists.
+     */
+    where: FleetCashDepositWhereUniqueInput
+    /**
+     * In case the FleetCashDeposit found by the `where` argument doesn't exist, create a new FleetCashDeposit with this data.
+     */
+    create: XOR<FleetCashDepositCreateInput, FleetCashDepositUncheckedCreateInput>
+    /**
+     * In case the FleetCashDeposit was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<FleetCashDepositUpdateInput, FleetCashDepositUncheckedUpdateInput>
+  }
+
+  /**
+   * FleetCashDeposit delete
+   */
+  export type FleetCashDepositDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetCashDeposit
+     */
+    select?: FleetCashDepositSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetCashDepositInclude<ExtArgs> | null
+    /**
+     * Filter which FleetCashDeposit to delete.
+     */
+    where: FleetCashDepositWhereUniqueInput
+  }
+
+  /**
+   * FleetCashDeposit deleteMany
+   */
+  export type FleetCashDepositDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FleetCashDeposits to delete
+     */
+    where?: FleetCashDepositWhereInput
+  }
+
+  /**
+   * FleetCashDeposit without action
+   */
+  export type FleetCashDepositDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetCashDeposit
+     */
+    select?: FleetCashDepositSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FleetCashDepositInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -149025,6 +150372,7 @@ export namespace Prisma {
     method: 'method',
     receiptUrl: 'receiptUrl',
     receivedById: 'receivedById',
+    fleetPartnerId: 'fleetPartnerId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -149382,6 +150730,27 @@ export namespace Prisma {
   };
 
   export type VendorTopUpScalarFieldEnum = (typeof VendorTopUpScalarFieldEnum)[keyof typeof VendorTopUpScalarFieldEnum]
+
+
+  export const FleetCashDepositScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    fleetPartnerId: 'fleetPartnerId',
+    requestedById: 'requestedById',
+    amountKwd: 'amountKwd',
+    method: 'method',
+    reference: 'reference',
+    note: 'note',
+    receiptUrl: 'receiptUrl',
+    status: 'status',
+    confirmedById: 'confirmedById',
+    confirmedAt: 'confirmedAt',
+    rejectReason: 'rejectReason',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type FleetCashDepositScalarFieldEnum = (typeof FleetCashDepositScalarFieldEnum)[keyof typeof FleetCashDepositScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -150658,7 +152027,8 @@ export namespace Prisma {
     tenantId: 'tenantId',
     driverId: 'driverId',
     receiptUrl: 'receiptUrl',
-    receivedById: 'receivedById'
+    receivedById: 'receivedById',
+    fleetPartnerId: 'fleetPartnerId'
   };
 
   export type RemittanceOrderByRelevanceFieldEnum = (typeof RemittanceOrderByRelevanceFieldEnum)[keyof typeof RemittanceOrderByRelevanceFieldEnum]
@@ -150919,6 +152289,21 @@ export namespace Prisma {
   };
 
   export type VendorTopUpOrderByRelevanceFieldEnum = (typeof VendorTopUpOrderByRelevanceFieldEnum)[keyof typeof VendorTopUpOrderByRelevanceFieldEnum]
+
+
+  export const FleetCashDepositOrderByRelevanceFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    fleetPartnerId: 'fleetPartnerId',
+    requestedById: 'requestedById',
+    reference: 'reference',
+    note: 'note',
+    receiptUrl: 'receiptUrl',
+    confirmedById: 'confirmedById',
+    rejectReason: 'rejectReason'
+  };
+
+  export type FleetCashDepositOrderByRelevanceFieldEnum = (typeof FleetCashDepositOrderByRelevanceFieldEnum)[keyof typeof FleetCashDepositOrderByRelevanceFieldEnum]
 
 
   /**
@@ -151960,6 +153345,20 @@ export namespace Prisma {
    */
   export type ListEnumVendorTopUpStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VendorTopUpStatus[]'>
     
+
+
+  /**
+   * Reference to a field of type 'FleetCashDepositStatus'
+   */
+  export type EnumFleetCashDepositStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FleetCashDepositStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'FleetCashDepositStatus[]'
+   */
+  export type ListEnumFleetCashDepositStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FleetCashDepositStatus[]'>
+    
   /**
    * Deep Input Types
    */
@@ -152082,6 +153481,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorListRelationFilter
     supportTickets?: SupportTicketListRelationFilter
     vendorTopUps?: VendorTopUpListRelationFilter
+    fleetCashDeposits?: FleetCashDepositListRelationFilter
     fleetDocuments?: FleetDocumentListRelationFilter
     fleetChangeRequests?: FleetChangeRequestListRelationFilter
     fleetIssues?: FleetIssueListRelationFilter
@@ -152201,6 +153601,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorOrderByRelationAggregateInput
     supportTickets?: SupportTicketOrderByRelationAggregateInput
     vendorTopUps?: VendorTopUpOrderByRelationAggregateInput
+    fleetCashDeposits?: FleetCashDepositOrderByRelationAggregateInput
     fleetDocuments?: FleetDocumentOrderByRelationAggregateInput
     fleetChangeRequests?: FleetChangeRequestOrderByRelationAggregateInput
     fleetIssues?: FleetIssueOrderByRelationAggregateInput
@@ -152324,6 +153725,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorListRelationFilter
     supportTickets?: SupportTicketListRelationFilter
     vendorTopUps?: VendorTopUpListRelationFilter
+    fleetCashDeposits?: FleetCashDepositListRelationFilter
     fleetDocuments?: FleetDocumentListRelationFilter
     fleetChangeRequests?: FleetChangeRequestListRelationFilter
     fleetIssues?: FleetIssueListRelationFilter
@@ -162659,10 +164061,12 @@ export namespace Prisma {
     method?: EnumDepositMethodFilter<"Remittance"> | $Enums.DepositMethod
     receiptUrl?: StringNullableFilter<"Remittance"> | string | null
     receivedById?: StringNullableFilter<"Remittance"> | string | null
+    fleetPartnerId?: StringNullableFilter<"Remittance"> | string | null
     createdAt?: DateTimeFilter<"Remittance"> | Date | string
     updatedAt?: DateTimeFilter<"Remittance"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     driver?: XOR<DriverRelationFilter, DriverWhereInput>
+    fleetPartner?: XOR<FleetPartnerNullableRelationFilter, FleetPartnerWhereInput> | null
   }
 
   export type RemittanceOrderByWithRelationInput = {
@@ -162673,10 +164077,12 @@ export namespace Prisma {
     method?: SortOrder
     receiptUrl?: SortOrderInput | SortOrder
     receivedById?: SortOrderInput | SortOrder
+    fleetPartnerId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     tenant?: TenantOrderByWithRelationInput
     driver?: DriverOrderByWithRelationInput
+    fleetPartner?: FleetPartnerOrderByWithRelationInput
     _relevance?: RemittanceOrderByRelevanceInput
   }
 
@@ -162691,10 +164097,12 @@ export namespace Prisma {
     method?: EnumDepositMethodFilter<"Remittance"> | $Enums.DepositMethod
     receiptUrl?: StringNullableFilter<"Remittance"> | string | null
     receivedById?: StringNullableFilter<"Remittance"> | string | null
+    fleetPartnerId?: StringNullableFilter<"Remittance"> | string | null
     createdAt?: DateTimeFilter<"Remittance"> | Date | string
     updatedAt?: DateTimeFilter<"Remittance"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     driver?: XOR<DriverRelationFilter, DriverWhereInput>
+    fleetPartner?: XOR<FleetPartnerNullableRelationFilter, FleetPartnerWhereInput> | null
   }, "id">
 
   export type RemittanceOrderByWithAggregationInput = {
@@ -162705,6 +164113,7 @@ export namespace Prisma {
     method?: SortOrder
     receiptUrl?: SortOrderInput | SortOrder
     receivedById?: SortOrderInput | SortOrder
+    fleetPartnerId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: RemittanceCountOrderByAggregateInput
@@ -162725,6 +164134,7 @@ export namespace Prisma {
     method?: EnumDepositMethodWithAggregatesFilter<"Remittance"> | $Enums.DepositMethod
     receiptUrl?: StringNullableWithAggregatesFilter<"Remittance"> | string | null
     receivedById?: StringNullableWithAggregatesFilter<"Remittance"> | string | null
+    fleetPartnerId?: StringNullableWithAggregatesFilter<"Remittance"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Remittance"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Remittance"> | Date | string
   }
@@ -163475,6 +164885,8 @@ export namespace Prisma {
     issues?: FleetIssueListRelationFilter
     supportTickets?: SupportTicketListRelationFilter
     payoutInvoices?: FleetPayoutInvoiceListRelationFilter
+    cashDeposits?: FleetCashDepositListRelationFilter
+    remittances?: RemittanceListRelationFilter
   }
 
   export type FleetPartnerOrderByWithRelationInput = {
@@ -163503,6 +164915,8 @@ export namespace Prisma {
     issues?: FleetIssueOrderByRelationAggregateInput
     supportTickets?: SupportTicketOrderByRelationAggregateInput
     payoutInvoices?: FleetPayoutInvoiceOrderByRelationAggregateInput
+    cashDeposits?: FleetCashDepositOrderByRelationAggregateInput
+    remittances?: RemittanceOrderByRelationAggregateInput
     _relevance?: FleetPartnerOrderByRelevanceInput
   }
 
@@ -163535,6 +164949,8 @@ export namespace Prisma {
     issues?: FleetIssueListRelationFilter
     supportTickets?: SupportTicketListRelationFilter
     payoutInvoices?: FleetPayoutInvoiceListRelationFilter
+    cashDeposits?: FleetCashDepositListRelationFilter
+    remittances?: RemittanceListRelationFilter
   }, "id">
 
   export type FleetPartnerOrderByWithAggregationInput = {
@@ -164659,6 +166075,117 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"VendorTopUp"> | Date | string
   }
 
+  export type FleetCashDepositWhereInput = {
+    AND?: FleetCashDepositWhereInput | FleetCashDepositWhereInput[]
+    OR?: FleetCashDepositWhereInput[]
+    NOT?: FleetCashDepositWhereInput | FleetCashDepositWhereInput[]
+    id?: StringFilter<"FleetCashDeposit"> | string
+    tenantId?: StringFilter<"FleetCashDeposit"> | string
+    fleetPartnerId?: StringFilter<"FleetCashDeposit"> | string
+    requestedById?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    amountKwd?: DecimalFilter<"FleetCashDeposit"> | Decimal | DecimalJsLike | number | string
+    method?: EnumDepositMethodFilter<"FleetCashDeposit"> | $Enums.DepositMethod
+    reference?: StringFilter<"FleetCashDeposit"> | string
+    note?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    receiptUrl?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    status?: EnumFleetCashDepositStatusFilter<"FleetCashDeposit"> | $Enums.FleetCashDepositStatus
+    confirmedById?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    confirmedAt?: DateTimeNullableFilter<"FleetCashDeposit"> | Date | string | null
+    rejectReason?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    createdAt?: DateTimeFilter<"FleetCashDeposit"> | Date | string
+    updatedAt?: DateTimeFilter<"FleetCashDeposit"> | Date | string
+    tenant?: XOR<TenantRelationFilter, TenantWhereInput>
+    fleetPartner?: XOR<FleetPartnerRelationFilter, FleetPartnerWhereInput>
+  }
+
+  export type FleetCashDepositOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    fleetPartnerId?: SortOrder
+    requestedById?: SortOrderInput | SortOrder
+    amountKwd?: SortOrder
+    method?: SortOrder
+    reference?: SortOrder
+    note?: SortOrderInput | SortOrder
+    receiptUrl?: SortOrderInput | SortOrder
+    status?: SortOrder
+    confirmedById?: SortOrderInput | SortOrder
+    confirmedAt?: SortOrderInput | SortOrder
+    rejectReason?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    tenant?: TenantOrderByWithRelationInput
+    fleetPartner?: FleetPartnerOrderByWithRelationInput
+    _relevance?: FleetCashDepositOrderByRelevanceInput
+  }
+
+  export type FleetCashDepositWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: FleetCashDepositWhereInput | FleetCashDepositWhereInput[]
+    OR?: FleetCashDepositWhereInput[]
+    NOT?: FleetCashDepositWhereInput | FleetCashDepositWhereInput[]
+    tenantId?: StringFilter<"FleetCashDeposit"> | string
+    fleetPartnerId?: StringFilter<"FleetCashDeposit"> | string
+    requestedById?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    amountKwd?: DecimalFilter<"FleetCashDeposit"> | Decimal | DecimalJsLike | number | string
+    method?: EnumDepositMethodFilter<"FleetCashDeposit"> | $Enums.DepositMethod
+    reference?: StringFilter<"FleetCashDeposit"> | string
+    note?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    receiptUrl?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    status?: EnumFleetCashDepositStatusFilter<"FleetCashDeposit"> | $Enums.FleetCashDepositStatus
+    confirmedById?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    confirmedAt?: DateTimeNullableFilter<"FleetCashDeposit"> | Date | string | null
+    rejectReason?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    createdAt?: DateTimeFilter<"FleetCashDeposit"> | Date | string
+    updatedAt?: DateTimeFilter<"FleetCashDeposit"> | Date | string
+    tenant?: XOR<TenantRelationFilter, TenantWhereInput>
+    fleetPartner?: XOR<FleetPartnerRelationFilter, FleetPartnerWhereInput>
+  }, "id">
+
+  export type FleetCashDepositOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    fleetPartnerId?: SortOrder
+    requestedById?: SortOrderInput | SortOrder
+    amountKwd?: SortOrder
+    method?: SortOrder
+    reference?: SortOrder
+    note?: SortOrderInput | SortOrder
+    receiptUrl?: SortOrderInput | SortOrder
+    status?: SortOrder
+    confirmedById?: SortOrderInput | SortOrder
+    confirmedAt?: SortOrderInput | SortOrder
+    rejectReason?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: FleetCashDepositCountOrderByAggregateInput
+    _avg?: FleetCashDepositAvgOrderByAggregateInput
+    _max?: FleetCashDepositMaxOrderByAggregateInput
+    _min?: FleetCashDepositMinOrderByAggregateInput
+    _sum?: FleetCashDepositSumOrderByAggregateInput
+  }
+
+  export type FleetCashDepositScalarWhereWithAggregatesInput = {
+    AND?: FleetCashDepositScalarWhereWithAggregatesInput | FleetCashDepositScalarWhereWithAggregatesInput[]
+    OR?: FleetCashDepositScalarWhereWithAggregatesInput[]
+    NOT?: FleetCashDepositScalarWhereWithAggregatesInput | FleetCashDepositScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"FleetCashDeposit"> | string
+    tenantId?: StringWithAggregatesFilter<"FleetCashDeposit"> | string
+    fleetPartnerId?: StringWithAggregatesFilter<"FleetCashDeposit"> | string
+    requestedById?: StringNullableWithAggregatesFilter<"FleetCashDeposit"> | string | null
+    amountKwd?: DecimalWithAggregatesFilter<"FleetCashDeposit"> | Decimal | DecimalJsLike | number | string
+    method?: EnumDepositMethodWithAggregatesFilter<"FleetCashDeposit"> | $Enums.DepositMethod
+    reference?: StringWithAggregatesFilter<"FleetCashDeposit"> | string
+    note?: StringNullableWithAggregatesFilter<"FleetCashDeposit"> | string | null
+    receiptUrl?: StringNullableWithAggregatesFilter<"FleetCashDeposit"> | string | null
+    status?: EnumFleetCashDepositStatusWithAggregatesFilter<"FleetCashDeposit"> | $Enums.FleetCashDepositStatus
+    confirmedById?: StringNullableWithAggregatesFilter<"FleetCashDeposit"> | string | null
+    confirmedAt?: DateTimeNullableWithAggregatesFilter<"FleetCashDeposit"> | Date | string | null
+    rejectReason?: StringNullableWithAggregatesFilter<"FleetCashDeposit"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"FleetCashDeposit"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"FleetCashDeposit"> | Date | string
+  }
+
   export type TenantCreateInput = {
     id?: string
     name: string
@@ -164773,6 +166300,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -164892,6 +166420,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -165011,6 +166540,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -165130,6 +166660,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -176504,6 +178035,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutRemittancesInput
     driver: DriverCreateNestedOneWithoutRemittancesInput
+    fleetPartner?: FleetPartnerCreateNestedOneWithoutRemittancesInput
   }
 
   export type RemittanceUncheckedCreateInput = {
@@ -176514,6 +178046,7 @@ export namespace Prisma {
     method: $Enums.DepositMethod
     receiptUrl?: string | null
     receivedById?: string | null
+    fleetPartnerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -176528,6 +178061,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutRemittancesNestedInput
     driver?: DriverUpdateOneRequiredWithoutRemittancesNestedInput
+    fleetPartner?: FleetPartnerUpdateOneWithoutRemittancesNestedInput
   }
 
   export type RemittanceUncheckedUpdateInput = {
@@ -176538,6 +178072,7 @@ export namespace Prisma {
     method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
     receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
     receivedById?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -176550,6 +178085,7 @@ export namespace Prisma {
     method: $Enums.DepositMethod
     receiptUrl?: string | null
     receivedById?: string | null
+    fleetPartnerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -176572,6 +178108,7 @@ export namespace Prisma {
     method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
     receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
     receivedById?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -177361,6 +178898,8 @@ export namespace Prisma {
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerUncheckedCreateInput = {
@@ -177387,6 +178926,8 @@ export namespace Prisma {
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceUncheckedCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerUpdateInput = {
@@ -177413,6 +178954,8 @@ export namespace Prisma {
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateInput = {
@@ -177439,6 +178982,8 @@ export namespace Prisma {
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUncheckedUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type FleetPartnerCreateManyInput = {
@@ -178608,6 +180153,130 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type FleetCashDepositCreateInput = {
+    id?: string
+    requestedById?: string | null
+    amountKwd: Decimal | DecimalJsLike | number | string
+    method?: $Enums.DepositMethod
+    reference: string
+    note?: string | null
+    receiptUrl?: string | null
+    status?: $Enums.FleetCashDepositStatus
+    confirmedById?: string | null
+    confirmedAt?: Date | string | null
+    rejectReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutFleetCashDepositsInput
+    fleetPartner: FleetPartnerCreateNestedOneWithoutCashDepositsInput
+  }
+
+  export type FleetCashDepositUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    fleetPartnerId: string
+    requestedById?: string | null
+    amountKwd: Decimal | DecimalJsLike | number | string
+    method?: $Enums.DepositMethod
+    reference: string
+    note?: string | null
+    receiptUrl?: string | null
+    status?: $Enums.FleetCashDepositStatus
+    confirmedById?: string | null
+    confirmedAt?: Date | string | null
+    rejectReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FleetCashDepositUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
+    reference?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutFleetCashDepositsNestedInput
+    fleetPartner?: FleetPartnerUpdateOneRequiredWithoutCashDepositsNestedInput
+  }
+
+  export type FleetCashDepositUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    fleetPartnerId?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
+    reference?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FleetCashDepositCreateManyInput = {
+    id?: string
+    tenantId: string
+    fleetPartnerId: string
+    requestedById?: string | null
+    amountKwd: Decimal | DecimalJsLike | number | string
+    method?: $Enums.DepositMethod
+    reference: string
+    note?: string | null
+    receiptUrl?: string | null
+    status?: $Enums.FleetCashDepositStatus
+    confirmedById?: string | null
+    confirmedAt?: Date | string | null
+    rejectReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FleetCashDepositUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
+    reference?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FleetCashDepositUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    fleetPartnerId?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
+    reference?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -179328,6 +180997,12 @@ export namespace Prisma {
     none?: VendorTopUpWhereInput
   }
 
+  export type FleetCashDepositListRelationFilter = {
+    every?: FleetCashDepositWhereInput
+    some?: FleetCashDepositWhereInput
+    none?: FleetCashDepositWhereInput
+  }
+
   export type FleetDocumentListRelationFilter = {
     every?: FleetDocumentWhereInput
     some?: FleetDocumentWhereInput
@@ -179736,6 +181411,10 @@ export namespace Prisma {
   }
 
   export type VendorTopUpOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type FleetCashDepositOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -187542,6 +189221,7 @@ export namespace Prisma {
     method?: SortOrder
     receiptUrl?: SortOrder
     receivedById?: SortOrder
+    fleetPartnerId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -187558,6 +189238,7 @@ export namespace Prisma {
     method?: SortOrder
     receiptUrl?: SortOrder
     receivedById?: SortOrder
+    fleetPartnerId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -187570,6 +189251,7 @@ export namespace Prisma {
     method?: SortOrder
     receiptUrl?: SortOrder
     receivedById?: SortOrder
+    fleetPartnerId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -189005,6 +190687,91 @@ export namespace Prisma {
     _max?: NestedEnumVendorTopUpStatusFilter<$PrismaModel>
   }
 
+  export type EnumFleetCashDepositStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.FleetCashDepositStatus | EnumFleetCashDepositStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.FleetCashDepositStatus[] | ListEnumFleetCashDepositStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FleetCashDepositStatus[] | ListEnumFleetCashDepositStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumFleetCashDepositStatusFilter<$PrismaModel> | $Enums.FleetCashDepositStatus
+  }
+
+  export type FleetCashDepositOrderByRelevanceInput = {
+    fields: FleetCashDepositOrderByRelevanceFieldEnum | FleetCashDepositOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type FleetCashDepositCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    fleetPartnerId?: SortOrder
+    requestedById?: SortOrder
+    amountKwd?: SortOrder
+    method?: SortOrder
+    reference?: SortOrder
+    note?: SortOrder
+    receiptUrl?: SortOrder
+    status?: SortOrder
+    confirmedById?: SortOrder
+    confirmedAt?: SortOrder
+    rejectReason?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FleetCashDepositAvgOrderByAggregateInput = {
+    amountKwd?: SortOrder
+  }
+
+  export type FleetCashDepositMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    fleetPartnerId?: SortOrder
+    requestedById?: SortOrder
+    amountKwd?: SortOrder
+    method?: SortOrder
+    reference?: SortOrder
+    note?: SortOrder
+    receiptUrl?: SortOrder
+    status?: SortOrder
+    confirmedById?: SortOrder
+    confirmedAt?: SortOrder
+    rejectReason?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FleetCashDepositMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    fleetPartnerId?: SortOrder
+    requestedById?: SortOrder
+    amountKwd?: SortOrder
+    method?: SortOrder
+    reference?: SortOrder
+    note?: SortOrder
+    receiptUrl?: SortOrder
+    status?: SortOrder
+    confirmedById?: SortOrder
+    confirmedAt?: SortOrder
+    rejectReason?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FleetCashDepositSumOrderByAggregateInput = {
+    amountKwd?: SortOrder
+  }
+
+  export type EnumFleetCashDepositStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.FleetCashDepositStatus | EnumFleetCashDepositStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.FleetCashDepositStatus[] | ListEnumFleetCashDepositStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FleetCashDepositStatus[] | ListEnumFleetCashDepositStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumFleetCashDepositStatusWithAggregatesFilter<$PrismaModel> | $Enums.FleetCashDepositStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumFleetCashDepositStatusFilter<$PrismaModel>
+    _max?: NestedEnumFleetCashDepositStatusFilter<$PrismaModel>
+  }
+
   export type CompanyCreateNestedManyWithoutTenantInput = {
     create?: XOR<CompanyCreateWithoutTenantInput, CompanyUncheckedCreateWithoutTenantInput> | CompanyCreateWithoutTenantInput[] | CompanyUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: CompanyCreateOrConnectWithoutTenantInput | CompanyCreateOrConnectWithoutTenantInput[]
@@ -189694,6 +191461,13 @@ export namespace Prisma {
     connectOrCreate?: VendorTopUpCreateOrConnectWithoutTenantInput | VendorTopUpCreateOrConnectWithoutTenantInput[]
     createMany?: VendorTopUpCreateManyTenantInputEnvelope
     connect?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+  }
+
+  export type FleetCashDepositCreateNestedManyWithoutTenantInput = {
+    create?: XOR<FleetCashDepositCreateWithoutTenantInput, FleetCashDepositUncheckedCreateWithoutTenantInput> | FleetCashDepositCreateWithoutTenantInput[] | FleetCashDepositUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: FleetCashDepositCreateOrConnectWithoutTenantInput | FleetCashDepositCreateOrConnectWithoutTenantInput[]
+    createMany?: FleetCashDepositCreateManyTenantInputEnvelope
+    connect?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
   }
 
   export type FleetDocumentCreateNestedManyWithoutTenantInput = {
@@ -190406,6 +192180,13 @@ export namespace Prisma {
     connectOrCreate?: VendorTopUpCreateOrConnectWithoutTenantInput | VendorTopUpCreateOrConnectWithoutTenantInput[]
     createMany?: VendorTopUpCreateManyTenantInputEnvelope
     connect?: VendorTopUpWhereUniqueInput | VendorTopUpWhereUniqueInput[]
+  }
+
+  export type FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput = {
+    create?: XOR<FleetCashDepositCreateWithoutTenantInput, FleetCashDepositUncheckedCreateWithoutTenantInput> | FleetCashDepositCreateWithoutTenantInput[] | FleetCashDepositUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: FleetCashDepositCreateOrConnectWithoutTenantInput | FleetCashDepositCreateOrConnectWithoutTenantInput[]
+    createMany?: FleetCashDepositCreateManyTenantInputEnvelope
+    connect?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
   }
 
   export type FleetDocumentUncheckedCreateNestedManyWithoutTenantInput = {
@@ -191843,6 +193624,20 @@ export namespace Prisma {
     deleteMany?: VendorTopUpScalarWhereInput | VendorTopUpScalarWhereInput[]
   }
 
+  export type FleetCashDepositUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<FleetCashDepositCreateWithoutTenantInput, FleetCashDepositUncheckedCreateWithoutTenantInput> | FleetCashDepositCreateWithoutTenantInput[] | FleetCashDepositUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: FleetCashDepositCreateOrConnectWithoutTenantInput | FleetCashDepositCreateOrConnectWithoutTenantInput[]
+    upsert?: FleetCashDepositUpsertWithWhereUniqueWithoutTenantInput | FleetCashDepositUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: FleetCashDepositCreateManyTenantInputEnvelope
+    set?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+    disconnect?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+    delete?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+    connect?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+    update?: FleetCashDepositUpdateWithWhereUniqueWithoutTenantInput | FleetCashDepositUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: FleetCashDepositUpdateManyWithWhereWithoutTenantInput | FleetCashDepositUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: FleetCashDepositScalarWhereInput | FleetCashDepositScalarWhereInput[]
+  }
+
   export type FleetDocumentUpdateManyWithoutTenantNestedInput = {
     create?: XOR<FleetDocumentCreateWithoutTenantInput, FleetDocumentUncheckedCreateWithoutTenantInput> | FleetDocumentCreateWithoutTenantInput[] | FleetDocumentUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: FleetDocumentCreateOrConnectWithoutTenantInput | FleetDocumentCreateOrConnectWithoutTenantInput[]
@@ -193261,6 +195056,20 @@ export namespace Prisma {
     update?: VendorTopUpUpdateWithWhereUniqueWithoutTenantInput | VendorTopUpUpdateWithWhereUniqueWithoutTenantInput[]
     updateMany?: VendorTopUpUpdateManyWithWhereWithoutTenantInput | VendorTopUpUpdateManyWithWhereWithoutTenantInput[]
     deleteMany?: VendorTopUpScalarWhereInput | VendorTopUpScalarWhereInput[]
+  }
+
+  export type FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<FleetCashDepositCreateWithoutTenantInput, FleetCashDepositUncheckedCreateWithoutTenantInput> | FleetCashDepositCreateWithoutTenantInput[] | FleetCashDepositUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: FleetCashDepositCreateOrConnectWithoutTenantInput | FleetCashDepositCreateOrConnectWithoutTenantInput[]
+    upsert?: FleetCashDepositUpsertWithWhereUniqueWithoutTenantInput | FleetCashDepositUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: FleetCashDepositCreateManyTenantInputEnvelope
+    set?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+    disconnect?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+    delete?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+    connect?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+    update?: FleetCashDepositUpdateWithWhereUniqueWithoutTenantInput | FleetCashDepositUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: FleetCashDepositUpdateManyWithWhereWithoutTenantInput | FleetCashDepositUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: FleetCashDepositScalarWhereInput | FleetCashDepositScalarWhereInput[]
   }
 
   export type FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput = {
@@ -202661,6 +204470,12 @@ export namespace Prisma {
     connect?: DriverWhereUniqueInput
   }
 
+  export type FleetPartnerCreateNestedOneWithoutRemittancesInput = {
+    create?: XOR<FleetPartnerCreateWithoutRemittancesInput, FleetPartnerUncheckedCreateWithoutRemittancesInput>
+    connectOrCreate?: FleetPartnerCreateOrConnectWithoutRemittancesInput
+    connect?: FleetPartnerWhereUniqueInput
+  }
+
   export type EnumDepositMethodFieldUpdateOperationsInput = {
     set?: $Enums.DepositMethod
   }
@@ -202679,6 +204494,16 @@ export namespace Prisma {
     upsert?: DriverUpsertWithoutRemittancesInput
     connect?: DriverWhereUniqueInput
     update?: XOR<XOR<DriverUpdateToOneWithWhereWithoutRemittancesInput, DriverUpdateWithoutRemittancesInput>, DriverUncheckedUpdateWithoutRemittancesInput>
+  }
+
+  export type FleetPartnerUpdateOneWithoutRemittancesNestedInput = {
+    create?: XOR<FleetPartnerCreateWithoutRemittancesInput, FleetPartnerUncheckedCreateWithoutRemittancesInput>
+    connectOrCreate?: FleetPartnerCreateOrConnectWithoutRemittancesInput
+    upsert?: FleetPartnerUpsertWithoutRemittancesInput
+    disconnect?: FleetPartnerWhereInput | boolean
+    delete?: FleetPartnerWhereInput | boolean
+    connect?: FleetPartnerWhereUniqueInput
+    update?: XOR<XOR<FleetPartnerUpdateToOneWithWhereWithoutRemittancesInput, FleetPartnerUpdateWithoutRemittancesInput>, FleetPartnerUncheckedUpdateWithoutRemittancesInput>
   }
 
   export type TenantCreateNestedOneWithoutWalletReconciliationRunsInput = {
@@ -202991,6 +204816,20 @@ export namespace Prisma {
     connect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
   }
 
+  export type FleetCashDepositCreateNestedManyWithoutFleetPartnerInput = {
+    create?: XOR<FleetCashDepositCreateWithoutFleetPartnerInput, FleetCashDepositUncheckedCreateWithoutFleetPartnerInput> | FleetCashDepositCreateWithoutFleetPartnerInput[] | FleetCashDepositUncheckedCreateWithoutFleetPartnerInput[]
+    connectOrCreate?: FleetCashDepositCreateOrConnectWithoutFleetPartnerInput | FleetCashDepositCreateOrConnectWithoutFleetPartnerInput[]
+    createMany?: FleetCashDepositCreateManyFleetPartnerInputEnvelope
+    connect?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+  }
+
+  export type RemittanceCreateNestedManyWithoutFleetPartnerInput = {
+    create?: XOR<RemittanceCreateWithoutFleetPartnerInput, RemittanceUncheckedCreateWithoutFleetPartnerInput> | RemittanceCreateWithoutFleetPartnerInput[] | RemittanceUncheckedCreateWithoutFleetPartnerInput[]
+    connectOrCreate?: RemittanceCreateOrConnectWithoutFleetPartnerInput | RemittanceCreateOrConnectWithoutFleetPartnerInput[]
+    createMany?: RemittanceCreateManyFleetPartnerInputEnvelope
+    connect?: RemittanceWhereUniqueInput | RemittanceWhereUniqueInput[]
+  }
+
   export type DriverUncheckedCreateNestedManyWithoutFleetPartnerInput = {
     create?: XOR<DriverCreateWithoutFleetPartnerInput, DriverUncheckedCreateWithoutFleetPartnerInput> | DriverCreateWithoutFleetPartnerInput[] | DriverUncheckedCreateWithoutFleetPartnerInput[]
     connectOrCreate?: DriverCreateOrConnectWithoutFleetPartnerInput | DriverCreateOrConnectWithoutFleetPartnerInput[]
@@ -203045,6 +204884,20 @@ export namespace Prisma {
     connectOrCreate?: FleetPayoutInvoiceCreateOrConnectWithoutFleetInput | FleetPayoutInvoiceCreateOrConnectWithoutFleetInput[]
     createMany?: FleetPayoutInvoiceCreateManyFleetInputEnvelope
     connect?: FleetPayoutInvoiceWhereUniqueInput | FleetPayoutInvoiceWhereUniqueInput[]
+  }
+
+  export type FleetCashDepositUncheckedCreateNestedManyWithoutFleetPartnerInput = {
+    create?: XOR<FleetCashDepositCreateWithoutFleetPartnerInput, FleetCashDepositUncheckedCreateWithoutFleetPartnerInput> | FleetCashDepositCreateWithoutFleetPartnerInput[] | FleetCashDepositUncheckedCreateWithoutFleetPartnerInput[]
+    connectOrCreate?: FleetCashDepositCreateOrConnectWithoutFleetPartnerInput | FleetCashDepositCreateOrConnectWithoutFleetPartnerInput[]
+    createMany?: FleetCashDepositCreateManyFleetPartnerInputEnvelope
+    connect?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+  }
+
+  export type RemittanceUncheckedCreateNestedManyWithoutFleetPartnerInput = {
+    create?: XOR<RemittanceCreateWithoutFleetPartnerInput, RemittanceUncheckedCreateWithoutFleetPartnerInput> | RemittanceCreateWithoutFleetPartnerInput[] | RemittanceUncheckedCreateWithoutFleetPartnerInput[]
+    connectOrCreate?: RemittanceCreateOrConnectWithoutFleetPartnerInput | RemittanceCreateOrConnectWithoutFleetPartnerInput[]
+    createMany?: RemittanceCreateManyFleetPartnerInputEnvelope
+    connect?: RemittanceWhereUniqueInput | RemittanceWhereUniqueInput[]
   }
 
   export type TenantUpdateOneRequiredWithoutFleetPartnersNestedInput = {
@@ -203177,6 +205030,34 @@ export namespace Prisma {
     deleteMany?: FleetPayoutInvoiceScalarWhereInput | FleetPayoutInvoiceScalarWhereInput[]
   }
 
+  export type FleetCashDepositUpdateManyWithoutFleetPartnerNestedInput = {
+    create?: XOR<FleetCashDepositCreateWithoutFleetPartnerInput, FleetCashDepositUncheckedCreateWithoutFleetPartnerInput> | FleetCashDepositCreateWithoutFleetPartnerInput[] | FleetCashDepositUncheckedCreateWithoutFleetPartnerInput[]
+    connectOrCreate?: FleetCashDepositCreateOrConnectWithoutFleetPartnerInput | FleetCashDepositCreateOrConnectWithoutFleetPartnerInput[]
+    upsert?: FleetCashDepositUpsertWithWhereUniqueWithoutFleetPartnerInput | FleetCashDepositUpsertWithWhereUniqueWithoutFleetPartnerInput[]
+    createMany?: FleetCashDepositCreateManyFleetPartnerInputEnvelope
+    set?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+    disconnect?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+    delete?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+    connect?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+    update?: FleetCashDepositUpdateWithWhereUniqueWithoutFleetPartnerInput | FleetCashDepositUpdateWithWhereUniqueWithoutFleetPartnerInput[]
+    updateMany?: FleetCashDepositUpdateManyWithWhereWithoutFleetPartnerInput | FleetCashDepositUpdateManyWithWhereWithoutFleetPartnerInput[]
+    deleteMany?: FleetCashDepositScalarWhereInput | FleetCashDepositScalarWhereInput[]
+  }
+
+  export type RemittanceUpdateManyWithoutFleetPartnerNestedInput = {
+    create?: XOR<RemittanceCreateWithoutFleetPartnerInput, RemittanceUncheckedCreateWithoutFleetPartnerInput> | RemittanceCreateWithoutFleetPartnerInput[] | RemittanceUncheckedCreateWithoutFleetPartnerInput[]
+    connectOrCreate?: RemittanceCreateOrConnectWithoutFleetPartnerInput | RemittanceCreateOrConnectWithoutFleetPartnerInput[]
+    upsert?: RemittanceUpsertWithWhereUniqueWithoutFleetPartnerInput | RemittanceUpsertWithWhereUniqueWithoutFleetPartnerInput[]
+    createMany?: RemittanceCreateManyFleetPartnerInputEnvelope
+    set?: RemittanceWhereUniqueInput | RemittanceWhereUniqueInput[]
+    disconnect?: RemittanceWhereUniqueInput | RemittanceWhereUniqueInput[]
+    delete?: RemittanceWhereUniqueInput | RemittanceWhereUniqueInput[]
+    connect?: RemittanceWhereUniqueInput | RemittanceWhereUniqueInput[]
+    update?: RemittanceUpdateWithWhereUniqueWithoutFleetPartnerInput | RemittanceUpdateWithWhereUniqueWithoutFleetPartnerInput[]
+    updateMany?: RemittanceUpdateManyWithWhereWithoutFleetPartnerInput | RemittanceUpdateManyWithWhereWithoutFleetPartnerInput[]
+    deleteMany?: RemittanceScalarWhereInput | RemittanceScalarWhereInput[]
+  }
+
   export type DriverUncheckedUpdateManyWithoutFleetPartnerNestedInput = {
     create?: XOR<DriverCreateWithoutFleetPartnerInput, DriverUncheckedCreateWithoutFleetPartnerInput> | DriverCreateWithoutFleetPartnerInput[] | DriverUncheckedCreateWithoutFleetPartnerInput[]
     connectOrCreate?: DriverCreateOrConnectWithoutFleetPartnerInput | DriverCreateOrConnectWithoutFleetPartnerInput[]
@@ -203287,6 +205168,34 @@ export namespace Prisma {
     update?: FleetPayoutInvoiceUpdateWithWhereUniqueWithoutFleetInput | FleetPayoutInvoiceUpdateWithWhereUniqueWithoutFleetInput[]
     updateMany?: FleetPayoutInvoiceUpdateManyWithWhereWithoutFleetInput | FleetPayoutInvoiceUpdateManyWithWhereWithoutFleetInput[]
     deleteMany?: FleetPayoutInvoiceScalarWhereInput | FleetPayoutInvoiceScalarWhereInput[]
+  }
+
+  export type FleetCashDepositUncheckedUpdateManyWithoutFleetPartnerNestedInput = {
+    create?: XOR<FleetCashDepositCreateWithoutFleetPartnerInput, FleetCashDepositUncheckedCreateWithoutFleetPartnerInput> | FleetCashDepositCreateWithoutFleetPartnerInput[] | FleetCashDepositUncheckedCreateWithoutFleetPartnerInput[]
+    connectOrCreate?: FleetCashDepositCreateOrConnectWithoutFleetPartnerInput | FleetCashDepositCreateOrConnectWithoutFleetPartnerInput[]
+    upsert?: FleetCashDepositUpsertWithWhereUniqueWithoutFleetPartnerInput | FleetCashDepositUpsertWithWhereUniqueWithoutFleetPartnerInput[]
+    createMany?: FleetCashDepositCreateManyFleetPartnerInputEnvelope
+    set?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+    disconnect?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+    delete?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+    connect?: FleetCashDepositWhereUniqueInput | FleetCashDepositWhereUniqueInput[]
+    update?: FleetCashDepositUpdateWithWhereUniqueWithoutFleetPartnerInput | FleetCashDepositUpdateWithWhereUniqueWithoutFleetPartnerInput[]
+    updateMany?: FleetCashDepositUpdateManyWithWhereWithoutFleetPartnerInput | FleetCashDepositUpdateManyWithWhereWithoutFleetPartnerInput[]
+    deleteMany?: FleetCashDepositScalarWhereInput | FleetCashDepositScalarWhereInput[]
+  }
+
+  export type RemittanceUncheckedUpdateManyWithoutFleetPartnerNestedInput = {
+    create?: XOR<RemittanceCreateWithoutFleetPartnerInput, RemittanceUncheckedCreateWithoutFleetPartnerInput> | RemittanceCreateWithoutFleetPartnerInput[] | RemittanceUncheckedCreateWithoutFleetPartnerInput[]
+    connectOrCreate?: RemittanceCreateOrConnectWithoutFleetPartnerInput | RemittanceCreateOrConnectWithoutFleetPartnerInput[]
+    upsert?: RemittanceUpsertWithWhereUniqueWithoutFleetPartnerInput | RemittanceUpsertWithWhereUniqueWithoutFleetPartnerInput[]
+    createMany?: RemittanceCreateManyFleetPartnerInputEnvelope
+    set?: RemittanceWhereUniqueInput | RemittanceWhereUniqueInput[]
+    disconnect?: RemittanceWhereUniqueInput | RemittanceWhereUniqueInput[]
+    delete?: RemittanceWhereUniqueInput | RemittanceWhereUniqueInput[]
+    connect?: RemittanceWhereUniqueInput | RemittanceWhereUniqueInput[]
+    update?: RemittanceUpdateWithWhereUniqueWithoutFleetPartnerInput | RemittanceUpdateWithWhereUniqueWithoutFleetPartnerInput[]
+    updateMany?: RemittanceUpdateManyWithWhereWithoutFleetPartnerInput | RemittanceUpdateManyWithWhereWithoutFleetPartnerInput[]
+    deleteMany?: RemittanceScalarWhereInput | RemittanceScalarWhereInput[]
   }
 
   export type TenantCreateNestedOneWithoutFleetPayoutStatementsInput = {
@@ -203918,6 +205827,38 @@ export namespace Prisma {
     upsert?: VendorUpsertWithoutTopUpsInput
     connect?: VendorWhereUniqueInput
     update?: XOR<XOR<VendorUpdateToOneWithWhereWithoutTopUpsInput, VendorUpdateWithoutTopUpsInput>, VendorUncheckedUpdateWithoutTopUpsInput>
+  }
+
+  export type TenantCreateNestedOneWithoutFleetCashDepositsInput = {
+    create?: XOR<TenantCreateWithoutFleetCashDepositsInput, TenantUncheckedCreateWithoutFleetCashDepositsInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutFleetCashDepositsInput
+    connect?: TenantWhereUniqueInput
+  }
+
+  export type FleetPartnerCreateNestedOneWithoutCashDepositsInput = {
+    create?: XOR<FleetPartnerCreateWithoutCashDepositsInput, FleetPartnerUncheckedCreateWithoutCashDepositsInput>
+    connectOrCreate?: FleetPartnerCreateOrConnectWithoutCashDepositsInput
+    connect?: FleetPartnerWhereUniqueInput
+  }
+
+  export type EnumFleetCashDepositStatusFieldUpdateOperationsInput = {
+    set?: $Enums.FleetCashDepositStatus
+  }
+
+  export type TenantUpdateOneRequiredWithoutFleetCashDepositsNestedInput = {
+    create?: XOR<TenantCreateWithoutFleetCashDepositsInput, TenantUncheckedCreateWithoutFleetCashDepositsInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutFleetCashDepositsInput
+    upsert?: TenantUpsertWithoutFleetCashDepositsInput
+    connect?: TenantWhereUniqueInput
+    update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutFleetCashDepositsInput, TenantUpdateWithoutFleetCashDepositsInput>, TenantUncheckedUpdateWithoutFleetCashDepositsInput>
+  }
+
+  export type FleetPartnerUpdateOneRequiredWithoutCashDepositsNestedInput = {
+    create?: XOR<FleetPartnerCreateWithoutCashDepositsInput, FleetPartnerUncheckedCreateWithoutCashDepositsInput>
+    connectOrCreate?: FleetPartnerCreateOrConnectWithoutCashDepositsInput
+    upsert?: FleetPartnerUpsertWithoutCashDepositsInput
+    connect?: FleetPartnerWhereUniqueInput
+    update?: XOR<XOR<FleetPartnerUpdateToOneWithWhereWithoutCashDepositsInput, FleetPartnerUpdateWithoutCashDepositsInput>, FleetPartnerUncheckedUpdateWithoutCashDepositsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -205456,6 +207397,23 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumVendorTopUpStatusFilter<$PrismaModel>
     _max?: NestedEnumVendorTopUpStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumFleetCashDepositStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.FleetCashDepositStatus | EnumFleetCashDepositStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.FleetCashDepositStatus[] | ListEnumFleetCashDepositStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FleetCashDepositStatus[] | ListEnumFleetCashDepositStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumFleetCashDepositStatusFilter<$PrismaModel> | $Enums.FleetCashDepositStatus
+  }
+
+  export type NestedEnumFleetCashDepositStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.FleetCashDepositStatus | EnumFleetCashDepositStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.FleetCashDepositStatus[] | ListEnumFleetCashDepositStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FleetCashDepositStatus[] | ListEnumFleetCashDepositStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumFleetCashDepositStatusWithAggregatesFilter<$PrismaModel> | $Enums.FleetCashDepositStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumFleetCashDepositStatusFilter<$PrismaModel>
+    _max?: NestedEnumFleetCashDepositStatusFilter<$PrismaModel>
   }
 
   export type CompanyCreateWithoutTenantInput = {
@@ -209149,6 +211107,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     driver: DriverCreateNestedOneWithoutRemittancesInput
+    fleetPartner?: FleetPartnerCreateNestedOneWithoutRemittancesInput
   }
 
   export type RemittanceUncheckedCreateWithoutTenantInput = {
@@ -209158,6 +211117,7 @@ export namespace Prisma {
     method: $Enums.DepositMethod
     receiptUrl?: string | null
     receivedById?: string | null
+    fleetPartnerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -209451,6 +211411,8 @@ export namespace Prisma {
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutTenantInput = {
@@ -209476,6 +211438,8 @@ export namespace Prisma {
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceUncheckedCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutTenantInput = {
@@ -209797,6 +211761,50 @@ export namespace Prisma {
 
   export type VendorTopUpCreateManyTenantInputEnvelope = {
     data: VendorTopUpCreateManyTenantInput | VendorTopUpCreateManyTenantInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type FleetCashDepositCreateWithoutTenantInput = {
+    id?: string
+    requestedById?: string | null
+    amountKwd: Decimal | DecimalJsLike | number | string
+    method?: $Enums.DepositMethod
+    reference: string
+    note?: string | null
+    receiptUrl?: string | null
+    status?: $Enums.FleetCashDepositStatus
+    confirmedById?: string | null
+    confirmedAt?: Date | string | null
+    rejectReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    fleetPartner: FleetPartnerCreateNestedOneWithoutCashDepositsInput
+  }
+
+  export type FleetCashDepositUncheckedCreateWithoutTenantInput = {
+    id?: string
+    fleetPartnerId: string
+    requestedById?: string | null
+    amountKwd: Decimal | DecimalJsLike | number | string
+    method?: $Enums.DepositMethod
+    reference: string
+    note?: string | null
+    receiptUrl?: string | null
+    status?: $Enums.FleetCashDepositStatus
+    confirmedById?: string | null
+    confirmedAt?: Date | string | null
+    rejectReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FleetCashDepositCreateOrConnectWithoutTenantInput = {
+    where: FleetCashDepositWhereUniqueInput
+    create: XOR<FleetCashDepositCreateWithoutTenantInput, FleetCashDepositUncheckedCreateWithoutTenantInput>
+  }
+
+  export type FleetCashDepositCreateManyTenantInputEnvelope = {
+    data: FleetCashDepositCreateManyTenantInput | FleetCashDepositCreateManyTenantInput[]
     skipDuplicates?: boolean
   }
 
@@ -212900,6 +214908,7 @@ export namespace Prisma {
     method?: EnumDepositMethodFilter<"Remittance"> | $Enums.DepositMethod
     receiptUrl?: StringNullableFilter<"Remittance"> | string | null
     receivedById?: StringNullableFilter<"Remittance"> | string | null
+    fleetPartnerId?: StringNullableFilter<"Remittance"> | string | null
     createdAt?: DateTimeFilter<"Remittance"> | Date | string
     updatedAt?: DateTimeFilter<"Remittance"> | Date | string
   }
@@ -213459,6 +215468,43 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"VendorTopUp"> | Date | string
   }
 
+  export type FleetCashDepositUpsertWithWhereUniqueWithoutTenantInput = {
+    where: FleetCashDepositWhereUniqueInput
+    update: XOR<FleetCashDepositUpdateWithoutTenantInput, FleetCashDepositUncheckedUpdateWithoutTenantInput>
+    create: XOR<FleetCashDepositCreateWithoutTenantInput, FleetCashDepositUncheckedCreateWithoutTenantInput>
+  }
+
+  export type FleetCashDepositUpdateWithWhereUniqueWithoutTenantInput = {
+    where: FleetCashDepositWhereUniqueInput
+    data: XOR<FleetCashDepositUpdateWithoutTenantInput, FleetCashDepositUncheckedUpdateWithoutTenantInput>
+  }
+
+  export type FleetCashDepositUpdateManyWithWhereWithoutTenantInput = {
+    where: FleetCashDepositScalarWhereInput
+    data: XOR<FleetCashDepositUpdateManyMutationInput, FleetCashDepositUncheckedUpdateManyWithoutTenantInput>
+  }
+
+  export type FleetCashDepositScalarWhereInput = {
+    AND?: FleetCashDepositScalarWhereInput | FleetCashDepositScalarWhereInput[]
+    OR?: FleetCashDepositScalarWhereInput[]
+    NOT?: FleetCashDepositScalarWhereInput | FleetCashDepositScalarWhereInput[]
+    id?: StringFilter<"FleetCashDeposit"> | string
+    tenantId?: StringFilter<"FleetCashDeposit"> | string
+    fleetPartnerId?: StringFilter<"FleetCashDeposit"> | string
+    requestedById?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    amountKwd?: DecimalFilter<"FleetCashDeposit"> | Decimal | DecimalJsLike | number | string
+    method?: EnumDepositMethodFilter<"FleetCashDeposit"> | $Enums.DepositMethod
+    reference?: StringFilter<"FleetCashDeposit"> | string
+    note?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    receiptUrl?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    status?: EnumFleetCashDepositStatusFilter<"FleetCashDeposit"> | $Enums.FleetCashDepositStatus
+    confirmedById?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    confirmedAt?: DateTimeNullableFilter<"FleetCashDeposit"> | Date | string | null
+    rejectReason?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    createdAt?: DateTimeFilter<"FleetCashDeposit"> | Date | string
+    updatedAt?: DateTimeFilter<"FleetCashDeposit"> | Date | string
+  }
+
   export type FleetDocumentUpsertWithWhereUniqueWithoutTenantInput = {
     where: FleetDocumentWhereUniqueInput
     update: XOR<FleetDocumentUpdateWithoutTenantInput, FleetDocumentUncheckedUpdateWithoutTenantInput>
@@ -213689,6 +215735,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -213807,6 +215854,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -214425,6 +216473,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -214543,6 +216592,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -214867,6 +216917,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -214985,6 +217036,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -215018,6 +217070,8 @@ export namespace Prisma {
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutOwnerGroupInput = {
@@ -215043,6 +217097,8 @@ export namespace Prisma {
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceUncheckedCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutOwnerGroupInput = {
@@ -215329,6 +217385,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -215447,6 +217504,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -215613,6 +217671,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -215731,6 +217790,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -215819,6 +217879,8 @@ export namespace Prisma {
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutUsersInput = {
@@ -215844,6 +217906,8 @@ export namespace Prisma {
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceUncheckedCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutUsersInput = {
@@ -217217,6 +219281,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -217335,6 +219400,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -217435,6 +219501,8 @@ export namespace Prisma {
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutUsersInput = {
@@ -217460,6 +219528,8 @@ export namespace Prisma {
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUncheckedUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type OwnerGroupUpsertWithoutUsersInput = {
@@ -218059,6 +220129,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -218177,6 +220248,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -218350,6 +220422,8 @@ export namespace Prisma {
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutDriversInput = {
@@ -218375,6 +220449,8 @@ export namespace Prisma {
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceUncheckedCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutDriversInput = {
@@ -220259,6 +222335,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutRemittancesInput
+    fleetPartner?: FleetPartnerCreateNestedOneWithoutRemittancesInput
   }
 
   export type RemittanceUncheckedCreateWithoutDriverInput = {
@@ -220268,6 +222345,7 @@ export namespace Prisma {
     method: $Enums.DepositMethod
     receiptUrl?: string | null
     receivedById?: string | null
+    fleetPartnerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -220630,6 +222708,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -220748,6 +222827,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -220939,6 +223019,8 @@ export namespace Prisma {
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutDriversInput = {
@@ -220964,6 +223046,8 @@ export namespace Prisma {
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUncheckedUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type DriverInventoryUpsertWithWhereUniqueWithoutDriverInput = {
@@ -222000,6 +224084,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -222118,6 +224203,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -222441,6 +224527,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -222559,6 +224646,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -223256,6 +225344,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -223374,6 +225463,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -223547,6 +225637,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -223665,6 +225756,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -223828,6 +225920,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -223946,6 +226039,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -224556,6 +226650,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -224674,6 +226769,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -225128,6 +227224,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -225246,6 +227343,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -225630,6 +227728,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -225748,6 +227847,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -226128,6 +228228,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -226246,6 +228347,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -226739,6 +228841,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -226857,6 +228960,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -227218,6 +229322,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -227336,6 +229441,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -227724,6 +229830,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -227842,6 +229949,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -228226,6 +230334,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -228344,6 +230453,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -228732,6 +230842,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -228850,6 +230961,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -229234,6 +231346,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -229352,6 +231465,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -229675,6 +231789,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -229793,6 +231908,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -230106,6 +232222,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -230224,6 +232341,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -230547,6 +232665,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -230665,6 +232784,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -230978,6 +233098,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -231096,6 +233217,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -231419,6 +233541,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -231537,6 +233660,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -231850,6 +233974,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -231968,6 +234093,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -232352,6 +234478,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -232470,6 +234597,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -232850,6 +234978,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -232968,6 +235097,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -233413,6 +235543,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -233531,6 +235662,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -234592,6 +236724,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -234710,6 +236843,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -235082,6 +237216,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -235200,6 +237335,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -237344,6 +239480,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -237462,6 +239599,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -237785,6 +239923,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -237903,6 +240042,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -238216,6 +240356,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -238334,6 +240475,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -238819,6 +240961,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -238937,6 +241080,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -239424,6 +241568,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -239542,6 +241687,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -239676,6 +241822,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -239794,6 +241941,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -239912,6 +242060,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -240030,6 +242179,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -240164,6 +242314,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -240282,6 +242433,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -240400,6 +242552,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -240518,6 +242671,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -241332,6 +243486,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -241450,6 +243605,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -242284,6 +244440,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -242402,6 +244559,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -242826,6 +244984,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -242944,6 +245103,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -243364,6 +245524,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -243482,6 +245643,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -243950,6 +246112,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -244068,6 +246231,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -244484,6 +246648,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -244602,6 +246767,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -244992,6 +247158,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -245110,6 +247277,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -246020,6 +248188,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -246138,6 +248307,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -246461,6 +248631,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -246579,6 +248750,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -246892,6 +249064,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -247010,6 +249183,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -247144,6 +249318,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -247262,6 +249437,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -247380,6 +249556,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -247498,6 +249675,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -247821,6 +249999,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -247939,6 +250118,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -248252,6 +250432,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -248370,6 +250551,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -248693,6 +250875,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -248811,6 +250994,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -249124,6 +251308,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -249242,6 +251427,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -249376,6 +251562,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -249494,6 +251681,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -249612,6 +251800,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -249730,6 +251919,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -249864,6 +252054,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -249982,6 +252173,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -250100,6 +252292,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -250218,6 +252411,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -250619,6 +252813,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -250737,6 +252932,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -251140,6 +253336,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -251258,6 +253455,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -251526,6 +253724,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -251644,6 +253843,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -251810,6 +254010,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -251928,6 +254129,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -252179,6 +254381,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -252297,6 +254500,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -252484,6 +254688,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -252602,6 +254807,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -252772,6 +254978,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -252890,6 +255097,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -253024,6 +255232,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -253142,6 +255351,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -253447,6 +255657,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -253565,6 +255776,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -253872,6 +256084,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -253990,6 +256203,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -254313,6 +256527,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -254431,6 +256646,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -254744,6 +256960,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -254862,6 +257079,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -255232,6 +257450,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -255350,6 +257569,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -255716,6 +257936,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -255834,6 +258055,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -255968,6 +258190,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -256086,6 +258309,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -256204,6 +258428,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -256322,6 +258547,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -256492,6 +258718,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -256610,6 +258837,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -256744,6 +258972,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -256862,6 +259091,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -257220,6 +259450,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -257338,6 +259569,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -257692,6 +259924,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -257810,6 +260043,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -258045,6 +260279,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -258163,6 +260398,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -258388,6 +260624,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -258506,6 +260743,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -258640,6 +260878,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -258758,6 +260997,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -258876,6 +261116,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -258994,6 +261235,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -259128,6 +261370,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -259246,6 +261489,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -259364,6 +261608,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -259482,6 +261727,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -259805,6 +262051,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -259923,6 +262170,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -260236,6 +262484,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -260354,6 +262603,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -260744,6 +262994,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -260862,6 +263113,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -261207,6 +263459,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -261325,6 +263578,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -261697,6 +263951,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -261815,6 +264070,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -262144,6 +264400,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -262262,6 +264519,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -262445,6 +264703,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -262563,6 +264822,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -262736,6 +264996,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -262854,6 +265115,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -262988,6 +265250,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -263106,6 +265369,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -263224,6 +265488,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -263342,6 +265607,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -263665,6 +265931,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -263783,6 +266050,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -264096,6 +266364,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -264214,6 +266483,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -264348,6 +266618,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -264466,6 +266737,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -264584,6 +266856,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -264702,6 +266975,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -264836,6 +267110,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -264954,6 +267229,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -265072,6 +267348,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -265190,6 +267467,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -265513,6 +267791,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -265631,6 +267910,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -265944,6 +268224,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -266062,6 +268343,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -266196,6 +268478,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -266314,6 +268597,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -266432,6 +268716,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -266550,6 +268835,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -266684,6 +268970,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -266802,6 +269089,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -266920,6 +269208,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -267038,6 +269327,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -267290,6 +269580,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -267408,6 +269699,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -267651,6 +269943,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -267769,6 +270062,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -268024,6 +270318,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -268142,6 +270437,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -268536,6 +270832,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -268654,6 +270951,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -269016,6 +271314,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -269134,6 +271433,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -269492,6 +271792,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -269610,6 +271911,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -269848,6 +272150,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -269966,6 +272269,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -270178,6 +272482,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -270296,6 +272601,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -270471,6 +272777,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -270589,6 +272896,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -270754,6 +273062,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -270872,6 +273181,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -271047,6 +273357,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -271165,6 +273476,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -271330,6 +273642,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -271448,6 +273761,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -271756,6 +274070,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -271874,6 +274189,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -272171,6 +274487,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -272289,6 +274606,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -272470,6 +274788,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -272588,6 +274907,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -272759,6 +275079,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -272877,6 +275198,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -273203,6 +275525,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -273321,6 +275644,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -273615,6 +275939,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -273733,6 +276058,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -273914,6 +276240,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -274032,6 +276359,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -274203,6 +276531,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -274321,6 +276650,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -274556,6 +276886,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -274674,6 +277005,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -274899,6 +277231,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -275017,6 +277350,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -275340,6 +277674,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -275458,6 +277793,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -275771,6 +278107,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -275889,6 +278226,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -276124,6 +278462,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -276242,6 +278581,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -276467,6 +278807,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -276585,6 +278926,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -276903,6 +279245,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -277021,6 +279364,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -277307,6 +279651,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -277425,6 +279770,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -277651,6 +279997,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -277769,6 +280116,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -277991,6 +280339,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -278109,6 +280458,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -278382,6 +280732,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -278500,6 +280851,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -278741,6 +281093,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -278859,6 +281212,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -279543,6 +281897,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -279661,6 +282016,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -279997,6 +282353,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -280115,6 +282472,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -280604,6 +282962,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -280722,6 +283081,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -281027,6 +283387,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -281145,6 +283506,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -281669,6 +284031,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -281787,6 +284150,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -282031,6 +284395,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -282149,6 +284514,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -282381,6 +284747,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -282499,6 +284866,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -282727,6 +285095,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -282845,6 +285214,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -283149,6 +285519,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -283267,6 +285638,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -283815,6 +286187,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -283933,6 +286306,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -284067,6 +286441,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -284185,6 +286560,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -284303,6 +286679,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -284421,6 +286798,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -284555,6 +286933,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -284673,6 +287052,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -284791,6 +287171,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -284909,6 +287290,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -285578,6 +287960,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -285696,6 +288079,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -286331,6 +288715,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -286449,6 +288834,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -286879,6 +289265,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -286997,6 +289384,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -287423,6 +289811,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -287541,6 +289930,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -287705,6 +290095,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -287823,6 +290214,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -287957,6 +290349,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -288075,6 +290468,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -288239,6 +290633,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -288357,6 +290752,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -288491,6 +290887,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -288609,6 +291006,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -288797,6 +291195,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -288915,6 +291314,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -289099,6 +291499,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -289217,6 +291618,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -289416,6 +291818,65 @@ export namespace Prisma {
     create: XOR<DriverCreateWithoutRemittancesInput, DriverUncheckedCreateWithoutRemittancesInput>
   }
 
+  export type FleetPartnerCreateWithoutRemittancesInput = {
+    id?: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    contactEmail?: string | null
+    flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
+    minOnlineHoursPerDay?: number | null
+    minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
+    disciplineStatus?: string
+    disciplineNote?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutFleetPartnersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutFleetsInput
+    drivers?: DriverCreateNestedManyWithoutFleetPartnerInput
+    users?: UserCreateNestedManyWithoutFleetPartnerInput
+    statements?: FleetPayoutStatementCreateNestedManyWithoutFleetInput
+    documents?: FleetDocumentCreateNestedManyWithoutFleetInput
+    changeRequests?: FleetChangeRequestCreateNestedManyWithoutFleetInput
+    issues?: FleetIssueCreateNestedManyWithoutFleetInput
+    supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositCreateNestedManyWithoutFleetPartnerInput
+  }
+
+  export type FleetPartnerUncheckedCreateWithoutRemittancesInput = {
+    id?: string
+    tenantId: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    contactEmail?: string | null
+    flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
+    minOnlineHoursPerDay?: number | null
+    minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
+    disciplineStatus?: string
+    disciplineNote?: string | null
+    isActive?: boolean
+    ownerGroupId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    drivers?: DriverUncheckedCreateNestedManyWithoutFleetPartnerInput
+    users?: UserUncheckedCreateNestedManyWithoutFleetPartnerInput
+    statements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutFleetInput
+    documents?: FleetDocumentUncheckedCreateNestedManyWithoutFleetInput
+    changeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutFleetInput
+    issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
+    supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutFleetPartnerInput
+  }
+
+  export type FleetPartnerCreateOrConnectWithoutRemittancesInput = {
+    where: FleetPartnerWhereUniqueInput
+    create: XOR<FleetPartnerCreateWithoutRemittancesInput, FleetPartnerUncheckedCreateWithoutRemittancesInput>
+  }
+
   export type TenantUpsertWithoutRemittancesInput = {
     update: XOR<TenantUpdateWithoutRemittancesInput, TenantUncheckedUpdateWithoutRemittancesInput>
     create: XOR<TenantCreateWithoutRemittancesInput, TenantUncheckedCreateWithoutRemittancesInput>
@@ -289540,6 +292001,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -289658,6 +292120,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -289858,6 +292321,71 @@ export namespace Prisma {
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
   }
 
+  export type FleetPartnerUpsertWithoutRemittancesInput = {
+    update: XOR<FleetPartnerUpdateWithoutRemittancesInput, FleetPartnerUncheckedUpdateWithoutRemittancesInput>
+    create: XOR<FleetPartnerCreateWithoutRemittancesInput, FleetPartnerUncheckedCreateWithoutRemittancesInput>
+    where?: FleetPartnerWhereInput
+  }
+
+  export type FleetPartnerUpdateToOneWithWhereWithoutRemittancesInput = {
+    where?: FleetPartnerWhereInput
+    data: XOR<FleetPartnerUpdateWithoutRemittancesInput, FleetPartnerUncheckedUpdateWithoutRemittancesInput>
+  }
+
+  export type FleetPartnerUpdateWithoutRemittancesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
+    minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
+    disciplineStatus?: StringFieldUpdateOperationsInput | string
+    disciplineNote?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutFleetPartnersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutFleetsNestedInput
+    drivers?: DriverUpdateManyWithoutFleetPartnerNestedInput
+    users?: UserUpdateManyWithoutFleetPartnerNestedInput
+    statements?: FleetPayoutStatementUpdateManyWithoutFleetNestedInput
+    documents?: FleetDocumentUpdateManyWithoutFleetNestedInput
+    changeRequests?: FleetChangeRequestUpdateManyWithoutFleetNestedInput
+    issues?: FleetIssueUpdateManyWithoutFleetNestedInput
+    supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUpdateManyWithoutFleetPartnerNestedInput
+  }
+
+  export type FleetPartnerUncheckedUpdateWithoutRemittancesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
+    minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
+    disciplineStatus?: StringFieldUpdateOperationsInput | string
+    disciplineNote?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    drivers?: DriverUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    users?: UserUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    statements?: FleetPayoutStatementUncheckedUpdateManyWithoutFleetNestedInput
+    documents?: FleetDocumentUncheckedUpdateManyWithoutFleetNestedInput
+    changeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutFleetNestedInput
+    issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
+    supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutFleetPartnerNestedInput
+  }
+
   export type TenantCreateWithoutWalletReconciliationRunsInput = {
     id?: string
     name: string
@@ -289971,6 +292499,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -290089,6 +292618,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -290223,6 +292753,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -290341,6 +292872,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -290459,6 +292991,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -290577,6 +293110,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -291007,6 +293541,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -291125,6 +293660,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -291551,6 +294087,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -291669,6 +294206,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -291858,6 +294396,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -291976,6 +294515,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -292155,6 +294695,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -292273,6 +294814,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -292462,6 +295004,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -292580,6 +295123,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -292759,6 +295303,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -292877,6 +295422,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -293307,6 +295853,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -293425,6 +295972,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -293851,6 +296399,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -293969,6 +296518,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -294158,6 +296708,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -294276,6 +296827,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -294455,6 +297007,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -294573,6 +297126,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -294869,6 +297423,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -294987,6 +297542,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -295279,6 +297835,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -295397,6 +297954,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -296004,6 +298562,84 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type FleetCashDepositCreateWithoutFleetPartnerInput = {
+    id?: string
+    requestedById?: string | null
+    amountKwd: Decimal | DecimalJsLike | number | string
+    method?: $Enums.DepositMethod
+    reference: string
+    note?: string | null
+    receiptUrl?: string | null
+    status?: $Enums.FleetCashDepositStatus
+    confirmedById?: string | null
+    confirmedAt?: Date | string | null
+    rejectReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutFleetCashDepositsInput
+  }
+
+  export type FleetCashDepositUncheckedCreateWithoutFleetPartnerInput = {
+    id?: string
+    tenantId: string
+    requestedById?: string | null
+    amountKwd: Decimal | DecimalJsLike | number | string
+    method?: $Enums.DepositMethod
+    reference: string
+    note?: string | null
+    receiptUrl?: string | null
+    status?: $Enums.FleetCashDepositStatus
+    confirmedById?: string | null
+    confirmedAt?: Date | string | null
+    rejectReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FleetCashDepositCreateOrConnectWithoutFleetPartnerInput = {
+    where: FleetCashDepositWhereUniqueInput
+    create: XOR<FleetCashDepositCreateWithoutFleetPartnerInput, FleetCashDepositUncheckedCreateWithoutFleetPartnerInput>
+  }
+
+  export type FleetCashDepositCreateManyFleetPartnerInputEnvelope = {
+    data: FleetCashDepositCreateManyFleetPartnerInput | FleetCashDepositCreateManyFleetPartnerInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type RemittanceCreateWithoutFleetPartnerInput = {
+    id?: string
+    amountKwd: Decimal | DecimalJsLike | number | string
+    method: $Enums.DepositMethod
+    receiptUrl?: string | null
+    receivedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutRemittancesInput
+    driver: DriverCreateNestedOneWithoutRemittancesInput
+  }
+
+  export type RemittanceUncheckedCreateWithoutFleetPartnerInput = {
+    id?: string
+    tenantId: string
+    driverId: string
+    amountKwd: Decimal | DecimalJsLike | number | string
+    method: $Enums.DepositMethod
+    receiptUrl?: string | null
+    receivedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RemittanceCreateOrConnectWithoutFleetPartnerInput = {
+    where: RemittanceWhereUniqueInput
+    create: XOR<RemittanceCreateWithoutFleetPartnerInput, RemittanceUncheckedCreateWithoutFleetPartnerInput>
+  }
+
+  export type RemittanceCreateManyFleetPartnerInputEnvelope = {
+    data: RemittanceCreateManyFleetPartnerInput | RemittanceCreateManyFleetPartnerInput[]
+    skipDuplicates?: boolean
+  }
+
   export type TenantUpsertWithoutFleetPartnersInput = {
     update: XOR<TenantUpdateWithoutFleetPartnersInput, TenantUncheckedUpdateWithoutFleetPartnersInput>
     create: XOR<TenantCreateWithoutFleetPartnersInput, TenantUncheckedCreateWithoutFleetPartnersInput>
@@ -296128,6 +298764,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -296246,6 +298883,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -296414,6 +299052,38 @@ export namespace Prisma {
     data: XOR<FleetPayoutInvoiceUpdateManyMutationInput, FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetInput>
   }
 
+  export type FleetCashDepositUpsertWithWhereUniqueWithoutFleetPartnerInput = {
+    where: FleetCashDepositWhereUniqueInput
+    update: XOR<FleetCashDepositUpdateWithoutFleetPartnerInput, FleetCashDepositUncheckedUpdateWithoutFleetPartnerInput>
+    create: XOR<FleetCashDepositCreateWithoutFleetPartnerInput, FleetCashDepositUncheckedCreateWithoutFleetPartnerInput>
+  }
+
+  export type FleetCashDepositUpdateWithWhereUniqueWithoutFleetPartnerInput = {
+    where: FleetCashDepositWhereUniqueInput
+    data: XOR<FleetCashDepositUpdateWithoutFleetPartnerInput, FleetCashDepositUncheckedUpdateWithoutFleetPartnerInput>
+  }
+
+  export type FleetCashDepositUpdateManyWithWhereWithoutFleetPartnerInput = {
+    where: FleetCashDepositScalarWhereInput
+    data: XOR<FleetCashDepositUpdateManyMutationInput, FleetCashDepositUncheckedUpdateManyWithoutFleetPartnerInput>
+  }
+
+  export type RemittanceUpsertWithWhereUniqueWithoutFleetPartnerInput = {
+    where: RemittanceWhereUniqueInput
+    update: XOR<RemittanceUpdateWithoutFleetPartnerInput, RemittanceUncheckedUpdateWithoutFleetPartnerInput>
+    create: XOR<RemittanceCreateWithoutFleetPartnerInput, RemittanceUncheckedCreateWithoutFleetPartnerInput>
+  }
+
+  export type RemittanceUpdateWithWhereUniqueWithoutFleetPartnerInput = {
+    where: RemittanceWhereUniqueInput
+    data: XOR<RemittanceUpdateWithoutFleetPartnerInput, RemittanceUncheckedUpdateWithoutFleetPartnerInput>
+  }
+
+  export type RemittanceUpdateManyWithWhereWithoutFleetPartnerInput = {
+    where: RemittanceScalarWhereInput
+    data: XOR<RemittanceUpdateManyMutationInput, RemittanceUncheckedUpdateManyWithoutFleetPartnerInput>
+  }
+
   export type TenantCreateWithoutFleetPayoutStatementsInput = {
     id?: string
     name: string
@@ -296527,6 +299197,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -296645,6 +299316,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -296678,6 +299350,8 @@ export namespace Prisma {
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutStatementsInput = {
@@ -296703,6 +299377,8 @@ export namespace Prisma {
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceUncheckedCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutStatementsInput = {
@@ -296865,6 +299541,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -296983,6 +299660,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -297022,6 +299700,8 @@ export namespace Prisma {
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutStatementsInput = {
@@ -297047,6 +299727,8 @@ export namespace Prisma {
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUncheckedUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type FleetPayoutInvoiceUpsertWithoutStatementInput = {
@@ -297199,6 +299881,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -297317,6 +300000,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -297350,6 +300034,8 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestCreateNestedManyWithoutFleetInput
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutPayoutInvoicesInput = {
@@ -297375,6 +300061,8 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutFleetInput
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceUncheckedCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutPayoutInvoicesInput = {
@@ -297652,6 +300340,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -297770,6 +300459,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -297809,6 +300499,8 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutPayoutInvoicesInput = {
@@ -297834,6 +300526,8 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUncheckedUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type FleetPayoutStatementUpsertWithoutInvoiceInput = {
@@ -298108,6 +300802,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
   }
@@ -298226,6 +300921,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
   }
@@ -298258,6 +300954,8 @@ export namespace Prisma {
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutDocumentsInput = {
@@ -298283,6 +300981,8 @@ export namespace Prisma {
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceUncheckedCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutDocumentsInput = {
@@ -298806,6 +301506,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
   }
@@ -298924,6 +301625,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
   }
@@ -298962,6 +301664,8 @@ export namespace Prisma {
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutDocumentsInput = {
@@ -298987,6 +301691,8 @@ export namespace Prisma {
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUncheckedUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type DriverUpsertWithoutFleetDocumentsInput = {
@@ -299512,6 +302218,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
   }
@@ -299630,6 +302337,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
   }
@@ -299662,6 +302370,8 @@ export namespace Prisma {
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutChangeRequestsInput = {
@@ -299687,6 +302397,8 @@ export namespace Prisma {
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceUncheckedCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutChangeRequestsInput = {
@@ -300210,6 +302922,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
   }
@@ -300328,6 +303041,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
   }
@@ -300366,6 +303080,8 @@ export namespace Prisma {
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutChangeRequestsInput = {
@@ -300391,6 +303107,8 @@ export namespace Prisma {
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUncheckedUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type DriverUpsertWithoutFleetChangeRequestsInput = {
@@ -300916,6 +303634,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
   }
@@ -301034,6 +303753,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
   }
@@ -301066,6 +303786,8 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutIssuesInput = {
@@ -301091,6 +303813,8 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutFleetInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceUncheckedCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutIssuesInput = {
@@ -301614,6 +304338,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
   }
@@ -301732,6 +304457,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
   }
@@ -301770,6 +304496,8 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutIssuesInput = {
@@ -301795,6 +304523,8 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUncheckedUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type DriverUpsertWithoutFleetIssuesInput = {
@@ -302319,6 +305049,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -302437,6 +305168,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -302672,6 +305404,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -302790,6 +305523,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -303015,6 +305749,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -303133,6 +305868,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -303368,6 +306104,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -303486,6 +306223,7 @@ export namespace Prisma {
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -303711,6 +306449,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -303829,6 +306568,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -304119,6 +306859,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -304237,6 +306978,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -304523,6 +307265,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -304641,6 +307384,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -304729,6 +307473,8 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestCreateNestedManyWithoutFleetInput
     issues?: FleetIssueCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerUncheckedCreateWithoutSupportTicketsInput = {
@@ -304754,6 +307500,8 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutFleetInput
     issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
+    cashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutFleetPartnerInput
+    remittances?: RemittanceUncheckedCreateNestedManyWithoutFleetPartnerInput
   }
 
   export type FleetPartnerCreateOrConnectWithoutSupportTicketsInput = {
@@ -304913,6 +307661,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -305031,6 +307780,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -305131,6 +307881,8 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutSupportTicketsInput = {
@@ -305156,6 +307908,8 @@ export namespace Prisma {
     changeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutFleetNestedInput
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUncheckedUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type SupportTicketMessageUpsertWithWhereUniqueWithoutTicketInput = {
@@ -305372,6 +308126,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
@@ -305490,6 +308245,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
     accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    fleetCashDeposits?: FleetCashDepositUncheckedCreateNestedManyWithoutTenantInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
@@ -305679,6 +308435,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
@@ -305797,6 +308554,7 @@ export namespace Prisma {
     userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
     accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    fleetCashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutTenantNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
@@ -305861,6 +308619,622 @@ export namespace Prisma {
     refunds?: RefundUncheckedUpdateManyWithoutVendorNestedInput
     accountManagers?: AccountManagerVendorUncheckedUpdateManyWithoutVendorNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutVendorNestedInput
+  }
+
+  export type TenantCreateWithoutFleetCashDepositsInput = {
+    id?: string
+    name: string
+    subscriptionPlan?: $Enums.SubscriptionPlan
+    designPartner?: boolean
+    monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    companies?: CompanyCreateNestedManyWithoutTenantInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    drivers?: DriverCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryCreateNestedManyWithoutTenantInput
+    shifts?: ShiftCreateNestedManyWithoutTenantInput
+    attendanceRecords?: AttendanceRecordCreateNestedManyWithoutTenantInput
+    orderLogs?: OrderLogCreateNestedManyWithoutTenantInput
+    cashRecords?: CashRecordCreateNestedManyWithoutTenantInput
+    cashTransactions?: CashTransactionCreateNestedManyWithoutTenantInput
+    pendingDuesLedgers?: PendingDuesLedgerCreateNestedManyWithoutTenantInput
+    vehicleInspections?: VehicleInspectionCreateNestedManyWithoutTenantInput
+    maintenanceRecords?: MaintenanceRecordCreateNestedManyWithoutTenantInput
+    aiScores?: AiScoreCreateNestedManyWithoutTenantInput
+    alerts?: AlertCreateNestedManyWithoutTenantInput
+    aiDigests?: AiDigestCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogCreateNestedManyWithoutTenantInput
+    tickets?: TicketCreateNestedManyWithoutTenantInput
+    leaveRequests?: LeaveRequestCreateNestedManyWithoutTenantInput
+    recruitmentPipeline?: RecruitmentPipelineCreateNestedManyWithoutTenantInput
+    vehicles?: VehicleCreateNestedManyWithoutTenantInput
+    talabatSessions?: TalabatSessionCreateNestedManyWithoutTenantInput
+    talabatViolationEvents?: TalabatViolationEventCreateNestedManyWithoutTenantInput
+    talabatDailyMetrics?: TalabatDailyMetricsCreateNestedManyWithoutTenantInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsCreateNestedManyWithoutTenantInput
+    keetaDailyMetrics?: KeetaDailyMetricsCreateNestedManyWithoutTenantInput
+    americanaDailyOrders?: AmericanaDailyOrdersCreateNestedManyWithoutTenantInput
+    kpiDefinitions?: KpiDefinitionCreateNestedManyWithoutTenantInput
+    kpiRecords?: KpiRecordCreateNestedManyWithoutTenantInput
+    platformSettings?: PlatformSettingsCreateNestedManyWithoutTenantInput
+    platformInventory?: PlatformInventoryCreateNestedManyWithoutTenantInput
+    notifications?: NotificationCreateNestedManyWithoutTenantInput
+    notificationRules?: NotificationRuleCreateNestedManyWithoutTenantInput
+    notificationDeliveries?: NotificationDeliveryCreateNestedManyWithoutTenantInput
+    driverRestrictions?: DriverRestrictionCreateNestedManyWithoutTenantInput
+    courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutTenantInput
+    violations?: ViolationCreateNestedManyWithoutTenantInput
+    penalties?: PenaltyCreateNestedManyWithoutTenantInput
+    appeals?: AppealCreateNestedManyWithoutTenantInput
+    orderEvents?: OrderEventCreateNestedManyWithoutTenantInput
+    aiInsights?: AiInsightCreateNestedManyWithoutTenantInput
+    demandHeatmaps?: DemandHeatmapCreateNestedManyWithoutTenantInput
+    courierAttendanceSlots?: CourierAttendanceSlotCreateNestedManyWithoutTenantInput
+    shiftComplianceConfig?: ShiftComplianceConfigCreateNestedOneWithoutTenantInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotCreateNestedManyWithoutTenantInput
+    deliveryAreas?: DeliveryAreaCreateNestedManyWithoutTenantInput
+    partners?: PartnerCreateNestedManyWithoutTenantInput
+    incentiveTargetRounds?: IncentiveTargetRoundCreateNestedManyWithoutTenantInput
+    courierIncentivePayouts?: CourierIncentivePayoutCreateNestedManyWithoutTenantInput
+    billings?: BillingCreateNestedManyWithoutTenantInput
+    taxInvoices?: TaxInvoiceCreateNestedManyWithoutTenantInput
+    paymentWithdrawals?: PaymentWithdrawalCreateNestedManyWithoutTenantInput
+    agentRunLogs?: AgentRunLogCreateNestedManyWithoutTenantInput
+    pendingAgentActions?: PendingAgentActionCreateNestedManyWithoutTenantInput
+    agentActions?: AgentActionCreateNestedManyWithoutTenantInput
+    agentMemories?: AgentMemoryCreateNestedManyWithoutTenantInput
+    pinnedViews?: PinnedViewCreateNestedManyWithoutTenantInput
+    performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutTenantInput
+    metricEvents?: MetricEventCreateNestedManyWithoutTenantInput
+    chatThreads?: ChatThreadCreateNestedManyWithoutTenantInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutTenantInput
+    scheduledBriefings?: ScheduledBriefingCreateNestedManyWithoutTenantInput
+    ingestRuns?: IngestRunCreateNestedManyWithoutTenantInput
+    americanaChains?: AmericanaChainCreateNestedManyWithoutTenantInput
+    americanaStores?: AmericanaStoreCreateNestedManyWithoutTenantInput
+    americanaContracts?: AmericanaContractCreateNestedManyWithoutTenantInput
+    americanaChainRates?: AmericanaChainRateCreateNestedManyWithoutTenantInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutTenantInput
+    americanaDailyIngestions?: AmericanaDailyIngestionCreateNestedManyWithoutTenantInput
+    sims?: SimCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupCreateNestedManyWithoutTenantInput
+    vendors?: VendorCreateNestedManyWithoutTenantInput
+    vendorBranches?: VendorBranchCreateNestedManyWithoutTenantInput
+    deliveryZones?: DeliveryZoneCreateNestedManyWithoutTenantInput
+    zoneSurcharges?: ZoneSurchargeCreateNestedManyWithoutTenantInput
+    fulfillmentSettings?: FulfillmentSettingsCreateNestedOneWithoutTenantInput
+    deliveryOrders?: DeliveryOrderCreateNestedManyWithoutTenantInput
+    dispatchOffers?: DispatchOfferCreateNestedManyWithoutTenantInput
+    walletAccounts?: WalletAccountCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
+    walletEntries?: WalletEntryCreateNestedManyWithoutTenantInput
+    remittances?: RemittanceCreateNestedManyWithoutTenantInput
+    walletReconciliationRuns?: WalletReconciliationRunCreateNestedManyWithoutTenantInput
+    incidents?: IncidentCreateNestedManyWithoutTenantInput
+    foodicsConnections?: FoodicsConnectionCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
+    orderRatings?: OrderRatingCreateNestedManyWithoutTenantInput
+    vendorStatements?: VendorStatementCreateNestedManyWithoutTenantInput
+    refunds?: RefundCreateNestedManyWithoutTenantInput
+    fleetPartners?: FleetPartnerCreateNestedManyWithoutTenantInput
+    fleetPayoutStatements?: FleetPayoutStatementCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutTenantInput
+    deliveryPlans?: DeliveryPlanCreateNestedManyWithoutTenantInput
+    distanceCacheEntries?: DistanceCacheCreateNestedManyWithoutTenantInput
+    userInvites?: UserInviteCreateNestedManyWithoutTenantInput
+    userSurfacePermissions?: UserSurfacePermissionCreateNestedManyWithoutTenantInput
+    accountManagerVendors?: AccountManagerVendorCreateNestedManyWithoutTenantInput
+    supportTickets?: SupportTicketCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpCreateNestedManyWithoutTenantInput
+    fleetDocuments?: FleetDocumentCreateNestedManyWithoutTenantInput
+    fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutTenantInput
+    fleetIssues?: FleetIssueCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantUncheckedCreateWithoutFleetCashDepositsInput = {
+    id?: string
+    name: string
+    subscriptionPlan?: $Enums.SubscriptionPlan
+    designPartner?: boolean
+    monthlyOverrideKd?: Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: Date | string | null
+    defaultLanguage?: $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: string | null
+    whatsappPhoneNumberId?: string | null
+    outboundDailyKdLimit?: Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    companies?: CompanyUncheckedCreateNestedManyWithoutTenantInput
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    drivers?: DriverUncheckedCreateNestedManyWithoutTenantInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutTenantInput
+    shifts?: ShiftUncheckedCreateNestedManyWithoutTenantInput
+    attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutTenantInput
+    orderLogs?: OrderLogUncheckedCreateNestedManyWithoutTenantInput
+    cashRecords?: CashRecordUncheckedCreateNestedManyWithoutTenantInput
+    cashTransactions?: CashTransactionUncheckedCreateNestedManyWithoutTenantInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedCreateNestedManyWithoutTenantInput
+    vehicleInspections?: VehicleInspectionUncheckedCreateNestedManyWithoutTenantInput
+    maintenanceRecords?: MaintenanceRecordUncheckedCreateNestedManyWithoutTenantInput
+    aiScores?: AiScoreUncheckedCreateNestedManyWithoutTenantInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutTenantInput
+    aiDigests?: AiDigestUncheckedCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutTenantInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutTenantInput
+    leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutTenantInput
+    recruitmentPipeline?: RecruitmentPipelineUncheckedCreateNestedManyWithoutTenantInput
+    vehicles?: VehicleUncheckedCreateNestedManyWithoutTenantInput
+    talabatSessions?: TalabatSessionUncheckedCreateNestedManyWithoutTenantInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedCreateNestedManyWithoutTenantInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedCreateNestedManyWithoutTenantInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedCreateNestedManyWithoutTenantInput
+    kpiDefinitions?: KpiDefinitionUncheckedCreateNestedManyWithoutTenantInput
+    kpiRecords?: KpiRecordUncheckedCreateNestedManyWithoutTenantInput
+    platformSettings?: PlatformSettingsUncheckedCreateNestedManyWithoutTenantInput
+    platformInventory?: PlatformInventoryUncheckedCreateNestedManyWithoutTenantInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutTenantInput
+    notificationRules?: NotificationRuleUncheckedCreateNestedManyWithoutTenantInput
+    notificationDeliveries?: NotificationDeliveryUncheckedCreateNestedManyWithoutTenantInput
+    driverRestrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutTenantInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutTenantInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutTenantInput
+    violations?: ViolationUncheckedCreateNestedManyWithoutTenantInput
+    penalties?: PenaltyUncheckedCreateNestedManyWithoutTenantInput
+    appeals?: AppealUncheckedCreateNestedManyWithoutTenantInput
+    orderEvents?: OrderEventUncheckedCreateNestedManyWithoutTenantInput
+    aiInsights?: AiInsightUncheckedCreateNestedManyWithoutTenantInput
+    demandHeatmaps?: DemandHeatmapUncheckedCreateNestedManyWithoutTenantInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedCreateNestedManyWithoutTenantInput
+    shiftComplianceConfig?: ShiftComplianceConfigUncheckedCreateNestedOneWithoutTenantInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUncheckedCreateNestedManyWithoutTenantInput
+    deliveryAreas?: DeliveryAreaUncheckedCreateNestedManyWithoutTenantInput
+    partners?: PartnerUncheckedCreateNestedManyWithoutTenantInput
+    incentiveTargetRounds?: IncentiveTargetRoundUncheckedCreateNestedManyWithoutTenantInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedCreateNestedManyWithoutTenantInput
+    billings?: BillingUncheckedCreateNestedManyWithoutTenantInput
+    taxInvoices?: TaxInvoiceUncheckedCreateNestedManyWithoutTenantInput
+    paymentWithdrawals?: PaymentWithdrawalUncheckedCreateNestedManyWithoutTenantInput
+    agentRunLogs?: AgentRunLogUncheckedCreateNestedManyWithoutTenantInput
+    pendingAgentActions?: PendingAgentActionUncheckedCreateNestedManyWithoutTenantInput
+    agentActions?: AgentActionUncheckedCreateNestedManyWithoutTenantInput
+    agentMemories?: AgentMemoryUncheckedCreateNestedManyWithoutTenantInput
+    pinnedViews?: PinnedViewUncheckedCreateNestedManyWithoutTenantInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutTenantInput
+    metricEvents?: MetricEventUncheckedCreateNestedManyWithoutTenantInput
+    chatThreads?: ChatThreadUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    scheduledBriefings?: ScheduledBriefingUncheckedCreateNestedManyWithoutTenantInput
+    ingestRuns?: IngestRunUncheckedCreateNestedManyWithoutTenantInput
+    americanaChains?: AmericanaChainUncheckedCreateNestedManyWithoutTenantInput
+    americanaStores?: AmericanaStoreUncheckedCreateNestedManyWithoutTenantInput
+    americanaContracts?: AmericanaContractUncheckedCreateNestedManyWithoutTenantInput
+    americanaChainRates?: AmericanaChainRateUncheckedCreateNestedManyWithoutTenantInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutTenantInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUncheckedCreateNestedManyWithoutTenantInput
+    sims?: SimUncheckedCreateNestedManyWithoutTenantInput
+    ownerGroups?: OwnerGroupUncheckedCreateNestedManyWithoutTenantInput
+    vendors?: VendorUncheckedCreateNestedManyWithoutTenantInput
+    vendorBranches?: VendorBranchUncheckedCreateNestedManyWithoutTenantInput
+    deliveryZones?: DeliveryZoneUncheckedCreateNestedManyWithoutTenantInput
+    zoneSurcharges?: ZoneSurchargeUncheckedCreateNestedManyWithoutTenantInput
+    fulfillmentSettings?: FulfillmentSettingsUncheckedCreateNestedOneWithoutTenantInput
+    deliveryOrders?: DeliveryOrderUncheckedCreateNestedManyWithoutTenantInput
+    dispatchOffers?: DispatchOfferUncheckedCreateNestedManyWithoutTenantInput
+    walletAccounts?: WalletAccountUncheckedCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
+    walletEntries?: WalletEntryUncheckedCreateNestedManyWithoutTenantInput
+    remittances?: RemittanceUncheckedCreateNestedManyWithoutTenantInput
+    walletReconciliationRuns?: WalletReconciliationRunUncheckedCreateNestedManyWithoutTenantInput
+    incidents?: IncidentUncheckedCreateNestedManyWithoutTenantInput
+    foodicsConnections?: FoodicsConnectionUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
+    orderRatings?: OrderRatingUncheckedCreateNestedManyWithoutTenantInput
+    vendorStatements?: VendorStatementUncheckedCreateNestedManyWithoutTenantInput
+    refunds?: RefundUncheckedCreateNestedManyWithoutTenantInput
+    fleetPartners?: FleetPartnerUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutStatements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutTenantInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutTenantInput
+    deliveryPlans?: DeliveryPlanUncheckedCreateNestedManyWithoutTenantInput
+    distanceCacheEntries?: DistanceCacheUncheckedCreateNestedManyWithoutTenantInput
+    userInvites?: UserInviteUncheckedCreateNestedManyWithoutTenantInput
+    userSurfacePermissions?: UserSurfacePermissionUncheckedCreateNestedManyWithoutTenantInput
+    accountManagerVendors?: AccountManagerVendorUncheckedCreateNestedManyWithoutTenantInput
+    supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+    vendorTopUps?: VendorTopUpUncheckedCreateNestedManyWithoutTenantInput
+    fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutTenantInput
+    fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutTenantInput
+    fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantCreateOrConnectWithoutFleetCashDepositsInput = {
+    where: TenantWhereUniqueInput
+    create: XOR<TenantCreateWithoutFleetCashDepositsInput, TenantUncheckedCreateWithoutFleetCashDepositsInput>
+  }
+
+  export type FleetPartnerCreateWithoutCashDepositsInput = {
+    id?: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    contactEmail?: string | null
+    flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
+    minOnlineHoursPerDay?: number | null
+    minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
+    disciplineStatus?: string
+    disciplineNote?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutFleetPartnersInput
+    ownerGroup?: OwnerGroupCreateNestedOneWithoutFleetsInput
+    drivers?: DriverCreateNestedManyWithoutFleetPartnerInput
+    users?: UserCreateNestedManyWithoutFleetPartnerInput
+    statements?: FleetPayoutStatementCreateNestedManyWithoutFleetInput
+    documents?: FleetDocumentCreateNestedManyWithoutFleetInput
+    changeRequests?: FleetChangeRequestCreateNestedManyWithoutFleetInput
+    issues?: FleetIssueCreateNestedManyWithoutFleetInput
+    supportTickets?: SupportTicketCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceCreateNestedManyWithoutFleetInput
+    remittances?: RemittanceCreateNestedManyWithoutFleetPartnerInput
+  }
+
+  export type FleetPartnerUncheckedCreateWithoutCashDepositsInput = {
+    id?: string
+    tenantId: string
+    name: string
+    contactName?: string | null
+    contactPhone?: string | null
+    contactEmail?: string | null
+    flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
+    minOnlineHoursPerDay?: number | null
+    minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
+    disciplineStatus?: string
+    disciplineNote?: string | null
+    isActive?: boolean
+    ownerGroupId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    drivers?: DriverUncheckedCreateNestedManyWithoutFleetPartnerInput
+    users?: UserUncheckedCreateNestedManyWithoutFleetPartnerInput
+    statements?: FleetPayoutStatementUncheckedCreateNestedManyWithoutFleetInput
+    documents?: FleetDocumentUncheckedCreateNestedManyWithoutFleetInput
+    changeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutFleetInput
+    issues?: FleetIssueUncheckedCreateNestedManyWithoutFleetInput
+    supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutFleetInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedCreateNestedManyWithoutFleetInput
+    remittances?: RemittanceUncheckedCreateNestedManyWithoutFleetPartnerInput
+  }
+
+  export type FleetPartnerCreateOrConnectWithoutCashDepositsInput = {
+    where: FleetPartnerWhereUniqueInput
+    create: XOR<FleetPartnerCreateWithoutCashDepositsInput, FleetPartnerUncheckedCreateWithoutCashDepositsInput>
+  }
+
+  export type TenantUpsertWithoutFleetCashDepositsInput = {
+    update: XOR<TenantUpdateWithoutFleetCashDepositsInput, TenantUncheckedUpdateWithoutFleetCashDepositsInput>
+    create: XOR<TenantCreateWithoutFleetCashDepositsInput, TenantUncheckedCreateWithoutFleetCashDepositsInput>
+    where?: TenantWhereInput
+  }
+
+  export type TenantUpdateToOneWithWhereWithoutFleetCashDepositsInput = {
+    where?: TenantWhereInput
+    data: XOR<TenantUpdateWithoutFleetCashDepositsInput, TenantUncheckedUpdateWithoutFleetCashDepositsInput>
+  }
+
+  export type TenantUpdateWithoutFleetCashDepositsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    subscriptionPlan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+    designPartner?: BoolFieldUpdateOperationsInput | boolean
+    monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    companies?: CompanyUpdateManyWithoutTenantNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    drivers?: DriverUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUpdateManyWithoutTenantNestedInput
+    shifts?: ShiftUpdateManyWithoutTenantNestedInput
+    attendanceRecords?: AttendanceRecordUpdateManyWithoutTenantNestedInput
+    orderLogs?: OrderLogUpdateManyWithoutTenantNestedInput
+    cashRecords?: CashRecordUpdateManyWithoutTenantNestedInput
+    cashTransactions?: CashTransactionUpdateManyWithoutTenantNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUpdateManyWithoutTenantNestedInput
+    vehicleInspections?: VehicleInspectionUpdateManyWithoutTenantNestedInput
+    maintenanceRecords?: MaintenanceRecordUpdateManyWithoutTenantNestedInput
+    aiScores?: AiScoreUpdateManyWithoutTenantNestedInput
+    alerts?: AlertUpdateManyWithoutTenantNestedInput
+    aiDigests?: AiDigestUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutTenantNestedInput
+    tickets?: TicketUpdateManyWithoutTenantNestedInput
+    leaveRequests?: LeaveRequestUpdateManyWithoutTenantNestedInput
+    recruitmentPipeline?: RecruitmentPipelineUpdateManyWithoutTenantNestedInput
+    vehicles?: VehicleUpdateManyWithoutTenantNestedInput
+    talabatSessions?: TalabatSessionUpdateManyWithoutTenantNestedInput
+    talabatViolationEvents?: TalabatViolationEventUpdateManyWithoutTenantNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUpdateManyWithoutTenantNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUpdateManyWithoutTenantNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUpdateManyWithoutTenantNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUpdateManyWithoutTenantNestedInput
+    kpiDefinitions?: KpiDefinitionUpdateManyWithoutTenantNestedInput
+    kpiRecords?: KpiRecordUpdateManyWithoutTenantNestedInput
+    platformSettings?: PlatformSettingsUpdateManyWithoutTenantNestedInput
+    platformInventory?: PlatformInventoryUpdateManyWithoutTenantNestedInput
+    notifications?: NotificationUpdateManyWithoutTenantNestedInput
+    notificationRules?: NotificationRuleUpdateManyWithoutTenantNestedInput
+    notificationDeliveries?: NotificationDeliveryUpdateManyWithoutTenantNestedInput
+    driverRestrictions?: DriverRestrictionUpdateManyWithoutTenantNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUpdateManyWithoutTenantNestedInput
+    violations?: ViolationUpdateManyWithoutTenantNestedInput
+    penalties?: PenaltyUpdateManyWithoutTenantNestedInput
+    appeals?: AppealUpdateManyWithoutTenantNestedInput
+    orderEvents?: OrderEventUpdateManyWithoutTenantNestedInput
+    aiInsights?: AiInsightUpdateManyWithoutTenantNestedInput
+    demandHeatmaps?: DemandHeatmapUpdateManyWithoutTenantNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUpdateManyWithoutTenantNestedInput
+    shiftComplianceConfig?: ShiftComplianceConfigUpdateOneWithoutTenantNestedInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUpdateManyWithoutTenantNestedInput
+    deliveryAreas?: DeliveryAreaUpdateManyWithoutTenantNestedInput
+    partners?: PartnerUpdateManyWithoutTenantNestedInput
+    incentiveTargetRounds?: IncentiveTargetRoundUpdateManyWithoutTenantNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUpdateManyWithoutTenantNestedInput
+    billings?: BillingUpdateManyWithoutTenantNestedInput
+    taxInvoices?: TaxInvoiceUpdateManyWithoutTenantNestedInput
+    paymentWithdrawals?: PaymentWithdrawalUpdateManyWithoutTenantNestedInput
+    agentRunLogs?: AgentRunLogUpdateManyWithoutTenantNestedInput
+    pendingAgentActions?: PendingAgentActionUpdateManyWithoutTenantNestedInput
+    agentActions?: AgentActionUpdateManyWithoutTenantNestedInput
+    agentMemories?: AgentMemoryUpdateManyWithoutTenantNestedInput
+    pinnedViews?: PinnedViewUpdateManyWithoutTenantNestedInput
+    performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutTenantNestedInput
+    metricEvents?: MetricEventUpdateManyWithoutTenantNestedInput
+    chatThreads?: ChatThreadUpdateManyWithoutTenantNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutTenantNestedInput
+    scheduledBriefings?: ScheduledBriefingUpdateManyWithoutTenantNestedInput
+    ingestRuns?: IngestRunUpdateManyWithoutTenantNestedInput
+    americanaChains?: AmericanaChainUpdateManyWithoutTenantNestedInput
+    americanaStores?: AmericanaStoreUpdateManyWithoutTenantNestedInput
+    americanaContracts?: AmericanaContractUpdateManyWithoutTenantNestedInput
+    americanaChainRates?: AmericanaChainRateUpdateManyWithoutTenantNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutTenantNestedInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUpdateManyWithoutTenantNestedInput
+    sims?: SimUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUpdateManyWithoutTenantNestedInput
+    vendors?: VendorUpdateManyWithoutTenantNestedInput
+    vendorBranches?: VendorBranchUpdateManyWithoutTenantNestedInput
+    deliveryZones?: DeliveryZoneUpdateManyWithoutTenantNestedInput
+    zoneSurcharges?: ZoneSurchargeUpdateManyWithoutTenantNestedInput
+    fulfillmentSettings?: FulfillmentSettingsUpdateOneWithoutTenantNestedInput
+    deliveryOrders?: DeliveryOrderUpdateManyWithoutTenantNestedInput
+    dispatchOffers?: DispatchOfferUpdateManyWithoutTenantNestedInput
+    walletAccounts?: WalletAccountUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
+    walletEntries?: WalletEntryUpdateManyWithoutTenantNestedInput
+    remittances?: RemittanceUpdateManyWithoutTenantNestedInput
+    walletReconciliationRuns?: WalletReconciliationRunUpdateManyWithoutTenantNestedInput
+    incidents?: IncidentUpdateManyWithoutTenantNestedInput
+    foodicsConnections?: FoodicsConnectionUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
+    orderRatings?: OrderRatingUpdateManyWithoutTenantNestedInput
+    vendorStatements?: VendorStatementUpdateManyWithoutTenantNestedInput
+    refunds?: RefundUpdateManyWithoutTenantNestedInput
+    fleetPartners?: FleetPartnerUpdateManyWithoutTenantNestedInput
+    fleetPayoutStatements?: FleetPayoutStatementUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutTenantNestedInput
+    deliveryPlans?: DeliveryPlanUpdateManyWithoutTenantNestedInput
+    distanceCacheEntries?: DistanceCacheUpdateManyWithoutTenantNestedInput
+    userInvites?: UserInviteUpdateManyWithoutTenantNestedInput
+    userSurfacePermissions?: UserSurfacePermissionUpdateManyWithoutTenantNestedInput
+    accountManagerVendors?: AccountManagerVendorUpdateManyWithoutTenantNestedInput
+    supportTickets?: SupportTicketUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUpdateManyWithoutTenantNestedInput
+    fleetDocuments?: FleetDocumentUpdateManyWithoutTenantNestedInput
+    fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutTenantNestedInput
+    fleetIssues?: FleetIssueUpdateManyWithoutTenantNestedInput
+  }
+
+  export type TenantUncheckedUpdateWithoutFleetCashDepositsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    subscriptionPlan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+    designPartner?: BoolFieldUpdateOperationsInput | boolean
+    monthlyOverrideKd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    defaultLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundChannels?: JsonNullValueInput | InputJsonValue
+    whatsappBusinessAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappPhoneNumberId?: NullableStringFieldUpdateOperationsInput | string | null
+    outboundDailyKdLimit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    companies?: CompanyUncheckedUpdateManyWithoutTenantNestedInput
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    drivers?: DriverUncheckedUpdateManyWithoutTenantNestedInput
+    driverBatchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutTenantNestedInput
+    shifts?: ShiftUncheckedUpdateManyWithoutTenantNestedInput
+    attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutTenantNestedInput
+    orderLogs?: OrderLogUncheckedUpdateManyWithoutTenantNestedInput
+    cashRecords?: CashRecordUncheckedUpdateManyWithoutTenantNestedInput
+    cashTransactions?: CashTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleInspections?: VehicleInspectionUncheckedUpdateManyWithoutTenantNestedInput
+    maintenanceRecords?: MaintenanceRecordUncheckedUpdateManyWithoutTenantNestedInput
+    aiScores?: AiScoreUncheckedUpdateManyWithoutTenantNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutTenantNestedInput
+    aiDigests?: AiDigestUncheckedUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutTenantNestedInput
+    leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutTenantNestedInput
+    recruitmentPipeline?: RecruitmentPipelineUncheckedUpdateManyWithoutTenantNestedInput
+    vehicles?: VehicleUncheckedUpdateManyWithoutTenantNestedInput
+    talabatSessions?: TalabatSessionUncheckedUpdateManyWithoutTenantNestedInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedUpdateManyWithoutTenantNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedUpdateManyWithoutTenantNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedUpdateManyWithoutTenantNestedInput
+    kpiDefinitions?: KpiDefinitionUncheckedUpdateManyWithoutTenantNestedInput
+    kpiRecords?: KpiRecordUncheckedUpdateManyWithoutTenantNestedInput
+    platformSettings?: PlatformSettingsUncheckedUpdateManyWithoutTenantNestedInput
+    platformInventory?: PlatformInventoryUncheckedUpdateManyWithoutTenantNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutTenantNestedInput
+    notificationRules?: NotificationRuleUncheckedUpdateManyWithoutTenantNestedInput
+    notificationDeliveries?: NotificationDeliveryUncheckedUpdateManyWithoutTenantNestedInput
+    driverRestrictions?: DriverRestrictionUncheckedUpdateManyWithoutTenantNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutTenantNestedInput
+    vehicleDriverAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutTenantNestedInput
+    violations?: ViolationUncheckedUpdateManyWithoutTenantNestedInput
+    penalties?: PenaltyUncheckedUpdateManyWithoutTenantNestedInput
+    appeals?: AppealUncheckedUpdateManyWithoutTenantNestedInput
+    orderEvents?: OrderEventUncheckedUpdateManyWithoutTenantNestedInput
+    aiInsights?: AiInsightUncheckedUpdateManyWithoutTenantNestedInput
+    demandHeatmaps?: DemandHeatmapUncheckedUpdateManyWithoutTenantNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedUpdateManyWithoutTenantNestedInput
+    shiftComplianceConfig?: ShiftComplianceConfigUncheckedUpdateOneWithoutTenantNestedInput
+    keetaAvailableSlots?: KeetaAvailableShiftSlotUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryAreas?: DeliveryAreaUncheckedUpdateManyWithoutTenantNestedInput
+    partners?: PartnerUncheckedUpdateManyWithoutTenantNestedInput
+    incentiveTargetRounds?: IncentiveTargetRoundUncheckedUpdateManyWithoutTenantNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedUpdateManyWithoutTenantNestedInput
+    billings?: BillingUncheckedUpdateManyWithoutTenantNestedInput
+    taxInvoices?: TaxInvoiceUncheckedUpdateManyWithoutTenantNestedInput
+    paymentWithdrawals?: PaymentWithdrawalUncheckedUpdateManyWithoutTenantNestedInput
+    agentRunLogs?: AgentRunLogUncheckedUpdateManyWithoutTenantNestedInput
+    pendingAgentActions?: PendingAgentActionUncheckedUpdateManyWithoutTenantNestedInput
+    agentActions?: AgentActionUncheckedUpdateManyWithoutTenantNestedInput
+    agentMemories?: AgentMemoryUncheckedUpdateManyWithoutTenantNestedInput
+    pinnedViews?: PinnedViewUncheckedUpdateManyWithoutTenantNestedInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutTenantNestedInput
+    metricEvents?: MetricEventUncheckedUpdateManyWithoutTenantNestedInput
+    chatThreads?: ChatThreadUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    scheduledBriefings?: ScheduledBriefingUncheckedUpdateManyWithoutTenantNestedInput
+    ingestRuns?: IngestRunUncheckedUpdateManyWithoutTenantNestedInput
+    americanaChains?: AmericanaChainUncheckedUpdateManyWithoutTenantNestedInput
+    americanaStores?: AmericanaStoreUncheckedUpdateManyWithoutTenantNestedInput
+    americanaContracts?: AmericanaContractUncheckedUpdateManyWithoutTenantNestedInput
+    americanaChainRates?: AmericanaChainRateUncheckedUpdateManyWithoutTenantNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutTenantNestedInput
+    americanaDailyIngestions?: AmericanaDailyIngestionUncheckedUpdateManyWithoutTenantNestedInput
+    sims?: SimUncheckedUpdateManyWithoutTenantNestedInput
+    ownerGroups?: OwnerGroupUncheckedUpdateManyWithoutTenantNestedInput
+    vendors?: VendorUncheckedUpdateManyWithoutTenantNestedInput
+    vendorBranches?: VendorBranchUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryZones?: DeliveryZoneUncheckedUpdateManyWithoutTenantNestedInput
+    zoneSurcharges?: ZoneSurchargeUncheckedUpdateManyWithoutTenantNestedInput
+    fulfillmentSettings?: FulfillmentSettingsUncheckedUpdateOneWithoutTenantNestedInput
+    deliveryOrders?: DeliveryOrderUncheckedUpdateManyWithoutTenantNestedInput
+    dispatchOffers?: DispatchOfferUncheckedUpdateManyWithoutTenantNestedInput
+    walletAccounts?: WalletAccountUncheckedUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    walletEntries?: WalletEntryUncheckedUpdateManyWithoutTenantNestedInput
+    remittances?: RemittanceUncheckedUpdateManyWithoutTenantNestedInput
+    walletReconciliationRuns?: WalletReconciliationRunUncheckedUpdateManyWithoutTenantNestedInput
+    incidents?: IncidentUncheckedUpdateManyWithoutTenantNestedInput
+    foodicsConnections?: FoodicsConnectionUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
+    orderRatings?: OrderRatingUncheckedUpdateManyWithoutTenantNestedInput
+    vendorStatements?: VendorStatementUncheckedUpdateManyWithoutTenantNestedInput
+    refunds?: RefundUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPartners?: FleetPartnerUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutStatements?: FleetPayoutStatementUncheckedUpdateManyWithoutTenantNestedInput
+    fleetPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutTenantNestedInput
+    deliveryPlans?: DeliveryPlanUncheckedUpdateManyWithoutTenantNestedInput
+    distanceCacheEntries?: DistanceCacheUncheckedUpdateManyWithoutTenantNestedInput
+    userInvites?: UserInviteUncheckedUpdateManyWithoutTenantNestedInput
+    userSurfacePermissions?: UserSurfacePermissionUncheckedUpdateManyWithoutTenantNestedInput
+    accountManagerVendors?: AccountManagerVendorUncheckedUpdateManyWithoutTenantNestedInput
+    supportTickets?: SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+    vendorTopUps?: VendorTopUpUncheckedUpdateManyWithoutTenantNestedInput
+    fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutTenantNestedInput
+    fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutTenantNestedInput
+    fleetIssues?: FleetIssueUncheckedUpdateManyWithoutTenantNestedInput
+  }
+
+  export type FleetPartnerUpsertWithoutCashDepositsInput = {
+    update: XOR<FleetPartnerUpdateWithoutCashDepositsInput, FleetPartnerUncheckedUpdateWithoutCashDepositsInput>
+    create: XOR<FleetPartnerCreateWithoutCashDepositsInput, FleetPartnerUncheckedCreateWithoutCashDepositsInput>
+    where?: FleetPartnerWhereInput
+  }
+
+  export type FleetPartnerUpdateToOneWithWhereWithoutCashDepositsInput = {
+    where?: FleetPartnerWhereInput
+    data: XOR<FleetPartnerUpdateWithoutCashDepositsInput, FleetPartnerUncheckedUpdateWithoutCashDepositsInput>
+  }
+
+  export type FleetPartnerUpdateWithoutCashDepositsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
+    minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
+    disciplineStatus?: StringFieldUpdateOperationsInput | string
+    disciplineNote?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutFleetPartnersNestedInput
+    ownerGroup?: OwnerGroupUpdateOneWithoutFleetsNestedInput
+    drivers?: DriverUpdateManyWithoutFleetPartnerNestedInput
+    users?: UserUpdateManyWithoutFleetPartnerNestedInput
+    statements?: FleetPayoutStatementUpdateManyWithoutFleetNestedInput
+    documents?: FleetDocumentUpdateManyWithoutFleetNestedInput
+    changeRequests?: FleetChangeRequestUpdateManyWithoutFleetNestedInput
+    issues?: FleetIssueUpdateManyWithoutFleetNestedInput
+    supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
+    remittances?: RemittanceUpdateManyWithoutFleetPartnerNestedInput
+  }
+
+  export type FleetPartnerUncheckedUpdateWithoutCashDepositsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
+    minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
+    disciplineStatus?: StringFieldUpdateOperationsInput | string
+    disciplineNote?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    ownerGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    drivers?: DriverUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    users?: UserUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    statements?: FleetPayoutStatementUncheckedUpdateManyWithoutFleetNestedInput
+    documents?: FleetDocumentUncheckedUpdateManyWithoutFleetNestedInput
+    changeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutFleetNestedInput
+    issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
+    supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
+    payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
+    remittances?: RemittanceUncheckedUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type CompanyCreateManyTenantInput = {
@@ -307147,6 +310521,7 @@ export namespace Prisma {
     method: $Enums.DepositMethod
     receiptUrl?: string | null
     receivedById?: string | null
+    fleetPartnerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -307362,6 +310737,23 @@ export namespace Prisma {
     providerRef?: string | null
     provider?: string | null
     paidAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FleetCashDepositCreateManyTenantInput = {
+    id?: string
+    fleetPartnerId: string
+    requestedById?: string | null
+    amountKwd: Decimal | DecimalJsLike | number | string
+    method?: $Enums.DepositMethod
+    reference: string
+    note?: string | null
+    receiptUrl?: string | null
+    status?: $Enums.FleetCashDepositStatus
+    confirmedById?: string | null
+    confirmedAt?: Date | string | null
+    rejectReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -311541,6 +314933,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     driver?: DriverUpdateOneRequiredWithoutRemittancesNestedInput
+    fleetPartner?: FleetPartnerUpdateOneWithoutRemittancesNestedInput
   }
 
   export type RemittanceUncheckedUpdateWithoutTenantInput = {
@@ -311550,6 +314943,7 @@ export namespace Prisma {
     method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
     receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
     receivedById?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -311561,6 +314955,7 @@ export namespace Prisma {
     method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
     receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
     receivedById?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -311867,6 +315262,8 @@ export namespace Prisma {
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutTenantInput = {
@@ -311892,6 +315289,8 @@ export namespace Prisma {
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUncheckedUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateManyWithoutTenantInput = {
@@ -312234,6 +315633,57 @@ export namespace Prisma {
     providerRef?: NullableStringFieldUpdateOperationsInput | string | null
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FleetCashDepositUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
+    reference?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fleetPartner?: FleetPartnerUpdateOneRequiredWithoutCashDepositsNestedInput
+  }
+
+  export type FleetCashDepositUncheckedUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fleetPartnerId?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
+    reference?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FleetCashDepositUncheckedUpdateManyWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fleetPartnerId?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
+    reference?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -313008,6 +316458,8 @@ export namespace Prisma {
     issues?: FleetIssueUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateWithoutOwnerGroupInput = {
@@ -313033,6 +316485,8 @@ export namespace Prisma {
     issues?: FleetIssueUncheckedUpdateManyWithoutFleetNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutFleetNestedInput
     payoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutFleetNestedInput
+    cashDeposits?: FleetCashDepositUncheckedUpdateManyWithoutFleetPartnerNestedInput
+    remittances?: RemittanceUncheckedUpdateManyWithoutFleetPartnerNestedInput
   }
 
   export type FleetPartnerUncheckedUpdateManyWithoutOwnerGroupInput = {
@@ -315646,6 +319100,7 @@ export namespace Prisma {
     method: $Enums.DepositMethod
     receiptUrl?: string | null
     receivedById?: string | null
+    fleetPartnerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -317786,6 +321241,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutRemittancesNestedInput
+    fleetPartner?: FleetPartnerUpdateOneWithoutRemittancesNestedInput
   }
 
   export type RemittanceUncheckedUpdateWithoutDriverInput = {
@@ -317795,6 +321251,7 @@ export namespace Prisma {
     method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
     receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
     receivedById?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -317806,6 +321263,7 @@ export namespace Prisma {
     method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
     receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
     receivedById?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -322768,6 +326226,35 @@ export namespace Prisma {
     uploadedAt?: Date | string
   }
 
+  export type FleetCashDepositCreateManyFleetPartnerInput = {
+    id?: string
+    tenantId: string
+    requestedById?: string | null
+    amountKwd: Decimal | DecimalJsLike | number | string
+    method?: $Enums.DepositMethod
+    reference: string
+    note?: string | null
+    receiptUrl?: string | null
+    status?: $Enums.FleetCashDepositStatus
+    confirmedById?: string | null
+    confirmedAt?: Date | string | null
+    rejectReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RemittanceCreateManyFleetPartnerInput = {
+    id?: string
+    tenantId: string
+    driverId: string
+    amountKwd: Decimal | DecimalJsLike | number | string
+    method: $Enums.DepositMethod
+    receiptUrl?: string | null
+    receivedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type DriverUpdateWithoutFleetPartnerInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -323427,6 +326914,93 @@ export namespace Prisma {
     uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type FleetCashDepositUpdateWithoutFleetPartnerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
+    reference?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutFleetCashDepositsNestedInput
+  }
+
+  export type FleetCashDepositUncheckedUpdateWithoutFleetPartnerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
+    reference?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FleetCashDepositUncheckedUpdateManyWithoutFleetPartnerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
+    reference?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumFleetCashDepositStatusFieldUpdateOperationsInput | $Enums.FleetCashDepositStatus
+    confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RemittanceUpdateWithoutFleetPartnerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
+    receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    receivedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutRemittancesNestedInput
+    driver?: DriverUpdateOneRequiredWithoutRemittancesNestedInput
+  }
+
+  export type RemittanceUncheckedUpdateWithoutFleetPartnerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    driverId?: StringFieldUpdateOperationsInput | string
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
+    receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    receivedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RemittanceUncheckedUpdateManyWithoutFleetPartnerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    driverId?: StringFieldUpdateOperationsInput | string
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    method?: EnumDepositMethodFieldUpdateOperationsInput | $Enums.DepositMethod
+    receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    receivedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type SupportTicketMessageCreateManyTicketInput = {
     id?: string
     tenantId: string
@@ -324064,6 +327638,10 @@ export namespace Prisma {
      * @deprecated Use VendorTopUpDefaultArgs instead
      */
     export type VendorTopUpArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = VendorTopUpDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use FleetCashDepositDefaultArgs instead
+     */
+    export type FleetCashDepositArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = FleetCashDepositDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

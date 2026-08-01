@@ -30,6 +30,9 @@ export const FLEET_TABS = [
   "DOCUMENTS",
   "SCORECARD",
   "PAYOUTS",
+  // Revision 14 — the company's own cash account with Darb: what it has
+  // deposited, and clearing its drivers' cash-on-hand out of it.
+  "CASH",
   "SUPPORT",
   "TEAM",
 ] as const;
@@ -53,9 +56,13 @@ export const FLEET_PORTAL_ROLES: readonly FleetPortalRole[] = [
  * a portal that cannot ask a question sends a WhatsApp instead.
  */
 export const FLEET_ROLE_DEFAULT_TABS: Record<FleetPortalRole, FleetTab[]> = {
-  OWNER: ["ROSTER", "ISSUES", "DOCUMENTS", "SCORECARD", "PAYOUTS", "SUPPORT", "TEAM"],
+  OWNER: ["ROSTER", "ISSUES", "DOCUMENTS", "SCORECARD", "PAYOUTS", "CASH", "SUPPORT", "TEAM"],
   OPERATIONS: ["ROSTER", "ISSUES", "DOCUMENTS", "SUPPORT"],
-  FINANCE: ["PAYOUTS", "SCORECARD", "SUPPORT"],
+  // Revision 14 — CASH is money, so it lands with FINANCE rather than with the
+  // supervisor who physically collects the envelopes. An owner who wants their
+  // operations lead to settle drivers grants it through the tab override, which
+  // is exactly what the override is for.
+  FINANCE: ["PAYOUTS", "SCORECARD", "CASH", "SUPPORT"],
 };
 
 export function isFleetTab(value: unknown): value is FleetTab {

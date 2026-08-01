@@ -1930,6 +1930,61 @@ export interface Messages {
     subtitle: string;
     historyTitle: string;
     historySubtitle: string;
+    /**
+     * Revision 14 — the desk's other queue. Cash arriving from a delivery
+     * company rather than from a driver, and only an accountant confirming it
+     * credits that company's account.
+     */
+    depositsTitle: string;
+    depositsHint: string;
+    noDeposits: string;
+    company: string;
+    confirmDeposit: string;
+    rejectDeposit: string;
+    depositConfirmed: string;
+    depositRejected: string;
+    rejectReasonLabel: string;
+    rejectReasonRequired: string;
+  };
+  /** Revision 14 — the delivery company's own cash account with Darb. */
+  fleetCash: {
+    title: string;
+    subtitle: string;
+    balance: string;
+    driversHolding: string;
+    awaitingDarb: string;
+    depositTitle: string;
+    depositHint: string;
+    amount: string;
+    method: string;
+    methodCASH: string;
+    methodBANK_TRANSFER: string;
+    methodAL_MUZAINI: string;
+    note: string;
+    notePlaceholder: string;
+    submitDeposit: string;
+    depositSubmitted: string;
+    depositWithdrawn: string;
+    reference: string;
+    submittedAt: string;
+    status: string;
+    withdraw: string;
+    noDeposits: string;
+    settleTitle: string;
+    settleHint: string;
+    fillAll: string;
+    cashOnHand: string;
+    settleAmount: string;
+    inFull: string;
+    settling: string;
+    settleButton: string;
+    settled: string;
+    overDriver: string;
+    overBalance: string;
+    noDriversOwing: string;
+    historyTitle: string;
+    settledAt: string;
+    noSettlements: string;
   };
   fleetPortal: {
     exportExcel: string;
@@ -1944,6 +1999,8 @@ export interface Messages {
     navRoster: string;
     navScorecard: string;
     navPayouts: string;
+    /** Revision 14 — the company's cash account with Darb. */
+    navCash: string;
     /**
      * Revision 12 — the portal stopped being three read-only screens. The rule
      * behind all of it: a delivery company submits, Darb approves or rejects,
@@ -2176,6 +2233,7 @@ export interface Messages {
     tabDOCUMENTS: string;
     tabSCORECARD: string;
     tabPAYOUTS: string;
+    tabCASH: string;
     tabSUPPORT: string;
     tabTEAM: string;
   };
@@ -4282,6 +4340,59 @@ export const en: Messages = {
     subtitle: "Record the cash a driver hands in at the end of a shift.",
     historyTitle: "Hand-in history",
     historySubtitle: "Every hand-in recorded, newest first.",
+    depositsTitle: "Deposits from delivery companies",
+    depositsHint:
+      "Cash a delivery company has paid in. Confirming credits its account, and the company clears its own drivers from there.",
+    noDeposits: "No deposits are waiting.",
+    company: "Company",
+    confirmDeposit: "Confirm receipt",
+    rejectDeposit: "Reject",
+    depositConfirmed: "Deposit confirmed and the account credited.",
+    depositRejected: "Deposit rejected.",
+    rejectReasonLabel: "Why is it refused?",
+    rejectReasonRequired: "A reason is required to reject a deposit.",
+  },
+  fleetCash: {
+    title: "Cash account",
+    subtitle:
+      "Pay Darb the cash your drivers collected, then clear their balances from what you have deposited.",
+    balance: "Deposited with Darb",
+    driversHolding: "Your drivers are holding",
+    awaitingDarb: "Awaiting Darb",
+    depositTitle: "New deposit",
+    depositHint:
+      "This tells Darb the money is on its way. Nothing is credited until an accountant confirms it arrived.",
+    amount: "Amount",
+    method: "Method",
+    methodCASH: "Cash",
+    methodBANK_TRANSFER: "Bank transfer",
+    methodAL_MUZAINI: "Al Muzaini",
+    note: "Note",
+    notePlaceholder: "Transfer reference, who delivered it, anything Darb should know",
+    submitDeposit: "Submit deposit",
+    depositSubmitted: "Deposit submitted. Reference",
+    depositWithdrawn: "Deposit withdrawn.",
+    reference: "Reference",
+    submittedAt: "Submitted",
+    status: "Status",
+    withdraw: "Withdraw",
+    noDeposits: "No deposits yet.",
+    settleTitle: "Clear driver cash",
+    settleHint:
+      "Spends your deposited balance. It applies at once, and all the lines go through together or none of them do.",
+    fillAll: "Fill every driver",
+    cashOnHand: "Carrying",
+    settleAmount: "Settle",
+    inFull: "In full",
+    settling: "Settling",
+    settleButton: "Settle now",
+    settled: "Settled",
+    overDriver: "More than this driver is carrying.",
+    overBalance: "More than your deposited balance. Deposit the difference first.",
+    noDriversOwing: "No driver is carrying cash right now.",
+    historyTitle: "Settled from this account",
+    settledAt: "Settled",
+    noSettlements: "Nothing settled yet.",
   },
   fleetPortal: {
     exportExcel: "Export Excel",
@@ -4291,6 +4402,7 @@ export const en: Messages = {
     navRoster: "Roster",
     navScorecard: "Scorecard",
     navPayouts: "Payouts",
+    navCash: "Cash",
     navIssues: "Issues",
     navDocuments: "Documents",
     navSupport: "Support",
@@ -4513,6 +4625,7 @@ export const en: Messages = {
     tabDOCUMENTS: "Documents",
     tabSCORECARD: "Scorecard",
     tabPAYOUTS: "Payouts",
+    tabCASH: "Cash",
     tabSUPPORT: "Support",
     tabTEAM: "Team",
   },
@@ -6603,6 +6716,56 @@ export const ar: Messages = {
     subtitle: "سجّل النقد الذي يسلّمه السائق في نهاية الدوام.",
     historyTitle: "سجل التسليم",
     historySubtitle: "كل عمليات التسليم المسجّلة، الأحدث أولاً.",
+    depositsTitle: "إيداعات شركات التوصيل",
+    depositsHint:
+      "نقد سلّمته شركة توصيل. التأكيد يضيف الرصيد إلى حسابها، ومنه تسدّد الشركة عن سائقيها.",
+    noDeposits: "لا توجد إيداعات بانتظار المراجعة.",
+    company: "الشركة",
+    confirmDeposit: "تأكيد الاستلام",
+    rejectDeposit: "رفض",
+    depositConfirmed: "تم تأكيد الإيداع وإضافة الرصيد.",
+    depositRejected: "تم رفض الإيداع.",
+    rejectReasonLabel: "ما سبب الرفض؟",
+    rejectReasonRequired: "السبب مطلوب لرفض الإيداع.",
+  },
+  fleetCash: {
+    title: "حساب النقد",
+    subtitle: "سلّم درب النقد الذي جمعه سائقوك، ثم سدّد أرصدتهم من رصيدك المودع.",
+    balance: "المودع لدى درب",
+    driversHolding: "بحوزة سائقيك",
+    awaitingDarb: "بانتظار درب",
+    depositTitle: "إيداع جديد",
+    depositHint: "هذا يبلغ درب أن المبلغ في الطريق. لا يُضاف أي رصيد حتى يؤكّد المحاسب استلامه.",
+    amount: "المبلغ",
+    method: "الطريقة",
+    methodCASH: "نقداً",
+    methodBANK_TRANSFER: "تحويل بنكي",
+    methodAL_MUZAINI: "المزيني",
+    note: "ملاحظة",
+    notePlaceholder: "رقم التحويل، من سلّم المبلغ، أو أي شيء يلزم درب معرفته",
+    submitDeposit: "إرسال الإيداع",
+    depositSubmitted: "تم إرسال الإيداع. الرقم المرجعي",
+    depositWithdrawn: "تم سحب الإيداع.",
+    reference: "الرقم المرجعي",
+    submittedAt: "أُرسل",
+    status: "الحالة",
+    withdraw: "سحب",
+    noDeposits: "لا توجد إيداعات بعد.",
+    settleTitle: "تسديد نقد السائقين",
+    settleHint: "يُخصم من رصيدك المودع. يُطبّق فوراً، وتمرّ كل البنود معاً أو لا يمرّ أي منها.",
+    fillAll: "تعبئة كل السائقين",
+    cashOnHand: "بحوزته",
+    settleAmount: "المبلغ المسدّد",
+    inFull: "بالكامل",
+    settling: "قيد التسديد",
+    settleButton: "تسديد الآن",
+    settled: "تم التسديد",
+    overDriver: "أكثر مما بحوزة هذا السائق.",
+    overBalance: "أكثر من رصيدك المودع. أودع الفرق أولاً.",
+    noDriversOwing: "لا يوجد سائق بحوزته نقد حالياً.",
+    historyTitle: "المسدّد من هذا الحساب",
+    settledAt: "تاريخ التسديد",
+    noSettlements: "لم يُسدّد شيء بعد.",
   },
   fleetPortal: {
     exportExcel: "تصدير Excel",
@@ -6612,6 +6775,7 @@ export const ar: Messages = {
     navRoster: "السائقون",
     navScorecard: "الأداء",
     navPayouts: "المستحقات",
+    navCash: "النقد",
     navIssues: "الملاحظات",
     navDocuments: "الوثائق",
     navSupport: "الدعم",
@@ -6833,6 +6997,7 @@ export const ar: Messages = {
     tabDOCUMENTS: "المستندات",
     tabSCORECARD: "بطاقة الأداء",
     tabPAYOUTS: "المستحقات",
+    tabCASH: "النقد",
     tabSUPPORT: "الدعم",
     tabTEAM: "الفريق",
   },

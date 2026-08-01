@@ -19,6 +19,7 @@ export const FLEET_TAB_ORDER: FleetTab[] = [
   "DOCUMENTS",
   "SCORECARD",
   "PAYOUTS",
+  "CASH",
   "SUPPORT",
   "TEAM",
 ];
@@ -31,9 +32,12 @@ export const FLEET_TAB_ORDER: FleetTab[] = [
  * cannot ask Darb a question sends a WhatsApp instead.
  */
 const ROLE_DEFAULTS: Record<FleetPortalRole, FleetTab[]> = {
-  OWNER: ["ROSTER", "ISSUES", "DOCUMENTS", "SCORECARD", "PAYOUTS", "SUPPORT", "TEAM"],
+  OWNER: ["ROSTER", "ISSUES", "DOCUMENTS", "SCORECARD", "PAYOUTS", "CASH", "SUPPORT", "TEAM"],
   OPERATIONS: ["ROSTER", "ISSUES", "DOCUMENTS", "SUPPORT"],
-  FINANCE: ["PAYOUTS", "SCORECARD", "SUPPORT"],
+  // Revision 14 — Cash is money, so it lands with Finance rather than with the
+  // supervisor who collects the envelopes. An owner who wants their operations
+  // lead settling drivers grants it through the per-user tab override.
+  FINANCE: ["PAYOUTS", "SCORECARD", "CASH", "SUPPORT"],
 };
 
 export function fleetRoleDefaultTabs(role: FleetPortalRole | null | undefined): FleetTab[] {
@@ -46,6 +50,7 @@ const ROUTE_TABS: Array<{ prefix: string; tab: FleetTab }> = [
   { prefix: "/fleet-portal/documents", tab: "DOCUMENTS" },
   { prefix: "/fleet-portal/scorecard", tab: "SCORECARD" },
   { prefix: "/fleet-portal/payouts", tab: "PAYOUTS" },
+  { prefix: "/fleet-portal/cash", tab: "CASH" },
   { prefix: "/fleet-portal/support", tab: "SUPPORT" },
   { prefix: "/fleet-portal/team", tab: "TEAM" },
   // Last: /fleet-portal and /fleet-portal/drivers/* are the roster, so this has

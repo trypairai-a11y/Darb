@@ -26,7 +26,7 @@ import { useToast } from "@/components/shared/Toast";
 import { fleetApi, uploadFleetDocument } from "@/lib/darbApi";
 import type { FleetDriverRow, FleetDocumentInput } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
-import { formatNumber } from "@/i18n/format";
+import { formatKwd, formatNumber } from "@/i18n/format";
 
 /** The documents Darb wants before it will activate a driver. */
 const ONBOARD_DOCS = ["CIVIL_ID", "DRIVING_LICENSE", "VEHICLE_REG"] as const;
@@ -305,6 +305,22 @@ export default function FleetRosterPage() {
               ) : (
                 <span dir="ltr" className="tabular-nums">
                   {formatNumber(value ?? 0, locale)}
+                </span>
+              ),
+          },
+          {
+            // Revision 14 — what this driver is still carrying. It belongs on
+            // the roster rather than only on the Cash tab: the supervisor
+            // collecting envelopes at the end of a shift is the one who needs
+            // the figure, and they are an OPERATIONS login with no Cash tab.
+            key: "cashOnHandKwd",
+            label: t("fleetCash.cashOnHand"),
+            render: (value: string | undefined, row: FleetDriverRow) =>
+              row.pending ? (
+                "n/a"
+              ) : (
+                <span dir="ltr" className="tabular-nums">
+                  {formatKwd(value ?? "0", locale)}
                 </span>
               ),
           },

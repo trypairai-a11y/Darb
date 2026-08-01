@@ -106,6 +106,10 @@ enum DepositMethod {
   CASH
   BANK_TRANSFER
   AL_MUZAINI
+  /// Revision 14 — the driver did not hand cash to Darb at all. Their delivery
+  /// company covered it out of the cash account it had already deposited, so
+  /// the Remittance records a real clearing with no envelope behind it.
+  FLEET_ACCOUNT
 }
 
 enum CashStatus {
@@ -502,6 +506,7 @@ model Tenant {
   accountManagerVendors     AccountManagerVendor[]
   supportTickets            SupportTicket[]
   vendorTopUps              VendorTopUp[]
+  fleetCashDeposits         FleetCashDeposit[]
   // Revision 12 — fleet portal request desk.
   fleetDocuments            FleetDocument[]
   fleetChangeRequests       FleetChangeRequest[]
@@ -2767,6 +2772,10 @@ enum WalletOwnerType {
   VENDOR_PAYABLE
   PLATFORM_REVENUE
   PLATFORM_CLEARING
+  /// Revision 14 — money a delivery company has deposited with Darb, not yet
+  /// spent clearing its own drivers' cash-on-hand. Liability-like: CREDIT
+  /// raises it, same polarity as VENDOR_PAYABLE.
+  FLEET_CASH
 }
 
 enum WalletTxType {
@@ -2778,6 +2787,8 @@ enum WalletTxType {
   REFUND
   TIP
   FLEET_PAYOUT
+  /// Revision 14 — a delivery company paying into its own cash account.
+  FLEET_DEPOSIT
   /// Revision 10 (#2) — a merchant paying money into their own wallet. Its own
   /// type rather than an ADJUSTMENT so a shop reading its ledger can tell what
   /// it paid in apart from what Darb corrected.
@@ -3253,21 +3264,28 @@ model WalletEntry {
 
 // D11. Remittance - driver hands collected cash to the hub
 model Remittance {
-  id           String        @id @default(uuid())
-  tenantId     String
-  driverId     String
-  amountKwd    Decimal       @db.Decimal(10, 3)
-  method       DepositMethod
-  receiptUrl   String?
-  receivedById String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id             String        @id @default(uuid())
+  tenantId       String
+  driverId       String
+  amountKwd      Decimal       @db.Decimal(10, 3)
+  method         DepositMethod
+  receiptUrl     String?
+  receivedById   String?
+  /// Revision 14 — set when the delivery company cleared this driver out of its
+  /// own deposited cash account rather than the driver handing notes to Darb.
+  /// Null is the original hand-in at the cash desk, which is why this is one
+  /// table: a driver's cash history is one list whoever settled it.
+  fleetPartnerId String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
-  tenant Tenant @relation(fields: [tenantId], references: [id])
-  driver Driver @relation(fields: [driverId], references: [id])
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  driver       Driver        @relation(fields: [driverId], references: [id])
+  fleetPartner FleetPartner? @relation(fields: [fleetPartnerId], references: [id])
 
   @@index([tenantId, createdAt])
   @@index([driverId, createdAt])
+  @@index([tenantId, fleetPartnerId, createdAt])
 }
 
 // D12. WalletReconciliationRun - nightly invariant checks over the ledger
@@ -3478,6 +3496,9 @@ model FleetPartner {
   issues         FleetIssue[]
   supportTickets SupportTicket[]
   payoutInvoices FleetPayoutInvoice[]
+  // Revision 14 — the company's own cash account with Darb.
+  cashDeposits   FleetCashDeposit[]
+  remittances    Remittance[]
 
   @@index([tenantId, isActive])
   @@index([tenantId, ownerGroupId])
@@ -3915,6 +3936,49 @@ enum VendorTopUpStatus {
   PAID
   CANCELLED
   FAILED
+}
+
+// D. FleetCashDeposit (revision 14) - a delivery company paying Darb the cash
+//    its drivers collected. Shaped on VendorTopUp and for the same reason: the
+//    row records the INTENT to pay, and only an accountant confirming receipt
+//    credits FLEET_CASH. Two divergences from a merchant top-up, both
+//    deliberate: no payment gateway and no public token, because this is an
+//    envelope or a bank transfer between two companies that both already have
+//    logins, not a checkout link a stranger opens on a phone.
+model FleetCashDeposit {
+  id             String                 @id @default(uuid())
+  tenantId       String
+  fleetPartnerId String
+  /// Which of the company's own logins submitted it.
+  requestedById  String?
+  amountKwd      Decimal                @db.Decimal(10, 3)
+  method         DepositMethod          @default(CASH)
+  /// Human-quotable reference, e.g. "DEP-4F2A19".
+  reference      String
+  note           String?
+  /// The company's own transfer slip or receipt photo, when there is one.
+  receiptUrl     String?
+  status         FleetCashDepositStatus @default(PENDING)
+  /// The accountant's decision. rejectReason is required to reject: a refused
+  /// deposit with no account of why is a company left guessing.
+  confirmedById  String?
+  confirmedAt    DateTime?
+  rejectReason   String?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id])
+  fleetPartner FleetPartner @relation(fields: [fleetPartnerId], references: [id])
+
+  @@index([tenantId, fleetPartnerId, createdAt])
+  @@index([tenantId, status])
+}
+
+enum FleetCashDepositStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  CANCELLED
 }
 
 /// The four kinds of request a shop raises, as the client described them.

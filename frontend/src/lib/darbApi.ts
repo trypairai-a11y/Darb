@@ -55,6 +55,10 @@ import type {
   FleetTeamUser,
   FleetStatementDetail,
   FleetInvoiceUpload,
+  FleetCashPayload,
+  FleetCashSettlement,
+  FleetDeposit,
+  FleetDepositMethod,
   CockpitSummary,
   SupportTicket,
   SupportTicketType,
@@ -316,6 +320,19 @@ export const walletsApi = {
   /** Revision 4 (#4) — every transaction behind one shop's statement period. */
   statementTransactions: (statementId: string) =>
     get<StatementDetail>(`/api/wallets/vendor-statements/${statementId}/transactions`),
+
+  // ── Revision 14: the cash desk's other queue ────────────────────────────
+  // Delivery companies paying in the cash their drivers collected. Confirming
+  // is what credits the company's account; nothing else does.
+  /** Defaults to the pending queue. Pass status "ALL" for the history. */
+  fleetDeposits: (params?: Params) =>
+    get<Paginated<FleetDeposit> | FleetDeposit[]>("/api/wallets/fleet-deposits", params),
+  confirmFleetDeposit: (id: string) =>
+    post<{ ok: boolean; alreadyConfirmed: boolean; balanceKwd: string }>(
+      `/api/wallets/fleet-deposits/${id}/confirm`,
+    ),
+  rejectFleetDeposit: (id: string, reason: string) =>
+    post<{ ok: true }>(`/api/wallets/fleet-deposits/${id}/reject`, { reason }),
 };
 
 // ── /api/delivery-plans (revision 4 #7) ──────────────────────────────────
@@ -627,6 +644,30 @@ export const fleetApi = {
    * and a new tab would not carry it.
    */
   statementInvoice: (id: string) => getBlob(`/api/fleet/statements/${id}/invoice`),
+
+  // ── Revision 14: the company's own cash account with Darb ──────────────
+  // A deposit is an intent to pay and credits nothing until Darb confirms it.
+  // A settlement spends an already-confirmed balance and needs nobody: the
+  // money has been Darb's since that confirmation.
+  cash: () => get<FleetCashPayload>("/api/fleet/cash"),
+  cashSettlements: () => get<FleetCashSettlement[]>("/api/fleet/cash/settlements"),
+  createDeposit: (body: {
+    amountKwd: string;
+    method: FleetDepositMethod;
+    note?: string;
+  }) => post<FleetDeposit>("/api/fleet/cash/deposits", body),
+  cancelDeposit: (id: string) =>
+    post<{ ok: true }>(`/api/fleet/cash/deposits/${id}/cancel`),
+  /** All or nothing: one bad line settles none of them. */
+  settleDriverCash: (
+    lines: Array<{ driverId: string; amountKwd: string }>,
+    note?: string,
+  ) =>
+    post<{
+      totalKwd: string;
+      balanceKwd: string;
+      lines: Array<{ driverId: string; driverName: string; amountKwd: string }>;
+    }>("/api/fleet/cash/settle", { lines, note }),
 
   // ── Revision 13 (#6): the delivery company's own team ──────────────────
   team: () => get<FleetTeamPayload>("/api/fleet/team"),

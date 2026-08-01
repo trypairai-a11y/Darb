@@ -32,6 +32,17 @@ import {
 } from "../services/fleet/fleetActivityService";
 import { readInvoiceInput, sendInvoice } from "../services/fleet/fleetInvoiceService";
 import {
+  cancelFleetDeposit,
+  createFleetDeposit,
+  driverCashBalances,
+  FleetCashError,
+  getFleetCashSummary,
+  isFleetDepositMethod,
+  listFleetDeposits,
+  settleDriverCash,
+} from "../services/wallet/fleetCashService";
+import { toKwdString } from "../services/wallet/walletService";
+import {
   FLEET_TABS,
   FleetPortalRole,
   FleetTab,
@@ -329,7 +340,7 @@ router.get("/drivers", requireFleetTab("ROSTER"), async (req: Request, res: Resp
     // Revision 12 — the roster carries how much work each driver actually did.
     // `rosterActivity` is one grouped read for the whole fleet, not a query per
     // driver: the ratings loop below is already the expensive part.
-    const [ratings, activity, pendingOnboards] = await Promise.all([
+    const [ratings, activity, pendingOnboards, cash] = await Promise.all([
       Promise.all(drivers.map((d) => getDriverRating(ctx.tenantId, d.id))),
       rosterActivity(ctx.tenantId, ctx.fleetPartnerId),
       prisma.fleetChangeRequest.findMany({
@@ -342,6 +353,11 @@ router.get("/drivers", requireFleetTab("ROSTER"), async (req: Request, res: Resp
         select: { id: true, payload: true, createdAt: true },
         orderBy: { createdAt: "desc" },
       }),
+      // Revision 14 — what each driver is still carrying. One grouped read for
+      // the whole roster in the manner of rosterActivity above, never a query
+      // per driver: a company with 80 drivers would otherwise open 80
+      // connections on a serverless host.
+      driverCashBalances(ctx.tenantId, drivers.map((d) => d.id)),
     ]);
 
     res.json([
@@ -368,6 +384,8 @@ router.get("/drivers", requireFleetTab("ROSTER"), async (req: Request, res: Resp
           rating: { avg: null, count: 0 },
           ordersToday: 0,
           ordersLast7d: 0,
+          // A driver with no Driver row has no wallet account either.
+          cashOnHandKwd: "0.000",
           submittedAt: r.createdAt,
         };
       }),
@@ -377,6 +395,7 @@ router.get("/drivers", requireFleetTab("ROSTER"), async (req: Request, res: Resp
         rating: ratings[i],
         ordersToday: activity.get(d.id)?.ordersToday ?? 0,
         ordersLast7d: activity.get(d.id)?.ordersLast7d ?? 0,
+        cashOnHandKwd: toKwdString(cash.get(d.id) ?? 0),
       })),
     ]);
   } catch (err: any) {
@@ -591,6 +610,173 @@ async function ownDriverOr404(
     where: { id: driverId, tenantId: ctx.tenantId, fleetPartnerId: ctx.fleetPartnerId },
   });
 }
+
+// ─── Cash account (revision 14) ──────────────────────────────────────────────
+//
+// The company's own cash position with Darb. Deposits are an intent to pay and
+// credit nothing until an accountant confirms receipt; settlements spend an
+// already-confirmed balance and need nobody's approval, because the money has
+// been Darb's since that confirmation. See services/wallet/fleetCashService.
+
+/**
+ * @swagger
+ * /api/fleet/cash:
+ *   get:
+ *     tags: [Fleet Portal]
+ *     summary: Deposit balance, drivers carrying cash, and recent deposits
+ */
+router.get("/cash", requireFleetTab("CASH"), async (req: Request, res: Response) => {
+  try {
+    const ctx = await fleetContext(req);
+    if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+    const [summary, deposits] = await Promise.all([
+      getFleetCashSummary(ctx.tenantId, ctx.fleetPartnerId),
+      listFleetDeposits({
+        tenantId: ctx.tenantId,
+        fleetPartnerIds: [ctx.fleetPartnerId],
+        take: 25,
+      }),
+    ]);
+    res.json({ ...summary, deposits: deposits.data });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/fleet/cash/settlements:
+ *   get:
+ *     tags: [Fleet Portal]
+ *     summary: Driver cash this company has cleared out of its own account
+ */
+router.get("/cash/settlements", requireFleetTab("CASH"), async (req: Request, res: Response) => {
+  try {
+    const ctx = await fleetContext(req);
+    if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+    const rows = await prisma.remittance.findMany({
+      where: {
+        tenantId: ctx.tenantId,
+        fleetPartnerId: ctx.fleetPartnerId,
+      },
+      select: {
+        id: true,
+        amountKwd: true,
+        createdAt: true,
+        driver: { select: { id: true, name: true, driverCode: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
+    res.json(
+      rows.map((r) => ({
+        id: r.id,
+        amountKwd: toKwdString(r.amountKwd),
+        createdAt: r.createdAt,
+        driverId: r.driver.id,
+        driverName: r.driver.name,
+        driverCode: r.driver.driverCode,
+      })),
+    );
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/fleet/cash/deposits:
+ *   post:
+ *     tags: [Fleet Portal]
+ *     summary: Tell Darb money is on its way. Credits nothing until confirmed.
+ */
+router.post("/cash/deposits", requireFleetTab("CASH"), async (req: Request, res: Response) => {
+  try {
+    const ctx = await fleetContext(req);
+    if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+    const { amountKwd, method, note, receiptUrl } = req.body as {
+      amountKwd?: string | number;
+      method?: string;
+      note?: string;
+      receiptUrl?: string;
+    };
+    if (!isFleetDepositMethod(method)) {
+      res.status(400).json({ error: "Method must be CASH, BANK_TRANSFER or AL_MUZAINI" });
+      return;
+    }
+    const deposit = await createFleetDeposit({
+      tenantId: ctx.tenantId,
+      fleetPartnerId: ctx.fleetPartnerId,
+      amountKwd: amountKwd ?? 0,
+      method,
+      note,
+      receiptUrl,
+      requestedById: req.user?.userId ?? null,
+    });
+    res.status(201).json(deposit);
+  } catch (err: any) {
+    if (err instanceof FleetCashError) { res.status(400).json({ error: err.message }); return; }
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/fleet/cash/deposits/{id}/cancel:
+ *   post:
+ *     tags: [Fleet Portal]
+ *     summary: Withdraw a deposit Darb has not acted on yet
+ */
+router.post(
+  "/cash/deposits/:id/cancel",
+  requireFleetTab("CASH"),
+  async (req: Request, res: Response) => {
+    try {
+      const ctx = await fleetContext(req);
+      if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+      const ok = await cancelFleetDeposit(ctx.tenantId, ctx.fleetPartnerId, req.params.id);
+      if (!ok) {
+        res.status(409).json({ error: "Only a deposit Darb has not acted on can be withdrawn" });
+        return;
+      }
+      res.json({ ok: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+/**
+ * @swagger
+ * /api/fleet/cash/settle:
+ *   post:
+ *     tags: [Fleet Portal]
+ *     summary: Clear drivers' cash-on-hand out of the confirmed deposit balance
+ */
+router.post("/cash/settle", requireFleetTab("CASH"), async (req: Request, res: Response) => {
+  try {
+    const ctx = await fleetContext(req);
+    if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+    const { lines, note } = req.body as {
+      lines?: Array<{ driverId?: string; amountKwd?: string | number }>;
+      note?: string;
+    };
+    const result = await settleDriverCash({
+      tenantId: ctx.tenantId,
+      fleetPartnerId: ctx.fleetPartnerId,
+      lines: (lines ?? []) as Array<{ driverId: string; amountKwd: string | number }>,
+      actorId: req.user!.userId,
+      note,
+    });
+    res.json(result);
+  } catch (err: any) {
+    // Every refusal in here means nothing was written, which is what the
+    // message has to say: a company reading "insufficient balance" needs to
+    // know the other nine lines did not go through either.
+    if (err instanceof FleetCashError) { res.status(400).json({ error: err.message }); return; }
+    res.status(500).json({ error: err.message });
+  }
+});
 
 /**
  * @swagger

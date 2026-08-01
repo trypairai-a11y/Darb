@@ -792,6 +792,8 @@ export type FleetTab =
   | "DOCUMENTS"
   | "SCORECARD"
   | "PAYOUTS"
+  // Revision 14 — the company's own cash account with Darb.
+  | "CASH"
   | "SUPPORT"
   | "TEAM";
 
@@ -858,6 +860,8 @@ export interface FleetDriverRow {
    */
   ordersToday: number;
   ordersLast7d: number;
+  /** Revision 14 — COD this driver is still carrying, as a 3dp string. */
+  cashOnHandKwd?: string;
   /**
    * A driver put forward but not yet approved. They have NO Driver row, so the
    * row is drawn from the request itself and `id` is `pending:{requestId}`.
@@ -865,6 +869,56 @@ export interface FleetDriverRow {
   pending?: boolean;
   requestId?: string;
   submittedAt?: string;
+}
+
+// ── Revision 14: the delivery company's cash account with Darb ─────────────
+
+export type FleetDepositMethod = "CASH" | "BANK_TRANSFER" | "AL_MUZAINI";
+
+export type FleetDepositStatus = "PENDING" | "CONFIRMED" | "REJECTED" | "CANCELLED";
+
+export interface FleetDeposit {
+  id: string;
+  fleetPartnerId: string;
+  /** Only on the staff queue, which spans companies. */
+  fleetPartnerName?: string;
+  amountKwd: string;
+  method: string;
+  reference: string;
+  note: string | null;
+  receiptUrl: string | null;
+  status: FleetDepositStatus;
+  rejectReason: string | null;
+  confirmedAt: string | null;
+  createdAt: string;
+}
+
+export interface FleetCashDriver {
+  driverId: string;
+  name: string;
+  driverCode: string | null;
+  phone: string | null;
+  cashOnHandKwd: string;
+}
+
+export interface FleetCashPayload {
+  /** Deposited with Darb and not yet spent. Never negative. */
+  balanceKwd: string;
+  /** What this company's drivers are still carrying. */
+  driverCashOutstandingKwd: string;
+  /** Submitted and waiting on a Darb accountant. Credits nothing yet. */
+  pendingDepositsKwd: string;
+  drivers: FleetCashDriver[];
+  deposits: FleetDeposit[];
+}
+
+export interface FleetCashSettlement {
+  id: string;
+  amountKwd: string;
+  createdAt: string;
+  driverId: string;
+  driverName: string;
+  driverCode: string | null;
 }
 
 // ── Revision 12: the fleet portal's request desk ──────────────────────────

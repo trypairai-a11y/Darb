@@ -205,6 +205,9 @@ export const NAV_SECTIONS: NavSection[] = [
       { i18n: "fleetPortal.navDocuments", path: "/fleet-portal/documents", icon: FileText, fleetTab: "DOCUMENTS" },
       { i18n: "fleetPortal.navScorecard", path: "/fleet-portal/scorecard", icon: Gauge, fleetTab: "SCORECARD" },
       { i18n: "fleetPortal.navPayouts", path: "/fleet-portal/payouts", icon: Truck, fleetTab: "PAYOUTS" },
+      // Revision 14 — the company's cash account with Darb, next to Payouts
+      // because the two are the same conversation in opposite directions.
+      { i18n: "fleetPortal.navCash", path: "/fleet-portal/cash", icon: Wallet, fleetTab: "CASH" },
       { i18n: "fleetPortal.navSupport", path: "/fleet-portal/support", icon: LifeBuoy, fleetTab: "SUPPORT" },
       // Revision 13 (#6). Governed by the tab alone, never by a second role
       // gate on top of it: that is the mistake revision 11 (#9) found on the

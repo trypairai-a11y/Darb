@@ -5,13 +5,18 @@
 //
 //   ASSET-like   (DRIVER_CASH, PLATFORM_CLEARING):
 //     DEBIT  ⇒ balance increases, CREDIT ⇒ balance decreases
-//   LIABILITY/INCOME-like (VENDOR_PAYABLE, PLATFORM_REVENUE):
+//   LIABILITY/INCOME-like (VENDOR_PAYABLE, PLATFORM_REVENUE, FLEET_CASH):
 //     CREDIT ⇒ balance increases, DEBIT  ⇒ balance decreases
 //
 // Balance meanings:
 //   DRIVER_CASH.balanceKwd       = cash the driver currently holds for us
 //   VENDOR_PAYABLE.balanceKwd    = what we owe the vendor (may go negative
 //                                  when prepaid fees exceed COD receipts)
+//   FLEET_CASH.balanceKwd        = cash a delivery company has deposited and
+//                                  not yet spent clearing its own drivers.
+//                                  NEVER negative: there is no credit line,
+//                                  because clearing a driver on money Darb has
+//                                  not received is what the confirm gate stops
 //   PLATFORM_REVENUE.balanceKwd  = accumulated delivery fees earned
 //   PLATFORM_CLEARING.balanceKwd = remitted cash received at the hub,
 //                                  awaiting banking
@@ -28,6 +33,13 @@
 //   Remittance      ("remit:{remittanceId}"):
 //     driver cash    CREDIT amount        (driver handed cash in)
 //     platform clearing DEBIT amount      (hub now holds it)
+//   Fleet deposit   ("fleet-deposit:{depositId}", revision 14):
+//     fleet cash     CREDIT amount        (the company's balance with us)
+//     platform clearing DEBIT amount      (we now hold the money)
+//   Fleet settlement ("remit:{remittanceId}", also a Remittance row):
+//     driver cash    CREDIT amount        (the driver no longer owes it)
+//     fleet cash     DEBIT amount         (the company spent its deposit)
+//     — clearing does not move: we took the money at deposit confirmation.
 //   Adjustment      ("adjust:{uuid}", ADMIN only, reason required):
 //     compensating transaction against PLATFORM_CLEARING — never an edit.
 //
@@ -50,7 +62,9 @@ export type WalletOwnerTypeLiteral =
   | "DRIVER_CASH"
   | "VENDOR_PAYABLE"
   | "PLATFORM_REVENUE"
-  | "PLATFORM_CLEARING";
+  | "PLATFORM_CLEARING"
+  // Revision 14 — a delivery company's prepaid cash account with Darb.
+  | "FLEET_CASH";
 
 export type EntryDirection = "DEBIT" | "CREDIT";
 
@@ -64,7 +78,9 @@ export type WalletTxTypeLiteral =
   | "TIP"
   | "FLEET_PAYOUT"
   // Revision 10 (#2) — a merchant paying into their own wallet.
-  | "TOP_UP";
+  | "TOP_UP"
+  // Revision 14 — a delivery company paying into its own cash account.
+  | "FLEET_DEPOSIT";
 
 /** Domain error — routes map instances to HTTP 400. */
 export class WalletError extends Error {}
@@ -96,9 +112,20 @@ export function vendorOwnerKey(vendorId: string): string {
   return `VENDOR:${vendorId}`;
 }
 
+/**
+ * Revision 14 — one account per delivery COMPANY, never per owner group.
+ *
+ * Drivers, payout statements and the `User.fleetPartnerIds` scoping are all
+ * per-company. A group-wide balance would let a login fenced to Marina spend
+ * Sidra's money, which is the exact thing `fleetContext` intersects to prevent.
+ */
+export function fleetOwnerKey(fleetPartnerId: string): string {
+  return `FLEET:${fleetPartnerId}`;
+}
+
 function ownerKeyFor(
   ownerType: WalletOwnerTypeLiteral,
-  opts?: { driverId?: string; vendorId?: string }
+  opts?: { driverId?: string; vendorId?: string; fleetPartnerId?: string }
 ): string {
   switch (ownerType) {
     case "DRIVER_CASH":
@@ -107,6 +134,11 @@ function ownerKeyFor(
     case "VENDOR_PAYABLE":
       if (!opts?.vendorId) throw new WalletError("vendorId required for VENDOR_PAYABLE account");
       return vendorOwnerKey(opts.vendorId);
+    case "FLEET_CASH":
+      if (!opts?.fleetPartnerId) {
+        throw new WalletError("fleetPartnerId required for FLEET_CASH account");
+      }
+      return fleetOwnerKey(opts.fleetPartnerId);
     case "PLATFORM_REVENUE":
       return "PLATFORM_REVENUE";
     case "PLATFORM_CLEARING":
@@ -134,8 +166,8 @@ function balanceDelta(
 export async function ensureAccount(
   tx: Tx,
   tenantId: string,
-  ownerType: "DRIVER_CASH" | "VENDOR_PAYABLE" | "PLATFORM_REVENUE" | "PLATFORM_CLEARING",
-  opts?: { driverId?: string; vendorId?: string }
+  ownerType: WalletOwnerTypeLiteral,
+  opts?: { driverId?: string; vendorId?: string; fleetPartnerId?: string }
 ): Promise<{ id: string; balanceKwd: Prisma.Decimal }> {
   const ownerKey = ownerKeyFor(ownerType, opts);
   const account = await tx.walletAccount.upsert({

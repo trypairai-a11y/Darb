@@ -18,6 +18,7 @@ import FilterBar from "@/components/shared/FilterBar";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
+import FleetDepositQueue from "@/components/cash/FleetDepositQueue";
 import { walletsApi, unwrapList, fetchAllPages } from "@/lib/darbApi";
 import type { Remittance, RemittanceMethod, WalletAccount } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -197,6 +198,14 @@ export default function CashDeskPanel({ view = "both" }: CashDeskPanelProps) {
 
   return (
     <div className="space-y-6">
+      {/*
+        Revision 14 — deposits from delivery companies, above the hand-in form
+        on the same reasoning that puts pending change requests above the
+        scorecard: somebody on the other end is waiting on it. It renders
+        nothing when the queue is empty, so the desk's main job stays first.
+      */}
+      <FleetDepositQueue status={showRecord ? "PENDING" : "ALL"} />
+
       {/* Record form */}
       {showRecord && (
       <div className="bg-card border border-sand-200 rounded-2xl shadow-soft p-6 space-y-4 max-w-2xl">

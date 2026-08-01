@@ -54,7 +54,13 @@ export type DarbEventType =
   | "order.returned"
   | "order.cancel_requested"
   | "order.rated"
-  | "order.tipped";
+  | "order.tipped"
+  // Revision 14 — a delivery company's cash account with Darb. The settlement
+  // that clears a driver publishes `remittance.recorded` like any other
+  // hand-in, so only the deposit's own lifecycle needs types of its own.
+  | "fleet.deposit.submitted"
+  | "fleet.deposit.confirmed"
+  | "fleet.deposit.rejected";
 
 export interface DarbEvent {
   type: DarbEventType;

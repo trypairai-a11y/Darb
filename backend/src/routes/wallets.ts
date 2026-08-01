@@ -24,6 +24,12 @@ import {
   previousMonthPeriod,
 } from "../services/wallet/vendorSettlementService";
 import { RefundError, processRefund } from "../services/wallet/refundService";
+import {
+  confirmFleetDeposit,
+  FleetCashConflict,
+  listFleetDeposits,
+  rejectFleetDeposit,
+} from "../services/wallet/fleetCashService";
 
 const FINANCE_READ = ["ADMIN", "OPS_MANAGER", "ACCOUNTANT"];
 // Revision 4 (#3): CASH_COLLECTOR is the cash desk login. Without it here the
@@ -46,7 +52,14 @@ const OWNER_TYPES = [
   "VENDOR_PAYABLE",
   "PLATFORM_REVENUE",
   "PLATFORM_CLEARING",
+  // Revision 14 — a delivery company's prepaid cash account.
+  "FLEET_CASH",
 ] as const;
+
+// Who may act on a fleet deposit. Reading it is the cash desk's job, so
+// REMITTANCE_READ covers the queue; confirming is money arriving on Darb's
+// books, which is an accountant's call and not a cash collector's.
+const DEPOSIT_CONFIRM = ["ACCOUNTANT", "ADMIN"];
 
 const DEPOSIT_METHODS = ["CASH", "BANK_TRANSFER", "AL_MUZAINI"] as const;
 
@@ -457,6 +470,105 @@ router.get("/remittances", rbac(...REMITTANCE_READ), async (req: Request, res: R
     res.status(500).json({ error: err.message });
   }
 });
+
+// ─── Fleet cash deposits (revision 14) ─────────────────────────────────────
+//
+// The cash desk's other queue. A delivery company submits a deposit from its
+// own portal, and an accountant here is the ONLY thing that credits FLEET_CASH
+// — same posture as a merchant top-up, for the same reason: a portal that could
+// credit itself is a portal that can pay Darb with a form.
+
+/**
+ * @swagger
+ * /api/wallets/fleet-deposits:
+ *   get:
+ *     tags: [Wallets]
+ *     summary: Fleet cash deposits, newest first (default: the pending queue)
+ */
+router.get("/fleet-deposits", rbac(...REMITTANCE_READ), async (req: Request, res: Response) => {
+  try {
+    const { tenantId } = req.user!;
+    const { page, limit, skip } = getPagination(req);
+    // The screen this feeds is a work queue, so the default is what is waiting.
+    // `status=ALL` is the explicit way to ask for the history.
+    const requested = typeof req.query.status === "string" ? req.query.status : "PENDING";
+    const status = requested === "ALL" ? undefined : requested;
+    const { data, total } = await listFleetDeposits({
+      tenantId,
+      status,
+      take: limit,
+      skip,
+      withPartnerName: true,
+      ...(typeof req.query.fleetPartnerId === "string"
+        ? { fleetPartnerIds: [req.query.fleetPartnerId] }
+        : {}),
+    });
+    res.json(paginatedResponse(data, total, page, limit));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/wallets/fleet-deposits/{id}/confirm:
+ *   post:
+ *     tags: [Wallets]
+ *     summary: Confirm the money arrived and credit the company's cash account
+ */
+router.post(
+  "/fleet-deposits/:id/confirm",
+  rbac(...DEPOSIT_CONFIRM),
+  async (req: Request, res: Response) => {
+    try {
+      const { tenantId, userId } = req.user!;
+      const result = await confirmFleetDeposit({
+        tenantId,
+        depositId: req.params.id,
+        actorId: userId,
+      });
+      res.json(result);
+    } catch (err: any) {
+      // A deposit somebody else already acted on is a conflict, not a bad
+      // request: the accountant did nothing wrong, the screen was just stale.
+      if (err instanceof FleetCashConflict) { res.status(409).json({ error: err.message }); return; }
+      if (err instanceof WalletError) { res.status(400).json({ error: err.message }); return; }
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+/**
+ * @swagger
+ * /api/wallets/fleet-deposits/{id}/reject:
+ *   post:
+ *     tags: [Wallets]
+ *     summary: Refuse a deposit. Posts nothing; a reason is required.
+ */
+router.post(
+  "/fleet-deposits/:id/reject",
+  rbac(...DEPOSIT_CONFIRM),
+  async (req: Request, res: Response) => {
+    try {
+      const { tenantId, userId } = req.user!;
+      const { reason } = req.body as { reason?: string };
+      const ok = await rejectFleetDeposit({
+        tenantId,
+        depositId: req.params.id,
+        actorId: userId,
+        reason: reason ?? "",
+      });
+      if (!ok) {
+        res.status(409).json({ error: "This deposit has already been acted on" });
+        return;
+      }
+      res.json({ ok: true });
+    } catch (err: any) {
+      if (err instanceof WalletError) { res.status(400).json({ error: err.message }); return; }
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
 
 // ─── Adjustments (ADMIN only — compensating transactions) ──────────────────
 

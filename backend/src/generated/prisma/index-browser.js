@@ -1707,6 +1707,7 @@ exports.Prisma.RemittanceScalarFieldEnum = {
   method: 'method',
   receiptUrl: 'receiptUrl',
   receivedById: 'receivedById',
+  fleetPartnerId: 'fleetPartnerId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -1999,6 +2000,24 @@ exports.Prisma.VendorTopUpScalarFieldEnum = {
   providerRef: 'providerRef',
   provider: 'provider',
   paidAt: 'paidAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.FleetCashDepositScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  fleetPartnerId: 'fleetPartnerId',
+  requestedById: 'requestedById',
+  amountKwd: 'amountKwd',
+  method: 'method',
+  reference: 'reference',
+  note: 'note',
+  receiptUrl: 'receiptUrl',
+  status: 'status',
+  confirmedById: 'confirmedById',
+  confirmedAt: 'confirmedAt',
+  rejectReason: 'rejectReason',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -2968,7 +2987,8 @@ exports.Prisma.RemittanceOrderByRelevanceFieldEnum = {
   tenantId: 'tenantId',
   driverId: 'driverId',
   receiptUrl: 'receiptUrl',
-  receivedById: 'receivedById'
+  receivedById: 'receivedById',
+  fleetPartnerId: 'fleetPartnerId'
 };
 
 exports.Prisma.WalletReconciliationRunOrderByRelevanceFieldEnum = {
@@ -3167,6 +3187,18 @@ exports.Prisma.VendorTopUpOrderByRelevanceFieldEnum = {
   providerRef: 'providerRef',
   provider: 'provider'
 };
+
+exports.Prisma.FleetCashDepositOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  fleetPartnerId: 'fleetPartnerId',
+  requestedById: 'requestedById',
+  reference: 'reference',
+  note: 'note',
+  receiptUrl: 'receiptUrl',
+  confirmedById: 'confirmedById',
+  rejectReason: 'rejectReason'
+};
 exports.SubscriptionPlan = exports.$Enums.SubscriptionPlan = {
   FREE: 'FREE',
   PRO: 'PRO',
@@ -3282,7 +3314,8 @@ exports.OrderSource = exports.$Enums.OrderSource = {
 exports.DepositMethod = exports.$Enums.DepositMethod = {
   CASH: 'CASH',
   BANK_TRANSFER: 'BANK_TRANSFER',
-  AL_MUZAINI: 'AL_MUZAINI'
+  AL_MUZAINI: 'AL_MUZAINI',
+  FLEET_ACCOUNT: 'FLEET_ACCOUNT'
 };
 
 exports.CashStatus = exports.$Enums.CashStatus = {
@@ -3561,7 +3594,8 @@ exports.WalletOwnerType = exports.$Enums.WalletOwnerType = {
   DRIVER_CASH: 'DRIVER_CASH',
   VENDOR_PAYABLE: 'VENDOR_PAYABLE',
   PLATFORM_REVENUE: 'PLATFORM_REVENUE',
-  PLATFORM_CLEARING: 'PLATFORM_CLEARING'
+  PLATFORM_CLEARING: 'PLATFORM_CLEARING',
+  FLEET_CASH: 'FLEET_CASH'
 };
 
 exports.WalletTxType = exports.$Enums.WalletTxType = {
@@ -3573,6 +3607,7 @@ exports.WalletTxType = exports.$Enums.WalletTxType = {
   REFUND: 'REFUND',
   TIP: 'TIP',
   FLEET_PAYOUT: 'FLEET_PAYOUT',
+  FLEET_DEPOSIT: 'FLEET_DEPOSIT',
   TOP_UP: 'TOP_UP'
 };
 
@@ -3682,6 +3717,13 @@ exports.VendorTopUpStatus = exports.$Enums.VendorTopUpStatus = {
   PAID: 'PAID',
   CANCELLED: 'CANCELLED',
   FAILED: 'FAILED'
+};
+
+exports.FleetCashDepositStatus = exports.$Enums.FleetCashDepositStatus = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  REJECTED: 'REJECTED',
+  CANCELLED: 'CANCELLED'
 };
 
 exports.Prisma.ModelName = {
@@ -3802,7 +3844,8 @@ exports.Prisma.ModelName = {
   AccountManagerVendor: 'AccountManagerVendor',
   SupportTicket: 'SupportTicket',
   SupportTicketMessage: 'SupportTicketMessage',
-  VendorTopUp: 'VendorTopUp'
+  VendorTopUp: 'VendorTopUp',
+  FleetCashDeposit: 'FleetCashDeposit'
 };
 
 /**
