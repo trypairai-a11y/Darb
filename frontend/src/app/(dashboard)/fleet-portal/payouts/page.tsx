@@ -15,7 +15,7 @@
 // required and the status only moves once it is stored.
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Download, FileText, MessageSquareWarning, Upload } from "lucide-react";
+import { Check, Download, FileText, MessageSquareWarning, Printer, Upload } from "lucide-react";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
@@ -121,6 +121,92 @@ export default function FleetPayoutsPage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  /** The driver report as a spreadsheet. */
+  function exportDriverReport(row: FleetStatementRow) {
+    const rows = detailQuery.data?.byDriver ?? [];
+    downloadCsv(
+      `statement-${row.periodStart.slice(0, 7)}`,
+      [
+        t("fleetPortal.driverName"),
+        t("fleetPortal.darbId"),
+        t("fleetPortal.orders"),
+        t("fleetPortal.total"),
+      ],
+      [
+        ...rows.map((d) => [d.name, d.driverCode ?? "n/a", String(d.orders), d.totalKwd]),
+        [t("fleetPortal.total"), "", String(row.deliveredOrders), row.totalKwd],
+      ],
+    );
+  }
+
+  /**
+   * The statement as a page, for printing or saving to PDF.
+   *
+   * This is the document the delivery company stamps and hands back, so it has
+   * to look like a statement rather than a screenshot of a panel: its own
+   * window with its own stylesheet, no rail, no buttons, and a signature line.
+   * A CSV cannot be stamped and a screenshot is not a document.
+   */
+  function printStatement(row: FleetStatementRow) {
+    const rows = detailQuery.data?.byDriver ?? [];
+    const esc = (v: string) =>
+      v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const period = monthLabel(row.periodStart);
+    const body = rows
+      .map(
+        (d) => `<tr><td>${esc(d.name)}</td><td class="mono">${esc(d.driverCode ?? "n/a")}</td>` +
+          `<td class="num">${d.orders}</td><td class="num">KD ${esc(d.totalKwd)}</td></tr>`,
+      )
+      .join("");
+
+    const win = window.open("", "_blank", "noopener,noreferrer,width=900,height=1100");
+    if (!win) { toast.error(t("fleetPortal.printBlocked")); return; }
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8">
+<title>${esc(period)} — ${esc(t("fleetPortal.payoutsTitle"))}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font: 13px/1.5 -apple-system, "Segoe UI", system-ui, sans-serif; color: #1b1a17; margin: 32px; }
+  h1 { font-size: 22px; margin: 0 0 2px; }
+  .sub { color: #6b6660; font-size: 12px; margin: 0 0 20px; }
+  .totals { display: flex; gap: 28px; margin: 0 0 22px; }
+  .totals div span { display: block; color: #6b6660; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+  .totals div b { font-size: 17px; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #6b6660; border-bottom: 1px solid #d9d4cc; padding: 7px 8px; }
+  td { padding: 7px 8px; border-bottom: 1px solid #efece7; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .mono { font-family: ui-monospace, Menlo, monospace; color: #6b6660; font-size: 12px; }
+  tfoot td { border-top: 2px solid #1b1a17; border-bottom: none; font-weight: 600; padding-top: 10px; }
+  .sign { margin-top: 46px; display: flex; gap: 60px; }
+  .sign div { flex: 1; border-top: 1px solid #1b1a17; padding-top: 6px; font-size: 11px; color: #6b6660; }
+  @media print { body { margin: 14mm; } }
+</style></head><body>
+<h1>${esc(period)}</h1>
+<p class="sub">${esc(t("fleetPortal.payoutsTitle"))} &middot; Darb</p>
+<div class="totals">
+  <div><span>${esc(t("fleetPortal.orders"))}</span><b>${row.deliveredOrders}</b></div>
+  <div><span>${esc(t("fleetPortal.feePerOrder"))}</span><b>KD ${esc(row.feePerOrderKwd)}</b></div>
+  <div><span>${esc(t("fleetPortal.total"))}</span><b>KD ${esc(row.totalKwd)}</b></div>
+</div>
+<table>
+  <thead><tr>
+    <th>${esc(t("fleetPortal.driverName"))}</th>
+    <th>${esc(t("fleetPortal.darbId"))}</th>
+    <th class="num">${esc(t("fleetPortal.orders"))}</th>
+    <th class="num">${esc(t("fleetPortal.total"))}</th>
+  </tr></thead>
+  <tbody>${body}</tbody>
+  <tfoot><tr><td colspan="2">${esc(t("fleetPortal.total"))}</td>
+    <td class="num">${row.deliveredOrders}</td>
+    <td class="num">KD ${esc(row.totalKwd)}</td></tr></tfoot>
+</table>
+<div class="sign"><div>${esc(t("fleetPortal.companyStamp"))}</div><div>${esc(t("fleetPortal.dateSigned"))}</div></div>
+</body></html>`);
+    win.document.close();
+    win.focus();
+    win.print();
   }
 
   /** Open the stored invoice. Fetched with the bearer token, then shown. */
@@ -376,9 +462,33 @@ export default function FleetPayoutsPage() {
                     it. The orders themselves are still in Earnings below. */}
                 {(detailQuery.data?.byDriver ?? []).length > 0 && (
                   <div className="rounded-xl border border-sand-200 overflow-hidden">
-                    <p className="px-3 py-2 text-xs font-medium text-sand-700 bg-sand-50 border-b border-sand-200">
-                      {t("fleetPortal.ordersByDriver")}
-                    </p>
+                    {/* The download sits on the report it downloads. The
+                        delivery company's own copy of this is what it stamps
+                        and sends back, so it cannot be a button somebody has
+                        to go looking for. */}
+                    <div className="flex items-center justify-between gap-3 px-3 py-2 bg-sand-50 border-b border-sand-200">
+                      <p className="text-xs font-medium text-sand-700">
+                        {t("fleetPortal.ordersByDriver")}
+                      </p>
+                      <span className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => printStatement(openRow)}
+                          className="inline-flex items-center gap-1.5 px-3 h-8 rounded-pill bg-white border border-sand-300 text-sand-800 text-[11px] font-medium hover:bg-sand-100"
+                        >
+                          <Printer size={11} aria-hidden="true" />
+                          {t("fleetPortal.printStatement")}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => exportDriverReport(openRow)}
+                          className="inline-flex items-center gap-1.5 px-3 h-8 rounded-pill bg-white border border-sand-300 text-sand-800 text-[11px] font-medium hover:bg-sand-100"
+                        >
+                          <Download size={11} aria-hidden="true" />
+                          {t("table.exportCsv")}
+                        </button>
+                      </span>
+                    </div>
                     <div className="max-h-[26rem] overflow-y-auto">
                       <table className="w-full">
                         <thead className="sticky top-0 bg-white">
@@ -432,26 +542,7 @@ export default function FleetPayoutsPage() {
                   </div>
                 )}
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    const rows = detailQuery.data?.byDriver ?? [];
-                    downloadCsv(
-                      `statement-${openRow.periodStart.slice(0, 7)}`,
-                      [
-                        t("fleetPortal.driverName"),
-                        t("fleetPortal.darbId"),
-                        t("fleetPortal.orders"),
-                        t("fleetPortal.total"),
-                      ],
-                      rows.map((d) => [d.name, d.driverCode ?? "n/a", String(d.orders), d.totalKwd]),
-                    );
-                  }}
-                  className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200"
-                >
-                  <Download size={12} aria-hidden="true" />
-                  {t("table.exportCsv")}
-                </button>
+
               </>
             )}
 

@@ -2108,6 +2108,10 @@ export interface Messages {
     invoiceRequired: string;
     orderCountDrift: string;
     ordersByDriver: string;
+    printStatement: string;
+    printBlocked: string;
+    companyStamp: string;
+    dateSigned: string;
     importInvoice: string;
     noInvoiceOnStatement: string;
     viewInvoice: string;
@@ -4438,6 +4442,10 @@ export const en: Messages = {
     orderCountDrift:
       "This statement was cut on {counted} orders and {listed} are listed today. Dispute it if the difference matters.",
     ordersByDriver: "Orders by driver",
+    printStatement: "Download",
+    printBlocked: "Your browser blocked the print window. Allow pop-ups for this site.",
+    companyStamp: "Company stamp and signature",
+    dateSigned: "Date",
     importInvoice: "Invoice",
     noInvoiceOnStatement: "No invoice yet",
     viewInvoice: "Stamped invoice",
@@ -6752,6 +6760,10 @@ export const ar: Messages = {
     orderCountDrift:
       "صدر هذا الكشف على {counted} طلب ويظهر اليوم {listed}. سجّل اعتراضك إذا كان الفرق مهماً.",
     ordersByDriver: "الطلبات حسب السائق",
+    printStatement: "تحميل",
+    printBlocked: "منع المتصفح نافذة الطباعة. اسمح بالنوافذ المنبثقة لهذا الموقع.",
+    companyStamp: "ختم الشركة والتوقيع",
+    dateSigned: "التاريخ",
     importInvoice: "الفاتورة",
     noInvoiceOnStatement: "لا توجد فاتورة بعد",
     viewInvoice: "الفاتورة المختومة",
