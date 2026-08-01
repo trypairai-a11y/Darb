@@ -358,6 +358,81 @@ export async function fetchMyShifts(): Promise<ShiftRecord[]> {
   return res.data ?? [];
 }
 
+/**
+ * Ask for a shift (client request, 2026-08-01).
+ *
+ * A driver cannot book a shift outright because there is nothing to book: every
+ * Shift row belongs to a driver already, so there is no pool of open slots to
+ * claim. The ask therefore travels as a request Darb approves, which is the
+ * same shape the fleet portal uses for everything a delivery company wants,
+ * and it reuses the driver ticket desk rather than inventing a second inbox for
+ * ops to watch.
+ */
+export async function requestShift(payload: {
+  date: string;
+  startTime: string;
+  endTime: string;
+  area?: string;
+  note?: string;
+}): Promise<TicketRecord> {
+  const deviceId = await getDeviceId();
+  const lines = [
+    `Date: ${payload.date}`,
+    `From: ${payload.startTime}`,
+    `To: ${payload.endTime}`,
+    payload.area ? `Area: ${payload.area}` : null,
+    payload.note ? `Note: ${payload.note}` : null,
+  ].filter(Boolean);
+  return agentFetch<TicketRecord>("/api/agent/tickets", {
+    method: "POST",
+    body: JSON.stringify({
+      deviceId,
+      category: "SHIFT_REQUEST",
+      title: `Shift request ${payload.date} ${payload.startTime}-${payload.endTime}`,
+      description: lines.join("\n"),
+    }),
+  });
+}
+
+// ─── Notifications (client request, 2026-08-01) ───
+export interface DriverNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  severity: string;
+  read: boolean;
+  createdAt: string;
+  titleAr: string | null;
+  bodyAr: string | null;
+}
+
+export async function fetchMyNotifications(): Promise<{ data: DriverNotification[]; unread: number }> {
+  const res = await agentFetch<{ data: DriverNotification[]; unread: number }>("/api/agent/notifications");
+  return { data: res.data ?? [], unread: res.unread ?? 0 };
+}
+
+/** No ids means "all of mine". Used when the screen is opened. */
+export async function markNotificationsRead(ids?: string[]): Promise<void> {
+  await agentFetch("/api/agent/notifications/read", {
+    method: "POST",
+    body: JSON.stringify(ids && ids.length > 0 ? { ids } : {}),
+  });
+}
+
+/** Raise a support request. The photo-less path, which is most of them. */
+export async function createSupportTicket(payload: {
+  category: string;
+  title: string;
+  description: string;
+}): Promise<TicketRecord> {
+  const deviceId = await getDeviceId();
+  return agentFetch<TicketRecord>("/api/agent/tickets", {
+    method: "POST",
+    body: JSON.stringify({ deviceId, ...payload }),
+  });
+}
+
 // ─── Equipment (issued kit the driver can report on) ───
 export type EquipmentCondition = "OK" | "DAMAGED" | "CHANGED" | "CHANGE_REQUESTED";
 export type ReportableCondition = "DAMAGED" | "CHANGED" | "CHANGE_REQUESTED";

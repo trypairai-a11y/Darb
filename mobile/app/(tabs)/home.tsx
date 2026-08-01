@@ -4,7 +4,7 @@ import {
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import * as Location from "expo-location";
-import { Award, ChevronRight, MapPin, MapPinOff, Phone, Settings, TriangleAlert } from "lucide-react-native";
+import { Award, ChevronRight, LifeBuoy, MapPin, MapPinOff, Phone, Settings, TriangleAlert } from "lucide-react-native";
 import { Card, Screen } from "../../src/components/hig";
 import { formatKwd } from "../../src/i18n/format";
 import { t as tr } from "../../src/i18n/strings";
@@ -285,6 +285,29 @@ export default function HomeScreen() {
         >
           <Award size={18} color={c.tint} />
           <Text style={[t.subheadline, { color: c.label, flex: 1 }]}>{tr("settings.my_points")}</Text>
+          <ChevronRight size={16} color={c.gray3} />
+        </TouchableOpacity>
+
+        {/*
+          Rider support (client request, 2026-08-01). A row rather than a tab:
+          four tabs is already the ceiling on a phone, and support is reached
+          occasionally rather than daily.
+
+          It is NOT the SOS button and must never read as it. SOS is the red
+          emergency path for a driver in trouble right now; this is a bike that
+          needs repair or a wrong deduction, and putting them in one place would
+          mean either an emergency queuing behind a pay question or a pay
+          question paging the on-call supervisor.
+        */}
+        <TouchableOpacity
+          style={styles.pointsRow}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          testID="home-rider-support"
+          onPress={() => router.push("/support")}
+        >
+          <LifeBuoy size={18} color={c.tint} />
+          <Text style={[t.subheadline, { color: c.label, flex: 1 }]}>{tr("support.title")}</Text>
           <ChevronRight size={16} color={c.gray3} />
         </TouchableOpacity>
 

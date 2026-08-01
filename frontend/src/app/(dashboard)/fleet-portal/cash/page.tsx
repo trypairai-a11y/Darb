@@ -354,13 +354,36 @@ export default function FleetCashPage() {
             </p>
           </div>
           {drivers.length > 0 && (
-            <button
-              type="button"
-              onClick={settleAll}
-              className="h-9 px-3.5 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors"
-            >
-              {t("fleetCash.fillAll")}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={settleAll}
+                className="h-9 px-3.5 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors"
+              >
+                {t("fleetCash.fillAll")}
+              </button>
+              {/*
+                Settles every filled line in one press, and sits here because
+                that is where the client asked for it: beside Fill every driver,
+                the button it is the natural partner to. Fill types the amounts,
+                this one commits them.
+
+                It is the same call as Settle now in the bar below, deliberately.
+                The pair reads as one motion at the top of a 36-row table, and
+                the bar stays because somebody who edits individual lines while
+                scrolling still needs the action within reach.
+              */}
+              <button
+                type="button"
+                data-testid="fleet-settle-clear-all"
+                onClick={settle}
+                disabled={!canSettle}
+                className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-pill bg-forest-600 text-white text-xs font-medium hover:bg-forest-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <Check size={12} aria-hidden="true" />
+                {t("fleetCash.clearAll")}
+              </button>
+            </div>
           )}
         </header>
 

@@ -681,6 +681,75 @@ router.post("/equipment/:id/condition", async (req: Request, res: Response) => {
   }
 });
 
+// ─── Notifications (client request, 2026-08-01) ─────────────────────────────
+//
+// The driver's own feed. Scoped to their Driver row and NEVER to the tenant at
+// large: a driver opening this must not be handed the staff notices that share
+// the table, which is why the filter is driverId and not "driverId or null".
+
+/**
+ * @swagger
+ * /api/agent/notifications:
+ *   get:
+ *     tags: [Driver App]
+ *     summary: The driver's own notifications, newest first
+ */
+router.get("/notifications", async (req: Request, res: Response) => {
+  try {
+    const identity = await resolveDriverFromAgentRequest(req);
+    if (!identity) { res.status(404).json({ error: "Device or driver not found" }); return; }
+    const { driver } = identity;
+
+    const rows = await prisma.notification.findMany({
+      where: { tenantId: driver.tenantId, driverId: driver.id },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: {
+        id: true, title: true, message: true, type: true, severity: true,
+        read: true, createdAt: true, titleAr: true, bodyAr: true,
+      },
+    });
+
+    res.json({
+      data: rows,
+      unread: rows.filter((r) => !r.read).length,
+    });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/agent/notifications/read:
+ *   post:
+ *     tags: [Driver App]
+ *     summary: Mark notifications read (all, or the ids given)
+ */
+router.post("/notifications/read", async (req: Request, res: Response) => {
+  try {
+    const identity = await resolveDriverFromAgentRequest(req);
+    if (!identity) { res.status(404).json({ error: "Device or driver not found" }); return; }
+    const { driver } = identity;
+    const { ids } = req.body as { ids?: string[] };
+
+    // The driverId in the filter is what stops an id from another driver's feed
+    // being marked read by guessing it.
+    const result = await prisma.notification.updateMany({
+      where: {
+        tenantId: driver.tenantId,
+        driverId: driver.id,
+        read: false,
+        ...(Array.isArray(ids) && ids.length > 0 ? { id: { in: ids } } : {}),
+      },
+      data: { read: true, readAt: new Date() },
+    });
+    res.json({ ok: true, updated: result.count });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 router.get("/points", async (req: Request, res: Response) => {
   try {
     const identity = await resolveDriverFromAgentRequest(req);
@@ -1323,6 +1392,11 @@ const VALID_TICKET_CATEGORIES = new Set([
   "TRANSFER_REQUEST",
   "COMPLAINT",
   "ACCIDENT_REPORT",
+  // Client request, 2026-08-01: the driver app asks for a shift here rather
+  // than through a second inbox. There is no pool of open shifts to claim (a
+  // Shift row always belongs to a driver), so the ask is a request ops approve
+  // by creating the shift, and this desk is already the one they watch.
+  "SHIFT_REQUEST",
   "OTHER",
 ]);
 const VALID_TICKET_PRIORITIES = new Set(["LOW", "MEDIUM", "HIGH", "URGENT"]);

@@ -769,6 +769,8 @@ model Driver {
   @@index([tenantId, platform, status])
   @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
   @@index([phone(ops: raw("gin_trgm_ops"))], type: Gin)
+  // Client request 2026-08-01 — the driver app's notification feed.
+  notifications Notification[]
 }
 
 // 5. DriverRestriction
@@ -1906,6 +1908,12 @@ model Notification {
   id        String    @id @default(uuid())
   tenantId  String
   userId    String?
+  /// Client request 2026-08-01: the driver app needed somewhere to read its
+  /// notifications, and a driver is not a User row, so userId could never
+  /// address one. Exactly one of userId / driverId is set in practice; both
+  /// null is a tenant-wide notice, which is what the staff feed already relied
+  /// on, so nothing needed backfilling.
+  driverId  String?
   title     String
   message   String
   type      String // violation type or alert type (e.g. "GPS_OFF", "cash_overdue")
@@ -1919,12 +1927,14 @@ model Notification {
   bodyAr    String?
   createdAt DateTime  @default(now())
 
-  tenant Tenant @relation(fields: [tenantId], references: [id])
-  user   User?  @relation(fields: [userId], references: [id])
+  tenant Tenant  @relation(fields: [tenantId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id])
+  driver Driver? @relation(fields: [driverId], references: [id])
 
   @@index([tenantId])
   @@index([userId])
   @@index([read])
+  @@index([driverId, createdAt])
   @@index([createdAt])
 }
 

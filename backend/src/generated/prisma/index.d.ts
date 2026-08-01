@@ -13353,6 +13353,7 @@ export namespace Prisma {
     fleetDocuments: number
     fleetChangeRequests: number
     fleetIssues: number
+    notifications: number
   }
 
   export type DriverCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -13401,6 +13402,7 @@ export namespace Prisma {
     fleetDocuments?: boolean | DriverCountOutputTypeCountFleetDocumentsArgs
     fleetChangeRequests?: boolean | DriverCountOutputTypeCountFleetChangeRequestsArgs
     fleetIssues?: boolean | DriverCountOutputTypeCountFleetIssuesArgs
+    notifications?: boolean | DriverCountOutputTypeCountNotificationsArgs
   }
 
   // Custom InputTypes
@@ -13727,6 +13729,13 @@ export namespace Prisma {
    */
   export type DriverCountOutputTypeCountFleetIssuesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: FleetIssueWhereInput
+  }
+
+  /**
+   * DriverCountOutputType without action
+   */
+  export type DriverCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NotificationWhereInput
   }
 
 
@@ -23077,6 +23086,7 @@ export namespace Prisma {
     fleetDocuments?: boolean | Driver$fleetDocumentsArgs<ExtArgs>
     fleetChangeRequests?: boolean | Driver$fleetChangeRequestsArgs<ExtArgs>
     fleetIssues?: boolean | Driver$fleetIssuesArgs<ExtArgs>
+    notifications?: boolean | Driver$notificationsArgs<ExtArgs>
     _count?: boolean | DriverCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["driver"]>
 
@@ -23228,6 +23238,7 @@ export namespace Prisma {
     fleetDocuments?: boolean | Driver$fleetDocumentsArgs<ExtArgs>
     fleetChangeRequests?: boolean | Driver$fleetChangeRequestsArgs<ExtArgs>
     fleetIssues?: boolean | Driver$fleetIssuesArgs<ExtArgs>
+    notifications?: boolean | Driver$notificationsArgs<ExtArgs>
     _count?: boolean | DriverCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type DriverIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -23291,6 +23302,7 @@ export namespace Prisma {
       fleetDocuments: Prisma.$FleetDocumentPayload<ExtArgs>[]
       fleetChangeRequests: Prisma.$FleetChangeRequestPayload<ExtArgs>[]
       fleetIssues: Prisma.$FleetIssuePayload<ExtArgs>[]
+      notifications: Prisma.$NotificationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -23751,6 +23763,7 @@ export namespace Prisma {
     fleetDocuments<T extends Driver$fleetDocumentsArgs<ExtArgs> = {}>(args?: Subset<T, Driver$fleetDocumentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetDocumentPayload<ExtArgs>, T, "findMany"> | Null>
     fleetChangeRequests<T extends Driver$fleetChangeRequestsArgs<ExtArgs> = {}>(args?: Subset<T, Driver$fleetChangeRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetChangeRequestPayload<ExtArgs>, T, "findMany"> | Null>
     fleetIssues<T extends Driver$fleetIssuesArgs<ExtArgs> = {}>(args?: Subset<T, Driver$fleetIssuesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetIssuePayload<ExtArgs>, T, "findMany"> | Null>
+    notifications<T extends Driver$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, Driver$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -25098,6 +25111,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: FleetIssueScalarFieldEnum | FleetIssueScalarFieldEnum[]
+  }
+
+  /**
+   * Driver.notifications
+   */
+  export type Driver$notificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    where?: NotificationWhereInput
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    cursor?: NotificationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
   }
 
   /**
@@ -73133,6 +73166,7 @@ export namespace Prisma {
     id: string | null
     tenantId: string | null
     userId: string | null
+    driverId: string | null
     title: string | null
     message: string | null
     type: string | null
@@ -73150,6 +73184,7 @@ export namespace Prisma {
     id: string | null
     tenantId: string | null
     userId: string | null
+    driverId: string | null
     title: string | null
     message: string | null
     type: string | null
@@ -73167,6 +73202,7 @@ export namespace Prisma {
     id: number
     tenantId: number
     userId: number
+    driverId: number
     title: number
     message: number
     type: number
@@ -73187,6 +73223,7 @@ export namespace Prisma {
     id?: true
     tenantId?: true
     userId?: true
+    driverId?: true
     title?: true
     message?: true
     type?: true
@@ -73204,6 +73241,7 @@ export namespace Prisma {
     id?: true
     tenantId?: true
     userId?: true
+    driverId?: true
     title?: true
     message?: true
     type?: true
@@ -73221,6 +73259,7 @@ export namespace Prisma {
     id?: true
     tenantId?: true
     userId?: true
+    driverId?: true
     title?: true
     message?: true
     type?: true
@@ -73312,6 +73351,7 @@ export namespace Prisma {
     id: string
     tenantId: string
     userId: string | null
+    driverId: string | null
     title: string
     message: string
     type: string
@@ -73347,6 +73387,7 @@ export namespace Prisma {
     id?: boolean
     tenantId?: boolean
     userId?: boolean
+    driverId?: boolean
     title?: boolean
     message?: boolean
     type?: boolean
@@ -73361,12 +73402,14 @@ export namespace Prisma {
     createdAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     user?: boolean | Notification$userArgs<ExtArgs>
+    driver?: boolean | Notification$driverArgs<ExtArgs>
   }, ExtArgs["result"]["notification"]>
 
   export type NotificationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     tenantId?: boolean
     userId?: boolean
+    driverId?: boolean
     title?: boolean
     message?: boolean
     type?: boolean
@@ -73381,12 +73424,14 @@ export namespace Prisma {
     createdAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     user?: boolean | Notification$userArgs<ExtArgs>
+    driver?: boolean | Notification$driverArgs<ExtArgs>
   }, ExtArgs["result"]["notification"]>
 
   export type NotificationSelectScalar = {
     id?: boolean
     tenantId?: boolean
     userId?: boolean
+    driverId?: boolean
     title?: boolean
     message?: boolean
     type?: boolean
@@ -73404,10 +73449,12 @@ export namespace Prisma {
   export type NotificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     user?: boolean | Notification$userArgs<ExtArgs>
+    driver?: boolean | Notification$driverArgs<ExtArgs>
   }
   export type NotificationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     user?: boolean | Notification$userArgs<ExtArgs>
+    driver?: boolean | Notification$driverArgs<ExtArgs>
   }
 
   export type $NotificationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -73415,11 +73462,20 @@ export namespace Prisma {
     objects: {
       tenant: Prisma.$TenantPayload<ExtArgs>
       user: Prisma.$UserPayload<ExtArgs> | null
+      driver: Prisma.$DriverPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       tenantId: string
       userId: string | null
+      /**
+       * Client request 2026-08-01: the driver app needed somewhere to read its
+       * notifications, and a driver is not a User row, so userId could never
+       * address one. Exactly one of userId / driverId is set in practice; both
+       * null is a tenant-wide notice, which is what the staff feed already relied
+       * on, so nothing needed backfilling.
+       */
+      driverId: string | null
       title: string
       message: string
       type: string
@@ -73798,6 +73854,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     user<T extends Notification$userArgs<ExtArgs> = {}>(args?: Subset<T, Notification$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    driver<T extends Notification$driverArgs<ExtArgs> = {}>(args?: Subset<T, Notification$driverArgs<ExtArgs>>): Prisma__DriverClient<$Result.GetResult<Prisma.$DriverPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -73830,6 +73887,7 @@ export namespace Prisma {
     readonly id: FieldRef<"Notification", 'String'>
     readonly tenantId: FieldRef<"Notification", 'String'>
     readonly userId: FieldRef<"Notification", 'String'>
+    readonly driverId: FieldRef<"Notification", 'String'>
     readonly title: FieldRef<"Notification", 'String'>
     readonly message: FieldRef<"Notification", 'String'>
     readonly type: FieldRef<"Notification", 'String'>
@@ -74172,6 +74230,21 @@ export namespace Prisma {
      */
     include?: UserInclude<ExtArgs> | null
     where?: UserWhereInput
+  }
+
+  /**
+   * Notification.driver
+   */
+  export type Notification$driverArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Driver
+     */
+    select?: DriverSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DriverInclude<ExtArgs> | null
+    where?: DriverWhereInput
   }
 
   /**
@@ -149557,6 +149630,7 @@ export namespace Prisma {
     id: 'id',
     tenantId: 'tenantId',
     userId: 'userId',
+    driverId: 'driverId',
     title: 'title',
     message: 'message',
     type: 'type',
@@ -151489,6 +151563,7 @@ export namespace Prisma {
     id: 'id',
     tenantId: 'tenantId',
     userId: 'userId',
+    driverId: 'driverId',
     title: 'title',
     message: 'message',
     type: 'type',
@@ -154350,6 +154425,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentListRelationFilter
     fleetChangeRequests?: FleetChangeRequestListRelationFilter
     fleetIssues?: FleetIssueListRelationFilter
+    notifications?: NotificationListRelationFilter
   }
 
   export type DriverOrderByWithRelationInput = {
@@ -154447,6 +154523,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentOrderByRelationAggregateInput
     fleetChangeRequests?: FleetChangeRequestOrderByRelationAggregateInput
     fleetIssues?: FleetIssueOrderByRelationAggregateInput
+    notifications?: NotificationOrderByRelationAggregateInput
     _relevance?: DriverOrderByRelevanceInput
   }
 
@@ -154549,6 +154626,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentListRelationFilter
     fleetChangeRequests?: FleetChangeRequestListRelationFilter
     fleetIssues?: FleetIssueListRelationFilter
+    notifications?: NotificationListRelationFilter
   }, "id" | "tenantId_driverCode">
 
   export type DriverOrderByWithAggregationInput = {
@@ -159345,6 +159423,7 @@ export namespace Prisma {
     id?: StringFilter<"Notification"> | string
     tenantId?: StringFilter<"Notification"> | string
     userId?: StringNullableFilter<"Notification"> | string | null
+    driverId?: StringNullableFilter<"Notification"> | string | null
     title?: StringFilter<"Notification"> | string
     message?: StringFilter<"Notification"> | string
     type?: StringFilter<"Notification"> | string
@@ -159359,12 +159438,14 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Notification"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     user?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    driver?: XOR<DriverNullableRelationFilter, DriverWhereInput> | null
   }
 
   export type NotificationOrderByWithRelationInput = {
     id?: SortOrder
     tenantId?: SortOrder
     userId?: SortOrderInput | SortOrder
+    driverId?: SortOrderInput | SortOrder
     title?: SortOrder
     message?: SortOrder
     type?: SortOrder
@@ -159379,6 +159460,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     tenant?: TenantOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
+    driver?: DriverOrderByWithRelationInput
     _relevance?: NotificationOrderByRelevanceInput
   }
 
@@ -159389,6 +159471,7 @@ export namespace Prisma {
     NOT?: NotificationWhereInput | NotificationWhereInput[]
     tenantId?: StringFilter<"Notification"> | string
     userId?: StringNullableFilter<"Notification"> | string | null
+    driverId?: StringNullableFilter<"Notification"> | string | null
     title?: StringFilter<"Notification"> | string
     message?: StringFilter<"Notification"> | string
     type?: StringFilter<"Notification"> | string
@@ -159403,12 +159486,14 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Notification"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     user?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    driver?: XOR<DriverNullableRelationFilter, DriverWhereInput> | null
   }, "id">
 
   export type NotificationOrderByWithAggregationInput = {
     id?: SortOrder
     tenantId?: SortOrder
     userId?: SortOrderInput | SortOrder
+    driverId?: SortOrderInput | SortOrder
     title?: SortOrder
     message?: SortOrder
     type?: SortOrder
@@ -159433,6 +159518,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Notification"> | string
     tenantId?: StringWithAggregatesFilter<"Notification"> | string
     userId?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    driverId?: StringNullableWithAggregatesFilter<"Notification"> | string | null
     title?: StringWithAggregatesFilter<"Notification"> | string
     message?: StringWithAggregatesFilter<"Notification"> | string
     type?: StringWithAggregatesFilter<"Notification"> | string
@@ -167358,6 +167444,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateInput = {
@@ -167451,6 +167538,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUpdateInput = {
@@ -167544,6 +167632,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateInput = {
@@ -167637,6 +167726,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverCreateManyInput = {
@@ -172918,12 +173008,14 @@ export namespace Prisma {
     createdAt?: Date | string
     tenant: TenantCreateNestedOneWithoutNotificationsInput
     user?: UserCreateNestedOneWithoutNotificationsInput
+    driver?: DriverCreateNestedOneWithoutNotificationsInput
   }
 
   export type NotificationUncheckedCreateInput = {
     id?: string
     tenantId: string
     userId?: string | null
+    driverId?: string | null
     title: string
     message: string
     type: string
@@ -172954,12 +173046,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutNotificationsNestedInput
     user?: UserUpdateOneWithoutNotificationsNestedInput
+    driver?: DriverUpdateOneWithoutNotificationsNestedInput
   }
 
   export type NotificationUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
@@ -172978,6 +173072,7 @@ export namespace Prisma {
     id?: string
     tenantId: string
     userId?: string | null
+    driverId?: string | null
     title: string
     message: string
     type: string
@@ -173012,6 +173107,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
@@ -185907,6 +186003,7 @@ export namespace Prisma {
     id?: SortOrder
     tenantId?: SortOrder
     userId?: SortOrder
+    driverId?: SortOrder
     title?: SortOrder
     message?: SortOrder
     type?: SortOrder
@@ -185925,6 +186022,7 @@ export namespace Prisma {
     id?: SortOrder
     tenantId?: SortOrder
     userId?: SortOrder
+    driverId?: SortOrder
     title?: SortOrder
     message?: SortOrder
     type?: SortOrder
@@ -185942,6 +186040,7 @@ export namespace Prisma {
     id?: SortOrder
     tenantId?: SortOrder
     userId?: SortOrder
+    driverId?: SortOrder
     title?: SortOrder
     message?: SortOrder
     type?: SortOrder
@@ -197053,6 +197152,13 @@ export namespace Prisma {
     connect?: FleetIssueWhereUniqueInput | FleetIssueWhereUniqueInput[]
   }
 
+  export type NotificationCreateNestedManyWithoutDriverInput = {
+    create?: XOR<NotificationCreateWithoutDriverInput, NotificationUncheckedCreateWithoutDriverInput> | NotificationCreateWithoutDriverInput[] | NotificationUncheckedCreateWithoutDriverInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutDriverInput | NotificationCreateOrConnectWithoutDriverInput[]
+    createMany?: NotificationCreateManyDriverInputEnvelope
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+  }
+
   export type DriverInventoryUncheckedCreateNestedManyWithoutDriverInput = {
     create?: XOR<DriverInventoryCreateWithoutDriverInput, DriverInventoryUncheckedCreateWithoutDriverInput> | DriverInventoryCreateWithoutDriverInput[] | DriverInventoryUncheckedCreateWithoutDriverInput[]
     connectOrCreate?: DriverInventoryCreateOrConnectWithoutDriverInput | DriverInventoryCreateOrConnectWithoutDriverInput[]
@@ -197378,6 +197484,13 @@ export namespace Prisma {
     connectOrCreate?: FleetIssueCreateOrConnectWithoutDriverInput | FleetIssueCreateOrConnectWithoutDriverInput[]
     createMany?: FleetIssueCreateManyDriverInputEnvelope
     connect?: FleetIssueWhereUniqueInput | FleetIssueWhereUniqueInput[]
+  }
+
+  export type NotificationUncheckedCreateNestedManyWithoutDriverInput = {
+    create?: XOR<NotificationCreateWithoutDriverInput, NotificationUncheckedCreateWithoutDriverInput> | NotificationCreateWithoutDriverInput[] | NotificationUncheckedCreateWithoutDriverInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutDriverInput | NotificationCreateOrConnectWithoutDriverInput[]
+    createMany?: NotificationCreateManyDriverInputEnvelope
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
   export type EnumVehicleTypeFieldUpdateOperationsInput = {
@@ -198082,6 +198195,20 @@ export namespace Prisma {
     deleteMany?: FleetIssueScalarWhereInput | FleetIssueScalarWhereInput[]
   }
 
+  export type NotificationUpdateManyWithoutDriverNestedInput = {
+    create?: XOR<NotificationCreateWithoutDriverInput, NotificationUncheckedCreateWithoutDriverInput> | NotificationCreateWithoutDriverInput[] | NotificationUncheckedCreateWithoutDriverInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutDriverInput | NotificationCreateOrConnectWithoutDriverInput[]
+    upsert?: NotificationUpsertWithWhereUniqueWithoutDriverInput | NotificationUpsertWithWhereUniqueWithoutDriverInput[]
+    createMany?: NotificationCreateManyDriverInputEnvelope
+    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    update?: NotificationUpdateWithWhereUniqueWithoutDriverInput | NotificationUpdateWithWhereUniqueWithoutDriverInput[]
+    updateMany?: NotificationUpdateManyWithWhereWithoutDriverInput | NotificationUpdateManyWithWhereWithoutDriverInput[]
+    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+  }
+
   export type DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput = {
     create?: XOR<DriverInventoryCreateWithoutDriverInput, DriverInventoryUncheckedCreateWithoutDriverInput> | DriverInventoryCreateWithoutDriverInput[] | DriverInventoryUncheckedCreateWithoutDriverInput[]
     connectOrCreate?: DriverInventoryCreateOrConnectWithoutDriverInput | DriverInventoryCreateOrConnectWithoutDriverInput[]
@@ -198730,6 +198857,20 @@ export namespace Prisma {
     update?: FleetIssueUpdateWithWhereUniqueWithoutDriverInput | FleetIssueUpdateWithWhereUniqueWithoutDriverInput[]
     updateMany?: FleetIssueUpdateManyWithWhereWithoutDriverInput | FleetIssueUpdateManyWithWhereWithoutDriverInput[]
     deleteMany?: FleetIssueScalarWhereInput | FleetIssueScalarWhereInput[]
+  }
+
+  export type NotificationUncheckedUpdateManyWithoutDriverNestedInput = {
+    create?: XOR<NotificationCreateWithoutDriverInput, NotificationUncheckedCreateWithoutDriverInput> | NotificationCreateWithoutDriverInput[] | NotificationUncheckedCreateWithoutDriverInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutDriverInput | NotificationCreateOrConnectWithoutDriverInput[]
+    upsert?: NotificationUpsertWithWhereUniqueWithoutDriverInput | NotificationUpsertWithWhereUniqueWithoutDriverInput[]
+    createMany?: NotificationCreateManyDriverInputEnvelope
+    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    update?: NotificationUpdateWithWhereUniqueWithoutDriverInput | NotificationUpdateWithWhereUniqueWithoutDriverInput[]
+    updateMany?: NotificationUpdateManyWithWhereWithoutDriverInput | NotificationUpdateManyWithWhereWithoutDriverInput[]
+    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
   export type TenantCreateNestedOneWithoutDriverRestrictionsInput = {
@@ -201320,6 +201461,12 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type DriverCreateNestedOneWithoutNotificationsInput = {
+    create?: XOR<DriverCreateWithoutNotificationsInput, DriverUncheckedCreateWithoutNotificationsInput>
+    connectOrCreate?: DriverCreateOrConnectWithoutNotificationsInput
+    connect?: DriverWhereUniqueInput
+  }
+
   export type TenantUpdateOneRequiredWithoutNotificationsNestedInput = {
     create?: XOR<TenantCreateWithoutNotificationsInput, TenantUncheckedCreateWithoutNotificationsInput>
     connectOrCreate?: TenantCreateOrConnectWithoutNotificationsInput
@@ -201336,6 +201483,16 @@ export namespace Prisma {
     delete?: UserWhereInput | boolean
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutNotificationsInput, UserUpdateWithoutNotificationsInput>, UserUncheckedUpdateWithoutNotificationsInput>
+  }
+
+  export type DriverUpdateOneWithoutNotificationsNestedInput = {
+    create?: XOR<DriverCreateWithoutNotificationsInput, DriverUncheckedCreateWithoutNotificationsInput>
+    connectOrCreate?: DriverCreateOrConnectWithoutNotificationsInput
+    upsert?: DriverUpsertWithoutNotificationsInput
+    disconnect?: DriverWhereInput | boolean
+    delete?: DriverWhereInput | boolean
+    connect?: DriverWhereUniqueInput
+    update?: XOR<XOR<DriverUpdateToOneWithWhereWithoutNotificationsInput, DriverUpdateWithoutNotificationsInput>, DriverUncheckedUpdateWithoutNotificationsInput>
   }
 
   export type TenantCreateNestedOneWithoutNotificationDeliveriesInput = {
@@ -207788,6 +207945,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutTenantInput = {
@@ -207880,6 +208038,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutTenantInput = {
@@ -209133,11 +209292,13 @@ export namespace Prisma {
     bodyAr?: string | null
     createdAt?: Date | string
     user?: UserCreateNestedOneWithoutNotificationsInput
+    driver?: DriverCreateNestedOneWithoutNotificationsInput
   }
 
   export type NotificationUncheckedCreateWithoutTenantInput = {
     id?: string
     userId?: string | null
+    driverId?: string | null
     title: string
     message: string
     type: string
@@ -213263,6 +213424,7 @@ export namespace Prisma {
     id?: StringFilter<"Notification"> | string
     tenantId?: StringFilter<"Notification"> | string
     userId?: StringNullableFilter<"Notification"> | string | null
+    driverId?: StringNullableFilter<"Notification"> | string | null
     title?: StringFilter<"Notification"> | string
     message?: StringFilter<"Notification"> | string
     type?: StringFilter<"Notification"> | string
@@ -216229,6 +216391,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutCompanyInput = {
@@ -216321,6 +216484,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutCompanyInput = {
@@ -218267,6 +218431,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutSupervisorInput = {
@@ -218359,6 +218524,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutSupervisorInput = {
@@ -218614,11 +218780,13 @@ export namespace Prisma {
     bodyAr?: string | null
     createdAt?: Date | string
     tenant: TenantCreateNestedOneWithoutNotificationsInput
+    driver?: DriverCreateNestedOneWithoutNotificationsInput
   }
 
   export type NotificationUncheckedCreateWithoutUserInput = {
     id?: string
     tenantId: string
+    driverId?: string | null
     title: string
     message: string
     type: string
@@ -222728,6 +222896,52 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type NotificationCreateWithoutDriverInput = {
+    id?: string
+    title: string
+    message: string
+    type: string
+    severity?: string
+    sourceId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    read?: boolean
+    readAt?: Date | string | null
+    category?: string | null
+    titleAr?: string | null
+    bodyAr?: string | null
+    createdAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutNotificationsInput
+    user?: UserCreateNestedOneWithoutNotificationsInput
+  }
+
+  export type NotificationUncheckedCreateWithoutDriverInput = {
+    id?: string
+    tenantId: string
+    userId?: string | null
+    title: string
+    message: string
+    type: string
+    severity?: string
+    sourceId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    read?: boolean
+    readAt?: Date | string | null
+    category?: string | null
+    titleAr?: string | null
+    bodyAr?: string | null
+    createdAt?: Date | string
+  }
+
+  export type NotificationCreateOrConnectWithoutDriverInput = {
+    where: NotificationWhereUniqueInput
+    create: XOR<NotificationCreateWithoutDriverInput, NotificationUncheckedCreateWithoutDriverInput>
+  }
+
+  export type NotificationCreateManyDriverInputEnvelope = {
+    data: NotificationCreateManyDriverInput | NotificationCreateManyDriverInput[]
+    skipDuplicates?: boolean
+  }
+
   export type TenantUpsertWithoutDriversInput = {
     update: XOR<TenantUpdateWithoutDriversInput, TenantUncheckedUpdateWithoutDriversInput>
     create: XOR<TenantCreateWithoutDriversInput, TenantUncheckedCreateWithoutDriversInput>
@@ -224115,6 +224329,22 @@ export namespace Prisma {
     data: XOR<FleetIssueUpdateManyMutationInput, FleetIssueUncheckedUpdateManyWithoutDriverInput>
   }
 
+  export type NotificationUpsertWithWhereUniqueWithoutDriverInput = {
+    where: NotificationWhereUniqueInput
+    update: XOR<NotificationUpdateWithoutDriverInput, NotificationUncheckedUpdateWithoutDriverInput>
+    create: XOR<NotificationCreateWithoutDriverInput, NotificationUncheckedCreateWithoutDriverInput>
+  }
+
+  export type NotificationUpdateWithWhereUniqueWithoutDriverInput = {
+    where: NotificationWhereUniqueInput
+    data: XOR<NotificationUpdateWithoutDriverInput, NotificationUncheckedUpdateWithoutDriverInput>
+  }
+
+  export type NotificationUpdateManyWithWhereWithoutDriverInput = {
+    where: NotificationScalarWhereInput
+    data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyWithoutDriverInput>
+  }
+
   export type TenantCreateWithoutDriverRestrictionsInput = {
     id?: string
     name: string
@@ -224448,6 +224678,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutRestrictionsInput = {
@@ -224540,6 +224771,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutRestrictionsInput = {
@@ -224897,6 +225129,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutRestrictionsInput = {
@@ -224989,6 +225222,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverCreateWithoutInventoryInput = {
@@ -225081,6 +225315,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutInventoryInput = {
@@ -225173,6 +225408,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutInventoryInput = {
@@ -225281,6 +225517,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutInventoryInput = {
@@ -225373,6 +225610,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutRecruitmentPipelineInput = {
@@ -226323,6 +226561,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutAssignedVehicleInput = {
@@ -226415,6 +226654,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutAssignedVehicleInput = {
@@ -227065,6 +227305,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutAssignedVehicleInput = {
@@ -227157,6 +227398,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type VehicleInspectionUpsertWithWhereUniqueWithoutVehicleInput = {
@@ -227649,6 +227891,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutVehicleAssignmentsInput = {
@@ -227741,6 +227984,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutVehicleAssignmentsInput = {
@@ -228165,6 +228409,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutVehicleAssignmentsInput = {
@@ -228257,6 +228502,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutShiftsInput = {
@@ -228592,6 +228838,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutShiftsInput = {
@@ -228684,6 +228931,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutShiftsInput = {
@@ -229211,6 +229459,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutShiftsInput = {
@@ -229303,6 +229552,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type AttendanceRecordUpsertWithWhereUniqueWithoutShiftInput = {
@@ -229686,6 +229936,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutAttendanceRecordsInput = {
@@ -229778,6 +230029,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutAttendanceRecordsInput = {
@@ -230200,6 +230452,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutAttendanceRecordsInput = {
@@ -230292,6 +230545,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type ShiftUpsertWithoutAttendanceRecordsInput = {
@@ -230698,6 +230952,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutOrderLogsInput = {
@@ -230790,6 +231045,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutOrderLogsInput = {
@@ -231212,6 +231468,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutOrderLogsInput = {
@@ -231304,6 +231561,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type ShiftUpsertWithoutOrderLogsInput = {
@@ -231710,6 +231968,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutCashRecordsInput = {
@@ -231802,6 +232061,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutCashRecordsInput = {
@@ -232159,6 +232419,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutCashRecordsInput = {
@@ -232251,6 +232512,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutCashTransactionsInput = {
@@ -232586,6 +232848,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutCashTransactionsInput = {
@@ -232678,6 +232941,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutCashTransactionsInput = {
@@ -233035,6 +233299,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutCashTransactionsInput = {
@@ -233127,6 +233392,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutPendingDuesLedgersInput = {
@@ -233462,6 +233728,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutPendingDuesLedgersInput = {
@@ -233554,6 +233821,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutPendingDuesLedgersInput = {
@@ -233911,6 +234179,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutPendingDuesLedgersInput = {
@@ -234003,6 +234272,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutVehicleInspectionsInput = {
@@ -234399,6 +234669,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutVehicleInspectionsInput = {
@@ -234491,6 +234762,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutVehicleInspectionsInput = {
@@ -234915,6 +235187,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutVehicleInspectionsInput = {
@@ -235007,6 +235280,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutMaintenanceRecordsInput = {
@@ -235403,6 +235677,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutMaintenanceRecordsInput = {
@@ -235495,6 +235770,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutMaintenanceRecordsInput = {
@@ -235980,6 +236256,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutMaintenanceRecordsInput = {
@@ -236072,6 +236349,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type VehicleUpsertWithoutSpareMaintenanceInput = {
@@ -236231,6 +236509,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutDeviceInput = {
@@ -236323,6 +236602,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutDeviceInput = {
@@ -236581,6 +236861,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutDeviceInput = {
@@ -236673,6 +236954,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type CapturedOrderUpsertWithWhereUniqueWithoutDeviceInput = {
@@ -237088,6 +237370,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutSimsInput = {
@@ -237180,6 +237463,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutSimsInput = {
@@ -237586,6 +237870,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutSimsInput = {
@@ -237678,6 +237963,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DeviceUpsertWithoutSimsInput = {
@@ -237874,6 +238160,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutCapturedOrdersInput = {
@@ -237966,6 +238253,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutCapturedOrdersInput = {
@@ -238129,6 +238417,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutCapturedOrdersInput = {
@@ -238221,6 +238510,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DeviceCreateWithoutLocationLogsInput = {
@@ -238362,6 +238652,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutLocationLogsInput = {
@@ -238454,6 +238745,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutLocationLogsInput = {
@@ -238617,6 +238909,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutLocationLogsInput = {
@@ -238709,6 +239002,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DeviceCreateWithoutAppUsageLogsInput = {
@@ -238850,6 +239144,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutAppUsageLogsInput = {
@@ -238942,6 +239237,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutAppUsageLogsInput = {
@@ -239105,6 +239401,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutAppUsageLogsInput = {
@@ -239197,6 +239494,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DeviceCreateWithoutCommandsInput = {
@@ -239844,6 +240142,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutAiScoresInput = {
@@ -239936,6 +240235,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutAiScoresInput = {
@@ -240293,6 +240593,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutAiScoresInput = {
@@ -240385,6 +240686,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutAlertsInput = {
@@ -240720,6 +241022,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutAlertsInput = {
@@ -240812,6 +241115,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutAlertsInput = {
@@ -241331,6 +241635,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutAlertsInput = {
@@ -241423,6 +241728,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type VehicleUpsertWithoutAlertsInput = {
@@ -242916,6 +243222,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutSubmittedTicketsInput = {
@@ -243008,6 +243315,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutSubmittedTicketsInput = {
@@ -243346,6 +243654,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutTicketsInput = {
@@ -243438,6 +243747,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutTicketsInput = {
@@ -243856,6 +244166,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutSubmittedTicketsInput = {
@@ -243948,6 +244259,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type UserUpsertWithoutSubmittedTicketsInput = {
@@ -244310,6 +244622,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutTicketsInput = {
@@ -244402,6 +244715,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type VehicleUpsertWithoutTicketsInput = {
@@ -244804,6 +245118,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutLeaveRequestsInput = {
@@ -244896,6 +245211,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutLeaveRequestsInput = {
@@ -245354,6 +245670,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutLeaveRequestsInput = {
@@ -245446,6 +245763,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type UserUpsertWithoutReviewedLeavesInput = {
@@ -245888,6 +246206,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutTalabatSessionsInput = {
@@ -245980,6 +246299,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutTalabatSessionsInput = {
@@ -246482,6 +246802,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutTalabatSessionsInput = {
@@ -246574,6 +246895,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type ShiftUpsertWithoutTalabatSessionsInput = {
@@ -247012,6 +247334,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutTalabatViolationEventsInput = {
@@ -247104,6 +247427,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutTalabatViolationEventsInput = {
@@ -247528,6 +247852,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutTalabatViolationEventsInput = {
@@ -247620,6 +247945,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TalabatSessionUpsertWithoutViolationEventsInput = {
@@ -247785,6 +248111,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutTalabatDeliveriesInput = {
@@ -247877,6 +248204,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutTalabatDeliveriesInput = {
@@ -248052,6 +248380,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutTalabatDeliveriesInput = {
@@ -248144,6 +248473,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TalabatSessionUpsertWithoutDeliveryItemsInput = {
@@ -248552,6 +248882,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutKeetaDailyMetricsInput = {
@@ -248644,6 +248975,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutKeetaDailyMetricsInput = {
@@ -249001,6 +249333,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutKeetaDailyMetricsInput = {
@@ -249093,6 +249426,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutIngestRunsInput = {
@@ -249920,6 +250254,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutDeliverooDailyMetricsInput = {
@@ -250012,6 +250347,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutDeliverooDailyMetricsInput = {
@@ -250369,6 +250705,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutDeliverooDailyMetricsInput = {
@@ -250461,6 +250798,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutTalabatDailyMetricsInput = {
@@ -250796,6 +251134,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutTalabatDailyMetricsInput = {
@@ -250888,6 +251227,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutTalabatDailyMetricsInput = {
@@ -251245,6 +251585,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutTalabatDailyMetricsInput = {
@@ -251337,6 +251678,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutPlatformSettingsInput = {
@@ -252656,6 +252998,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutAmericanaDailyOrdersInput = {
@@ -252748,6 +253091,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutAmericanaDailyOrdersInput = {
@@ -253183,6 +253527,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutAmericanaDailyOrdersInput = {
@@ -253275,6 +253620,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type AmericanaChainUpsertWithoutDailyOrdersInput = {
@@ -256448,6 +256794,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutBatchHistoryInput = {
@@ -256540,6 +256887,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutBatchHistoryInput = {
@@ -256897,6 +257245,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutBatchHistoryInput = {
@@ -256989,6 +257338,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutAmericanaStoreAssignmentsInput = {
@@ -257324,6 +257674,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutAmericanaStoreAssignmentsInput = {
@@ -257416,6 +257767,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutAmericanaStoreAssignmentsInput = {
@@ -257820,6 +258172,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutAmericanaStoreAssignmentsInput = {
@@ -257912,6 +258265,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type AmericanaStoreUpsertWithoutAssignmentsInput = {
@@ -259336,6 +259690,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutKpiRecordsInput = {
@@ -259428,6 +259783,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutKpiRecordsInput = {
@@ -259820,6 +260176,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutKpiRecordsInput = {
@@ -259912,6 +260269,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type KpiDefinitionUpsertWithoutRecordsInput = {
@@ -260299,6 +260657,197 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
   }
 
+  export type DriverCreateWithoutNotificationsInput = {
+    id?: string
+    name: string
+    phone: string
+    driverCode?: string | null
+    platform: $Enums.Platform
+    platformDriverId?: string | null
+    utr?: string | null
+    vehicleType: $Enums.VehicleType
+    zone?: string | null
+    batchNumber?: string | null
+    status?: $Enums.DriverStatus
+    hireDate: Date | string
+    photoUrl?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
+    monthlySalary?: number | null
+    monthlyOffDaysUsed?: number
+    offDaysResetMonth?: string | null
+    performanceTier?: string | null
+    tierComputedAt?: Date | string | null
+    throttledUntil?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    healthCertExpiry?: Date | string | null
+    healthCertStatus?: string | null
+    workPermitExpiry?: Date | string | null
+    workPermitStatus?: string | null
+    foodHandlingCertExpiry?: Date | string | null
+    foodHandlingCertStatus?: string | null
+    vehicleRegExpiry?: Date | string | null
+    vehicleRegStatus?: string | null
+    vehicleInsuranceExpiry?: Date | string | null
+    vehicleInsuranceStatus?: string | null
+    drivingLicenseExpiry?: Date | string | null
+    drivingLicenseStatus?: string | null
+    civilIdExpiry?: Date | string | null
+    civilIdStatus?: string | null
+    tenant: TenantCreateNestedOneWithoutDriversInput
+    company: CompanyCreateNestedOneWithoutDriversInput
+    supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
+    fleetPartner?: FleetPartnerCreateNestedOneWithoutDriversInput
+    inventory?: DriverInventoryCreateNestedManyWithoutDriverInput
+    shifts?: ShiftCreateNestedManyWithoutDriverInput
+    attendanceRecords?: AttendanceRecordCreateNestedManyWithoutDriverInput
+    orderLogs?: OrderLogCreateNestedManyWithoutDriverInput
+    cashRecords?: CashRecordCreateNestedManyWithoutDriverInput
+    cashTransactions?: CashTransactionCreateNestedManyWithoutDriverInput
+    pendingDuesLedgers?: PendingDuesLedgerCreateNestedManyWithoutDriverInput
+    vehicleInspections?: VehicleInspectionCreateNestedManyWithoutDriverInput
+    maintenanceRecords?: MaintenanceRecordCreateNestedManyWithoutDriverInput
+    aiScores?: AiScoreCreateNestedManyWithoutDriverInput
+    alerts?: AlertCreateNestedManyWithoutDriverInput
+    capturedOrders?: CapturedOrderCreateNestedManyWithoutDriverInput
+    locationLogs?: LocationLogCreateNestedManyWithoutDriverInput
+    appUsageLogs?: AppUsageLogCreateNestedManyWithoutDriverInput
+    device?: DeviceCreateNestedOneWithoutDriverInput
+    assignedVehicle?: VehicleCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentCreateNestedManyWithoutDriverInput
+    leaveRequests?: LeaveRequestCreateNestedManyWithoutDriverInput
+    restrictions?: DriverRestrictionCreateNestedManyWithoutDriverInput
+    tickets?: TicketCreateNestedManyWithoutDriverInput
+    submittedTickets?: TicketCreateNestedManyWithoutSubmitterDriverInput
+    talabatSessions?: TalabatSessionCreateNestedManyWithoutDriverInput
+    talabatViolationEvents?: TalabatViolationEventCreateNestedManyWithoutDriverInput
+    talabatDailyMetrics?: TalabatDailyMetricsCreateNestedManyWithoutDriverInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsCreateNestedManyWithoutDriverInput
+    keetaDailyMetrics?: KeetaDailyMetricsCreateNestedManyWithoutDriverInput
+    americanaDailyOrders?: AmericanaDailyOrdersCreateNestedManyWithoutDriverInput
+    talabatDeliveries?: TalabatDeliveryCreateNestedManyWithoutDriverInput
+    kpiRecords?: KpiRecordCreateNestedManyWithoutDriverInput
+    courierOnlineSessions?: CourierOnlineSessionCreateNestedManyWithoutDriverInput
+    violations?: ViolationCreateNestedManyWithoutDriverInput
+    penalties?: PenaltyCreateNestedManyWithoutDriverInput
+    aiInsights?: AiInsightCreateNestedManyWithoutDriverInput
+    courierAttendanceSlots?: CourierAttendanceSlotCreateNestedManyWithoutDriverInput
+    courierIncentivePayouts?: CourierIncentivePayoutCreateNestedManyWithoutDriverInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentCreateNestedManyWithoutDriverInput
+    sims?: SimCreateNestedManyWithoutDriverInput
+    performanceSnapshots?: PerformanceSnapshotCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryCreateNestedManyWithoutDriverInput
+    deliveryOrders?: DeliveryOrderCreateNestedManyWithoutDriverInput
+    dispatchOffers?: DispatchOfferCreateNestedManyWithoutDriverInput
+    remittances?: RemittanceCreateNestedManyWithoutDriverInput
+    incidents?: IncidentCreateNestedManyWithoutDriverInput
+    orderRatings?: OrderRatingCreateNestedManyWithoutDriverInput
+    fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
+    fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
+    fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+  }
+
+  export type DriverUncheckedCreateWithoutNotificationsInput = {
+    id?: string
+    tenantId: string
+    companyId: string
+    name: string
+    phone: string
+    driverCode?: string | null
+    platform: $Enums.Platform
+    platformDriverId?: string | null
+    utr?: string | null
+    vehicleType: $Enums.VehicleType
+    zone?: string | null
+    batchNumber?: string | null
+    status?: $Enums.DriverStatus
+    hireDate: Date | string
+    photoUrl?: string | null
+    supervisorId?: string | null
+    preferredLanguage?: $Enums.Language
+    outboundOptIn?: boolean
+    smsOptOut?: boolean
+    expoPushToken?: string | null
+    monthlySalary?: number | null
+    monthlyOffDaysUsed?: number
+    offDaysResetMonth?: string | null
+    performanceTier?: string | null
+    tierComputedAt?: Date | string | null
+    throttledUntil?: Date | string | null
+    fleetPartnerId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    healthCertExpiry?: Date | string | null
+    healthCertStatus?: string | null
+    workPermitExpiry?: Date | string | null
+    workPermitStatus?: string | null
+    foodHandlingCertExpiry?: Date | string | null
+    foodHandlingCertStatus?: string | null
+    vehicleRegExpiry?: Date | string | null
+    vehicleRegStatus?: string | null
+    vehicleInsuranceExpiry?: Date | string | null
+    vehicleInsuranceStatus?: string | null
+    drivingLicenseExpiry?: Date | string | null
+    drivingLicenseStatus?: string | null
+    civilIdExpiry?: Date | string | null
+    civilIdStatus?: string | null
+    inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
+    shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
+    attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutDriverInput
+    orderLogs?: OrderLogUncheckedCreateNestedManyWithoutDriverInput
+    cashRecords?: CashRecordUncheckedCreateNestedManyWithoutDriverInput
+    cashTransactions?: CashTransactionUncheckedCreateNestedManyWithoutDriverInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedCreateNestedManyWithoutDriverInput
+    vehicleInspections?: VehicleInspectionUncheckedCreateNestedManyWithoutDriverInput
+    maintenanceRecords?: MaintenanceRecordUncheckedCreateNestedManyWithoutDriverInput
+    aiScores?: AiScoreUncheckedCreateNestedManyWithoutDriverInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutDriverInput
+    capturedOrders?: CapturedOrderUncheckedCreateNestedManyWithoutDriverInput
+    locationLogs?: LocationLogUncheckedCreateNestedManyWithoutDriverInput
+    appUsageLogs?: AppUsageLogUncheckedCreateNestedManyWithoutDriverInput
+    device?: DeviceUncheckedCreateNestedOneWithoutDriverInput
+    assignedVehicle?: VehicleUncheckedCreateNestedOneWithoutAssignedDriverInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedCreateNestedManyWithoutDriverInput
+    leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutDriverInput
+    restrictions?: DriverRestrictionUncheckedCreateNestedManyWithoutDriverInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutDriverInput
+    submittedTickets?: TicketUncheckedCreateNestedManyWithoutSubmitterDriverInput
+    talabatSessions?: TalabatSessionUncheckedCreateNestedManyWithoutDriverInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedCreateNestedManyWithoutDriverInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedCreateNestedManyWithoutDriverInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedCreateNestedManyWithoutDriverInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedCreateNestedManyWithoutDriverInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedCreateNestedManyWithoutDriverInput
+    talabatDeliveries?: TalabatDeliveryUncheckedCreateNestedManyWithoutDriverInput
+    kpiRecords?: KpiRecordUncheckedCreateNestedManyWithoutDriverInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedCreateNestedManyWithoutDriverInput
+    violations?: ViolationUncheckedCreateNestedManyWithoutDriverInput
+    penalties?: PenaltyUncheckedCreateNestedManyWithoutDriverInput
+    aiInsights?: AiInsightUncheckedCreateNestedManyWithoutDriverInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedCreateNestedManyWithoutDriverInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedCreateNestedManyWithoutDriverInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedCreateNestedManyWithoutDriverInput
+    sims?: SimUncheckedCreateNestedManyWithoutDriverInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedCreateNestedManyWithoutDriverInput
+    batchHistory?: DriverBatchHistoryUncheckedCreateNestedManyWithoutDriverInput
+    deliveryOrders?: DeliveryOrderUncheckedCreateNestedManyWithoutDriverInput
+    dispatchOffers?: DispatchOfferUncheckedCreateNestedManyWithoutDriverInput
+    remittances?: RemittanceUncheckedCreateNestedManyWithoutDriverInput
+    incidents?: IncidentUncheckedCreateNestedManyWithoutDriverInput
+    orderRatings?: OrderRatingUncheckedCreateNestedManyWithoutDriverInput
+    fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
+    fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
+    fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+  }
+
+  export type DriverCreateOrConnectWithoutNotificationsInput = {
+    where: DriverWhereUniqueInput
+    create: XOR<DriverCreateWithoutNotificationsInput, DriverUncheckedCreateWithoutNotificationsInput>
+  }
+
   export type TenantUpsertWithoutNotificationsInput = {
     update: XOR<TenantUpdateWithoutNotificationsInput, TenantUncheckedUpdateWithoutNotificationsInput>
     create: XOR<TenantCreateWithoutNotificationsInput, TenantUncheckedCreateWithoutNotificationsInput>
@@ -260653,6 +261202,203 @@ export namespace Prisma {
     acknowledgedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutAcknowledgedByNestedInput
     resolvedFleetIssues?: FleetIssueUncheckedUpdateManyWithoutResolvedByNestedInput
     uploadedPayoutInvoices?: FleetPayoutInvoiceUncheckedUpdateManyWithoutUploadedByNestedInput
+  }
+
+  export type DriverUpsertWithoutNotificationsInput = {
+    update: XOR<DriverUpdateWithoutNotificationsInput, DriverUncheckedUpdateWithoutNotificationsInput>
+    create: XOR<DriverCreateWithoutNotificationsInput, DriverUncheckedCreateWithoutNotificationsInput>
+    where?: DriverWhereInput
+  }
+
+  export type DriverUpdateToOneWithWhereWithoutNotificationsInput = {
+    where?: DriverWhereInput
+    data: XOR<DriverUpdateWithoutNotificationsInput, DriverUncheckedUpdateWithoutNotificationsInput>
+  }
+
+  export type DriverUpdateWithoutNotificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
+    platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
+    platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
+    utr?: NullableStringFieldUpdateOperationsInput | string | null
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    zone?: NullableStringFieldUpdateOperationsInput | string | null
+    batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
+    monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
+    offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    performanceTier?: NullableStringFieldUpdateOperationsInput | string | null
+    tierComputedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    throttledUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    healthCertExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    healthCertStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    workPermitExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workPermitStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    foodHandlingCertExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    foodHandlingCertStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    vehicleRegExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    vehicleRegStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    vehicleInsuranceExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    vehicleInsuranceStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    drivingLicenseExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    drivingLicenseStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    civilIdExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    civilIdStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
+    company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
+    supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
+    fleetPartner?: FleetPartnerUpdateOneWithoutDriversNestedInput
+    inventory?: DriverInventoryUpdateManyWithoutDriverNestedInput
+    shifts?: ShiftUpdateManyWithoutDriverNestedInput
+    attendanceRecords?: AttendanceRecordUpdateManyWithoutDriverNestedInput
+    orderLogs?: OrderLogUpdateManyWithoutDriverNestedInput
+    cashRecords?: CashRecordUpdateManyWithoutDriverNestedInput
+    cashTransactions?: CashTransactionUpdateManyWithoutDriverNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUpdateManyWithoutDriverNestedInput
+    vehicleInspections?: VehicleInspectionUpdateManyWithoutDriverNestedInput
+    maintenanceRecords?: MaintenanceRecordUpdateManyWithoutDriverNestedInput
+    aiScores?: AiScoreUpdateManyWithoutDriverNestedInput
+    alerts?: AlertUpdateManyWithoutDriverNestedInput
+    capturedOrders?: CapturedOrderUpdateManyWithoutDriverNestedInput
+    locationLogs?: LocationLogUpdateManyWithoutDriverNestedInput
+    appUsageLogs?: AppUsageLogUpdateManyWithoutDriverNestedInput
+    device?: DeviceUpdateOneWithoutDriverNestedInput
+    assignedVehicle?: VehicleUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUpdateManyWithoutDriverNestedInput
+    leaveRequests?: LeaveRequestUpdateManyWithoutDriverNestedInput
+    restrictions?: DriverRestrictionUpdateManyWithoutDriverNestedInput
+    tickets?: TicketUpdateManyWithoutDriverNestedInput
+    submittedTickets?: TicketUpdateManyWithoutSubmitterDriverNestedInput
+    talabatSessions?: TalabatSessionUpdateManyWithoutDriverNestedInput
+    talabatViolationEvents?: TalabatViolationEventUpdateManyWithoutDriverNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUpdateManyWithoutDriverNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUpdateManyWithoutDriverNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUpdateManyWithoutDriverNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUpdateManyWithoutDriverNestedInput
+    talabatDeliveries?: TalabatDeliveryUpdateManyWithoutDriverNestedInput
+    kpiRecords?: KpiRecordUpdateManyWithoutDriverNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUpdateManyWithoutDriverNestedInput
+    violations?: ViolationUpdateManyWithoutDriverNestedInput
+    penalties?: PenaltyUpdateManyWithoutDriverNestedInput
+    aiInsights?: AiInsightUpdateManyWithoutDriverNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUpdateManyWithoutDriverNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUpdateManyWithoutDriverNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUpdateManyWithoutDriverNestedInput
+    sims?: SimUpdateManyWithoutDriverNestedInput
+    performanceSnapshots?: PerformanceSnapshotUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUpdateManyWithoutDriverNestedInput
+    deliveryOrders?: DeliveryOrderUpdateManyWithoutDriverNestedInput
+    dispatchOffers?: DispatchOfferUpdateManyWithoutDriverNestedInput
+    remittances?: RemittanceUpdateManyWithoutDriverNestedInput
+    incidents?: IncidentUpdateManyWithoutDriverNestedInput
+    orderRatings?: OrderRatingUpdateManyWithoutDriverNestedInput
+    fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
+    fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
+    fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+  }
+
+  export type DriverUncheckedUpdateWithoutNotificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    companyId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    driverCode?: NullableStringFieldUpdateOperationsInput | string | null
+    platform?: EnumPlatformFieldUpdateOperationsInput | $Enums.Platform
+    platformDriverId?: NullableStringFieldUpdateOperationsInput | string | null
+    utr?: NullableStringFieldUpdateOperationsInput | string | null
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    zone?: NullableStringFieldUpdateOperationsInput | string | null
+    batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
+    outboundOptIn?: BoolFieldUpdateOperationsInput | boolean
+    smsOptOut?: BoolFieldUpdateOperationsInput | boolean
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlySalary?: NullableFloatFieldUpdateOperationsInput | number | null
+    monthlyOffDaysUsed?: IntFieldUpdateOperationsInput | number
+    offDaysResetMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    performanceTier?: NullableStringFieldUpdateOperationsInput | string | null
+    tierComputedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    throttledUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    healthCertExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    healthCertStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    workPermitExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workPermitStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    foodHandlingCertExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    foodHandlingCertStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    vehicleRegExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    vehicleRegStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    vehicleInsuranceExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    vehicleInsuranceStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    drivingLicenseExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    drivingLicenseStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    civilIdExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    civilIdStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
+    shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
+    attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutDriverNestedInput
+    orderLogs?: OrderLogUncheckedUpdateManyWithoutDriverNestedInput
+    cashRecords?: CashRecordUncheckedUpdateManyWithoutDriverNestedInput
+    cashTransactions?: CashTransactionUncheckedUpdateManyWithoutDriverNestedInput
+    pendingDuesLedgers?: PendingDuesLedgerUncheckedUpdateManyWithoutDriverNestedInput
+    vehicleInspections?: VehicleInspectionUncheckedUpdateManyWithoutDriverNestedInput
+    maintenanceRecords?: MaintenanceRecordUncheckedUpdateManyWithoutDriverNestedInput
+    aiScores?: AiScoreUncheckedUpdateManyWithoutDriverNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutDriverNestedInput
+    capturedOrders?: CapturedOrderUncheckedUpdateManyWithoutDriverNestedInput
+    locationLogs?: LocationLogUncheckedUpdateManyWithoutDriverNestedInput
+    appUsageLogs?: AppUsageLogUncheckedUpdateManyWithoutDriverNestedInput
+    device?: DeviceUncheckedUpdateOneWithoutDriverNestedInput
+    assignedVehicle?: VehicleUncheckedUpdateOneWithoutAssignedDriverNestedInput
+    vehicleAssignments?: VehicleDriverAssignmentUncheckedUpdateManyWithoutDriverNestedInput
+    leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutDriverNestedInput
+    restrictions?: DriverRestrictionUncheckedUpdateManyWithoutDriverNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutDriverNestedInput
+    submittedTickets?: TicketUncheckedUpdateManyWithoutSubmitterDriverNestedInput
+    talabatSessions?: TalabatSessionUncheckedUpdateManyWithoutDriverNestedInput
+    talabatViolationEvents?: TalabatViolationEventUncheckedUpdateManyWithoutDriverNestedInput
+    talabatDailyMetrics?: TalabatDailyMetricsUncheckedUpdateManyWithoutDriverNestedInput
+    deliverooDailyMetrics?: DeliverooDailyMetricsUncheckedUpdateManyWithoutDriverNestedInput
+    keetaDailyMetrics?: KeetaDailyMetricsUncheckedUpdateManyWithoutDriverNestedInput
+    americanaDailyOrders?: AmericanaDailyOrdersUncheckedUpdateManyWithoutDriverNestedInput
+    talabatDeliveries?: TalabatDeliveryUncheckedUpdateManyWithoutDriverNestedInput
+    kpiRecords?: KpiRecordUncheckedUpdateManyWithoutDriverNestedInput
+    courierOnlineSessions?: CourierOnlineSessionUncheckedUpdateManyWithoutDriverNestedInput
+    violations?: ViolationUncheckedUpdateManyWithoutDriverNestedInput
+    penalties?: PenaltyUncheckedUpdateManyWithoutDriverNestedInput
+    aiInsights?: AiInsightUncheckedUpdateManyWithoutDriverNestedInput
+    courierAttendanceSlots?: CourierAttendanceSlotUncheckedUpdateManyWithoutDriverNestedInput
+    courierIncentivePayouts?: CourierIncentivePayoutUncheckedUpdateManyWithoutDriverNestedInput
+    americanaStoreAssignments?: AmericanaStoreAssignmentUncheckedUpdateManyWithoutDriverNestedInput
+    sims?: SimUncheckedUpdateManyWithoutDriverNestedInput
+    performanceSnapshots?: PerformanceSnapshotUncheckedUpdateManyWithoutDriverNestedInput
+    batchHistory?: DriverBatchHistoryUncheckedUpdateManyWithoutDriverNestedInput
+    deliveryOrders?: DeliveryOrderUncheckedUpdateManyWithoutDriverNestedInput
+    dispatchOffers?: DispatchOfferUncheckedUpdateManyWithoutDriverNestedInput
+    remittances?: RemittanceUncheckedUpdateManyWithoutDriverNestedInput
+    incidents?: IncidentUncheckedUpdateManyWithoutDriverNestedInput
+    orderRatings?: OrderRatingUncheckedUpdateManyWithoutDriverNestedInput
+    fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
+    fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
+    fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutNotificationDeliveriesInput = {
@@ -261972,6 +262718,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutCourierOnlineSessionsInput = {
@@ -262064,6 +262811,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutCourierOnlineSessionsInput = {
@@ -262421,6 +263169,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutCourierOnlineSessionsInput = {
@@ -262513,6 +263262,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutViolationsInput = {
@@ -262848,6 +263598,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutViolationsInput = {
@@ -262940,6 +263691,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutViolationsInput = {
@@ -263364,6 +264116,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutViolationsInput = {
@@ -263456,6 +264209,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type PenaltyUpsertWithWhereUniqueWithoutViolationsInput = {
@@ -263823,6 +264577,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutPenaltiesInput = {
@@ -263915,6 +264670,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutPenaltiesInput = {
@@ -264321,6 +265077,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutPenaltiesInput = {
@@ -264413,6 +265170,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type ViolationUpsertWithWhereUniqueWithoutPenaltiesInput = {
@@ -265852,6 +266610,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutAiInsightsInput = {
@@ -265944,6 +266703,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutAiInsightsInput = {
@@ -266301,6 +267061,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutAiInsightsInput = {
@@ -266393,6 +267154,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutDemandHeatmapsInput = {
@@ -267712,6 +268474,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutCourierAttendanceSlotsInput = {
@@ -267804,6 +268567,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutCourierAttendanceSlotsInput = {
@@ -268161,6 +268925,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutCourierAttendanceSlotsInput = {
@@ -268253,6 +269018,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutKeetaAvailableSlotsInput = {
@@ -271235,6 +272001,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutCourierIncentivePayoutsInput = {
@@ -271327,6 +272094,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutCourierIncentivePayoutsInput = {
@@ -271729,6 +272497,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutCourierIncentivePayoutsInput = {
@@ -271821,6 +272590,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutBillingsInput = {
@@ -277595,6 +278365,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutPerformanceSnapshotsInput = {
@@ -277687,6 +278458,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutPerformanceSnapshotsInput = {
@@ -278044,6 +278816,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutPerformanceSnapshotsInput = {
@@ -278136,6 +278909,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutMetricEventsInput = {
@@ -287635,6 +288409,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutDeliveryOrdersInput = {
@@ -287727,6 +288502,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutDeliveryOrdersInput = {
@@ -288442,6 +289218,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutDeliveryOrdersInput = {
@@ -288534,6 +289311,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DeliveryZoneUpsertWithoutPickupOrdersInput = {
@@ -289186,6 +289964,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutDispatchOffersInput = {
@@ -289278,6 +290057,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutDispatchOffersInput = {
@@ -289748,6 +290528,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutDispatchOffersInput = {
@@ -289840,6 +290621,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutWalletAccountsInput = {
@@ -291863,6 +292645,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutRemittancesInput = {
@@ -291955,6 +292738,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutRemittancesInput = {
@@ -292371,6 +293155,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutRemittancesInput = {
@@ -292463,6 +293248,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type FleetPartnerUpsertWithoutRemittancesInput = {
@@ -293355,6 +294141,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutIncidentsInput = {
@@ -293447,6 +294234,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutIncidentsInput = {
@@ -293911,6 +294699,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutIncidentsInput = {
@@ -294003,6 +294792,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DeliveryOrderUpsertWithoutIncidentsInput = {
@@ -295774,6 +296564,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutOrderRatingsInput = {
@@ -295866,6 +296657,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutOrderRatingsInput = {
@@ -296336,6 +297128,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutOrderRatingsInput = {
@@ -296428,6 +297221,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type TenantCreateWithoutVendorStatementsInput = {
@@ -298228,6 +299022,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutFleetPartnerInput = {
@@ -298320,6 +299115,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutFleetPartnerInput = {
@@ -301232,6 +302028,7 @@ export namespace Prisma {
     orderRatings?: OrderRatingCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutFleetDocumentsInput = {
@@ -301324,6 +302121,7 @@ export namespace Prisma {
     orderRatings?: OrderRatingUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutFleetDocumentsInput = {
@@ -301948,6 +302746,7 @@ export namespace Prisma {
     orderRatings?: OrderRatingUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutFleetDocumentsInput = {
@@ -302040,6 +302839,7 @@ export namespace Prisma {
     orderRatings?: OrderRatingUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type UserUpsertWithoutUploadedFleetDocumentsInput = {
@@ -302648,6 +303448,7 @@ export namespace Prisma {
     orderRatings?: OrderRatingCreateNestedManyWithoutDriverInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutFleetChangeRequestsInput = {
@@ -302740,6 +303541,7 @@ export namespace Prisma {
     orderRatings?: OrderRatingUncheckedCreateNestedManyWithoutDriverInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetIssues?: FleetIssueUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutFleetChangeRequestsInput = {
@@ -303364,6 +304166,7 @@ export namespace Prisma {
     orderRatings?: OrderRatingUpdateManyWithoutDriverNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutFleetChangeRequestsInput = {
@@ -303456,6 +304259,7 @@ export namespace Prisma {
     orderRatings?: OrderRatingUncheckedUpdateManyWithoutDriverNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type UserUpsertWithoutRequestedFleetChangesInput = {
@@ -304064,6 +304868,7 @@ export namespace Prisma {
     orderRatings?: OrderRatingCreateNestedManyWithoutDriverInput
     fleetDocuments?: FleetDocumentCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestCreateNestedManyWithoutDriverInput
+    notifications?: NotificationCreateNestedManyWithoutDriverInput
   }
 
   export type DriverUncheckedCreateWithoutFleetIssuesInput = {
@@ -304156,6 +304961,7 @@ export namespace Prisma {
     orderRatings?: OrderRatingUncheckedCreateNestedManyWithoutDriverInput
     fleetDocuments?: FleetDocumentUncheckedCreateNestedManyWithoutDriverInput
     fleetChangeRequests?: FleetChangeRequestUncheckedCreateNestedManyWithoutDriverInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutDriverInput
   }
 
   export type DriverCreateOrConnectWithoutFleetIssuesInput = {
@@ -304780,6 +305586,7 @@ export namespace Prisma {
     orderRatings?: OrderRatingUpdateManyWithoutDriverNestedInput
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutFleetIssuesInput = {
@@ -304872,6 +305679,7 @@ export namespace Prisma {
     orderRatings?: OrderRatingUncheckedUpdateManyWithoutDriverNestedInput
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type UserUpsertWithoutAcknowledgedFleetIssuesInput = {
@@ -309940,6 +310748,7 @@ export namespace Prisma {
   export type NotificationCreateManyTenantInput = {
     id?: string
     userId?: string | null
+    driverId?: string | null
     title: string
     message: string
     type: string
@@ -311228,6 +312037,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutTenantInput = {
@@ -311320,6 +312130,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateManyWithoutTenantInput = {
@@ -312804,11 +313615,13 @@ export namespace Prisma {
     bodyAr?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneWithoutNotificationsNestedInput
+    driver?: DriverUpdateOneWithoutNotificationsNestedInput
   }
 
   export type NotificationUncheckedUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
@@ -312826,6 +313639,7 @@ export namespace Prisma {
   export type NotificationUncheckedUpdateManyWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
@@ -316221,6 +317035,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutCompanyInput = {
@@ -316313,6 +317128,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateManyWithoutCompanyInput = {
@@ -316991,6 +317807,7 @@ export namespace Prisma {
   export type NotificationCreateManyUserInput = {
     id?: string
     tenantId: string
+    driverId?: string | null
     title: string
     message: string
     type: string
@@ -317388,6 +318205,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutSupervisorInput = {
@@ -317480,6 +318298,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateManyWithoutSupervisorInput = {
@@ -317809,11 +318628,13 @@ export namespace Prisma {
     bodyAr?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutNotificationsNestedInput
+    driver?: DriverUpdateOneWithoutNotificationsNestedInput
   }
 
   export type NotificationUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
@@ -317831,6 +318652,7 @@ export namespace Prisma {
   export type NotificationUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
@@ -319358,6 +320180,24 @@ export namespace Prisma {
     resolutionNote?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type NotificationCreateManyDriverInput = {
+    id?: string
+    tenantId: string
+    userId?: string | null
+    title: string
+    message: string
+    type: string
+    severity?: string
+    sourceId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    read?: boolean
+    readAt?: Date | string | null
+    category?: string | null
+    titleAr?: string | null
+    bodyAr?: string | null
+    createdAt?: Date | string
   }
 
   export type DriverInventoryUpdateWithoutDriverInput = {
@@ -321695,6 +322535,60 @@ export namespace Prisma {
     resolutionNote?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationUpdateWithoutDriverInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    severity?: StringFieldUpdateOperationsInput | string
+    sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    read?: BoolFieldUpdateOperationsInput | boolean
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    titleAr?: NullableStringFieldUpdateOperationsInput | string | null
+    bodyAr?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutNotificationsNestedInput
+    user?: UserUpdateOneWithoutNotificationsNestedInput
+  }
+
+  export type NotificationUncheckedUpdateWithoutDriverInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    severity?: StringFieldUpdateOperationsInput | string
+    sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    read?: BoolFieldUpdateOperationsInput | boolean
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    titleAr?: NullableStringFieldUpdateOperationsInput | string | null
+    bodyAr?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationUncheckedUpdateManyWithoutDriverInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    severity?: StringFieldUpdateOperationsInput | string
+    sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    read?: BoolFieldUpdateOperationsInput | boolean
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    titleAr?: NullableStringFieldUpdateOperationsInput | string | null
+    bodyAr?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type VehicleInspectionCreateManyVehicleInput = {
@@ -326517,6 +327411,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateWithoutFleetPartnerInput = {
@@ -326609,6 +327504,7 @@ export namespace Prisma {
     fleetDocuments?: FleetDocumentUncheckedUpdateManyWithoutDriverNestedInput
     fleetChangeRequests?: FleetChangeRequestUncheckedUpdateManyWithoutDriverNestedInput
     fleetIssues?: FleetIssueUncheckedUpdateManyWithoutDriverNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutDriverNestedInput
   }
 
   export type DriverUncheckedUpdateManyWithoutFleetPartnerInput = {

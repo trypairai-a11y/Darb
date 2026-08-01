@@ -12,6 +12,7 @@ import { randomBytes, randomInt } from "crypto";
 import { DeliveryOrder, DeliveryOrderStatus, Prisma } from "../generated/prisma";
 import { prisma } from "../config";
 import { logger } from "../config/logger";
+import { notifyOrderAssigned } from "./driverNotificationService";
 import { quoteDelivery } from "./pricingService";
 import {
   isVendorOverCreditCap,
@@ -874,6 +875,10 @@ export async function assignDriverManually(args: {
   } catch (err) {
     logger.warn({ err, orderId, driverId }, "manual-assign driver push failed");
   }
+
+  // The push is a moment; the feed is the record of it. A driver who missed the
+  // banner, or whose notifications are off, still has somewhere to look.
+  notifyOrderAssigned({ tenantId, driverId, orderId, orderNumber: order.orderNumber });
 
   return updated ?? { ...order, status: "ASSIGNED", driverId, assignedAt: now };
 }

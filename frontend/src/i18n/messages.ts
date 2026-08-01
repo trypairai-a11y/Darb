@@ -1981,6 +1981,8 @@ export interface Messages {
     settleTitle: string;
     settleHint: string;
     fillAll: string;
+    /** Undo for Fill every driver (client request). */
+    clearAll: string;
     cashOnHand: string;
     settleAmount: string;
     inFull: string;
@@ -4394,6 +4396,7 @@ export const en: Messages = {
     settleHint:
       "Spends your deposited balance. It applies at once, and all the lines go through together or none of them do.",
     fillAll: "Fill every driver",
+    clearAll: "Clear all lines",
     cashOnHand: "Carrying",
     settleAmount: "Settle",
     inFull: "In full",
@@ -6773,6 +6776,7 @@ export const ar: Messages = {
     settleTitle: "تسديد نقد السائقين",
     settleHint: "يُخصم من رصيدك المودع. يُطبّق فوراً، وتمرّ كل البنود معاً أو لا يمرّ أي منها.",
     fillAll: "تعبئة كل السائقين",
+    clearAll: "مسح كل البنود",
     cashOnHand: "بحوزته",
     settleAmount: "المبلغ المسدّد",
     inFull: "بالكامل",

@@ -45,6 +45,7 @@ import {
 // MyFatoorah call; a second copy here is how the two rails drift apart the day
 // somebody changes a header.
 import { payUrl, requestGatewayLink } from "./topUpService";
+import { notifyCashSettled } from "../driverNotificationService";
 
 /** Validation failure — routes map instances to HTTP 400. */
 export class FleetCashError extends WalletError {}
@@ -768,6 +769,14 @@ export async function settleDriverCash(opts: {
   // so anything already listening (the driver app, the activity feed) sees a
   // company settlement without knowing this feature exists.
   for (const line of result.lines) {
+    // The driver did nothing to cause this, so an unexplained balance drop is
+    // exactly what would send them to ring a supervisor. Tell them instead.
+    notifyCashSettled({
+      tenantId: opts.tenantId,
+      driverId: line.driverId,
+      amountKwd: line.amountKwd,
+      remittanceId: line.remittanceId,
+    });
     publishEvent({
       type: "remittance.recorded",
       tenantId: opts.tenantId,

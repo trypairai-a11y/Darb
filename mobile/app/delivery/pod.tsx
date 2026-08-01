@@ -19,7 +19,19 @@ import { hydrateNow } from "../../src/services/offerChannel";
 import { useDriverStore } from "../../src/store/driverStore";
 import { useTheme, type Palette, space, radius, continuous, shadow } from "../../src/theme";
 
-type PodMethod = "PIN" | "PHOTO";
+/**
+ * Proof of delivery is a photo, and only a photo (client request, 2026-08-01).
+ *
+ * The PIN was the primary method: the driver asked the customer for a 4-digit
+ * code and typed it in. It is gone from the driver's side because it stalls the
+ * handover at the door, and it fails in exactly the situations where a delivery
+ * is already awkward, a customer who never read the message, a doorman taking
+ * the bag, a phone with no signal.
+ *
+ * The server still knows about PIN and still issues one on the order, so the
+ * tracking page and any historic delivery are unaffected. This screen simply
+ * never offers it, which is why there is no method switch left to render.
+ */
 type DoneState = null | "delivered" | "queued";
 
 async function podCoords(): Promise<{ lat: number; lng: number }> {
@@ -46,20 +58,13 @@ export default function PodScreen() {
 
   const codAmount = Number(order?.codAmountKwd ?? 0);
   const [codConfirmed, setCodConfirmed] = useState(false);
-  const [method, setMethod] = useState<PodMethod>(online ? "PIN" : "PHOTO");
-  const [pin, setPin] = useState("");
-  const [pinError, setPinError] = useState<string | null>(null);
-  const [pinMisses, setPinMisses] = useState(0);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<DoneState>(null);
   const cameraRef = useRef<CameraView>(null);
-  const pinInputRef = useRef<TextInput>(null);
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
 
-  const pinLocked = pinMisses >= 3;
-  const pinAvailable = online && !pinLocked;
   const codGateOpen = codAmount <= 0 || codConfirmed;
 
   const finish = useCallback(
@@ -74,52 +79,6 @@ export default function PodScreen() {
     },
     [completeOrder, router],
   );
-
-  const submitPin = useCallback(async () => {
-    if (!order || pin.length !== 4 || submitting || !codGateOpen || !pinAvailable) return;
-    setSubmitting(true);
-    setPinError(null);
-    try {
-      const coords = await podCoords();
-      const res = await postPod(order.id, {
-        method: "PIN",
-        pin,
-        codCollectedKwd: codAmount > 0 ? codAmount : undefined,
-        lat: coords.lat,
-        lng: coords.lng,
-        idempotencyKey: `pod:${order.id}`,
-      });
-      if (res?.wallet) setWallet(res.wallet);
-      finish("delivered");
-    } catch (e: any) {
-      if (isApiError(e, 422)) {
-        const attemptsLeft = typeof e.body?.attemptsLeft === "number" ? e.body.attemptsLeft : Math.max(0, 2 - pinMisses);
-        const misses = attemptsLeft > 0 ? 3 - attemptsLeft : 3;
-        setPinMisses(misses);
-        setPin("");
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
-        if (misses >= 3 || attemptsLeft <= 0) {
-          setPinMisses(3);
-          setMethod("PHOTO"); // server forces photo-only after 3 misses
-          setPinError(tr("pod.pin_locked"));
-        } else {
-          setPinError(tr("pod.pin_mismatch", { attemptsLeft }));
-        }
-      } else if (isApiError(e, 409)) {
-        // Already delivered / state moved on — adopt the server's truth.
-        await hydrateNow();
-        finish("delivered");
-      } else if (isApiError(e)) {
-        setPinError(e.message);
-      } else {
-        // Network down: PIN can't be verified offline — steer to photo.
-        setMethod("PHOTO");
-        setPinError(tr("pod.pin_offline"));
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  }, [order, pin, submitting, codGateOpen, pinAvailable, codAmount, pinMisses, setWallet, finish]);
 
   const capturePhoto = useCallback(async () => {
     // Web: skip the in-app camera entirely — a file input with
@@ -277,59 +236,6 @@ export default function PodScreen() {
         ) : null}
 
         <View style={{ marginTop: space.lg, opacity: codGateOpen ? 1 : 0.35 }} pointerEvents={codGateOpen ? "auto" : "none"}>
-          <Segmented<PodMethod>
-            options={[
-              { value: "PIN", label: tr("pod.method_pin") },
-              { value: "PHOTO", label: tr("pod.method_photo") },
-            ]}
-            value={method}
-            onChange={(v) => {
-              if (v === "PIN" && !pinAvailable) return;
-              setMethod(v);
-            }}
-          />
-
-          {method === "PIN" ? (
-            <View style={{ marginTop: space.xl }}>
-              <Text style={[t.subheadline, { color: c.secondaryLabel, textAlign: "center" }]}>
-                {pinAvailable ? tr("pod.pin_hint") : pinLocked ? tr("pod.pin_locked") : tr("pod.pin_offline")}
-              </Text>
-              <TouchableOpacity
-                style={styles.pinRow}
-                activeOpacity={0.9}
-                onPress={() => pinInputRef.current?.focus()}
-                disabled={!pinAvailable}
-              >
-                {[0, 1, 2, 3].map((i) => (
-                  <View key={i} style={[styles.pinBox, pin.length === i && pinAvailable && { borderColor: c.tint }]}>
-                    <Text style={[t.hero, { fontSize: 34, lineHeight: 40 }]}>{pin[i] ?? ""}</Text>
-                  </View>
-                ))}
-              </TouchableOpacity>
-              <TextInput
-                ref={pinInputRef}
-                style={styles.hiddenInput}
-                value={pin}
-                onChangeText={(v) => {
-                  setPinError(null);
-                  setPin(v.replace(/\D/g, "").slice(0, 4));
-                }}
-                keyboardType="number-pad"
-                maxLength={4}
-                editable={pinAvailable && !submitting}
-                autoFocus={pinAvailable}
-              />
-              {pinError ? (
-                <Text style={[t.footnote, { color: c.red, textAlign: "center", marginTop: space.sm }]}>{pinError}</Text>
-              ) : null}
-              <Button
-                title={submitting ? tr("pod.submitting") : tr("pod.confirm_delivery")}
-                onPress={() => void submitPin()}
-                disabled={pin.length !== 4 || submitting || !pinAvailable || !codGateOpen}
-                style={{ marginTop: space.xl }}
-              />
-            </View>
-          ) : (
             <View style={{ marginTop: space.xl }}>
               <Text style={[t.subheadline, { color: c.secondaryLabel, textAlign: "center" }]}>
                 {tr("pod.photo_hint")}
@@ -362,7 +268,6 @@ export default function PodScreen() {
                 style={{ marginTop: space.xl }}
               />
             </View>
-          )}
         </View>
 
         {submitting ? <ActivityIndicator size="small" color={c.tint} style={{ marginTop: space.lg }} /> : null}
