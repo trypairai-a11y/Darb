@@ -17,6 +17,11 @@ import { getMockPrisma, resetAllMocks } from "../setup";
 // `{tenantId}/{orderId}/{deviceId}/<ts>.jpg` shape; we don't unit-test the
 // AWS SDK itself.
 jest.mock("../../services/r2Service", () => ({
+  // The route asks whether storage exists before it presigns, because an
+  // environment without R2 now falls back to storing the photo in the database
+  // instead of throwing. A mock missing this reports "not configured" at best
+  // and throws at worst, which is what this test caught.
+  isR2Configured: jest.fn(() => true),
   presignPutUrl: jest.fn(
     async (key: string) => `https://r2.test.invalid/${key}?signature=stub`,
   ),
