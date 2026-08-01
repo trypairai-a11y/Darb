@@ -126,14 +126,14 @@ export default function RootLayout() {
   }, []);
 
   if ((!fontsLoaded && !fontError && !timedOut) || (!langHydrated && !timedOut)) {
-    return <View style={{ flex: 1, backgroundColor: "#0A0B0D" }} />;
+    return <View style={{ flex: 1, backgroundColor: "#FBFAF8" }} />;
   }
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <DeliveryLoopController />
-      <Stack key={lang} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#0A0B0D" } }}>
+      <Stack key={lang} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#FBFAF8" } }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="enrollment" />
         <Stack.Screen name="(tabs)" />

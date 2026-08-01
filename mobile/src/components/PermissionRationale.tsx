@@ -111,7 +111,7 @@ export function PermissionRationale({ visible, onComplete }: PermissionRationale
 
         {(stage === "fg-asking" || stage === "bg-asking") && (
           <View style={styles.body}>
-            <ActivityIndicator size="large" color="#F97316" />
+            <ActivityIndicator size="large" color="#1D4E89" />
             <Text style={[styles.text, styles.center]}>
               {stage === "fg-asking"
                 ? "Waiting for location permission..."
@@ -142,12 +142,12 @@ export function PermissionRationale({ visible, onComplete }: PermissionRationale
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   body: { flex: 1, padding: 24, justifyContent: "center" },
-  title: { fontSize: 22, fontWeight: "700", marginBottom: 16, color: "#1A1A2E" },
+  title: { fontSize: 22, fontWeight: "700", marginBottom: 16, color: "#302E2D" },
   text: { fontSize: 16, lineHeight: 24, color: "#555", marginBottom: 32 },
-  emphasis: { fontWeight: "700", color: "#1A1A2E" },
+  emphasis: { fontWeight: "700", color: "#302E2D" },
   center: { textAlign: "center", marginTop: 16 },
   primaryBtn: {
-    backgroundColor: "#F97316",
+    backgroundColor: "#1D4E89",
     borderRadius: 12,
     padding: 18,
     alignItems: "center",

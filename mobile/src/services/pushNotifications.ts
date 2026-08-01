@@ -33,14 +33,14 @@ async function ensureAndroidChannels(): Promise<void> {
     name: "Darb dispatch",
     importance: Notifications.AndroidImportance.HIGH,
     vibrationPattern: [0, 250, 250, 250],
-    lightColor: "#047857",
+    lightColor: "#468254",
   });
   await Notifications.setNotificationChannelAsync("darb-offers", {
     name: "Delivery offers",
     importance: Notifications.AndroidImportance.MAX,
     sound: "default",
     vibrationPattern: [0, 400, 200, 400, 200, 600],
-    lightColor: "#C6FF3A",
+    lightColor: "#F5C518",
     enableVibrate: true,
     bypassDnd: true,
     lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,

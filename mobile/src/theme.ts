@@ -1,15 +1,15 @@
 /**
- * theme.ts — the driver app's design system, on Darb's brand.
+ * theme.ts — the driver app on Darb's design system.
  *
- * The canvas stays dark. That is not a departure from the brand, it is the one
- * screen in the product used one-handed, at night, in a vehicle, for a whole
- * shift: a sand-white surface at 3am is glare, and it costs battery on OLED.
- * Everything that carries brand identity is the brand's — the accent is Darb
- * yellow (#F5C518, the dot in the mark), navy appears where the web uses it,
- * and the type is the same system stack the web runs rather than two
- * downloaded families nobody else in the product uses.
+ * The same palette the web platform runs, token for token: sand surfaces,
+ * brand navy for primary, the yellow dot as the accent, and Darb's own
+ * semantic colours (moss for success, clay for warning). The type is the
+ * platform stack, not two downloaded families that appear nowhere else.
  *
- * Components/screens consume `useTheme()` → { c (palette), t (type ramp) }.
+ * This screen used to be a dark, lime-accented system of its own. It is one
+ * product, so it is one look.
+ *
+ * Components/screens consume `useTheme()` -> { c (palette), t (type ramp) }.
  */
 
 import { type TextStyle, type ViewStyle } from "react-native";
@@ -33,75 +33,76 @@ export const fonts = {
 export const fontFamily = fonts.bodyMedium;
 
 const C = {
-  // Signature accent — Darb yellow, the dot in the wordmark and the sun in the
-  // mark. It was electric lime, which belonged to no other Darb surface.
+  // Signature accent — Darb yellow, the dot in the wordmark.
   tint: "#F5C518",
   tintPressed: "#DCB015",
-  tintFill: "rgba(245,197,24,0.14)",
-  onTint: "#0A1220", // brand navy-900 text on the yellow accent
+  tintFill: "rgba(245,197,24,0.16)",
+  onTint: "#0A1220",
 
-  // Brand navy, for the places the web uses primary rather than the accent.
+  // Brand navy: the web's `primary`.
   navy: "#1D4E89",
-  navyFill: "rgba(29,78,137,0.18)",
+  navyPressed: "#163C6E",
+  navyFill: "rgba(29,78,137,0.10)",
+  onNavy: "#FFFFFF",
 
-  // System accents (dark-tuned)
-  blue: "#5AC8FA",
-  green: "#39E08A",
-  greenFill: "rgba(57,224,138,0.14)",
-  red: "#FF5C52",
-  redFill: "rgba(255,92,82,0.15)",
-  orange: "#FFB84D",
-  orangeFill: "rgba(255,184,77,0.14)",
-  yellow: "#FFD60A",
-  indigo: "#7D7BFF",
-  purple: "#CB8CFF",
-  teal: "#5FE3D0",
+  // Semantic accents, taken from the web's tokens rather than invented.
+  blue: "#3860BE",
+  green: "#468254",
+  greenFill: "rgba(70,130,84,0.12)",
+  red: "#C0392B",
+  redFill: "rgba(192,57,43,0.10)",
+  orange: "#C57B59",
+  orangeFill: "rgba(197,123,89,0.12)",
+  yellow: "#F5C518",
+  indigo: "#27455C",
+  purple: "#7D5BA6",
+  teal: "#2F8F83",
 
-  // Neutral ramp on dark
-  gray: "#8A8F98",
-  gray2: "#6B7079",
-  gray3: "#454A52",
-  gray4: "#33373E",
-  gray5: "#23262C",
-  gray6: "#15171B",
+  // Neutral ramp — the web's sand scale.
+  gray: "#8A7E72",
+  gray2: "#A99E92",
+  gray3: "#C5BBB1",
+  gray4: "#E4E0DC",
+  gray5: "#EDEAE5",
+  gray6: "#F6F5F3",
 
   // Text
-  label: "#F3F5F8",
-  secondaryLabel: "rgba(235,240,250,0.62)",
-  tertiaryLabel: "rgba(235,240,250,0.34)",
-  quaternaryLabel: "rgba(235,240,250,0.18)",
-  placeholder: "rgba(235,240,250,0.34)",
+  label: "#302E2D",
+  secondaryLabel: "rgba(48,46,45,0.66)",
+  tertiaryLabel: "rgba(48,46,45,0.44)",
+  quaternaryLabel: "rgba(48,46,45,0.24)",
+  placeholder: "rgba(48,46,45,0.40)",
 
   // Structure
-  separator: "rgba(255,255,255,0.08)",
-  opaqueSeparator: "#23262C",
-  hairline: "rgba(255,255,255,0.07)",
+  separator: "rgba(48,46,45,0.10)",
+  opaqueSeparator: "#E4E0DC",
+  hairline: "rgba(48,46,45,0.08)",
 
-  // Backgrounds / surfaces
-  systemBackground: "#0A0B0D",
-  groupedBackground: "#0A0B0D",
-  groupedSecondary: "#15171B",
-  surfaceElevated: "#1B1E24",
+  // Backgrounds / surfaces — sand-50 canvas, white cards, as on the web.
+  systemBackground: "#FBFAF8",
+  groupedBackground: "#F6F5F3",
+  groupedSecondary: "#FFFFFF",
+  surfaceElevated: "#FFFFFF",
 
-  // Atmosphere gradient stops + accent glow
-  bgTop: "#13161B",
-  bgBottom: "#08090B",
-  glow: "rgba(198,255,58,0.16)",
+  // The web's sand gradient.
+  bgTop: "#F6F5F3",
+  bgBottom: "#EDEAE5",
+  glow: "rgba(245,197,24,0.18)",
 
   // Fills
-  systemFill: "rgba(255,255,255,0.12)",
-  secondaryFill: "rgba(255,255,255,0.09)",
-  tertiaryFill: "rgba(255,255,255,0.06)",
-  quaternaryFill: "rgba(255,255,255,0.04)",
+  systemFill: "rgba(48,46,45,0.10)",
+  secondaryFill: "rgba(48,46,45,0.07)",
+  tertiaryFill: "rgba(48,46,45,0.05)",
+  quaternaryFill: "rgba(48,46,45,0.03)",
 
   // Semantic callout surfaces
-  warnBg: "rgba(255,184,77,0.12)",
-  warnLabel: "#FFCE85",
-  warnLabel2: "#E0A33A",
-  successBg: "rgba(57,224,138,0.12)",
-  successLabel: "#8DEFB6",
-  successLabel2: "#4FB877",
-  unreadBg: "rgba(198,255,58,0.05)",
+  warnBg: "rgba(197,123,89,0.12)",
+  warnLabel: "#8A4A2C",
+  warnLabel2: "#C57B59",
+  successBg: "rgba(70,130,84,0.12)",
+  successLabel: "#2F5D3B",
+  successLabel2: "#468254",
+  unreadBg: "rgba(245,197,24,0.08)",
 
   white: "#FFFFFF",
 };
@@ -147,7 +148,7 @@ export const continuous = { borderCurve: "continuous" as const };
 export const shadow: Record<"card" | "floating" | "glow", ViewStyle> = {
   card: { shadowColor: "#000", shadowOpacity: 0.4, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 3 },
   floating: { shadowColor: "#000", shadowOpacity: 0.5, shadowRadius: 24, shadowOffset: { width: 0, height: 12 }, elevation: 8 },
-  glow: { shadowColor: "#C6FF3A", shadowOpacity: 0.45, shadowRadius: 20, shadowOffset: { width: 0, height: 6 }, elevation: 6 },
+  glow: { shadowColor: "#F5C518", shadowOpacity: 0.30, shadowRadius: 18, shadowOffset: { width: 0, height: 6 }, elevation: 6 },
 };
 
 export const hitSlop = { top: 8, bottom: 8, left: 8, right: 8 };

@@ -118,7 +118,7 @@ export async function startBeacon(): Promise<StartBeaconResult> {
     foregroundService: {
       notificationTitle: "Darb is tracking your shift",
       notificationBody: "Active until you tap End Shift",
-      notificationColor: "#F97316",
+      notificationColor: "#1D4E89",
       killServiceOnDestroy: false,
     },
   });
