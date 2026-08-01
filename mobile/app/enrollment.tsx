@@ -13,13 +13,20 @@ export default function EnrollmentScreen() {
   const { c, t } = useTheme();
   const styles = useMemo(() => makeStyles(c), [c]);
   const [code, setCode] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // The demo driver needs no phone; a real driver does. Enrolment answers with
+  // a device credential, and a Darb ID on its own is sequential.
+  const isDemo = (next: string) => next.trim().toUpperCase() === "DEMO";
 
   async function handleEnroll(nextCode = code) {
     if (!nextCode.trim()) return;
+    if (!isDemo(nextCode) && !phone.trim()) return;
     setLoading(true);
     try {
       await register(nextCode.trim(), {
+        phone: isDemo(nextCode) ? undefined : phone.trim(),
         model: Device.modelName || "unknown",
         // Platform.Version is undefined on web — send a stable label instead.
         osVersion: `${Platform.OS} ${Platform.Version ?? "web"}`,
@@ -53,7 +60,29 @@ export default function EnrollmentScreen() {
           autoCorrect={false}
         />
 
-        <Button title={loading ? tr("enroll.cta_busy") : tr("enroll.cta")} onPress={() => handleEnroll()} disabled={loading} style={{ marginTop: space.lg }} />
+        <TextInput
+          style={[styles.input, { marginTop: space.md }]}
+          placeholder={tr("enroll.phone_placeholder")}
+          placeholderTextColor={c.placeholder}
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+          autoCorrect={false}
+        />
+
+        {/* Where the Darb ID comes from. The old screen asked for a code that
+            appeared on no Darb screen, so nobody could tell a driver what to
+            type. This one names the roster. */}
+        <Text style={[t.footnote, { color: c.tertiaryLabel, textAlign: "center", marginTop: space.md }]}>
+          {tr("enroll.hint")}
+        </Text>
+
+        <Button
+          title={loading ? tr("enroll.cta_busy") : tr("enroll.cta")}
+          onPress={() => handleEnroll()}
+          disabled={loading || !code.trim() || !phone.trim()}
+          style={{ marginTop: space.lg }}
+        />
         {/* Demo is a REAL enrollment against the backend's DEMO code — same
             device-token auth, same live delivery loop, demo tenant data. */}
         <Button title={tr("enroll.demo")} variant="tinted" onPress={() => handleEnroll("DEMO")} disabled={loading} style={{ marginTop: space.md }} />

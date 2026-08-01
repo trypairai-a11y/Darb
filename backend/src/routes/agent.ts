@@ -38,19 +38,35 @@ function _gcIdempotency() {
 // Agent endpoints don't use standard auth - they use device-based auth
 router.post("/register", async (req: Request, res: Response) => {
   try {
-    const { enrollmentCode, imei, model, osVersion } = req.body;
+    const { enrollmentCode, phone, imei, model, osVersion } = req.body;
     const normalizedCode = String(enrollmentCode || "").trim();
     // The DEMO code resolves a real ACTIVE driver and hands back their device
     // token to an unauthenticated caller, so it is off unless somebody turns it
     // on. Same switch as the demo login (security review, 2026-08).
-    const isDemoCode =
-      normalizedCode.toUpperCase() === "DEMO" && process.env.DEMO_LOGIN_ENABLED === "true";
+    const isDemoCodeRequested = normalizedCode.toUpperCase() === "DEMO";
+    const isDemoCode = isDemoCodeRequested && process.env.DEMO_LOGIN_ENABLED === "true";
 
     const demoTenant = isDemoCode
       ? await prisma.tenant.findFirst({ where: { name: "Osama Fleet Management" } })
       : null;
 
-    // Find driver by enrollment code. Demo code is scoped to the seeded demo tenant only.
+    /**
+     * The enrollment code is the driver's Darb ID.
+     *
+     * It used to be `platformDriverId` alone — the Keeta/Talabat identifier a
+     * driver inherited from the aggregator era. That number appears on no Darb
+     * screen, so nobody could tell a driver what to type, and the 20 drivers
+     * onboarded through the fleet portal have none at all: they could never
+     * enrol. `driverCode` ("DRB-0065") is the one every surface already shows,
+     * including the roster column a fleet supervisor reads from.
+     *
+     * The phone number is a second factor, and it is not optional. This
+     * endpoint is unauthenticated and answers with the driver's device token,
+     * so accepting a sequential id on its own would let anyone walk DRB-0001
+     * upwards and collect the fleet. The legacy platform ids stay accepted so
+     * drivers already enrolled on them are not stranded.
+     */
+    const normalizedPhone = String(phone || "").replace(/[\s-]/g, "").trim();
     const driver = await prisma.driver.findFirst({
       where: isDemoCode
         ? {
@@ -58,7 +74,17 @@ router.post("/register", async (req: Request, res: Response) => {
             status: "ACTIVE",
             name: { contains: "Qadir", mode: "insensitive" },
           }
-        : { platformDriverId: normalizedCode },
+        : normalizedPhone
+          ? {
+              phone: { endsWith: normalizedPhone.slice(-8) },
+              OR: [
+                { driverCode: { equals: normalizedCode, mode: "insensitive" } },
+                { platformDriverId: normalizedCode },
+              ],
+            }
+          : // No phone, no enrolment. Stated as its own case so the error below
+            // can say which half is missing.
+            { id: "__phone-required__" },
       include: { company: true },
     }) || (isDemoCode
       ? await prisma.driver.findFirst({
@@ -67,7 +93,22 @@ router.post("/register", async (req: Request, res: Response) => {
           orderBy: { createdAt: "asc" },
         })
       : null);
-    if (!driver) { res.status(404).json({ error: "Invalid enrollment code" }); return; }
+    if (!driver) {
+      if (isDemoCodeRequested && !isDemoCode) {
+        res.status(404).json({
+          error: "The demo driver is switched off on this environment.",
+          code: "DEMO_DISABLED",
+        });
+        return;
+      }
+      res.status(404).json({
+        error: normalizedPhone
+          ? "That Darb ID and phone number do not match a driver. Ask your supervisor to check the roster."
+          : "Enter your Darb ID and the phone number registered with Darb.",
+        code: normalizedPhone ? "NO_MATCH" : "PHONE_REQUIRED",
+      });
+      return;
+    }
 
     const deviceImei =
       String(imei || "").trim() ||

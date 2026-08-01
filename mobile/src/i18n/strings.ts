@@ -30,13 +30,15 @@ const EN: Record<string, string> = {
   // ─── Enrollment / boot ───
   "enroll.kicker": "DARB DRIVER",
   "enroll.title": "Start your shift with confidence.",
-  "enroll.subtitle": "Enter the code from your supervisor, or preview the app with the demo driver.",
-  "enroll.placeholder": "Enrollment code",
+  "enroll.subtitle": "Enter your Darb ID and the phone number registered with Darb.",
+  "enroll.placeholder": "Darb ID, for example DRB-0065",
+  "enroll.phone_placeholder": "Phone number",
+  "enroll.hint": "Your Darb ID is on the driver roster. Your supervisor can read it to you.",
   "enroll.cta": "Enroll device",
   "enroll.cta_busy": "Enrolling…",
   "enroll.demo": "Use demo driver",
   "enroll.failed_title": "Enrollment failed",
-  "enroll.failed_body": "Check your code and try again",
+  "enroll.failed_body": "Check your Darb ID and phone number and try again",
 
   // ─── Tabs ───
   "tabs.home": "Home",

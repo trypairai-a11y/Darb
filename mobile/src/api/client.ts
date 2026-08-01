@@ -105,6 +105,9 @@ export async function register(enrollmentCode: string, deviceInfo: {
   model: string;
   osVersion: string;
   appVersion: string;
+  /** The number registered with Darb. Required with a Darb ID, since that id
+   *  is sequential and this endpoint answers with a device credential. */
+  phone?: string;
 }): Promise<{ token: string; deviceId: string; driverId: string }> {
   const data = await agentFetch<any>("/api/agent/register", {
     method: "POST",
