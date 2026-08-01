@@ -4,8 +4,9 @@ import { Stack, usePathname, useRouter } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import * as SecureStore from "../src/services/deviceStorage";
-import { useFonts, BricolageGrotesque_700Bold, BricolageGrotesque_800ExtraBold } from "@expo-google-fonts/bricolage-grotesque";
-import { Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold, Manrope_800ExtraBold } from "@expo-google-fonts/manrope";
+// No downloaded faces: the app runs the same system stack the web platform
+// does (SF Pro on Apple, system UI elsewhere, Almarai for Arabic), so there is
+// nothing to gate a first render on and two fewer downloads on mobile data.
 import { setLastTab, type PlatformHint } from "../src/services/platformGuess";
 import { hydrateNow, startOfferChannel, stopOfferChannel } from "../src/services/offerChannel";
 import { flushEventOutbox } from "../src/services/eventOutbox";
@@ -105,14 +106,8 @@ export default function RootLayout() {
   // language change re-renders every mounted screen without an app restart.
   const lang = useLanguageStore((s) => s.lang);
   const langHydrated = useLanguageStore((s) => s.hydrated);
-  const [fontsLoaded, fontError] = useFonts({
-    BricolageGrotesque_700Bold,
-    BricolageGrotesque_800ExtraBold,
-    Manrope_500Medium,
-    Manrope_600SemiBold,
-    Manrope_700Bold,
-    Manrope_800ExtraBold,
-  });
+  const fontsLoaded = true;
+  const fontError = null;
   // Fail-open: never block the UI on fonts. Render once they load or error, and
   // hard-stop the gate after 1.2s so a slow/failed web font falls back to system.
   const [timedOut, setTimedOut] = useState(false);

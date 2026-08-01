@@ -1,10 +1,13 @@
 /**
- * theme.ts — "Darb Velocity" design system.
+ * theme.ts — the driver app's design system, on Darb's brand.
  *
- * A premium dark motion-telemetry aesthetic for couriers: a near-black canvas
- * with atmosphere, an electric-lime signature accent, expressive Bricolage
- * Grotesque display type over Manrope body, hairline-bordered surfaces and
- * glowing accents. One confident direction — dark by design.
+ * The canvas stays dark. That is not a departure from the brand, it is the one
+ * screen in the product used one-handed, at night, in a vehicle, for a whole
+ * shift: a sand-white surface at 3am is glare, and it costs battery on OLED.
+ * Everything that carries brand identity is the brand's — the accent is Darb
+ * yellow (#F5C518, the dot in the mark), navy appears where the web uses it,
+ * and the type is the same system stack the web runs rather than two
+ * downloaded families nobody else in the product uses.
  *
  * Components/screens consume `useTheme()` → { c (palette), t (type ramp) }.
  */
@@ -12,23 +15,34 @@
 import { type TextStyle, type ViewStyle } from "react-native";
 
 // ─── Type families (loaded at the root via expo-font / @expo-google-fonts) ───
+/**
+ * The web platform's stack: SF Pro on Apple, the system UI face elsewhere,
+ * Almarai for Arabic. Undefined means "the platform's own", which is exactly
+ * what `font-sans` resolves to in the web app, and it removes two font
+ * downloads from a screen a courier opens on mobile data.
+ */
 export const fonts = {
-  display: "BricolageGrotesque_700Bold",
-  displayX: "BricolageGrotesque_800ExtraBold",
-  bodyMedium: "Manrope_500Medium",
-  bodySemibold: "Manrope_600SemiBold",
-  bodyBold: "Manrope_700Bold",
-  bodyX: "Manrope_800ExtraBold",
+  display: undefined as string | undefined,
+  displayX: undefined as string | undefined,
+  bodyMedium: undefined as string | undefined,
+  bodySemibold: undefined as string | undefined,
+  bodyBold: undefined as string | undefined,
+  bodyX: undefined as string | undefined,
 };
 // Kept for any legacy reference.
 export const fontFamily = fonts.bodyMedium;
 
 const C = {
-  // Signature accent — electric lime (speed / earnings / "live")
-  tint: "#C6FF3A",
-  tintPressed: "#B4F525",
-  tintFill: "rgba(198,255,58,0.14)",
-  onTint: "#0B0E05", // near-black text on the lime accent
+  // Signature accent — Darb yellow, the dot in the wordmark and the sun in the
+  // mark. It was electric lime, which belonged to no other Darb surface.
+  tint: "#F5C518",
+  tintPressed: "#DCB015",
+  tintFill: "rgba(245,197,24,0.14)",
+  onTint: "#0A1220", // brand navy-900 text on the yellow accent
+
+  // Brand navy, for the places the web uses primary rather than the accent.
+  navy: "#1D4E89",
+  navyFill: "rgba(29,78,137,0.18)",
 
   // System accents (dark-tuned)
   blue: "#5AC8FA",
