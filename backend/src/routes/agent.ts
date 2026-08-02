@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import type { TicketCategory, TicketPriority } from "../generated/prisma";
 import { prisma } from "../config";
 import { upload } from "../utils/upload";
 import { nextTicketNumber } from "../utils/ticketNumber";
@@ -1511,7 +1512,17 @@ router.post("/commands/:id/ack", async (req: Request, res: Response) => {
 // Identity is resolved via deviceId (mirrors the selfie route). No bearer
 // auth — the agent_token in SecureStore is a stub the server doesn't validate.
 
-const VALID_TICKET_CATEGORIES = new Set([
+/**
+ * Typed as TicketCategory[] deliberately: this list and the Prisma enum drifted
+ * apart once already and nothing complained. SHIFT_REQUEST, ORDER_ISSUE and
+ * DRIVER_ISSUE were accepted here while the enum lacked them, so every
+ * submission passed validation and then died inside ticket.create — a driver
+ * saw an error and no shift request was ever recorded in production. The
+ * annotation is what makes tsc, rather than a live probe, catch the next one.
+ * Set<string> is built from it so the `.has(category)` check below still takes
+ * the raw request body.
+ */
+const TICKET_CATEGORIES: TicketCategory[] = [
   "VEHICLE_REPAIR",
   "EQUIPMENT_REQUEST",
   "LEAVE_REQUEST",
@@ -1529,8 +1540,10 @@ const VALID_TICKET_CATEGORIES = new Set([
   "ORDER_ISSUE",
   "DRIVER_ISSUE",
   "OTHER",
-]);
-const VALID_TICKET_PRIORITIES = new Set(["LOW", "MEDIUM", "HIGH", "URGENT"]);
+];
+const VALID_TICKET_CATEGORIES = new Set<string>(TICKET_CATEGORIES);
+const TICKET_PRIORITIES: TicketPriority[] = ["LOW", "MEDIUM", "HIGH", "URGENT"];
+const VALID_TICKET_PRIORITIES = new Set<string>(TICKET_PRIORITIES);
 
 const driverTicketSelect = {
   id: true,
