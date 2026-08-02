@@ -182,7 +182,7 @@ export default function FleetDepositQueue({ status = "PENDING" }: FleetDepositQu
                     type="button"
                     disabled={busy}
                     onClick={() => confirm(row)}
-                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-pill bg-forest-600 text-white text-xs font-medium hover:bg-forest-700 disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-pill bg-primary text-white text-xs font-medium hover:bg-primary-hover disabled:opacity-50"
                   >
                     <Check size={12} aria-hidden="true" />
                     {t("cashDesk.confirmDeposit")}
@@ -216,7 +216,7 @@ export default function FleetDepositQueue({ status = "PENDING" }: FleetDepositQu
               rows={2}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="px-3 py-2 rounded-xl border border-sand-300 bg-card text-sm focus:outline-none focus:ring-2 focus:ring-forest-500"
+              className="px-3 py-2 rounded-xl border border-sand-300 bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </label>
           <div className="flex items-center gap-2">

@@ -1524,6 +1524,10 @@ const VALID_TICKET_CATEGORIES = new Set([
   // Shift row always belongs to a driver), so the ask is a request ops approve
   // by creating the shift, and this desk is already the one they watch.
   "SHIFT_REQUEST",
+  // Client rule, 2026-08-02: a driver raising a request thinks in four kinds,
+  // not eight. Vehicle and Other already existed; these two are the rest.
+  "ORDER_ISSUE",
+  "DRIVER_ISSUE",
   "OTHER",
 ]);
 const VALID_TICKET_PRIORITIES = new Set(["LOW", "MEDIUM", "HIGH", "URGENT"]);

@@ -246,7 +246,7 @@ export default function FleetCashPage() {
               dir="ltr"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="h-10 w-40 px-3 rounded-xl border border-sand-300 bg-card text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-forest-500"
+              className="h-10 w-40 px-3 rounded-xl border border-sand-300 bg-card text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </label>
           <label className="flex flex-col gap-1.5 flex-1 min-w-[200px]">
@@ -257,7 +257,7 @@ export default function FleetCashPage() {
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder={t("fleetCash.notePlaceholder")}
-              className="h-10 px-3 rounded-xl border border-sand-300 bg-card text-sm focus:outline-none focus:ring-2 focus:ring-forest-500"
+              className="h-10 px-3 rounded-xl border border-sand-300 bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </label>
           <button
@@ -265,7 +265,7 @@ export default function FleetCashPage() {
             data-testid="fleet-deposit-create-link"
             onClick={submitDeposit}
             disabled={saving || !amount || Number(amount) <= 0}
-            className="inline-flex items-center gap-1.5 h-10 px-4 rounded-pill bg-forest-600 text-white text-sm font-medium hover:bg-forest-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="inline-flex items-center gap-1.5 h-10 px-4 rounded-pill bg-primary text-white text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Link2 size={14} aria-hidden="true" />
             {t("fleetCash.submitDeposit")}
@@ -330,7 +330,7 @@ export default function FleetCashPage() {
                             target="_blank"
                             rel="noopener noreferrer"
                             data-testid="fleet-deposit-pay-link"
-                            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-pill bg-forest-600 text-white text-xs font-medium hover:bg-forest-700"
+                            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-pill bg-primary text-white text-xs font-medium hover:bg-primary-hover"
                           >
                             <ExternalLink size={12} aria-hidden="true" />
                             {t("fleetCash.payNow")}
@@ -391,7 +391,7 @@ export default function FleetCashPage() {
                 data-testid="fleet-settle-clear-all"
                 onClick={() => setConfirming(true)}
                 disabled={!canSettle}
-                className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-pill bg-forest-600 text-white text-xs font-medium hover:bg-forest-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-pill bg-primary text-white text-xs font-medium hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <Check size={12} aria-hidden="true" />
                 {t("fleetCash.clearAll")}
@@ -447,7 +447,7 @@ export default function FleetCashPage() {
                               value={typed}
                               onChange={(e) => setLine(d.driverId, e.target.value)}
                               aria-label={t("fleetCash.settleAmount")}
-                              className={`h-9 w-32 px-3 rounded-xl border bg-card text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-forest-500 ${
+                              className={`h-9 w-32 px-3 rounded-xl border bg-card text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-primary ${
                                 over ? "border-red-400" : "border-sand-300"
                               }`}
                             />
@@ -511,7 +511,7 @@ export default function FleetCashPage() {
                 data-testid="fleet-settle-submit"
                 onClick={() => setConfirming(true)}
                 disabled={!canSettle}
-                className="inline-flex items-center gap-1.5 h-10 px-4 rounded-pill bg-forest-600 text-white text-sm font-medium hover:bg-forest-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center gap-1.5 h-10 px-4 rounded-pill bg-primary text-white text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Check size={14} aria-hidden="true" />
                 {t("fleetCash.settleButton")}

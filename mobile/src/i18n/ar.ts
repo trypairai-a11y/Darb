@@ -65,6 +65,8 @@ const AR: Record<string, string> = {
   "support.mine": "طلباتك",
   "support.none": "لم تطلب شيئاً بعد.",
   "support.cat_VEHICLE_REPAIR": "المركبة",
+  "support.cat_ORDER_ISSUE": "الطلب",
+  "support.cat_DRIVER_ISSUE": "السائق",
   "support.cat_EQUIPMENT_REQUEST": "العدة",
   "support.cat_SALARY_ISSUE": "الراتب",
   "support.cat_COMPLAINT": "شكوى",

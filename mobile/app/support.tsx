@@ -30,13 +30,18 @@ import { t as tr } from "../src/i18n/strings";
 import { useTheme, type Palette, space, radius, continuous } from "../src/theme";
 
 /**
- * What a driver can raise, in the order they actually raise it.
+ * The four kinds a driver raises (client rule, 2026-08-02).
  *
- * A deliberate subset of what the server accepts: ACCIDENT_REPORT is missing
- * because an accident is an SOS, not a support ticket, and SHIFT_REQUEST is
- * missing because it has its own screen with the fields it needs.
+ * It was five, split the way the back office files things: Bike, Kit, Pay,
+ * Complaint, Other. A driver does not think in those, and a wrong pick is a
+ * ticket that lands on the wrong desk. Vehicle, Order, Driver, Other is the
+ * split they actually use.
+ *
+ * Still a subset of what the server accepts: ACCIDENT_REPORT is missing because
+ * an accident is an SOS, not a support ticket, and SHIFT_REQUEST has its own
+ * screen with the fields it needs.
  */
-const CATEGORIES = ["VEHICLE_REPAIR", "EQUIPMENT_REQUEST", "SALARY_ISSUE", "COMPLAINT", "OTHER"] as const;
+const CATEGORIES = ["VEHICLE_REPAIR", "ORDER_ISSUE", "DRIVER_ISSUE", "OTHER"] as const;
 type Category = (typeof CATEGORIES)[number];
 
 function statusColor(status: string, c: Palette): string {
