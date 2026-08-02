@@ -265,6 +265,13 @@ enum TicketCategory {
   TRANSFER_REQUEST
   COMPLAINT
   ACCIDENT_REPORT
+  /// The driver app's own kinds. The route validated these as strings before
+  /// they existed here, so every submission passed validation and then died in
+  /// the database: a shift request and a support ticket both looked accepted to
+  /// the driver and never arrived. A category the API accepts MUST exist here.
+  SHIFT_REQUEST
+  ORDER_ISSUE
+  DRIVER_ISSUE
   OTHER
 }
 
