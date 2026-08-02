@@ -762,6 +762,32 @@ router.post("/photo-inline", agentUploadRateLimit, async (req: Request, res: Res
 
 /**
  * @swagger
+ * /api/agent/zones:
+ *   get:
+ *     tags: [Driver App]
+ *     summary: The zones a driver may ask to work, for the shift request
+ */
+router.get("/zones", async (req: Request, res: Response) => {
+  try {
+    const identity = await resolveDriverFromAgentRequest(req);
+    if (!identity) { res.status(404).json({ error: "Device or driver not found" }); return; }
+
+    // Name and code only. A driver picking a zone for a shift has no use for a
+    // polygon, and shipping the geometry to a phone on a Kuwaiti data plan for
+    // a dropdown is the kind of payload nobody notices until the bill.
+    const zones = await prisma.deliveryZone.findMany({
+      where: { tenantId: identity.driver.tenantId, isActive: true },
+      select: { id: true, code: true, name: true, nameAr: true },
+      orderBy: { name: "asc" },
+    });
+    res.json({ data: zones });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
  * /api/agent/notifications:
  *   get:
  *     tags: [Driver App]

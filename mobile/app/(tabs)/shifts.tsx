@@ -15,10 +15,17 @@
  */
 
 import { useCallback, useMemo, useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { CalendarPlus, CalendarRange } from "lucide-react-native";
-import { fetchMyShifts, requestShift, type ShiftRecord } from "../../src/api/client";
+import {
+  fetchMyShifts,
+  fetchZones,
+  requestShift,
+  SHIFT_HOURS,
+  type DriverZone,
+  type ShiftRecord,
+} from "../../src/api/client";
 import { Button, Card, LargeTitle, ListGroup, ListRow, Pill, Screen } from "../../src/components/hig";
 import { t as tr } from "../../src/i18n/strings";
 import { useTheme, type Palette, space, radius, continuous } from "../../src/theme";
@@ -59,8 +66,8 @@ export default function ShiftsScreen() {
 
   const [date, setDate] = useState("");
   const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const [area, setArea] = useState("");
+  const [zoneId, setZoneId] = useState<string | null>(null);
+  const [zones, setZones] = useState<DriverZone[]>([]);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +76,9 @@ export default function ShiftsScreen() {
     try {
       setShifts(await fetchMyShifts());
       setStatus("ready");
+      // The zone list is required to ask for a shift, so a failure to load it
+      // must not look like an empty list of choices.
+      fetchZones().then(setZones).catch(() => {});
     } catch {
       // Keep the last-known schedule rather than blanking it: a driver checking
       // when they start next is worse off with an error than with stale rows.
@@ -87,7 +97,25 @@ export default function ShiftsScreen() {
     load().finally(() => setRefreshing(false));
   }, [load]);
 
-  const canSend = date.trim().length > 0 && from.trim().length > 0 && to.trim().length > 0 && !sending;
+  /**
+   * "HH:MM" plus three hours, or null when the start is not a time yet.
+   *
+   * Derived rather than typed (client rule, 2026-08-02): every shift is three
+   * hours, so a second field could only ever disagree with the rule, and a
+   * request that disagrees has to be caught by a human reading it.
+   */
+  const endTime = useMemo(() => {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(from.trim());
+    if (!m) return null;
+    const h = Number(m[1]);
+    const min = Number(m[2]);
+    if (h > 23 || min > 59) return null;
+    const end = (h + SHIFT_HOURS) % 24;
+    return `${String(end).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+  }, [from]);
+
+  const zone = zones.find((z) => z.id === zoneId) ?? null;
+  const canSend = date.trim().length > 0 && !!endTime && !!zone && !sending;
 
   const send = useCallback(async () => {
     if (!canSend) return;
@@ -97,20 +125,19 @@ export default function ShiftsScreen() {
       await requestShift({
         date: date.trim(),
         startTime: from.trim(),
-        endTime: to.trim(),
-        area: area.trim() || undefined,
+        endTime: endTime!,
+        area: zone!.name,
       });
       setSent(true);
       setDate("");
       setFrom("");
-      setTo("");
-      setArea("");
+      setZoneId(null);
     } catch (e: any) {
       setError(e?.message ?? tr("shifts.request_failed"));
     } finally {
       setSending(false);
     }
-  }, [canSend, date, from, to, area]);
+  }, [canSend, date, from, endTime, zone]);
 
   const upcoming = shifts.filter((s) => s.status === "BOOKED" || s.status === "IN_PROGRESS");
   const past = shifts.filter((s) => s.status !== "BOOKED" && s.status !== "IN_PROGRESS");
@@ -175,22 +202,41 @@ export default function ShiftsScreen() {
               onChangeText={(v) => { setSent(false); setFrom(v); }}
               placeholder={tr("shifts.field_from")}
               placeholderTextColor={c.gray}
+              keyboardType="numbers-and-punctuation"
             />
-            <TextInput
-              style={[styles.input, { flex: 1 }]}
-              value={to}
-              onChangeText={(v) => { setSent(false); setTo(v); }}
-              placeholder={tr("shifts.field_to")}
-              placeholderTextColor={c.gray}
-            />
+            {/*
+              The end of the shift, shown and not asked for. Every shift is
+              three hours, so a field here could only ever disagree with the
+              rule and leave somebody to catch it by reading the request.
+            */}
+            <View style={[styles.input, styles.derived]}>
+              <Text style={[t.subheadline, { color: endTime ? c.label : c.gray }]}>
+                {endTime ? `${tr("shifts.until")} ${endTime}` : tr("shifts.field_to")}
+              </Text>
+            </View>
           </View>
-          <TextInput
-            style={styles.input}
-            value={area}
-            onChangeText={(v) => { setSent(false); setArea(v); }}
-            placeholder={tr("shifts.field_area")}
-            placeholderTextColor={c.gray}
-          />
+
+          <Text style={[t.footnote, { color: c.secondaryLabel, marginTop: space.md }]}>
+            {tr("shifts.zone_label")}
+          </Text>
+          <View style={styles.zoneWrap}>
+            {zones.map((z) => {
+              const on = z.id === zoneId;
+              return (
+                <TouchableOpacity
+                  key={z.id}
+                  onPress={() => { setSent(false); setZoneId(z.id); }}
+                  activeOpacity={0.8}
+                  style={[styles.zoneChip, on && { backgroundColor: c.tint, borderColor: c.tint }]}
+                >
+                  <Text style={[t.footnote, { color: on ? c.onTint : c.label }]}>{z.name}</Text>
+                </TouchableOpacity>
+              );
+            })}
+            {zones.length === 0 ? (
+              <Text style={[t.footnote, { color: c.secondaryLabel }]}>{tr("shifts.zones_loading")}</Text>
+            ) : null}
+          </View>
 
           {error ? (
             <Text style={[t.footnote, { color: c.red, marginTop: space.sm }]}>{error}</Text>
@@ -231,6 +277,12 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   headerRow: { flexDirection: "row", alignItems: "center", gap: space.sm },
   emptyRow: { flexDirection: "row", alignItems: "center", gap: space.md },
   row: { flexDirection: "row", gap: space.md },
+  derived: { justifyContent: "center", flex: 1, backgroundColor: c.gray6 },
+  zoneWrap: { flexDirection: "row", flexWrap: "wrap", gap: space.sm, marginTop: space.sm },
+  zoneChip: {
+    paddingHorizontal: space.base, paddingVertical: 8, borderRadius: radius.capsule,
+    borderWidth: 1, borderColor: c.gray4, backgroundColor: c.groupedBackground, ...continuous,
+  },
   input: {
     marginTop: space.md,
     height: 46,

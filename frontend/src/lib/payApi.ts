@@ -25,6 +25,22 @@ export interface PayPayload {
   vendorCode: string | null;
   /** The gateway's hosted checkout, when a gateway issued one. Null otherwise. */
   gatewayUrl: string | null;
+  /**
+   * Whether this page can settle the deposit itself. True only on a demo
+   * tenant with no payment provider configured, where otherwise the person
+   * evaluating the product has no way to recharge the account they are
+   * evaluating and the flow simply dead-ends.
+   */
+  canSimulate?: boolean;
+}
+
+export async function simulatePayment(token: string): Promise<{ ok: boolean }> {
+  const res = await fetch(`/api/pay/${encodeURIComponent(token)}/simulate`, {
+    method: "POST",
+    headers: { Accept: "application/json" },
+  });
+  if (!res.ok) throw new Error("FAILED");
+  return (await res.json()) as { ok: boolean };
 }
 
 export async function fetchTopUp(token: string): Promise<PayPayload> {

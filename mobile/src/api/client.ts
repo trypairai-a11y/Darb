@@ -403,11 +403,33 @@ export async function fetchMyShifts(): Promise<ShiftRecord[]> {
  * and it reuses the driver ticket desk rather than inventing a second inbox for
  * ops to watch.
  */
+export interface DriverZone {
+  id: string;
+  code: string;
+  name: string;
+  nameAr: string | null;
+}
+
+export async function fetchZones(): Promise<DriverZone[]> {
+  const res = await agentFetch<{ data: DriverZone[] }>("/api/agent/zones");
+  return res.data ?? [];
+}
+
+/**
+ * A shift is three hours in one named zone (client rule, 2026-08-02).
+ *
+ * The end time is derived rather than typed. Letting a driver enter both ends
+ * meant every request had to be checked by hand against a rule they could not
+ * see, and a four-hour ask looked identical to a correct one until somebody
+ * read it.
+ */
+export const SHIFT_HOURS = 3;
+
 export async function requestShift(payload: {
   date: string;
   startTime: string;
   endTime: string;
-  area?: string;
+  area: string;
   note?: string;
 }): Promise<TicketRecord> {
   const deviceId = await getDeviceId();
@@ -415,7 +437,8 @@ export async function requestShift(payload: {
     `Date: ${payload.date}`,
     `From: ${payload.startTime}`,
     `To: ${payload.endTime}`,
-    payload.area ? `Area: ${payload.area}` : null,
+    `Duration: ${SHIFT_HOURS} hours`,
+    `Zone: ${payload.area}`,
     payload.note ? `Note: ${payload.note}` : null,
   ].filter(Boolean);
   return agentFetch<TicketRecord>("/api/agent/tickets", {
@@ -423,7 +446,7 @@ export async function requestShift(payload: {
     body: JSON.stringify({
       deviceId,
       category: "SHIFT_REQUEST",
-      title: `Shift request ${payload.date} ${payload.startTime}-${payload.endTime}`,
+      title: `Shift request ${payload.date} ${payload.startTime}-${payload.endTime} (${payload.area})`,
       description: lines.join("\n"),
     }),
   });

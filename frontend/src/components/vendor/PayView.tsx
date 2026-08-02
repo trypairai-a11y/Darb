@@ -10,7 +10,7 @@
 // receipt or the gateway's own webhook does that, and both show as PAID here.
 import { useEffect, useState } from "react";
 import { ArrowUpRight, CheckCircle2, Loader2, TriangleAlert, Wallet } from "lucide-react";
-import { fetchTopUp, type PayPayload } from "@/lib/payApi";
+import { fetchTopUp, simulatePayment, type PayPayload } from "@/lib/payApi";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd } from "@/i18n/format";
 
@@ -18,6 +18,7 @@ export default function PayView({ token }: { token: string }) {
   const { t, locale } = useI18n();
   const [payload, setPayload] = useState<PayPayload | null>(null);
   const [error, setError] = useState<"NOT_FOUND" | "FAILED" | null>(null);
+  const [paying, setPaying] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -152,6 +153,33 @@ export default function PayView({ token }: { token: string }) {
             </p>
             <p className="text-xs text-sand-600">{t("vendorPortal.payTransferHint")}</p>
           </div>
+        )}
+
+        {/*
+          Demo tenants only, and the server decides. Without a payment provider
+          this page has nothing to press, so the account can never be recharged
+          by the person evaluating it and the whole flow dead-ends one step in.
+        */}
+        {!settled && payload.canSimulate && (
+          <button
+            type="button"
+            data-testid="pay-simulate"
+            disabled={paying}
+            onClick={async () => {
+              setPaying(true);
+              try {
+                await simulatePayment(token);
+                setPayload(await fetchTopUp(token));
+              } catch {
+                setError("FAILED");
+              } finally {
+                setPaying(false);
+              }
+            }}
+            className="inline-flex w-full items-center justify-center gap-1.5 h-11 rounded-pill bg-primary text-white text-sm font-medium hover:bg-primary-hover disabled:opacity-50 transition-colors"
+          >
+            {paying ? t("common.loading") : t("vendorPortal.paySimulate")}
+          </button>
         )}
       </div>
     </main>

@@ -1565,6 +1565,8 @@ export interface Messages {
     payTitle: string;
     /** Revision 14b — the same page, when a delivery company is the one paying. */
     payDepositTitle: string;
+    /** Demo tenants with no payment provider configured. */
+    paySimulate: string;
     payFor: string;
     payAmount: string;
     payReference: string;
@@ -3977,6 +3979,7 @@ export const en: Messages = {
     pauseNoneSelected: "Pick a branch above to pause it on its own.",
     payTitle: "Top up your Darb wallet",
     payDepositTitle: "Pay Darb your drivers' collected cash",
+    paySimulate: "Mark as paid (demo)",
     payFor: "For",
     payAmount: "Amount",
     payReference: "Reference",
@@ -6373,6 +6376,7 @@ export const ar: Messages = {
     pauseNoneSelected: "اختر فرعا أعلاه لإيقافه بمفرده.",
     payTitle: "إيداع في محفظة Darb",
     payDepositTitle: "سدّد لدرب النقد الذي جمعه سائقوك",
+    paySimulate: "تحديد كمدفوع (تجريبي)",
     payFor: "لحساب",
     payAmount: "المبلغ",
     payReference: "المرجع",
