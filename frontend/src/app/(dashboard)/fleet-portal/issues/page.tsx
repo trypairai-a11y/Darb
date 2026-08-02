@@ -117,7 +117,7 @@ export default function FleetIssuesPage() {
 
       {issues.length === 0 ? (
         <div className="flex items-center gap-3 px-4 py-6 rounded-xl border border-sand-200 bg-white">
-          <CheckCircle2 size={18} className="text-forest-600" aria-hidden="true" />
+          <CheckCircle2 size={18} className="text-moss" aria-hidden="true" />
           <p className="text-sm text-sand-600">{t("fleetPortal.noIssues")}</p>
         </div>
       ) : (
@@ -163,7 +163,7 @@ export default function FleetIssuesPage() {
                     {t("fleetPortal.raisedOn")} {formatDateTime(issue.openedAt, locale)}
                   </p>
                   {issue.resolutionNote && (
-                    <p className="text-xs text-forest-700 mt-1.5" dir="auto">
+                    <p className="text-xs text-moss mt-1.5" dir="auto">
                       {t("fleetPortal.resolutionNote")}: {issue.resolutionNote}
                     </p>
                   )}

@@ -150,8 +150,12 @@ export default function FleetSupportPage() {
                     key={m.id}
                     className={cn(
                       "rounded-xl px-3 py-2 text-sm",
+                      // Navy here rather than moss: this separates who is
+                      // speaking, not good from bad. forest-* is not a tailwind
+                      // colour, so Darb's replies carried no tint and the
+                      // thread read as one voice.
                       m.author === "DARB"
-                        ? "bg-forest-50 text-forest-900"
+                        ? "bg-navy-50 text-navy-900"
                         : "bg-sand-100 text-sand-800",
                     )}
                     dir="auto"

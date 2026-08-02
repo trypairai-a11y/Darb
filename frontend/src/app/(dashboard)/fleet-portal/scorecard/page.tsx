@@ -226,7 +226,7 @@ export default function FleetScorecardPage() {
                     <div key={row.label}>
                       <p className="text-[11px] text-sand-500">{row.label}</p>
                       <p className="text-sm tabular-nums" dir="ltr">
-                        <span className="text-forest-700 font-medium">
+                        <span className="text-moss font-medium">
                           {row.as === "pct" ? pct(row.a, locale) : num(row.a, locale, 2)}
                         </span>
                         <span className="text-sand-400"> vs </span>
@@ -274,8 +274,13 @@ function DriverColumn({
       <header
         className={cn(
           "flex items-center gap-2 px-4 py-3 border-b",
+          // The good half has to stay green: it is read against the red half
+          // below it. forest-* is not a tailwind colour, so this header
+          // rendered with no tint at all and the top-three panel was
+          // indistinguishable from any other card while the bottom three sat
+          // in red.
           tone === "good"
-            ? "bg-forest-50 border-forest-100 text-forest-900"
+            ? "bg-moss/10 border-moss/20 text-moss"
             : "bg-red-50 border-red-100 text-red-900",
         )}
       >
@@ -301,7 +306,7 @@ function DriverColumn({
                 <span
                   className={cn(
                     "text-lg font-display tabular-nums shrink-0",
-                    tone === "good" ? "text-forest-700" : "text-red-600",
+                    tone === "good" ? "text-moss" : "text-red-600",
                   )}
                   dir="ltr"
                 >
