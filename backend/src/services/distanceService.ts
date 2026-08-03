@@ -54,12 +54,29 @@ function straightLine(origin: Point, dest: Point): DistanceResult {
 }
 
 /**
+ * Every other failure below is transient and logs on each occurrence. A missing
+ * key is neither: it is permanent and silent, so it warns once per process
+ * instead of on every quote, the same shape as the notification stub warning.
+ * Without this the only signal that km plans are priced on straight-line
+ * distance is the `source` field on a quote nobody reads.
+ */
+let warnedMissingKey = false;
+
+/**
  * Ask Google for driving distance in km. Returns null on any failure so the
  * caller can fall back — this never throws, because a pricing call must not be
  * able to fail on someone else's outage.
  */
 async function fetchGoogleKm(origin: Point, dest: Point): Promise<number | null> {
-  if (!env.GOOGLE_MAPS_API_KEY) return null;
+  if (!env.GOOGLE_MAPS_API_KEY) {
+    if (!warnedMissingKey) {
+      warnedMissingKey = true;
+      logger.warn(
+        "distanceService: GOOGLE_MAPS_API_KEY is not set, every by-km quote falls back to straight-line distance",
+      );
+    }
+    return null;
+  }
 
   const url =
     `${DISTANCE_MATRIX_URL}?origins=${origin.lat},${origin.lng}` +
