@@ -27,6 +27,7 @@ import deviceRoutes from "./routes/devices";
 import simRoutes from "./routes/sims";
 import alertRoutes from "./routes/alerts";
 import ticketRoutes from "./routes/tickets";
+import shiftRequestRoutes from "./routes/shiftRequests";
 import attendanceRoutes from "./routes/attendance";
 import leaveRequestRoutes from "./routes/leaveRequests";
 import agentRoutes from "./routes/agent";
@@ -179,9 +180,21 @@ function makeStore(prefix: string): Store | undefined {
   });
 }
 
+// Trimmed, and VERCEL_ENV beside it, for the reason routes/auth.ts gives: on
+// the @vercel/node runtime NODE_ENV is not reliably "production", and `vercel
+// env add` stores whatever it is handed, newline included. Production carried
+// NODE_ENV="production\n", so an exact match read false and this limiter ran at
+// the dev ceiling of 500 login attempts per 15 minutes instead of 20. The same
+// trap already bit DEMO_REFRESH_ENABLED (see demoRefreshService.isDemoRefreshEnabled);
+// a rate limit is the one place where reading a flag as unset is a security
+// weakening rather than a missing feature.
+const isProdRuntime =
+  (process.env.NODE_ENV ?? "").trim() === "production" ||
+  (process.env.VERCEL_ENV ?? "").trim() === "production";
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === "production" ? 20 : 500,
+  max: isProdRuntime ? 20 : 500,
   message: { error: "Too many auth attempts. Please try again in 15 minutes." },
   standardHeaders: true,
   legacyHeaders: false,
@@ -245,6 +258,7 @@ app.use("/api/devices", deviceRoutes);
 app.use("/api/sims", simRoutes);
 app.use("/api/alerts", alertRoutes);
 app.use("/api/tickets", ticketRoutes);
+app.use("/api/shift-requests", shiftRequestRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/leave-requests", leaveRequestRoutes);
 app.use("/api/agent", agentRoutes);
