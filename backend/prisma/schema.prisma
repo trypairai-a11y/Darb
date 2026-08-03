@@ -3000,6 +3000,20 @@ model DeliveryPlan {
   // the grid, which is where the value used to live, so plans written before
   // this column keep pricing exactly as they did.
   intraZoneFeeKwd Decimal?         @db.Decimal(10, 3)
+  // Revision 14 (#1). A by-kilometre plan is a base fee plus a rate for each
+  // kilometre travelled, which is how the client quotes distance work and how
+  // every merchant already reads a delivery price. The band ladder below
+  // (kmTiers) stays for plans written before this and is still read when
+  // perKmFeeKwd and baseFeeKwd are both NULL, so nothing reprices on deploy —
+  // saving the editor once moves a plan onto the formula and clears its bands,
+  // because a plan carrying two price lists is a plan nobody can read.
+  baseFeeKwd      Decimal?         @db.Decimal(10, 3)
+  perKmFeeKwd     Decimal?         @db.Decimal(10, 3)
+  // Past this distance the plan does not deliver. NULL = no limit. This is the
+  // one thing the band ladder could say that a formula cannot: a formula alone
+  // prices every distance on earth, so without this column "we do not go that
+  // far" would have quietly stopped being expressible.
+  maxDistanceKm   Decimal?         @db.Decimal(6, 2)
   isActive        Boolean          @default(true)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -3694,6 +3708,11 @@ enum FleetChangeRequestType {
   DRIVER_PROFILE
   DRIVER_DOCUMENT
   COMPANY_DOCUMENT
+  /// Revision 14 (#2) — the delivery company proposes its own per-order rate.
+  /// It is a request like everything else in this portal, and for the sharpest
+  /// version of the reason: a company that could write its own rate live could
+  /// raise what Darb pays it without anybody approving it.
+  RATE_CHANGE
 }
 
 enum FleetChangeRequestStatus {

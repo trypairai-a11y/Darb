@@ -22,6 +22,11 @@ prisma.fleetPartner = prisma.fleetPartner ?? {
   findFirst: jest.fn(),
   findMany: jest.fn(),
 };
+// Revision 14 (#2). These two exist ONLY so the "no live write" assertion is a
+// real one: an undefined property cannot be asserted against, so without them
+// the test that proves POST /rate never moves the rate passes vacuously.
+prisma.fleetPartner.update = prisma.fleetPartner.update ?? jest.fn();
+prisma.fleetPartner.updateMany = prisma.fleetPartner.updateMany ?? jest.fn();
 prisma.driver = prisma.driver ?? {
   findFirst: jest.fn(),
   findMany: jest.fn(),
@@ -454,5 +459,110 @@ describe("Fleet portal request desk", () => {
         data: expect.objectContaining({ fleetPartnerId: "f-1", vendorId: null }),
       }),
     );
+  });
+
+  // ─── Revision 14 (#2): the company's own price per order ─────────────────
+  //
+  // The client asked for the price to be "visible and adjustable" in the
+  // delivery company portal. Adjustable here means the company ASKS: this is
+  // the one endpoint in the portal where writing through would let a
+  // subcontractor raise what Darb pays it with nobody approving it, so the
+  // test that matters is that POST /rate touches no FleetPartner row.
+
+  test("proposing a price opens a request and writes NO live rate", async () => {
+    prisma.fleetPartner.findFirst.mockResolvedValue({
+      id: "f-1", name: "Sidra Delivery Co", flatFeePerOrderKwd: "1.100",
+    });
+    prisma.fleetChangeRequest.findFirst.mockResolvedValue(null);
+
+    const res = await request(makeApp())
+      .post("/api/fleet/rate")
+      .send({ flatFeePerOrderKwd: "1.400", reason: "Fuel" });
+
+    expect(res.status).toBe(201);
+    expect(prisma.fleetChangeRequest.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          fleetPartnerId: "f-1",
+          type: "RATE_CHANGE",
+          payload: expect.objectContaining({
+            flatFeePerOrderKwd: "1.400",
+            // Carried so the reviewing supervisor sees the size of the raise.
+            currentKwd: "1.100",
+            reason: "Fuel",
+          }),
+        }),
+      }),
+    );
+    // THE contract: nothing live moved.
+    expect(prisma.fleetPartner.update).not.toHaveBeenCalled();
+    expect(prisma.fleetPartner.updateMany).not.toHaveBeenCalled();
+  });
+
+  test.each([["zero", "0"], ["negative", "-1"], ["absurd", "500"], ["not a number", "abc"]])(
+    "a %s price per order is refused",
+    async (_label, value) => {
+      prisma.fleetChangeRequest.findFirst.mockResolvedValue(null);
+      const res = await request(makeApp())
+        .post("/api/fleet/rate")
+        .send({ flatFeePerOrderKwd: value });
+
+      expect(res.status).toBe(400);
+      expect(prisma.fleetChangeRequest.create).not.toHaveBeenCalled();
+    },
+  );
+
+  // Two open asks give Darb a queue where approving the older silently undoes
+  // the newer, and neither side can say afterwards which number was agreed.
+  test("a second price request while one is pending is refused with its id", async () => {
+    prisma.fleetChangeRequest.findFirst.mockResolvedValue({ id: "req-9" });
+
+    const res = await request(makeApp())
+      .post("/api/fleet/rate")
+      .send({ flatFeePerOrderKwd: "1.400" });
+
+    expect(res.status).toBe(409);
+    expect(res.body.code).toBe("RATE_REQUEST_PENDING");
+    expect(res.body.requestId).toBe("req-9");
+    expect(prisma.fleetChangeRequest.create).not.toHaveBeenCalled();
+  });
+
+  // Money stays with the owner, the same way minting a login does.
+  test("a non-owner portal role cannot propose a price", async () => {
+    prisma.user.findFirst.mockResolvedValue({
+      fleetRole: "OPERATIONS", fleetTabs: null, fleetPartnerIds: null,
+      isActive: true, name: "Dispatcher", email: "ops2@sidra.kw",
+    });
+
+    const res = await request(makeApp())
+      .post("/api/fleet/rate")
+      .send({ flatFeePerOrderKwd: "1.400" });
+
+    expect(res.status).toBe(403);
+    expect(prisma.fleetChangeRequest.create).not.toHaveBeenCalled();
+  });
+
+  test("GET /rate returns the live price plus the ask in review", async () => {
+    prisma.fleetPartner.findFirst.mockResolvedValue({ flatFeePerOrderKwd: "1.100" });
+    prisma.fleetChangeRequest.findFirst.mockResolvedValue({
+      id: "req-9",
+      payload: { flatFeePerOrderKwd: "1.400", reason: "Fuel" },
+      createdAt: new Date("2026-08-03T12:00:00Z"),
+    });
+
+    const res = await request(makeApp()).get("/api/fleet/rate");
+
+    expect(res.status).toBe(200);
+    expect(res.body.currentKwd).toBe("1.100");
+    expect(res.body.canPropose).toBe(true);
+    expect(res.body.pending).toMatchObject({ id: "req-9", proposedKwd: "1.400", reason: "Fuel" });
+  });
+
+  test("withdrawing a decided request is a 409, not a silent no-op", async () => {
+    prisma.fleetChangeRequest.updateMany.mockResolvedValue({ count: 0 });
+
+    const res = await request(makeApp()).delete("/api/fleet/rate/req-9");
+
+    expect(res.status).toBe(409);
   });
 });

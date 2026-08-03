@@ -21,7 +21,6 @@ import { useToast } from "@/components/shared/Toast";
 import { deliveryPlansApi, zonesApi, unwrapList } from "@/lib/darbApi";
 import type {
   DeliveryPlan,
-  DeliveryPlanKmTier,
   DeliveryPlanType,
   DeliveryPlanZoneRate,
   DeliveryZone,
@@ -346,9 +345,12 @@ function PlanRatesEditor({
   const plan = planQuery.data;
 
   const [cells, setCells] = useState<Record<string, string>>({});
-  const [tiers, setTiers] = useState<DeliveryPlanKmTier[]>([]);
   // Revision 5 (#7) — this plan's own intra-zone flat fee.
   const [intraFee, setIntraFee] = useState("");
+  // Revision 14 (#1) — a by-kilometre plan: base fee + rate for each kilometre.
+  const [kmBase, setKmBase] = useState("");
+  const [kmPerKm, setKmPerKm] = useState("");
+  const [kmMax, setKmMax] = useState("");
   const [saving, setSaving] = useState(false);
   // Bulk-fill knobs. Defaults are a plain starting point, not a house rate.
   const [fillBase, setFillBase] = useState("1.000");
@@ -364,17 +366,9 @@ function PlanRatesEditor({
       setCells(next);
       setIntraFee(plan.intraZoneFeeKwd == null ? "" : toFixed3(plan.intraZoneFeeKwd));
     } else {
-      setTiers(
-        plan.kmTiers?.length
-          ? plan.kmTiers
-          : // A fresh km plan opens on the client's own worked example, so the
-            // shape of the answer is obvious before anything is typed.
-            [
-              { maxKm: 12, feeKwd: null },
-              { maxKm: 14, feeKwd: null },
-              { maxKm: null, feeKwd: null },
-            ]
-      );
+      setKmBase(plan.baseFeeKwd == null ? "" : toFixed3(plan.baseFeeKwd));
+      setKmPerKm(plan.perKmFeeKwd == null ? "" : toFixed3(plan.perKmFeeKwd));
+      setKmMax(plan.maxDistanceKm == null ? "" : String(plan.maxDistanceKm));
     }
   }, [plan]);
 
@@ -464,14 +458,23 @@ function PlanRatesEditor({
         }
         await deliveryPlansApi.putRates(plan.id, { zoneRates });
       } else {
-        await deliveryPlansApi.putRates(plan.id, {
-          kmTiers: tiers.map((tier) => ({
-            maxKm: tier.maxKm == null ? null : Number(tier.maxKm),
-            feeKwd:
-              tier.feeKwd == null || tier.feeKwd === ""
-                ? null
-                : Number(tier.feeKwd).toFixed(3),
-          })),
+        // Revision 14 (#1): the kilometre plan is three numbers on the plan
+        // itself, so it saves like the intra-zone fee does. A blank per-km
+        // rate with a base fee set is a legitimate flat fee for any distance,
+        // which is why neither field is required.
+        if (kmPerKm !== "" && !Number.isFinite(Number(kmPerKm))) {
+          toast.error(t("plansPage.kmRateInvalid"));
+          return;
+        }
+        await deliveryPlansApi.update(plan.id, {
+          baseFeeKwd:
+            kmBase !== "" && Number.isFinite(Number(kmBase)) ? Number(kmBase).toFixed(3) : null,
+          perKmFeeKwd:
+            kmPerKm !== "" && Number.isFinite(Number(kmPerKm)) ? Number(kmPerKm).toFixed(3) : null,
+          maxDistanceKm:
+            kmMax !== "" && Number.isFinite(Number(kmMax)) && Number(kmMax) > 0
+              ? Number(kmMax)
+              : null,
         });
       }
       toast.success(t("pricingPage.saved"));
@@ -653,7 +656,14 @@ function PlanRatesEditor({
           </table>
         </div>
       ) : (
-        <KmTierEditor tiers={tiers} onChange={setTiers} />
+        <KmFormulaEditor
+          base={kmBase}
+          perKm={kmPerKm}
+          maxKm={kmMax}
+          onBase={setKmBase}
+          onPerKm={setKmPerKm}
+          onMaxKm={setKmMax}
+        />
       )}
 
       <button
@@ -669,70 +679,126 @@ function PlanRatesEditor({
   );
 }
 
-function KmTierEditor({
-  tiers,
-  onChange,
+/**
+ * A by-kilometre plan, revision 14 (#1): base fee + a rate for each kilometre.
+ *
+ * This replaced a ladder of distance bands. The bands could price a 12 km drop
+ * and a 12.1 km drop very differently for no reason a merchant could explain,
+ * and every band left blank was a distance the plan silently refused. Three
+ * numbers price every distance instead, and the worked examples underneath are
+ * the whole point of the screen: a rate card nobody can check before saving is
+ * a rate card that gets found wrong by a merchant, in production.
+ */
+function KmFormulaEditor({
+  base,
+  perKm,
+  maxKm,
+  onBase,
+  onPerKm,
+  onMaxKm,
 }: {
-  tiers: DeliveryPlanKmTier[];
-  onChange: (tiers: DeliveryPlanKmTier[]) => void;
+  base: string;
+  perKm: string;
+  maxKm: string;
+  onBase: (v: string) => void;
+  onPerKm: (v: string) => void;
+  onMaxKm: (v: string) => void;
 }) {
   const { t } = useI18n();
 
-  function update(index: number, patch: Partial<DeliveryPlanKmTier>) {
-    onChange(tiers.map((tier, i) => (i === index ? { ...tier, ...patch } : tier)));
-  }
+  const baseNum = base === "" ? 0 : Number(base);
+  const perKmNum = perKm === "" ? 0 : Number(perKm);
+  const maxNum = maxKm === "" ? null : Number(maxKm);
+  const usable = Number.isFinite(baseNum) && Number.isFinite(perKmNum) && baseNum + perKmNum > 0;
+
+  // Distances a Kuwait dispatcher actually sees, so the preview answers the
+  // question being asked: what does a normal delivery cost on this plan.
+  const samples = [3, 8, 15];
+
+  const field = (
+    label: string,
+    value: string,
+    onChange: (v: string) => void,
+    step: string,
+    placeholder: string,
+    hint: string,
+  ) => (
+    <div>
+      <label className="block text-xs font-medium text-sand-700 uppercase tracking-wide mb-1.5">
+        {label}
+      </label>
+      <input
+        type="number"
+        step={step}
+        min="0"
+        dir="ltr"
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label={label}
+        className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/20"
+      />
+      <p className="text-[11px] text-sand-600 mt-1.5">{hint}</p>
+    </div>
+  );
 
   return (
-    <div className="space-y-2">
-      <div className="grid grid-cols-[1fr_1fr_auto] gap-2 text-xs font-medium text-sand-600 px-1">
-        <span>{t("plansPage.upToKm")}</span>
-        <span>{t("plansPage.priceKwd")}</span>
-        <span />
+    <div className="space-y-4" data-testid="km-formula-editor">
+      <div className="grid gap-4 sm:grid-cols-3">
+        {field(
+          t("plansPage.kmBaseFee"),
+          base,
+          onBase,
+          "0.001",
+          "1.000",
+          t("plansPage.kmBaseFeeHint"),
+        )}
+        {field(
+          t("plansPage.kmPerKmFee"),
+          perKm,
+          onPerKm,
+          "0.001",
+          "0.150",
+          t("plansPage.kmPerKmFeeHint"),
+        )}
+        {field(
+          t("plansPage.kmMaxDistance"),
+          maxKm,
+          onMaxKm,
+          "0.1",
+          t("plansPage.kmNoLimit"),
+          t("plansPage.kmMaxDistanceHint"),
+        )}
       </div>
-      {tiers.map((tier, i) => (
-        <div key={i} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
-          <input
-            type="number"
-            step="0.1"
-            min="0"
-            dir="ltr"
-            value={tier.maxKm ?? ""}
-            placeholder={t("plansPage.andAbove")}
-            onChange={(e) =>
-              update(i, { maxKm: e.target.value === "" ? null : Number(e.target.value) })
-            }
-            className="px-3 h-9 rounded-xl bg-white border border-sand-300 text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/20"
-          />
-          <input
-            type="number"
-            step="0.001"
-            min="0"
-            dir="ltr"
-            value={tier.feeKwd ?? ""}
-            placeholder={t("plansPage.notServed")}
-            onChange={(e) => update(i, { feeKwd: e.target.value === "" ? null : e.target.value })}
-            className="px-3 h-9 rounded-xl bg-white border border-sand-300 text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/20"
-          />
-          <button
-            type="button"
-            onClick={() => onChange(tiers.filter((_, idx) => idx !== i))}
-            disabled={tiers.length <= 1}
-            className="p-2 rounded-lg text-secondary hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-30"
-            aria-label={t("common.delete")}
-          >
-            <Trash2 size={14} aria-hidden="true" />
-          </button>
-        </div>
-      ))}
-      <button
-        type="button"
-        onClick={() => onChange([...tiers, { maxKm: null, feeKwd: null }])}
-        className="inline-flex items-center gap-1.5 px-3 h-8 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors"
-      >
-        <Plus size={12} aria-hidden="true" />
-        {t("plansPage.addTier")}
-      </button>
-      <p className="text-xs text-sand-600 pt-1">{t("plansPage.tierOrderHint")}</p>
+
+      <div className="rounded-xl border border-sand-200 bg-sand-50/60 p-4">
+        <p className="text-xs font-medium text-sand-700 uppercase tracking-wide mb-2">
+          {t("plansPage.kmPreview")}
+        </p>
+        {usable ? (
+          <ul className="space-y-1" dir="ltr">
+            {samples.map((km) => {
+              const over = maxNum != null && km > maxNum;
+              return (
+                <li key={km} className="text-sm text-sand-800 tabular-nums">
+                  {km} km{" "}
+                  {over ? (
+                    <span className="text-secondary">{t("plansPage.kmBeyondLimit")}</span>
+                  ) : (
+                    <span className="font-medium">
+                      KD {(baseNum + perKmNum * km).toFixed(3)}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="text-sm text-sand-600">{t("plansPage.kmPreviewEmpty")}</p>
+        )}
+      </div>
+
+      <p className="text-xs text-sand-600">{t("plansPage.tierOrderHint")}</p>
     </div>
   );
 }

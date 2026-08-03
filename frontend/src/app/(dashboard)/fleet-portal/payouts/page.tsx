@@ -266,6 +266,12 @@ export default function FleetPayoutsPage() {
         </h1>
       </div>
 
+      {/* Revision 14 (#2): the company's own price per order. It was already on
+          screen inside the earnings line, but only as a number to read. It sits
+          above the statements because it is the figure every total below is
+          built from. */}
+      <FleetRateCard />
+
       <DataTable
         columns={[
           {
@@ -642,5 +648,188 @@ export default function FleetPayoutsPage() {
         </div>
       </SlidePanel>
     </div>
+  );
+}
+
+/**
+ * The company's own price per order, and the ask to change it (revision 14 #2).
+ *
+ * The client's note was "the delivery company will create its own price so make
+ * it visible and adjustable". Visible it already was, buried in the earnings
+ * line as `20 x KD 1.100`. Adjustable it was not, and it deliberately still is
+ * not adjustable *directly*: this opens a request Darb approves, because a
+ * company that could write its own rate live could raise what Darb pays it with
+ * nobody approving it. The screen says so in as many words rather than letting
+ * an owner press Send and wonder why the number did not move.
+ */
+function FleetRateCard() {
+  const { t, locale } = useI18n();
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const [proposing, setProposing] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [why, setWhy] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const rateQuery = useQuery({
+    queryKey: ["darb", "fleet", "rate"],
+    queryFn: () => fleetApi.rate(),
+  });
+  const rate = rateQuery.data;
+  if (!rate) return null;
+
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ["darb", "fleet", "rate"] });
+
+  async function send() {
+    const n = Number(amount);
+    if (!Number.isFinite(n) || n <= 0) {
+      toast.error(t("fleetPortal.ratePriceInvalid"));
+      return;
+    }
+    setBusy(true);
+    try {
+      await fleetApi.proposeRate({ flatFeePerOrderKwd: n.toFixed(3), reason: why.trim() });
+      toast.success(t("fleetPortal.rateRequestSent"));
+      setProposing(false);
+      setAmount("");
+      setWhy("");
+      refresh();
+    } catch (err) {
+      toast.error(
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+          t("toast.failedSave"),
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function withdraw(id: string) {
+    setBusy(true);
+    try {
+      await fleetApi.withdrawRateRequest(id);
+      toast.success(t("fleetPortal.rateRequestWithdrawn"));
+      refresh();
+    } catch (err) {
+      toast.error(
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+          t("toast.failedSave"),
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section
+      className="bg-card border border-sand-200 rounded-2xl shadow-soft px-5 py-4"
+      data-testid="fleet-rate-card"
+    >
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="text-sm font-medium text-sand-900">{t("fleetPortal.rateTitle")}</h2>
+          <p className="text-2xl font-display text-sand-900 mt-1 tabular-nums" dir="ltr">
+            {formatKwd(rate.currentKwd, locale)}
+          </p>
+          <p className="text-xs text-sand-600 mt-1" dir="auto">
+            {t("fleetPortal.rateHint")}
+          </p>
+        </div>
+
+        {/* Owner-only, and hidden rather than shown to answer 403. */}
+        {rate.canPropose && !rate.pending && !proposing && (
+          <button
+            type="button"
+            onClick={() => setProposing(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors"
+          >
+            {t("fleetPortal.ratePropose")}
+          </button>
+        )}
+      </div>
+
+      {/* An ask already in review. Shown with its own numbers so a second
+          attempt is not the way an owner discovers the first one exists. */}
+      {rate.pending && (
+        <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3">
+          <p className="text-sm text-sand-900" dir="ltr">
+            {formatKwd(rate.currentKwd, locale)} →{" "}
+            <span className="font-medium">
+              {formatKwd(rate.pending.proposedKwd ?? "0", locale)}
+            </span>
+          </p>
+          <p className="text-xs text-sand-700 mt-0.5" dir="auto">
+            {t("fleetPortal.rateAwaitingDarb")}
+            {rate.pending.reason ? ` · ${rate.pending.reason}` : ""}
+          </p>
+          {rate.canPropose && (
+            <button
+              type="button"
+              onClick={() => void withdraw(rate.pending!.id)}
+              disabled={busy}
+              className="mt-2 inline-flex items-center h-8 px-3 rounded-pill bg-white border border-sand-300 text-xs text-sand-800 hover:bg-sand-100 disabled:opacity-50"
+            >
+              {t("fleetPortal.rateWithdraw")}
+            </button>
+          )}
+        </div>
+      )}
+
+      {proposing && (
+        <div className="mt-3 space-y-3 border-t border-sand-200 pt-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="block text-xs font-medium text-sand-700 uppercase tracking-wide mb-1.5">
+                {t("fleetPortal.rateNewPrice")}
+              </label>
+              <input
+                type="number"
+                step="0.001"
+                min="0"
+                dir="ltr"
+                value={amount}
+                placeholder={rate.currentKwd}
+                onChange={(e) => setAmount(e.target.value)}
+                aria-label={t("fleetPortal.rateNewPrice")}
+                className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-sand-700 uppercase tracking-wide mb-1.5">
+                {t("fleetPortal.rateReason")}
+              </label>
+              <input
+                type="text"
+                dir="auto"
+                value={why}
+                onChange={(e) => setWhy(e.target.value)}
+                aria-label={t("fleetPortal.rateReason")}
+                className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+          </div>
+          <p className="text-xs text-sand-600" dir="auto">
+            {t("fleetPortal.rateApprovalHint")}
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => void send()}
+              disabled={busy}
+              className="btn-primary inline-flex items-center gap-2 px-4 h-10 disabled:opacity-50"
+            >
+              {busy ? t("common.processing") : t("fleetPortal.rateSend")}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setProposing(false); setAmount(""); setWhy(""); }}
+              className="inline-flex items-center h-10 px-4 rounded-pill bg-sand-100 text-sand-800 text-sm font-medium hover:bg-sand-200"
+            >
+              {t("common.cancel")}
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

@@ -24,7 +24,8 @@ export type FleetRequestType =
   | "DRIVER_STATUS"
   | "DRIVER_PROFILE"
   | "DRIVER_DOCUMENT"
-  | "COMPANY_DOCUMENT";
+  | "COMPANY_DOCUMENT"
+  | "RATE_CHANGE";
 
 /** The driver statuses a delivery company may ask Darb for. */
 export const REQUESTABLE_STATUSES = ["ACTIVE", "LEAVE", "TERMINATED"] as const;
@@ -36,6 +37,7 @@ const TYPE_LABELS: Record<FleetRequestType, string> = {
   DRIVER_PROFILE: "Driver details change",
   DRIVER_DOCUMENT: "Driver document",
   COMPANY_DOCUMENT: "Company document",
+  RATE_CHANGE: "Price per order change",
 };
 
 /**
@@ -205,6 +207,25 @@ export async function approveFleetRequest(params: {
       if (typeof payload.zone === "string") data.zone = payload.zone;
       if (Object.keys(data).length > 0) {
         await tx.driver.update({ where: { id: driverId }, data });
+      }
+    }
+
+    // Revision 14 (#2): the company's own price per order. Approval is the
+    // only thing that moves it, which is the whole reason this is a request
+    // and not a field the portal writes.
+    //
+    // The rate is read fresh on every payout run, so this changes what the
+    // CURRENT open period pays — it is not backdated, and a statement already
+    // FINAL keeps the total it was cut on. That is the behaviour the delivery
+    // company can see and dispute, rather than a silent retroactive edit.
+    if (request.type === "RATE_CHANGE") {
+      const raw = payload.flatFeePerOrderKwd;
+      const rate = raw == null ? NaN : Number(raw);
+      if (Number.isFinite(rate) && rate > 0) {
+        await tx.fleetPartner.update({
+          where: { id: request.fleetPartnerId },
+          data: { flatFeePerOrderKwd: new Prisma.Decimal(String(raw)) },
+        });
       }
     }
 

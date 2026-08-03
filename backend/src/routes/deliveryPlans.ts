@@ -57,6 +57,16 @@ const updatePlanSchema = z.object({
   // Revision 5 (#7). Null clears it, which puts the plan back on its grid's
   // diagonal — the only way to express "this plan has no flat fee of its own".
   intraZoneFeeKwd: money.nullable().optional(),
+  // Revision 14 (#1) — a by-kilometre plan is base fee + rate per kilometre.
+  baseFeeKwd: money.nullable().optional(),
+  perKmFeeKwd: money.nullable().optional(),
+  // Blank = no limit. Zero would mean "deliver nowhere", which no one types on
+  // purpose, so it is refused rather than saved as a plan that quotes nothing.
+  maxDistanceKm: z
+    .union([z.number().positive(), z.string()])
+    .refine((v) => Number.isFinite(Number(v)) && Number(v) > 0, "Must be a distance above zero")
+    .nullable()
+    .optional(),
 });
 
 const ratesSchema = z.object({
@@ -104,6 +114,11 @@ function serialisePlan(plan: any, zoneCount = 0) {
     // Revision 5 (#7) — the plan's own intra-zone flat fee. Null means it has
     // none and same-zone deliveries fall through to the grid's diagonal.
     intraZoneFeeKwd: kwd(plan.intraZoneFeeKwd),
+    // Revision 14 (#1) — a by-kilometre plan's base fee and its rate for each
+    // kilometre. Both null on a plan still priced by the band ladder below.
+    baseFeeKwd: kwd(plan.baseFeeKwd),
+    perKmFeeKwd: kwd(plan.perKmFeeKwd),
+    maxDistanceKm: plan.maxDistanceKm == null ? null : Number(plan.maxDistanceKm),
     vendorCount: plan._count?.vendors ?? 0,
     zoneRates: (plan.zoneRates ?? []).map((r: any) => ({
       originZoneId: r.originZoneId,
@@ -219,20 +234,38 @@ router.put(
   async (req: Request, res: Response) => {
     try {
       const body = req.body as z.infer<typeof updatePlanSchema>;
-      const updated = await prisma.deliveryPlan.updateMany({
-        where: { id: req.params.id, tenantId: req.user!.tenantId },
-        data: {
-          ...(body.name !== undefined ? { name: body.name } : {}),
-          ...(body.isActive !== undefined ? { isActive: body.isActive } : {}),
-          ...(body.intraZoneFeeKwd !== undefined
-            ? {
-                intraZoneFeeKwd:
-                  body.intraZoneFeeKwd == null
-                    ? null
-                    : new Prisma.Decimal(String(body.intraZoneFeeKwd)),
-              }
-            : {}),
-        },
+      const dec = (v: string | number | null | undefined) =>
+        v == null ? null : new Prisma.Decimal(String(v));
+
+      // Revision 14 (#1): setting either kilometre number moves the plan off
+      // its band ladder and onto the formula. The bands go with it in the same
+      // transaction — a plan holding both a formula and a stale ladder reads
+      // one way on screen and could price the other way if the formula is ever
+      // cleared, which is exactly the surprise a rate card must not hold.
+      const movesToFormula =
+        (body.baseFeeKwd != null && body.baseFeeKwd !== undefined) ||
+        (body.perKmFeeKwd != null && body.perKmFeeKwd !== undefined);
+
+      const updated = await prisma.$transaction(async (tx) => {
+        const result = await tx.deliveryPlan.updateMany({
+          where: { id: req.params.id, tenantId: req.user!.tenantId },
+          data: {
+            ...(body.name !== undefined ? { name: body.name } : {}),
+            ...(body.isActive !== undefined ? { isActive: body.isActive } : {}),
+            ...(body.intraZoneFeeKwd !== undefined
+              ? { intraZoneFeeKwd: dec(body.intraZoneFeeKwd) }
+              : {}),
+            ...(body.baseFeeKwd !== undefined ? { baseFeeKwd: dec(body.baseFeeKwd) } : {}),
+            ...(body.perKmFeeKwd !== undefined ? { perKmFeeKwd: dec(body.perKmFeeKwd) } : {}),
+            ...(body.maxDistanceKm !== undefined
+              ? { maxDistanceKm: dec(body.maxDistanceKm) }
+              : {}),
+          },
+        });
+        if (result.count > 0 && movesToFormula) {
+          await tx.deliveryPlanKmTier.deleteMany({ where: { planId: req.params.id } });
+        }
+        return result;
       });
       if (updated.count === 0) return res.status(404).json({ error: "Delivery plan not found" });
 

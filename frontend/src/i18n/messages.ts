@@ -1353,12 +1353,18 @@ export interface Messages {
     deleteConfirm: string;
     zoneEditorHint: string;
     kmEditorHint: string;
-    upToKm: string;
-    priceKwd: string;
-    andAbove: string;
-    notServed: string;
-    addTier: string;
     tierOrderHint: string;
+    kmBaseFee: string;
+    kmBaseFeeHint: string;
+    kmPerKmFee: string;
+    kmPerKmFeeHint: string;
+    kmMaxDistance: string;
+    kmMaxDistanceHint: string;
+    kmNoLimit: string;
+    kmPreview: string;
+    kmPreviewEmpty: string;
+    kmBeyondLimit: string;
+    kmRateInvalid: string;
     planIntraZoneHint: string;
     unpricedPairs: string;
     unpricedPairsHint: string;
@@ -1954,6 +1960,19 @@ export interface Messages {
     viaGateway: string;
     viaTransfer: string;
   };
+  /**
+   * Drivers asking Darb for a three-hour window (client request, 2026-08-03).
+   * Lives inside the Live screen's Drivers segment, not its own rail entry.
+   */
+  shiftRequests: {
+    title: string;
+    approve: string;
+    decline: string;
+    send: string;
+    reasonPlaceholder: string;
+    approved: string;
+    declined: string;
+  };
   /** Revision 14 — the delivery company's own cash account with Darb. */
   fleetCash: {
     title: string;
@@ -2120,6 +2139,18 @@ export interface Messages {
     period: string;
     orders: string;
     feePerOrder: string;
+    rateTitle: string;
+    rateHint: string;
+    ratePropose: string;
+    rateNewPrice: string;
+    rateReason: string;
+    rateSend: string;
+    rateApprovalHint: string;
+    rateAwaitingDarb: string;
+    rateWithdraw: string;
+    rateRequestSent: string;
+    rateRequestWithdrawn: string;
+    ratePriceInvalid: string;
     total: string;
     statementStatus: string;
     earningsTitle: string;
@@ -3756,7 +3787,7 @@ export const en: Messages = {
     typeZone: "Zone",
     typeKm: "Kilometre",
     typeZoneHint: "A flat fee within a zone, plus a price for each zone to zone pair.",
-    typeKmHint: "Price bands by driving distance from Google Maps, not the route the driver took.",
+    typeKmHint: "A base fee plus a rate for each kilometre of driving distance from Google Maps, not the route the driver took.",
     typeLockedHint: "A plan is one or the other, and this cannot be changed later. Create a second plan instead.",
     createAndEdit: "Create and set prices",
     created: "Plan created",
@@ -3764,13 +3795,19 @@ export const en: Messages = {
     deletePlan: "Delete plan",
     deleteConfirm: "This cannot be undone. Merchants on this plan must be moved to another one first.",
     zoneEditorHint: "One price per origin and destination pair. Leave a cell blank to say you do not deliver it.",
-    kmEditorHint: "Bands are read top to bottom. Leave the last distance blank for 'and above', and leave a price blank to say you do not deliver that far.",
-    upToKm: "Up to (km)",
-    priceKwd: "Price (KD)",
-    andAbove: "and above",
-    notServed: "not served",
-    addTier: "Add band",
+    kmEditorHint: "Every delivery on this plan is charged the base fee plus the kilometre rate for the distance driven.",
     tierOrderHint: "Distance is measured from Google Maps routing, fixed when the order is priced.",
+    kmBaseFee: "Base fee (KD)",
+    kmBaseFeeHint: "Charged on every delivery before any distance.",
+    kmPerKmFee: "Per kilometre (KD)",
+    kmPerKmFeeHint: "Charged for each kilometre driven. Leave blank for a flat fee at any distance.",
+    kmMaxDistance: "Maximum distance (km)",
+    kmMaxDistanceHint: "Past this, orders are refused at intake. Leave blank for no limit.",
+    kmNoLimit: "no limit",
+    kmPreview: "What this charges",
+    kmPreviewEmpty: "Enter a base fee or a kilometre rate to see what a delivery costs.",
+    kmBeyondLimit: "not delivered",
+    kmRateInvalid: "The kilometre rate must be a number.",
     planIntraZoneHint:
       "Charged when pickup and drop-off are in the same zone. Belongs to this plan only. Leave blank to price same-zone deliveries from the grid instead.",
     unpricedPairs: "{count} zone pairs have no price",
@@ -4372,6 +4409,15 @@ export const en: Messages = {
     viaGateway: "Card or KNET",
     viaTransfer: "Transfer, quoting the reference",
   },
+  shiftRequests: {
+    title: "Shift requests",
+    approve: "Confirm",
+    decline: "Decline",
+    send: "Send",
+    reasonPlaceholder: "Why not, in a few words",
+    approved: "Shift confirmed.",
+    declined: "Request declined.",
+  },
   fleetCash: {
     title: "Cash account",
     subtitle:
@@ -4526,6 +4572,18 @@ export const en: Messages = {
     period: "Period",
     orders: "Orders",
     feePerOrder: "Fee/order",
+    rateTitle: "Your price per order",
+    rateHint: "What Darb pays your company for each delivered order. Every payout below is built from this figure.",
+    ratePropose: "Propose a new price",
+    rateNewPrice: "New price per order (KD)",
+    rateReason: "Reason (optional)",
+    rateSend: "Send to Darb",
+    rateApprovalHint: "This does not change your price on its own. Darb reviews the request, and the new price applies once it is approved. Statements already issued keep the price they were built on.",
+    rateAwaitingDarb: "Waiting on Darb to review",
+    rateWithdraw: "Withdraw request",
+    rateRequestSent: "Sent to Darb for review",
+    rateRequestWithdrawn: "Request withdrawn",
+    ratePriceInvalid: "Enter a price per order above zero.",
     total: "Total",
     statementStatus: "Status",
     earningsTitle: "Earnings this month",
@@ -6153,7 +6211,7 @@ export const ar: Messages = {
     typeZone: "المنطقة",
     typeKm: "الكيلومتر",
     typeZoneHint: "رسوم ثابتة داخل المنطقة، مع سعر لكل زوج من منطقة إلى منطقة.",
-    typeKmHint: "شرائح سعرية حسب مسافة القيادة من خرائط جوجل، لا حسب مسار السائق.",
+    typeKmHint: "رسوم أساسية زائد سعر لكل كيلومتر من مسافة القيادة في خرائط جوجل، لا حسب مسار السائق.",
     typeLockedHint: "الخطة إما هذه أو تلك، ولا يمكن تغييرها لاحقاً. أنشئ خطة ثانية بدلاً من ذلك.",
     createAndEdit: "إنشاء وتحديد الأسعار",
     created: "تم إنشاء الخطة",
@@ -6161,13 +6219,19 @@ export const ar: Messages = {
     deletePlan: "حذف الخطة",
     deleteConfirm: "لا يمكن التراجع عن هذا. يجب نقل التجار على هذه الخطة إلى خطة أخرى أولاً.",
     zoneEditorHint: "سعر واحد لكل زوج مصدر ووجهة. اترك الخانة فارغة للإشارة إلى أنك لا توصّل إليها.",
-    kmEditorHint: "تُقرأ الشرائح من الأعلى إلى الأسفل. اترك آخر مسافة فارغة لتعني «وما فوق»، واترك السعر فارغاً لتعني أنك لا توصّل هذه المسافة.",
-    upToKm: "حتى (كم)",
-    priceKwd: "السعر (د.ك)",
-    andAbove: "وما فوق",
-    notServed: "غير مخدومة",
-    addTier: "إضافة شريحة",
+    kmEditorHint: "كل توصيلة على هذه الخطة تُحتسب بالرسوم الأساسية زائد سعر الكيلومتر عن المسافة المقطوعة.",
     tierOrderHint: "تُقاس المسافة من مسار خرائط جوجل، وتُثبّت عند تسعير الطلب.",
+    kmBaseFee: "الرسوم الأساسية (د.ك)",
+    kmBaseFeeHint: "تُحتسب على كل توصيلة قبل احتساب أي مسافة.",
+    kmPerKmFee: "لكل كيلومتر (د.ك)",
+    kmPerKmFeeHint: "يُحتسب عن كل كيلومتر مقطوع. اتركه فارغا لرسوم ثابتة مهما كانت المسافة.",
+    kmMaxDistance: "أقصى مسافة (كم)",
+    kmMaxDistanceHint: "بعدها تُرفض الطلبات عند الاستلام. اتركه فارغا بلا حد أقصى.",
+    kmNoLimit: "بلا حد",
+    kmPreview: "ما تحتسبه هذه الخطة",
+    kmPreviewEmpty: "أدخل رسوما أساسية أو سعرا للكيلومتر لتظهر تكلفة التوصيلة.",
+    kmBeyondLimit: "لا تُوصَّل",
+    kmRateInvalid: "سعر الكيلومتر يجب أن يكون رقما.",
     planIntraZoneHint:
       "تُحتسب عندما يكون الاستلام والتسليم في المنطقة نفسها. تخص هذه الخطة وحدها. اتركها فارغة لتسعير التوصيل داخل المنطقة من الجدول.",
     unpricedPairs: "{count} من أزواج المناطق بلا سعر",
@@ -6757,6 +6821,15 @@ export const ar: Messages = {
     viaGateway: "بطاقة أو كي نت",
     viaTransfer: "تحويل مع ذكر الرقم المرجعي",
   },
+  shiftRequests: {
+    title: "طلبات الورديات",
+    approve: "تأكيد",
+    decline: "رفض",
+    send: "إرسال",
+    reasonPlaceholder: "السبب باختصار",
+    approved: "تم تأكيد الوردية.",
+    declined: "تم رفض الطلب.",
+  },
   fleetCash: {
     title: "حساب النقد",
     subtitle: "سلّم درب النقد الذي جمعه سائقوك، ثم سدّد أرصدتهم من رصيدك المودع.",
@@ -6909,6 +6982,18 @@ export const ar: Messages = {
     period: "الفترة",
     orders: "الطلبات",
     feePerOrder: "الأجر لكل طلب",
+    rateTitle: "سعرك لكل طلب",
+    rateHint: "ما تدفعه درب لشركتك عن كل طلب تم توصيله. كل دفعة أدناه مبنية على هذا الرقم.",
+    ratePropose: "اقتراح سعر جديد",
+    rateNewPrice: "السعر الجديد لكل طلب (د.ك)",
+    rateReason: "السبب (اختياري)",
+    rateSend: "إرسال إلى درب",
+    rateApprovalHint: "هذا لا يغيّر سعرك بنفسه. تراجع درب الطلب، ويسري السعر الجديد بعد الموافقة عليه. الكشوف الصادرة تحتفظ بالسعر الذي بُنيت عليه.",
+    rateAwaitingDarb: "بانتظار مراجعة درب",
+    rateWithdraw: "سحب الطلب",
+    rateRequestSent: "أُرسل إلى درب للمراجعة",
+    rateRequestWithdrawn: "تم سحب الطلب",
+    ratePriceInvalid: "أدخل سعرا لكل طلب أكبر من صفر.",
     total: "الإجمالي",
     statementStatus: "الحالة",
     earningsTitle: "أرباح هذا الشهر",

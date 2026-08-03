@@ -7,7 +7,9 @@
  *
  *   by zone → the plan's own intra-zone flat fee within a zone, else the
  *             plan's origin→destination rate cell
- *   by km   → the first tier whose maxKm covers the routing distance
+ *   by km   → the plan's base fee plus its rate for each kilometre travelled
+ *             (revision 14 #1), or, on a plan never moved onto that formula,
+ *             the first tier whose maxKm covers the routing distance
  *
  * A by-zone plan holding no rates at all has never been configured, and falls
  * back to the tenant-wide pricing below rather than refusing every order that
@@ -125,6 +127,44 @@ function feeForDistance(
   return null;
 }
 
+/**
+ * Fee for a by-kilometre plan — revision 14 (#1).
+ *
+ * The client's rule: base fee plus a rate for each kilometre travelled.
+ *
+ *   fee = baseFeeKwd + perKmFeeKwd × km,  rounded to the fils
+ *
+ * Beyond `maxDistanceKm` the plan does not deliver, which is the only reason
+ * that column exists: a formula on its own quotes a price for any distance,
+ * and the ladder it replaces could say "we stop here" by leaving the top band
+ * blank. Losing that would have turned an unserviceable drop into a very large
+ * quote nobody meant to offer.
+ *
+ * A plan with neither number set has never been moved onto the formula, so its
+ * band ladder still answers. That is what lets this ship without repricing a
+ * single live plan on the deploy.
+ */
+function kmPlanFee(
+  plan: {
+    baseFeeKwd: Prisma.Decimal | null;
+    perKmFeeKwd: Prisma.Decimal | null;
+    maxDistanceKm: Prisma.Decimal | null;
+    kmTiers: Array<{ maxKm: Prisma.Decimal | null; feeKwd: Prisma.Decimal | null }>;
+  },
+  km: number,
+): Prisma.Decimal | null {
+  if (plan.baseFeeKwd == null && plan.perKmFeeKwd == null) {
+    return feeForDistance(plan.kmTiers, km);
+  }
+
+  const maxKm = plan.maxDistanceKm == null ? null : Number(plan.maxDistanceKm);
+  if (maxKm != null && km > maxKm) return null;
+
+  const base = new Prisma.Decimal((plan.baseFeeKwd ?? 0) as unknown as Prisma.Decimal.Value);
+  const perKm = new Prisma.Decimal((plan.perKmFeeKwd ?? 0) as unknown as Prisma.Decimal.Value);
+  return base.plus(perKm.mul(new Prisma.Decimal(km))).toDecimalPlaces(3);
+}
+
 // ─── Quote ──────────────────────────────────────────────────────────────────
 
 /**
@@ -237,7 +277,7 @@ export async function quoteDelivery(
       { lat: originLat, lng: originLng },
       { lat: destLat, lng: destLng },
     );
-    const feeKwd = feeForDistance(plan.kmTiers, distance.km);
+    const feeKwd = kmPlanFee(plan, distance.km);
     if (feeKwd == null) return { ok: false, reason: "UNSERVICEABLE_PAIR" };
 
     return {

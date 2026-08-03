@@ -42,6 +42,7 @@ import type {
   FleetStatementRow,
   FleetUser,
   FleetEarnings,
+  FleetRate,
   FleetDocument,
   FleetDocumentInput,
   FleetDocumentsPayload,
@@ -346,8 +347,17 @@ export const deliveryPlansApi = {
   update: (
     id: string,
     // Revision 5 (#7): null clears the plan's own intra-zone fee and puts it
-    // back on the grid's diagonal.
-    body: { name?: string; isActive?: boolean; intraZoneFeeKwd?: string | null }
+    // back on the grid's diagonal. Revision 14 (#1): the kilometre numbers
+    // save here rather than through putRates, because they belong to the plan
+    // the way the intra-zone fee does, not to a table of rows.
+    body: {
+      name?: string;
+      isActive?: boolean;
+      intraZoneFeeKwd?: string | null;
+      baseFeeKwd?: string | null;
+      perKmFeeKwd?: string | null;
+      maxDistanceKm?: number | null;
+    }
   ) => put<DeliveryPlan>(`/api/delivery-plans/${id}`, body),
   /** Rates are replaced wholesale — a plan is never half-priced. */
   putRates: (
@@ -374,6 +384,33 @@ export const dispatchApi = {
   /** Bootstrap snapshot for the live map / driverPositionStore. */
   positions: () => get<DriverPosition[] | { data: DriverPosition[] }>("/api/dispatch/positions"),
   overview: () => get<DispatchOverview>("/api/dispatch/overview"),
+};
+
+// ── /api/shift-requests (drivers asking Darb for a three-hour window) ────
+//
+// The driver app writes these; approving one is what creates the Shift. Kept
+// out of dispatchApi because the Live map's overview call runs on a timer and
+// a pending queue does not belong in a payload that size.
+
+export interface ShiftRequestRow {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  zoneName: string;
+  status: "PENDING" | "APPROVED" | "DECLINED" | "CANCELLED";
+  declineReason: string | null;
+  createdAt: string;
+  driver?: { id: string; name: string; driverCode: string | null; phone: string | null } | null;
+}
+
+export const shiftRequestsApi = {
+  list: (params?: Params) =>
+    get<Paginated<ShiftRequestRow> | ShiftRequestRow[]>("/api/shift-requests", params),
+  pendingCount: () => get<{ count: number }>("/api/shift-requests/pending-count"),
+  approve: (id: string) => post<{ shiftId: string }>(`/api/shift-requests/${id}/approve`),
+  decline: (id: string, reason: string) =>
+    post<{ message: string }>(`/api/shift-requests/${id}/decline`, { reason }),
 };
 
 // ── /api/vendor (vendor-portal scope — vendorId comes from the JWT) ──────
@@ -512,6 +549,14 @@ export const fleetApi = {
   statements: () => get<FleetStatementRow[]>("/api/fleet/statements"),
   earnings: (params?: { month?: string }) =>
     get<FleetEarnings>("/api/fleet/earnings", params as Params),
+
+  // Revision 14 (#2) — the company's own price per order. `proposeRate` does
+  // NOT change it: it opens a request Darb approves, like everything else this
+  // portal asks for.
+  rate: () => get<FleetRate>("/api/fleet/rate"),
+  proposeRate: (body: { flatFeePerOrderKwd: string; reason?: string }) =>
+    post<{ id: string; status: string }>("/api/fleet/rate", body),
+  withdrawRateRequest: (id: string) => del<{ ok: true }>(`/api/fleet/rate/${id}`),
 
   // ── Revision 12: the request desk ──────────────────────────────────────
   // Everything below either reads the fleet's own records or opens a request

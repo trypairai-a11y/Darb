@@ -468,6 +468,91 @@ describe("quoteDelivery with a delivery plan", () => {
     expect(result.pickupZoneId).toBe("zone-a");
   });
 
+  // ── By-kilometre plans: base fee + rate per km (revision 14 #1) ───────────
+  //
+  // The client's rule, in their words: "for the kilometre pricing make it base
+  // fee + each kilometre fee". The band ladder above is what this replaced, and
+  // the tests for it stay: a plan saved before this change must keep quoting
+  // exactly what it quoted yesterday, which is the property that let this ship
+  // without a data migration.
+
+  function primeFormulaPlan(plan: Record<string, unknown>) {
+    primeBranchOnPlan(
+      { id: "plan-f", type: "KM", kmTiers: [], ...plan },
+      { lat: 29.375, lng: 47.975 },
+    );
+  }
+
+  test.each([
+    ["a short drop", 3, "1.450"],
+    ["a fractional distance", 8.4, "2.260"],
+    ["a long drop", 21.6, "4.240"],
+  ])("by-km formula: %s → KD %s", async (_label, km, expected) => {
+    // KD 1.000 to start, 150 fils a kilometre.
+    primeFormulaPlan({ baseFeeKwd: D("1.000"), perKmFeeKwd: D("0.150"), maxDistanceKm: null });
+    drivingDistanceKm.mockResolvedValue({ km, source: "google" });
+
+    const result = await quoteDelivery(TENANT, { branchId: "branch-1", dropoff: IN_ZONE_B });
+
+    expect(result.ok).toBe(true);
+    expect(result.feeKwd.toFixed(3)).toBe(expected);
+    expect(result.distanceKm).toBe(km);
+  });
+
+  // The one thing the band ladder could say that a formula cannot. Without it,
+  // a drop we do not serve would quote a very large number instead of refusing.
+  test("by-km formula: past the maximum distance the plan does not deliver", async () => {
+    primeFormulaPlan({
+      baseFeeKwd: D("1.000"),
+      perKmFeeKwd: D("0.150"),
+      maxDistanceKm: D("20"),
+    });
+    drivingDistanceKm.mockResolvedValue({ km: 24.5, source: "google" });
+
+    const result = await quoteDelivery(TENANT, { branchId: "branch-1", dropoff: IN_ZONE_B });
+
+    expect(result).toEqual({ ok: false, reason: "UNSERVICEABLE_PAIR" });
+  });
+
+  test("by-km formula: exactly on the maximum distance is still served", async () => {
+    primeFormulaPlan({
+      baseFeeKwd: D("1.000"),
+      perKmFeeKwd: D("0.150"),
+      maxDistanceKm: D("20"),
+    });
+    drivingDistanceKm.mockResolvedValue({ km: 20, source: "google" });
+
+    const result = await quoteDelivery(TENANT, { branchId: "branch-1", dropoff: IN_ZONE_B });
+
+    expect(result.ok).toBe(true);
+    expect(result.feeKwd.toFixed(3)).toBe("4.000");
+  });
+
+  test("by-km formula: a base fee with no kilometre rate is flat at any distance", async () => {
+    primeFormulaPlan({ baseFeeKwd: D("1.250"), perKmFeeKwd: null, maxDistanceKm: null });
+    drivingDistanceKm.mockResolvedValue({ km: 17.3, source: "google" });
+
+    const result = await quoteDelivery(TENANT, { branchId: "branch-1", dropoff: IN_ZONE_B });
+
+    expect(result.ok).toBe(true);
+    expect(result.feeKwd.toFixed(3)).toBe("1.250");
+  });
+
+  // The migration story, asserted rather than assumed: a plan that predates the
+  // formula has both columns null, and its bands must still answer.
+  test("by-km: a plan with no formula still prices off its bands", async () => {
+    primeBranchOnPlan(
+      { id: "plan-k", type: "KM", kmTiers: KM_TIERS, baseFeeKwd: null, perKmFeeKwd: null },
+      { lat: 29.375, lng: 47.975 },
+    );
+    drivingDistanceKm.mockResolvedValue({ km: 13, source: "google" });
+
+    const result = await quoteDelivery(TENANT, { branchId: "branch-1", dropoff: IN_ZONE_B });
+
+    expect(result.ok).toBe(true);
+    expect(result.feeKwd.toFixed(3)).toBe("2.000");
+  });
+
   test("by-zone plan: a dropoff outside every zone has no cell to read", async () => {
     primeBranchOnPlan({ id: "plan-z", type: "ZONE", kmTiers: [] });
 

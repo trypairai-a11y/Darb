@@ -327,9 +327,19 @@ function RequestsSection({ fleet }: { fleet: FleetRow }) {
                   ? `${payload.phone ?? ""} · ${payload.vehicleType ?? ""}`
                   : r.type === "DRIVER_STATUS"
                     ? `${payload.status ?? ""}${payload.reason ? ` · ${payload.reason}` : ""}`
-                    : payload.documentType
-                      ? String(payload.documentType).replace(/_/g, " ")
-                      : ""}
+                    : // Revision 14 (#2): a price ask must show both numbers.
+                      // Approving a bare "KD 1.400" without what it moves from
+                      // is a supervisor guessing at the size of the raise.
+                      r.type === "RATE_CHANGE"
+                      ? `${t("fleetPortal.feePerOrder")}: ${formatKwd(
+                          payload.currentKwd ?? "0",
+                          locale,
+                        )} → ${formatKwd(payload.flatFeePerOrderKwd ?? "0", locale)}${
+                          payload.reason ? ` · ${payload.reason}` : ""
+                        }`
+                      : payload.documentType
+                        ? String(payload.documentType).replace(/_/g, " ")
+                        : ""}
               </p>
               <p className="text-xs text-sand-500 mt-0.5">
                 {t("fleetPortal.submittedBy")}{" "}

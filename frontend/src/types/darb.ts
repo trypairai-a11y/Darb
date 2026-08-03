@@ -959,7 +959,10 @@ export type FleetRequestType =
   | "DRIVER_STATUS"
   | "DRIVER_PROFILE"
   | "DRIVER_DOCUMENT"
-  | "COMPANY_DOCUMENT";
+  | "COMPANY_DOCUMENT"
+  // Revision 14 (#2) — the delivery company's own price per order. Approval is
+  // the only thing that moves it.
+  | "RATE_CHANGE";
 
 export type FleetRequestStatus = "PENDING" | "APPROVED" | "REJECTED" | "WITHDRAWN";
 
@@ -1195,6 +1198,23 @@ export interface FleetInvoiceUpload {
   fileKey?: string;
 }
 
+/**
+ * The delivery company's own price per order (revision 14 #2), plus any
+ * proposal Darb has not decided yet. `canPropose` is the server's answer, not
+ * the client's guess: only an owner may ask, and the control is hidden rather
+ * than shown to answer 403.
+ */
+export interface FleetRate {
+  currentKwd: string;
+  canPropose: boolean;
+  pending: {
+    id: string;
+    proposedKwd: string | null;
+    reason: string | null;
+    createdAt: string;
+  } | null;
+}
+
 export interface FleetEarnings {
   periodStart: string;
   periodEnd: string;
@@ -1286,6 +1306,12 @@ export interface DeliveryPlan {
   // Revision 5 (#7) — this plan's own intra-zone flat fee. Null means it has
   // none and same-zone deliveries price off the grid's diagonal instead.
   intraZoneFeeKwd?: string | null;
+  // Revision 14 (#1) — a by-kilometre plan is a base fee plus a rate for each
+  // kilometre travelled. Both null on a plan still priced by kmTiers below.
+  baseFeeKwd?: string | null;
+  perKmFeeKwd?: string | null;
+  /** Past this the plan does not deliver. Null = no limit. */
+  maxDistanceKm?: number | null;
   // Origin→destination pairs this plan leaves blank. Null on by-km plans and
   // on the list endpoint, which does not load the grid.
   unpricedPairs?: number | null;

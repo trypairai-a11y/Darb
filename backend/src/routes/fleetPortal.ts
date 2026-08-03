@@ -537,6 +537,190 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
   }
 });
 
+/**
+ * @swagger
+ * /api/fleet/rate:
+ *   get:
+ *     tags: [Fleet Portal]
+ *     summary: The company's own price per order, and any proposal in review
+ *
+ * Revision 14 (#2). The rate was already on screen inside the earnings
+ * breakdown, but only as a number the company could read and not act on. This
+ * is the same number with the ask attached, and it returns the pending
+ * proposal so a company that has already asked sees its own request rather
+ * than a button that appears to do nothing the second time.
+ */
+router.get("/rate", requireFleetTab("PAYOUTS"), async (req: Request, res: Response) => {
+  try {
+    const ctx = await fleetContext(req);
+    if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+
+    const [fleet, pending] = await Promise.all([
+      prisma.fleetPartner.findFirst({
+        where: { id: ctx.fleetPartnerId, tenantId: ctx.tenantId },
+        select: { flatFeePerOrderKwd: true },
+      }),
+      prisma.fleetChangeRequest.findFirst({
+        where: {
+          tenantId: ctx.tenantId,
+          fleetPartnerId: ctx.fleetPartnerId,
+          type: "RATE_CHANGE",
+          status: "PENDING",
+        },
+        orderBy: { createdAt: "desc" },
+        select: { id: true, payload: true, createdAt: true },
+      }),
+    ]);
+    if (!fleet) { res.status(404).json({ error: "Fleet partner not found" }); return; }
+
+    const payload = (pending?.payload ?? {}) as Record<string, any>;
+    res.json({
+      currentKwd: Number(fleet.flatFeePerOrderKwd).toFixed(3),
+      // Only an owner may ask, so the client can hide the control instead of
+      // showing a button that answers 403 (revision 13 #6, same rule as Team).
+      canPropose: fleetRoleOf(req) === "OWNER",
+      pending: pending
+        ? {
+            id: pending.id,
+            proposedKwd:
+              payload.flatFeePerOrderKwd == null
+                ? null
+                : Number(payload.flatFeePerOrderKwd).toFixed(3),
+            reason: payload.reason ?? null,
+            createdAt: pending.createdAt,
+          }
+        : null,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/fleet/rate:
+ *   post:
+ *     tags: [Fleet Portal]
+ *     summary: Propose a new price per order (opens a request for Darb)
+ *
+ * Revision 14 (#2). This does NOT change the rate. It opens a
+ * `FleetChangeRequest`, exactly like every other thing this portal asks for,
+ * and Darb's approval is what moves the number. A delivery company that could
+ * write its own rate live could raise what Darb pays it with nobody approving
+ * it, which is the single sharpest case for the rule this portal already has.
+ */
+router.post(
+  "/rate",
+  requireFleetTab("PAYOUTS"),
+  // Money, so it stays with the owner the way minting logins does. Enforced
+  // here AND by hiding the control, so nobody is shown a button that 403s.
+  requireFleetRole("OWNER"),
+  async (req: Request, res: Response) => {
+    try {
+      const ctx = await fleetContext(req);
+      if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+
+      const rate = Number(req.body?.flatFeePerOrderKwd);
+      if (!Number.isFinite(rate) || rate <= 0) {
+        res.status(400).json({ error: "Enter a price per order above zero" });
+        return;
+      }
+      // A rate nobody would type is a typo, and a typo approved in a hurry is
+      // a month of payouts to unwind with compensating entries.
+      if (rate > 50) {
+        res.status(400).json({ error: "That price per order looks wrong. Check the amount." });
+        return;
+      }
+      const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
+
+      // One open ask at a time. Two competing proposals give Darb a queue where
+      // approving the older one silently undoes the newer, and neither side can
+      // say afterwards which number was agreed.
+      const existing = await prisma.fleetChangeRequest.findFirst({
+        where: {
+          tenantId: ctx.tenantId,
+          fleetPartnerId: ctx.fleetPartnerId,
+          type: "RATE_CHANGE",
+          status: "PENDING",
+        },
+        select: { id: true },
+      });
+      if (existing) {
+        res.status(409).json({
+          error: "A price change is already waiting on Darb. Withdraw it first to send a new one.",
+          code: "RATE_REQUEST_PENDING",
+          requestId: existing.id,
+        });
+        return;
+      }
+
+      const fleet = await prisma.fleetPartner.findFirst({
+        where: { id: ctx.fleetPartnerId, tenantId: ctx.tenantId },
+        select: { name: true, flatFeePerOrderKwd: true },
+      });
+
+      const request = await createFleetRequest({
+        tenantId: ctx.tenantId,
+        fleetPartnerId: ctx.fleetPartnerId,
+        type: "RATE_CHANGE",
+        payload: {
+          flatFeePerOrderKwd: rate.toFixed(3),
+          // Carried so the approving supervisor sees what it is moving from
+          // without opening a second screen to look it up.
+          currentKwd: Number(fleet?.flatFeePerOrderKwd ?? 0).toFixed(3),
+          ...(reason ? { reason } : {}),
+        },
+        requestedById: req.user?.userId ?? null,
+        fleetName: fleet?.name ?? null,
+      });
+
+      res.status(201).json({ id: request.id, status: request.status });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+/**
+ * @swagger
+ * /api/fleet/rate/{id}:
+ *   delete:
+ *     tags: [Fleet Portal]
+ *     summary: Withdraw a price proposal Darb has not decided yet
+ *
+ * Status-guarded claim, same discipline as approve/reject: a company must not
+ * be able to pull a request back out from under a supervisor mid-decision.
+ */
+router.delete(
+  "/rate/:id",
+  requireFleetTab("PAYOUTS"),
+  requireFleetRole("OWNER"),
+  async (req: Request, res: Response) => {
+    try {
+      const ctx = await fleetContext(req);
+      if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+
+      const claimed = await prisma.fleetChangeRequest.updateMany({
+        where: {
+          id: req.params.id,
+          tenantId: ctx.tenantId,
+          fleetPartnerId: ctx.fleetPartnerId,
+          type: "RATE_CHANGE",
+          status: "PENDING",
+        },
+        data: { status: "WITHDRAWN" },
+      });
+      if (claimed.count === 0) {
+        res.status(409).json({ error: "That request is no longer pending" });
+        return;
+      }
+      res.json({ ok: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
 // ─── Revision 12: the request desk ──────────────────────────────────────────
 //
 // Everything below either reads the fleet's own records or opens a request for
