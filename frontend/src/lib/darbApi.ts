@@ -44,11 +44,13 @@ import type {
   FleetEarnings,
   FleetRate,
   FleetDocument,
+  FleetDeduction,
   FleetDocumentInput,
   FleetDocumentsPayload,
   FleetChangeRequest,
   FleetDriverProfile,
   FleetIssue,
+  FleetProblems,
   FleetMonthActivity,
   FleetPortalRole,
   FleetTab,
@@ -282,6 +284,15 @@ export const deliveryOrdersApi = {
   redispatch: (id: string) => post<DeliveryOrder>(`/api/delivery-orders/${id}/redispatch`),
   cancel: (id: string, reason?: string) =>
     post<DeliveryOrder>(`/api/delivery-orders/${id}/cancel`, { reason }),
+  /**
+   * Revision 17 (#7) — walk a FAILED order to RETURNED.
+   *
+   * The status, the FSM edge and this endpoint all shipped with the PRD; what
+   * was missing was any caller, so a failed delivery could be given a reason
+   * and then never tracked to the goods actually coming back.
+   */
+  returnToMerchant: (id: string, note?: string) =>
+    post<DeliveryOrder>(`/api/delivery-orders/${id}/return`, { note }),
   updateDropoff: (id: string, body: { lat: number; lng: number; address?: string }) =>
     patch<DeliveryOrder>(`/api/delivery-orders/${id}/dropoff`, body),
   /** Record (or correct) why a FAILED / CANCELLED / RETURNED order ended. */
@@ -367,8 +378,18 @@ export const deliveryPlansApi = {
   remove: (id: string) => del<void>(`/api/delivery-plans/${id}`),
 };
 
-// ── /api/incidents ───────────────────────────────────────────────────────
+// ── /api/drivers (staff-side actions) ────────────────────────────────────
 
+/**
+ * Edit #8 (2026-08-22) — "Put offline" on the problem/incident cards. Closes
+ * the driver's open online session server-side, exactly as if the rider had
+ * flipped themselves OFFLINE in the agent app.
+ */
+export const staffDriversApi = {
+  putOffline: (id: string) => post<{ ok: true; alreadyOffline: boolean }>(`/api/drivers/${id}/offline`),
+};
+
+// ── /api/incidents ───────────────────────────────────────────────────────
 export const incidentsApi = {
   list: (params?: Params) => get<Paginated<Incident> | Incident[]>("/api/incidents", params),
   ack: (id: string) => post<Incident>(`/api/incidents/${id}/ack`),
@@ -411,6 +432,52 @@ export const shiftRequestsApi = {
   approve: (id: string) => post<{ shiftId: string }>(`/api/shift-requests/${id}/approve`),
   decline: (id: string, reason: string) =>
     post<{ message: string }>(`/api/shift-requests/${id}/decline`, { reason }),
+};
+
+// ── /api/shift-planning (revision 15 — the roster behind those requests) ──
+//
+// Client request, 2026-08-06: Darb assigns the driver an area and caps how many
+// drivers each window takes; the driver only picks the hours. The whole screen
+// loads from one GET because three calls would each be fast and the grid still
+// could not draw until the last of them landed.
+
+export interface ShiftPlanningDriver {
+  id: string;
+  name: string;
+  driverCode: string | null;
+  phone: string | null;
+  status: string;
+  assignedZoneId: string | null;
+  fleetPartner?: { id: string; name: string } | null;
+}
+
+export interface ShiftCapacityRow {
+  zoneId: string;
+  /** 0 = Sunday .. 6 = Saturday. Revision 16 (#2): caps are set per day. */
+  dayOfWeek: number;
+  startTime: string;
+  maxDrivers: number;
+}
+
+export interface ShiftPlanning {
+  hours: number;
+  windows: string[];
+  zones: { id: string; code: string; name: string; nameAr: string | null }[];
+  capacity: ShiftCapacityRow[];
+  drivers: ShiftPlanningDriver[];
+}
+
+export const shiftPlanningApi = {
+  get: () => get<ShiftPlanning>("/api/shift-planning"),
+  // Replaced wholesale, like the delivery plan rate grids: a per-cell save can
+  // leave half a grid written with nothing on screen saying which half.
+  saveCapacity: (rows: ShiftCapacityRow[]) =>
+    put<{ message: string; count: number }>("/api/shift-planning/capacity", { rows }),
+  assignZone: (driverId: string, zoneId: string | null) =>
+    patch<{ message: string; assignedZoneId: string | null }>(
+      `/api/shift-planning/drivers/${driverId}/zone`,
+      { zoneId },
+    ),
 };
 
 // ── /api/vendor (vendor-portal scope — vendorId comes from the JWT) ──────
@@ -554,7 +621,13 @@ export const fleetApi = {
   // NOT change it: it opens a request Darb approves, like everything else this
   // portal asks for.
   rate: () => get<FleetRate>("/api/fleet/rate"),
-  proposeRate: (body: { flatFeePerOrderKwd: string; reason?: string }) =>
+  proposeRate: (body: {
+    flatFeePerOrderKwd: string;
+    /** Revision 14 (#3). Omitted means "leave the kilometre rate alone", never
+     *  zero: an empty box must not quietly take a company off distance pay. */
+    perKmFeeKwd?: string;
+    reason?: string;
+  }) =>
     post<{ id: string; status: string }>("/api/fleet/rate", body),
   withdrawRateRequest: (id: string) => del<{ ok: true }>(`/api/fleet/rate/${id}`),
 
@@ -656,6 +729,11 @@ export const fleetApi = {
   issues: (params?: { includeResolved?: boolean }) =>
     get<{ issues: FleetIssue[]; openCount: number }>("/api/fleet/issues", params as Params),
   acknowledgeIssue: (id: string) => post<{ ok: true }>(`/api/fleet/issues/${id}/acknowledge`),
+  /**
+   * Edit #2 (2026-08-22) — the HQ Problems view, scoped to this fleet: active
+   * orders past their SLA and open SOS/incident rows on its drivers.
+   */
+  problems: () => get<FleetProblems>("/api/fleet/problems"),
   resolveIssue: (id: string, note: string) =>
     post<{ ok: true }>(`/api/fleet/issues/${id}/resolve`, { note }),
 
@@ -809,6 +887,12 @@ export const fleetsApi = {
     ),
   requests: (id: string, params?: { status?: string }) =>
     get<FleetChangeRequest[]>(`/api/fleets/${id}/requests`, params as Params),
+  /**
+   * Revision 15 (#2). Every company's submissions in one queue, so a proposed
+   * rate does not wait for somebody to open the right row in /fleets.
+   */
+  requestsInbox: (params?: { status?: string }) =>
+    get<FleetChangeRequest[]>("/api/fleets/requests/inbox", params as Params),
   approveRequest: (id: string, reqId: string, note?: string) =>
     post<{ ok: true; driverId: string | null; created: boolean }>(
       `/api/fleets/${id}/requests/${reqId}/approve`,
@@ -818,11 +902,45 @@ export const fleetsApi = {
     post<{ ok: true }>(`/api/fleets/${id}/requests/${reqId}/reject`, { reason }),
   documents: (id: string) => get<FleetDocument[]>(`/api/fleets/${id}/documents`),
   documentUrl: (docId: string) => get<{ url: string }>(`/api/fleets/documents/${docId}/url`),
+  /**
+   * Revision 16 (#1). The endpoint has existed since the discipline ladder went
+   * in, with nothing on the client calling it: the column could only ever be
+   * moved by the automatic sweep, so a supervisor who wanted to lift a throttle
+   * or warn a company by hand had no way to.
+   */
+  discipline: (id: string, status: string, note: string) =>
+    post<FleetProfile>(`/api/fleets/${id}/discipline`, { status, note }),
   issues: (id: string, params?: { includeResolved?: boolean }) =>
     get<FleetIssue[]>(`/api/fleets/${id}/issues`, params as Params),
   support: (id: string) => get<SupportTicket[]>(`/api/fleets/${id}/support`),
   replySupport: (id: string, ticketId: string, body: string, resolve?: boolean) =>
     post<SupportTicket>(`/api/fleets/${id}/support/${ticketId}/reply`, { body, resolve }),
+
+  // ── Edit #1 / Edit #6b (2026-08-22): the vendor-layout profile ──────────
+  /** Update profile fields — the editable delivery fee lives here. */
+  update: (
+    id: string,
+    body: {
+      name?: string;
+      contactName?: string | null;
+      contactPhone?: string | null;
+      contactEmail?: string | null;
+      minOnlineHoursPerDay?: number | null;
+      isActive?: boolean;
+      flatFeePerOrderKwd?: string | number | null;
+      perKmFeeKwd?: string | number | null;
+      minDriversOnline?: Record<string, number> | null;
+    },
+  ) => put<FleetProfile>(`/api/fleets/${id}`, body),
+  /** Invoice deductions against this company, newest first. */
+  deductions: (id: string) =>
+    get<{ data: FleetDeduction[] }>(`/api/fleets/${id}/deductions`),
+  addDeduction: (
+    id: string,
+    body: { amountKwd: number; reason: string; note?: string; incurredAt?: string },
+  ) => post<FleetDeduction>(`/api/fleets/${id}/deductions`, body),
+  cancelDeduction: (id: string, deductionId: string) =>
+    post<FleetDeduction>(`/api/fleets/${id}/deductions/${deductionId}/cancel`),
 
   /**
    * Revision 13 (#8). Posts FLEET_PAYOUT and marks the statement PAID.
@@ -837,6 +955,23 @@ export const fleetsApi = {
     post<{ ok: true; transactionId: string | null; replay: boolean }>(
       `/api/fleets/statements/${statementId}/payout`,
     ),
+};
+
+// ── /api/support (revision 15 #2 — the HQ inbox) ─────────────────────────
+//
+// Support requests used to be readable only from inside the shop or the
+// delivery company that raised them, so a request from an account nobody
+// happened to open that day was invisible. This reads across both.
+
+export const supportApi = {
+  list: (params?: { status?: string; source?: "vendor" | "fleet"; limit?: number }) =>
+    get<Paginated<SupportTicket> | SupportTicket[]>("/api/support", params as Params),
+  counts: () =>
+    get<{ openSupport: number; pendingApprovals: number; total: number }>(
+      "/api/support/counts",
+    ),
+  reply: (id: string, body: string, resolve?: boolean) =>
+    post<SupportTicket>(`/api/support/${id}/reply`, { body, resolve }),
 };
 
 // ── /api/cockpit (ADMIN-only founder summary) ────────────────────────────

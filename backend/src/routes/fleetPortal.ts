@@ -11,9 +11,15 @@ import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
 import { rbac } from "../middleware/rbac";
 import { fleetScope } from "../middleware/fleetScope";
-import { getFleetScorecard } from "../services/fleetService";
+import {
+  fleetRateOf,
+  getFleetScorecard,
+  orderPayoutKwd,
+  sumFleetPayout,
+} from "../services/fleetService";
 import { getFleetDriverComparison } from "../services/fleet/fleetDriverScoreService";
 import { getDriverRating } from "../services/ratingService";
+import { createSupportNotifications } from "../services/notificationService";
 import { parseLocalDate, parseLocalDateEnd } from "../utils/date";
 import { presignPutUrl, presignGetUrl } from "../services/r2Service";
 import {
@@ -482,10 +488,10 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
       : new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
     const end = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 1));
 
-    const [fleet, orders, deliveredCount] = await Promise.all([
+    const [fleet, orders, allDistances] = await Promise.all([
       prisma.fleetPartner.findFirst({
         where: { id: ctx.fleetPartnerId, tenantId: ctx.tenantId },
-        select: { flatFeePerOrderKwd: true },
+        select: { flatFeePerOrderKwd: true, perKmFeeKwd: true },
       }),
       prisma.deliveryOrder.findMany({
         where: {
@@ -495,32 +501,50 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
           driver: { fleetPartnerId: ctx.fleetPartnerId },
         },
         select: {
-          id: true, orderNumber: true, deliveredAt: true,
+          id: true, orderNumber: true, deliveredAt: true, distanceKm: true,
           driver: { select: { id: true, name: true } },
         },
         orderBy: { deliveredAt: "desc" },
         take: 1000,
       }),
-      // Counted, not measured off the list above. The headline used to be
-      // `orders.length`, so a fleet past 1000 orders in a month watched its
-      // running earnings freeze at KD 1100.000 and quietly understate.
-      prisma.deliveryOrder.count({
+      // Every order's kilometres, not just the 1000 the table shows. The
+      // headline used to be `orders.length`, so a fleet past 1000 orders in a
+      // month watched its running earnings freeze at KD 1100.000 and quietly
+      // understate. One Decimal column over a month is the cheap way to keep
+      // the figure whole, and summing the same rows the statement will sum is
+      // what stops the running total and the cut statement disagreeing.
+      prisma.deliveryOrder.findMany({
         where: {
           tenantId: ctx.tenantId,
           status: "DELIVERED",
           deliveredAt: { gte: start, lt: end },
           driver: { fleetPartnerId: ctx.fleetPartnerId },
         },
+        select: { distanceKm: true },
       }),
     ]);
 
-    const fee = Number(fleet?.flatFeePerOrderKwd ?? 1.1);
+    const rate = fleetRateOf(fleet ?? { flatFeePerOrderKwd: "1.100", perKmFeeKwd: null });
+    const deliveredCount = allDistances.length;
+    const { totalKwd, totalKm, ordersMissingDistance } = sumFleetPayout(
+      rate,
+      allDistances.map((r) => r.distanceKm),
+    );
+
     res.json({
       periodStart: start,
       periodEnd: end,
-      feePerOrderKwd: fee.toFixed(3),
+      feePerOrderKwd: rate.baseKwd.toFixed(3),
+      // Null on a flat-rate company, which is what the screen reads to decide
+      // whether to draw a kilometre line at all.
+      perKmFeeKwd: rate.perKmKwd == null ? null : rate.perKmKwd.toFixed(3),
+      totalKm: rate.perKmKwd == null ? null : totalKm.toFixed(3),
+      // Orders Darb could not measure a distance for, so a company reading a
+      // base-only line has the count in front of it rather than a discrepancy
+      // to find by hand.
+      ordersMissingDistance: rate.perKmKwd == null ? 0 : ordersMissingDistance,
       deliveredOrders: deliveredCount,
-      totalKwd: (deliveredCount * fee).toFixed(3),
+      totalKwd: totalKwd.toFixed(3),
       // The list is capped; the figures above are not. Say so rather than let
       // a truncated table look like the whole month.
       listTruncated: orders.length < deliveredCount,
@@ -529,7 +553,8 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
         orderNumber: o.orderNumber,
         deliveredAt: o.deliveredAt,
         driverName: o.driver?.name ?? null,
-        feeKwd: fee.toFixed(3),
+        distanceKm: o.distanceKm == null ? null : Number(o.distanceKm).toFixed(3),
+        feeKwd: orderPayoutKwd(rate, o.distanceKm).toFixed(3),
       })),
     });
   } catch (err: any) {
@@ -558,7 +583,7 @@ router.get("/rate", requireFleetTab("PAYOUTS"), async (req: Request, res: Respon
     const [fleet, pending] = await Promise.all([
       prisma.fleetPartner.findFirst({
         where: { id: ctx.fleetPartnerId, tenantId: ctx.tenantId },
-        select: { flatFeePerOrderKwd: true },
+        select: { flatFeePerOrderKwd: true, perKmFeeKwd: true },
       }),
       prisma.fleetChangeRequest.findFirst({
         where: {
@@ -574,18 +599,23 @@ router.get("/rate", requireFleetTab("PAYOUTS"), async (req: Request, res: Respon
     if (!fleet) { res.status(404).json({ error: "Fleet partner not found" }); return; }
 
     const payload = (pending?.payload ?? {}) as Record<string, any>;
+    const money = (v: unknown) => (v == null ? null : Number(v).toFixed(3));
     res.json({
+      // The base half. Kept under its old name so a client built before
+      // revision 14 (#3) still reads the number it always read.
       currentKwd: Number(fleet.flatFeePerOrderKwd).toFixed(3),
+      // Null on a flat-rate company. The screen draws the kilometre line only
+      // when there is one, rather than showing every company KD 0.000 per km
+      // and implying Darb pays nothing for distance.
+      currentPerKmKwd: money(fleet.perKmFeeKwd),
       // Only an owner may ask, so the client can hide the control instead of
       // showing a button that answers 403 (revision 13 #6, same rule as Team).
       canPropose: fleetRoleOf(req) === "OWNER",
       pending: pending
         ? {
             id: pending.id,
-            proposedKwd:
-              payload.flatFeePerOrderKwd == null
-                ? null
-                : Number(payload.flatFeePerOrderKwd).toFixed(3),
+            proposedKwd: money(payload.flatFeePerOrderKwd),
+            proposedPerKmKwd: money(payload.perKmFeeKwd),
             reason: payload.reason ?? null,
             createdAt: pending.createdAt,
           }
@@ -622,14 +652,35 @@ router.post(
 
       const rate = Number(req.body?.flatFeePerOrderKwd);
       if (!Number.isFinite(rate) || rate <= 0) {
-        res.status(400).json({ error: "Enter a price per order above zero" });
+        res.status(400).json({ error: "Enter a base price above zero" });
         return;
       }
       // A rate nobody would type is a typo, and a typo approved in a hurry is
       // a month of payouts to unwind with compensating entries.
       if (rate > 50) {
-        res.status(400).json({ error: "That price per order looks wrong. Check the amount." });
+        res.status(400).json({ error: "That base price looks wrong. Check the amount." });
         return;
+      }
+
+      // Revision 14 (#3): the kilometre half. Optional and omitted means "no
+      // change to how distance is paid" — an empty field must not be read as
+      // zero, or a company asking for a higher base would silently give up its
+      // per-kilometre rate in the same request.
+      const rawPerKm = req.body?.perKmFeeKwd;
+      let perKm: number | null = null;
+      if (rawPerKm != null && String(rawPerKm).trim() !== "") {
+        perKm = Number(rawPerKm);
+        if (!Number.isFinite(perKm) || perKm < 0) {
+          res.status(400).json({ error: "Enter a price per kilometre of zero or more" });
+          return;
+        }
+        // Same typo guard, at the scale a per-kilometre rate is quoted on. A
+        // Kuwait delivery runs single-digit kilometres, so KD 5 a kilometre is
+        // already far past any real rate.
+        if (perKm > 5) {
+          res.status(400).json({ error: "That price per kilometre looks wrong. Check the amount." });
+          return;
+        }
       }
       const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
 
@@ -656,7 +707,7 @@ router.post(
 
       const fleet = await prisma.fleetPartner.findFirst({
         where: { id: ctx.fleetPartnerId, tenantId: ctx.tenantId },
-        select: { name: true, flatFeePerOrderKwd: true },
+        select: { name: true, flatFeePerOrderKwd: true, perKmFeeKwd: true },
       });
 
       const request = await createFleetRequest({
@@ -665,9 +716,12 @@ router.post(
         type: "RATE_CHANGE",
         payload: {
           flatFeePerOrderKwd: rate.toFixed(3),
+          ...(perKm == null ? {} : { perKmFeeKwd: perKm.toFixed(3) }),
           // Carried so the approving supervisor sees what it is moving from
           // without opening a second screen to look it up.
           currentKwd: Number(fleet?.flatFeePerOrderKwd ?? 0).toFixed(3),
+          currentPerKmKwd:
+            fleet?.perKmFeeKwd == null ? null : Number(fleet.perKmFeeKwd).toFixed(3),
           ...(reason ? { reason } : {}),
         },
         requestedById: req.user?.userId ?? null,
@@ -1669,6 +1723,74 @@ router.post("/issues/:id/resolve", requireFleetTab("ISSUES"), async (req: Reques
   }
 });
 
+// ─── Problems: what Darb's system noticed on this fleet's roster ────────────
+//
+// Edit #2 (2026-08-22) — the client asked for the HQ "Problems" view to show
+// in the delivery company portal too. Same definition of a problem as the
+// staff Live screen: an active order past its SLA deadline, or an open SOS /
+// incident on one of the fleet's drivers. Scoped to the caller's own partner
+// id from the JWT; a fleet can never see another fleet's trouble.
+
+router.get("/problems", requireFleetTab("ISSUES"), async (req: Request, res: Response) => {
+  try {
+    const ctx = await fleetContext(req);
+    if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+    const now = new Date();
+
+    const [jeopardyOrders, incidents] = await Promise.all([
+      prisma.deliveryOrder.findMany({
+        where: {
+          tenantId: ctx.tenantId,
+          status: { in: ["ASSIGNED", "PICKED_UP"] },
+          slaDeadline: { lt: now },
+          driver: { fleetPartnerId: ctx.fleetPartnerId },
+        },
+        orderBy: { slaDeadline: "asc" },
+        take: 50,
+        select: {
+          id: true,
+          orderNumber: true,
+          status: true,
+          slaDeadline: true,
+          driver: { select: { id: true, name: true, phone: true } },
+        },
+      }),
+      prisma.incident.findMany({
+        where: {
+          tenantId: ctx.tenantId,
+          status: { in: ["OPEN", "ACKNOWLEDGED"] },
+          driver: { fleetPartnerId: ctx.fleetPartnerId },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+        select: {
+          id: true,
+          type: true,
+          status: true,
+          severity: true,
+          description: true,
+          createdAt: true,
+          driver: { select: { id: true, name: true, phone: true } },
+        },
+      }),
+    ]);
+
+    res.json({
+      data: {
+        jeopardyOrders: jeopardyOrders.map((o) => ({
+          ...o,
+          minutesOver: o.slaDeadline
+            ? Math.max(0, Math.round((now.getTime() - new Date(o.slaDeadline).getTime()) / 60000))
+            : null,
+        })),
+        incidents,
+      },
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── Support: the fleet's channel to Darb ────────────────────────────────────
 //
 // The mirror of the merchant portal's support tab, on the same SupportTicket
@@ -1706,8 +1828,7 @@ router.get("/support", requireFleetTab("SUPPORT"), async (req: Request, res: Res
  *     tags: [Fleet Portal]
  *     summary: Raise a support request with Darb
  */
-router.post("/support", requireFleetTab("SUPPORT"), async (req: Request, res: Response) => {
-  try {
+router.post("/support", requireFleetTab("SUPPORT"), async (req: Request, res: Response) => {  try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
     const { subject, body, type } = req.body as {
@@ -1741,6 +1862,27 @@ router.post("/support", requireFleetTab("SUPPORT"), async (req: Request, res: Re
       },
       include: { messages: true },
     });
+
+    // Edit #11 (2026-08-22) — route the request to the right desk by category:
+    // money to the accountant, operations to this company's account manager
+    // (scoped to companies they handle), tech to the ops manager.
+    const SUPPORT_CATEGORY: Record<string, "MONEY" | "OPERATIONS" | "TECH"> = {
+      WALLET: "MONEY",
+      ORDER: "OPERATIONS",
+      OTHER: "OPERATIONS",
+      TECHNICAL: "TECH",
+    };
+    const category = SUPPORT_CATEGORY[(type && allowedTypes.includes(type) ? type : "OTHER") as string] ?? "OPERATIONS";
+    void createSupportNotifications({
+      tenantId: ctx.tenantId,
+      category,
+      title: `New ${category.toLowerCase()} support request`,
+      message: subject.trim(),
+      sourceId: ticket.id,
+      metadata: { ticketId: ticket.id, fleetPartnerId: ctx.fleetPartnerId },
+      fleetPartnerId: ctx.fleetPartnerId,
+    }).catch(() => {});
+
     res.status(201).json(ticket);
   } catch (err: any) {
     res.status(400).json({ error: err.message });
@@ -1894,7 +2036,7 @@ router.get(
           driver: { fleetPartnerId: ctx.fleetPartnerId },
         },
         select: {
-          id: true, orderNumber: true, deliveredAt: true,
+          id: true, orderNumber: true, deliveredAt: true, distanceKm: true,
           vendor: { select: { name: true } },
           driver: { select: { id: true, name: true, driverCode: true } },
         },
@@ -1902,6 +2044,13 @@ router.get(
         take: 2000,
       });
 
+      // The rate SNAPSHOTTED on the statement, never the company's rate today:
+      // a rate change approved this morning must not rewrite what a closed
+      // month was cut on (revision 14 #3).
+      const rate = {
+        baseKwd: statement.feePerOrderKwd,
+        perKmKwd: statement.perKmFeeKwd,
+      };
       const fee = statement.feePerOrderKwd;
 
       // Client note: the statement should say how many each driver did. The
@@ -1909,7 +2058,14 @@ router.get(
       // a statement exists to have done already.
       const byDriver = new Map<
         string,
-        { driverId: string; name: string; driverCode: string | null; orders: number }
+        {
+          driverId: string;
+          name: string;
+          driverCode: string | null;
+          orders: number;
+          km: Prisma.Decimal;
+          earned: Prisma.Decimal;
+        }
       >();
       for (const o of orders) {
         const id = o.driver?.id ?? "unassigned";
@@ -1918,16 +2074,25 @@ router.get(
           name: o.driver?.name ?? "n/a",
           driverCode: o.driver?.driverCode ?? null,
           orders: 0,
+          km: new Prisma.Decimal(0),
+          earned: new Prisma.Decimal(0),
         };
         row.orders += 1;
+        if (o.distanceKm != null) row.km = row.km.plus(o.distanceKm);
+        // Accumulated per order, not orders × fee: with a kilometre half the
+        // driver who took the long runs is worth more than the one beside them
+        // on the same count, and that is the whole point of showing this.
+        row.earned = row.earned.plus(orderPayoutKwd(rate, o.distanceKm));
         byDriver.set(id, row);
       }
-      const feeNumber = Number(fee);
 
       res.json({
         statement: {
           ...statement,
           feePerOrderKwd: fee.toFixed(3),
+          perKmFeeKwd:
+            statement.perKmFeeKwd == null ? null : statement.perKmFeeKwd.toFixed(3),
+          totalKm: statement.totalKm == null ? null : statement.totalKm.toFixed(3),
           totalKwd: statement.totalKwd.toFixed(3),
         },
         orders: orders.map((o) => ({
@@ -1937,13 +2102,21 @@ router.get(
           vendorName: o.vendor?.name ?? null,
           driverName: o.driver?.name ?? null,
           driverCode: o.driver?.driverCode ?? null,
-          feeKwd: fee.toFixed(3),
+          distanceKm: o.distanceKm == null ? null : Number(o.distanceKm).toFixed(3),
+          feeKwd: orderPayoutKwd(rate, o.distanceKm).toFixed(3),
         })),
         // Ordered by who did the most, because that is the order the question
         // "who carried this month" is asked in.
         byDriver: [...byDriver.values()]
           .sort((a, b) => b.orders - a.orders)
-          .map((d) => ({ ...d, totalKwd: (d.orders * feeNumber).toFixed(3) })),
+          .map((d) => ({
+            driverId: d.driverId,
+            name: d.name,
+            driverCode: d.driverCode,
+            orders: d.orders,
+            totalKm: statement.perKmFeeKwd == null ? null : d.km.toFixed(3),
+            totalKwd: d.earned.toFixed(3),
+          })),
         // The count on the statement is the one that was paid on; a difference
         // here means orders were re-stated after the month closed, and the
         // company should see that rather than have it quietly reconciled.

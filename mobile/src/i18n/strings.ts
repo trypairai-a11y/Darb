@@ -45,25 +45,38 @@ const EN: Record<string, string> = {
   "tabs.wallet": "Wallet",
   "tabs.history": "History",
   "tabs.shifts": "Shifts",
+  "tabs.settings": "Settings",
   "tabs.alerts": "Alerts",
 
-  // ─── Shifts (client request 2026-08-01) ───
+  // ─── Shifts (client request 2026-08-01, rebuilt 2026-08-03) ───
   "shifts.title": "Shifts",
-  "shifts.subtitle": "Your schedule, and asking for more of it.",
+  "shifts.subtitle": "Pick a day, pick a window, and Darb confirms it.",
   "shifts.upcoming": "Coming up",
   "shifts.past": "Earlier",
-  "shifts.none_upcoming": "No shifts booked yet. Ask for one below.",
-  "shifts.request_title": "Ask for a shift",
-  "shifts.request_hint": "Every shift is 3 hours in one zone. Darb confirms it and it appears above.",
-  "shifts.field_date": "Date, e.g. 2026-08-05",
-  "shifts.field_from": "Start, e.g. 16:00",
-  "shifts.field_to": "Ends 3 hours later",
-  "shifts.until": "until",
-  "shifts.zone_label": "Zone (required)",
-  "shifts.zones_loading": "Loading zones…",
-  "shifts.request_button": "Send request",
+  "shifts.none_upcoming": "Nothing booked yet. Pick a window above.",
+  "shifts.request_title": "Book a shift",
+  "shifts.request_hint": "Every shift is 3 hours. Darb sets your area, you pick the hours.",
+  "shifts.your_area": "Your area: {area}",
+  "shifts.no_area": "Darb has not set your area yet. Ask your supervisor.",
+  "shifts.no_windows": "No windows left on this day. Try another day.",
+  "shifts.places_left": "{count} places left",
+  "shifts.full": "Full",
+  "shifts.windows": "Windows",
+  "shifts.book": "Book",
+  "shifts.booking": "Booking…",
+  "shifts.taken": "Booked",
+  "shifts.today": "Today",
+  "shifts.tomorrow": "Tomorrow",
+  "shifts.mine": "My shifts",
+  "shifts.status_pending": "Awaiting Darb",
+  "shifts.status_confirmed": "Confirmed",
+  "shifts.status_declined": "Declined",
+  "shifts.status_withdrawn": "Withdrawn",
+  "shifts.withdraw": "Withdraw",
+  "shifts.withdraw_failed": "Could not withdraw it",
   "shifts.request_sent": "Sent. Darb will confirm it.",
   "shifts.request_failed": "Could not send the request",
+  "shifts.past_window": "That window has already started.",
 
   // ─── Rider support (client request 2026-08-01) ───
   "support.title": "Rider support",
@@ -102,11 +115,15 @@ const EN: Record<string, string> = {
   "home.waiting": "Waiting for offers…",
   "home.waiting_sub": "Stay near your zone. New offers ring loudly.",
   "home.offline_hint": "Go online to start receiving delivery offers.",
+  "home.offline_in_settings": "You are offline. Go online from Settings to receive offers.",
   "home.busy_hint": "Finish your current delivery to receive new offers.",
   "home.today": "Today",
-  "home.deliveries": "Deliveries",
-  "home.collected": "Collected",
+  // The scope belongs in the label. A bare "Collected" beside "Cash on hand"
+  // reads as two names for one number, which is exactly what a driver asked.
+  "home.deliveries": "Deliveries today",
+  "home.collected": "Collected today",
   "home.cash_on_hand": "Cash on hand",
+  "home.cash_on_hand_hint": "Collected but not handed in yet, across all days",
   "home.resume_delivery": "Resume delivery",
   "home.lockout_title": "Offers paused — cash over ceiling",
   "home.lockout_body": "Deposit your cash at the hub to resume receiving offers.",
@@ -114,6 +131,15 @@ const EN: Record<string, string> = {
   "home.permission_warning_sub": "Offers require background location. Tap to fix.",
   "home.permission_ok": "Location sharing active",
   "home.availability_error": "Could not change status",
+  "home.demand_title": "Where the work is",
+  "home.demand_window": "Last {mins} min",
+  "home.demand_orders": "{count} orders picked up here",
+  "home.demand_waiting": "{count} waiting for a driver",
+  "home.demand_quiet": "Quiet",
+  "home.demand_busy": "Busy",
+  "home.demand_tap_hint": "Tap an area to see its numbers.",
+  "home.demand_empty": "No orders yet in this window. The map fills in as they come in.",
+  "home.demand_unavailable": "Demand map unavailable right now.",
 
   // ─── Offer ───
   "offer.title": "New delivery offer",
@@ -237,7 +263,8 @@ const EN: Record<string, string> = {
 
   // ─── Settings ───
   "settings.title": "Settings",
-  "settings.profile": "Driver",
+  "settings.profile": "Profile",
+  "settings.help": "Notifications and support",
   "settings.device": "Device",
   "settings.permissions": "Permissions",
   "settings.location_permission": "Location sharing",
@@ -252,6 +279,15 @@ const EN: Record<string, string> = {
   "settings.lang_en": "English",
   "settings.lang_ar": "العربية",
   "settings.my_points": "My Darb Points",
+  "settings.availability": "On shift",
+  "settings.outside_zone_body":
+    "You are outside your assigned area. Go to your area, then turn this on.",
+
+  // ─── Profile card (client request 2026-08-06) ───
+  "profile.title": "My profile",
+  "profile.darb_id": "Darb ID",
+  "profile.phone": "Phone",
+  "profile.points": "Darb Points",
 };
 
 export type Lang = "en" | "ar";

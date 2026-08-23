@@ -28,8 +28,24 @@ import type { FleetDriverRow, FleetDocumentInput } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd, formatNumber } from "@/i18n/format";
 
-/** The documents Darb wants before it will activate a driver. */
-const ONBOARD_DOCS = ["CIVIL_ID", "DRIVING_LICENSE", "VEHICLE_REG"] as const;
+/**
+ * The documents Darb wants before it will activate a driver.
+ *
+ * Client request, revision 16 (#3): the panel collected three of these and the
+ * driver profile offered seven, so the rest could only be added after the
+ * driver existed, one upload at a time. This is the list the client named, and
+ * it matches REQUIRED_DRIVER_DOCS on the server.
+ */
+const ONBOARD_DOCS = [
+  "CIVIL_ID",
+  "DRIVING_LICENSE",
+  "WORK_PERMIT",
+  "HEALTH_CERT",
+  "VEHICLE_REG",
+  "POLICE_CLEARANCE",
+  "PASSPORT",
+  "DRIVER_SELFIE",
+] as const;
 
 const inputClass =
   "w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20";

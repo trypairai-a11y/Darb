@@ -1286,6 +1286,10 @@ export interface Messages {
     setupPeopleDesc: string;
     setupEquipment: string;
     setupEquipmentDesc: string;
+    setupShifts: string;
+    setupShiftsDesc: string;
+    setupRequests: string;
+    setupRequestsDesc: string;
     backToSetup: string;
     grow: string;
     growSubtitle: string;
@@ -1306,6 +1310,34 @@ export interface Messages {
     onlineNowBadge: string;
     noShifts: string;
     stillOnline: string;
+    /**
+     * Revision 15 — the roster the driver app now books against: which area a
+     * driver works, and how many drivers each window in each area takes.
+     */
+    tabToday: string;
+    tabCoverage: string;
+    tabAreas: string;
+    coverageTitle: string;
+    coverageHint: string;
+    coverageNoZones: string;
+    copyToWeek: string;
+    daySun: string;
+    dayMon: string;
+    dayTue: string;
+    dayWed: string;
+    dayThu: string;
+    dayFri: string;
+    daySat: string;
+    areasTitle: string;
+    areasHint: string;
+    areasSearch: string;
+    notAssigned: string;
+    noDrivers: string;
+    save: string;
+    saving: string;
+    saved: string;
+    areaSaved: string;
+    company: string;
   };
   zonesPage: {
     title: string;
@@ -1331,6 +1363,34 @@ export interface Messages {
     zoneDeleted: string;
     noZones: string;
     drawBoundaryFirst: string;
+    deactivateZone: string;
+    activateZone: string;
+    deactivateConfirmTitle: string;
+    deactivateConfirmMessage: string;
+    zoneDeactivated: string;
+    zoneActivated: string;
+  };
+  hqRequests: {
+    title: string;
+    subtitle: string;
+    tabSupport: string;
+    tabApprovals: string;
+    fromShop: string;
+    fromFleet: string;
+    emptySupport: string;
+    emptyApprovals: string;
+    viewFile: string;
+    noFile: string;
+    fileOpenFailed: string;
+    filterWaiting: string;
+    filterResolved: string;
+    filterAll: string;
+    replyPlaceholder: string;
+    send: string;
+    sendAndClose: string;
+    replied: string;
+    raisedBy: string;
+    noOne: string;
   };
   plansPage: {
     title: string;
@@ -1397,6 +1457,19 @@ export interface Messages {
     deliveryPlan: string;
     deliveryPlanDefault: string;
     deliveryPlanHint: string;
+    pricingModel: string;
+    pricingModelNone: string;
+    pricingModelSubscription: string;
+    pricingModelMargin: string;
+    subscriptionFee: string;
+    subscriptionFeeNone: string;
+    pricingModelHint: string;
+    integrations: string;
+    otherIntegrations: string;
+    integrationAccountPlaceholder: string;
+    integrationCustom: string;
+    integrationCustomPlaceholder: string;
+    integrationConfigured: string;
     portalRole: string;
     roleOwner: string;
     roleFinance: string;
@@ -1611,6 +1684,9 @@ export interface Messages {
     redispatch: string;
     redispatchConfirmTitle: string;
     redispatchConfirmMessage: string;
+    returnToMerchant: string;
+    returnConfirmTitle: string;
+    returnConfirmMessage: string;
     cancelOrder: string;
     cancelConfirmTitle: string;
     cancelConfirmMessage: string;
@@ -1853,6 +1929,8 @@ export interface Messages {
     lastSeen: string;
     acknowledged: string;
     call: string;
+    putOffline: string;
+    driverOffline: string;
     allClear: string;
     autoClearHint: string;
     clearedSection: string;
@@ -1972,6 +2050,8 @@ export interface Messages {
     reasonPlaceholder: string;
     approved: string;
     declined: string;
+    bookedTitle: string;
+    autoHint: string;
   };
   /** Revision 14 — the delivery company's own cash account with Darb. */
   fleetCash: {
@@ -2106,6 +2186,10 @@ export interface Messages {
     escalated: string;
     noIssues: string;
     showResolved: string;
+    problemsOrders: string;
+    problemsIncidents: string;
+    minutesOverSla: string;
+    reassignHint: string;
     raisedOn: string;
     // Support
     supportTitle: string;
@@ -2143,6 +2227,16 @@ export interface Messages {
     rateHint: string;
     ratePropose: string;
     rateNewPrice: string;
+    // Revision 14 (#3) — the rate is a base plus a rate per kilometre.
+    rateBaseLabel: string;
+    ratePerKmLabel: string;
+    rateNewPerKm: string;
+    ratePerKmInvalid: string;
+    ratePerKmHint: string;
+    rateFlatOnly: string;
+    distanceKm: string;
+    totalDistance: string;
+    noDistanceOrders: string;
     rateReason: string;
     rateSend: string;
     rateApprovalHint: string;
@@ -2163,6 +2257,13 @@ export interface Messages {
     portalLoginsTitle: string;
     portalLoginsHint: string;
     noPortalLogins: string;
+    changeDiscipline: string;
+    disciplineStatus: string;
+    disciplineNote: string;
+    disciplineNoteHint: string;
+    legalDocuments: string;
+    noLegalDocuments: string;
+    expires: string;
     addPortalLogin: string;
     createPortalLogin: string;
     portalLoginCreated: string;
@@ -2324,6 +2425,15 @@ export interface Messages {
     zoneName: string;
     zoneDelivered: string;
     zoneOnTime: string;
+    zoneActive: string;
+    zoneDriversCol: string;
+    zoneDriversTitle: string;
+    shiftFilter: string;
+    allShifts: string;
+    driverCol: string;
+    windowCol: string;
+    ordersInWindow: string;
+    noShiftBookings: string;
     fleetsTitle: string;
     fleetName: string;
     fleetOnline: string;
@@ -3727,6 +3837,10 @@ export const en: Messages = {
     setupPeopleDesc: "Who can log in to Darb and what they are allowed to do.",
     setupEquipment: "Equipment",
     setupEquipmentDesc: "Bags and devices handed out to drivers.",
+    setupShifts: "Shifts",
+    setupShiftsDesc: "Driver areas, and how many drivers each window takes.",
+    setupRequests: "Requests and approvals",
+    setupRequestsDesc: "Support requests from shops and companies, and pricing waiting for your approval.",
     backToSetup: "Back to Setup",
     grow: "Grow",
     growSubtitle: "How your orders are doing, and how to bring customers back.",
@@ -3747,6 +3861,32 @@ export const en: Messages = {
     onlineNowBadge: "Online now",
     noShifts: "No shifts on this day.",
     stillOnline: "Online now",
+    tabToday: "Today",
+    tabCoverage: "Coverage",
+    tabAreas: "Driver areas",
+    coverageTitle: "Drivers per window",
+    coverageHint:
+      "How many drivers each area takes in each window. Leave a box empty for no limit. Zero closes that window in that area.",
+    coverageNoZones: "Add an area first, then set how many drivers it takes.",
+    copyToWeek: "Copy this day to the week",
+    daySun: "Sun",
+    dayMon: "Mon",
+    dayTue: "Tue",
+    dayWed: "Wed",
+    dayThu: "Thu",
+    dayFri: "Fri",
+    daySat: "Sat",
+    areasTitle: "Which area each driver works",
+    areasHint:
+      "A driver books shifts in the area you put them in. A driver with no area cannot book until you set one.",
+    areasSearch: "Search by name or Darb ID",
+    notAssigned: "Not assigned",
+    noDrivers: "No drivers match that search.",
+    save: "Save",
+    saving: "Saving…",
+    saved: "Coverage saved.",
+    areaSaved: "Area saved.",
+    company: "Company",
   },
   zonesPage: {
     title: "Areas we deliver to",
@@ -3769,11 +3909,42 @@ export const en: Messages = {
     vertices: "points",
     saveZone: "Save zone",
     deleteConfirmTitle: "Delete zone?",
-    deleteConfirmMessage: "Branches and pricing rows referencing this zone will stop resolving. This cannot be undone.",
+    deleteConfirmMessage: "Branches and drivers assigned here are released, and pricing rows for this zone are removed. Past orders keep their history but lose the area name. To keep the area on record, deactivate it instead. This cannot be undone.",
     zoneSaved: "Zone saved",
     zoneDeleted: "Zone deleted",
     drawBoundaryFirst: "Draw the zone boundary on the map before saving.",
     noZones: "No zones yet — draw the first one on the map.",
+    // Revision 15 (#1): the tick box next to the colour swatch was the only way
+    // to close an area, and it does nothing until Save zone is pressed, so from
+    // the panel it does not read as an action at all.
+    deactivateZone: "Deactivate zone",
+    activateZone: "Activate zone",
+    deactivateConfirmTitle: "Deactivate this zone?",
+    deactivateConfirmMessage: "Darb stops quoting and delivering to this area until you turn it back on. Nothing is deleted and the boundary is kept.",
+    zoneDeactivated: "Zone deactivated",
+    zoneActivated: "Zone activated",
+  },
+  hqRequests: {
+    title: "Requests and approvals",
+    subtitle: "Everything the shops and the delivery companies are waiting on Darb for, in one place.",
+    tabSupport: "Support requests",
+    tabApprovals: "Waiting for approval",
+    fromShop: "Shop",
+    fromFleet: "Delivery company",
+    emptySupport: "Nothing waiting. Every request has been answered.",
+    emptyApprovals: "Nothing waiting for approval.",
+    viewFile: "View file",
+    noFile: "No file attached",
+    fileOpenFailed: "Could not open the file",
+    filterWaiting: "Waiting",
+    filterResolved: "Closed",
+    filterAll: "All",
+    replyPlaceholder: "Write your answer",
+    send: "Send",
+    sendAndClose: "Send and close",
+    replied: "Answer sent",
+    raisedBy: "Raised by",
+    noOne: "n/a",
   },
   plansPage: {
     title: "Delivery plans",
@@ -3843,6 +4014,19 @@ export const en: Messages = {
     deliveryPlan: "Delivery plan",
     deliveryPlanDefault: "Default pricing",
     deliveryPlanHint: "The price list this merchant is quoted on. Default pricing uses the tenant-wide flat fee and surcharge grid.",
+    pricingModel: "Pricing model",
+    pricingModelNone: "Not agreed yet",
+    pricingModelSubscription: "Monthly subscription fee",
+    pricingModelMargin: "Margin (company price vs shop price)",
+    subscriptionFee: "Monthly subscription (KD)",
+    subscriptionFeeNone: "No fee set",
+    pricingModelHint: "How this shop's delivery arrangement is priced: a flat monthly subscription to the delivery company, or the margin — the difference between the company's price and what the shop accepts, kept per order.",
+    integrations: "Integrations",
+    otherIntegrations: "Other platforms",
+    integrationAccountPlaceholder: "Account / API reference",
+    integrationCustom: "Custom system",
+    integrationCustomPlaceholder: "System name and contact",
+    integrationConfigured: "Configured",
     portalRole: "Portal role",
     roleOwner: "Owner",
     roleFinance: "Finance",
@@ -4055,6 +4239,9 @@ export const en: Messages = {
     redispatch: "Auto-redispatch",
     redispatchConfirmTitle: "Re-run dispatch?",
     redispatchConfirmMessage: "The dispatch engine will search for a driver again from round 1.",
+    returnToMerchant: "Return to merchant",
+    returnConfirmTitle: "Mark this order returned?",
+    returnConfirmMessage: "Confirm the goods have gone back to the shop. The order moves from Failed to Returned, which is its final status.",
     cancelOrder: "Cancel order",
     cancelConfirmTitle: "Cancel this order?",
     cancelConfirmMessage: "The customer and vendor flows stop here. This cannot be undone.",
@@ -4321,6 +4508,8 @@ export const en: Messages = {
     resolveConfirm: "Resolve",
     incidentResolved: "Incident resolved",
     incidentAcked: "Incident acknowledged",
+    putOffline: "Put offline",
+    driverOffline: "Driver taken offline",
     noIncidents: "No open incidents.",
     photos: "Photos",
     category: "Category",
@@ -4417,6 +4606,8 @@ export const en: Messages = {
     reasonPlaceholder: "Why not, in a few words",
     approved: "Shift confirmed.",
     declined: "Request declined.",
+    bookedTitle: "Shifts booked",
+    autoHint: "Shifts confirm themselves on a first-come, first-served basis while the window has room. There is nothing to approve here.",
   },
   fleetCash: {
     title: "Cash account",
@@ -4540,6 +4731,10 @@ export const en: Messages = {
     escalated: "Escalated to Darb",
     noIssues: "Nothing outstanding. Good.",
     showResolved: "Show closed",
+    problemsOrders: "Orders past SLA (reassign from HQ Live if needed)",
+    problemsIncidents: "Open incidents & SOS on your drivers",
+    minutesOverSla: "min over SLA:",
+    reassignHint: "Reassign via HQ — failed deliveries pay no driver fee",
     raisedOn: "Raised",
     supportTitle: "Support",
     supportSubtitle: "Ask Darb something. Your messages and Darb's answers live here.",
@@ -4572,10 +4767,19 @@ export const en: Messages = {
     period: "Period",
     orders: "Orders",
     feePerOrder: "Fee/order",
-    rateTitle: "Your price per order",
-    rateHint: "What Darb pays your company for each delivered order. Every payout below is built from this figure.",
+    rateTitle: "Your price per delivery",
+    rateHint: "What Darb pays your company for each delivered order: a base fee plus a rate for every kilometre driven. Every payout below is built from these figures.",
     ratePropose: "Propose a new price",
-    rateNewPrice: "New price per order (KD)",
+    rateNewPrice: "New base price per order (KD)",
+    rateBaseLabel: "Base per order",
+    ratePerKmLabel: "Per kilometre",
+    rateNewPerKm: "New price per kilometre (KD)",
+    ratePerKmInvalid: "Enter a price per kilometre of zero or more.",
+    ratePerKmHint: "Leave the kilometre box empty to keep the rate you have now.",
+    rateFlatOnly: "Flat rate, no kilometre charge",
+    distanceKm: "Distance (km)",
+    totalDistance: "Total distance",
+    noDistanceOrders: "{n} of these deliveries had no distance recorded and were paid the base fee only.",
     rateReason: "Reason (optional)",
     rateSend: "Send to Darb",
     rateApprovalHint: "This does not change your price on its own. Darb reviews the request, and the new price applies once it is approved. Statements already issued keep the price they were built on.",
@@ -4593,6 +4797,13 @@ export const en: Messages = {
     portalLoginsHint:
       "This person signs in at the fleet portal and sees only this company's roster, scorecard and payouts. Set the password here and pass it on, then ask them to change it.",
     noPortalLogins: "No portal logins yet.",
+    changeDiscipline: "Change discipline status",
+    disciplineStatus: "Status",
+    disciplineNote: "Reason",
+    disciplineNoteHint: "Why this company is being warned, throttled, or cleared.",
+    legalDocuments: "Legal documents",
+    noLegalDocuments: "No company documents on file yet.",
+    expires: "Expires",
     addPortalLogin: "Add portal login",
     createPortalLogin: "Create login",
     portalLoginCreated: "Portal login created.",
@@ -4750,6 +4961,15 @@ export const en: Messages = {
     zoneName: "Zone",
     zoneDelivered: "Delivered",
     zoneOnTime: "On-time",
+    zoneActive: "Active orders",
+    zoneDriversCol: "Drivers assigned",
+    zoneDriversTitle: "Drivers by zone & shift",
+    shiftFilter: "Shift",
+    allShifts: "All shifts",
+    driverCol: "Driver",
+    windowCol: "Window",
+    ordersInWindow: "Orders in window",
+    noShiftBookings: "No shift bookings for today yet.",
     fleetsTitle: "Fleet partners",
     fleetName: "Fleet",
     fleetOnline: "Online",
@@ -6153,6 +6373,10 @@ export const ar: Messages = {
     setupPeopleDesc: "من يستطيع الدخول إلى دَرب وما المسموح له به.",
     setupEquipment: "المعدات",
     setupEquipmentDesc: "الحقائب والأجهزة المسلَّمة للمندوبين.",
+    setupShifts: "الورديات",
+    setupShiftsDesc: "مناطق السائقين، وعدد السائقين لكل فترة.",
+    setupRequests: "الطلبات والموافقات",
+    setupRequestsDesc: "طلبات الدعم من التجار والشركات، والأسعار المقترحة بانتظار موافقتك.",
     backToSetup: "رجوع إلى الإعداد",
     grow: "النمو",
     growSubtitle: "كيف تسير طلباتك، وكيف تُعيد العملاء إليك.",
@@ -6173,6 +6397,32 @@ export const ar: Messages = {
     onlineNowBadge: "متصل الآن",
     noShifts: "لا توجد ورديات في هذا اليوم.",
     stillOnline: "متصل الآن",
+    tabToday: "اليوم",
+    tabCoverage: "التغطية",
+    tabAreas: "مناطق السائقين",
+    coverageTitle: "عدد السائقين لكل فترة",
+    coverageHint:
+      "كم سائقاً تحتاج كل منطقة في كل فترة. اترك الخانة فارغة لعدم وضع حد. الصفر يغلق تلك الفترة في تلك المنطقة.",
+    coverageNoZones: "أضف منطقة أولاً، ثم حدد عدد السائقين الذي تحتاجه.",
+    copyToWeek: "نسخ هذا اليوم على الأسبوع",
+    daySun: "الأحد",
+    dayMon: "الإثنين",
+    dayTue: "الثلاثاء",
+    dayWed: "الأربعاء",
+    dayThu: "الخميس",
+    dayFri: "الجمعة",
+    daySat: "السبت",
+    areasTitle: "منطقة عمل كل سائق",
+    areasHint:
+      "يحجز السائق ورديات في المنطقة التي تضعه فيها. السائق بلا منطقة لا يستطيع الحجز حتى تحدد له واحدة.",
+    areasSearch: "ابحث بالاسم أو رقم درب",
+    notAssigned: "غير محدد",
+    noDrivers: "لا يوجد سائق مطابق للبحث.",
+    save: "حفظ",
+    saving: "جارٍ الحفظ…",
+    saved: "تم حفظ التغطية.",
+    areaSaved: "تم حفظ المنطقة.",
+    company: "الشركة",
   },
   zonesPage: {
     title: "مناطق التوصيل",
@@ -6193,11 +6443,39 @@ export const ar: Messages = {
     vertices: "نقاط",
     saveZone: "حفظ المنطقة",
     deleteConfirmTitle: "حذف المنطقة؟",
-    deleteConfirmMessage: "الفروع وصفوف التسعير المرتبطة بهذه المنطقة ستتوقف عن العمل. لا يمكن التراجع عن هذا الإجراء.",
+    deleteConfirmMessage: "سيتم إلغاء ربط الفروع والسائقين المعينين هنا، وحذف صفوف التسعير الخاصة بهذه المنطقة. الطلبات السابقة تحتفظ بسجلها لكنها تفقد اسم المنطقة. للاحتفاظ بالمنطقة في السجلات، قم بإلغاء تفعيلها بدلاً من ذلك. لا يمكن التراجع عن هذا الإجراء.",
     zoneSaved: "تم حفظ المنطقة",
     zoneDeleted: "تم حذف المنطقة",
     drawBoundaryFirst: "ارسم حدود المنطقة على الخريطة قبل الحفظ.",
     noZones: "لا توجد مناطق بعد — ارسم المنطقة الأولى على الخريطة.",
+    deactivateZone: "إيقاف المنطقة",
+    activateZone: "تفعيل المنطقة",
+    deactivateConfirmTitle: "إيقاف هذه المنطقة؟",
+    deactivateConfirmMessage: "ستتوقف دَرب عن التسعير والتوصيل لهذه المنطقة حتى تعيد تفعيلها. لن يُحذف أي شيء وستبقى الحدود كما هي.",
+    zoneDeactivated: "تم إيقاف المنطقة",
+    zoneActivated: "تم تفعيل المنطقة",
+  },
+  hqRequests: {
+    title: "الطلبات والموافقات",
+    subtitle: "كل ما ينتظره التجار وشركات التوصيل من دَرب، في مكان واحد.",
+    tabSupport: "طلبات الدعم",
+    tabApprovals: "بانتظار الموافقة",
+    fromShop: "متجر",
+    fromFleet: "شركة توصيل",
+    emptySupport: "لا يوجد شيء بالانتظار. تمت الإجابة على كل الطلبات.",
+    emptyApprovals: "لا يوجد شيء بانتظار الموافقة.",
+    viewFile: "عرض الملف",
+    noFile: "لا يوجد ملف مرفق",
+    fileOpenFailed: "تعذر فتح الملف",
+    filterWaiting: "بالانتظار",
+    filterResolved: "مغلقة",
+    filterAll: "الكل",
+    replyPlaceholder: "اكتب ردك",
+    send: "إرسال",
+    sendAndClose: "إرسال وإغلاق",
+    replied: "تم إرسال الرد",
+    raisedBy: "مقدّم الطلب",
+    noOne: "غير متوفر",
   },
   plansPage: {
     title: "خطط التوصيل",
@@ -6267,6 +6545,19 @@ export const ar: Messages = {
     deliveryPlan: "خطة التوصيل",
     deliveryPlanDefault: "التسعير الافتراضي",
     deliveryPlanHint: "قائمة الأسعار التي يُسعّر بها هذا التاجر. التسعير الافتراضي يستخدم الرسوم الثابتة وجدول الإضافات العام.",
+    pricingModel: "نموذج التسعير",
+    pricingModelNone: "لم يُتفق عليه بعد",
+    pricingModelSubscription: "اشتراك شهري",
+    pricingModelMargin: "هامش الفرق (سعر الشركة مقابل سعر المتجر)",
+    subscriptionFee: "الاشتراك الشهري (د.ك)",
+    subscriptionFeeNone: "لا رسوم محددة",
+    pricingModelHint: "كيف تُسعَّر اتفاقية التوصيل لهذا المتجر: اشتراك شهري ثابت مع شركة التوصيل، أو هامش الفرق بين سعر الشركة والسعر الذي يقبه المتجر، يُحسب لكل طلب.",
+    integrations: "التكاملات",
+    otherIntegrations: "منصات أخرى",
+    integrationAccountPlaceholder: "الحساب / مرجع الـ API",
+    integrationCustom: "نظام مخصص",
+    integrationCustomPlaceholder: "اسم النظام وجهة الاتصال",
+    integrationConfigured: "مُعد",
     portalRole: "دور البوابة",
     roleOwner: "المالك",
     roleFinance: "المالية",
@@ -6479,6 +6770,9 @@ export const ar: Messages = {
     redispatch: "إعادة الإسناد التلقائي",
     redispatchConfirmTitle: "إعادة تشغيل الإسناد؟",
     redispatchConfirmMessage: "سيبحث محرك الإسناد عن سائق من جديد بدءاً من الجولة الأولى.",
+    returnToMerchant: "إرجاع إلى المتجر",
+    returnConfirmTitle: "تسجيل الطلب كمُرجَع؟",
+    returnConfirmMessage: "أكّد أن البضاعة عادت إلى المتجر. ينتقل الطلب من فاشل إلى مُرجَع، وهي حالته النهائية.",
     cancelOrder: "إلغاء الطلب",
     cancelConfirmTitle: "إلغاء هذا الطلب؟",
     cancelConfirmMessage: "تتوقف رحلة العميل والمطعم هنا. لا يمكن التراجع عن هذا الإجراء.",
@@ -6733,6 +7027,8 @@ export const ar: Messages = {
     resolveConfirm: "إغلاق",
     incidentResolved: "تم إغلاق البلاغ",
     incidentAcked: "تم تأكيد استلام البلاغ",
+    putOffline: "إيقاف الاستقبال",
+    driverOffline: "تم إيقاف المندوب",
     noIncidents: "لا توجد بلاغات مفتوحة.",
     photos: "الصور",
     category: "التصنيف",
@@ -6829,6 +7125,8 @@ export const ar: Messages = {
     reasonPlaceholder: "السبب باختصار",
     approved: "تم تأكيد الوردية.",
     declined: "تم رفض الطلب.",
+    bookedTitle: "الورديات المحجوزة",
+    autoHint: "تُؤكَّد الورديات تلقائياً بأسبقية الحجز ما دام في الفترة متسع. لا شيء هنا بحاجة إلى موافقة.",
   },
   fleetCash: {
     title: "حساب النقد",
@@ -6950,6 +7248,10 @@ export const ar: Messages = {
     escalated: "رُفعت إلى درب",
     noIssues: "لا شيء معلّق. ممتاز.",
     showResolved: "عرض المغلقة",
+    problemsOrders: "طلبات تجاوزت المهلة (إعادة الإسناد من شاشة العمليات)",
+    problemsIncidents: "بلاغات مفتوحة واستغاثات على مندوبيك",
+    minutesOverSla: "دقيقة فوق المهلة:",
+    reassignHint: "أعد الإسناد من الإدارة — التوصيلات الفاشلة لا تُحسب لأجر المندوب",
     raisedOn: "فُتحت في",
     supportTitle: "الدعم",
     supportSubtitle: "اسأل درب. رسائلك وردود درب تظهر هنا.",
@@ -6982,10 +7284,19 @@ export const ar: Messages = {
     period: "الفترة",
     orders: "الطلبات",
     feePerOrder: "الأجر لكل طلب",
-    rateTitle: "سعرك لكل طلب",
-    rateHint: "ما تدفعه درب لشركتك عن كل طلب تم توصيله. كل دفعة أدناه مبنية على هذا الرقم.",
+    rateTitle: "سعرك لكل توصيلة",
+    rateHint: "ما تدفعه درب لشركتك عن كل طلب تم توصيله: أجر أساسي زائد سعر عن كل كيلومتر مقطوع. كل دفعة أدناه مبنية على هذين الرقمين.",
     ratePropose: "اقتراح سعر جديد",
-    rateNewPrice: "السعر الجديد لكل طلب (د.ك)",
+    rateNewPrice: "السعر الأساسي الجديد لكل طلب (د.ك)",
+    rateBaseLabel: "الأساسي لكل طلب",
+    ratePerKmLabel: "لكل كيلومتر",
+    rateNewPerKm: "السعر الجديد لكل كيلومتر (د.ك)",
+    ratePerKmInvalid: "أدخل سعرا لكل كيلومتر يساوي صفرا أو أكثر.",
+    ratePerKmHint: "اترك خانة الكيلومتر فارغة للإبقاء على السعر الحالي.",
+    rateFlatOnly: "سعر ثابت، بدون أجر كيلومترات",
+    distanceKm: "المسافة (كم)",
+    totalDistance: "إجمالي المسافة",
+    noDistanceOrders: "{n} من هذه التوصيلات لم تُسجَّل لها مسافة، ودُفع عنها الأجر الأساسي فقط.",
     rateReason: "السبب (اختياري)",
     rateSend: "إرسال إلى درب",
     rateApprovalHint: "هذا لا يغيّر سعرك بنفسه. تراجع درب الطلب، ويسري السعر الجديد بعد الموافقة عليه. الكشوف الصادرة تحتفظ بالسعر الذي بُنيت عليه.",
@@ -7003,6 +7314,13 @@ export const ar: Messages = {
     portalLoginsHint:
       "يدخل صاحب هذا الحساب إلى بوابة الأسطول ولا يرى سوى سائقي هذه الشركة وبطاقة أدائها ومستحقاتها. عيّن كلمة المرور هنا وسلّمها له، ثم اطلب منه تغييرها.",
     noPortalLogins: "لا توجد حسابات بوابة بعد.",
+    changeDiscipline: "تغيير حالة الانضباط",
+    disciplineStatus: "الحالة",
+    disciplineNote: "السبب",
+    disciplineNoteHint: "سبب تحذير الشركة أو تقييدها أو إعادتها إلى الوضع الطبيعي.",
+    legalDocuments: "المستندات القانونية",
+    noLegalDocuments: "لا توجد مستندات للشركة بعد.",
+    expires: "تنتهي في",
     addPortalLogin: "إضافة حساب بوابة",
     createPortalLogin: "إنشاء الحساب",
     portalLoginCreated: "تم إنشاء حساب البوابة.",
@@ -7159,6 +7477,15 @@ export const ar: Messages = {
     zoneName: "المنطقة",
     zoneDelivered: "موصلة",
     zoneOnTime: "في الوقت",
+    zoneActive: "طلبات جارية",
+    zoneDriversCol: "مندوبون معينون",
+    zoneDriversTitle: "المندوبون حسب المنطقة والوردية",
+    shiftFilter: "الوردية",
+    allShifts: "كل الورديات",
+    driverCol: "المندوب",
+    windowCol: "الفترة",
+    ordersInWindow: "طلبات الفترة",
+    noShiftBookings: "لا حجوزات ورديات لهذا اليوم بعد.",
     fleetsTitle: "شركات التوصيل",
     fleetName: "الأسطول",
     fleetOnline: "متصل",

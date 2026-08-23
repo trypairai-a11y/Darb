@@ -49,6 +49,11 @@ jest.mock("../../services/eventBus", () => ({
 jest.mock("../../services/foodics/writebackHook", () => ({
   enqueueFoodicsWriteback: jest.fn().mockResolvedValue(undefined),
 }));
+// Revision 16 (#5): going ONLINE is checked against the driver's assigned area.
+jest.mock("../../services/zoneService", () => ({
+  resolveZone: jest.fn().mockResolvedValue(null),
+  invalidateZoneCache: jest.fn(),
+}));
 
 const {
   getDriverWalletSummary,
@@ -164,7 +169,14 @@ describe("GET /api/agent/state", () => {
     const res = await auth(request(app).get("/api/agent/state"));
 
     expect(res.status).toBe(200);
-    expect(res.body.driver).toEqual({ id: "drv-1", name: "Qadir Baloch", phone: "+96550000001" });
+    // driverCode joined the payload with the Home profile card (revision 15)
+    // and this assertion was not moved with it.
+    expect(res.body.driver).toEqual({
+      id: "drv-1",
+      name: "Qadir Baloch",
+      phone: "+96550000001",
+      driverCode: null,
+    });
     expect(res.body.availability).toBe("ONLINE");
     expect(res.body.lockout).toBeNull();
     expect(res.body.activeOffer).toMatchObject({
@@ -253,7 +265,14 @@ describe("POST /api/agent/availability", () => {
     });
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ ok: true, availability: "ONLINE" });
+    // The warning rides along because this driver has no assigned area. It is
+    // a warning and not a refusal on purpose: the zone gate fails OPEN, so a
+    // driver Darb has not rostered anywhere still gets to work.
+    expect(res.body).toEqual({
+      ok: true,
+      availability: "ONLINE",
+      warning: "NO_ZONE_ASSIGNED",
+    });
     const created = prisma.courierOnlineSession.create.mock.calls[0][0].data;
     expect(created).toMatchObject({
       tenantId: TENANT,
@@ -264,6 +283,97 @@ describe("POST /api/agent/availability", () => {
     const online = publishEvent.mock.calls.filter((c) => c[0]?.type === "driver.online");
     expect(online).toHaveLength(1);
     expect(online[0][0].tenantId).toBe(TENANT);
+  });
+
+  /**
+   * The zone gate (client request, revision 16 #5).
+   *
+   * The client asked that a driver "cannot log in outside his zone". There is
+   * no login to gate: the app enrols once and keeps its token, so the check
+   * lives on going ONLINE, which is the moment that actually means "I am here
+   * and ready" and the one dispatch reads.
+   *
+   * It fails OPEN by decision. A driver who cannot be located still gets to
+   * work, because the gate exists to stop somebody working a different area,
+   * not to strand a driver whose signal dropped in a basement car park. These
+   * four cases are the whole contract, and the fail-open ones matter more than
+   * the refusal: a bug there costs somebody a day's earnings.
+   */
+  describe("the assigned-area gate on going ONLINE", () => {
+    const { resolveZone } = require("../../services/zoneService");
+    const ZONED_DEVICE = {
+      ...DEVICE,
+      driver: { ...DRIVER, assignedZoneId: "z-1" },
+    };
+
+    beforeEach(() => {
+      // Not on the shared mock; attached per the house pattern.
+      (prisma as any).deliveryZone = { findFirst: jest.fn().mockResolvedValue(null) };
+    });
+
+    test("a driver standing in another area is refused, and told which", async () => {
+      prisma.device.findUnique.mockResolvedValue(ZONED_DEVICE);
+      resolveZone.mockResolvedValue({ id: "z-9", name: "Hawally" });
+      prisma.deliveryZone.findFirst.mockResolvedValue({ name: "Salmiya" });
+
+      const res = await auth(request(app).post("/api/agent/availability")).send({
+        availability: "ONLINE",
+        latitude: 29.33,
+        longitude: 48.06,
+      });
+
+      expect(res.status).toBe(409);
+      expect(res.body.code).toBe("OUTSIDE_ZONE");
+      // Naming both ends is what makes this actionable rather than a wall.
+      expect(res.body.assignedZone).toBe("Salmiya");
+      expect(res.body.currentZone).toBe("Hawally");
+      expect(prisma.courierOnlineSession.create).not.toHaveBeenCalled();
+    });
+
+    test("a driver standing in their own area goes online clean", async () => {
+      prisma.device.findUnique.mockResolvedValue(ZONED_DEVICE);
+      resolveZone.mockResolvedValue({ id: "z-1", name: "Salmiya" });
+      prisma.courierOnlineSession.create.mockResolvedValue({ id: "sess-1" });
+
+      const res = await auth(request(app).post("/api/agent/availability")).send({
+        availability: "ONLINE",
+        latitude: 29.33,
+        longitude: 48.06,
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ ok: true, availability: "ONLINE" });
+    });
+
+    test("no coordinates lets the driver through with a warning, never a refusal", async () => {
+      prisma.device.findUnique.mockResolvedValue(ZONED_DEVICE);
+      prisma.courierOnlineSession.create.mockResolvedValue({ id: "sess-1" });
+
+      const res = await auth(request(app).post("/api/agent/availability")).send({
+        availability: "ONLINE",
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body.warning).toBe("NO_LOCATION");
+      expect(resolveZone).not.toHaveBeenCalled();
+    });
+
+    test("a fix outside every zone is a warning, not proof of being in the wrong place", async () => {
+      prisma.device.findUnique.mockResolvedValue(ZONED_DEVICE);
+      // Zone polygons do not tile the country, so the edge of one is a normal
+      // place to stand and must not read as "somewhere else".
+      resolveZone.mockResolvedValue(null);
+      prisma.courierOnlineSession.create.mockResolvedValue({ id: "sess-1" });
+
+      const res = await auth(request(app).post("/api/agent/availability")).send({
+        availability: "ONLINE",
+        latitude: 29.9,
+        longitude: 47.5,
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body.warning).toBe("LOCATION_OUTSIDE_ANY_ZONE");
+    });
   });
 
   test("OFFLINE closes the open session and publishes driver.offline", async () => {

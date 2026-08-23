@@ -29,7 +29,7 @@ import { formatKwd, formatDateTime } from "@/i18n/format";
 import { cn } from "@/lib/cn";
 import { DirectionalIcon } from "@/i18n/directionalIcon";
 
-type Tab = "profile" | "branches" | "foodics" | "wallet" | "users";
+type Tab = "profile" | "branches" | "integrations" | "wallet" | "users";
 
 const KUWAIT_CENTER: [number, number] = [29.3759, 47.9774];
 
@@ -80,7 +80,7 @@ export default function VendorDetailPage() {
   const tabs: { key: Tab; label: string }[] = [
     { key: "profile", label: t("vendorsPage.profile") },
     { key: "branches", label: t("vendorsPage.branches") },
-    { key: "foodics", label: t("vendorsPage.foodics") },
+    { key: "integrations", label: t("vendorsPage.integrations") },
     { key: "wallet", label: t("vendorsPage.wallet") },
     { key: "users", label: t("vendorsPage.users") },
   ];
@@ -160,7 +160,7 @@ export default function VendorDetailPage() {
         <ProfileTab vendor={vendor} onSaved={invalidateVendor} />
       )}
       {tab === "branches" && <BranchesTab vendorId={vendor.id} />}
-      {tab === "foodics" && <FoodicsTab vendorId={vendor.id} />}
+      {tab === "integrations" && <IntegrationsTab vendor={vendor} />}
       {tab === "wallet" && <WalletTab vendorId={vendor.id} />}
       {tab === "users" && <UsersTab vendorId={vendor.id} />}
     </div>
@@ -179,6 +179,8 @@ function ProfileTab({ vendor, onSaved }: { vendor: Vendor; onSaved: () => void }
     // Revision 4 (#7) — empty means no plan, which prices this merchant on the
     // tenant-wide default rather than leaving it unpriced.
     deliveryPlanId: vendor.deliveryPlanId ?? "",
+    pricingModel: vendor.pricingModel ?? "",
+    subscriptionKwd: vendor.subscriptionKwd == null ? "" : String(vendor.subscriptionKwd),
     requiresCarOnly: !!vendor.requiresCarOnly,
     isActive: vendor.isActive !== false,
   });
@@ -196,6 +198,8 @@ function ProfileTab({ vendor, onSaved }: { vendor: Vendor; onSaved: () => void }
       nameAr: vendor.nameAr ?? "",
       phone: vendor.phone ?? "",
       deliveryPlanId: vendor.deliveryPlanId ?? "",
+      pricingModel: vendor.pricingModel ?? "",
+      subscriptionKwd: vendor.subscriptionKwd == null ? "" : String(vendor.subscriptionKwd),
       requiresCarOnly: !!vendor.requiresCarOnly,
       isActive: vendor.isActive !== false,
     });
@@ -209,6 +213,11 @@ function ProfileTab({ vendor, onSaved }: { vendor: Vendor; onSaved: () => void }
         nameAr: form.nameAr.trim() || null,
         phone: form.phone.trim() || null,
         deliveryPlanId: form.deliveryPlanId || null,
+        pricingModel: form.pricingModel === "" ? null : (form.pricingModel as "SUBSCRIPTION" | "MARGIN"),
+        subscriptionKwd:
+          form.pricingModel === "SUBSCRIPTION" && form.subscriptionKwd.trim()
+            ? form.subscriptionKwd.trim()
+            : null,
         requiresCarOnly: form.requiresCarOnly,
         isActive: form.isActive,
       });
@@ -285,6 +294,46 @@ function ProfileTab({ vendor, onSaved }: { vendor: Vendor; onSaved: () => void }
               ))}
           </select>
           <p className="text-xs text-sand-600 mt-2">{t("vendorsPage.deliveryPlanHint")}</p>
+        </div>
+        {/* Edit #4 (2026-08-22). Replaces the old Target Price field. What
+            Darb has with the delivery companies is one of two models, and the
+            profile now says which: a flat monthly subscription, or the margin
+            — the difference between the company's price and the shop's
+            accepted price, taken per order and stored nowhere. */}
+        <div>
+          <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
+            {t("vendorsPage.pricingModel")}
+          </label>
+          <select
+            data-testid="vendor-pricing-model"
+            value={form.pricingModel}
+            onChange={(e) =>
+              setForm({ ...form, pricingModel: e.target.value })
+            }
+            className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="">{t("vendorsPage.pricingModelNone")}</option>
+            <option value="SUBSCRIPTION">{t("vendorsPage.pricingModelSubscription")}</option>
+            <option value="MARGIN">{t("vendorsPage.pricingModelMargin")}</option>
+          </select>
+          {form.pricingModel === "SUBSCRIPTION" ? (
+            <div className="mt-2">
+              <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
+                {t("vendorsPage.subscriptionFee")}
+              </label>
+              <input
+                type="text"
+                inputMode="decimal"
+                dir="ltr"
+                data-testid="vendor-subscription-fee"
+                placeholder={t("vendorsPage.subscriptionFeeNone")}
+                value={form.subscriptionKwd}
+                onChange={(e) => setForm({ ...form, subscriptionKwd: e.target.value })}
+                className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+          ) : null}
+          <p className="text-xs text-sand-600 mt-2">{t("vendorsPage.pricingModelHint")}</p>
         </div>
         <div className="flex items-center gap-6">
           <label className="flex items-center gap-2 text-sm text-sand-800 cursor-pointer">
@@ -603,6 +652,10 @@ function BranchesTab({ vendorId }: { vendorId: string }) {
               </select>
             </div>
 
+            {/* Edit #4 (2026-08-22): the per-branch target price is gone with
+                the vendor-level one — pricing is the vendor's pricing model
+                now, inherited by every branch. */}
+
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
@@ -687,9 +740,17 @@ function BranchesTab({ vendorId }: { vendorId: string }) {
   );
 }
 
-/* ── Foodics ── */
+/* ── Integrations ── */
 
-function FoodicsTab({ vendorId }: { vendorId: string }) {
+// Edit #5 (2026-08-22) — Foodics used to be the whole story; now it is one
+// card among several. uPayments, Salla and Shopify are the named platforms the
+// client listed, and a shop running something else records what it uses so
+// Darb can wire a custom bridge. Non-Foodics config lives on the vendor's
+// integrationSettings blob until each platform gets its own OAuth flow.
+const NAMED_INTEGRATIONS = ["uPayments", "Salla", "Shopify"] as const;
+
+function IntegrationsTab({ vendor }: { vendor: Vendor }) {
+  const vendorId = vendor.id;
   const { t, locale } = useI18n();
   const toast = useToast();
   const [connecting, setConnecting] = useState(false);
@@ -720,7 +781,8 @@ function FoodicsTab({ vendorId }: { vendorId: string }) {
   }
 
   return (
-    <div className="bg-card border border-sand-200 rounded-2xl shadow-soft p-6 max-w-xl space-y-5">
+    <>
+      <div className="bg-card border border-sand-200 rounded-2xl shadow-soft p-6 max-w-xl space-y-5">
       <div>
         <h2 className="font-medium text-sand-900">{t("foodics.title")}</h2>
         <p className="text-xs text-sand-600 mt-1">{t("foodics.connectHint")}</p>
@@ -788,6 +850,106 @@ function FoodicsTab({ vendorId }: { vendorId: string }) {
           </div>
         </div>
       )}
+      </div>
+
+      {/* Edit #5 (2026-08-22) — the rest of the platform list, plus a custom
+          system for shops Darb hasn't got a connector for yet. Config is a
+          single reference field per provider until each one gets its own
+          OAuth flow like Foodics has. */}
+      <div className="bg-card border border-sand-200 rounded-2xl shadow-soft p-6 max-w-xl space-y-4">
+        <h2 className="font-medium text-sand-900">{t("vendorsPage.otherIntegrations")}</h2>
+        {NAMED_INTEGRATIONS.map((name) => (
+          <IntegrationConfigRow
+            key={name}
+            vendorId={vendorId}
+            vendor={vendor}
+            name={name}
+            placeholder={t("vendorsPage.integrationAccountPlaceholder")}
+          />
+        ))}
+        <IntegrationConfigRow
+          vendorId={vendorId}
+          vendor={vendor}
+          name={t("vendorsPage.integrationCustom")}
+          custom
+          placeholder={t("vendorsPage.integrationCustomPlaceholder")}
+        />
+      </div>
+    </>
+  );
+}
+
+/**
+ * One row of the integrations list. Saves straight into the vendor's
+ * integrationSettings blob keyed by provider name; the row reads back what is
+ * stored so a saved value shows as configured.
+ */
+function IntegrationConfigRow({
+  vendorId,
+  vendor,
+  name,
+  custom = false,
+  placeholder,
+}: {
+  vendorId: string;
+  vendor: Vendor;
+  /** Provider name, or (when `custom`) the translated row label. */
+  name: string;
+  custom?: boolean;
+  placeholder: string;
+}) {
+  const { t } = useI18n();
+  const toast = useToast();
+  // The key the value is stored under: named providers store under their own
+  // name, the custom system stores under "custom" with its label inside.
+  const storageKey = custom ? "custom" : name;
+  const saved = (vendor.integrationSettings?.[storageKey] as string | undefined)?.trim() ?? "";
+
+  const [value, setValue] = useState(saved);
+  const [busy, setBusy] = useState(false);
+  // Re-seed when the vendor record refreshes and what is stored changed.
+  useEffect(() => {
+    setValue((vendor.integrationSettings?.[storageKey] as string | undefined)?.trim() ?? "");
+  }, [vendor.updatedAt, storageKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function save() {
+    setBusy(true);
+    try {
+      await vendorsApi.update(vendorId, {
+        integrationSettings: { ...(vendor.integrationSettings ?? {}), [storageKey]: value.trim() || null },
+      });
+      toast.success(t("toast.saved"));
+    } catch {
+      toast.error(t("toast.failedSave"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2 flex-wrap" data-testid={`integration-${storageKey}`}>
+      <span className="text-sm font-medium text-sand-900 w-40 shrink-0 truncate">{name}</span>
+      {saved && (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-pill bg-green-50 text-green-700 text-[11px] font-medium">
+          {t("vendorsPage.integrationConfigured")}
+        </span>
+      )}
+      <input
+        type="text"
+        dir="auto"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder={placeholder}
+        className="flex-1 min-w-[180px] px-3 h-9 rounded-xl bg-white border border-sand-300 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+      />
+      <button
+        type="button"
+        onClick={() => void save()}
+        disabled={busy || value.trim() === saved}
+        className="px-3 h-9 rounded-pill bg-primary/10 text-primary text-xs font-medium hover:bg-primary/15 transition-colors disabled:opacity-50"
+      >
+        {busy ? t("common.processing") : t("common.save")}
+      </button>
     </div>
   );
 }

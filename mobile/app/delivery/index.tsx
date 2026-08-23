@@ -4,7 +4,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import * as Location from "expo-location";
-import { Check, Phone, Siren } from "lucide-react-native";
+import { Check, ChevronRight, LifeBuoy, Phone, Siren } from "lucide-react-native";
 import { Button, Screen } from "../../src/components/hig";
 import { formatClock, formatKwd } from "../../src/i18n/format";
 import { t as tr } from "../../src/i18n/strings";
@@ -251,6 +251,30 @@ export default function DeliveryScreen() {
           style={{ marginTop: space.lg, height: 60 }}
         />
 
+        {/*
+          Rider support, on the order (client request, 2026-08-04). It came off
+          Home, and this is the half of the request that matters: the problems a
+          driver opens a ticket about (shop closed, address wrong, bike down)
+          happen mid-order, and until now the only control on this screen was
+          the red SOS FAB.
+
+          Deliberately quiet and deliberately not the FAB. SOS pages the on-call
+          supervisor for a driver in danger. If the two looked alike, a jammed
+          gate would ring the emergency line and a real emergency would sit in a
+          ticket queue.
+        */}
+        <TouchableOpacity
+          style={styles.supportRow}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          testID="delivery-rider-support"
+          onPress={() => router.push("/support")}
+        >
+          <LifeBuoy size={18} color={c.tint} />
+          <Text style={[t.subheadline, { color: c.label, flex: 1 }]}>{tr("support.title")}</Text>
+          <ChevronRight size={16} color={c.gray3} />
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.failedLink}
           activeOpacity={0.7}
@@ -300,6 +324,11 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     backgroundColor: c.tintFill, borderRadius: radius.capsule, paddingHorizontal: 14, paddingVertical: 9,
   },
   callRow: { flexDirection: "row", alignItems: "center", gap: 7, marginTop: space.md },
+  supportRow: {
+    flexDirection: "row", alignItems: "center", gap: space.md, marginTop: space.lg,
+    backgroundColor: c.groupedSecondary, borderRadius: radius.card, padding: space.base,
+    borderWidth: 1, borderColor: c.hairline, ...continuous,
+  },
   failedLink: { alignSelf: "center", marginTop: space.lg, padding: space.sm },
   sos: {
     position: "absolute", right: space.lg, bottom: space.xxl, width: 60, height: 60, borderRadius: 30,

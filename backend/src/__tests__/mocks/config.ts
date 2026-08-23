@@ -193,6 +193,27 @@ export const prisma = {
     findFirst: jest.fn(),
     findMany: jest.fn(),
   },
+  // Revision 15 (#3/#4). Dispatch now reads the branch's target price and the
+  // rates of the companies behind the candidate drivers. Both delegates live in
+  // the shared stub rather than being attached per-suite, because every suite
+  // that reaches selectCandidates hits them whether it cares about cost or not,
+  // and an unprimed jest.fn() resolving undefined reads correctly as "no target
+  // set" — which is exactly how the rules behave for a tenant that has none.
+  vendorBranch: {
+    findFirst: jest.fn(),
+    findMany: jest.fn(),
+    // The full delegate set, because suites augment with `??` and a partial
+    // entry here silently shadows their own richer attachment — that is what
+    // broke vendors.test.ts when only findFirst/findMany landed (2026-08-06).
+    create: jest.fn(),
+    update: jest.fn(),
+    updateMany: jest.fn(),
+    deleteMany: jest.fn(),
+  },
+  fleetPartner: {
+    findFirst: jest.fn(),
+    findMany: jest.fn(),
+  },
   $transaction: jest.fn(),
   // Order numbering takes its MAX in the database, casting the suffix to an
   // integer, because a text column's ORDER BY put "0169" above "000170" and

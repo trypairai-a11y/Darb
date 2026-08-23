@@ -4,27 +4,38 @@ import {
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import * as Location from "expo-location";
-import { Award, ChevronRight, LifeBuoy, MapPin, MapPinOff, Phone, Settings, TriangleAlert } from "lucide-react-native";
+import { ChevronRight, MapPinOff, Phone, TriangleAlert } from "lucide-react-native";
 import { Card, Screen } from "../../src/components/hig";
-import { formatKwd } from "../../src/i18n/format";
 import { t as tr } from "../../src/i18n/strings";
+import { DemandHeatMap } from "../../src/components/DemandHeatMap";
+import { DriverProfileCard } from "../../src/components/DriverProfileCard";
 import { PermissionRationale } from "../../src/components/PermissionRationale";
 import { WebShiftBanner } from "../../src/components/WebShiftBanner";
-import { showAlert } from "../../src/utils/alert";
 import { hydrateNow } from "../../src/services/offerChannel";
-import { startBeacon, stopBeacon } from "../../src/services/locationService";
 import { registerForPushNotifications } from "../../src/services/pushNotifications";
 import { useDriverStore } from "../../src/store/driverStore";
 import { useTheme, type Palette, space, radius, continuous, shadow } from "../../src/theme";
 import type { Availability } from "../../src/api/client";
 
-// Label keys resolved at render time so a language switch takes effect
-// without reloading the module.
-const AVAILABILITY_OPTIONS: { value: Availability; labelKey: string }[] = [
-  { value: "ONLINE", labelKey: "home.status.online" },
-  { value: "BUSY", labelKey: "home.status.busy" },
-  { value: "OFFLINE", labelKey: "home.status.offline" },
-];
+/**
+ * Client request, 2026-08-06: the Online/Offline switch is a Settings control
+ * now, and Busy is not a choice at all.
+ *
+ * Busy was never a state a driver should pick: the server sets it the moment an
+ * offer is accepted and clears it when the delivery ends, so the button could
+ * only ever do one of two things — nothing, or take a driver off dispatch under
+ * a name that reads like they are working. It is still a status this screen can
+ * show, because the server still sets it; it is no longer one anybody presses.
+ *
+ * What is left here is the status, not the switch: a driver who is offline has
+ * to be able to see it from Home, and the row says where the switch went rather
+ * than being a second one.
+ */
+const STATUS_LABEL_KEYS: Record<Availability, string> = {
+  ONLINE: "home.status.online",
+  BUSY: "home.status.busy",
+  OFFLINE: "home.status.offline",
+};
 
 function PulseRing({ color }: { color: string }) {
   const pulse = useRef(new Animated.Value(0)).current;
@@ -55,17 +66,14 @@ export default function HomeScreen() {
 
   const driver = useDriverStore((s) => s.driver);
   const availability = useDriverStore((s) => s.availability);
-  const availabilitySync = useDriverStore((s) => s.availabilitySync);
   const lockout = useDriverStore((s) => s.lockout);
   const activeOrder = useDriverStore((s) => s.activeOrder);
-  const wallet = useDriverStore((s) => s.wallet);
   const supervisorPhone = useDriverStore((s) => s.supervisorPhone);
-  const setAvailability = useDriverStore((s) => s.setAvailability);
 
   const [refreshing, setRefreshing] = useState(false);
   const [locationGranted, setLocationGranted] = useState<boolean | null>(null);
   const [showRationale, setShowRationale] = useState(false);
-  const pendingOnline = useRef(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   const checkPermissions = useCallback(async () => {
     try {
@@ -96,53 +104,10 @@ export default function HomeScreen() {
     registerForPushNotifications().catch(() => {});
   }, []);
 
-  const applyAvailability = useCallback(
-    async (next: Availability) => {
-      const res = await setAvailability(next);
-      if (!res.ok) {
-        const msg =
-          res.reason === "CASH_CEILING_LOCKOUT"
-            ? tr("home.lockout_body")
-            : res.reason === "ACTIVE_ORDER"
-              ? tr("home.busy_hint")
-              : res.reason ?? "";
-        showAlert(tr("home.availability_error"), msg);
-        return;
-      }
-      if (next === "ONLINE") {
-        startBeacon().catch(() => {});
-      } else if (next === "OFFLINE") {
-        stopBeacon().catch(() => {});
-      }
-    },
-    [setAvailability],
-  );
-
-  const onSelectAvailability = useCallback(
-    (next: Availability) => {
-      if (next === availability || availabilitySync === "pending") return;
-      if (next === "ONLINE" && locationGranted === false) {
-        pendingOnline.current = true;
-        setShowRationale(true);
-        return;
-      }
-      void applyAvailability(next);
-    },
-    [availability, availabilitySync, locationGranted, applyAvailability],
-  );
-
-  const onRationaleComplete = useCallback(
-    (granted: boolean) => {
-      setShowRationale(false);
-      void checkPermissions();
-      if (granted && pendingOnline.current) {
-        pendingOnline.current = false;
-        void applyAvailability("ONLINE");
-      }
-      pendingOnline.current = false;
-    },
-    [applyAvailability, checkPermissions],
-  );
+  const onRationaleComplete = useCallback(() => {
+    setShowRationale(false);
+    void checkPermissions();
+  }, [checkPermissions]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -151,6 +116,8 @@ export default function HomeScreen() {
 
   const statusColor = availability === "ONLINE" ? c.tint : availability === "BUSY" ? c.orange : c.gray;
   const idleOnline = availability === "ONLINE" && !activeOrder && !lockout.active;
+  const initials =
+    (driver?.name || "?").split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("") || "?";
 
   return (
     <Screen>
@@ -166,14 +133,27 @@ export default function HomeScreen() {
             </Text>
             <Text style={t.largeTitle} numberOfLines={1}>{driver?.name || "Driver"}</Text>
           </View>
+          {/*
+            The gear that used to sit here is gone: Settings is a tab of its own
+            since 2026-08-04, and two doors onto one screen is how a driver ends
+            up unsure which one holds their points.
+
+            This is not that gear back. Client request, 2026-08-06: a small
+            button on Home that opens the driver's own details. It is a card of
+            four facts, not a screen, which is why it is a modal and not a
+            second route into Settings.
+          */}
           <TouchableOpacity
-            style={styles.gear}
-            activeOpacity={0.7}
+            style={styles.profileBtn}
+            activeOpacity={0.8}
             accessibilityRole="button"
-            accessibilityLabel="Settings"
-            onPress={() => router.push("/settings")}
+            accessibilityLabel={tr("profile.title")}
+            testID="home-profile-button"
+            onPress={() => setShowProfile(true)}
           >
-            <Settings size={20} color={c.label} />
+            <Text style={[t.subheadline, { color: c.onTint, fontFamily: undefined, fontWeight: "700" }]}>
+              {initials}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -204,56 +184,42 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
-        {/* ─── Availability control ─── */}
-        <Card style={idleOnline ? styles.cardLive : undefined}>
-          <View style={styles.statusRow}>
-            {idleOnline ? <PulseRing color={c.tint} /> : (
-              <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
-            )}
-            <Text style={[t.title2, { flex: 1 }]}>
-              {idleOnline
-                ? tr("home.waiting")
-                : tr(AVAILABILITY_OPTIONS.find((o) => o.value === availability)?.labelKey ?? "")}
-            </Text>
-            {availabilitySync === "pending" ? (
-              <Text style={[t.caption1, { color: c.secondaryLabel }]}>…</Text>
-            ) : null}
-          </View>
-          <Text style={[t.footnote, { color: c.secondaryLabel, marginTop: 4 }]}>
-            {availability === "OFFLINE"
-              ? tr("home.offline_hint")
-              : availability === "BUSY"
-                ? tr("home.busy_hint")
-                : tr("home.waiting_sub")}
-          </Text>
+        {/*
+          ─── Status, not the switch ───
 
-          <View style={styles.availability}>
-            {AVAILABILITY_OPTIONS.map((o) => {
-              const active = o.value === availability;
-              const tintFor = o.value === "ONLINE" ? c.tint : o.value === "BUSY" ? c.orange : c.gray2;
-              return (
-                <TouchableOpacity
-                  key={o.value}
-                  style={[styles.availabilityBtn, active && { backgroundColor: tintFor, borderColor: tintFor }]}
-                  activeOpacity={0.8}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active }}
-                  disabled={availabilitySync === "pending"}
-                  onPress={() => onSelectAvailability(o.value)}
-                >
-                  <Text
-                    style={[
-                      t.headline,
-                      { color: active ? (o.value === "ONLINE" ? c.onTint : c.systemBackground) : c.secondaryLabel },
-                    ]}
-                  >
-                    {tr(o.labelKey)}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </Card>
+          The three buttons that used to sit here are in Settings (client
+          request, 2026-08-06), and Busy is gone from them entirely. Leaving
+          nothing behind was the wrong answer: an offline driver receives no
+          offers, and the reason has to be legible from the first screen they
+          open. So the state stays and the row says where the switch is, and it
+          opens it — a status that a driver cannot act on is the dead end this
+          whole revision is about.
+        */}
+        <TouchableOpacity
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          testID="home-status-row"
+          onPress={() => router.push("/settings")}
+        >
+          <Card style={idleOnline ? styles.cardLive : undefined}>
+            <View style={styles.statusRow}>
+              {idleOnline ? <PulseRing color={c.tint} /> : (
+                <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+              )}
+              <Text style={[t.title2, { flex: 1 }]}>
+                {idleOnline ? tr("home.waiting") : tr(STATUS_LABEL_KEYS[availability])}
+              </Text>
+              <ChevronRight size={18} color={c.gray} />
+            </View>
+            <Text style={[t.footnote, { color: c.secondaryLabel, marginTop: 4 }]}>
+              {availability === "OFFLINE"
+                ? tr("home.offline_in_settings")
+                : availability === "BUSY"
+                  ? tr("home.busy_hint")
+                  : tr("home.waiting_sub")}
+            </Text>
+          </Card>
+        </TouchableOpacity>
 
         {activeOrder ? (
           <TouchableOpacity style={styles.resume} activeOpacity={0.85} onPress={() => router.replace("/delivery")}>
@@ -267,100 +233,61 @@ export default function HomeScreen() {
           </TouchableOpacity>
         ) : null}
 
-        {/* ─── Today ─── */}
-        <View style={styles.grid}>
-          <Metric label={tr("home.deliveries")} value={String(wallet?.todayDeliveries ?? 0)} accent />
-          <Metric label={tr("home.collected")} value={formatKwd(wallet?.todayCollectedKwd)} />
-        </View>
-        <View style={[styles.grid, { marginTop: space.md }]}>
-          <Metric label={tr("home.cash_on_hand")} value={formatKwd(wallet?.cashOnHandKwd)} wide />
-        </View>
+        {/*
+          ─── Demand heat map ───
 
-        {/* ─── Darb Points entry ─── */}
-        <TouchableOpacity
-          style={styles.pointsRow}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          onPress={() => router.push("/points")}
-        >
-          <Award size={18} color={c.tint} />
-          <Text style={[t.subheadline, { color: c.label, flex: 1 }]}>{tr("settings.my_points")}</Text>
-          <ChevronRight size={16} color={c.gray3} />
-        </TouchableOpacity>
+          Client request, 2026-08-04: Home is the status toggle and the heat map,
+          nothing else. The three earnings tiles that used to sit here (deliveries
+          today, collected today, cash on hand) were not deleted, they are the top
+          of the Wallet tab and were showing twice.
+
+          Darb Points and Rider support moved to Settings, where the same request
+          put them. Support is also on the delivery screen now, which is where a
+          driver actually needs it: mid-order, not before one.
+        */}
+        <DemandHeatMap />
 
         {/*
-          Rider support (client request, 2026-08-01). A row rather than a tab:
-          four tabs is already the ceiling on a phone, and support is reached
-          occasionally rather than daily.
+          ─── Permission health ───
 
-          It is NOT the SOS button and must never read as it. SOS is the red
-          emergency path for a driver in trouble right now; this is a bike that
-          needs repair or a wrong deduction, and putting them in one place would
-          mean either an emergency queuing behind a pay question or a pay
-          question paging the on-call supervisor.
+          Only when it is broken. The green "location sharing active" row it used
+          to draw was a permanent line of reassurance nobody read, and this screen
+          is meant to be two things now. A denied grant still has to say so here:
+          it is the reason Online will refuse, and hiding that would leave the
+          toggle failing with no explanation on screen.
         */}
-        <TouchableOpacity
-          style={styles.pointsRow}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          testID="home-rider-support"
-          onPress={() => router.push("/support")}
-        >
-          <LifeBuoy size={18} color={c.tint} />
-          <Text style={[t.subheadline, { color: c.label, flex: 1 }]}>{tr("support.title")}</Text>
-          <ChevronRight size={16} color={c.gray3} />
-        </TouchableOpacity>
-
-        {/* ─── Permission health ─── */}
-        <TouchableOpacity
-          style={[styles.permRow, locationGranted === false && styles.permRowWarn]}
-          activeOpacity={locationGranted === false ? 0.8 : 1}
-          onPress={() => {
-            if (locationGranted === false) setShowRationale(true);
-          }}
-        >
-          {locationGranted === false ? (
+        {locationGranted === false ? (
+          <TouchableOpacity
+            style={[styles.permRow, styles.permRowWarn]}
+            activeOpacity={0.8}
+            testID="home-location-warning"
+            onPress={() => setShowRationale(true)}
+          >
             <MapPinOff size={18} color={c.orange} />
-          ) : (
-            <MapPin size={18} color={c.tint} />
-          )}
-          <View style={{ flex: 1 }}>
-            <Text style={[t.subheadline, { color: locationGranted === false ? c.warnLabel : c.label }]}>
-              {locationGranted === false ? tr("home.permission_warning") : tr("home.permission_ok")}
-            </Text>
-            {locationGranted === false ? (
+            <View style={{ flex: 1 }}>
+              <Text style={[t.subheadline, { color: c.warnLabel }]}>{tr("home.permission_warning")}</Text>
               <Text style={[t.footnote, { color: c.warnLabel2, marginTop: 1 }]}>
                 {tr("home.permission_warning_sub")}
               </Text>
-            ) : null}
-          </View>
-          {locationGranted === false ? <ChevronRight size={16} color={c.warnLabel2} /> : null}
-        </TouchableOpacity>
+            </View>
+            <ChevronRight size={16} color={c.warnLabel2} />
+          </TouchableOpacity>
+        ) : null}
       </ScrollView>
 
       <PermissionRationale visible={showRationale} onComplete={onRationaleComplete} />
+      <DriverProfileCard
+        visible={showProfile}
+        onClose={() => setShowProfile(false)}
+        driver={driver}
+      />
     </Screen>
-  );
-}
-
-function Metric({ label, value, accent, wide }: { label: string; value: string; accent?: boolean; wide?: boolean }) {
-  const { c, t } = useTheme();
-  const styles = useMemo(() => makeStyles(c), [c]);
-  return (
-    <View style={[styles.metric, wide && { width: "100%" }]}>
-      <Text style={[t.title1, { color: accent ? c.tint : c.label }]} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
-      <Text style={[t.footnote, { color: c.secondaryLabel, marginTop: 3 }]}>{label}</Text>
-    </View>
   );
 }
 
 const makeStyles = (c: Palette) => StyleSheet.create({
   content: { paddingHorizontal: space.base, paddingTop: space.sm, paddingBottom: space.xxxl },
   header: { flexDirection: "row", alignItems: "flex-start", gap: space.md, marginBottom: space.base },
-  gear: {
-    width: 42, height: 42, borderRadius: radius.capsule, backgroundColor: c.groupedSecondary,
-    borderWidth: 1, borderColor: c.hairline, alignItems: "center", justifyContent: "center",
-  },
   lockout: {
     backgroundColor: c.warnBg, borderRadius: radius.card, padding: space.base, marginBottom: space.md,
     borderWidth: 1, borderColor: "rgba(255,184,77,0.22)", ...continuous,
@@ -372,24 +299,13 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   cardLive: { borderColor: "rgba(198,255,58,0.35)" },
   statusRow: { flexDirection: "row", alignItems: "center", gap: space.md },
   statusDot: { width: 14, height: 14, borderRadius: 7 },
-  availability: { flexDirection: "row", gap: space.sm, marginTop: space.lg },
-  availabilityBtn: {
-    flex: 1, height: 56, borderRadius: radius.button, alignItems: "center", justifyContent: "center",
-    backgroundColor: c.tertiaryFill, borderWidth: 1, borderColor: c.hairline, ...continuous,
+  profileBtn: {
+    width: 42, height: 42, borderRadius: 21, backgroundColor: c.tint,
+    alignItems: "center", justifyContent: "center", ...continuous,
   },
   resume: {
     marginTop: space.md, backgroundColor: c.tint, borderRadius: radius.card, padding: space.base,
     flexDirection: "row", alignItems: "center", gap: space.md, ...continuous, ...shadow.glow,
-  },
-  grid: { flexDirection: "row", gap: space.md, marginTop: space.md },
-  metric: {
-    flex: 1, backgroundColor: c.groupedSecondary, borderRadius: radius.card,
-    padding: space.base, borderWidth: 1, borderColor: c.hairline, ...continuous, ...shadow.card,
-  },
-  pointsRow: {
-    flexDirection: "row", alignItems: "center", gap: space.md, marginTop: space.md,
-    backgroundColor: c.groupedSecondary, borderRadius: radius.card, padding: space.base,
-    borderWidth: 1, borderColor: c.hairline, ...continuous,
   },
   permRow: {
     flexDirection: "row", alignItems: "center", gap: space.md, marginTop: space.lg,

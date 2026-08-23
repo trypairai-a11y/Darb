@@ -222,9 +222,20 @@ export async function approveFleetRequest(params: {
       const raw = payload.flatFeePerOrderKwd;
       const rate = raw == null ? NaN : Number(raw);
       if (Number.isFinite(rate) && rate > 0) {
+        // Revision 14 (#3): the rate has two halves. The kilometre one is
+        // written only when the request actually carried it — a proposal that
+        // moved the base alone must leave the per-kilometre rate where it is,
+        // not clear it to NULL and quietly put the company back on a flat deal.
+        const rawPerKm = payload.perKmFeeKwd;
+        const perKm = rawPerKm == null ? NaN : Number(rawPerKm);
         await tx.fleetPartner.update({
           where: { id: request.fleetPartnerId },
-          data: { flatFeePerOrderKwd: new Prisma.Decimal(String(raw)) },
+          data: {
+            flatFeePerOrderKwd: new Prisma.Decimal(String(raw)),
+            ...(Number.isFinite(perKm) && perKm >= 0
+              ? { perKmFeeKwd: new Prisma.Decimal(String(rawPerKm)) }
+              : {}),
+          },
         });
       }
     }

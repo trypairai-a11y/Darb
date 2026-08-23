@@ -120,8 +120,7 @@ function toItemSlug(raw: string): string {
 }
 
 // PUT /api/platform-settings/:platform/inventory
-router.put("/:platform/inventory", rbac(...ADMINS), async (req: Request, res: Response) => {
-  try {
+router.put("/:platform/inventory", rbac(...ADMINS), async (req: Request, res: Response) => {  try {
     const tenantId = req.user!.tenantId;
     const platform = req.params.platform.toUpperCase();
     const { items } = req.body; // [{ itemType, label?, total, minStock }]
@@ -174,6 +173,77 @@ router.put("/:platform/inventory", rbac(...ADMINS), async (req: Request, res: Re
   }
 });
 
+// POST /api/platform-settings/:platform/inventory/:itemType/issue
+// Edit #12 (2026-08-22) — hand a piece of kit from the platform pool to one
+// delivery-company driver. The pool's issued goes up and available goes down
+// in the same transaction that writes (or tops up) the driver's own
+// DriverInventory row, so /assets and the driver file can never disagree.
+router.post(
+  "/:platform/inventory/:itemType/issue",
+  rbac(...ADMINS),
+  async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.user!.tenantId;
+      const platform = req.params.platform.toUpperCase();
+      const itemType = toItemSlug(req.params.itemType);
+      const driverId = String(req.body?.driverId ?? "");
+
+      if (!driverId) {
+        res.status(400).json({ error: "driverId is required" });
+        return;
+      }
+
+      const driver = await prisma.driver.findFirst({
+        where: { id: driverId, tenantId },
+        select: { id: true, name: true },
+      });
+      if (!driver) {
+        res.status(404).json({ error: "Driver not found" });
+        return;
+      }
+
+      const result = await prisma.$transaction(async (tx) => {
+        const pool = await tx.platformInventory.findUnique({
+          where: { tenantId_platform_itemType: { tenantId, platform: platform as any, itemType } },
+        });
+        if (!pool) {
+          throw new Error("Inventory pool not found");
+        }
+        if (pool.available <= 0) {
+          throw new Error("No stock available to issue");
+        }
+
+        const existing = await tx.driverInventory.findFirst({
+          where: { driverId, itemType },
+          orderBy: { createdAt: "desc" },
+        });
+        if (existing && !existing.returnedDate) {
+          // Already carrying one of these; bump the quantity rather than
+          // stacking a second open row.
+          await tx.driverInventory.update({
+            where: { id: existing.id },
+            data: { issued: true, quantity: existing.quantity + 1, issuedDate: new Date() },
+          });
+        } else {
+          await tx.driverInventory.create({
+            data: { driverId, itemType, issued: true, quantity: 1, issuedDate: new Date() },
+          });
+        }
+
+        return tx.platformInventory.update({
+          where: { id: pool.id },
+          data: { issued: pool.issued + 1, available: pool.available - 1 },
+        });
+      });
+
+      res.json({ data: result });
+    } catch (err: any) {
+      const status = err?.message === "Inventory pool not found" ? 404 : 400;
+      res.status(status).json({ error: err.message });
+    }
+  }
+);
+
 // DELETE /api/platform-settings/:platform/inventory/:itemType — retire a pool.
 // Creating item types without a way to remove a typo is a one-way door.
 router.delete(
@@ -201,6 +271,109 @@ router.delete(
 
       await prisma.platformInventory.delete({ where: { id: existing.id } });
       res.json({ data: { id: existing.id } });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+);
+
+/**
+ * POST /api/platform-settings/:platform/inventory/:itemType/issue
+ * Revision 17 (#12) — hand a piece of kit to one delivery company's driver.
+ *
+ * The two tables this touches were both already here: PlatformInventory holds
+ * the pool and DriverInventory holds who has what. Nothing joined them, so
+ * /assets could only ever report a stock count that ops had to keep true by
+ * typing it in, and issuing kit was an off-system act.
+ *
+ * The decrement is a status-guarded updateMany on `available`, the same
+ * discipline as the order FSM: count 0 means someone else took the last one
+ * between the read and the write, and that is a 409, never an oversell.
+ */
+router.post(
+  "/:platform/inventory/:itemType/issue",
+  rbac(...ADMINS),
+  async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.user!.tenantId;
+      const platform = req.params.platform.toUpperCase();
+      const itemType = toItemSlug(req.params.itemType);
+      const driverId = String(req.body?.driverId ?? "");
+      const quantity = Number(req.body?.quantity ?? 1);
+
+      if (!driverId) {
+        res.status(400).json({ error: "driverId is required" });
+        return;
+      }
+      if (!Number.isInteger(quantity) || quantity < 1) {
+        res.status(400).json({ error: "quantity must be a whole number of at least 1" });
+        return;
+      }
+
+      // Tenant-scoped so a driver id from another tenant cannot be issued to.
+      const driver = await prisma.driver.findFirst({
+        where: { id: driverId, tenantId },
+        select: { id: true, name: true, fleetPartnerId: true },
+      });
+      if (!driver) {
+        res.status(404).json({ error: "Driver not found" });
+        return;
+      }
+
+      const pool = await prisma.platformInventory.findUnique({
+        where: { tenantId_platform_itemType: { tenantId, platform: platform as any, itemType } },
+        select: { id: true, available: true, label: true },
+      });
+      if (!pool) {
+        res.status(404).json({ error: "Inventory pool not found" });
+        return;
+      }
+
+      const result = await prisma.$transaction(async (tx) => {
+        // Guarded: only moves stock while at least `quantity` is still free.
+        const claimed = await tx.platformInventory.updateMany({
+          where: { id: pool.id, available: { gte: quantity } },
+          data: { available: { decrement: quantity }, issued: { increment: quantity } },
+        });
+        if (claimed.count === 0) return null;
+
+        // One row per driver per item type, so issuing a second of the same
+        // thing tops up the quantity rather than leaving two half-rows that
+        // no return flow could ever reconcile.
+        const existing = await tx.driverInventory.findFirst({
+          where: { driverId: driver.id, itemType },
+          select: { id: true, quantity: true },
+        });
+        if (existing) {
+          return tx.driverInventory.update({
+            where: { id: existing.id },
+            data: {
+              quantity: existing.quantity + quantity,
+              issued: true,
+              issuedDate: new Date(),
+              returnedDate: null,
+            },
+          });
+        }
+        return tx.driverInventory.create({
+          data: {
+            driverId: driver.id,
+            itemType,
+            quantity,
+            issued: true,
+            issuedDate: new Date(),
+          },
+        });
+      });
+
+      if (!result) {
+        res.status(409).json({
+          error: `Not enough ${pool.label ?? itemType} in stock. ${pool.available} available.`,
+        });
+        return;
+      }
+
+      res.json({ data: result });
     } catch (err: any) {
       res.status(400).json({ error: err.message });
     }

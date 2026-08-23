@@ -32,16 +32,36 @@ export const DRIVER_DOC_COLUMNS = {
   HEALTH_CERT: { expiry: "healthCertExpiry", status: "healthCertStatus" },
   WORK_PERMIT: { expiry: "workPermitExpiry", status: "workPermitStatus" },
   FOOD_HANDLING: { expiry: "foodHandlingCertExpiry", status: "foodHandlingCertStatus" },
+  // Client request, revision 16 (#3). The selfie has no expiry of its own; it
+  // keeps a column pair anyway so it is counted and shown beside the rest
+  // rather than being storable and invisible, which is what this map exists to
+  // prevent.
+  POLICE_CLEARANCE: { expiry: "policeClearanceExpiry", status: "policeClearanceStatus" },
+  PASSPORT: { expiry: "passportExpiry", status: "passportStatus" },
+  DRIVER_SELFIE: { expiry: "driverSelfieExpiry", status: "driverSelfieStatus" },
 } as const;
 
 export type DriverDocType = keyof typeof DRIVER_DOC_COLUMNS;
 export type CompanyDocType = (typeof COMPANY_DOC_TYPES)[number];
 
-/** The driver documents Darb requires before a driver may be activated. */
+/**
+ * The driver documents Darb requires before a driver may be activated.
+ *
+ * Client request, revision 16 (#3): the eight the client named, up from three.
+ * Vehicle insurance and food handling stay storable but optional because they
+ * were not on that list. Safe to widen because the approve button WARNS on a
+ * gap rather than blocking it, so an existing driver missing a passport scan
+ * shows as incomplete instead of being deactivated overnight.
+ */
 export const REQUIRED_DRIVER_DOCS: DriverDocType[] = [
   "CIVIL_ID",
   "DRIVING_LICENSE",
+  "WORK_PERMIT",
+  "HEALTH_CERT",
   "VEHICLE_REG",
+  "POLICE_CLEARANCE",
+  "PASSPORT",
+  "DRIVER_SELFIE",
 ];
 
 export function isDriverDocType(t: string): t is DriverDocType {

@@ -48,6 +48,8 @@ export default function CockpitPage() {
   // labelled as such rather than silently contradicting the selected range.
   const [period, setPeriod] = useState<Period>(DEFAULT_PERIOD);
   const [groupByOwner, setGroupByOwner] = useState(true);
+  // Edit #9 (2026-08-22) — narrow the zone-driver sheet to one shift window.
+  const [shiftFilter, setShiftFilter] = useState("");
   const isToday = period.preset === "today";
 
   const summaryQuery = useQuery({
@@ -259,7 +261,8 @@ export default function CockpitPage() {
         )}
       </section>
 
-      {/* Zones */}
+      {/* Zones — Edit #9 adds what the zone is carrying now and how many
+          drivers are booked on it, beside the delivered/on-time figures. */}
       <section className="space-y-3">
         <h2 className="text-sm font-medium text-sand-900">{t("cockpit.zonesTitle")}</h2>
         <DataTable
@@ -276,6 +279,20 @@ export default function CockpitPage() {
             },
             { key: "deliveredToday", label: t("cockpit.zoneDelivered") },
             {
+              key: "activeOrders",
+              label: t("cockpit.zoneActive"),
+              render: (value: number | undefined) => (
+                <span dir="ltr" className="tabular-nums">{value ?? 0}</span>
+              ),
+            },
+            {
+              key: "driversAssigned",
+              label: t("cockpit.zoneDriversCol"),
+              render: (value: number | undefined) => (
+                <span dir="ltr" className="tabular-nums">{value ?? 0}</span>
+              ),
+            },
+            {
               key: "onTimeRate",
               label: t("cockpit.zoneOnTime"),
               render: (value: number | null) => (
@@ -286,6 +303,79 @@ export default function CockpitPage() {
           data={s.zones}
           rowKey="zoneId"
           emptyMessage={t("errors.noData")}
+        />
+      </section>
+
+      {/* Edit #9 (2026-08-22) — the assignment sheet: which drivers are on
+          which zone, in which booked window, and what each window moved. The
+          shift filter narrows the whole sheet to one window. */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h2 className="text-sm font-medium text-sand-900">{t("cockpit.zoneDriversTitle")}</h2>
+          {(s.shifts?.windows?.length ?? 0) > 0 && (
+            <label className="inline-flex items-center gap-2 text-xs text-sand-600">
+              {t("cockpit.shiftFilter")}
+              <select
+                value={shiftFilter}
+                onChange={(e) => setShiftFilter(e.target.value)}
+                data-testid="cockpit-shift-filter"
+                className="px-2.5 h-8 rounded-xl bg-white border border-sand-300 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="">{t("cockpit.allShifts")}</option>
+                {s.shifts!.windows.map((w) => (
+                  <option key={w} value={w} dir="ltr">
+                    {w}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+        </div>
+        <DataTable
+          columns={[
+            {
+              key: "zoneName",
+              label: t("cockpit.zoneName"),
+              render: (value: string) => (
+                <span dir="auto" className="text-sm">{value}</span>
+              ),
+            },
+            {
+              key: "driverName",
+              label: t("cockpit.driverCol"),
+              render: (value: string, row: { driverId: string }) => (
+                <Link
+                  href={`/drivers/${row.driverId}`}
+                  className="text-sm text-primary hover:underline"
+                  dir="auto"
+                >
+                  {value}
+                </Link>
+              ),
+            },
+            {
+              key: "window",
+              label: t("cockpit.windowCol"),
+              render: (value: string) => (
+                <span dir="ltr" className="font-mono text-xs tabular-nums">{value}</span>
+              ),
+            },
+            {
+              key: "ordersInWindow",
+              label: t("cockpit.ordersInWindow"),
+              render: (value: number) => (
+                <span dir="ltr" className="tabular-nums text-sm font-medium">{value}</span>
+              ),
+            },
+          ]}
+          data={(s.shifts?.zoneDrivers ?? [])
+            .filter((r) => !shiftFilter || r.window === shiftFilter)
+            .map((r) => ({
+              ...r,
+              _key: `${r.zoneId ?? r.zoneName}-${r.driverId}-${r.window}`,
+            }))}
+          rowKey="_key"
+          emptyMessage={t("cockpit.noShiftBookings")}
         />
       </section>
 

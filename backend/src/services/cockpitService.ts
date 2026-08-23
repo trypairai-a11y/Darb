@@ -3,7 +3,9 @@
 // live cash position (collected in the field vs deposited), and threshold
 // alerts. Every number is derived from committed rows on read; no caches.
 
+import { Prisma } from "../generated/prisma";
 import { prisma } from "../config";
+import { fleetRateOf, sumFleetPayout } from "./fleetService";
 
 const ACTIVE_STATUSES = ["CREATED", "DISPATCHING", "NO_DRIVER", "ASSIGNED", "PICKED_UP"] as const;
 
@@ -23,7 +25,34 @@ export interface CockpitSummary {
     name: string;
     deliveredToday: number;
     onTimeRate: number | null;
+    /**
+     * Edit #9 (2026-08-22) — the client reads this table asking two more
+     * questions than it answered: how many drivers are on the zone right now,
+     * and how many orders the zone is carrying beyond the delivered ones.
+     */
+    activeOrders: number;
+    driversAssigned: number;
   }>;
+  /**
+   * Edit #9 (2026-08-22) — the zone-to-driver assignment sheet, per booked
+   * shift window, with each driver's order count inside that window. This is
+   * what the client asked to see "here" on Today: who is on which zone, in
+   * which three-hour window, and how much that window actually moved.
+   */
+  shifts: {
+    /** Distinct booked windows today, e.g. ["10:00-13:00", "16:00-19:00"]. */
+    windows: string[];
+    zoneDrivers: Array<{
+      zoneId: string | null;
+      zoneName: string;
+      driverId: string;
+      driverName: string;
+      /** "16:00-19:00", exactly as the driver booked it. */
+      window: string;
+      /** Orders that driver delivered inside that window. */
+      ordersInWindow: number;
+    }>;
+  };
   money: {
     feesTodayKwd: string;
     fleetCostTodayKwd: string;
@@ -83,6 +112,8 @@ export async function getCockpitSummary(
   const [
     activeByStatus,
     deliveredRows,
+    shiftRequests,
+    activeByZone,
     cancelledToday,
     noDriverNow,
     zones,
@@ -108,8 +139,35 @@ export async function getCockpitSummary(
         slaDeadline: true,
         pickupZoneId: true,
         deliveryFeeKwd: true,
+        // Revision 14 (#3): fleet cost is per kilometre now, not per order.
+        distanceKm: true,
+        driverId: true, // Edit #9 — orders-per-driver on the zone sheet.
         driver: { select: { fleetPartnerId: true } },
       },
+    }),
+    // Edit #9 (2026-08-22) — who booked which zone window today. APPROVED is
+    // the only status that writes a Shift, so it is the only status that means
+    // "this driver is assigned here".
+    prisma.shiftRequest.findMany({
+      where: {
+        tenantId,
+        date: { gte: startOfToday(), lt: new Date(startOfToday().getTime() + 86_400_000) },
+        status: "APPROVED",
+      },
+      select: {
+        driverId: true,
+        zoneId: true,
+        zoneName: true,
+        startTime: true,
+        endTime: true,
+        driver: { select: { name: true } },
+      },
+    }),
+    // Edit #9 — orders currently moving through each zone, for the zone table.
+    prisma.deliveryOrder.groupBy({
+      by: ["pickupZoneId"],
+      where: { tenantId, status: { in: [...ACTIVE_STATUSES] }, pickupZoneId: { not: null } },
+      _count: { _all: true },
     }),
     prisma.deliveryOrder.count({
       where: { tenantId, status: "CANCELLED", cancelledAt: period },
@@ -139,6 +197,7 @@ export async function getCockpitSummary(
         disciplineStatus: true,
         minDriversOnline: true,
         flatFeePerOrderKwd: true,
+        perKmFeeKwd: true,
         ownerGroup: { select: { id: true, name: true } },
       },
     }),
@@ -184,15 +243,72 @@ export async function getCockpitSummary(
     byZone.set(r.pickupZoneId, z);
   }
 
-  // Fleet cost today: delivered-by-fleet counts x each fleet's flat fee.
+  // Edit #9 (2026-08-22) — who is assigned where, per booked window, and what
+  // each driver actually moved inside their own window. Window text is Kuwait
+  // wall clock, so the bounds are built against an explicit +03:00 day frame
+  // (the same convention resolveDriverDateRange uses), not server-local time.
+  const ordersByDriver = new Map<string, number>();
+  for (const r of deliveredRows) {
+    if (!r.driverId) continue;
+    ordersByDriver.set(r.driverId, (ordersByDriver.get(r.driverId) ?? 0) + 1);
+  }
+  const activeOrdersByZone = new Map<string, number>();
+  for (const r of activeByZone) {
+    if (r.pickupZoneId) activeOrdersByZone.set(r.pickupZoneId, r._count._all);
+  }
+  const kuwaitDay = new Date(Date.now() + 3 * 3_600_000).toISOString().slice(0, 10);
+  const hm = (v: string, fallback: string) =>
+    /^\d{2}:\d{2}$/.test(v) ? v : fallback;
+  const windowBounds = (startText: string, endText: string) => ({
+    start: new Date(`${kuwaitDay}T${hm(startText, "00:00")}:00.000+03:00`),
+    end: new Date(`${kuwaitDay}T${hm(endText, "23:59")}:59.999+03:00`),
+  });
+  const zoneDriverRows = shiftRequests
+    .map((sr) => {
+      const { start, end } = windowBounds(sr.startTime, sr.endTime);
+      const ordersInWindow = deliveredRows.filter(
+        (r) =>
+          r.driverId === sr.driverId &&
+          r.deliveredAt &&
+          r.deliveredAt >= start &&
+          r.deliveredAt <= end,
+      ).length;
+      return {
+        zoneId: sr.zoneId,
+        zoneName: sr.zoneName,
+        driverId: sr.driverId,
+        driverName: sr.driver?.name ?? "n/a",
+        window: `${hm(sr.startTime, "--:--")}-${hm(sr.endTime, "--:--")}`,
+        ordersInWindow,
+      };
+    })
+    .sort(
+      (a, b) =>
+        a.zoneName.localeCompare(b.zoneName) ||
+        a.window.localeCompare(b.window) ||
+        a.driverName.localeCompare(b.driverName),
+    );
+  const shiftWindows = Array.from(new Set(zoneDriverRows.map((r) => r.window))).sort();
+
+  // Fleet cost today: each company's base fee per delivery plus its rate for
+  // the kilometres those deliveries covered (revision 14 #3). Summed through
+  // the same helper the statements are cut with, so the cockpit's cost line
+  // and the month's payout cannot drift apart.
+  const kmByFleet = new Map<string, Array<Prisma.Decimal | null>>();
   const deliveredByFleet = new Map<string, number>();
   for (const r of deliveredRows) {
     const f = r.driver?.fleetPartnerId;
-    if (f) deliveredByFleet.set(f, (deliveredByFleet.get(f) ?? 0) + 1);
+    if (!f) continue;
+    deliveredByFleet.set(f, (deliveredByFleet.get(f) ?? 0) + 1);
+    const list = kmByFleet.get(f) ?? [];
+    list.push(r.distanceKm);
+    kmByFleet.set(f, list);
   }
   let fleetCost = 0;
   for (const fleet of fleets) {
-    fleetCost += (deliveredByFleet.get(fleet.id) ?? 0) * Number(fleet.flatFeePerOrderKwd);
+    fleetCost += Number(
+      sumFleetPayout(fleetRateOf(fleet), kmByFleet.get(fleet.id) ?? []).totalKwd,
+    );
   }
 
   const onlineByFleet = new Map<string, number>();
@@ -284,9 +400,21 @@ export async function getCockpitSummary(
           deliveredToday: agg?.delivered ?? 0,
           onTimeRate:
             agg && agg.withSla > 0 ? Number((agg.onTime / agg.withSla).toFixed(3)) : null,
+          // Edit #9 — what the zone is carrying now, and who is on it.
+          activeOrders: activeOrdersByZone.get(z.id) ?? 0,
+          driversAssigned: new Set(
+            shiftRequests
+              .filter((sr) => sr.zoneId === z.id || (!sr.zoneId && sr.zoneName === z.name))
+              .map((sr) => sr.driverId),
+          ).size,
         };
       })
       .sort((a, b) => b.deliveredToday - a.deliveredToday),
+    // Edit #9 (2026-08-22) — the assignment sheet behind the zone table.
+    shifts: {
+      windows: shiftWindows,
+      zoneDrivers: zoneDriverRows,
+    },
     money: {
       feesTodayKwd: fees.toFixed(3),
       fleetCostTodayKwd: fleetCost.toFixed(3),

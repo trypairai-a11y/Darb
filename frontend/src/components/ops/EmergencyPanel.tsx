@@ -11,7 +11,7 @@
 // uses, so mounting it costs no extra request.
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BellOff, BellRing, Check, MousePointerClick, Phone, X } from "lucide-react";
+import { BellOff, BellRing, Check, MousePointerClick, Phone, PowerOff, X } from "lucide-react";
 import LiveMap from "@/components/map/LiveMap";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
@@ -19,7 +19,7 @@ import { useToast } from "@/components/shared/Toast";
 import { useSlaTick } from "@/components/darb/useSlaTick";
 import { useDarbEvents } from "@/hooks/useDarbEvents";
 import { useSoundAlert } from "@/hooks/useSoundAlert";
-import { incidentsApi, unwrapList } from "@/lib/darbApi";
+import { incidentsApi, staffDriversApi, unwrapList } from "@/lib/darbApi";
 import type { Incident } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDateTime } from "@/i18n/format";
@@ -97,6 +97,24 @@ export default function EmergencyPanel({ onClose }: { onClose: () => void }) {
       await incidentsApi.ack(incident.id);
       toast.success(t("opsPages.incidentAcked"));
       await queryClient.invalidateQueries({ queryKey: ["darb", "incidents"] });
+    } catch {
+
+      toast.error(t("toast.failedSave"));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  // Edit #8 (2026-08-22) — a breakdown or accident can end a rider's shift on
+  // the spot, and the person handling the incident is the one who knows it.
+  // This takes the driver's session down without waiting for the agent app.
+  async function putOffline(incident: Incident) {
+    if (!incident.driverId) return;
+    setBusyId(incident.id);
+    try {
+      await staffDriversApi.putOffline(incident.driverId);
+      toast.success(t("opsPages.driverOffline"));
+      await queryClient.invalidateQueries({ queryKey: ["darb", "dispatch"] });
     } catch {
       toast.error(t("toast.failedSave"));
     } finally {
@@ -311,6 +329,21 @@ export default function EmergencyPanel({ onClose }: { onClose: () => void }) {
                         <Phone size={13} aria-hidden="true" />
                         {t("opsPages.call")}
                       </a>
+                    )}
+                    {/* Edit #8 (2026-08-22) — for the incidents that end a
+                        shift (breakdown, accident): pull the driver's session
+                        down right here so dispatch stops offering them work. */}
+                    {incident.driverId && (
+                      <button
+                        type="button"
+                        onClick={() => void putOffline(incident)}
+                        disabled={busyId === incident.id}
+                        className="inline-flex items-center gap-1.5 px-4 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors disabled:opacity-50"
+                        data-testid="incident-put-offline"
+                      >
+                        <PowerOff size={13} aria-hidden="true" />
+                        {busyId === incident.id ? t("common.processing") : t("opsPages.putOffline")}
+                      </button>
                     )}
                   </div>
                 </div>

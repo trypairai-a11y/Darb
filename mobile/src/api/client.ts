@@ -416,39 +416,135 @@ export async function fetchZones(): Promise<DriverZone[]> {
 }
 
 /**
- * A shift is three hours in one named zone (client rule, 2026-08-02).
+ * Where the work is, by zone (client request, 2026-08-04).
  *
- * The end time is derived rather than typed. Letting a driver enter both ends
- * meant every request had to be checked by hand against a rule they could not
- * see, and a four-hour ask looked identical to a correct one until somebody
- * read it.
+ * This is the only payload in the app that carries zone geometry. The Home heat
+ * map draws the real polygons rather than pins on a tile map: the driver app has
+ * no map library, adding one would cost the web build at darb-driver.vercel.app
+ * and force a dev client instead of Expo Go, and the question a driver is asking
+ * ("which side of town should I sit on") is answered by shaded areas, not tiles.
+ */
+export interface DriverZoneDemand {
+  id: string;
+  code: string;
+  name: string;
+  nameAr: string | null;
+  /** GeoJSON Polygon geometry, coordinates in [lng, lat] order. */
+  polygon: { type?: string; coordinates?: number[][][] } | null;
+  /** [minLng, minLat, maxLng, maxLat]. */
+  bbox: number[] | null;
+  recentOrders: number;
+  waitingOrders: number;
+  /** 0 to 1, relative to the busiest zone in the same response. */
+  intensity: number;
+}
+
+export async function fetchDemand(): Promise<{
+  data: DriverZoneDemand[];
+  windowMinutes: number;
+  busiestOrders: number;
+}> {
+  const res = await agentFetch<{
+    data: DriverZoneDemand[];
+    windowMinutes: number;
+    busiestOrders: number;
+  }>("/api/agent/demand");
+  return {
+    data: res.data ?? [],
+    windowMinutes: res.windowMinutes ?? 90,
+    busiestOrders: res.busiestOrders ?? 0,
+  };
+}
+
+/**
+ * A shift is three hours in one named zone, and booking one is a tap.
+ *
+ * Client request, 2026-08-03: "I need same as Talabat app design". The driver
+ * picks a day and a window rather than typing a date and a start time, and the
+ * ask lands on their own screen straight away as Awaiting Darb. It writes a
+ * ShiftRequest rather than a Shift, because Darb decides who works where and a
+ * Shift is the row attendance and pay are computed from.
+ *
+ * The end time is derived server-side too. Letting the client send both ends
+ * meant a four-hour ask looked identical to a correct one until somebody read
+ * it.
  */
 export const SHIFT_HOURS = 3;
+
+// The list of windows used to live here. It is the server's now
+// (/api/agent/shift-slots), because Darb caps each window per zone and two
+// copies of the list is how one screen ends up offering a window the other does
+// not know exists. SHIFT_HOURS above stays: it is only a fallback for a slots
+// response that arrives without it.
+
+export type ShiftRequestStatus = "PENDING" | "APPROVED" | "DECLINED" | "CANCELLED";
+
+export interface ShiftRequestRecord {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  area: string | null;
+  status: ShiftRequestStatus;
+  declineReason: string | null;
+  createdAt: string;
+}
+
+export async function fetchMyShiftRequests(): Promise<ShiftRequestRecord[]> {
+  const res = await agentFetch<{ data: ShiftRequestRecord[] }>("/api/agent/shift-requests");
+  return res.data ?? [];
+}
+
+/**
+ * The windows still open on one day, in the zone Darb put this driver in.
+ *
+ * Client request, 2026-08-06: "remove the areas from the driver, he will see
+ * the available times only". The app used to draw a chip per zone and send the
+ * chosen one; the zone is the server's answer now, not the driver's question,
+ * and `zone: null` is a driver Darb has not rostered anywhere yet.
+ */
+export interface ShiftSlot {
+  start: string;
+  end: string;
+  /** null when Darb has set no cap on that window. */
+  capacity: number | null;
+  booked: number;
+  remaining: number | null;
+  full: boolean;
+  /** This driver already holds it, asked-for or confirmed. */
+  mine: boolean;
+  past: boolean;
+}
+
+export interface ShiftSlotsResponse {
+  zone: { id: string; name: string; nameAr: string | null } | null;
+  hours: number;
+  windows: ShiftSlot[];
+}
+
+export async function fetchShiftSlots(date: string): Promise<ShiftSlotsResponse> {
+  const res = await agentFetch<ShiftSlotsResponse>(
+    `/api/agent/shift-slots?date=${encodeURIComponent(date)}`,
+  );
+  return { zone: res.zone ?? null, hours: res.hours ?? SHIFT_HOURS, windows: res.windows ?? [] };
+}
 
 export async function requestShift(payload: {
   date: string;
   startTime: string;
-  endTime: string;
-  area: string;
-  note?: string;
-}): Promise<TicketRecord> {
+}): Promise<ShiftRequestRecord> {
   const deviceId = await getDeviceId();
-  const lines = [
-    `Date: ${payload.date}`,
-    `From: ${payload.startTime}`,
-    `To: ${payload.endTime}`,
-    `Duration: ${SHIFT_HOURS} hours`,
-    `Zone: ${payload.area}`,
-    payload.note ? `Note: ${payload.note}` : null,
-  ].filter(Boolean);
-  return agentFetch<TicketRecord>("/api/agent/tickets", {
+  return agentFetch<ShiftRequestRecord>("/api/agent/shift-requests", {
     method: "POST",
-    body: JSON.stringify({
-      deviceId,
-      category: "SHIFT_REQUEST",
-      title: `Shift request ${payload.date} ${payload.startTime}-${payload.endTime} (${payload.area})`,
-      description: lines.join("\n"),
-    }),
+    body: JSON.stringify({ deviceId, ...payload }),
+  });
+}
+
+export async function cancelShiftRequest(id: string): Promise<void> {
+  const deviceId = await getDeviceId();
+  await agentFetch(`/api/agent/shift-requests/${id}/cancel`, {
+    method: "POST",
+    body: JSON.stringify({ deviceId }),
   });
 }
 
@@ -585,7 +681,17 @@ export interface AgentWalletSummary {
 }
 
 export interface AgentStateResponse {
-  driver?: { id: string; name?: string; phone?: string | null; platform?: string | null } | null;
+  // driverCode is the Darb ID ("DRB-0065") the profile card on Home shows back
+  // to the driver (client request, 2026-08-06). Optional because a backend
+  // older than that request does not send it, and the card must degrade to a
+  // dash rather than render "undefined".
+  driver?: {
+    id: string;
+    driverCode?: string | null;
+    name?: string;
+    phone?: string | null;
+    platform?: string | null;
+  } | null;
   availability: Availability;
   lockout?: { active: boolean; reason?: string | null } | boolean | null;
   activeOffer?: AgentOfferSummary | null;
@@ -600,11 +706,25 @@ export async function getState(): Promise<AgentStateResponse> {
   return agentFetch<AgentStateResponse>("/api/agent/state");
 }
 
-/** POST /api/agent/availability → 200 | 409 CASH_CEILING_LOCKOUT | 409 ACTIVE_ORDER. */
-export async function postAvailability(availability: Availability): Promise<{ availability: Availability }> {
+/**
+ * POST /api/agent/availability → 200 | 409 CASH_CEILING_LOCKOUT | 409
+ * ACTIVE_ORDER | 409 OUTSIDE_ZONE.
+ *
+ * The coordinates are what the server checks the assigned zone against when
+ * going ONLINE. Sending none is allowed and lets the driver through with a
+ * warning: the gate is there to stop somebody working the wrong area, not to
+ * strand a driver whose GPS has dropped.
+ */
+export async function postAvailability(
+  availability: Availability,
+  where?: { latitude: number; longitude: number } | null,
+): Promise<{ availability: Availability; warning?: string }> {
   return agentFetch("/api/agent/availability", {
     method: "POST",
-    body: JSON.stringify({ availability }),
+    body: JSON.stringify({
+      availability,
+      ...(where ? { latitude: where.latitude, longitude: where.longitude } : {}),
+    }),
   });
 }
 

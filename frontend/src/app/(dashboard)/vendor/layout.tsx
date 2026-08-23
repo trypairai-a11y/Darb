@@ -18,15 +18,23 @@ import { useDeniedVendorTabs } from "@/lib/vendorAccess";
 import { useI18n } from "@/i18n/I18nProvider";
 
 /**
- * The branch filter, for every vendor screen except the order board.
+ * The branch filter, for every vendor screen that scopes to a branch.
  *
- * The board renders the same control itself, inside its own filter row beside
- * the Live / Delivered tabs, with a count per branch. Rendering it here as well
- * would put two copies of one filter on that screen.
+ * The order board renders the same control itself, inside its own filter row
+ * beside the Live / Delivered tabs, with a count per branch. Rendering it here
+ * as well would put two copies of one filter on that screen.
+ *
+ * Settings is skipped for the opposite reason (client report, revision 16 #6):
+ * that page reads only inspectVendorId from the branch context and nothing on
+ * it responds to the selection, so the filter sat at the top doing nothing
+ * above the working branch picker inside Incoming orders. Two controls that
+ * look identical where only the lower one does anything is worse than one.
  */
+const UNSCOPED_VENDOR_PATHS = ["/vendor", "/vendor/settings"];
+
 function LayoutBranchFilter() {
   const pathname = usePathname();
-  if (pathname === "/vendor") return null;
+  if (UNSCOPED_VENDOR_PATHS.includes(pathname ?? "")) return null;
   return <BranchFilter />;
 }
 

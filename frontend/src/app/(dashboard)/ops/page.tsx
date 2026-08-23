@@ -28,6 +28,7 @@ import OrderOpsPanel from "@/components/darb/OrderOpsPanel";
 import { useSlaTick } from "@/components/darb/useSlaTick";
 import OpsAlertBanner from "@/components/ops/OpsAlertBanner";
 import OpsCourierList from "@/components/ops/OpsCourierList";
+import ShiftRequestQueue from "@/components/ops/ShiftRequestQueue";
 import OpsFilterChips from "@/components/ops/OpsFilterChips";
 import OpsTaskList from "@/components/ops/OpsTaskList";
 import ProblemsList from "@/components/ops/ProblemsList";
@@ -594,17 +595,23 @@ function OpsLiveScreen() {
           ) : tab === "areas" ? (
             <AreasPanel rows={zoneRows} />
           ) : (
-            <OpsCourierList
-              drivers={visibleDrivers}
-              allDrivers={positions}
-              activeStatuses={driverStatuses}
-              search={driverSearch}
-              selectedDriverId={selectedDriverId}
-              onToggleStatus={toggleDriverStatus}
-              onSearch={setDriverSearch}
-              onSelect={(id) => setSelectedDriverId((prev) => (prev === id ? null : id))}
-              onCopy={copyDriver}
-            />
+            <>
+              {/* Drivers asking for a window sit above the drivers already on
+                  one: deciding tonight's roster is the same job as watching who
+                  is online now, and this queue had no home at all before. */}
+              <ShiftRequestQueue />
+              <OpsCourierList
+                drivers={visibleDrivers}
+                allDrivers={positions}
+                activeStatuses={driverStatuses}
+                search={driverSearch}
+                selectedDriverId={selectedDriverId}
+                onToggleStatus={toggleDriverStatus}
+                onSearch={setDriverSearch}
+                onSelect={(id) => setSelectedDriverId((prev) => (prev === id ? null : id))}
+                onCopy={copyDriver}
+              />
+            </>
           )}
         </div>
       </aside>

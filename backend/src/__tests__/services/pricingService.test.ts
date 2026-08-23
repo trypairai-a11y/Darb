@@ -578,6 +578,54 @@ describe("quoteDelivery with a delivery plan", () => {
     expect(drivingDistanceKm).not.toHaveBeenCalled();
   });
 
+  // ── Revision 14 (#3): every quote records how far the trip was ──────────
+  //
+  // The distance used to be measured only inside the by-kilometre branch,
+  // because it was only ever a pricing input. It is a payout input now: Darb
+  // pays its delivery companies a base plus a rate per kilometre, and a
+  // zone-priced order is driven over exactly the same road as a km-priced one.
+  // If these regress, every zone-priced delivery quietly pays the base alone.
+
+  test("a by-zone plan quote still carries the distance the trip covered", async () => {
+    primeBranchOnPlan({ id: "plan-z", type: "ZONE", kmTiers: [] }, { lat: 29.37, lng: 47.98 });
+    prisma.deliveryPlanZoneRate.findFirst.mockResolvedValue({ feeKwd: D("2.250") });
+    drivingDistanceKm.mockResolvedValue({ km: 6.482, source: "google" });
+
+    const result = await quoteDelivery(TENANT, { branchId: "branch-1", dropoff: IN_ZONE_B });
+
+    expect(result.ok).toBe(true);
+    // The zone grid still sets the price. Only the measurement is new.
+    expect(result.feeKwd.toFixed(3)).toBe("2.250");
+    expect(result.distanceKm).toBe(6.482);
+    expect(result.distanceSource).toBe("google");
+  });
+
+  test("a plan-less vendor on tenant-wide pricing carries it too", async () => {
+    primeBranchOnPlan(null, { lat: 29.37, lng: 47.98 });
+    prisma.zoneSurcharge.findFirst.mockResolvedValue({ surchargeKwd: D("0.750") });
+    drivingDistanceKm.mockResolvedValue({ km: 3.1, source: "straight-line" });
+
+    const result = await quoteDelivery(TENANT, { branchId: "branch-1", dropoff: IN_ZONE_B });
+
+    expect(result.ok).toBe(true);
+    expect(result.feeKwd.toFixed(3)).toBe("2.000");
+    expect(result.distanceKm).toBe(3.1);
+    expect(result.distanceSource).toBe("straight-line");
+  });
+
+  // Absent, never zero: a zero-kilometre order reads as a driver who did not
+  // move, and would be paid as one.
+  test("a branch with no pin leaves the distance absent rather than zero", async () => {
+    primeBranchOnPlan({ id: "plan-z", type: "ZONE", kmTiers: [] }); // no coords
+    prisma.deliveryPlanZoneRate.findFirst.mockResolvedValue({ feeKwd: D("2.250") });
+
+    const result = await quoteDelivery(TENANT, { branchId: "branch-1", dropoff: IN_ZONE_B });
+
+    expect(result.ok).toBe(true);
+    expect(result.distanceKm).toBeUndefined();
+    expect(drivingDistanceKm).not.toHaveBeenCalled();
+  });
+
   test("an inactive plan falls back to tenant-wide pricing rather than failing", async () => {
     // deliveryPlan.findFirst filters on isActive, so a deactivated plan reads
     // as "no plan" — the vendor keeps getting priced instead of being cut off.

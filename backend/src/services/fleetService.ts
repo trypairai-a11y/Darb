@@ -5,12 +5,18 @@
 //   acceptance % = ACCEPTED offers / all responded offers (accepted+declined+expired)
 //   utilisation  = Σ CourierOnlineSession hours vs contracted hours (when set)
 //
-// Payout: delivered-order count × the fleet's flat fee (PRD: 1.100 KWD/order,
-// no bonuses) — computed from counts, NOT per-order accrual legs, so the
-// wallet settlement flow and reconciliation invariants stay untouched. The
-// statement snapshots feePerOrderKwd; payment posts one FLEET_PAYOUT
-// transaction (DEBIT PLATFORM_REVENUE = fleet cost against fee income,
-// CREDIT PLATFORM_CLEARING = cash out).
+// Payout (revision 14 #3): a base fee for each delivered order plus a rate for
+// every kilometre those orders covered — the same shape the merchant side is
+// quoted on, because a company driving 12 km for a fee built on 3 km is a
+// company that stops taking the far zones. A partner with perKmFeeKwd NULL is
+// on the old flat deal and is paid exactly what it was before.
+//
+// Still computed from counts and the distances stamped on the orders, NOT from
+// per-order accrual legs, so the wallet settlement flow and reconciliation
+// invariants stay untouched. The statement snapshots both halves of the rate
+// and the kilometres it was cut on; payment posts one FLEET_PAYOUT transaction
+// (DEBIT PLATFORM_REVENUE = fleet cost against fee income, CREDIT
+// PLATFORM_CLEARING = cash out).
 
 import { Prisma } from "../generated/prisma";
 import { prisma } from "../config";
@@ -21,6 +27,73 @@ import {
   ensureAccount,
   postLedgerTransaction,
 } from "./wallet/walletService";
+
+// ─── The fleet rate ─────────────────────────────────────────────────────────
+
+/** What Darb pays a delivery company, revision 14 (#3). */
+export interface FleetRate {
+  /** Base fee per delivered order. Always set. */
+  baseKwd: Prisma.Decimal;
+  /** Rate per kilometre. NULL means a flat-rate company: base only. */
+  perKmKwd: Prisma.Decimal | null;
+}
+
+export function fleetRateOf(fleet: {
+  flatFeePerOrderKwd: Prisma.Decimal | string | number;
+  perKmFeeKwd?: Prisma.Decimal | string | number | null;
+}): FleetRate {
+  return {
+    baseKwd: new Prisma.Decimal(fleet.flatFeePerOrderKwd as Prisma.Decimal.Value),
+    perKmKwd:
+      fleet.perKmFeeKwd == null
+        ? null
+        : new Prisma.Decimal(fleet.perKmFeeKwd as Prisma.Decimal.Value),
+  };
+}
+
+/**
+ * What one delivered order earns the company: base + rate × its kilometres.
+ *
+ * An order with no distance on it (a dropoff given as a zone id, or a row
+ * created before revision 14 #3) pays the base alone. It is NOT dropped and it
+ * is NOT guessed at: dropping it would lose the company an order it delivered,
+ * and re-measuring it now would invent a figure the merchant was never charged
+ * on. The statement lists every order with its kilometres beside it, so a run
+ * of blanks is visible and disputable rather than quietly absorbed.
+ */
+export function orderPayoutKwd(rate: FleetRate, distanceKm: Prisma.Decimal | null): Prisma.Decimal {
+  if (rate.perKmKwd == null || distanceKm == null) return rate.baseKwd;
+  return rate.baseKwd.plus(rate.perKmKwd.mul(distanceKm)).toDecimalPlaces(3);
+}
+
+/**
+ * A period's payout, summed from the orders rather than from the totals.
+ *
+ * base × count + rate × Σkm would be one multiplication instead of a row pass,
+ * and it would be wrong by a few fils: each line on the statement is rounded to
+ * the fil, and a total computed the other way does not add up to the lines
+ * printed under it. A delivery company checking a statement by hand and finding
+ * it short by 4 fils has no way to tell that from an error, so the total IS the
+ * sum of the lines.
+ */
+export function sumFleetPayout(
+  rate: FleetRate,
+  distances: Array<Prisma.Decimal | null>,
+): { totalKwd: Prisma.Decimal; totalKm: Prisma.Decimal; ordersMissingDistance: number } {
+  let totalKwd = new Prisma.Decimal(0);
+  let totalKm = new Prisma.Decimal(0);
+  let ordersMissingDistance = 0;
+  for (const km of distances) {
+    totalKwd = totalKwd.plus(orderPayoutKwd(rate, km));
+    if (km == null) ordersMissingDistance += 1;
+    else totalKm = totalKm.plus(km);
+  }
+  return {
+    totalKwd: totalKwd.toDecimalPlaces(3),
+    totalKm: totalKm.toDecimalPlaces(3),
+    ordersMissingDistance,
+  };
+}
 
 export interface FleetScorecard {
   fleetPartnerId: string;
@@ -106,7 +179,10 @@ export async function getFleetScorecard(
 ): Promise<FleetScorecard> {
   const fleet = await prisma.fleetPartner.findFirst({
     where: { id: fleetPartnerId, tenantId },
-    select: { id: true, minOnlineHoursPerDay: true, flatFeePerOrderKwd: true },
+    select: {
+      id: true, minOnlineHoursPerDay: true,
+      flatFeePerOrderKwd: true, perKmFeeKwd: true,
+    },
   });
   if (!fleet) throw new Error("Fleet partner not found");
 
@@ -205,7 +281,11 @@ export async function getFleetScorecard(
     },
     // driverId and assignedAt ride along for the per-driver comparison and the
     // median delivery time; both were already in this row.
-    select: { driverId: true, deliveredAt: true, slaDeadline: true, assignedAt: true },
+    select: {
+      driverId: true, deliveredAt: true, slaDeadline: true, assignedAt: true,
+      // Revision 14 (#3): earnings are per kilometre now, not per order.
+      distanceKm: true,
+    },
   });
 
   // Orders assigned to this fleet that never arrived. Counted over the same
@@ -260,7 +340,12 @@ export async function getFleetScorecard(
       ? Math.round(durations[Math.floor(durations.length / 2)] * 10) / 10
       : null;
 
-  const feePerOrder = Number(fleet.flatFeePerOrderKwd ?? 1.1);
+  // Revision 14 (#3): the same base + kilometre formula the statement is cut
+  // on, so the scorecard's earnings line and the payout tab keep agreeing.
+  const earnings = sumFleetPayout(
+    fleetRateOf(fleet),
+    deliveredRows.map((r) => r.distanceKm),
+  );
   const assignedTotal = delivered + failedOrders;
 
   return {
@@ -289,7 +374,7 @@ export async function getFleetScorecard(
     failureRate:
       assignedTotal > 0 ? Number((failedOrders / assignedTotal).toFixed(3)) : null,
     slaBreaches: withSla.length - onTimeCount,
-    earningsKwd: (delivered * feePerOrder).toFixed(3),
+    earningsKwd: earnings.totalKwd.toFixed(3),
     offersDeclined: counts.DECLINED ?? 0,
     offersExpired: counts.EXPIRED ?? 0,
   };
@@ -306,7 +391,7 @@ export async function generateFleetStatements(
 ): Promise<number> {
   const fleets = await prisma.fleetPartner.findMany({
     where: { tenantId, isActive: true },
-    select: { id: true, flatFeePerOrderKwd: true },
+    select: { id: true, flatFeePerOrderKwd: true, perKmFeeKwd: true },
   });
 
   let created = 0;
@@ -318,25 +403,31 @@ export async function generateFleetStatements(
       });
       if (existing) continue;
 
-      const deliveredOrders = await prisma.deliveryOrder.count({
+      // The distances, not just the count: the rate has a kilometre half now,
+      // and one column over a month of one fleet's orders is a cheap read.
+      const rows = await prisma.deliveryOrder.findMany({
         where: {
           tenantId,
           status: "DELIVERED",
           deliveredAt: { gte: period.start, lt: period.end },
           driver: { fleetPartnerId: fleet.id },
         },
+        select: { distanceKm: true },
       });
 
-      const fee = new Prisma.Decimal(fleet.flatFeePerOrderKwd);
+      const rate = fleetRateOf(fleet);
+      const { totalKwd, totalKm } = sumFleetPayout(rate, rows.map((r) => r.distanceKm));
       await prisma.fleetPayoutStatement.create({
         data: {
           tenantId,
           fleetPartnerId: fleet.id,
           periodStart: period.start,
           periodEnd: period.end,
-          deliveredOrders,
-          feePerOrderKwd: fee,
-          totalKwd: fee.times(deliveredOrders),
+          deliveredOrders: rows.length,
+          feePerOrderKwd: rate.baseKwd,
+          perKmFeeKwd: rate.perKmKwd,
+          totalKm: rate.perKmKwd == null ? null : totalKm,
+          totalKwd,
         },
       });
       created += 1;

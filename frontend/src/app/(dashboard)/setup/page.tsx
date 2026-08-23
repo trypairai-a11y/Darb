@@ -5,7 +5,7 @@
 // on a normal day. They now live behind this one door, unmodified: the hub is
 // pure navigation, so nothing about those pages had to change.
 import Link from "next/link";
-import { Hexagon, Coins, Store, Truck, ShieldCheck, Package } from "lucide-react";
+import { Hexagon, Coins, Store, Truck, ShieldCheck, Package, CalendarRange } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useRole } from "@/hooks/useRole";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -55,11 +55,23 @@ const CARDS: SetupCard[] = [
     titleKey: "simple.setupEquipment",
     descKey: "simple.setupEquipmentDesc",
   },
+  // Client request, 2026-08-06: somewhere to assign a driver an area and cap
+  // how many drivers a window takes. Set-up work by the same test as the cards
+  // above, decided once and revisited monthly. It opens on Coverage; /shifts on
+  // its own still opens the live table it always did, so an existing link shows
+  // what it used to.
+  {
+    href: "/shifts?tab=coverage",
+    icon: CalendarRange,
+    titleKey: "simple.setupShifts",
+    descKey: "simple.setupShiftsDesc",
+  },
 ];
 
 export default function SetupPage() {
   const { t } = useI18n();
   const { canManageSettings } = useRole();
+
 
   // The rail already gates /setup at OPS_MANAGER; this is the in-page mirror
   // of that gate for anyone who arrives by URL.

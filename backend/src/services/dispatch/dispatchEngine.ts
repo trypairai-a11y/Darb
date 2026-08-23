@@ -41,6 +41,11 @@ import {
 } from "../../queues/dispatchQueue";
 import { enqueueFoodicsWriteback } from "../foodics/writebackHook";
 import { fireCustomerMilestone } from "../customerMessagingService";
+import {
+  estimatedOrderCostKwd,
+  isFlatRateFleet,
+  loadFleetRates,
+} from "./fleetCostPolicy";
 
 // ─── Errors ─────────────────────────────────────────────────────────────────
 
@@ -72,6 +77,13 @@ export interface Candidate {
    * pushes slaDeadline out by exactly this much.
    */
   finishingInMin: number;
+  /**
+   * Revision 15 (#4). What this order would cost Darb if this driver took it:
+   * their company's base fee plus its kilometre rate over the order's own
+   * distance. 0 for a driver with no delivery company behind them. Only read
+   * when the branch is at or over its target price.
+   */
+  costKwd?: number;
 }
 
 /** Average courier speed used for the ETA estimate (plan §A3). */
@@ -203,6 +215,8 @@ type SessionWithDriver = {
     vehicleType: string | null;
     expoPushToken: string | null;
     throttledUntil: Date | null;
+    /** Revision 15 (#3/#4): which company Darb pays for this driver's work. */
+    fleetPartnerId: string | null;
   };
 };
 
@@ -255,6 +269,18 @@ function latestSessionPerDriver(sessions: SessionWithDriver[]): SessionWithDrive
  * busy courier while an idle one is in range. Within the tier the soonest to
  * finish wins and distance breaks ties. `finishingInMin` rides on the candidate
  * so acceptOffer can push the customer's ETA out by the wait.
+ *
+ * Revision 15 (#3) — what the driver's delivery company costs Darb enters the
+ * filter, and it does nothing until a tenant configures a rate (see
+ * services/dispatch/fleetCostPolicy.ts):
+ *
+ *   - Filter 9: a company on a base fee with no kilometre rate cannot be paid
+ *     for distance, so it is excluded from any order whose pickup and dropoff
+ *     zones differ.
+ *
+ * Revision 17 (Edit #4) removed the target-price sort that used to sit beside
+ * it: the column is gone, and the client's two pricing models say cost must
+ * never steer who delivers.
  */
 export async function selectCandidates(
   tenantId: string,
@@ -295,6 +321,7 @@ export async function selectCandidates(
           vehicleType: true,
           expoPushToken: true,
           throttledUntil: true,
+          fleetPartnerId: true,
         },
       },
     },
@@ -304,8 +331,14 @@ export async function selectCandidates(
   // driver status + vehicle constraint. The radius is applied further down,
   // once it is known whether a driver is free (measured from where he is) or
   // finishing a drop (measured from where he will be).
-  type Prelim = Candidate & { lastGpsAt: Date; throttled: boolean; lat: number; lng: number };
-  const prelim: Prelim[] = [];
+  type Prelim = Candidate & {
+    lastGpsAt: Date;
+    throttled: boolean;
+    lat: number;
+    lng: number;
+    fleetPartnerId: string | null;
+  };
+  let prelim: Prelim[] = [];
   for (const session of latestSessionPerDriver(sessions)) {
     const { driver } = session;
     if (!driver || driver.status !== "ACTIVE") continue;
@@ -327,11 +360,57 @@ export async function selectCandidates(
       lastGpsAt: session.lastGpsAt,
       lat,
       lng,
+      fleetPartnerId: driver.fleetPartnerId ?? null,
       throttled:
         driver.throttledUntil != null && driver.throttledUntil.getTime() > Date.now(),
     });
   }
   if (prelim.length === 0) return [];
+
+  // ── Revision 15 (#3/#4): what each candidate's company costs Darb ─────────
+  //
+  // Loaded once for the whole pool. Both client rules read the same rates, so
+  // one query answers "may this company take a cross-zone order" and "which of
+  // these drivers is the cheapest".
+  const fleetRates = await loadFleetRates(
+    tenantId,
+    prelim.map((c) => c.fleetPartnerId).filter((id): id is string => !!id),
+  );
+
+  // Revision 15 (#3). A company paid a base fee with no kilometre rate has no
+  // mechanism to be paid for the extra distance, so it only takes orders that
+  // start and finish in one zone. A hard exclusion on purpose: ranking it last
+  // would still hand it the order the moment nobody else answered, which is
+  // exactly the cross-zone delivery the rule exists to keep away from it. An
+  // order with either zone unresolved is not treated as cross-zone — that is a
+  // missing pin, not a long trip, and refusing every flat-rate company over a
+  // blank column would quietly shrink the pool for a data problem.
+  if (
+    order.pickupZoneId &&
+    order.dropoffZoneId &&
+    order.pickupZoneId !== order.dropoffZoneId
+  ) {
+    const before = prelim.length;
+    const sameZoneOnly = prelim.filter((c) => {
+      if (!c.fleetPartnerId) return true; // no company behind them, no rate to break
+      const rate = fleetRates.get(c.fleetPartnerId);
+      return !rate || !isFlatRateFleet(rate);
+    });
+    if (sameZoneOnly.length !== before) {
+      logger.info(
+        { orderId, excluded: before - sameZoneOnly.length },
+        "flat-rate fleets excluded from a cross-zone order",
+      );
+    }
+    prelim = sameZoneOnly;
+    if (prelim.length === 0) return [];
+  }
+
+  const orderDistanceKm = (order as { distanceKm?: Prisma.Decimal | null }).distanceKm ?? null;
+  for (const c of prelim) {
+    const rate = c.fleetPartnerId ? (fleetRates.get(c.fleetPartnerId) ?? null) : null;
+    c.costKwd = estimatedOrderCostKwd(rate, orderDistanceKm);
+  }
 
   const driverIds = prelim.map((c) => c.driverId);
 
@@ -466,7 +545,14 @@ export async function selectCandidates(
 
   const limit = opts?.limit;
   const ranked = filtered.map(
-    ({ lastGpsAt: _drop, throttled: _t, lat: _lat, lng: _lng, ...candidate }) => candidate,
+    ({
+      lastGpsAt: _drop,
+      throttled: _t,
+      lat: _lat,
+      lng: _lng,
+      fleetPartnerId: _fleet,
+      ...candidate
+    }) => candidate,
   );
   return typeof limit === "number" && limit > 0 ? ranked.slice(0, limit) : ranked;
 }

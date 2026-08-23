@@ -53,7 +53,13 @@ export type QuoteResult =
       dropoffZone: ResolvedZone | null;
       /** True when the drop is outside every zone but was still priced. */
       outOfZone?: boolean;
-      /** Set only for by-kilometre plans. */
+      /**
+       * Branch-to-drop routing distance. Set on every quote that has two pins
+       * to measure between, not only on by-kilometre plans (revision 14 #3):
+       * the fleet payout is per kilometre now, so an order priced by zone still
+       * has to record how far it went. Undefined when the dropoff was given as
+       * a zone id with no coordinates, which nothing can measure.
+       */
       distanceKm?: number;
       distanceSource?: DistanceSource;
       planId?: string;
@@ -255,39 +261,60 @@ export async function quoteDelivery(
   // ── 3. Fee (Prisma.Decimal arithmetic only) ──────────────────────────────
   const plan = await resolvePlan(tenantId, input.branchId);
 
+  // ── 3·0. Measure the trip, whatever the plan prices on ───────────────────
+  //
+  // Revision 14 (#3): this used to run only inside the by-kilometre branch,
+  // because the distance was only ever a pricing input. It is a payout input
+  // now — Darb pays its delivery companies a base plus a rate per kilometre —
+  // and a zone-priced order is carried by a driver over exactly the same road
+  // as a km-priced one. Leaving the measurement inside 3a would have paid the
+  // base and nothing else on every zone-priced delivery, silently, for a whole
+  // month before anyone reconciled it.
+  //
+  // Google is asked once per rounded coordinate pair and cached for thirty
+  // days, and the call cannot throw or reject a quote: it falls back to
+  // straight-line and says which it gave. So the cost of measuring every order
+  // is a cache hit on the repeat traffic that makes up most of a Kuwait day.
+  const branchPin = input.branchId
+    ? await prisma.vendorBranch.findFirst({
+        where: { id: input.branchId, tenantId },
+        select: { lat: true, lng: true },
+      })
+    : null;
+  const originLat = toNum(branchPin?.lat);
+  const originLng = toNum(branchPin?.lng);
+  const destLat = toNum(dropoff.lat);
+  const destLng = toNum(dropoff.lng);
+  const hasBothPins =
+    originLat != null && originLng != null && destLat != null && destLng != null;
+
+  const distance = hasBothPins
+    ? await drivingDistanceKm(
+        tenantId,
+        { lat: originLat as number, lng: originLng as number },
+        { lat: destLat as number, lng: destLng as number },
+      )
+    : null;
+  // Spread onto every ok result below. A dropoff given as a zone id with no
+  // coordinates has nothing to measure, and stays absent rather than zero: a
+  // zero kilometre order would be paid as if the driver never moved.
+  const measured = distance
+    ? { distanceKm: Number(distance.km.toFixed(3)), distanceSource: distance.source }
+    : {};
+
   // ── 3a. By-kilometre plan ────────────────────────────────────────────────
   // Zone-independent by construction: the tiers answer for any pin on earth,
   // so an uncovered drop is priced exactly like a covered one.
   if (plan?.type === "KM") {
-    const branch = await prisma.vendorBranch.findFirst({
-      where: { id: input.branchId!, tenantId },
-      select: { lat: true, lng: true },
-    });
-    const originLat = toNum(branch?.lat);
-    const originLng = toNum(branch?.lng);
-    const destLat = toNum(dropoff.lat);
-    const destLng = toNum(dropoff.lng);
     // Kilometre pricing needs two pins. A dropoff given only as a zone id has
     // no distance to measure, so it cannot be priced on a km plan.
     if (originLat == null || originLng == null) return { ok: false, reason: "BRANCH_UNZONED" };
     if (destLat == null || destLng == null) return { ok: false, reason: "NO_COORDINATES" };
 
-    const distance = await drivingDistanceKm(
-      tenantId,
-      { lat: originLat, lng: originLng },
-      { lat: destLat, lng: destLng },
-    );
-    const feeKwd = kmPlanFee(plan, distance.km);
+    const feeKwd = kmPlanFee(plan, (distance as { km: number }).km);
     if (feeKwd == null) return { ok: false, reason: "UNSERVICEABLE_PAIR" };
 
-    return {
-      ok: true,
-      ...base,
-      feeKwd,
-      distanceKm: Number(distance.km.toFixed(3)),
-      distanceSource: distance.source,
-      planId: plan.id,
-    };
+    return { ok: true, ...base, ...measured, feeKwd, planId: plan.id };
   }
 
   // ── 3b. By-zone plan ─────────────────────────────────────────────────────
@@ -323,6 +350,7 @@ export async function quoteDelivery(
       return {
         ok: true,
         ...base,
+        ...measured,
         feeKwd: new Prisma.Decimal(plan.intraZoneFeeKwd as unknown as Prisma.Decimal.Value),
         planId: plan.id,
       };
@@ -335,6 +363,7 @@ export async function quoteDelivery(
     return {
       ok: true,
       ...base,
+      ...measured,
       feeKwd: new Prisma.Decimal(rate.feeKwd as unknown as Prisma.Decimal.Value),
       planId: plan.id,
     };
@@ -363,5 +392,5 @@ export async function quoteDelivery(
     );
   }
 
-  return { ok: true, ...base, feeKwd };
+  return { ok: true, ...base, ...measured, feeKwd };
 }

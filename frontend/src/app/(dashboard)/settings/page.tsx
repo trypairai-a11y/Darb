@@ -41,6 +41,24 @@ const ROLE_COLORS: Record<string, string> = {
 /** Roles that can own a company as its Darb account manager (revision #20). */
 const INTERNAL_ROLES = ["ADMIN", "OPS_MANAGER", "SUPERVISOR"];
 
+/**
+ * Revision 17 (#10) — which portal a login signs into.
+ *
+ * `role` answers what someone may do, never where they do it, so every portal
+ * manager rendered as their staff role and the list read as though the whole
+ * company were admins. A user carries at most one portal link; absent both,
+ * they are Darb's own staff.
+ */
+function portalOf(u: { vendorId?: string | null; fleetPartnerId?: string | null; vendor?: { name?: string } | null; fleetPartner?: { name?: string } | null }) {
+  if (u.fleetPartnerId) {
+    return { label: "Delivery company", detail: u.fleetPartner?.name ?? null, className: "bg-indigo-50 text-indigo-600" };
+  }
+  if (u.vendorId) {
+    return { label: "Vendor", detail: u.vendor?.name ?? null, className: "bg-amber-50 text-amber-700" };
+  }
+  return { label: "HQ", detail: null, className: "bg-sky-50 text-sky-700" };
+}
+
 type Tab = "companies" | "users" | "notifications" | "profile";
 
 function UsersTab() {
@@ -141,6 +159,7 @@ function UsersTab() {
             <tr className="border-b border-gray-50">
               <th className="text-left text-xs font-medium text-secondary px-5 py-3">Name</th>
               <th className="text-left text-xs font-medium text-secondary px-5 py-3">Email</th>
+              <th className="text-left text-xs font-medium text-secondary px-5 py-3">Portal</th>
               <th className="text-left text-xs font-medium text-secondary px-5 py-3">Role</th>
               <th className="text-left text-xs font-medium text-secondary px-5 py-3">Status</th>
               <th className="text-left text-xs font-medium text-secondary px-5 py-3">Last Login</th>
@@ -152,6 +171,21 @@ function UsersTab() {
               <tr key={u.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-25">
                 <td className="px-5 py-3 text-sm font-medium">{u.name}</td>
                 <td className="px-5 py-3 text-sm text-secondary">{u.email}</td>
+                <td className="px-5 py-3" data-testid="user-portal-cell">
+                  {(() => {
+                    const p = portalOf(u);
+                    return (
+                      <span className="inline-flex flex-col gap-0.5">
+                        <span className={cn("px-2 py-0.5 rounded-md text-xs font-medium w-fit", p.className)}>
+                          {p.label}
+                        </span>
+                        {p.detail && (
+                          <span className="text-[11px] text-secondary">{p.detail}</span>
+                        )}
+                      </span>
+                    );
+                  })()}
+                </td>
                 <td className="px-5 py-3">
                   <select
                     value={u.role}
@@ -630,6 +664,30 @@ function NotificationsTab() {
 
   return (
     <div>
+      {/* Edit #11 (2026-08-22) — support requests are grouped and routed by
+          category to a fixed desk; account managers only hear about the
+          companies they handle. This is routing policy, not a toggle grid. */}
+      <div className="mb-6 bg-white rounded-2xl shadow-sm p-5">
+        <h3 className="text-sm font-semibold text-foreground mb-1">Support request routing</h3>
+        <p className="text-xs text-secondary mb-3">
+          Support requests are grouped into categories and delivered to the right desk.
+          Account managers are only notified about the companies assigned to them.
+        </p>
+        <div className="grid gap-2 sm:grid-cols-3" data-testid="support-routing">
+          {[
+            { label: "Money", role: "Accountant", hint: "Payments, wallet, invoices" },
+            { label: "Operations", role: "Account Manager", hint: "Orders, drivers, day-to-day" },
+            { label: "Tech", role: "Ops Manager", hint: "Integrations, app faults" },
+          ].map((r) => (
+            <div key={r.label} className="border border-gray-100 rounded-xl px-4 py-3">
+              <p className="text-sm font-medium text-foreground">{r.label}</p>
+              <p className="text-xs text-primary font-medium mt-0.5">→ {r.role}</p>
+              <p className="text-[11px] text-secondary mt-1">{r.hint}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <p className="text-sm text-secondary mb-4">
         Configure which roles receive in-app notifications for each violation type. Toggle cells to enable or disable.
       </p>

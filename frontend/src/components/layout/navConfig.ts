@@ -127,6 +127,12 @@ export const NAV_SECTIONS: NavSection[] = [
         minRole: "OPS_MANAGER",
         owns: ["/zones", "/pricing", "/vendors", "/fleets", "/settings", "/assets"],
       },
+      {
+        i18n: "hqRequests.title",
+        path: "/requests",
+        icon: LifeBuoy,
+        minRole: "OPS_MANAGER",
+      },
     ],
   },
   {

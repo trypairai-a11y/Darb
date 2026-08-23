@@ -34,6 +34,9 @@ import { formatDate, formatNumber } from "@/i18n/format";
 const DRIVER_DOC_TYPES = [
   "CIVIL_ID", "DRIVING_LICENSE", "VEHICLE_REG", "VEHICLE_INSURANCE",
   "HEALTH_CERT", "WORK_PERMIT", "FOOD_HANDLING",
+  // Revision 16 (#3). Kept in step with DRIVER_DOC_COLUMNS on the server: a
+  // type the panel cannot offer is a type nobody can ever upload.
+  "POLICE_CLEARANCE", "PASSPORT", "DRIVER_SELFIE",
 ] as const;
 
 const inputClass =

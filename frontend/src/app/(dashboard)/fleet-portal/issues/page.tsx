@@ -11,7 +11,7 @@
 // tab is that somebody actually picked up the phone.
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Phone, TriangleAlert } from "lucide-react";
+import { CheckCircle2, Phone, Timer, TriangleAlert } from "lucide-react";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import SlidePanel from "@/components/shared/SlidePanel";
@@ -44,6 +44,16 @@ export default function FleetIssuesPage() {
     queryFn: () => fleetApi.issues({ includeResolved: showResolved }),
     refetchInterval: 120_000,
   });
+
+  // Edit #2 (2026-08-22) — the HQ Problems view, shown here too: the fleet's
+  // own orders past SLA and open SOS/incident rows, so a supervisor sees the
+  // same trouble the staff Live screen sees without asking for it.
+  const problemsQuery = useQuery({
+    queryKey: ["darb", "fleet", "problems"],
+    queryFn: () => fleetApi.problems(),
+    refetchInterval: 60_000,
+  });
+  const problems = problemsQuery.data;
 
   const refresh = () =>
     queryClient.invalidateQueries({ queryKey: ["darb", "fleet", "issues"] });
@@ -114,6 +124,89 @@ export default function FleetIssuesPage() {
           {t("fleetPortal.showResolved")}
         </label>
       </div>
+
+      {/* Edit #2 (2026-08-22) — the HQ Problems view, scoped to this fleet. */}
+      {(problems?.jeopardyOrders?.length ?? 0) > 0 && (
+        <section className="space-y-2" data-testid="fleet-problems-orders">
+          <h2 className="flex items-center gap-2 text-xs font-semibold text-sand-900">
+            <Timer size={14} className="text-red-600" aria-hidden="true" />
+            {t("fleetPortal.problemsOrders")}
+            <span className="text-[11px] font-normal text-sand-500 tabular-nums">
+              ({problems!.jeopardyOrders.length})
+            </span>
+          </h2>
+          <ul className="space-y-1.5">
+            {problems!.jeopardyOrders.map((o) => (
+              <li
+                key={o.id}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl border border-red-200 bg-white"
+              >
+                <div className="min-w-0 flex-1">
+                  <p dir="ltr" className="font-mono text-xs font-medium text-sand-900 truncate">
+                    {o.orderNumber}
+                  </p>
+                  <p className="text-[11px] text-sand-600 mt-0.5 truncate" dir="auto">
+                    {o.driver?.name ?? "n/a"}
+                    {o.minutesOver != null
+                      ? ` · ${t("fleetPortal.minutesOverSla")} ${o.minutesOver}`
+                      : ""}
+                  </p>
+                </div>
+                {o.driver?.phone && (
+                  <a
+                    href={`tel:${o.driver.phone}`}
+                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-sand-300 bg-white text-xs text-sand-700 hover:bg-sand-100 shrink-0"
+                  >
+                    <Phone size={12} aria-hidden="true" />
+                    <span dir="ltr">{o.driver.phone}</span>
+                  </a>
+                )}
+                {/* Edit #2 — hand the order to another driver; the original
+                    driver earns nothing from a delivery that never landed,
+                    because payouts only ever count DELIVERED orders. */}
+                {o.driver?.id && (
+                  <span className="text-[11px] text-sand-500 shrink-0 hidden sm:inline">
+                    {t("fleetPortal.reassignHint")}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {(problems?.incidents?.length ?? 0) > 0 && (
+        <section className="space-y-2" data-testid="fleet-problems-incidents">
+          <h2 className="flex items-center gap-2 text-xs font-semibold text-sand-900">
+            <TriangleAlert size={14} className="text-amber-600" aria-hidden="true" />
+            {t("fleetPortal.problemsIncidents")}
+            <span className="text-[11px] font-normal text-sand-500 tabular-nums">
+              ({problems!.incidents.length})
+            </span>
+          </h2>
+          <ul className="space-y-1.5">
+            {problems!.incidents.map((i) => (
+              <li
+                key={i.id}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl border border-amber-200 bg-white"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-sand-900 truncate" dir="auto">
+                    {i.type.replaceAll("_", " ")}
+                    {i.driver?.name ? ` · ${i.driver.name}` : ""}
+                  </p>
+                  {i.description && (
+                    <p className="text-[11px] text-sand-600 mt-0.5 truncate" dir="auto">
+                      {i.description}
+                    </p>
+                  )}
+                </div>
+                <StatusBadge status={i.status} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {issues.length === 0 ? (
         <div className="flex items-center gap-3 px-4 py-6 rounded-xl border border-sand-200 bg-white">

@@ -86,6 +86,10 @@ prisma.orderRating = prisma.orderRating ?? {
 // boundary so a request test does not assert on notification rows.
 jest.mock("../../services/notificationService", () => ({
   createViolationNotifications: jest.fn().mockResolvedValue(undefined),
+  // Revision 17 (#11) — the support route now files a categorised notification
+  // after the ticket is created; without this export the route 400s and the
+  // ticket test reads as a validation failure instead of a missing mock.
+  createSupportNotifications: jest.fn().mockResolvedValue(undefined),
 }));
 
 import fleetPortalRouter from "../../routes/fleetPortal";

@@ -49,6 +49,16 @@ router.get("/", rbac("ADMIN", "OPS_MANAGER"), async (req: Request, res: Response
         select: {
           id: true, email: true, name: true, phone: true,
           role: true, isActive: true, lastLoginAt: true, createdAt: true,
+          // Revision 17 (#10) — which portal this login belongs to. Every user
+          // carries a staff `role` whatever portal they sign into, so a list
+          // keyed on role alone showed a delivery company's manager as ADMIN
+          // beside a Darb admin. The linkage was always on the row; it was
+          // simply never selected, so the client read it as everyone sharing
+          // one role. The names come along so the column can say which shop.
+          vendorId: true,
+          fleetPartnerId: true,
+          vendor: { select: { name: true } },
+          fleetPartner: { select: { name: true } },
         },
       }),
       prisma.user.count({ where }),

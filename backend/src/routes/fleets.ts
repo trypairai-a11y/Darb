@@ -48,6 +48,10 @@ const createFleetSchema = z.object({
   contactPhone: z.string().max(30).nullable().optional(),
   contactEmail: z.string().email().max(200).nullable().optional(),
   flatFeePerOrderKwd: kwdSchema.optional(),
+  // Revision 14 (#3): the kilometre half of what Darb pays this company.
+  // Nullable so a partner can be put back on a flat deal explicitly, rather
+  // than only ever being able to move one way.
+  perKmFeeKwd: kwdSchema.nullable().optional(),
   minOnlineHoursPerDay: z.number().min(0).max(24).nullable().optional(),
   minDriversOnline: z.record(z.number().int().min(0)).nullable().optional(),
 });
@@ -193,6 +197,9 @@ router.post("/", rbac(...MUTATE), validateBody(createFleetSchema), async (req: R
         ...(body.flatFeePerOrderKwd !== undefined
           ? { flatFeePerOrderKwd: String(body.flatFeePerOrderKwd) }
           : {}),
+        ...(body.perKmFeeKwd !== undefined
+          ? { perKmFeeKwd: body.perKmFeeKwd == null ? null : String(body.perKmFeeKwd) }
+          : {}),
         minOnlineHoursPerDay: body.minOnlineHoursPerDay ?? null,
         minDriversOnline: (body.minDriversOnline ?? undefined) as any,
       },
@@ -291,7 +298,13 @@ router.get("/export.xlsx", rbac(...READ), async (req: Request, res: Response) =>
 
       section(sheet, "COMPANY");
       pair(sheet, "Discipline", f.disciplineStatus);
-      pair(sheet, "Fee per order (KD)", Number(f.flatFeePerOrderKwd), KWD);
+      pair(sheet, "Base fee per order (KD)", Number(f.flatFeePerOrderKwd), KWD);
+      pair(
+        sheet,
+        "Fee per kilometre (KD)",
+        f.perKmFeeKwd == null ? "n/a" : Number(f.perKmFeeKwd),
+        f.perKmFeeKwd == null ? undefined : KWD,
+      );
       pair(sheet, "Roster", f._count.drivers);
       pair(sheet, "Portal users", f._count.users);
       pair(sheet, "Status", f.isActive ? "Active" : "Inactive");
@@ -344,7 +357,8 @@ router.get("/export.xlsx", rbac(...READ), async (req: Request, res: Response) =>
       { header: "Fleet", key: "name", width: 28 },
       { header: "Roster", key: "roster", width: 10 },
       { header: "Discipline", key: "discipline", width: 14 },
-      { header: "Fee per order (KD)", key: "fee", width: 18, style: { numFmt: KWD } },
+      { header: "Base fee per order (KD)", key: "fee", width: 22, style: { numFmt: KWD } },
+      { header: "Fee per km (KD)", key: "perKm", width: 18, style: { numFmt: KWD } },
       { header: "Status", key: "status", width: 12 },
     ];
     for (const f of fleets) {
@@ -353,6 +367,7 @@ router.get("/export.xlsx", rbac(...READ), async (req: Request, res: Response) =>
         roster: f._count.drivers,
         discipline: f.disciplineStatus,
         fee: Number(f.flatFeePerOrderKwd),
+        perKm: f.perKmFeeKwd == null ? null : Number(f.perKmFeeKwd),
         status: f.isActive ? "Active" : "Inactive",
       });
     }
@@ -463,6 +478,10 @@ router.put("/:id", rbac(...MUTATE), validateBody(updateFleetSchema), async (req:
       if (body[key] !== undefined) data[key] = body[key];
     }
     if (body.flatFeePerOrderKwd !== undefined) data.flatFeePerOrderKwd = String(body.flatFeePerOrderKwd);
+    // null is a real value here: it puts the company back on a flat rate.
+    if (body.perKmFeeKwd !== undefined) {
+      data.perKmFeeKwd = body.perKmFeeKwd == null ? null : String(body.perKmFeeKwd);
+    }
     if (body.minDriversOnline !== undefined) data.minDriversOnline = body.minDriversOnline;
     const updated = await prisma.fleetPartner.updateMany({
       where: { id: req.params.id, tenantId },
@@ -474,6 +493,124 @@ router.put("/:id", rbac(...MUTATE), validateBody(updateFleetSchema), async (req:
     res.status(500).json({ error: err.message });
   }
 });
+
+// ─── Invoice deductions (revision 17 #1 / client Edit #1) ───────────────────
+//
+// Money Darb withholds from a delivery company's next invoice. A deduction is
+// an adjustment row, not a wallet posting: it sits PENDING until it is folded
+// into a cut statement, and cancelling is only allowed while PENDING.
+
+const DEDUCTION_REASONS = ["DAMAGE", "FINE", "EQUIPMENT", "CASH_SHORTFALL", "SLA", "OTHER"];
+
+/**
+ * @swagger
+ * /api/fleets/{id}/deductions:
+ *   get:
+ *     tags: [Fleets]
+ *     summary: The company's invoice deductions, newest first
+ */
+router.get("/:id/deductions", rbac(...READ), async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const fleet = await findTenantFleet(tenantId, req.params.id);
+    if (!fleet) { res.status(404).json({ error: "Fleet partner not found" }); return; }
+
+    const deductions = await prisma.fleetDeduction.findMany({
+      where: { tenantId, fleetPartnerId: fleet.id },
+      orderBy: { incurredAt: "desc" },
+      take: 100,
+    });
+    res.json({ data: deductions });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/fleets/{id}/deductions:
+ *   post:
+ *     tags: [Fleets]
+ *     summary: Record a deduction against the company's invoice
+ */
+router.post("/:id/deductions", rbac(...MUTATE), async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const fleet = await findTenantFleet(tenantId, req.params.id);
+    if (!fleet) { res.status(404).json({ error: "Fleet partner not found" }); return; }
+
+    const amountKwd = Number(req.body?.amountKwd);
+    if (!Number.isFinite(amountKwd) || amountKwd <= 0) {
+      res.status(400).json({ error: "amountKwd must be a number greater than 0" });
+      return;
+    }
+    const reason = String(req.body?.reason ?? "OTHER").toUpperCase();
+    if (!DEDUCTION_REASONS.includes(reason)) {
+      res.status(400).json({ error: `reason must be one of ${DEDUCTION_REASONS.join(", ")}` });
+      return;
+    }
+    let incurredAt: Date | undefined;
+    if (req.body?.incurredAt) {
+      const d = new Date(String(req.body.incurredAt));
+      if (Number.isNaN(d.getTime())) {
+        res.status(400).json({ error: "incurredAt must be a valid date" });
+        return;
+      }
+      incurredAt = d;
+    }
+
+    const deduction = await prisma.fleetDeduction.create({
+      data: {
+        tenantId,
+        fleetPartnerId: fleet.id,
+        amountKwd: String(amountKwd),
+        reason,
+        note: typeof req.body?.note === "string" && req.body.note.trim() ? req.body.note.trim() : null,
+        incurredAt,
+        createdById: req.user!.userId,
+      },
+    });
+    res.status(201).json(deduction);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/fleets/{id}/deductions/{deductionId}/cancel:
+ *   post:
+ *     tags: [Fleets]
+ *     summary: Cancel a PENDING deduction (already-applied ones are history)
+ */
+router.post(
+  "/:id/deductions/:deductionId/cancel",
+  rbac(...MUTATE),
+  async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.user!.tenantId;
+      const deduction = await prisma.fleetDeduction.findFirst({
+        where: {
+          id: req.params.deductionId,
+          tenantId,
+          fleetPartnerId: req.params.id,
+        },
+      });
+      if (!deduction) { res.status(404).json({ error: "Deduction not found" }); return; }
+      if (deduction.status !== "PENDING") {
+        res.status(409).json({ error: `Only PENDING deductions can be cancelled (this one is ${deduction.status})` });
+        return;
+      }
+      const updated = await prisma.fleetDeduction.update({
+        where: { id: deduction.id },
+        data: { status: "CANCELLED", cancelledAt: new Date() },
+      });
+      res.json(updated);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+);
 
 /**
  * @swagger
@@ -753,6 +890,57 @@ router.get("/requests/pending-count", rbac(...READ), async (req: Request, res: R
       }),
     ]);
     res.json({ pendingRequests: requests, escalatedIssues: issues });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/fleets/requests/inbox:
+ *   get:
+ *     tags: [Fleets]
+ *     summary: Every delivery company's submissions in one queue
+ *     description: >
+ *       Revision 15 (#2). The per-company list at /api/fleets/{id}/requests can
+ *       only be read by somebody who already picked the right company out of the
+ *       table, so a rate a partner proposed on Tuesday waits until whoever opens
+ *       that row notices it. This is the same data with no company chosen first.
+ *       Two path segments deliberately: a single-segment /requests would be
+ *       swallowed by GET /:id above.
+ */
+router.get("/requests/inbox", rbac(...READ), async (req: Request, res: Response) => {
+  try {
+    const status = typeof req.query.status === "string" ? req.query.status : "PENDING";
+    const rows = await prisma.fleetChangeRequest.findMany({
+      where: {
+        tenantId: req.user!.tenantId,
+        ...(status === "ALL" ? {} : { status: status as any }),
+      },
+      include: {
+        fleet: { select: { id: true, name: true } },
+        driver: { select: { id: true, name: true, phone: true } },
+        requestedBy: { select: { id: true, name: true, email: true } },
+        reviewedBy: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: [{ status: "asc" }, { createdAt: "asc" }],
+      take: 200,
+    });
+
+    const docIds = rows.flatMap((r) => r.documentIds);
+    const docs = docIds.length
+      ? await prisma.fleetDocument.findMany({
+          where: { tenantId: req.user!.tenantId, id: { in: docIds } },
+        })
+      : [];
+    const byId = new Map(docs.map((d) => [d.id, d]));
+
+    res.json(
+      rows.map((r) => ({
+        ...r,
+        documents: r.documentIds.map((id) => byId.get(id)).filter(Boolean),
+      })),
+    );
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

@@ -19,13 +19,26 @@ import PeriodPicker, { type Period, presetRange } from "@/components/shared/Peri
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/Toast";
 import { fleetsApi, unwrapList } from "@/lib/darbApi";
-import type { FleetProfile, FleetStatementRow, FleetUser } from "@/types/darb";
+import type { FleetDocument, FleetProfile, FleetStatementRow, FleetUser } from "@/types/darb";
 import BackToSetup from "@/components/shared/BackToSetup";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDate, formatKwd, formatNumber, formatPercent, localeTag } from "@/i18n/format";
 import type { Locale } from "@/i18n/messages";
 
-type FleetRow = FleetProfile & { _count?: { drivers?: number; users?: number } };
+// Edit #1/#6b — the profile endpoint includes the roster (GET /:id), so the
+// panel's drivers-documents section can read it straight off the row.
+type FleetRow = FleetProfile & {
+  _count?: { drivers?: number; users?: number };
+  drivers?: Array<{
+    id: string;
+    name: string;
+    phone: string | null;
+    status: string;
+    vehicleType: string;
+    performanceTier: string | null;
+    throttledUntil: Date | string | null;
+  }>;
+};
 
 function pct(value: number | null | undefined, locale: Locale): string {
   return value == null ? "n/a" : formatPercent(value, locale, 1);
@@ -421,6 +434,423 @@ function RequestsSection({ fleet }: { fleet: FleetRow }) {
   );
 }
 
+const inputClass =
+  "w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20";
+const labelClass = "block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide";
+
+/* ── Edit #1 (2026-08-22): the vendor-layout profile. Contacts and the
+   delivery pricing in one editable block — the Fee/order rate is adjustable
+   here directly, with no RATE_CHANGE round-trip. */
+function ProfilePricingSection({ fleet }: { fleet: FleetRow }) {
+  const { t } = useI18n();
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const [form, setForm] = useState({
+    name: fleet.name,
+    contactName: fleet.contactName ?? "",
+    contactPhone: fleet.contactPhone ?? "",
+    contactEmail: fleet.contactEmail ?? "",
+    flatFeePerOrderKwd:
+      fleet.flatFeePerOrderKwd == null ? "" : String(fleet.flatFeePerOrderKwd),
+    perKmFeeKwd: fleet.perKmFeeKwd == null ? "" : String(fleet.perKmFeeKwd),
+  });
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    setSaving(true);
+    try {
+      await fleetsApi.update(fleet.id, {
+        name: form.name.trim(),
+        contactName: form.contactName.trim() || null,
+        contactPhone: form.contactPhone.trim() || null,
+        contactEmail: form.contactEmail.trim() || null,
+        flatFeePerOrderKwd: form.flatFeePerOrderKwd.trim() || null,
+        perKmFeeKwd: form.perKmFeeKwd.trim() || null,
+      });
+      toast.success(t("toast.saved"));
+      // The list row shows the fee and the name, so it is stale now too.
+      await queryClient.invalidateQueries({ queryKey: ["darb", "fleets"] });
+    } catch (err) {
+      toast.error(
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+          t("toast.failedSave"),
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <section className="space-y-4">
+      <h3 className="text-xs uppercase tracking-wide font-medium text-sand-600">
+        Company profile
+      </h3>
+      <div className="grid grid-cols-2 gap-3">
+        <label>
+          <span className={labelClass}>Company name</span>
+          <input
+            className={inputClass}
+            dir="auto"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+          />
+        </label>
+        <label>
+          <span className={labelClass}>Contact person</span>
+          <input
+            className={inputClass}
+            dir="auto"
+            value={form.contactName}
+            onChange={(e) => setForm({ ...form, contactName: e.target.value })}
+          />
+        </label>
+        <label>
+          <span className={labelClass}>Contact phone</span>
+          <input
+            className={inputClass}
+            dir="ltr"
+            value={form.contactPhone}
+            onChange={(e) => setForm({ ...form, contactPhone: e.target.value })}
+          />
+        </label>
+        <label>
+          <span className={labelClass}>Contact email</span>
+          <input
+            className={inputClass}
+            dir="ltr"
+            value={form.contactEmail}
+            onChange={(e) => setForm({ ...form, contactEmail: e.target.value })}
+          />
+        </label>
+      </div>
+
+      <h3 className="text-xs uppercase tracking-wide font-medium text-sand-600 pt-2">
+        Delivery pricing
+      </h3>
+      <div className="grid grid-cols-2 gap-3">
+        <label>
+          <span className={labelClass}>{t("fleetPortal.feePerOrder")}</span>
+          <input
+            type="text"
+            inputMode="decimal"
+            dir="ltr"
+            data-testid="fleet-fee-per-order"
+            placeholder="0.000"
+            className={cn(inputClass, "tabular-nums")}
+            value={form.flatFeePerOrderKwd}
+            onChange={(e) => setForm({ ...form, flatFeePerOrderKwd: e.target.value })}
+          />
+        </label>
+        <label>
+          <span className={labelClass}>Per km (optional)</span>
+          <input
+            type="text"
+            inputMode="decimal"
+            dir="ltr"
+            data-testid="fleet-per-km-fee"
+            placeholder="—"
+            className={cn(inputClass, "tabular-nums")}
+            value={form.perKmFeeKwd}
+            onChange={(e) => setForm({ ...form, perKmFeeKwd: e.target.value })}
+          />
+        </label>
+      </div>
+      <p className="text-xs text-sand-600">
+        What this company earns per delivered order. Per-km is only for companies on the
+        kilometre rate; leave it empty for a flat fee.
+      </p>
+
+      <button
+        type="button"
+        onClick={() => void save()}
+        disabled={saving}
+        data-testid="fleet-profile-save"
+        className="inline-flex items-center gap-1.5 px-4 h-9 rounded-pill bg-primary text-white text-xs font-medium hover:opacity-90 disabled:opacity-50"
+      >
+        {saving ? t("common.processing") : t("common.save")}
+      </button>
+    </section>
+  );
+}
+
+/** Edit #1 — deductions recorded against this company's invoice. */
+function DeductionsSection({ fleet }: { fleet: FleetRow }) {
+  const { t, locale } = useI18n();
+  const toast = useToast();
+
+  const deductionsQuery = useQuery({
+    queryKey: ["darb", "fleets", fleet.id, "deductions"],
+    queryFn: () => fleetsApi.deductions(fleet.id),
+  });
+  const rows = deductionsQuery.data?.data ?? [];
+
+  const [adding, setAdding] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [reason, setReason] = useState("DAMAGE");
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+
+  async function add() {
+    const value = Number(amount);
+    if (!Number.isFinite(value) || value <= 0) return;
+    setBusy("add");
+    try {
+      await fleetsApi.addDeduction(fleet.id, {
+        amountKwd: value,
+        reason,
+        note: note.trim() || undefined,
+      });
+      toast.success(t("toast.saved"));
+      setAmount("");
+      setNote("");
+      setReason("DAMAGE");
+      setAdding(false);
+      await deductionsQuery.refetch();
+    } catch (err) {
+      toast.error(
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+          t("toast.failedSave"),
+      );
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function cancel(id: string) {
+    setBusy(id);
+    try {
+      await fleetsApi.cancelDeduction(fleet.id, id);
+      await deductionsQuery.refetch();
+    } catch (err) {
+      toast.error(
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+          t("toast.failedSave"),
+      );
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <section className="space-y-3" data-testid="fleet-deductions">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-xs uppercase tracking-wide font-medium text-sand-600">
+          Invoice deductions
+        </h3>
+        {!adding && (
+          <button
+            type="button"
+            onClick={() => setAdding(true)}
+            className="h-8 px-3 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200"
+          >
+            + Add deduction
+          </button>
+        )}
+      </div>
+
+      {adding && (
+        <div className="rounded-xl border border-sand-300 bg-white p-3 space-y-2.5">
+          <div className="grid grid-cols-2 gap-2.5">
+            <label>
+              <span className={labelClass}>Amount (KD)</span>
+              <input
+                type="text"
+                inputMode="decimal"
+                dir="ltr"
+                autoFocus
+                className={cn(inputClass, "tabular-nums", "h-9")}
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+            </label>
+            <label>
+              <span className={labelClass}>Reason</span>
+              <select
+                className={cn(inputClass, "h-9")}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              >
+                {["DAMAGE", "FINE", "EQUIPMENT", "CASH_SHORTFALL", "SLA", "OTHER"].map((r) => (
+                  <option key={r} value={r}>
+                    {r.replace(/_/g, " ")}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <label className="block">
+            <span className={labelClass}>Note</span>
+            <input
+              className={cn(inputClass, "h-9")}
+              dir="auto"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </label>
+          <div className="flex gap-2 justify-end">
+            <button
+              type="button"
+              onClick={() => setAdding(false)}
+              className="h-8 px-3 rounded-full border border-sand-300 bg-white text-xs text-sand-700"
+            >
+              {t("common.cancel")}
+            </button>
+            <button
+              type="button"
+              disabled={busy === "add" || !(Number(amount) > 0)}
+              onClick={() => void add()}
+              className="h-8 px-3 rounded-full bg-primary text-white text-xs font-medium disabled:opacity-50"
+            >
+              {busy === "add" ? t("common.processing") : t("common.save")}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {deductionsQuery.isLoading ? (
+        <p className="text-sm text-sand-600">{t("common.loading")}</p>
+      ) : rows.length === 0 ? (
+        <p className="text-sm text-sand-600">Nothing withheld from invoices yet.</p>
+      ) : (
+        <ul className="divide-y divide-sand-200">
+          {rows.map((d) => (
+            <li key={d.id} className="flex items-center gap-3 py-2.5">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-sand-900 truncate" dir="auto">
+                  {d.reason.replace(/_/g, " ")}
+                  <span dir="ltr" className="tabular-nums ms-2 font-medium">
+                    KD {Number(d.amountKwd).toFixed(3)}
+                  </span>
+                </p>
+                <p className="text-[11px] text-sand-500 mt-0.5">
+                  {formatDate(d.incurredAt, locale)}
+                  {d.note ? ` · ${d.note}` : ""}
+                </p>
+              </div>
+              <StatusBadge status={d.status === "PENDING" ? "PENDING" : d.status} />
+              {d.status === "PENDING" && (
+                <button
+                  type="button"
+                  disabled={busy === d.id}
+                  onClick={() => void cancel(d.id)}
+                  className="text-[11px] text-red-600 hover:text-red-700 shrink-0 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+/** Edit #6b — every driver under the company, with documents and expiries. */
+function DriversDocumentsSection({ fleet }: { fleet: FleetRow }) {
+  const { t, locale } = useI18n();
+  const toast = useToast();
+
+  const docsQuery = useQuery({
+    queryKey: ["darb", "fleets", fleet.id, "documents"],
+    queryFn: () => fleetsApi.documents(fleet.id),
+  });
+  const allDocs = unwrapList<FleetDocument>(docsQuery.data);
+  const companyDocs = allDocs.filter((d) => !d.driverId);
+
+  async function openDoc(docId: string) {
+    try {
+      const { url } = await fleetsApi.documentUrl(docId);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch {
+      toast.error(t("hqRequests.fileOpenFailed"));
+    }
+  }
+
+  function DocChip({ doc }: { doc: FleetDocument }) {
+    return (
+      <button
+        type="button"
+        onClick={() => doc.fileKey && openDoc(doc.id)}
+        disabled={!doc.fileKey}
+        title={doc.fileKey ? t("hqRequests.viewFile") : t("fleetPortal.noFile")}
+        className={cn(
+          "inline-flex items-center gap-1.5 h-8 px-2.5 rounded-full border text-xs",
+          doc.fileKey
+            ? "border-sand-300 bg-white text-sand-700 hover:bg-sand-100"
+            : "border-sand-200 bg-sand-50 text-sand-400",
+        )}
+      >
+        {doc.type.replace(/_/g, " ")}
+        {doc.expiryDate ? (
+          <span dir="ltr" className="tabular-nums">
+            · {formatDate(doc.expiryDate, locale)}
+          </span>
+        ) : null}
+        {!doc.fileKey ? ` · ${t("fleetPortal.noFile")}` : ""}
+      </button>
+    );
+  }
+
+  return (
+    <section className="space-y-3" data-testid="fleet-drivers-documents">
+      <h3 className="text-xs uppercase tracking-wide font-medium text-sand-600">
+        Drivers &amp; documents ({(fleet.drivers ?? []).length})
+      </h3>
+
+      {companyDocs.length > 0 && (
+        <div>
+          <p className="text-[11px] uppercase tracking-wide text-sand-500 mb-1.5">
+            Legal documents
+          </p>
+          <ul className="flex flex-wrap gap-2">
+            {companyDocs.map((d) => (
+              <li key={d.id}>
+                <DocChip doc={d} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {(fleet.drivers ?? []).length === 0 ? (
+        <p className="text-sm text-sand-600">{t("errors.noData")}</p>
+      ) : (
+        <ul className="divide-y divide-sand-200">
+          {(fleet.drivers ?? []).map((driver) => {
+            const docs = allDocs.filter((d) => d.driverId === driver.id);
+            return (
+              <li key={driver.id} className="py-2.5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm text-sand-900 truncate" dir="auto">
+                      {driver.name}
+                    </p>
+                    <p className="text-[11px] text-sand-500 mt-0.5" dir="ltr">
+                      {driver.phone ?? "—"} · {docs.length} document
+                      {docs.length === 1 ? "" : "s"}
+                    </p>
+                  </div>
+                  <StatusBadge status={driver.status} />
+                </div>
+                {docs.length > 0 && (
+                  <ul className="flex flex-wrap gap-2 mt-2">
+                    {docs.map((d) => (
+                      <li key={d.id}>
+                        <DocChip doc={d} />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 function ScorecardPanel({ fleet }: { fleet: FleetRow }) {
   const { t, locale } = useI18n();
   const toast = useToast();
@@ -763,6 +1193,9 @@ export default function FleetsPage() {
       >
         {selected && (
           <>
+            <ProfilePricingSection key={`pp-${selected.id}`} fleet={selected} />
+            <DeductionsSection key={`dd-${selected.id}`} fleet={selected} />
+            <DriversDocumentsSection key={`dv-${selected.id}`} fleet={selected} />
             <RequestsSection fleet={selected} />
             <ScorecardPanel fleet={selected} />
           </>

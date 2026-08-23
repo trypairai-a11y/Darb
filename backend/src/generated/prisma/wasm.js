@@ -200,6 +200,7 @@ exports.Prisma.DriverScalarFieldEnum = {
   utr: 'utr',
   vehicleType: 'vehicleType',
   zone: 'zone',
+  assignedZoneId: 'assignedZoneId',
   batchNumber: 'batchNumber',
   status: 'status',
   hireDate: 'hireDate',
@@ -231,7 +232,13 @@ exports.Prisma.DriverScalarFieldEnum = {
   drivingLicenseExpiry: 'drivingLicenseExpiry',
   drivingLicenseStatus: 'drivingLicenseStatus',
   civilIdExpiry: 'civilIdExpiry',
-  civilIdStatus: 'civilIdStatus'
+  civilIdStatus: 'civilIdStatus',
+  policeClearanceExpiry: 'policeClearanceExpiry',
+  policeClearanceStatus: 'policeClearanceStatus',
+  passportExpiry: 'passportExpiry',
+  passportStatus: 'passportStatus',
+  driverSelfieExpiry: 'driverSelfieExpiry',
+  driverSelfieStatus: 'driverSelfieStatus'
 };
 
 exports.Prisma.DriverRestrictionScalarFieldEnum = {
@@ -335,6 +342,25 @@ exports.Prisma.ShiftScalarFieldEnum = {
   clockOutMethod: 'clockOutMethod',
   shiftScreenshotUrl: 'shiftScreenshotUrl',
   deliveryArea: 'deliveryArea',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ShiftRequestScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  driverId: 'driverId',
+  date: 'date',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  zoneId: 'zoneId',
+  zoneName: 'zoneName',
+  status: 'status',
+  ticketId: 'ticketId',
+  shiftId: 'shiftId',
+  decidedAt: 'decidedAt',
+  decidedById: 'decidedById',
+  declineReason: 'declineReason',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -1490,6 +1516,9 @@ exports.Prisma.VendorScalarFieldEnum = {
   isPaused: 'isPaused',
   creditCapKwd: 'creditCapKwd',
   deliveryPlanId: 'deliveryPlanId',
+  pricingModel: 'pricingModel',
+  subscriptionKwd: 'subscriptionKwd',
+  integrationSettings: 'integrationSettings',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -1530,6 +1559,17 @@ exports.Prisma.DeliveryZoneScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ShiftCapacityScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  zoneId: 'zoneId',
+  startTime: 'startTime',
+  dayOfWeek: 'dayOfWeek',
+  maxDrivers: 'maxDrivers',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.ZoneSurchargeScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -1546,6 +1586,9 @@ exports.Prisma.DeliveryPlanScalarFieldEnum = {
   name: 'name',
   type: 'type',
   intraZoneFeeKwd: 'intraZoneFeeKwd',
+  baseFeeKwd: 'baseFeeKwd',
+  perKmFeeKwd: 'perKmFeeKwd',
+  maxDistanceKm: 'maxDistanceKm',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -1622,6 +1665,8 @@ exports.Prisma.DeliveryOrderScalarFieldEnum = {
   dropoffLng: 'dropoffLng',
   pickupZoneId: 'pickupZoneId',
   dropoffZoneId: 'dropoffZoneId',
+  distanceKm: 'distanceKm',
+  distanceSource: 'distanceSource',
   driverId: 'driverId',
   offerRound: 'offerRound',
   redispatchAttempts: 'redispatchAttempts',
@@ -1832,6 +1877,7 @@ exports.Prisma.FleetPartnerScalarFieldEnum = {
   contactPhone: 'contactPhone',
   contactEmail: 'contactEmail',
   flatFeePerOrderKwd: 'flatFeePerOrderKwd',
+  perKmFeeKwd: 'perKmFeeKwd',
   minOnlineHoursPerDay: 'minOnlineHoursPerDay',
   minDriversOnline: 'minDriversOnline',
   disciplineStatus: 'disciplineStatus',
@@ -1850,6 +1896,8 @@ exports.Prisma.FleetPayoutStatementScalarFieldEnum = {
   periodEnd: 'periodEnd',
   deliveredOrders: 'deliveredOrders',
   feePerOrderKwd: 'feePerOrderKwd',
+  perKmFeeKwd: 'perKmFeeKwd',
+  totalKm: 'totalKm',
   totalKwd: 'totalKwd',
   status: 'status',
   payoutTxId: 'payoutTxId',
@@ -1858,6 +1906,8 @@ exports.Prisma.FleetPayoutStatementScalarFieldEnum = {
   disputedAt: 'disputedAt',
   disputeReason: 'disputeReason',
   disputeTicketId: 'disputeTicketId',
+  deductionsKwd: 'deductionsKwd',
+  netPayableKwd: 'netPayableKwd',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -1974,6 +2024,46 @@ exports.Prisma.AccountManagerVendorScalarFieldEnum = {
   userId: 'userId',
   vendorId: 'vendorId',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.AccountManagerFleetScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  userId: 'userId',
+  fleetPartnerId: 'fleetPartnerId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.FleetDeductionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  fleetPartnerId: 'fleetPartnerId',
+  statementId: 'statementId',
+  amountKwd: 'amountKwd',
+  reason: 'reason',
+  note: 'note',
+  status: 'status',
+  incurredAt: 'incurredAt',
+  createdById: 'createdById',
+  cancelledAt: 'cancelledAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.VendorIntegrationScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  vendorId: 'vendorId',
+  provider: 'provider',
+  label: 'label',
+  status: 'status',
+  credentialEnc: 'credentialEnc',
+  config: 'config',
+  webhookSecret: 'webhookSecret',
+  lastEventAt: 'lastEventAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SupportTicketScalarFieldEnum = {
@@ -2119,6 +2209,7 @@ exports.Prisma.DriverOrderByRelevanceFieldEnum = {
   platformDriverId: 'platformDriverId',
   utr: 'utr',
   zone: 'zone',
+  assignedZoneId: 'assignedZoneId',
   batchNumber: 'batchNumber',
   photoUrl: 'photoUrl',
   supervisorId: 'supervisorId',
@@ -2132,7 +2223,10 @@ exports.Prisma.DriverOrderByRelevanceFieldEnum = {
   vehicleRegStatus: 'vehicleRegStatus',
   vehicleInsuranceStatus: 'vehicleInsuranceStatus',
   drivingLicenseStatus: 'drivingLicenseStatus',
-  civilIdStatus: 'civilIdStatus'
+  civilIdStatus: 'civilIdStatus',
+  policeClearanceStatus: 'policeClearanceStatus',
+  passportStatus: 'passportStatus',
+  driverSelfieStatus: 'driverSelfieStatus'
 };
 
 exports.Prisma.DriverRestrictionOrderByRelevanceFieldEnum = {
@@ -2192,6 +2286,20 @@ exports.Prisma.ShiftOrderByRelevanceFieldEnum = {
   clockOutMethod: 'clockOutMethod',
   shiftScreenshotUrl: 'shiftScreenshotUrl',
   deliveryArea: 'deliveryArea'
+};
+
+exports.Prisma.ShiftRequestOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  driverId: 'driverId',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  zoneId: 'zoneId',
+  zoneName: 'zoneName',
+  ticketId: 'ticketId',
+  shiftId: 'shiftId',
+  decidedById: 'decidedById',
+  declineReason: 'declineReason'
 };
 
 exports.Prisma.AttendanceRecordOrderByRelevanceFieldEnum = {
@@ -2905,6 +3013,13 @@ exports.Prisma.DeliveryZoneOrderByRelevanceFieldEnum = {
   color: 'color'
 };
 
+exports.Prisma.ShiftCapacityOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  zoneId: 'zoneId',
+  startTime: 'startTime'
+};
+
 exports.Prisma.ZoneSurchargeOrderByRelevanceFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -2957,6 +3072,7 @@ exports.Prisma.DeliveryOrderOrderByRelevanceFieldEnum = {
   dropoffAddress: 'dropoffAddress',
   pickupZoneId: 'pickupZoneId',
   dropoffZoneId: 'dropoffZoneId',
+  distanceSource: 'distanceSource',
   driverId: 'driverId',
   rejectionReason: 'rejectionReason',
   cancelReason: 'cancelReason',
@@ -3184,6 +3300,36 @@ exports.Prisma.AccountManagerVendorOrderByRelevanceFieldEnum = {
   vendorId: 'vendorId'
 };
 
+exports.Prisma.AccountManagerFleetOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  userId: 'userId',
+  fleetPartnerId: 'fleetPartnerId'
+};
+
+exports.Prisma.FleetDeductionOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  fleetPartnerId: 'fleetPartnerId',
+  statementId: 'statementId',
+  reason: 'reason',
+  note: 'note',
+  status: 'status',
+  createdById: 'createdById'
+};
+
+exports.Prisma.VendorIntegrationOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  vendorId: 'vendorId',
+  provider: 'provider',
+  label: 'label',
+  status: 'status',
+  credentialEnc: 'credentialEnc',
+  webhookSecret: 'webhookSecret',
+  lastError: 'lastError'
+};
+
 exports.Prisma.SupportTicketOrderByRelevanceFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -3320,6 +3466,13 @@ exports.ShiftStatus = exports.$Enums.ShiftStatus = {
   IN_PROGRESS: 'IN_PROGRESS',
   COMPLETED: 'COMPLETED',
   MISSED: 'MISSED',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.ShiftRequestStatus = exports.$Enums.ShiftRequestStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  DECLINED: 'DECLINED',
   CANCELLED: 'CANCELLED'
 };
 
@@ -3585,6 +3738,11 @@ exports.WithdrawalStatus = exports.$Enums.WithdrawalStatus = {
   FAILED: 'FAILED'
 };
 
+exports.PricingModel = exports.$Enums.PricingModel = {
+  SUBSCRIPTION: 'SUBSCRIPTION',
+  MARGIN: 'MARGIN'
+};
+
 exports.DeliveryPlanType = exports.$Enums.DeliveryPlanType = {
   ZONE: 'ZONE',
   KM: 'KM'
@@ -3685,7 +3843,8 @@ exports.FleetChangeRequestType = exports.$Enums.FleetChangeRequestType = {
   DRIVER_STATUS: 'DRIVER_STATUS',
   DRIVER_PROFILE: 'DRIVER_PROFILE',
   DRIVER_DOCUMENT: 'DRIVER_DOCUMENT',
-  COMPANY_DOCUMENT: 'COMPANY_DOCUMENT'
+  COMPANY_DOCUMENT: 'COMPANY_DOCUMENT',
+  RATE_CHANGE: 'RATE_CHANGE'
 };
 
 exports.FleetChangeRequestStatus = exports.$Enums.FleetChangeRequestStatus = {
@@ -3772,6 +3931,7 @@ exports.Prisma.ModelName = {
   Vehicle: 'Vehicle',
   VehicleDriverAssignment: 'VehicleDriverAssignment',
   Shift: 'Shift',
+  ShiftRequest: 'ShiftRequest',
   AttendanceRecord: 'AttendanceRecord',
   OrderLog: 'OrderLog',
   CashRecord: 'CashRecord',
@@ -3847,6 +4007,7 @@ exports.Prisma.ModelName = {
   Vendor: 'Vendor',
   VendorBranch: 'VendorBranch',
   DeliveryZone: 'DeliveryZone',
+  ShiftCapacity: 'ShiftCapacity',
   ZoneSurcharge: 'ZoneSurcharge',
   DeliveryPlan: 'DeliveryPlan',
   DeliveryPlanZoneRate: 'DeliveryPlanZoneRate',
@@ -3877,6 +4038,9 @@ exports.Prisma.ModelName = {
   UserInvite: 'UserInvite',
   UserSurfacePermission: 'UserSurfacePermission',
   AccountManagerVendor: 'AccountManagerVendor',
+  AccountManagerFleet: 'AccountManagerFleet',
+  FleetDeduction: 'FleetDeduction',
+  VendorIntegration: 'VendorIntegration',
   SupportTicket: 'SupportTicket',
   SupportTicketMessage: 'SupportTicketMessage',
   VendorTopUp: 'VendorTopUp',

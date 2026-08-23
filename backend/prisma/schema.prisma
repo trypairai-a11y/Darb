@@ -83,6 +83,20 @@ enum ShiftStatus {
   CANCELLED
 }
 
+/// Client request, 2026-08-03: "I need same as Talabat app design".
+///
+/// A driver taps a three-hour window and it has to show up on their own screen
+/// straight away. It cannot be a Shift row yet, because Darb decides who works
+/// where and a Shift is the record attendance and pay are computed from. So the
+/// tap writes this, the driver sees it as Awaiting Darb, and approval is what
+/// creates the Shift. Same request-then-approve shape the fleet portal uses.
+enum ShiftRequestStatus {
+  PENDING
+  APPROVED
+  DECLINED
+  CANCELLED
+}
+
 enum AttendanceStatus {
   PRESENT
   LATE
@@ -195,6 +209,14 @@ enum SubscriptionPlan {
   FREE
   PRO
   ENTERPRISE
+}
+
+// Edit #4 (2026-08-22) — how Darb's arrangement with a delivery company is
+// priced for a vendor: a flat monthly fee, or the per-order difference between
+// the company's price and the shop's accepted price.
+enum PricingModel {
+  SUBSCRIPTION
+  MARGIN
 }
 
 enum RecruitmentStage {
@@ -414,6 +436,8 @@ model Tenant {
   drivers                   Driver[]
   driverBatchHistory        DriverBatchHistory[]
   shifts                    Shift[]
+  shiftRequests             ShiftRequest[]
+  shiftCapacities           ShiftCapacity[]
   attendanceRecords         AttendanceRecord[]
   orderLogs                 OrderLog[]
   cashRecords               CashRecord[]
@@ -497,6 +521,7 @@ model Tenant {
   walletReconciliationRuns  WalletReconciliationRun[]
   incidents                 Incident[]
   foodicsConnections        FoodicsConnection[]
+  integrations              VendorIntegration[]
   // Darb 2.0 PRD build (DARB2-PRD-001 v3.0)
   apiKeys                   ApiKey[]
   orderRatings              OrderRating[]
@@ -508,9 +533,10 @@ model Tenant {
   // Revision 4 — delivery plans (#7), invites and per-surface access (#12).
   deliveryPlans             DeliveryPlan[]
   distanceCacheEntries      DistanceCache[]
+  accountManagerVendors     AccountManagerVendor[]
+  accountManagerFleets      AccountManagerFleet[]
   userInvites               UserInvite[]
   userSurfacePermissions    UserSurfacePermission[]
-  accountManagerVendors     AccountManagerVendor[]
   supportTickets            SupportTicket[]
   vendorTopUps              VendorTopUp[]
   fleetCashDeposits         FleetCashDeposit[]
@@ -519,6 +545,8 @@ model Tenant {
   fleetDocuments            FleetDocument[]
   fleetChangeRequests       FleetChangeRequest[]
   fleetIssues               FleetIssue[]
+  // Revision 17 — fleet deductions, account-manager scoping, POS integrations.
+  fleetDeductions      FleetDeduction[]
 }
 
 // 2. Company
@@ -634,6 +662,7 @@ model User {
   acknowledgedAlerts      Alert[]                 @relation("AlertAcknowledger")
   reviewedLeaves          LeaveRequest[]          @relation("LeaveReviewer")
   assignedTickets         Ticket[]                @relation("TicketAssignee")
+  decidedShiftRequests    ShiftRequest[]          @relation("ShiftRequestDecider")
   submittedTickets        Ticket[]                @relation("TicketSubmitterUser")
   notifications           Notification[]
   createdAmericanaRates   AmericanaChainRate[]    @relation("AmericanaChainRateCreator")
@@ -648,6 +677,7 @@ model User {
   invites                 UserInvite[]
   surfacePermissions      UserSurfacePermission[]
   managedVendors          AccountManagerVendor[]
+  managedFleets           AccountManagerFleet[]
   // Revision 12 — fleet portal request desk authorship.
   uploadedFleetDocuments  FleetDocument[]         @relation("FleetDocumentUploader")
   reviewedFleetDocuments  FleetDocument[]         @relation("FleetDocumentReviewer")
@@ -676,6 +706,12 @@ model Driver {
   utr                String?
   vehicleType        VehicleType
   zone               String?
+  // Revision 15 — the zone Darb assigns this driver to work. `zone` above is
+  // inherited free text from the aggregator era and nothing validates it; this
+  // one is the real area, and it is what the driver app books shifts against.
+  // A driver with none cannot book: the client's rule is that Darb decides the
+  // area first and the driver only chooses the hours.
+  assignedZoneId     String?
   batchNumber        String?
   status             DriverStatus @default(ACTIVE)
   hireDate           DateTime
@@ -714,14 +750,26 @@ model Driver {
   drivingLicenseStatus   String?
   civilIdExpiry          DateTime?
   civilIdStatus          String?
+  policeClearanceExpiry  DateTime?
+  policeClearanceStatus  String?
+  passportExpiry         DateTime?
+  passportStatus         String?
+  /// The selfie has no expiry of its own: the pair exists so the photo counts
+  /// toward the roster's document tally and shows on the profile like the rest.
+  /// A type with no column pair is storable and invisible, which is the trap
+  /// DRIVER_DOC_COLUMNS warns about.
+  driverSelfieExpiry     DateTime?
+  driverSelfieStatus     String?
 
   tenant       Tenant        @relation(fields: [tenantId], references: [id])
   company      Company       @relation(fields: [companyId], references: [id])
   supervisor   User?         @relation("DriverSupervisor", fields: [supervisorId], references: [id])
   fleetPartner FleetPartner? @relation(fields: [fleetPartnerId], references: [id])
+  assignedZone DeliveryZone? @relation("DriverAssignedZone", fields: [assignedZoneId], references: [id])
 
   inventory                 DriverInventory[]
   shifts                    Shift[]
+  shiftRequests             ShiftRequest[]
   attendanceRecords         AttendanceRecord[]
   orderLogs                 OrderLog[]
   cashRecords               CashRecord[]
@@ -945,6 +993,55 @@ model Shift {
   @@index([tenantId, date])
   @@index([tenantId, driverId, date])
   @@index([tenantId, deliveryArea, date])
+}
+
+/// A driver's ask for a three-hour window, and the record that makes the ask
+/// visible before anybody has acted on it.
+///
+/// Before this, asking for a shift wrote a SHIFT_REQUEST ticket and nothing
+/// else. The driver got one line of green text that a reload wiped, the Coming
+/// up list still read "No shifts booked yet", and no surface at Darb could turn
+/// the ticket into a shift — so the answer to "did my request go anywhere" was
+/// no, permanently. The ticket still opens, because that is the desk ops
+/// already watch; this row is what the driver's screen and the approve action
+/// both read.
+///
+/// APPROVED is the only status that writes a Shift, and shiftId points at it,
+/// so approving twice cannot produce two shifts for one ask.
+model ShiftRequest {
+  id            String             @id @default(uuid())
+  tenantId      String
+  driverId      String
+  /// The day itself, midnight local. The window is startTime/endTime.
+  date          DateTime
+  /// "16:00" / "19:00". Kept as text because they are what the driver picked,
+  /// not an instant: a shift booked for 16:00 stays 16:00 across a DST change.
+  startTime     String
+  endTime       String
+  zoneId        String?
+  zoneName      String
+  status        ShiftRequestStatus @default(PENDING)
+  /// The desk item this ask opened, so resolving one can close the other.
+  ticketId      String?
+  /// Set only on approval, and only once.
+  shiftId       String?
+  decidedAt     DateTime?
+  decidedById   String?
+  declineReason String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  tenant    Tenant @relation(fields: [tenantId], references: [id])
+  driver    Driver @relation(fields: [driverId], references: [id])
+  decidedBy User?  @relation("ShiftRequestDecider", fields: [decidedById], references: [id])
+
+  /// One ask per driver per window. A double tap on a slow connection is the
+  /// common case, and two identical pending rows is what ops would have to
+  /// untangle by hand.
+  @@unique([driverId, date, startTime])
+  @@index([tenantId, status])
+  @@index([tenantId, date])
+  @@index([driverId, status])
 }
 
 // 9. AttendanceRecord
@@ -2858,6 +2955,25 @@ model Vendor {
   // falls through to FulfillmentSettings + ZoneSurcharge, which is how every
   // vendor is priced until a plan is assigned.
   deliveryPlanId  String?
+  // Client revision notes, Edit #4 (2026-08-22) — Target Price is gone. What
+  // Darb actually has with the delivery companies is one of two models:
+  //
+  //   SUBSCRIPTION — a flat monthly fee (subscriptionKwd); per-order economics
+  //                  don't enter into it.
+  //   MARGIN       — Darb keeps the difference between what the delivery
+  //                  company charges and the price the shop accepted; no
+  //                  vendor-level number is stored, because the margin is the
+  //                  per-order arithmetic between those two quoted prices.
+  //
+  // NULL means "not agreed yet", which is every vendor until somebody sets
+  // one. The old targetPriceKwd (revision 15) priced nothing and read as a
+  // discount knob; it is dropped here along with its branch-level copy.
+  pricingModel    PricingModel?
+  subscriptionKwd Decimal?     @db.Decimal(10, 3)
+  // Edit #5 (2026-08-22) — non-Foodics POS/e-commerce config (uPayments,
+  // Salla, Shopify, custom), keyed by provider name. Foodics keeps its own
+  // connection table; these are stored until each gets an OAuth flow.
+  integrationSettings Json?
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -2872,6 +2988,7 @@ model Vendor {
   refunds           Refund[]
   deliveryPlan      DeliveryPlan?          @relation(fields: [deliveryPlanId], references: [id])
   accountManagers   AccountManagerVendor[]
+  integrations      VendorIntegration[]
 
   supportTickets SupportTicket[]
   topUps         VendorTopUp[]
@@ -2898,6 +3015,9 @@ model VendorBranch {
   // plan. NULL inherits the vendor's plan, which is what every existing branch
   // does — this ships with no backfill and no repricing.
   deliveryPlanId  String?
+  // Edit #4 (2026-08-22): the branch-level target price went the way of the
+  // vendor-level one — pricing is the vendor's pricing model now, inherited
+  // by every branch the same way deliveryPlanId is.
   foodicsBranchId String?
   // Revision 10 (#7). Pausing used to be one switch for the whole account, so a
   // shop with a queue at one counter had to stop taking orders everywhere. A
@@ -2949,9 +3069,47 @@ model DeliveryZone {
   dropoffOrders    DeliveryOrder[]        @relation("OrderDropoffZone")
   planOriginRates  DeliveryPlanZoneRate[] @relation("PlanRateOrigin")
   planDestRates    DeliveryPlanZoneRate[] @relation("PlanRateDest")
+  assignedDrivers  Driver[]               @relation("DriverAssignedZone")
+  shiftCapacities  ShiftCapacity[]
 
   @@unique([tenantId, code])
   @@index([tenantId, isActive])
+}
+
+// D3b. ShiftCapacity - how many drivers Darb wants in one zone in one window.
+//
+// Revision 15, client request: "put the maximum number of drivers for each
+// shift". It is per zone per window rather than per day, because the cap is a
+// standing decision about how much of Salmiya needs covering at 19:00, not
+// something ops re-enters every morning. A missing row means no cap, which is
+// how this shipped without a backfill: nothing changes until somebody sets a
+// number.
+model ShiftCapacity {
+  id         String   @id @default(uuid())
+  tenantId   String
+  zoneId     String
+  /// "10:00" / "19:00". One of the windows the driver app offers, kept as text
+  /// for the same reason ShiftRequest.startTime is: it is the window that was
+  /// chosen, not an instant.
+  startTime  String
+  /// 0 = Sunday … 6 = Saturday, matching JS getDay().
+  ///
+  /// Client request, revision 16 (#2): a Friday does not need the staffing a
+  /// Tuesday needs, and one shared grid could only ever say the same number for
+  /// both. The cap lookup was already day-agnostic while the count was per
+  /// date, so the one number was silently re-applied to all seven days.
+  dayOfWeek  Int
+  /// 0 means the window is closed in that zone, which is a real answer and not
+  /// the same as no row at all.
+  maxDrivers Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tenant Tenant       @relation(fields: [tenantId], references: [id])
+  zone   DeliveryZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, zoneId, dayOfWeek, startTime])
+  @@index([tenantId])
 }
 
 // D4. ZoneSurcharge - cross-zone delivery surcharge. Absence of a row for an
@@ -3140,6 +3298,15 @@ model DeliveryOrder {
   dropoffLng         Decimal?            @db.Decimal(10, 7)
   pickupZoneId       String?
   dropoffZoneId      String?
+  // Revision 14 (#3). The branch-to-drop routing distance, fixed at quote time.
+  // Both sides of the money are built on THIS number: what the merchant is
+  // charged on a by-kilometre plan and what the delivery company is paid on a
+  // per-kilometre rate. Measuring it again at month end would produce a second,
+  // different figure (the branch may have moved its pin, the cache expires at
+  // thirty days) and the charge and the cost would stop agreeing. NULL only
+  // where there was no dropoff pin to measure to.
+  distanceKm         Decimal?            @db.Decimal(10, 3)
+  distanceSource     String? // google | straight-line
   driverId           String?
   offerRound         Int                 @default(0)
   // Revision 4 (#1) — NO_DRIVER is no longer a dead end. exhaustDispatch
@@ -3505,7 +3672,13 @@ model FleetPartner {
   contactName          String?
   contactPhone         String?
   contactEmail         String?
+  // Revision 14 (#3). What Darb pays this company for a delivery is a base fee
+  // plus a rate for each kilometre travelled, the same shape the merchant side
+  // is quoted on (DeliveryPlan.baseFeeKwd + perKmFeeKwd). This column IS the
+  // base: a company on the old flat deal carries perKmFeeKwd NULL and is paid
+  // exactly what it was before, so nothing reprices on the deploy.
   flatFeePerOrderKwd   Decimal  @default(1.100) @db.Decimal(10, 3)
+  perKmFeeKwd          Decimal? @db.Decimal(10, 3)
   minOnlineHoursPerDay Float?
   minDriversOnline     Json? // { "<zoneId>": n } contractual commitment
   disciplineStatus     String   @default("OK") // OK | WARNED | THROTTLED | SUSPENDED | REMOVED
@@ -3531,6 +3704,9 @@ model FleetPartner {
   // Revision 14 — the company's own cash account with Darb.
   cashDeposits   FleetCashDeposit[]
   remittances    Remittance[]
+  // Revision 17 — invoice deductions and the Darb staff who own this company.
+  deductions     FleetDeduction[]
+  accountManagers AccountManagerFleet[]
 
   @@index([tenantId, isActive])
   @@index([tenantId, ownerGroupId])
@@ -3547,7 +3723,13 @@ model FleetPayoutStatement {
   periodStart     DateTime
   periodEnd       DateTime // exclusive
   deliveredOrders Int
+  /// The base fee per order, snapshotted. On a flat-rate company this is still
+  /// literally the price per order, which is why the column keeps its name and
+  /// every statement cut before revision 14 (#3) still reads correctly.
   feePerOrderKwd  Decimal   @db.Decimal(10, 3)
+  /// Revision 14 (#3) — snapshots of the kilometre half. NULL on a flat month.
+  perKmFeeKwd     Decimal?  @db.Decimal(10, 3)
+  totalKm         Decimal?  @db.Decimal(12, 3)
   totalKwd        Decimal   @db.Decimal(10, 3)
   /// Revision 13 (#8) — FINAL | CONFIRMED | DISPUTED | PAID. The delivery
   /// company confirms a statement before Darb processes it; postFleetPayout
@@ -3562,13 +3744,21 @@ model FleetPayoutStatement {
   /// The SupportTicket a dispute opened, so the disagreement lands in the
   /// inbox Darb already triages rather than in a WhatsApp thread.
   disputeTicketId String?
+  /// Revision 17 (#1) — the sum of the deductions applied to this month, and
+  /// what is actually payable after them. Both are snapshots: a deduction
+  /// raised after the statement was cut must not silently rewrite a month the
+  /// company already confirmed, so applying one recomputes these columns and
+  /// is refused once the statement leaves FINAL.
+  deductionsKwd   Decimal   @default(0.000) @db.Decimal(10, 3)
+  netPayableKwd   Decimal?  @db.Decimal(10, 3)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  tenant  Tenant              @relation(fields: [tenantId], references: [id])
-  fleet   FleetPartner        @relation(fields: [fleetPartnerId], references: [id])
+  tenant     Tenant              @relation(fields: [tenantId], references: [id])
+  fleet      FleetPartner        @relation(fields: [fleetPartnerId], references: [id])
   /// Revision 13b — the company-stamped invoice that confirmation requires.
-  invoice FleetPayoutInvoice?
+  invoice    FleetPayoutInvoice?
+  deductions FleetDeduction[]
 
   @@unique([tenantId, fleetPartnerId, periodStart])
   @@index([tenantId, periodStart])
@@ -3896,6 +4086,101 @@ model AccountManagerVendor {
   vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
   @@unique([userId, vendorId])
+  @@index([tenantId, vendorId])
+}
+
+/// Revision 17 (#11) — the delivery-company half of AccountManagerVendor.
+///
+/// Support routing scopes an ACCOUNT_MANAGER to the companies they actually
+/// handle, and a delivery company is as ownable as a merchant. Kept as its own
+/// join rather than a polymorphic column so the foreign key still means
+/// something on both sides.
+model AccountManagerFleet {
+  id             String   @id @default(uuid())
+  tenantId       String
+  userId         String
+  fleetPartnerId String
+  createdAt      DateTime @default(now())
+
+  tenant Tenant       @relation(fields: [tenantId], references: [id])
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fleet  FleetPartner @relation(fields: [fleetPartnerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, fleetPartnerId])
+  @@index([tenantId, fleetPartnerId])
+}
+
+/// Revision 17 (#1) — money Darb withholds from a delivery company's invoice.
+///
+/// Deliberately NOT a wallet posting. A deduction is an adjustment to what a
+/// month's statement pays out, and the wallet only ever sees the net figure
+/// when the payout is processed. Posting it separately would have meant a
+/// company could confirm a statement and still see a different number leave.
+///
+/// statementId is nullable: ops record a deduction the moment it is agreed,
+/// which is usually mid-month before any statement for that period exists. The
+/// generator claims the unattached ones for the period they fall in.
+model FleetDeduction {
+  id             String    @id @default(uuid())
+  tenantId       String
+  fleetPartnerId String
+  /// Set when the deduction has been folded into a cut statement.
+  statementId    String?
+  amountKwd      Decimal   @db.Decimal(10, 3)
+  /// DAMAGE | FINE | EQUIPMENT | CASH_SHORTFALL | SLA | OTHER
+  reason         String    @default("OTHER")
+  note           String?
+  /// PENDING (agreed, not yet on a statement) | APPLIED | CANCELLED.
+  status         String    @default("PENDING")
+  /// The day the deduction is considered incurred, which is what decides the
+  /// statement period it lands in rather than the day someone typed it in.
+  incurredAt     DateTime  @default(now())
+  createdById    String?
+  cancelledAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  tenant    Tenant                @relation(fields: [tenantId], references: [id])
+  fleet     FleetPartner          @relation(fields: [fleetPartnerId], references: [id], onDelete: Cascade)
+  statement FleetPayoutStatement? @relation(fields: [statementId], references: [id])
+
+  @@index([tenantId, fleetPartnerId, status])
+  @@index([tenantId, statementId])
+}
+
+/// Revision 17 (#5) — a merchant's POS / e-commerce connection.
+///
+/// FoodicsConnection stays exactly where it is: it carries OAuth state, a
+/// webhook secret and an order tag that are Foodics' own, and rewriting a live
+/// integration to fit a generic table buys nothing. This is the table every
+/// OTHER provider uses, including CUSTOM, where `config` holds whatever that
+/// shop's own system needs and there is no shared shape to model.
+model VendorIntegration {
+  id            String   @id @default(uuid())
+  tenantId      String
+  vendorId      String
+  /// UPAYMENTS | SALLA | SHOPIFY | WOOCOMMERCE | ZID | MAGENTO | CUSTOM.
+  /// A slug, not an enum: a new provider must never need a migration.
+  provider      String
+  /// Operator label, so two Shopify stores on one merchant stay tellable apart.
+  label         String?
+  /// PENDING | CONNECTED | ERROR | DISABLED
+  status        String   @default("PENDING")
+  /// AES-256-GCM, same key as the Foodics token. Never returned by the API.
+  credentialEnc String?
+  /// Non-secret provider settings: store domain, branch mapping, and for
+  /// CUSTOM the endpoint and field mapping the shop's own system posts in.
+  config        Json?
+  webhookSecret String?
+  lastEventAt   DateTime?
+  lastError     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, vendorId, provider])
   @@index([tenantId, vendorId])
 }
 

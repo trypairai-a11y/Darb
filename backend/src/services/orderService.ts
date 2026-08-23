@@ -469,6 +469,12 @@ export async function createDeliveryOrder(input: CreateOrderInput): Promise<Deli
           pickupZoneId: quote.pickupZoneId,
           dropoffZoneId: quote.dropoffZoneId,
           deliveryFeeKwd: quote.feeKwd,
+          // Revision 14 (#3): the fleet payout is per kilometre, so the trip
+          // has to be recorded at the moment it was measured. Reading it back
+          // off the pins at month end would give a different number than the
+          // one the merchant was charged on.
+          distanceKm: quote.distanceKm ?? null,
+          distanceSource: quote.distanceSource ?? null,
           podPin: generatePodPin(),
           scheduledAt,
           // The 45-minute promise counts from dispatch start: creation for

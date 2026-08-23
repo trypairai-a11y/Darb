@@ -28,6 +28,7 @@ import { logger } from "../config/logger";
 import { upload } from "../utils/upload";
 import { resolveDriverFromAgentRequest } from "./agent";
 import { publishEvent } from "../services/eventBus";
+import { resolveZone } from "../services/zoneService";
 import {
   OfferGoneError,
   acceptOffer,
@@ -308,7 +309,16 @@ router.get("/state", async (req: Request, res: Response) => {
         : null;
 
     res.json({
-      driver: { id: driver.id, name: driver.name, phone: driver.phone ?? null },
+      // driverCode ships here for the Home profile card (revision 15, client
+      // request: "he can see his darb id, phone number, name, and darb
+      // points"). It is the id every other Darb surface prints, and the driver
+      // is asked for it at enrolment, so the app must be able to show it back.
+      driver: {
+        id: driver.id,
+        driverCode: driver.driverCode ?? null,
+        name: driver.name,
+        phone: driver.phone ?? null,
+      },
       availability: (session?.availability as Availability | undefined) ?? "OFFLINE",
       lockout: wallet.blocked ? { reason: "CASH_CEILING" as const } : null,
       activeOffer,
@@ -348,11 +358,58 @@ router.post("/availability", async (req: Request, res: Response) => {
       return;
     }
 
+    // A driver who cannot be located is allowed through with a warning rather
+    // than blocked, so a weak signal never costs somebody a shift's earnings.
+    let zoneWarning: string | null = null;
+
     if (availability === "ONLINE") {
       const over = await isDriverOverCeiling(tenantId, driver.id);
       if (over) {
         res.status(409).json({ error: "CASH_CEILING_LOCKOUT" });
         return;
+      }
+
+      // Client request, revision 16 (#5): a driver works the area Darb gave
+      // them, so going online from somewhere else is refused.
+      //
+      // The client asked for this as "cannot log in outside his zone", but the
+      // app has no login to gate: enrolment happens once and the device keeps
+      // its token forever, so a check there would pass for the rest of the
+      // driver's life on whatever spot they first stood in. Going ONLINE is the
+      // moment that actually means "I am here and ready", and it is the one the
+      // dispatch loop reads, so the gate lives here.
+      //
+      // It fails OPEN by decision: no assigned zone, no coordinates, or a fix
+      // that lands outside every polygon all let the driver through carrying a
+      // warning. The gate is here to stop somebody working a different area,
+      // not to strand a driver whose GPS dropped in a basement car park.
+      const lat = Number(req.body?.latitude);
+      const lng = Number(req.body?.longitude);
+      const hasFix = Number.isFinite(lat) && Number.isFinite(lng);
+
+      if (driver.assignedZoneId && hasFix) {
+        const here = await resolveZone(tenantId, lat, lng);
+        if (here && here.id !== driver.assignedZoneId) {
+          const assigned = await prisma.deliveryZone.findFirst({
+            where: { id: driver.assignedZoneId, tenantId },
+            select: { name: true },
+          });
+          res.status(409).json({
+            error: "OUTSIDE_ZONE",
+            code: "OUTSIDE_ZONE",
+            assignedZone: assigned?.name ?? null,
+            currentZone: here.name,
+          });
+          return;
+        }
+        // A fix outside every zone is not proof the driver is in the wrong
+        // place: zone polygons do not tile the country, and the edge of one is
+        // a normal place to stand.
+        if (!here) zoneWarning = "LOCATION_OUTSIDE_ANY_ZONE";
+      } else if (!driver.assignedZoneId) {
+        zoneWarning = "NO_ZONE_ASSIGNED";
+      } else {
+        zoneWarning = "NO_LOCATION";
       }
     }
 
@@ -416,7 +473,7 @@ router.post("/availability", async (req: Request, res: Response) => {
       timestamp: now.toISOString(),
     }).catch(() => {});
 
-    res.json({ ok: true, availability });
+    res.json({ ok: true, availability, ...(zoneWarning ? { warning: zoneWarning } : {}) });
   } catch (err) {
     handleAgentError(res, err);
   }

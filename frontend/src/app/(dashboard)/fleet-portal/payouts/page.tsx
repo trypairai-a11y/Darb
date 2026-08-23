@@ -132,11 +132,24 @@ export default function FleetPayoutsPage() {
         t("fleetPortal.driverName"),
         t("fleetPortal.darbId"),
         t("fleetPortal.orders"),
+        t("fleetPortal.distanceKm"),
         t("fleetPortal.total"),
       ],
       [
-        ...rows.map((d) => [d.name, d.driverCode ?? "n/a", String(d.orders), d.totalKwd]),
-        [t("fleetPortal.total"), "", String(row.deliveredOrders), row.totalKwd],
+        ...rows.map((d) => [
+          d.name,
+          d.driverCode ?? "n/a",
+          String(d.orders),
+          d.totalKm ?? "n/a",
+          d.totalKwd,
+        ]),
+        [
+          t("fleetPortal.total"),
+          "",
+          String(row.deliveredOrders),
+          row.totalKm ?? "n/a",
+          row.totalKwd,
+        ],
       ],
     );
   }
@@ -154,10 +167,17 @@ export default function FleetPayoutsPage() {
     const esc = (v: string) =>
       v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const period = monthLabel(row.periodStart);
+    // The kilometre column appears only on a month that was cut with a
+    // kilometre rate. Printing an empty column on a flat month would make the
+    // stamped document ask a question it has no answer to.
+    const perKm = row.perKmFeeKwd != null;
+    const kmCell = (km: string | null) =>
+      perKm ? `<td class="num">${esc(km == null ? "n/a" : km)}</td>` : "";
     const body = rows
       .map(
         (d) => `<tr><td>${esc(d.name)}</td><td class="mono">${esc(d.driverCode ?? "n/a")}</td>` +
-          `<td class="num">${d.orders}</td><td class="num">${esc(formatKwd(d.totalKwd, locale))}</td></tr>`,
+          `<td class="num">${d.orders}</td>${kmCell(d.totalKm)}` +
+          `<td class="num">${esc(formatKwd(d.totalKwd, locale))}</td></tr>`,
       )
       .join("");
 
@@ -187,7 +207,9 @@ export default function FleetPayoutsPage() {
 <p class="sub">${esc(t("fleetPortal.payoutsTitle"))} &middot; Darb</p>
 <div class="totals">
   <div><span>${esc(t("fleetPortal.orders"))}</span><b>${row.deliveredOrders}</b></div>
-  <div><span>${esc(t("fleetPortal.feePerOrder"))}</span><b>${esc(formatKwd(row.feePerOrderKwd, locale))}</b></div>
+  <div><span>${esc(t("fleetPortal.rateBaseLabel"))}</span><b>${esc(formatKwd(row.feePerOrderKwd, locale))}</b></div>
+  ${perKm ? `<div><span>${esc(t("fleetPortal.ratePerKmLabel"))}</span><b>${esc(formatKwd(row.perKmFeeKwd as string, locale))}</b></div>
+  <div><span>${esc(t("fleetPortal.totalDistance"))}</span><b>${esc(row.totalKm ?? "0")} km</b></div>` : ""}
   <div><span>${esc(t("fleetPortal.total"))}</span><b>${esc(formatKwd(row.totalKwd, locale))}</b></div>
 </div>
 <table>
@@ -195,11 +217,13 @@ export default function FleetPayoutsPage() {
     <th>${esc(t("fleetPortal.driverName"))}</th>
     <th>${esc(t("fleetPortal.darbId"))}</th>
     <th class="num">${esc(t("fleetPortal.orders"))}</th>
+    ${perKm ? `<th class="num">${esc(t("fleetPortal.distanceKm"))}</th>` : ""}
     <th class="num">${esc(t("fleetPortal.total"))}</th>
   </tr></thead>
   <tbody>${body}</tbody>
   <tfoot><tr><td colspan="2">${esc(t("fleetPortal.total"))}</td>
     <td class="num">${row.deliveredOrders}</td>
+    ${perKm ? `<td class="num">${esc(row.totalKm ?? "0")}</td>` : ""}
     <td class="num">${esc(formatKwd(row.totalKwd, locale))}</td></tr></tfoot>
 </table>
 <div class="sign"><div>${esc(t("fleetPortal.companyStamp"))}</div><div>${esc(t("fleetPortal.dateSigned"))}</div></div>
@@ -252,9 +276,16 @@ export default function FleetPayoutsPage() {
         t("dispatch.orderNumber"),
         t("fleetPortal.driverName"),
         t("darbOrderStatus.delivered"),
+        t("fleetPortal.distanceKm"),
         t("fleetPortal.feePerOrder"),
       ],
-      earnings.orders.map((o) => [o.orderNumber, o.driverName ?? "n/a", o.deliveredAt, o.feeKwd])
+      earnings.orders.map((o) => [
+        o.orderNumber,
+        o.driverName ?? "n/a",
+        o.deliveredAt,
+        o.distanceKm ?? "n/a",
+        o.feeKwd,
+      ])
     );
   }
 
@@ -281,10 +312,21 @@ export default function FleetPayoutsPage() {
           },
           { key: "deliveredOrders", label: t("fleetPortal.orders") },
           {
+            // The rate the month was cut on. A single figure here is what let
+            // the client read the whole deal as a flat price per order, so the
+            // kilometre half sits beside it wherever a month carries one.
             key: "feePerOrderKwd",
             label: t("fleetPortal.feePerOrder"),
-            render: (value: string) => (
-              <span dir="ltr" className="tabular-nums">{formatKwd(value, locale)}</span>
+            render: (value: string, row: FleetStatementRow) => (
+              <span dir="ltr" className="tabular-nums">
+                {formatKwd(value, locale)}
+                {row.perKmFeeKwd != null && (
+                  <span className="text-sand-600">
+                    {" + "}
+                    {formatKwd(row.perKmFeeKwd, locale)}/km
+                  </span>
+                )}
+              </span>
             ),
           },
           {
@@ -347,13 +389,34 @@ export default function FleetPayoutsPage() {
           <header className="px-5 py-4 border-b border-sand-200 flex items-center justify-between gap-3 flex-wrap">
             <div>
               <h2 className="text-sm font-medium text-sand-900">{t("fleetPortal.earningsTitle")}</h2>
+              {/* The working, not just the answer. With a kilometre half the
+                  total stops being a number anyone can check in their head,
+                  so both terms are printed. */}
               <p className="text-xs text-sand-600 mt-0.5" dir="ltr">
                 {formatNumber(earnings.deliveredOrders, locale)} x{" "}
-                {formatKwd(earnings.feePerOrderKwd, locale)} ={" "}
+                {formatKwd(earnings.feePerOrderKwd, locale)}
+                {earnings.perKmFeeKwd != null && (
+                  <>
+                    {" + "}
+                    {formatNumber(Number(earnings.totalKm ?? 0), locale)} km x{" "}
+                    {formatKwd(earnings.perKmFeeKwd, locale)}
+                  </>
+                )}{" "}
+                ={" "}
                 <span className="font-medium text-sand-900">
                   {formatKwd(earnings.totalKwd, locale)}
                 </span>
               </p>
+              {/* A base-only line is a difference the company would otherwise
+                  find by hand, so the count says so on the screen. */}
+              {earnings.ordersMissingDistance > 0 && (
+                <p className="text-xs text-amber-700 mt-0.5" dir="auto">
+                  {t("fleetPortal.noDistanceOrders").replace(
+                    "{n}",
+                    formatNumber(earnings.ordersMissingDistance, locale),
+                  )}
+                </p>
+              )}
             </div>
             <button
               type="button"
@@ -380,6 +443,11 @@ export default function FleetPayoutsPage() {
                     <th className="text-start text-xs font-medium text-secondary px-5 py-3">
                       {t("darbOrderStatus.delivered")}
                     </th>
+                    {earnings.perKmFeeKwd != null && (
+                      <th className="text-start text-xs font-medium text-secondary px-5 py-3">
+                        {t("fleetPortal.distanceKm")}
+                      </th>
+                    )}
                     <th className="text-start text-xs font-medium text-secondary px-5 py-3">
                       {t("fleetPortal.feePerOrder")}
                     </th>
@@ -393,6 +461,13 @@ export default function FleetPayoutsPage() {
                       <td dir="ltr" className="px-5 py-3 text-sm tabular-nums">
                         {formatDateTime(o.deliveredAt, locale)}
                       </td>
+                      {earnings.perKmFeeKwd != null && (
+                        <td dir="ltr" className="px-5 py-3 text-sm tabular-nums">
+                          {o.distanceKm == null
+                            ? "n/a"
+                            : formatNumber(Number(o.distanceKm), locale)}
+                        </td>
+                      )}
                       <td dir="ltr" className="px-5 py-3 text-sm tabular-nums">
                         {formatKwd(o.feeKwd, locale)}
                       </td>
@@ -417,10 +492,31 @@ export default function FleetPayoutsPage() {
       >
         {openRow && (
           <div className="space-y-5">
-            <div className="grid grid-cols-3 gap-3">
+            {/* The rate SNAPSHOTTED on this statement, so a month cut on a flat
+                deal keeps reading as three boxes even after the company moves
+                onto a kilometre rate. */}
+            <div
+              className={
+                openRow.perKmFeeKwd == null
+                  ? "grid grid-cols-3 gap-3"
+                  : "grid grid-cols-2 sm:grid-cols-5 gap-3"
+              }
+            >
               {[
                 { label: t("fleetPortal.orders"), value: formatNumber(openRow.deliveredOrders, locale) },
-                { label: t("fleetPortal.feePerOrder"), value: formatKwd(openRow.feePerOrderKwd, locale) },
+                { label: t("fleetPortal.rateBaseLabel"), value: formatKwd(openRow.feePerOrderKwd, locale) },
+                ...(openRow.perKmFeeKwd == null
+                  ? []
+                  : [
+                      {
+                        label: t("fleetPortal.ratePerKmLabel"),
+                        value: formatKwd(openRow.perKmFeeKwd, locale),
+                      },
+                      {
+                        label: t("fleetPortal.totalDistance"),
+                        value: `${formatNumber(Number(openRow.totalKm ?? 0), locale)} km`,
+                      },
+                    ]),
                 { label: t("fleetPortal.total"), value: formatKwd(openRow.totalKwd, locale) },
               ].map((box) => (
                 <div key={box.label} className="rounded-xl border border-sand-200 bg-white px-4 py-3">
@@ -512,6 +608,11 @@ export default function FleetPayoutsPage() {
                             <th className="text-end text-[11px] font-medium text-secondary px-3 py-2">
                               {t("fleetPortal.orders")}
                             </th>
+                            {openRow.perKmFeeKwd != null && (
+                              <th className="text-end text-[11px] font-medium text-secondary px-3 py-2">
+                                {t("fleetPortal.distanceKm")}
+                              </th>
+                            )}
                             <th className="text-end text-[11px] font-medium text-secondary px-3 py-2">
                               {t("fleetPortal.total")}
                             </th>
@@ -527,6 +628,13 @@ export default function FleetPayoutsPage() {
                               <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end">
                                 {formatNumber(d.orders, locale)}
                               </td>
+                              {openRow.perKmFeeKwd != null && (
+                                <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end">
+                                  {d.totalKm == null
+                                    ? "n/a"
+                                    : formatNumber(Number(d.totalKm), locale)}
+                                </td>
+                              )}
                               <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end font-medium">
                                 {formatKwd(d.totalKwd, locale)}
                               </td>
@@ -542,6 +650,11 @@ export default function FleetPayoutsPage() {
                             <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end font-medium">
                               {formatNumber(openRow.deliveredOrders, locale)}
                             </td>
+                            {openRow.perKmFeeKwd != null && (
+                              <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end font-medium">
+                                {formatNumber(Number(openRow.totalKm ?? 0), locale)}
+                              </td>
+                            )}
                             <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end font-medium">
                               {formatKwd(openRow.totalKwd, locale)}
                             </td>
@@ -668,6 +781,7 @@ function FleetRateCard() {
   const queryClient = useQueryClient();
   const [proposing, setProposing] = useState(false);
   const [amount, setAmount] = useState("");
+  const [perKm, setPerKm] = useState("");
   const [why, setWhy] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -686,12 +800,26 @@ function FleetRateCard() {
       toast.error(t("fleetPortal.ratePriceInvalid"));
       return;
     }
+    // An empty kilometre box means "leave that half alone", never zero. A
+    // company asking for a higher base must not give up its distance rate by
+    // not retyping it (revision 14 #3).
+    const km = perKm.trim();
+    const kmNumber = Number(km);
+    if (km !== "" && (!Number.isFinite(kmNumber) || kmNumber < 0)) {
+      toast.error(t("fleetPortal.ratePerKmInvalid"));
+      return;
+    }
     setBusy(true);
     try {
-      await fleetApi.proposeRate({ flatFeePerOrderKwd: n.toFixed(3), reason: why.trim() });
+      await fleetApi.proposeRate({
+        flatFeePerOrderKwd: n.toFixed(3),
+        ...(km === "" ? {} : { perKmFeeKwd: kmNumber.toFixed(3) }),
+        reason: why.trim(),
+      });
       toast.success(t("fleetPortal.rateRequestSent"));
       setProposing(false);
       setAmount("");
+      setPerKm("");
       setWhy("");
       refresh();
     } catch (err) {
@@ -728,11 +856,32 @@ function FleetRateCard() {
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h2 className="text-sm font-medium text-sand-900">{t("fleetPortal.rateTitle")}</h2>
-          <p className="text-2xl font-display text-sand-900 mt-1 tabular-nums" dir="ltr">
-            {formatKwd(rate.currentKwd, locale)}
-          </p>
+          {/* Both halves, side by side and labelled. One number with no label
+              is what made the old card read as a flat per-order price. */}
+          <div className="flex items-end gap-6 mt-1 flex-wrap">
+            <div>
+              <p className="text-[11px] text-sand-500 uppercase tracking-wide">
+                {t("fleetPortal.rateBaseLabel")}
+              </p>
+              <p className="text-2xl font-display text-sand-900 tabular-nums" dir="ltr">
+                {formatKwd(rate.currentKwd, locale)}
+              </p>
+            </div>
+            {rate.currentPerKmKwd != null && (
+              <div>
+                <p className="text-[11px] text-sand-500 uppercase tracking-wide">
+                  {t("fleetPortal.ratePerKmLabel")}
+                </p>
+                <p className="text-2xl font-display text-sand-900 tabular-nums" dir="ltr">
+                  {formatKwd(rate.currentPerKmKwd, locale)}
+                </p>
+              </div>
+            )}
+          </div>
           <p className="text-xs text-sand-600 mt-1" dir="auto">
-            {t("fleetPortal.rateHint")}
+            {rate.currentPerKmKwd == null
+              ? t("fleetPortal.rateFlatOnly")
+              : t("fleetPortal.rateHint")}
           </p>
         </div>
 
@@ -758,6 +907,17 @@ function FleetRateCard() {
               {formatKwd(rate.pending.proposedKwd ?? "0", locale)}
             </span>
           </p>
+          {/* Only when the ask actually moved it. A proposal that touched the
+              base alone must not read as one that zeroed the kilometre rate. */}
+          {rate.pending.proposedPerKmKwd != null && (
+            <p className="text-sm text-sand-900" dir="ltr">
+              {t("fleetPortal.ratePerKmLabel")}:{" "}
+              {formatKwd(rate.currentPerKmKwd ?? "0", locale)} →{" "}
+              <span className="font-medium">
+                {formatKwd(rate.pending.proposedPerKmKwd, locale)}
+              </span>
+            </p>
+          )}
           <p className="text-xs text-sand-700 mt-0.5" dir="auto">
             {t("fleetPortal.rateAwaitingDarb")}
             {rate.pending.reason ? ` · ${rate.pending.reason}` : ""}
@@ -796,6 +956,23 @@ function FleetRateCard() {
             </div>
             <div>
               <label className="block text-xs font-medium text-sand-700 uppercase tracking-wide mb-1.5">
+                {t("fleetPortal.rateNewPerKm")}
+              </label>
+              <input
+                type="number"
+                step="0.001"
+                min="0"
+                dir="ltr"
+                value={perKm}
+                placeholder={rate.currentPerKmKwd ?? "0.000"}
+                onChange={(e) => setPerKm(e.target.value)}
+                aria-label={t("fleetPortal.rateNewPerKm")}
+                data-testid="fleet-rate-per-km"
+                className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-sand-700 uppercase tracking-wide mb-1.5">
                 {t("fleetPortal.rateReason")}
               </label>
               <input
@@ -808,6 +985,9 @@ function FleetRateCard() {
               />
             </div>
           </div>
+          <p className="text-xs text-sand-600" dir="auto">
+            {t("fleetPortal.ratePerKmHint")}
+          </p>
           <p className="text-xs text-sand-600" dir="auto">
             {t("fleetPortal.rateApprovalHint")}
           </p>
@@ -822,7 +1002,7 @@ function FleetRateCard() {
             </button>
             <button
               type="button"
-              onClick={() => { setProposing(false); setAmount(""); setWhy(""); }}
+              onClick={() => { setProposing(false); setAmount(""); setPerKm(""); setWhy(""); }}
               className="inline-flex items-center h-10 px-4 rounded-pill bg-sand-100 text-sand-800 text-sm font-medium hover:bg-sand-200"
             >
               {t("common.cancel")}

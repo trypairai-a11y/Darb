@@ -4,7 +4,7 @@
 // click-to-add-vertex editor; metadata saved through a SlidePanel form.
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus, Trash2, Hexagon } from "lucide-react";
+import { Pencil, Plus, Trash2, Hexagon, Power } from "lucide-react";
 import DataTable from "@/components/shared/DataTable";
 import SlidePanel from "@/components/shared/SlidePanel";
 import ConfirmModal from "@/components/shared/ConfirmModal";
@@ -61,6 +61,10 @@ export default function ZonesPage() {
   const [form, setForm] = useState<ZoneFormState | null>(null);
   const [deleting, setDeleting] = useState<DeliveryZone | null>(null);
   const [saving, setSaving] = useState(false);
+  // Revision 15 (#1). Deactivating is confirmed and activating is not: closing
+  // an area stops every quote into it, turning one back on cannot hurt.
+  const [deactivating, setDeactivating] = useState<string | null>(null);
+  const [togglingActive, setTogglingActive] = useState(false);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["darb", "zones"],
@@ -86,7 +90,13 @@ export default function ZonesPage() {
       setSelectedZoneId(null);
       invalidate();
     },
-    onError: () => toast.error(t("toast.failedSave")),
+    // The blanket "Failed to save" is what made this arrive as a bug report with
+    // nothing to act on: the server names the table that refused, so show it.
+    onError: (err: unknown) =>
+      toast.error(
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+          t("toast.failedSave"),
+      ),
   });
 
   function startDrawNew() {
@@ -167,6 +177,29 @@ export default function ZonesPage() {
       toast.error(msg);
     } finally {
       setSaving(false);
+    }
+  }
+
+  /**
+   * Revision 15 (#1). Writes straight through instead of staging the change in
+   * the form: the client asked for a button that deactivates a zone, and a
+   * button that only arms a later Save is the tick box they already had.
+   */
+  async function setZoneActive(zoneId: string, isActive: boolean) {
+    setTogglingActive(true);
+    try {
+      await zonesApi.update(zoneId, { isActive });
+      setForm((prev) => (prev && prev.id === zoneId ? { ...prev, isActive } : prev));
+      toast.success(isActive ? t("zonesPage.zoneActivated") : t("zonesPage.zoneDeactivated"));
+      await invalidate();
+    } catch (err) {
+      const msg =
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+        t("toast.failedSave");
+      toast.error(msg);
+    } finally {
+      setTogglingActive(false);
+      setDeactivating(null);
     }
   }
 
@@ -388,29 +421,64 @@ export default function ZonesPage() {
                   className="h-10 w-16 rounded-lg border border-sand-300 bg-white cursor-pointer"
                 />
               </div>
-              <label className="flex items-center gap-2 mt-5 text-sm text-sand-800 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={form.isActive}
-                  onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                  className="h-4 w-4 rounded border-sand-400 text-primary focus:ring-primary/30"
-                />
-                {t("zonesPage.active")}
-              </label>
+              {/* A zone being drawn for the first time has nothing to
+                  deactivate yet, so creation keeps the tick box. */}
+              {!form.id && (
+                <label className="flex items-center gap-2 mt-5 text-sm text-sand-800 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.isActive}
+                    onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
+                    className="h-4 w-4 rounded border-sand-400 text-primary focus:ring-primary/30"
+                  />
+                  {t("zonesPage.active")}
+                </label>
+              )}
+              {form.id && (
+                <span
+                  className={cn(
+                    "inline-flex items-center px-2.5 py-0.5 mt-5 rounded-pill text-[11px] font-medium",
+                    form.isActive ? "bg-green-50 text-green-700" : "bg-sand-200 text-sand-700"
+                  )}
+                >
+                  {form.isActive ? t("status.active") : t("status.inactive")}
+                </span>
+              )}
             </div>
 
             {form.id && (
-              <button
-                type="button"
-                onClick={() => {
-                  const zone = zones.find((z) => z.id === form.id);
-                  if (zone) startEditPolygon(zone);
-                }}
-                className="inline-flex items-center gap-1.5 px-3 h-9 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/15 rounded-pill transition-colors"
-              >
-                <Hexagon size={13} aria-hidden="true" />
-                {t("zonesPage.editPolygon")}
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const zone = zones.find((z) => z.id === form.id);
+                    if (zone) startEditPolygon(zone);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 h-9 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/15 rounded-pill transition-colors"
+                >
+                  <Hexagon size={13} aria-hidden="true" />
+                  {t("zonesPage.editPolygon")}
+                </button>
+                <button
+                  type="button"
+                  data-testid="zone-active-toggle"
+                  disabled={togglingActive}
+                  onClick={() => {
+                    if (!form.id) return;
+                    if (form.isActive) setDeactivating(form.id);
+                    else void setZoneActive(form.id, true);
+                  }}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-3 h-9 text-xs font-medium rounded-pill transition-colors disabled:opacity-50",
+                    form.isActive
+                      ? "text-red-600 bg-red-50 hover:bg-red-100"
+                      : "text-green-700 bg-green-50 hover:bg-green-100"
+                  )}
+                >
+                  <Power size={13} aria-hidden="true" />
+                  {form.isActive ? t("zonesPage.deactivateZone") : t("zonesPage.activateZone")}
+                </button>
+              </div>
             )}
 
             <div className="pt-2 flex justify-end gap-2">
@@ -443,6 +511,18 @@ export default function ZonesPage() {
           if (deleting) deleteMutation.mutate(deleting.id);
         }}
         onCancel={() => setDeleting(null)}
+      />
+
+      <ConfirmModal
+        open={!!deactivating}
+        title={t("zonesPage.deactivateConfirmTitle")}
+        message={t("zonesPage.deactivateConfirmMessage")}
+        variant="danger"
+        loading={togglingActive}
+        onConfirm={() => {
+          if (deactivating) void setZoneActive(deactivating, false);
+        }}
+        onCancel={() => setDeactivating(null)}
       />
     </div>
   );

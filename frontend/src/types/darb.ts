@@ -141,6 +141,21 @@ export interface Vendor {
     type: "ZONE" | "KM";
     isActive: boolean;
   } | null;
+  /**
+   * Edit #4 (2026-08-22) — how Darb's delivery-company arrangement is priced
+   * for this shop: a flat monthly subscription, or the per-order margin
+   * between the company's price and the shop's accepted price. Null means not
+   * agreed yet. Replaces the old targetPriceKwd.
+   */
+  pricingModel?: "SUBSCRIPTION" | "MARGIN" | null;
+  /** Monthly fee — read only when pricingModel is SUBSCRIPTION. */
+  subscriptionKwd?: string | number | null;
+  /**
+   * Edit #5 (2026-08-22) — non-Foodics POS/e-commerce config, keyed by
+   * provider ("uPayments" | "Salla" | "Shopify" | "custom"). Foodics keeps its
+   * own connection table; these are stored until each gets an OAuth flow.
+   */
+  integrationSettings?: Record<string, string | null> | null;
   createdAt?: string;
   updatedAt?: string;
   branches?: VendorBranch[];
@@ -192,6 +207,8 @@ export interface VendorBranch {
   // Revision 5 (#6) — the branch's own price list. Null inherits the vendor's.
   deliveryPlanId?: string | null;
   deliveryPlan?: { id: string; name: string; type: DeliveryPlanType } | null;
+  // Edit #4 (2026-08-22) — branch-level target price removed with the
+  // vendor-level one; pricing is the vendor's pricing model, inherited here.
   isActive?: boolean;
 }
 
@@ -772,6 +789,8 @@ export interface FleetProfile {
   contactPhone: string | null;
   contactEmail: string | null;
   flatFeePerOrderKwd: string;
+  /** Revision 14 (#3) — the kilometre half. Null on a flat-rate company. */
+  perKmFeeKwd?: string | null;
   minOnlineHoursPerDay: number | null;
   minDriversOnline: Record<string, number> | null;
   disciplineStatus: "OK" | "WARNED" | "THROTTLED" | "SUSPENDED" | "REMOVED";
@@ -982,15 +1001,53 @@ export interface FleetChangeRequest {
   reviewedBy?: { id: string; name: string | null; email: string } | null;
   /** Populated on the staff read so a reviewer sees the scans, not ids. */
   documents?: FleetDocument[];
+  /** Populated by the cross-company inbox (revision 15 #2) only. */
+  fleet?: { id: string; name: string } | null;
 }
 
 export type FleetIssueStatus = "OPEN" | "ACKNOWLEDGED" | "RESOLVED" | "ESCALATED";
 
+/**
+ * Edit #1 (2026-08-22) - money Darb withholds from a delivery company's
+ * invoice. PENDING until folded into a cut statement.
+ */
+export interface FleetDeduction {
+  id: string;
+  fleetPartnerId: string;
+  statementId?: string | null;
+  amountKwd: string | number;
+  reason: "DAMAGE" | "FINE" | "EQUIPMENT" | "CASH_SHORTFALL" | "SLA" | "OTHER";
+  note?: string | null;
+  status: "PENDING" | "APPLIED" | "CANCELLED";
+  incurredAt: string;
+  createdAt?: string;
+}
+
+/** Edit #2 (2026-08-22) - the HQ Problems view, scoped to one fleet. */
+export interface FleetProblems {
+  jeopardyOrders: Array<{
+    id: string;
+    orderNumber: string;
+    status: string;
+    slaDeadline: string | null;
+    minutesOver: number | null;
+    driver?: { id: string; name: string; phone?: string | null } | null;
+  }>;
+  incidents: Array<{
+    id: string;
+    type: string;
+    status: string;
+    severity?: string | null;
+    description?: string | null;
+    createdAt: string;
+    driver?: { id: string; name: string; phone?: string | null } | null;
+  }>;
+}
+
 export interface FleetIssue {
   id: string;
   fleetPartnerId: string;
-  driverId: string | null;
-  type: "LATE_LOGIN" | "NO_ORDERS" | "RATING_DROP" | "DOC_EXPIRING" | "ACCEPTANCE_LOW";
+  driverId: string | null;  type: "LATE_LOGIN" | "NO_ORDERS" | "RATING_DROP" | "DOC_EXPIRING" | "ACCEPTANCE_LOW";
   severity: "LOW" | "MEDIUM" | "HIGH";
   title: string;
   detail: string;
@@ -1126,7 +1183,12 @@ export interface FleetStatementRow {
   periodStart: string;
   periodEnd: string;
   deliveredOrders: number;
+  /** The BASE fee per order, snapshotted. On a flat-rate company it is still
+   *  literally the price per order, which is why the name did not change. */
   feePerOrderKwd: string;
+  /** Revision 14 (#3) — the kilometre half, snapshotted. Null on a flat month. */
+  perKmFeeKwd?: string | null;
+  totalKm?: string | null;
   totalKwd: string;
   /**
    * Revision 13 (#8) — the delivery company confirms before Darb pays.
@@ -1159,6 +1221,8 @@ export interface FleetStatementDetail {
     vendorName: string | null;
     driverName: string | null;
     driverCode: string | null;
+    /** Revision 14 (#3) — what the payout for this line was built on. */
+    distanceKm: string | null;
     feeKwd: string;
   }>;
   /** How many each driver did, most first. The question a statement gets
@@ -1168,6 +1232,7 @@ export interface FleetStatementDetail {
     name: string;
     driverCode: string | null;
     orders: number;
+    totalKm: string | null;
     totalKwd: string;
   }>;
   /** What the statement was cut on, and what the query returns today. A gap
@@ -1205,11 +1270,17 @@ export interface FleetInvoiceUpload {
  * than shown to answer 403.
  */
 export interface FleetRate {
+  /** The base fee per delivered order. */
   currentKwd: string;
+  /** Revision 14 (#3) — the rate for each kilometre. Null on a flat deal, and
+   *  the screen draws no kilometre line at all rather than showing KD 0.000
+   *  and implying Darb pays nothing for distance. */
+  currentPerKmKwd: string | null;
   canPropose: boolean;
   pending: {
     id: string;
     proposedKwd: string | null;
+    proposedPerKmKwd: string | null;
     reason: string | null;
     createdAt: string;
   } | null;
@@ -1219,13 +1290,20 @@ export interface FleetEarnings {
   periodStart: string;
   periodEnd: string;
   feePerOrderKwd: string;
+  perKmFeeKwd: string | null;
+  totalKm: string | null;
+  /** Delivered orders Darb had no distance for, so a base-only line has its
+   *  count on screen rather than a discrepancy to find by hand. */
+  ordersMissingDistance: number;
   deliveredOrders: number;
   totalKwd: string;
+  listTruncated?: boolean;
   orders: Array<{
     id: string;
     orderNumber: string;
     deliveredAt: string;
     driverName: string | null;
+    distanceKm: string | null;
     feeKwd: string;
   }>;
 }
@@ -1246,7 +1324,26 @@ export interface CockpitSummary {
     name: string;
     deliveredToday: number;
     onTimeRate: number | null;
+    /** Edit #9 — orders moving through the zone right now. */
+    activeOrders?: number;
+    /** Edit #9 — distinct drivers booked on the zone today. */
+    driversAssigned?: number;
   }>;
+  /**
+   * Edit #9 (2026-08-22) — who is assigned to which zone per booked shift
+   * window, with that driver's delivered count inside the window.
+   */
+  shifts?: {
+    windows: string[];
+    zoneDrivers: Array<{
+      zoneId: string | null;
+      zoneName: string;
+      driverId: string;
+      driverName: string;
+      window: string;
+      ordersInWindow: number;
+    }>;
+  };
   money: {
     feesTodayKwd: string;
     fleetCostTodayKwd: string;
@@ -1355,4 +1452,11 @@ export interface SupportTicket {
    */
   createdByName?: string | null;
   messages: SupportTicketMessage[];
+  /**
+   * Revision 15 (#2) — who raised it, populated by the HQ inbox only. Exactly
+   * one of the two is ever set (the table's own rule), which is how the inbox
+   * labels a row "shop" or "delivery company" without a second field for it.
+   */
+  vendor?: { id: string; name: string; nameAr?: string | null } | null;
+  fleet?: { id: string; name: string } | null;
 }

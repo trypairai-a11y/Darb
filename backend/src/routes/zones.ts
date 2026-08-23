@@ -674,7 +674,7 @@ router.put(
  * /api/zones/{id}:
  *   delete:
  *     tags: [Zones]
- *     summary: Delete a zone (blocked with 409 while branches, surcharges, or orders reference it)
+ *     summary: Delete a zone, releasing everything that references it
  *     parameters:
  *       - in: path
  *         name: id
@@ -685,8 +685,6 @@ router.put(
  *         description: "{ ok: true }"
  *       404:
  *         description: Zone not found
- *       409:
- *         description: Zone still referenced — { error, references }
  */
 router.delete("/:id", rbac(...ZONE_EDITORS), async (req: Request, res: Response) => {
   try {
@@ -702,26 +700,46 @@ router.delete("/:id", rbac(...ZONE_EDITORS), async (req: Request, res: Response)
       return;
     }
 
-    const [branches, surcharges, orders] = await Promise.all([
-      prisma.vendorBranch.count({ where: { tenantId, zoneId } }),
-      prisma.zoneSurcharge.count({
-        where: { tenantId, OR: [{ originZoneId: zoneId }, { destZoneId: zoneId }] },
-      }),
-      prisma.deliveryOrder.count({
-        where: { tenantId, OR: [{ pickupZoneId: zoneId }, { dropoffZoneId: zoneId }] },
-      }),
-    ]);
-
-    if (branches > 0 || surcharges > 0 || orders > 0) {
-      res.status(409).json({
-        error:
-          "Zone is still referenced — reassign branches, remove its surcharge rows, and keep historical orders before deleting",
-        references: { branches, surcharges, orders },
+    // Every row that points at this zone is cleared first, in one transaction,
+    // because two of those relations are REQUIRED (ZoneSurcharge and
+    // DeliveryPlanZoneRate both hold a non-null zone id, so Postgres restricts
+    // the delete). Leaving either behind is what made Delete answer 500, and
+    // the surface reports a 500 as a flat "Failed to save" with no clue which
+    // table objected. Deactivate is the keep-everything option; delete is for a
+    // zone that should not exist, so it takes its configuration with it.
+    await prisma.$transaction(async (tx) => {
+      // Branches fall back to unzoned and re-resolve on the next zone edit.
+      await tx.vendorBranch.updateMany({
+        where: { tenantId, zoneId },
+        data: { zoneId: null },
       });
-      return;
-    }
+      // A driver rostered to a zone that no longer exists cannot be offered
+      // work: shift requests read the zone off this column.
+      await tx.driver.updateMany({
+        where: { tenantId, assignedZoneId: zoneId },
+        data: { assignedZoneId: null },
+      });
+      // Both pricing models: the legacy cross-zone matrix and the per-plan
+      // rate grid a vendor's DeliveryPlan is priced from.
+      await tx.zoneSurcharge.deleteMany({
+        where: { tenantId, OR: [{ originZoneId: zoneId }, { destZoneId: zoneId }] },
+      });
+      await tx.deliveryPlanZoneRate.deleteMany({
+        where: { tenantId, OR: [{ originZoneId: zoneId }, { destZoneId: zoneId }] },
+      });
+      // Delivered orders keep their history; only the zone pointer is dropped,
+      // which the confirmation already warns is permanent.
+      await tx.deliveryOrder.updateMany({
+        where: { tenantId, pickupZoneId: zoneId },
+        data: { pickupZoneId: null },
+      });
+      await tx.deliveryOrder.updateMany({
+        where: { tenantId, dropoffZoneId: zoneId },
+        data: { dropoffZoneId: null },
+      });
+      await tx.deliveryZone.deleteMany({ where: { id: zoneId, tenantId } });
+    });
 
-    await prisma.deliveryZone.deleteMany({ where: { id: zoneId, tenantId } });
     invalidateZoneCache(tenantId);
     res.json({ ok: true });
   } catch (err: any) {

@@ -145,7 +145,8 @@ export default function RootLayout() {
         <Stack.Screen name="delivery/pod" />
         <Stack.Screen name="delivery/failed" />
         <Stack.Screen name="sos" options={{ presentation: "modal" }} />
-        <Stack.Screen name="settings" />
+        {/* settings moved into (tabs) on 2026-08-04; declaring it here too would
+            register a second route for the same file and shadow the tab. */}
         <Stack.Screen name="points" />
       </Stack>
     </SafeAreaProvider>

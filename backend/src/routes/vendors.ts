@@ -48,6 +48,23 @@ const createVendorSchema = z.object({
   requiresCarOnly: z.boolean().optional(),
 });
 
+// Edit #4 (2026-08-22) — Target Price is gone. What replaced it is the pair of
+// pricing models Darb actually runs with the delivery companies:
+//   SUBSCRIPTION — a flat monthly fee, priced by subscriptionKwd below.
+//   MARGIN       — Darb keeps the difference between the delivery company's
+//                  price and the shop's accepted price; nothing to store.
+// Both nullable on purpose: "not agreed yet" is its own state.
+const pricingModelSchema = z.enum(["SUBSCRIPTION", "MARGIN"]).nullable().optional();
+
+const subscriptionKwdSchema = z
+  .union([z.string(), z.number()])
+  .refine((v) => /^\d{1,5}(\.\d{1,3})?$/.test(String(v)), {
+    message: "Must be a KWD amount with up to 3 decimals",
+  })
+  .transform((v) => String(v))
+  .nullable()
+  .optional();
+
 const updateVendorSchema = z.object({
   name: z.string().min(2).optional(),
   nameAr: z.string().nullable().optional(),
@@ -65,6 +82,11 @@ const updateVendorSchema = z.object({
   // Revision 4 (#7) — the named price list this merchant is quoted on. null
   // puts it back on the tenant-wide FulfillmentSettings + ZoneSurcharge pair.
   deliveryPlanId: z.string().uuid().nullable().optional(),
+  // Edit #4 (2026-08-22) — the two real pricing models replace Target Price.
+  pricingModel: pricingModelSchema,
+  subscriptionKwd: subscriptionKwdSchema,
+  // Edit #5 (2026-08-22) — non-Foodics integration config, keyed by provider.
+  integrationSettings: z.record(z.string().nullable()).nullable().optional(),
 });
 
 const createBranchSchema = z.object({
@@ -79,6 +101,8 @@ const createBranchSchema = z.object({
   // Revision 5 (#6). Null means "inherit the vendor's plan", which is what a
   // branch does unless somebody deliberately says otherwise.
   deliveryPlanId: z.string().uuid().nullable().optional(),
+  // Edit #4 (2026-08-22): no branch-level pricing any more — a branch inherits
+  // the vendor's pricing model the same way it inherits its plan.
   isActive: z.boolean().optional(),
 });
 
@@ -91,6 +115,7 @@ const updateBranchSchema = z.object({
   lng: z.number().min(-180).max(180).optional(),
   foodicsBranchId: z.string().nullable().optional(),
   deliveryPlanId: z.string().uuid().nullable().optional(),
+  // Edit #4 (2026-08-22): branch pricing inherits the vendor's pricing model.
   isActive: z.boolean().optional(),
 });
 

@@ -5,7 +5,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Phone, RefreshCw, UserPlus2, XCircle } from "lucide-react";
+import { Phone, PackageCheck, RefreshCw, UserPlus2, XCircle } from "lucide-react";
 import SlidePanel from "@/components/shared/SlidePanel";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import { useToast } from "@/components/shared/Toast";
@@ -26,6 +26,7 @@ const TERMINAL = ["DELIVERED", "CANCELLED", "REJECTED"];
 type PendingAction =
   | { kind: "assign"; candidate: DispatchCandidate }
   | { kind: "redispatch" }
+  | { kind: "return" }
   | { kind: "cancel" }
   | { kind: "reason" }
   | null;
@@ -110,6 +111,8 @@ export default function OrderOpsPanel({
         await deliveryOrdersApi.assign(orderId, pending.candidate.driverId);
       } else if (pending.kind === "redispatch") {
         await deliveryOrdersApi.redispatch(orderId);
+      } else if (pending.kind === "return") {
+        await deliveryOrdersApi.returnToMerchant(orderId);
       } else if (pending.kind === "reason") {
         await deliveryOrdersApi.recordReason(orderId, reasonDraft.trim());
       } else {
@@ -137,6 +140,18 @@ export default function OrderOpsPanel({
   }
 
   const canAct = canEdit && order && !TERMINAL.includes(order.status);
+  /**
+   * Revision 17 (#7) — the return-to-merchant action.
+   *
+   * RETURNED, its FSM edge (FAILED is the only status it may leave from) and
+   * POST /delivery-orders/:id/return all shipped with the PRD. What never
+   * existed was a caller: no surface asked for it, so a failed delivery could
+   * be given a reason and then never tracked to the goods coming back, and the
+   * status read as though it had not been built. Its own gate rather than a
+   * fourth button in the row above, because it applies to exactly one status
+   * while those three apply to every live one.
+   */
+  const canReturn = canEdit && order?.status === "FAILED";
 
   return (
     <>
@@ -272,6 +287,21 @@ export default function OrderOpsPanel({
               </section>
             )}
 
+            {/* Return to merchant — the one action a FAILED order still has. */}
+            {canReturn && (
+              <section className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setPending({ kind: "return" })}
+                  className="inline-flex items-center gap-1.5 px-3.5 h-9 text-xs font-medium rounded-pill bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors"
+                  data-testid="order-return-button"
+                >
+                  <PackageCheck size={13} aria-hidden="true" />
+                  {t("dispatch.returnToMerchant")}
+                </button>
+              </section>
+            )}
+
             {/* Candidates for reassign */}
             {reassigning && (
               <section>
@@ -366,6 +396,16 @@ export default function OrderOpsPanel({
         variant="default"
         loading={actionBusy}
         confirmLabel={t("dispatch.assign")}
+        onConfirm={() => void runPendingAction()}
+        onCancel={() => setPending(null)}
+      />
+      <ConfirmModal
+        open={pending?.kind === "return"}
+        title={t("dispatch.returnConfirmTitle")}
+        message={t("dispatch.returnConfirmMessage")}
+        variant="default"
+        loading={actionBusy}
+        confirmLabel={t("dispatch.returnToMerchant")}
         onConfirm={() => void runPendingAction()}
         onCancel={() => setPending(null)}
       />

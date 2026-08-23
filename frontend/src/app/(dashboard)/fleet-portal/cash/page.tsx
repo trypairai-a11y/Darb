@@ -16,7 +16,7 @@
 // one outcome neither side can reconcile afterwards.
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Banknote, Check, ExternalLink, Link2, Wallet, X } from "lucide-react";
+import { Banknote, Check, Eraser, ExternalLink, Link2, Wallet, X } from "lucide-react";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
@@ -376,24 +376,29 @@ export default function FleetCashPage() {
                 {t("fleetCash.fillAll")}
               </button>
               {/*
-                Settles every filled line in one press, and sits here because
-                that is where the client asked for it: beside Fill every driver,
-                the button it is the natural partner to. Fill types the amounts,
-                this one commits them.
+                Empties the Settle column, and nothing else (client report,
+                2026-08-03: "when I press clear all lines it should not take me
+                to settle").
 
-                It is the same call as Settle now in the bar below, deliberately.
-                The pair reads as one motion at the top of a 36-row table, and
-                the bar stays because somebody who edits individual lines while
-                scrolling still needs the action within reach.
+                It used to open the settle dialog, because it was added as the
+                partner to Fill every driver and named for clearing the drivers'
+                cash. Read on screen it says the opposite of what it did: a
+                company that typed 36 amounts and wanted to start over pressed
+                the only button that looked like an undo and was asked to spend
+                KD 421.507. Fill types the amounts, this wipes them, and the
+                only way to spend money is the Settle now button in the bar
+                below, which is on screen at every scroll position.
               */}
               <button
                 type="button"
                 data-testid="fleet-settle-clear-all"
-                onClick={() => setConfirming(true)}
-                disabled={!canSettle}
-                className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-pill bg-primary text-white text-xs font-medium hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                onClick={() => setLines({})}
+                // Anything typed can be cleared, including a 0 or a value the
+                // total ignores. totals.count would leave those stuck on screen.
+                disabled={Object.keys(lines).length === 0}
+                className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                <Check size={12} aria-hidden="true" />
+                <Eraser size={12} aria-hidden="true" />
                 {t("fleetCash.clearAll")}
               </button>
             </div>

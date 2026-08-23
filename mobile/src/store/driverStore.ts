@@ -28,6 +28,7 @@ import {
   type Availability,
   type OrderStage,
 } from "../api/client";
+import { getCurrentLocation } from "../services/locationService";
 import { computeClockSkewMs } from "../utils/countdown";
 
 /**
@@ -106,7 +107,7 @@ function serverStage(order: AgentActiveOrder): OrderStage {
 export interface DriverStoreState {
   hydrated: boolean; // at least one successful /state hydrate this session
   online: boolean; // last network attempt succeeded (connectivity heuristic)
-  driver: { id: string; name?: string; phone?: string | null } | null;
+  driver: { id: string; driverCode?: string | null; name?: string; phone?: string | null } | null;
   availability: Availability;
   availabilitySync: "idle" | "pending" | "error";
   lastAvailabilityError: string | null;
@@ -229,7 +230,22 @@ export const useDriverStore = create<DriverStoreState>()(
         if (prev === next) return { ok: true };
         set({ availability: next, availabilitySync: "pending", lastAvailabilityError: null });
         try {
-          await postAvailability(next);
+          // Going online is the moment the server checks the driver is standing
+          // in the area Darb gave them. A fix that cannot be taken is not an
+          // error here: the server treats a missing one as allowed, so a denied
+          // permission or a bad signal must not block the switch locally either.
+          let where: { latitude: number; longitude: number } | null = null;
+          if (next === "ONLINE") {
+            try {
+              const fix = await getCurrentLocation();
+              if (fix) {
+                where = { latitude: fix.coords.latitude, longitude: fix.coords.longitude };
+              }
+            } catch {
+              /* no fix — the server decides, and it lets this through */
+            }
+          }
+          await postAvailability(next, where);
           set({ availabilitySync: "idle", online: true });
           return { ok: true };
         } catch (e: any) {

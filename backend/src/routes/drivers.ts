@@ -6,6 +6,7 @@ import { getPagination, paginatedResponse } from "../utils/pagination";
 import { sendXlsx } from "../utils/xlsxExport";
 import { validateBody, createDriverSchema } from "../utils/validate";
 import { rbac } from "../middleware/rbac";
+import { publishEvent } from "../services/eventBus";
 import { resolveDriverDateRange, batchLoadDriverStats, resolveTalabatStatus } from "../services/driverService";
 import { listSnapshotsForDriver, listMemoriesByPrefix } from "../agent";
 import { explainScore } from "../services/driverFile/scoreExplainer";
@@ -18,6 +19,50 @@ const MUTATORS = ["ADMIN", "OPS_MANAGER", "SUPERVISOR"];
 const DESTRUCTIVE = ["ADMIN", "OPS_MANAGER"];
 const toNumber = (value: unknown) => Number(value ?? 0);
 const toIso = (value?: Date | string | null) => (value ? new Date(value).toISOString() : null);
+
+// Edit #8 (2026-08-22) — the staff-side kill switch behind "Put offline" on
+// the problem/incident cards. A rider with a dead bike or a crashed one cannot
+// flip their own availability in the agent app at that moment, and waiting
+// for them to get to it leaves dispatch offering orders nobody can take. This
+// closes the open CourierOnlineSession the same way the agent's own
+// OFFLINE transition does (same fields, same event), so presence, the live
+// map and dispatch all agree immediately.
+router.post("/:id/offline", rbac(...MUTATORS), async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const driver = await prisma.driver.findFirst({
+      where: { id: req.params.id, tenantId },
+      select: { id: true },
+    });
+    if (!driver) {
+      res.status(404).json({ error: "Driver not found" });
+      return;
+    }
+    const now = new Date();
+    // No @@unique on CourierOnlineSession — findFirst + update mirrors the
+    // agent's availability ingest in routes/agentDelivery.ts.
+    const existing = await prisma.courierOnlineSession.findFirst({
+      where: { tenantId, driverId: driver.id, isOnline: true },
+      orderBy: { startTime: "desc" },
+    });
+    if (existing) {
+      await prisma.courierOnlineSession.update({
+        where: { id: existing.id },
+        data: { availability: "OFFLINE", isOnline: false, endTime: now },
+      });
+    }
+    void publishEvent({
+      type: "driver.offline",
+      tenantId,
+      payload: { driverId: driver.id, availability: "OFFLINE", at: now.toISOString() },
+      timestamp: now.toISOString(),
+    }).catch(() => {});
+    res.json({ ok: true, alreadyOffline: !existing });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 /**
  * @swagger

@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import type { TicketCategory, TicketPriority } from "../generated/prisma";
+import type { DeliveryOrderStatus, TicketCategory, TicketPriority } from "../generated/prisma";
 import { prisma } from "../config";
 import { upload } from "../utils/upload";
 import { nextTicketNumber } from "../utils/ticketNumber";
@@ -555,6 +555,478 @@ router.get("/shifts", async (req: Request, res: Response) => {
   }
 });
 
+// ─── Shift requests ─────────────────────────────────────────────────────────
+/**
+ * Booking a three-hour window (client request, 2026-08-03: "same as Talabat
+ * app design").
+ *
+ * The driver taps a slot and it appears on their own screen immediately as
+ * Awaiting Darb. It is not a Shift yet: Darb decides who works where, and a
+ * Shift is the row attendance and pay are computed from. Before this the ask
+ * wrote a ticket and nothing else, so the driver's schedule kept reading "No
+ * shifts booked yet" no matter how many times they asked, and no surface could
+ * turn the ticket into a shift.
+ */
+export const SHIFT_HOURS = 3;
+/**
+ * The windows a day is cut into. The driver app had this list hardcoded and so
+ * did nothing else, which was fine while the app was the only thing that knew
+ * about windows. It is not any more: the capacity grid at Darb sets a number
+ * per window, so the list has to come from one place or the two screens end up
+ * disagreeing about which windows exist.
+ *
+ * Client request, revision 16 (#2): the list used to start at 10:00 and stop at
+ * 01:00, leaving 01:00 to 10:00 with no window at all. That is not a closed
+ * period, it is an absence: a zone could not be staffed overnight because there
+ * was nothing to put a number against. Eight windows of SHIFT_HOURS each now
+ * tile the full 24 hours. A window nobody should work is closed by setting its
+ * capacity to 0, which is a real answer the grid already understands.
+ */
+export const SHIFT_WINDOW_STARTS = [
+  "01:00",
+  "04:00",
+  "07:00",
+  "10:00",
+  "13:00",
+  "16:00",
+  "19:00",
+  "22:00",
+] as const;
+/**
+ * How far ahead a driver may book. Beyond this ops cannot plan against it.
+ * Client request, revision 16 (#5): one week, down from two.
+ */
+const SHIFT_REQUEST_HORIZON_DAYS = 7;
+
+/** "16:00" → 960. null when it is not a time. */
+function minutesOfDay(value: string): number | null {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(value.trim());
+  if (!m) return null;
+  const h = Number(m[1]);
+  const min = Number(m[2]);
+  if (h > 23 || min > 59) return null;
+  return h * 60 + min;
+}
+
+/** 960 → "16:00", wrapping past midnight so a 22:00 start ends 01:00. */
+function timeOfMinutes(total: number): string {
+  const t = ((total % 1440) + 1440) % 1440;
+  return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+}
+
+/** Midnight Kuwait for a "YYYY-MM-DD", as the UTC instant to store. */
+function kuwaitMidnight(day: string): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day.trim());
+  if (!m) return null;
+  const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])) - 3 * 60 * 60 * 1000);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+/** The instant of "HH:MM" on a stored shift date. */
+function instantOnDay(day: Date, time: string): Date {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(time);
+  if (!m) return new Date(day);
+  return new Date(day.getTime() + (Number(m[1]) * 60 + Number(m[2])) * 60 * 1000);
+}
+
+/** Thrown inside the booking transaction so a full window rolls it back. */
+class WindowFullError extends Error {}
+
+/**
+ * 0 = Sunday .. 6 = Saturday for a date produced by kuwaitMidnight.
+ *
+ * That value is the UTC instant of midnight in Kuwait, which is 21:00 the
+ * PREVIOUS day in UTC, so reading getUTCDay() off it directly would name the
+ * wrong weekday for every date and shift the whole capacity grid back by one.
+ * Adding the offset back lands on the Kuwait calendar day.
+ */
+export function kuwaitDayOfWeek(day: Date): number {
+  return new Date(day.getTime() + 3 * 60 * 60 * 1000).getUTCDay();
+}
+
+function shiftRequestPayload(r: {
+  id: string;
+  date: Date;
+  startTime: string;
+  endTime: string;
+  zoneName: string;
+  status: string;
+  declineReason: string | null;
+  createdAt: Date;
+}) {
+  return {
+    id: r.id,
+    date: r.date,
+    startTime: r.startTime,
+    endTime: r.endTime,
+    area: r.zoneName,
+    status: r.status,
+    declineReason: r.declineReason,
+    createdAt: r.createdAt,
+  };
+}
+
+router.get("/shift-requests", async (req: Request, res: Response) => {
+  try {
+    const identity = await resolveDriverFromAgentRequest(req);
+    if (!identity) { res.status(404).json({ error: "Device or driver not found" }); return; }
+
+    const { driver } = identity;
+    // A week back so a decision the driver has not opened the app since is
+    // still on screen, rather than the ask simply vanishing.
+    const since = new Date(kuwaitDayBounds().start.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const requests = await prisma.shiftRequest.findMany({
+      where: { driverId: driver.id, date: { gte: since } },
+      orderBy: [{ date: "asc" }, { startTime: "asc" }],
+      take: 60,
+    });
+    res.json({ data: requests.map(shiftRequestPayload) });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+/**
+ * The windows a driver may still book on one day, in the zone Darb put them in.
+ *
+ * Client request, 2026-08-06: "the driver must be assigned by hq a zone, after
+ * that he can book the timing that suits him", and "remove the areas from the
+ * driver, he will see the available times only". The zone picker the app used
+ * to draw let a driver book Salmiya on Monday and Jahra on Tuesday, which is
+ * the opposite of how the roster is planned.
+ *
+ * So the zone is not a choice any more, it is an answer this endpoint gives,
+ * and a driver with no assignment gets an empty window list with the reason
+ * rather than a screen of buttons that would 409 on the tap.
+ */
+router.get("/shift-slots", async (req: Request, res: Response) => {
+  try {
+    const identity = await resolveDriverFromAgentRequest(req);
+    if (!identity) { res.status(404).json({ error: "Device or driver not found" }); return; }
+    const { driver } = identity;
+
+    const day = kuwaitMidnight(String(req.query.date ?? ""));
+    if (!day) { res.status(400).json({ error: "A date is required, as YYYY-MM-DD" }); return; }
+
+    const zone = driver.assignedZoneId
+      ? await prisma.deliveryZone.findFirst({
+          where: { id: driver.assignedZoneId, tenantId: driver.tenantId, isActive: true },
+          select: { id: true, name: true, nameAr: true },
+        })
+      : null;
+    if (!zone) {
+      res.json({ zone: null, hours: SHIFT_HOURS, windows: [] });
+      return;
+    }
+
+    const [caps, held] = await Promise.all([
+      // Scoped to this date's weekday: the cap for a Friday is its own row now,
+      // so reading the whole zone would pick up six other days' numbers.
+      prisma.shiftCapacity.findMany({
+        where: {
+          tenantId: driver.tenantId,
+          zoneId: zone.id,
+          dayOfWeek: kuwaitDayOfWeek(day),
+        },
+        select: { startTime: true, maxDrivers: true },
+      }),
+      // Approving a request does not delete it, so PENDING plus APPROVED is
+      // both the asks and the confirmed shifts, counted once. A Shift ops
+      // created by hand without a request is not counted: it has no window on
+      // this list to be counted against.
+      prisma.shiftRequest.findMany({
+        where: {
+          tenantId: driver.tenantId,
+          zoneId: zone.id,
+          date: day,
+          status: { in: ["PENDING", "APPROVED"] },
+        },
+        select: { startTime: true, driverId: true },
+      }),
+    ]);
+
+    const capByStart = new Map(caps.map((c) => [c.startTime, c.maxDrivers]));
+    const now = Date.now();
+
+    const windows = SHIFT_WINDOW_STARTS.map((start) => {
+      const startMin = minutesOfDay(start) ?? 0;
+      const rows = held.filter((h) => h.startTime === start);
+      const booked = rows.length;
+      // A row with no capacity set means Darb has not capped that window, not
+      // that it is closed. Capping on day one would have shut every window in
+      // every zone the moment this shipped.
+      const capacity = capByStart.has(start) ? capByStart.get(start)! : null;
+      const mine = rows.some((h) => h.driverId === driver.id);
+      return {
+        start,
+        end: timeOfMinutes(startMin + SHIFT_HOURS * 60),
+        capacity,
+        booked,
+        remaining: capacity === null ? null : Math.max(0, capacity - booked),
+        full: capacity !== null && booked >= capacity,
+        mine,
+        past: day.getTime() + startMin * 60 * 1000 <= now,
+      };
+    });
+
+    res.json({
+      zone: { id: zone.id, name: zone.name, nameAr: zone.nameAr },
+      hours: SHIFT_HOURS,
+      windows,
+    });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+router.post("/shift-requests", async (req: Request, res: Response) => {
+  try {
+    const identity = await resolveDriverFromAgentRequest(req);
+    if (!identity) { res.status(404).json({ error: "Device or driver not found" }); return; }
+    const { driver } = identity;
+
+    const { date, startTime } = req.body as {
+      date?: string;
+      startTime?: string;
+    };
+
+    const day = kuwaitMidnight(String(date ?? ""));
+    if (!day) { res.status(400).json({ error: "A date is required, as YYYY-MM-DD" }); return; }
+    const startMin = minutesOfDay(String(startTime ?? ""));
+    if (startMin === null) { res.status(400).json({ error: "A start time is required, as HH:MM" }); return; }
+
+    const todayStart = kuwaitDayBounds().start;
+    if (day < todayStart) { res.status(400).json({ error: "That day has already passed" }); return; }
+    const horizon = new Date(todayStart.getTime() + SHIFT_REQUEST_HORIZON_DAYS * 24 * 60 * 60 * 1000);
+    if (day > horizon) {
+      res.status(400).json({ error: `Shifts open ${SHIFT_REQUEST_HORIZON_DAYS} days ahead` }); return;
+    }
+
+    // The zone comes off the driver's own row, never off the body (revision 15,
+    // client request). Darb assigns the area and the driver picks the hours, so
+    // a zoneId in the payload is ignored rather than honoured: an older build
+    // of the app still sends one, and letting it through would put a driver in
+    // an area nobody rostered them for.
+    const zone = driver.assignedZoneId
+      ? await prisma.deliveryZone.findFirst({
+          where: { id: driver.assignedZoneId, tenantId: driver.tenantId, isActive: true },
+          select: { id: true, name: true },
+        })
+      : null;
+    if (!zone) {
+      res.status(409).json({
+        error: "Darb has not assigned you an area yet. Ask your supervisor.",
+        code: "NO_ZONE_ASSIGNED",
+      });
+      return;
+    }
+
+    // Derived, never taken from the client. Every shift is three hours, and a
+    // request that disagrees with the rule can only be caught by a human
+    // reading it.
+    const endStr = timeOfMinutes(startMin + SHIFT_HOURS * 60);
+    const startStr = timeOfMinutes(startMin);
+
+    // The window is already the driver's, in either form. Answering 409 here
+    // rather than opening a second row is what keeps ops from arbitrating
+    // between two identical asks.
+    const clash = await prisma.shiftRequest.findFirst({
+      where: {
+        driverId: driver.id,
+        date: day,
+        startTime: startStr,
+        status: { in: ["PENDING", "APPROVED"] },
+      },
+      select: { id: true, status: true },
+    });
+    if (clash) {
+      res.status(409).json({
+        error: clash.status === "APPROVED" ? "You already have that shift" : "You already asked for that shift",
+        code: "ALREADY_REQUESTED",
+      });
+      return;
+    }
+
+    // Client request, revision 16 (#4): booking a window confirms it. Darb no
+    // longer approves each one, so the driver's screen says Confirmed on the
+    // tap and the Shift that attendance and pay are computed from is written
+    // here rather than by a supervisor later.
+    //
+    // That removes the only human who was ever going to notice a one-over, so
+    // the cap has to hold on its own now. It could not before: the unique index
+    // is per driver, so two drivers taking the last place at the same instant
+    // both counted and both passed. The count and the write share one
+    // serializable transaction, and Postgres refuses to commit the second one
+    // (P2034), which is answered as a full window rather than an error.
+    const startedAt = instantOnDay(day, startStr);
+    let endedAt = instantOnDay(day, endStr);
+    // A 22:00 start ends 01:00 the next day, which reads as before the start
+    // unless the day rolls over with it.
+    if (endedAt <= startedAt) endedAt = new Date(endedAt.getTime() + 24 * 60 * 60 * 1000);
+
+    let request;
+    try {
+      request = await prisma.$transaction(
+        async (tx) => {
+          // No row means no cap: this shipped with an empty table and capping
+          // by default would have closed every window everywhere.
+          const cap = await tx.shiftCapacity.findFirst({
+            where: {
+              tenantId: driver.tenantId,
+              zoneId: zone.id,
+              dayOfWeek: kuwaitDayOfWeek(day),
+              startTime: startStr,
+            },
+            select: { maxDrivers: true },
+          });
+          if (cap) {
+            const held = await tx.shiftRequest.count({
+              where: {
+                tenantId: driver.tenantId,
+                zoneId: zone.id,
+                date: day,
+                startTime: startStr,
+                status: { in: ["PENDING", "APPROVED"] },
+              },
+            });
+            if (held >= cap.maxDrivers) throw new WindowFullError();
+          }
+
+          const created = await tx.shiftRequest.create({
+            data: {
+              tenantId: driver.tenantId,
+              driverId: driver.id,
+              date: day,
+              startTime: startStr,
+              endTime: endStr,
+              zoneId: zone.id,
+              zoneName: zone.name,
+              status: "APPROVED",
+              decidedAt: new Date(),
+            },
+          });
+          const shift = await tx.shift.create({
+            data: {
+              tenantId: driver.tenantId,
+              driverId: driver.id,
+              date: day,
+              platform: driver.platform,
+              zone: zone.name,
+              deliveryArea: zone.name,
+              scheduledStart: startedAt,
+              scheduledEnd: endedAt,
+              status: "BOOKED",
+              plannedHoursMinutes: Math.round((endedAt.getTime() - startedAt.getTime()) / 60000),
+            },
+          });
+          return tx.shiftRequest.update({
+            where: { id: created.id },
+            data: { shiftId: shift.id },
+          });
+        },
+        { isolationLevel: "Serializable" },
+      );
+    } catch (e: any) {
+      if (e instanceof WindowFullError || e?.code === "P2034") {
+        res.status(409).json({
+          error: "That window is full. Pick another time.",
+          code: "WINDOW_FULL",
+        });
+        return;
+      }
+      throw e;
+    }
+
+    // The desk copy is still written, because that is the history ops search,
+    // but it is filed RESOLVED rather than OPEN: nobody has to decide anything
+    // any more, and an inbox item that only ever gets clicked to clear a badge
+    // is worse than no inbox item. Best-effort as before, since losing the desk
+    // copy must not cost the driver their booking.
+    const dayLabel = String(date).slice(0, 10);
+    try {
+      const ticket = await prisma.ticket.create({
+        data: {
+          tenantId: driver.tenantId,
+          ticketNumber: await nextTicketNumber(driver.tenantId),
+          category: "SHIFT_REQUEST",
+          priority: "MEDIUM",
+          title: `Shift booked ${dayLabel} ${startStr}-${endStr} (${zone.name})`,
+          description: [
+            `Date: ${dayLabel}`,
+            `From: ${startStr}`,
+            `To: ${endStr}`,
+            `Duration: ${SHIFT_HOURS} hours`,
+            `Zone: ${zone.name}`,
+          ].join("\n"),
+          submitterType: "DRIVER",
+          submitterDriverId: driver.id,
+          driverId: driver.id,
+          platform: driver.platform,
+          status: "RESOLVED",
+          resolution: `Confirmed automatically for ${startStr}-${endStr} in ${zone.name}`,
+          resolvedAt: new Date(),
+          slaDeadline: ticketSlaDeadline("MEDIUM"),
+        },
+        select: { id: true, ticketNumber: true, title: true, category: true },
+      });
+      await prisma.shiftRequest.update({
+        where: { id: request.id },
+        data: { ticketId: ticket.id },
+      });
+    } catch (e) {
+      logger.error({ err: e, requestId: request.id }, "shift booking desk record failed");
+    }
+
+    res.status(201).json(shiftRequestPayload(request));
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+router.post("/shift-requests/:id/cancel", async (req: Request, res: Response) => {
+  try {
+    const identity = await resolveDriverFromAgentRequest(req);
+    if (!identity) { res.status(404).json({ error: "Device or driver not found" }); return; }
+
+    // APPROVED is claimable too since revision 16 (#4). Booking now confirms on
+    // the tap, so PENDING is a state almost nothing reaches, and a guard that
+    // only accepted PENDING would have quietly taken away the driver's ability
+    // to drop a shift they can no longer work. Status-guarded and
+    // driver-guarded in one claim: count 0 means it is not theirs or it is
+    // already cancelled, and both answer the same way.
+    const existing = await prisma.shiftRequest.findFirst({
+      where: { id: req.params.id, driverId: identity.driver.id },
+      select: { shiftId: true },
+    });
+    const claimed = await prisma.shiftRequest.updateMany({
+      where: {
+        id: req.params.id,
+        driverId: identity.driver.id,
+        status: { in: ["PENDING", "APPROVED"] },
+      },
+      data: { status: "CANCELLED", decidedAt: new Date() },
+    });
+    if (claimed.count === 0) {
+      res.status(409).json({ error: "That shift is no longer yours to drop" }); return;
+    }
+    // The Shift is what attendance and pay read, so dropping the booking has to
+    // take it with it. Guarded on BOOKED: a shift already under way is not
+    // something the driver can walk out of from this screen.
+    if (existing?.shiftId) {
+      await prisma.shift
+        .updateMany({
+          where: { id: existing.shiftId, tenantId: identity.driver.tenantId, status: "BOOKED" },
+          data: { status: "CANCELLED" },
+        })
+        .catch(() => {});
+    }
+    res.json({ message: "Shift dropped" });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 // ─── Equipment ──────────────────────────────────────────────────────────────
 // The kit a driver is issued (helmet, bag, phone, etc.). Drivers can flag an
 // item as damaged / changed / request-change from the mobile app.
@@ -782,6 +1254,88 @@ router.get("/zones", async (req: Request, res: Response) => {
       orderBy: { name: "asc" },
     });
     res.json({ data: zones });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/agent/demand:
+ *   get:
+ *     tags: [Driver App]
+ *     summary: Where the work is right now, by zone, for the Home heat map
+ */
+// The window the shading is computed over. Ninety minutes is long enough that a
+// zone which has been busy all evening still reads busy between two orders, and
+// short enough that lunch does not colour the map at 9pm.
+const DEMAND_WINDOW_MIN = 90;
+
+// Orders that have not found a driver yet. These are the ones a driver standing
+// in that zone could be offered in the next few seconds, so they are reported
+// separately from the 90-minute count rather than folded into it.
+const DEMAND_WAITING_STATUSES: DeliveryOrderStatus[] = ["CREATED", "DISPATCHING", "NO_DRIVER"];
+
+router.get("/demand", async (req: Request, res: Response) => {
+  try {
+    const identity = await resolveDriverFromAgentRequest(req);
+    if (!identity) { res.status(404).json({ error: "Device or driver not found" }); return; }
+    const { tenantId } = identity.driver;
+
+    const since = new Date(Date.now() - DEMAND_WINDOW_MIN * 60_000);
+
+    // Geometry ships here and deliberately not from /zones: that one feeds a
+    // dropdown and has no use for a polygon. This one is the map.
+    const [zones, recent, waiting] = await Promise.all([
+      prisma.deliveryZone.findMany({
+        where: { tenantId, isActive: true },
+        select: {
+          id: true, code: true, name: true, nameAr: true,
+          polygon: true, bbox: true, color: true,
+        },
+        orderBy: { name: "asc" },
+      }),
+      prisma.deliveryOrder.groupBy({
+        by: ["pickupZoneId"],
+        where: { tenantId, createdAt: { gte: since }, pickupZoneId: { not: null } },
+        _count: { _all: true },
+      }),
+      prisma.deliveryOrder.groupBy({
+        by: ["pickupZoneId"],
+        where: {
+          tenantId,
+          status: { in: DEMAND_WAITING_STATUSES },
+          pickupZoneId: { not: null },
+        },
+        _count: { _all: true },
+      }),
+    ]);
+
+    const recentByZone = new Map(recent.map((r) => [r.pickupZoneId as string, r._count._all]));
+    const waitingByZone = new Map(waiting.map((r) => [r.pickupZoneId as string, r._count._all]));
+
+    // Intensity is relative to the busiest zone, not to an absolute order count.
+    // An absolute scale would paint the whole map cold on a slow Tuesday and
+    // tell a driver nothing about where to sit, which is the only question this
+    // screen answers.
+    const busiest = Math.max(0, ...zones.map((z) => recentByZone.get(z.id) ?? 0));
+
+    const data = zones.map((z) => {
+      const orders = recentByZone.get(z.id) ?? 0;
+      return {
+        id: z.id,
+        code: z.code,
+        name: z.name,
+        nameAr: z.nameAr,
+        polygon: z.polygon,
+        bbox: z.bbox,
+        recentOrders: orders,
+        waitingOrders: waitingByZone.get(z.id) ?? 0,
+        intensity: busiest > 0 ? Number((orders / busiest).toFixed(3)) : 0,
+      };
+    });
+
+    res.json({ data, windowMinutes: DEMAND_WINDOW_MIN, busiestOrders: busiest });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }

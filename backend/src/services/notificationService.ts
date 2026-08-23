@@ -254,3 +254,76 @@ export function getViolationSeverity(type: string): string {
   };
   return severityMap[type] || "MEDIUM";
 }
+
+/**
+ * Edit #11 (2026-08-22) — support requests are grouped into categories and
+ * each category lands on one desk, fixed rather than rule-configured:
+ *
+ *   MONEY       -> Accountant
+ *   OPERATIONS  -> Account Manager
+ *   TECH        -> Ops Manager
+ *
+ * And the Account Manager column is scoped: an AM only hears about the
+ * companies they actually handle - resolved through the AccountManagerVendor /
+ * AccountManagerFleet links, never network-wide.
+ */
+const SUPPORT_ROUTING: Record<string, { role: string; label: string }> = {
+  MONEY: { role: "ACCOUNTANT", label: "Money" },
+  OPERATIONS: { role: "ACCOUNT_MANAGER", label: "Operations" },
+  TECH: { role: "OPS_MANAGER", label: "Tech" },
+};
+
+export async function createSupportNotifications(params: {
+  tenantId: string;
+  category: keyof typeof SUPPORT_ROUTING;
+  title: string;
+  message: string;
+  sourceId?: string;
+  metadata?: any;
+  /** The company the request is about - scopes ACCOUNT_MANAGER delivery. */
+  vendorId?: string | null;
+  fleetPartnerId?: string | null;
+}) {
+  const { tenantId, category, title, message, sourceId, metadata, vendorId, fleetPartnerId } =
+    params;
+  const route = SUPPORT_ROUTING[category] ?? SUPPORT_ROUTING.OPERATIONS;
+
+  let userIds: string[] = [];
+  if (route.role === "ACCOUNT_MANAGER") {
+    if (vendorId) {
+      const links = await prisma.accountManagerVendor.findMany({
+        where: { tenantId, vendorId },
+        select: { userId: true },
+      });
+      userIds = links.map((l: { userId: string }) => l.userId);
+    } else if (fleetPartnerId) {
+      const links = await prisma.accountManagerFleet.findMany({
+        where: { tenantId, fleetPartnerId },
+        select: { userId: true },
+      });
+      userIds = links.map((l: { userId: string }) => l.userId);
+    }
+  } else {
+    const users = await prisma.user.findMany({
+      where: { tenantId, role: route.role as any, isActive: true },
+      select: { id: true },
+    });
+    userIds = users.map((u: { id: string }) => u.id);
+  }
+
+  if (userIds.length === 0) return { created: 0 };
+
+  const result = await prisma.notification.createMany({
+    data: userIds.map((userId: string) => ({
+      tenantId,
+      userId,
+      title,
+      message,
+      type: `SUPPORT_${category}`,
+      severity: "MEDIUM",
+      sourceId,
+      metadata: { ...(metadata ?? {}), supportCategory: category, routedRole: route.label },
+    })),
+  });
+  return { created: result.count };
+}

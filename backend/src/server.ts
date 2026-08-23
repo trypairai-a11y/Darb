@@ -28,6 +28,7 @@ import simRoutes from "./routes/sims";
 import alertRoutes from "./routes/alerts";
 import ticketRoutes from "./routes/tickets";
 import shiftRequestRoutes from "./routes/shiftRequests";
+import shiftPlanningRoutes from "./routes/shiftPlanning";
 import attendanceRoutes from "./routes/attendance";
 import leaveRequestRoutes from "./routes/leaveRequests";
 import agentRoutes from "./routes/agent";
@@ -75,6 +76,7 @@ import trackRouter from "./routes/track";
 import payRouter from "./routes/pay";
 import agentDeliveryRouter from "./routes/agentDelivery";
 import fleetsRouter from "./routes/fleets";
+import supportRouter from "./routes/support";
 import fleetPortalRouter from "./routes/fleetPortal";
 import cockpitRouter from "./routes/cockpit";
 import { blockVendorOutsideAllowlist } from "./middleware/vendorContainment";
@@ -259,6 +261,9 @@ app.use("/api/sims", simRoutes);
 app.use("/api/alerts", alertRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/shift-requests", shiftRequestRoutes);
+// Revision 15 — the roster behind those requests: which zone a driver works
+// and how many drivers each window in each zone takes.
+app.use("/api/shift-planning", shiftPlanningRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/leave-requests", leaveRequestRoutes);
 app.use("/api/agent", agentRoutes);
@@ -324,6 +329,9 @@ app.use("/api/delivery-plans", deliveryPlansRouter);
 app.use("/api/vendors", vendorsRouter);
 // Darb 2.0 PRD §9/§14 — fleet governance + founder cockpit
 app.use("/api/fleets", fleetsRouter);
+// Revision 15 (#2) — the HQ support inbox. Requests from shops and delivery
+// companies were only readable from inside the account that raised them.
+app.use("/api/support", supportRouter);
 app.use("/api/fleet", fleetPortalRouter);
 app.use("/api/cockpit", cockpitRouter);
 app.use("/api/vendor", vendorPortalRouter);

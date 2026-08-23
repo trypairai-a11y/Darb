@@ -1,9 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useApiGet } from "@/hooks/useApi";
 import { cn } from "@/lib/cn";
 import DataTable from "@/components/shared/DataTable";
-import { Car, Smartphone, Package, Search, Boxes, CreditCard, Plus, Trash2, Loader2 } from "lucide-react";
+import { Car, Smartphone, Package, Search, Boxes, CreditCard, Plus, Trash2, Loader2, PackagePlus } from "lucide-react";
 import api from "@/lib/api";
 import { useToast } from "@/components/shared/Toast";
 import AddVehicleModal from "@/components/shared/AddVehicleModal";
@@ -97,6 +97,9 @@ export default function GlobalAssetsPage() {
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [assignVehicle, setAssignVehicle] = useState<any | null>(null);
   const [removeItem, setRemoveItem] = useState<any | null>(null);
+  // Edit #12 (2026-08-22) — hand kit from a platform pool to one
+  // delivery-company driver.
+  const [issuingItem, setIssuingItem] = useState<any | null>(null);
   const [removing, setRemoving] = useState(false);
 
   const { data: vehiclesData, loading: vLoading, refetch: refetchVehicles } = useApiGet<any>(
@@ -501,17 +504,34 @@ export default function GlobalAssetsPage() {
         apiEquipment.length === 0 ? (
           <span className="text-xs text-secondary">n/a</span>
         ) : (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setRemoveItem(r);
-            }}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50"
-            title="Remove this item"
-          >
-            <Trash2 size={14} />
-          </button>
+          <div className="flex items-center gap-1 justify-end">
+            {/* Edit #12 (2026-08-22) — issue straight from the pool to one
+                delivery-company driver. */}
+            {(r.available ?? 0) > 0 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIssuingItem(r);
+                }}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-sand-100"
+                title="Issue to driver"
+              >
+                <PackagePlus size={14} />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setRemoveItem(r);
+              }}
+              className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50"
+              title="Remove this item"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
         ),
     },
   ];
@@ -734,6 +754,173 @@ export default function GlobalAssetsPage() {
           }}
         />
       )}
+
+      {/* Edit #12 (2026-08-22) — issue a piece of kit to one delivery-company
+          driver; decrements Available and increments Issued on save. */}
+      {issuingItem && (
+        <IssueEquipmentModal
+          item={issuingItem}
+          onClose={() => setIssuingItem(null)}
+          onIssued={() => {
+            setIssuingItem(null);
+            toast.success("Equipment issued to driver");
+            refetchEquipment();
+            refetchEquipmentCount();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/**
+ * Edit #12 (2026-08-22) — pick a delivery company, then one of its drivers,
+ * and POST the issue. Drivers are filtered client-side on both links a driver
+ * can carry (companyId for subcontract companies, fleetPartnerId for fleet
+ * governance), so a company either way round shows its roster.
+ */
+function IssueEquipmentModal({
+  item,
+  onClose,
+  onIssued,
+}: {
+  item: any;
+  onClose: () => void;
+  onIssued: () => void;
+}) {
+  const toast = useToast();
+  const [companies, setCompanies] = useState<any[]>([]);
+  const [companyId, setCompanyId] = useState("");
+  const [drivers, setDrivers] = useState<any[]>([]);
+  const [driverId, setDriverId] = useState("");
+  const [loadingDrivers, setLoadingDrivers] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    api
+      .get("/api/companies?limit=200")
+      .then(({ data }) => {
+        const rows: any[] = data?.data ?? [];
+        setCompanies(rows.filter((c) => (c.kind ?? "FLEET") === "FLEET"));
+      })
+      .catch(() => setCompanies([]));
+  }, []);
+
+  useEffect(() => {
+    if (!companyId) {
+      setDrivers([]);
+      return;
+    }
+    setLoadingDrivers(true);
+    api
+      .get("/api/drivers?limit=500")
+      .then(({ data }) => {
+        const rows: any[] = data?.data ?? [];
+        setDrivers(
+          rows.filter((d) => d.fleetPartnerId === companyId || d.companyId === companyId)
+        );
+      })
+      .catch(() => setDrivers([]))
+      .finally(() => setLoadingDrivers(false));
+  }, [companyId]);
+
+  async function issue() {
+    if (!driverId) return;
+    setBusy(true);
+    try {
+      await api.post(
+        `/api/platform-settings/${item.platform}/inventory/${item.itemType}/issue`,
+        { driverId }
+      );
+      onIssued();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || "Failed to issue equipment");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={() => !busy && onClose()}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-lg w-full max-w-md p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-lg font-semibold">
+          Issue {itemDisplayName(item.itemType, item.label)}
+        </h2>
+        <p className="text-sm text-secondary mt-1">
+          Assign one unit from the pool ({item.available ?? 0} available) to a driver under a
+          delivery company.
+        </p>
+
+        <div className="mt-4 space-y-3">
+          <label className="block">
+            <span className="block text-xs font-medium text-secondary mb-1">Delivery company</span>
+            <select
+              value={companyId}
+              onChange={(e) => {
+                setCompanyId(e.target.value);
+                setDriverId("");
+              }}
+              className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm"
+            >
+              <option value="">Select a company…</option>
+              {companies.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block">
+            <span className="block text-xs font-medium text-secondary mb-1">Driver</span>
+            <select
+              value={driverId}
+              onChange={(e) => setDriverId(e.target.value)}
+              disabled={!companyId}
+              className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm disabled:bg-gray-50"
+            >
+              <option value="">
+                {!companyId
+                  ? "Pick a company first…"
+                  : loadingDrivers
+                  ? "Loading drivers…"
+                  : drivers.length === 0
+                  ? "No drivers under this company"
+                  : "Select a driver…"}
+              </option>
+              {drivers.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="flex items-center justify-end gap-3 mt-6">
+          <button
+            onClick={onClose}
+            disabled={busy}
+            className="px-4 py-2 text-sm font-medium text-secondary hover:text-foreground"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => void issue()}
+            disabled={busy || !driverId}
+            className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
+          >
+            {busy && <Loader2 size={14} className="animate-spin" />}
+            {busy ? "Issuing…" : "Issue equipment"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

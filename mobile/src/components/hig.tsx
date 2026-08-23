@@ -103,16 +103,19 @@ export function ListGroup({ children, header, footer, style }: { children: React
 
 // ─── List row ───
 export function ListRow({
-  icon, title, subtitle, detail, onPress, chevron, trailing, titleColor,
+  icon, title, subtitle, detail, onPress, chevron, trailing, titleColor, testID,
 }: {
   icon?: React.ReactNode; title: string; subtitle?: string; detail?: string;
   onPress?: () => void; chevron?: boolean; trailing?: React.ReactNode; titleColor?: string;
+  // A row's title is a translated string, so it is the wrong thing to assert on
+  // in a test or to grep for in a deployed bundle. testID is the stable handle.
+  testID?: string;
 }) {
   const { c, t } = useTheme();
   const s = useMemo(() => makeStyles(c), [c]);
   const Wrap: any = onPress ? TouchableOpacity : View;
   return (
-    <Wrap style={s.row} onPress={onPress} activeOpacity={0.6}>
+    <Wrap style={s.row} onPress={onPress} activeOpacity={0.6} testID={testID}>
       {icon ? <View style={s.rowIcon}>{icon}</View> : null}
       <View style={{ flex: 1 }}>
         <Text style={[t.body, titleColor ? { color: titleColor } : null]} numberOfLines={1}>{title}</Text>
