@@ -11,7 +11,7 @@
 // uses, so mounting it costs no extra request.
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BellOff, BellRing, Check, MousePointerClick, Phone, PowerOff, X } from "lucide-react";
+import { BellOff, BellRing, Check, MousePointerClick, Phone, PowerOff, RefreshCw, X } from "lucide-react";
 import LiveMap from "@/components/map/LiveMap";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
@@ -117,6 +117,27 @@ export default function EmergencyPanel({ onClose }: { onClose: () => void }) {
       await queryClient.invalidateQueries({ queryKey: ["darb", "dispatch"] });
     } catch {
       toast.error(t("toast.failedSave"));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  // Client note (2026-08-31): the emergency workflow is for a driver carrying
+  // an order, and HQ must be able to move that order to another driver. Only
+  // offered pre-pickup (the bag is still at the shop); the endpoint puts the
+  // reporting driver offline so dispatch cannot hand the order straight back.
+  async function reassignOrder(incident: Incident) {
+    setBusyId(incident.id);
+    try {
+      const { orderNumber } = await incidentsApi.reassignOrder(incident.id);
+      toast.success(`${t("opsPages.orderReassigned")} · ${orderNumber}`);
+      await queryClient.invalidateQueries({ queryKey: ["darb", "incidents"] });
+      await queryClient.invalidateQueries({ queryKey: ["darb", "dispatch"] });
+    } catch (err) {
+      toast.error(
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+          t("toast.failedSave"),
+      );
     } finally {
       setBusyId(null);
     }
@@ -330,6 +351,26 @@ export default function EmergencyPanel({ onClose }: { onClose: () => void }) {
                         {t("opsPages.call")}
                       </a>
                     )}
+                    {/* Client note (2026-08-31) — a live order behind the
+                        emergency gets a way OFF this driver. Pre-pickup only:
+                        once the bag is collected the answer is the failed →
+                        returned flow, not a reassign. */}
+                    {incident.order &&
+                      incident.order.driverId === incident.driverId &&
+                      ["ASSIGNED", "ARRIVED"].includes(incident.order.status ?? "") && (
+                        <button
+                          type="button"
+                          onClick={() => void reassignOrder(incident)}
+                          disabled={busyId === incident.id}
+                          className="inline-flex items-center gap-1.5 px-4 h-9 rounded-pill bg-navy-700 text-white text-xs font-semibold hover:bg-navy-800 transition-colors disabled:opacity-50"
+                          data-testid="incident-reassign-order"
+                        >
+                          <RefreshCw size={13} aria-hidden="true" />
+                          {busyId === incident.id
+                            ? t("common.processing")
+                            : t("opsPages.reassignOrder")}
+                        </button>
+                      )}
                     {/* Edit #8 (2026-08-22) — for the incidents that end a
                         shift (breakdown, accident): pull the driver's session
                         down right here so dispatch stops offering them work. */}

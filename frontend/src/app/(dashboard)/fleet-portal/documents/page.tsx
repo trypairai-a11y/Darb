@@ -62,8 +62,8 @@ export default function FleetDocumentsPage() {
 
   async function openFile(id: string) {
     try {
-      const { url } = await fleetApi.documentUrl(id);
-      window.open(url, "_blank", "noopener,noreferrer");
+      const { objectUrl } = await fleetApi.documentFile(id);
+      window.open(objectUrl, "_blank", "noopener,noreferrer");
     } catch {
       toast.error(t("errors.loadingData"));
     }
@@ -142,7 +142,7 @@ export default function FleetDocumentsPage() {
             label: t("fleetPortal.viewFile"),
             sortable: false,
             render: (value: string | null, row: FleetDocument) =>
-              row.fileKey ? (
+              row.fileKey || row.hasFile ? (
                 <button
                   type="button"
                   onClick={() => openFile(row.id)}

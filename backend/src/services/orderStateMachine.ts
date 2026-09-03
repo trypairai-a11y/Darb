@@ -73,8 +73,13 @@ export const ALLOWED: Record<DeliveryOrderStatus, DeliveryOrderStatus[]> = {
   // shop can see a courier is standing at its counter. ASSIGNED → PICKED_UP
   // stays legal: a driver who collects without tapping Arrived, and every
   // order already in flight when this shipped, must still be able to finish.
-  ASSIGNED: ["ARRIVED", "PICKED_UP", "FAILED", "CANCELLED"],
-  ARRIVED: ["PICKED_UP", "FAILED", "CANCELLED"],
+  // Client note (2026-08-31, emergency handling): HQ may take a pre-pickup
+  // order off a driver who reported an emergency and send it back through
+  // dispatch. Pre-pickup only — once the driver holds the bag (PICKED_UP)
+  // there is nothing at the shop for a replacement driver to collect, so that
+  // path stays fail-then-return.
+  ASSIGNED: ["ARRIVED", "PICKED_UP", "FAILED", "CANCELLED", "DISPATCHING"],
+  ARRIVED: ["PICKED_UP", "FAILED", "CANCELLED", "DISPATCHING"],
   PICKED_UP: ["DELIVERED", "FAILED", "CANCELLED"],
   // PRD §6 return-to-merchant: after a FAILED delivery (customer unreachable)
   // rider support authorises the return. FAILED is no longer terminal.

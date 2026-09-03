@@ -35,18 +35,76 @@ export const VENDOR_TABS = [
 
 export type VendorTab = (typeof VENDOR_TABS)[number];
 
-export type VendorPortalRole = "OWNER" | "FINANCE" | "ORDER_TRACKING";
+/**
+ * Client note (2026-08-31, edit #8): the three portals share ONE role matrix —
+ * the same six types the HQ staff grid uses. The old vendor trio survives as
+ * stored legacy values that normalise in (OWNER→ADMIN, FINANCE→ACCOUNTANT,
+ * ORDER_TRACKING→SUPERVISOR), so this ships with no backfill and an old JWT
+ * or row keeps meaning what it always meant.
+ */
+export type VendorPortalRole =
+  | "ADMIN"
+  | "OPS_MANAGER"
+  | "SUPERVISOR"
+  | "ACCOUNTANT"
+  | "ACCOUNT_MANAGER"
+  | "VIEWER";
+
+export const VENDOR_PORTAL_ROLES: readonly VendorPortalRole[] = [
+  "ADMIN",
+  "OPS_MANAGER",
+  "SUPERVISOR",
+  "ACCOUNTANT",
+  "ACCOUNT_MANAGER",
+  "VIEWER",
+] as const;
+
+const LEGACY_VENDOR_ROLES: Record<string, VendorPortalRole> = {
+  OWNER: "ADMIN",
+  FINANCE: "ACCOUNTANT",
+  ORDER_TRACKING: "SUPERVISOR",
+};
+
+/** Stored values a role field may legally carry: the matrix plus the legacy trio. */
+export const ACCEPTED_VENDOR_ROLE_INPUTS: readonly string[] = [
+  ...VENDOR_PORTAL_ROLES,
+  ...Object.keys(LEGACY_VENDOR_ROLES),
+];
+
+/**
+ * A stored or submitted role, normalised to the matrix. Anything unrecognised
+ * reads as ADMIN, exactly as anything-but-the-trio used to read as OWNER.
+ */
+export function normaliseVendorRole(raw: unknown): VendorPortalRole {
+  if (typeof raw === "string") {
+    if ((VENDOR_PORTAL_ROLES as readonly string[]).includes(raw)) {
+      return raw as VendorPortalRole;
+    }
+    const legacy = LEGACY_VENDOR_ROLES[raw];
+    if (legacy) return legacy;
+  }
+  return "ADMIN";
+}
+
+/** Only a supervisor (the old ORDER_TRACKING) can be pinned to one branch. */
+export function vendorRoleTakesBranch(raw: unknown): boolean {
+  return normaliseVendorRole(raw) === "SUPERVISOR";
+}
 
 /**
  * What each role opens with no override.
  *
- * These reproduce the fences that were already in force: FINANCE was kept out
- * of settings and the team, ORDER_TRACKING out of money, settings and the team.
+ * ADMIN, ACCOUNTANT and SUPERVISOR reproduce the fences that were already in
+ * force for OWNER, FINANCE and ORDER_TRACKING. The three new types slot in
+ * between: managers see growth but not money, a viewer only watches.
  */
 export const ROLE_DEFAULT_TABS: Record<VendorPortalRole, VendorTab[]> = {
-  OWNER: ["ORDERS", "WALLET", "GROW", "SUPPORT", "TEAM", "SETTINGS"],
-  FINANCE: ["ORDERS", "WALLET", "GROW", "SUPPORT"],
-  ORDER_TRACKING: ["ORDERS", "SUPPORT"],
+  ADMIN: ["ORDERS", "WALLET", "GROW", "SUPPORT", "TEAM", "SETTINGS"],
+  OPS_MANAGER: ["ORDERS", "GROW", "SUPPORT"],
+  SUPERVISOR: ["ORDERS", "SUPPORT"],
+  ACCOUNTANT: ["ORDERS", "WALLET", "GROW", "SUPPORT"],
+  ACCOUNT_MANAGER: ["ORDERS", "GROW", "SUPPORT"],
+  VIEWER: ["ORDERS", "SUPPORT"],
 };
 
 export function isVendorTab(value: unknown): value is VendorTab {
@@ -74,7 +132,5 @@ export function effectiveVendorTabs(
 ): VendorTab[] {
   const override = parseVendorTabs(rawTabs);
   if (override) return override;
-  const role: VendorPortalRole =
-    vendorRole === "FINANCE" || vendorRole === "ORDER_TRACKING" ? vendorRole : "OWNER";
-  return ROLE_DEFAULT_TABS[role];
+  return ROLE_DEFAULT_TABS[normaliseVendorRole(vendorRole)];
 }

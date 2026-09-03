@@ -397,6 +397,12 @@ export const incidentsApi = {
   // silently dropped while the request still returned 200.
   resolve: (id: string, resolutionNote?: string) =>
     post<Incident>(`/api/incidents/${id}/resolve`, { resolutionNote }),
+  // Client note (2026-08-31): emergency with an active order — take the order
+  // off the reporting driver and send it back through dispatch.
+  reassignOrder: (id: string) =>
+    post<{ ok: true; orderId: string; orderNumber: string }>(
+      `/api/incidents/${id}/reassign-order`,
+    ),
 };
 
 // ── /api/dispatch ────────────────────────────────────────────────────────
@@ -639,6 +645,11 @@ export const fleetApi = {
   documents: () => get<FleetDocumentsPayload>("/api/fleet/documents"),
   documentUrl: (id: string) => get<{ url: string }>(`/api/fleet/documents/${id}/url`),
   /**
+   * Client note (2026-08-31): the file itself, R2 or inline bytes — the
+   * endpoint decides. Fetched as a blob because it is behind the bearer token.
+   */
+  documentFile: (id: string) => getBlob(`/api/fleet/documents/${id}/file`),
+  /**
    * Ask the backend to sign a direct-to-R2 PUT. Answers 503 with
    * code STORAGE_NOT_CONFIGURED when R2 is not wired up, which the upload
    * helper turns into a plain sentence rather than a broken picker.
@@ -705,6 +716,7 @@ export const fleetApi = {
         type: "DRIVER_DOCUMENT",
         documentType: body.type,
         fileKey: body.fileKey ?? null,
+        dataBase64: body.dataBase64 ?? null,
         fileName: body.fileName ?? null,
         mimeType: body.mimeType ?? null,
         sizeBytes: body.sizeBytes ?? null,
@@ -836,6 +848,27 @@ export async function uploadFleetDocument(
     });
   } catch (err) {
     const e = err as { response?: { data?: { error?: string; code?: string } } };
+    // Client note (2026-08-31): with R2 unconfigured the bytes travel inline
+    // in the submission instead of not travelling at all — the same fallback
+    // the payout invoice has always had. 3MB cap, matching the server's.
+    if (e?.response?.data?.code === "STORAGE_NOT_CONFIGURED") {
+      if (file.size > 3 * 1024 * 1024) {
+        throw new Error("The file must be under 3 MB.");
+      }
+      const dataBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result ?? ""));
+        reader.onerror = () => reject(new Error("The file could not be read. Try again."));
+        reader.readAsDataURL(file);
+      });
+      return {
+        type,
+        dataBase64,
+        fileName: file.name,
+        mimeType: file.type,
+        sizeBytes: file.size,
+      };
+    }
     throw new Error(
       e?.response?.data?.error ?? "Could not start the upload. Contact Darb operations.",
     );
@@ -902,6 +935,8 @@ export const fleetsApi = {
     post<{ ok: true }>(`/api/fleets/${id}/requests/${reqId}/reject`, { reason }),
   documents: (id: string) => get<FleetDocument[]>(`/api/fleets/${id}/documents`),
   documentUrl: (docId: string) => get<{ url: string }>(`/api/fleets/documents/${docId}/url`),
+  /** Staff twin of fleetApi.documentFile — R2 redirect or inline bytes. */
+  documentFile: (docId: string) => getBlob(`/api/fleets/documents/${docId}/file`),
   /**
    * Revision 16 (#1). The endpoint has existed since the discipline ladder went
    * in, with nothing on the client calling it: the column could only ever be

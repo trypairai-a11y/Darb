@@ -19,7 +19,12 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/Toast";
 import TabPicker from "@/components/vendor/TabPicker";
 import { vendorApi } from "@/lib/darbApi";
-import { roleDefaultTabs, VENDOR_TAB_ORDER } from "@/lib/vendorTabs";
+import {
+  normalizeVendorRole,
+  roleDefaultTabs,
+  VENDOR_ROLE_ORDER,
+  VENDOR_TAB_ORDER,
+} from "@/lib/vendorTabs";
 import type { VendorPortalRole, VendorTab, VendorUser } from "@/types/darb";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -28,11 +33,14 @@ import { formatDate } from "@/i18n/format";
 const inputClass =
   "w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20";
 
-/** What each role is for, in the shop's own words. */
+/** What each role is for — the shared matrix (edit #8). */
 const ROLE_HINT: Record<VendorPortalRole, string> = {
-  OWNER: "vendorTeam.hintOwner",
-  FINANCE: "vendorTeam.hintFinance",
-  ORDER_TRACKING: "vendorTeam.hintTracking",
+  ADMIN: "portalRoles.hintADMIN",
+  OPS_MANAGER: "portalRoles.hintOPS_MANAGER",
+  SUPERVISOR: "portalRoles.hintSUPERVISOR",
+  ACCOUNTANT: "portalRoles.hintACCOUNTANT",
+  ACCOUNT_MANAGER: "portalRoles.hintACCOUNT_MANAGER",
+  VIEWER: "portalRoles.hintVIEWER",
 };
 
 export default function VendorTeamPage() {
@@ -48,7 +56,7 @@ export default function VendorTeamPage() {
     email: "",
     phone: "",
     password: "",
-    vendorRole: "ORDER_TRACKING" as VendorPortalRole,
+    vendorRole: "SUPERVISOR" as VendorPortalRole,
     branchId: "",
     // Revision 10 (#6). null means "inherit the role's tabs", which is what
     // every login did before this existed.
@@ -77,7 +85,7 @@ export default function VendorTeamPage() {
   // anyone opens — that stays the owner's, on the endpoints and here, so nobody
   // is shown a button that answers 403. Undefined while /me is in flight, and
   // the buttons appear once the answer lands rather than flashing and vanishing.
-  const isOwner = (meQuery.data?.portalRole ?? "OWNER") === "OWNER";
+  const isOwner = normalizeVendorRole(meQuery.data?.portalRole ?? "ADMIN") === "ADMIN";
 
   async function save() {
     setSaving(true);
@@ -88,16 +96,16 @@ export default function VendorTeamPage() {
         name: form.name.trim(),
         phone: form.phone.trim() || undefined,
         vendorRole: form.vendorRole,
-        // Only a tracker can be pinned to a branch, and only optionally: a
-        // tracker with no branch follows all of them.
-        branchId: form.vendorRole === "ORDER_TRACKING" ? form.branchId || null : null,
+        // Only a supervisor can be pinned to a branch, and only optionally:
+        // one with no branch follows all of them.
+        branchId: form.vendorRole === "SUPERVISOR" ? form.branchId || null : null,
         vendorTabs: form.vendorTabs,
       });
       toast.success(t("vendorTeam.created"));
       setOpen(false);
       setForm({
         name: "", email: "", phone: "", password: "",
-        vendorRole: "ORDER_TRACKING", branchId: "", vendorTabs: null,
+        vendorRole: "SUPERVISOR", branchId: "", vendorTabs: null,
       });
       await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", "team"] });
     } catch (err) {
@@ -186,8 +194,8 @@ export default function VendorTeamPage() {
           {
             key: "vendorRole",
             label: t("vendorTeam.role"),
-            render: (value: VendorPortalRole | null) => (
-              <span>{value ? t(`vendorTeam.role${value}`) : t("vendorTeam.roleOWNER")}</span>
+            render: (value: string | null) => (
+              <span>{t(`portalRoles.${normalizeVendorRole(value)}`)}</span>
             ),
           },
           {
@@ -347,16 +355,18 @@ export default function VendorTeamPage() {
               onChange={(e) => setForm({ ...form, vendorRole: e.target.value as VendorPortalRole })}
               className={inputClass}
             >
-              <option value="OWNER">{t("vendorTeam.roleOWNER")}</option>
-              <option value="FINANCE">{t("vendorTeam.roleFINANCE")}</option>
-              <option value="ORDER_TRACKING">{t("vendorTeam.roleORDER_TRACKING")}</option>
+              {VENDOR_ROLE_ORDER.map((r) => (
+                <option key={r} value={r}>
+                  {t(`portalRoles.${r}`)}
+                </option>
+              ))}
             </select>
             <p className="mt-1.5 text-xs text-sand-600">{t(ROLE_HINT[form.vendorRole])}</p>
           </div>
-          {/* Only a tracker can be pinned to one branch. Owner and finance are
+          {/* Only a supervisor can be pinned to one branch. Every other role is
               shop-wide, so offering them a branch would be offering a choice
               the server ignores. */}
-          {form.vendorRole === "ORDER_TRACKING" && branches.length > 0 && (
+          {form.vendorRole === "SUPERVISOR" && branches.length > 0 && (
             <div>
               <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
                 {t("vendorsPage.branches")}
@@ -406,12 +416,12 @@ export default function VendorTeamPage() {
               <p dir="ltr" className="text-xs text-sand-600">{editing.email}</p>
               <p className="text-xs text-sand-600">
                 {t("vendorTeam.role")}:{" "}
-                {t(`vendorTeam.role${editing.vendorRole ?? "OWNER"}`)}
+                {t(`portalRoles.${normalizeVendorRole(editing.vendorRole)}`)}
               </p>
             </div>
 
             <TabPicker
-              vendorRole={editing.vendorRole ?? "OWNER"}
+              vendorRole={normalizeVendorRole(editing.vendorRole)}
               value={editTabs}
               onChange={setEditTabs}
             />

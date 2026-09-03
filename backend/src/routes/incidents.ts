@@ -8,6 +8,8 @@ import { validateBody } from "../utils/validate";
 import { getPagination, paginatedResponse } from "../utils/pagination";
 import { parseLocalDate, parseLocalDateEnd } from "../utils/date";
 import { publishEvent } from "../services/eventBus";
+import { reassignAwayFromDriver } from "../services/orderService";
+import { OrderStateConflictError } from "../services/orderStateMachine";
 
 // Darb 2.0 §A8 — staff-facing incident console (list, ack, resolve).
 // Incidents are raised by drivers (SOS via /api/agent/incidents) or created
@@ -20,6 +22,9 @@ const INCIDENT_TYPES = ["SOS", "ACCIDENT", "VEHICLE_BREAKDOWN", "CUSTOMER_ISSUE"
 const INCIDENT_STATUSES = ["OPEN", "ACKNOWLEDGED", "RESOLVED"] as const;
 
 const DRIVER_SELECT = { id: true, name: true, phone: true } as const;
+// Client note (2026-08-31): the emergency card decides whether "reassign the
+// order" is offered from the order's own status, so the list carries it.
+const ORDER_SELECT = { id: true, orderNumber: true, status: true, driverId: true } as const;
 
 const router = Router();
 router.use(authMiddleware, tenantScope);
@@ -119,7 +124,7 @@ router.get("/", async (req: Request, res: Response) => {
         skip,
         take: limit,
         orderBy: { createdAt: "desc" },
-        include: { driver: { select: DRIVER_SELECT } },
+        include: { driver: { select: DRIVER_SELECT }, order: { select: ORDER_SELECT } },
       }),
       prisma.incident.count({ where: { ...where, tenantId } }),
     ]);
@@ -151,7 +156,7 @@ router.get("/:id", async (req: Request, res: Response) => {
   try {
     const incident = await prisma.incident.findFirst({
       where: { id: req.params.id, tenantId: req.user!.tenantId },
-      include: { driver: { select: DRIVER_SELECT } },
+      include: { driver: { select: DRIVER_SELECT }, order: { select: ORDER_SELECT } },
     });
     if (!incident) { res.status(404).json({ error: "Incident not found" }); return; }
     res.json(incident);
@@ -350,6 +355,85 @@ router.post(
 
       res.json(incident);
     } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/incidents/{id}/reassign-order:
+ *   post:
+ *     tags: [Incidents]
+ *     summary: Take the emergency driver's active order back and re-dispatch it (SUPERVISOR+)
+ *     description: >
+ *       Client note (2026-08-31) — when a driver with an active order reports
+ *       an emergency, HQ must be able to move that order to another driver.
+ *       Pre-pickup only (ASSIGNED / ARRIVED). The reporting driver's session
+ *       goes OFFLINE in the same transaction so dispatch cannot offer the
+ *       order straight back to them.
+ *     responses:
+ *       200:
+ *         description: Order returned to dispatch
+ *       404:
+ *         description: Incident not found, or no active order to reassign
+ *       409:
+ *         description: The order is past pickup (or already moved on)
+ */
+router.post(
+  "/:id/reassign-order",
+  rbac(...SUPERVISOR_PLUS),
+  async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.user!.tenantId;
+      const incident = await prisma.incident.findFirst({
+        where: { id: req.params.id, tenantId },
+        select: { id: true, driverId: true, orderId: true },
+      });
+      if (!incident) { res.status(404).json({ error: "Incident not found" }); return; }
+
+      // The order named on the report when it is still this driver's; the
+      // driver's live order otherwise (an older app build may not send one).
+      const order = await prisma.deliveryOrder.findFirst({
+        where: incident.orderId
+          ? { id: incident.orderId, tenantId, driverId: incident.driverId }
+          : {
+              tenantId,
+              driverId: incident.driverId,
+              status: { in: ["ASSIGNED", "ARRIVED", "PICKED_UP"] },
+            },
+        select: { id: true, orderNumber: true, status: true },
+      });
+      if (!order) {
+        res.status(404).json({ error: "This driver has no active order to reassign" });
+        return;
+      }
+      if (order.status === "PICKED_UP") {
+        res.status(409).json({
+          error:
+            "The driver already collected this order — it cannot be reassigned. Use failed delivery and return it to the shop.",
+        });
+        return;
+      }
+
+      await reassignAwayFromDriver({
+        tenantId,
+        orderId: order.id,
+        actor: { type: "USER", id: req.user!.userId, name: req.user!.email },
+      });
+
+      await publishIncidentUpdated(tenantId, {
+        incidentId: incident.id,
+        orderId: order.id,
+        reassigned: true,
+      });
+
+      res.json({ ok: true, orderId: order.id, orderNumber: order.orderNumber });
+    } catch (err: any) {
+      if (err instanceof OrderStateConflictError) {
+        res.status(409).json({ error: err.message });
+        return;
+      }
       res.status(400).json({ error: err.message });
     }
   }

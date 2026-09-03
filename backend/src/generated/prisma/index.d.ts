@@ -142535,6 +142535,7 @@ export namespace Prisma {
     driverId: string | null
     type: string | null
     fileKey: string | null
+    fileData: Buffer | null
     fileName: string | null
     mimeType: string | null
     sizeBytes: number | null
@@ -142556,6 +142557,7 @@ export namespace Prisma {
     driverId: string | null
     type: string | null
     fileKey: string | null
+    fileData: Buffer | null
     fileName: string | null
     mimeType: string | null
     sizeBytes: number | null
@@ -142577,6 +142579,7 @@ export namespace Prisma {
     driverId: number
     type: number
     fileKey: number
+    fileData: number
     fileName: number
     mimeType: number
     sizeBytes: number
@@ -142608,6 +142611,7 @@ export namespace Prisma {
     driverId?: true
     type?: true
     fileKey?: true
+    fileData?: true
     fileName?: true
     mimeType?: true
     sizeBytes?: true
@@ -142629,6 +142633,7 @@ export namespace Prisma {
     driverId?: true
     type?: true
     fileKey?: true
+    fileData?: true
     fileName?: true
     mimeType?: true
     sizeBytes?: true
@@ -142650,6 +142655,7 @@ export namespace Prisma {
     driverId?: true
     type?: true
     fileKey?: true
+    fileData?: true
     fileName?: true
     mimeType?: true
     sizeBytes?: true
@@ -142758,6 +142764,7 @@ export namespace Prisma {
     driverId: string | null
     type: string
     fileKey: string | null
+    fileData: Buffer | null
     fileName: string | null
     mimeType: string | null
     sizeBytes: number | null
@@ -142798,6 +142805,7 @@ export namespace Prisma {
     driverId?: boolean
     type?: boolean
     fileKey?: boolean
+    fileData?: boolean
     fileName?: boolean
     mimeType?: boolean
     sizeBytes?: boolean
@@ -142824,6 +142832,7 @@ export namespace Prisma {
     driverId?: boolean
     type?: boolean
     fileKey?: boolean
+    fileData?: boolean
     fileName?: boolean
     mimeType?: boolean
     sizeBytes?: boolean
@@ -142850,6 +142859,7 @@ export namespace Prisma {
     driverId?: boolean
     type?: boolean
     fileKey?: boolean
+    fileData?: boolean
     fileName?: boolean
     mimeType?: boolean
     sizeBytes?: boolean
@@ -142908,6 +142918,14 @@ export namespace Prisma {
        * the portal falls back to while R2 is unconfigured.
        */
       fileKey: string | null
+      /**
+       * Inline bytes (client note 2026-08-31): same posture as
+       * FleetPayoutInvoice.fileData — when R2 is not configured the scan lands in
+       * Postgres (3MB cap) instead of not existing at all. fileKey is preferred
+       * when both are present, so nothing migrates the day R2 is switched on.
+       * NEVER selected in list queries; the bytes leave only via /file endpoints.
+       */
+      fileData: Buffer | null
       fileName: string | null
       mimeType: string | null
       sizeBytes: number | null
@@ -143324,6 +143342,7 @@ export namespace Prisma {
     readonly driverId: FieldRef<"FleetDocument", 'String'>
     readonly type: FieldRef<"FleetDocument", 'String'>
     readonly fileKey: FieldRef<"FleetDocument", 'String'>
+    readonly fileData: FieldRef<"FleetDocument", 'Bytes'>
     readonly fileName: FieldRef<"FleetDocument", 'String'>
     readonly mimeType: FieldRef<"FleetDocument", 'String'>
     readonly sizeBytes: FieldRef<"FleetDocument", 'Int'>
@@ -158457,6 +158476,7 @@ export namespace Prisma {
     driverId: 'driverId',
     type: 'type',
     fileKey: 'fileKey',
+    fileData: 'fileData',
     fileName: 'fileName',
     mimeType: 'mimeType',
     sizeBytes: 'sizeBytes',
@@ -173704,6 +173724,7 @@ export namespace Prisma {
     driverId?: StringNullableFilter<"FleetDocument"> | string | null
     type?: StringFilter<"FleetDocument"> | string
     fileKey?: StringNullableFilter<"FleetDocument"> | string | null
+    fileData?: BytesNullableFilter<"FleetDocument"> | Buffer | null
     fileName?: StringNullableFilter<"FleetDocument"> | string | null
     mimeType?: StringNullableFilter<"FleetDocument"> | string | null
     sizeBytes?: IntNullableFilter<"FleetDocument"> | number | null
@@ -173730,6 +173751,7 @@ export namespace Prisma {
     driverId?: SortOrderInput | SortOrder
     type?: SortOrder
     fileKey?: SortOrderInput | SortOrder
+    fileData?: SortOrderInput | SortOrder
     fileName?: SortOrderInput | SortOrder
     mimeType?: SortOrderInput | SortOrder
     sizeBytes?: SortOrderInput | SortOrder
@@ -173760,6 +173782,7 @@ export namespace Prisma {
     driverId?: StringNullableFilter<"FleetDocument"> | string | null
     type?: StringFilter<"FleetDocument"> | string
     fileKey?: StringNullableFilter<"FleetDocument"> | string | null
+    fileData?: BytesNullableFilter<"FleetDocument"> | Buffer | null
     fileName?: StringNullableFilter<"FleetDocument"> | string | null
     mimeType?: StringNullableFilter<"FleetDocument"> | string | null
     sizeBytes?: IntNullableFilter<"FleetDocument"> | number | null
@@ -173786,6 +173809,7 @@ export namespace Prisma {
     driverId?: SortOrderInput | SortOrder
     type?: SortOrder
     fileKey?: SortOrderInput | SortOrder
+    fileData?: SortOrderInput | SortOrder
     fileName?: SortOrderInput | SortOrder
     mimeType?: SortOrderInput | SortOrder
     sizeBytes?: SortOrderInput | SortOrder
@@ -173815,6 +173839,7 @@ export namespace Prisma {
     driverId?: StringNullableWithAggregatesFilter<"FleetDocument"> | string | null
     type?: StringWithAggregatesFilter<"FleetDocument"> | string
     fileKey?: StringNullableWithAggregatesFilter<"FleetDocument"> | string | null
+    fileData?: BytesNullableWithAggregatesFilter<"FleetDocument"> | Buffer | null
     fileName?: StringNullableWithAggregatesFilter<"FleetDocument"> | string | null
     mimeType?: StringNullableWithAggregatesFilter<"FleetDocument"> | string | null
     sizeBytes?: IntNullableWithAggregatesFilter<"FleetDocument"> | number | null
@@ -188537,6 +188562,7 @@ export namespace Prisma {
     id?: string
     type: string
     fileKey?: string | null
+    fileData?: Buffer | null
     fileName?: string | null
     mimeType?: string | null
     sizeBytes?: number | null
@@ -188561,6 +188587,7 @@ export namespace Prisma {
     driverId?: string | null
     type: string
     fileKey?: string | null
+    fileData?: Buffer | null
     fileName?: string | null
     mimeType?: string | null
     sizeBytes?: number | null
@@ -188579,6 +188606,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
@@ -188603,6 +188631,7 @@ export namespace Prisma {
     driverId?: NullableStringFieldUpdateOperationsInput | string | null
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
@@ -188624,6 +188653,7 @@ export namespace Prisma {
     driverId?: string | null
     type: string
     fileKey?: string | null
+    fileData?: Buffer | null
     fileName?: string | null
     mimeType?: string | null
     sizeBytes?: number | null
@@ -188642,6 +188672,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
@@ -188661,6 +188692,7 @@ export namespace Prisma {
     driverId?: NullableStringFieldUpdateOperationsInput | string | null
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
@@ -199957,6 +199989,7 @@ export namespace Prisma {
     driverId?: SortOrder
     type?: SortOrder
     fileKey?: SortOrder
+    fileData?: SortOrder
     fileName?: SortOrder
     mimeType?: SortOrder
     sizeBytes?: SortOrder
@@ -199982,6 +200015,7 @@ export namespace Prisma {
     driverId?: SortOrder
     type?: SortOrder
     fileKey?: SortOrder
+    fileData?: SortOrder
     fileName?: SortOrder
     mimeType?: SortOrder
     sizeBytes?: SortOrder
@@ -200003,6 +200037,7 @@ export namespace Prisma {
     driverId?: SortOrder
     type?: SortOrder
     fileKey?: SortOrder
+    fileData?: SortOrder
     fileName?: SortOrder
     mimeType?: SortOrder
     sizeBytes?: SortOrder
@@ -223119,6 +223154,7 @@ export namespace Prisma {
     id?: string
     type: string
     fileKey?: string | null
+    fileData?: Buffer | null
     fileName?: string | null
     mimeType?: string | null
     sizeBytes?: number | null
@@ -223141,6 +223177,7 @@ export namespace Prisma {
     driverId?: string | null
     type: string
     fileKey?: string | null
+    fileData?: Buffer | null
     fileName?: string | null
     mimeType?: string | null
     sizeBytes?: number | null
@@ -227064,6 +227101,7 @@ export namespace Prisma {
     driverId?: StringNullableFilter<"FleetDocument"> | string | null
     type?: StringFilter<"FleetDocument"> | string
     fileKey?: StringNullableFilter<"FleetDocument"> | string | null
+    fileData?: BytesNullableFilter<"FleetDocument"> | Buffer | null
     fileName?: StringNullableFilter<"FleetDocument"> | string | null
     mimeType?: StringNullableFilter<"FleetDocument"> | string | null
     sizeBytes?: IntNullableFilter<"FleetDocument"> | number | null
@@ -230605,6 +230643,7 @@ export namespace Prisma {
     id?: string
     type: string
     fileKey?: string | null
+    fileData?: Buffer | null
     fileName?: string | null
     mimeType?: string | null
     sizeBytes?: number | null
@@ -230628,6 +230667,7 @@ export namespace Prisma {
     driverId?: string | null
     type: string
     fileKey?: string | null
+    fileData?: Buffer | null
     fileName?: string | null
     mimeType?: string | null
     sizeBytes?: number | null
@@ -230655,6 +230695,7 @@ export namespace Prisma {
     id?: string
     type: string
     fileKey?: string | null
+    fileData?: Buffer | null
     fileName?: string | null
     mimeType?: string | null
     sizeBytes?: number | null
@@ -230678,6 +230719,7 @@ export namespace Prisma {
     driverId?: string | null
     type: string
     fileKey?: string | null
+    fileData?: Buffer | null
     fileName?: string | null
     mimeType?: string | null
     sizeBytes?: number | null
@@ -234395,6 +234437,7 @@ export namespace Prisma {
     id?: string
     type: string
     fileKey?: string | null
+    fileData?: Buffer | null
     fileName?: string | null
     mimeType?: string | null
     sizeBytes?: number | null
@@ -234417,6 +234460,7 @@ export namespace Prisma {
     fleetPartnerId: string
     type: string
     fileKey?: string | null
+    fileData?: Buffer | null
     fileName?: string | null
     mimeType?: string | null
     sizeBytes?: number | null
@@ -317076,6 +317120,7 @@ export namespace Prisma {
     id?: string
     type: string
     fileKey?: string | null
+    fileData?: Buffer | null
     fileName?: string | null
     mimeType?: string | null
     sizeBytes?: number | null
@@ -317098,6 +317143,7 @@ export namespace Prisma {
     driverId?: string | null
     type: string
     fileKey?: string | null
+    fileData?: Buffer | null
     fileName?: string | null
     mimeType?: string | null
     sizeBytes?: number | null
@@ -333154,6 +333200,7 @@ export namespace Prisma {
     driverId?: string | null
     type: string
     fileKey?: string | null
+    fileData?: Buffer | null
     fileName?: string | null
     mimeType?: string | null
     sizeBytes?: number | null
@@ -338375,6 +338422,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
@@ -338397,6 +338445,7 @@ export namespace Prisma {
     driverId?: NullableStringFieldUpdateOperationsInput | string | null
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
@@ -338417,6 +338466,7 @@ export namespace Prisma {
     driverId?: NullableStringFieldUpdateOperationsInput | string | null
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
@@ -339768,6 +339818,7 @@ export namespace Prisma {
     driverId?: string | null
     type: string
     fileKey?: string | null
+    fileData?: Buffer | null
     fileName?: string | null
     mimeType?: string | null
     sizeBytes?: number | null
@@ -339788,6 +339839,7 @@ export namespace Prisma {
     driverId?: string | null
     type: string
     fileKey?: string | null
+    fileData?: Buffer | null
     fileName?: string | null
     mimeType?: string | null
     sizeBytes?: number | null
@@ -340952,6 +341004,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
@@ -340975,6 +341028,7 @@ export namespace Prisma {
     driverId?: NullableStringFieldUpdateOperationsInput | string | null
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
@@ -340995,6 +341049,7 @@ export namespace Prisma {
     driverId?: NullableStringFieldUpdateOperationsInput | string | null
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
@@ -341012,6 +341067,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
@@ -341035,6 +341091,7 @@ export namespace Prisma {
     driverId?: NullableStringFieldUpdateOperationsInput | string | null
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
@@ -341055,6 +341112,7 @@ export namespace Prisma {
     driverId?: NullableStringFieldUpdateOperationsInput | string | null
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
@@ -342069,6 +342127,7 @@ export namespace Prisma {
     fleetPartnerId: string
     type: string
     fileKey?: string | null
+    fileData?: Buffer | null
     fileName?: string | null
     mimeType?: string | null
     sizeBytes?: number | null
@@ -344368,6 +344427,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
@@ -344390,6 +344450,7 @@ export namespace Prisma {
     fleetPartnerId?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
@@ -344410,6 +344471,7 @@ export namespace Prisma {
     fleetPartnerId?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
@@ -349680,6 +349742,7 @@ export namespace Prisma {
     driverId?: string | null
     type: string
     fileKey?: string | null
+    fileData?: Buffer | null
     fileName?: string | null
     mimeType?: string | null
     sizeBytes?: number | null
@@ -350267,6 +350330,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
@@ -350289,6 +350353,7 @@ export namespace Prisma {
     driverId?: NullableStringFieldUpdateOperationsInput | string | null
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
@@ -350309,6 +350374,7 @@ export namespace Prisma {
     driverId?: NullableStringFieldUpdateOperationsInput | string | null
     type?: StringFieldUpdateOperationsInput | string
     fileKey?: NullableStringFieldUpdateOperationsInput | string | null
+    fileData?: NullableBytesFieldUpdateOperationsInput | Buffer | null
     fileName?: NullableStringFieldUpdateOperationsInput | string | null
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null

@@ -28,7 +28,8 @@ interface User {
   // ORDER_TRACKING) and, for a branch-scoped tracker, the one branch they may
   // see. Both come from the signed token; the header and the rail read them so
   // a shop's accountant is not shown the same portal as its owner.
-  vendorRole?: "OWNER" | "FINANCE" | "ORDER_TRACKING" | null;
+  // May carry a legacy value from an old token; normalise before comparing.
+  vendorRole?: string | null;
   branchId?: string | null;
 }
 

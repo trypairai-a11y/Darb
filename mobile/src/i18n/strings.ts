@@ -200,6 +200,12 @@ const EN: Record<string, string> = {
   "failed.reason.OTHER": "Other",
   "failed.note_placeholder": "Add a short note…",
   "failed.submit": "Report failed delivery",
+  // Client request 2026-08-31: a failed delivery goes back to the shop.
+  "failed.return_title": "Return the order",
+  "failed.return_shop": "The shop",
+  "failed.return_body": "Take the order back to the shop it came from, hand it over, then confirm here.",
+  "failed.return_confirm": "I returned it to the shop",
+  "failed.return_later": "I can't return it now",
 
   // ─── Wallet ───
   "wallet.title": "Wallet",

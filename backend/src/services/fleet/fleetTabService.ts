@@ -39,30 +39,56 @@ export const FLEET_TABS = [
 
 export type FleetTab = (typeof FLEET_TABS)[number];
 
-export type FleetPortalRole = "OWNER" | "OPERATIONS" | "FINANCE";
+/**
+ * Client note (2026-08-31, edit #8): the three portals share ONE role matrix —
+ * the same six types the HQ staff grid uses. The old fleet trio survives as
+ * stored legacy values that normalise in (OWNER→ADMIN, OPERATIONS→OPS_MANAGER,
+ * FINANCE→ACCOUNTANT), so this ships with no backfill.
+ */
+export type FleetPortalRole =
+  | "ADMIN"
+  | "OPS_MANAGER"
+  | "SUPERVISOR"
+  | "ACCOUNTANT"
+  | "ACCOUNT_MANAGER"
+  | "VIEWER";
 
 export const FLEET_PORTAL_ROLES: readonly FleetPortalRole[] = [
-  "OWNER",
-  "OPERATIONS",
-  "FINANCE",
+  "ADMIN",
+  "OPS_MANAGER",
+  "SUPERVISOR",
+  "ACCOUNTANT",
+  "ACCOUNT_MANAGER",
+  "VIEWER",
 ] as const;
+
+const LEGACY_FLEET_ROLES: Record<string, FleetPortalRole> = {
+  OWNER: "ADMIN",
+  OPERATIONS: "OPS_MANAGER",
+  FINANCE: "ACCOUNTANT",
+};
+
+/** Stored values a role field may legally carry: the matrix plus the legacy trio. */
+export const ACCEPTED_FLEET_ROLE_INPUTS: readonly string[] = [
+  ...FLEET_PORTAL_ROLES,
+  ...Object.keys(LEGACY_FLEET_ROLES),
+];
 
 /**
  * What each role opens with no override.
  *
- * OPERATIONS is the supervisor who calls the drivers: everything about people
- * and paperwork, nothing about money. FINANCE is the other half. Both keep
- * SUPPORT, because the channel to Darb is not worth taking away from anyone and
- * a portal that cannot ask a question sends a WhatsApp instead.
+ * ADMIN, OPS_MANAGER and ACCOUNTANT reproduce what OWNER, OPERATIONS and
+ * FINANCE already opened. SUPERVISOR is the ops lead minus the paperwork,
+ * ACCOUNT_MANAGER and VIEWER only watch the numbers. CASH stays with the
+ * money roles (revision 14) — an owner widens anyone through the tab override.
  */
 export const FLEET_ROLE_DEFAULT_TABS: Record<FleetPortalRole, FleetTab[]> = {
-  OWNER: ["ROSTER", "ISSUES", "DOCUMENTS", "SCORECARD", "PAYOUTS", "CASH", "SUPPORT", "TEAM"],
-  OPERATIONS: ["ROSTER", "ISSUES", "DOCUMENTS", "SUPPORT"],
-  // Revision 14 — CASH is money, so it lands with FINANCE rather than with the
-  // supervisor who physically collects the envelopes. An owner who wants their
-  // operations lead to settle drivers grants it through the tab override, which
-  // is exactly what the override is for.
-  FINANCE: ["PAYOUTS", "SCORECARD", "CASH", "SUPPORT"],
+  ADMIN: ["ROSTER", "ISSUES", "DOCUMENTS", "SCORECARD", "PAYOUTS", "CASH", "SUPPORT", "TEAM"],
+  OPS_MANAGER: ["ROSTER", "ISSUES", "DOCUMENTS", "SUPPORT"],
+  SUPERVISOR: ["ROSTER", "ISSUES", "SUPPORT"],
+  ACCOUNTANT: ["PAYOUTS", "SCORECARD", "CASH", "SUPPORT"],
+  ACCOUNT_MANAGER: ["SCORECARD", "SUPPORT"],
+  VIEWER: ["SCORECARD", "SUPPORT"],
 };
 
 export function isFleetTab(value: unknown): value is FleetTab {
@@ -70,12 +96,21 @@ export function isFleetTab(value: unknown): value is FleetTab {
 }
 
 export function isFleetPortalRole(value: unknown): value is FleetPortalRole {
-  return value === "OWNER" || value === "OPERATIONS" || value === "FINANCE";
+  return typeof value === "string" && (FLEET_PORTAL_ROLES as readonly string[]).includes(value);
 }
 
-/** A stored role, normalised. Anything unrecognised reads as OWNER. */
+/**
+ * A stored or submitted role, normalised to the matrix. NULL and anything
+ * unrecognised read as ADMIN, exactly as they used to read as OWNER: every
+ * fleet login that predates roles could already open every screen.
+ */
 export function normaliseFleetRole(raw: unknown): FleetPortalRole {
-  return isFleetPortalRole(raw) ? raw : "OWNER";
+  if (isFleetPortalRole(raw)) return raw;
+  if (typeof raw === "string") {
+    const legacy = LEGACY_FLEET_ROLES[raw];
+    if (legacy) return legacy;
+  }
+  return "ADMIN";
 }
 
 /**

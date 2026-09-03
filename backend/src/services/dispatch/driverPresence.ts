@@ -37,6 +37,31 @@ export async function markDriverBusy(
  * pool mid-second-drop. Callers run this inside the same tx as the terminal
  * transition, so the just-finished order no longer matches the count.
  */
+/**
+ * Close the driver's open session outright (emergency handling). Unlike
+ * releaseDriverToOnline this ignores BUSY: a driver whose order was just
+ * pulled off them mid-emergency must not re-enter the candidate pool and be
+ * offered the same order back seconds later. Mirrors the staff kill switch in
+ * routes/drivers.ts (same fields), so presence, the map and dispatch agree.
+ */
+export async function forceDriverOffline(
+  tx: Tx,
+  tenantId: string,
+  driverId: string
+): Promise<boolean> {
+  const existing = await tx.courierOnlineSession.findFirst({
+    where: { tenantId, driverId, isOnline: true },
+    orderBy: { startTime: "desc" },
+    select: { id: true },
+  });
+  if (!existing) return false;
+  await tx.courierOnlineSession.update({
+    where: { id: existing.id },
+    data: { availability: "OFFLINE", isOnline: false, endTime: new Date() },
+  });
+  return true;
+}
+
 export async function releaseDriverToOnline(
   tx: Tx,
   tenantId: string,

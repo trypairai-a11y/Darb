@@ -55,7 +55,8 @@ export interface NavItem {
    * accountant handles money and looks up what orders were worth, and a
    * tracker follows deliveries and raises support.
    */
-  vendorRoles?: ("OWNER" | "FINANCE" | "ORDER_TRACKING")[];
+  // Canonical matrix names (edit #8); compare against a normalised role.
+  vendorRoles?: string[];
   /**
    * Revision 10 (#6) — the merchant-portal tab this entry belongs to.
    *

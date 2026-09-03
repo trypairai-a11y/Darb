@@ -3868,6 +3868,12 @@ model FleetDocument {
   /// Null when the fleet submitted an expiry date with no file, which is what
   /// the portal falls back to while R2 is unconfigured.
   fileKey         String?
+  /// Inline bytes (client note 2026-08-31): same posture as
+  /// FleetPayoutInvoice.fileData — when R2 is not configured the scan lands in
+  /// Postgres (3MB cap) instead of not existing at all. fileKey is preferred
+  /// when both are present, so nothing migrates the day R2 is switched on.
+  /// NEVER selected in list queries; the bytes leave only via /file endpoints.
+  fileData        Bytes?
   fileName        String?
   mimeType        String?
   sizeBytes       Int?

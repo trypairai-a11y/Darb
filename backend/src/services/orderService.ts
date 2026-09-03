@@ -28,7 +28,7 @@ import {
   transitionOrder,
 } from "./orderStateMachine";
 import { enqueueDispatchStart, removeOfferExpiryJob } from "../queues/dispatchQueue";
-import { markDriverBusy, releaseDriverToOnline } from "./dispatch/driverPresence";
+import { forceDriverOffline, markDriverBusy, releaseDriverToOnline } from "./dispatch/driverPresence";
 import { enqueueFoodicsWriteback } from "./foodics/writebackHook";
 import { fireCustomerMilestone } from "./customerMessagingService";
 import { sendDispatchDriverPush } from "./driverAppPushService";
@@ -907,6 +907,54 @@ export async function assignDriverManually(args: {
  * rows, ensure status DISPATCHING (NO_DRIVER → DISPATCHING when exhausted),
  * and enqueue dispatch-start.
  */
+/**
+ * Client note (2026-08-31, emergency handling): a driver with an active order
+ * reported an emergency, and HQ chose to move that order to another driver.
+ *
+ * Pre-pickup only (ASSIGNED | ARRIVED): the bag is still at the shop, so a
+ * replacement driver has something to collect. The reporting driver's session
+ * is forced OFFLINE in the same transaction — dispatch offers to ONLINE
+ * drivers only, so this is also what stops the engine handing the order
+ * straight back to the driver who cannot take it.
+ */
+export async function reassignAwayFromDriver(args: {
+  tenantId: string;
+  orderId: string;
+  actor: OrderActor;
+}): Promise<void> {
+  const { tenantId, orderId, actor } = args;
+
+  const order = await getOrderOrThrow(tenantId, orderId);
+  if (order.status !== "ASSIGNED" && order.status !== "ARRIVED") {
+    throw new OrderStateConflictError(orderId, order.status, "DISPATCHING");
+  }
+
+  const { tx, cancelledOffers } = await prisma.$transaction(async (trx) => {
+    const offers = await cancelOpenOffers(trx, tenantId, orderId);
+    await transitionOrder(trx, {
+      orderId,
+      tenantId,
+      from: order.status,
+      to: "DISPATCHING",
+      actor,
+      data: { driverId: null, assignedAt: null, arrivedAt: null },
+      eventMeta: {
+        ...baseEventMeta(order),
+        reassign: true,
+        previousDriverId: order.driverId ?? null,
+      },
+    });
+    if (order.driverId) {
+      await forceDriverOffline(trx, tenantId, order.driverId);
+    }
+    return { tx: trx, cancelledOffers: offers };
+  });
+
+  flushOrderEvents(tx);
+  removeExpiryJobs(cancelledOffers);
+  await enqueueDispatchStart(orderId, tenantId);
+}
+
 export async function redispatchOrder(args: {
   tenantId: string;
   orderId: string;

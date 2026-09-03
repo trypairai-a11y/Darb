@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRole } from "@/hooks/useRole";
 import { useAuth } from "@/contexts/AuthContext";
 import { fleetApi, vendorApi } from "@/lib/darbApi";
-import { roleDefaultTabs } from "@/lib/vendorTabs";
+import { normalizeVendorRole, roleDefaultTabs } from "@/lib/vendorTabs";
 import { fleetRoleDefaultTabs } from "@/lib/fleetTabs";
 import { useDeniedVendorTabs } from "@/lib/vendorAccess";
 import { useDeniedFleetTabs } from "@/lib/fleetAccess";
@@ -47,7 +47,7 @@ export default function Sidebar() {
   // that was moved to branch-only order tracking kept being drawn a Wallet and
   // a Grow entry here — and clicking either produced the 403 the client
   // reported, because the server was reading the current row all along.
-  const vendorRole = meQuery.data?.portalRole ?? user?.vendorRole ?? "OWNER";
+  const vendorRole = normalizeVendorRole(meQuery.data?.portalRole ?? user?.vendorRole);
   // Until the answer lands, fall back to what the role opens. That is what the
   // rail showed before per-user tabs existed, so the worst case is one entry
   // appearing for a moment before it is taken away, rather than an empty rail.
@@ -70,7 +70,7 @@ export default function Sidebar() {
     enabled: role === "FLEET",
     staleTime: 60_000,
   });
-  const fleetRole = fleetMeQuery.data?.portalRole ?? "OWNER";
+  const fleetRole = fleetMeQuery.data?.portalRole ?? "ADMIN";
   const fleetTabs = fleetMeQuery.data?.portalTabs ?? fleetRoleDefaultTabs(fleetRole);
   const deniedFleetTabs = useDeniedFleetTabs();
 

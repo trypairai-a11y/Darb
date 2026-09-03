@@ -42,7 +42,7 @@ export default function VendorSettingsPage() {
   // The server's answer, not the token's (revision 11 #5). Pausing the shop is
   // OWNER-only on the endpoint whatever the tab list says, so the switch below
   // follows the same rule.
-  const isOwner = (meQuery.data?.portalRole ?? "OWNER") === "OWNER";
+  const isOwner = (meQuery.data?.portalRole ?? "ADMIN") === "ADMIN";
   const branches = useMemo(() => meQuery.data?.branches ?? [], [meQuery.data?.branches]);
   // Revision 10 (#7). "" means the whole account, which is what the toggle
   // always did and stays the default.

@@ -13,18 +13,26 @@ import {
 
 describe("vendorTabService", () => {
   describe("effectiveVendorTabs — no override (the migration case)", () => {
+    // Client note (2026-08-31, edit #8): the stored legacy trio must keep
+    // opening exactly what it always opened, because nothing was backfilled.
     test.each([
       ["OWNER", ["ORDERS", "WALLET", "GROW", "SUPPORT", "TEAM", "SETTINGS"]],
       ["FINANCE", ["ORDERS", "WALLET", "GROW", "SUPPORT"]],
       ["ORDER_TRACKING", ["ORDERS", "SUPPORT"]],
+      ["ADMIN", ["ORDERS", "WALLET", "GROW", "SUPPORT", "TEAM", "SETTINGS"]],
+      ["ACCOUNTANT", ["ORDERS", "WALLET", "GROW", "SUPPORT"]],
+      ["SUPERVISOR", ["ORDERS", "SUPPORT"]],
+      ["OPS_MANAGER", ["ORDERS", "GROW", "SUPPORT"]],
+      ["ACCOUNT_MANAGER", ["ORDERS", "GROW", "SUPPORT"]],
+      ["VIEWER", ["ORDERS", "SUPPORT"]],
     ])("%s falls back to exactly the fences that were already in force", (role, expected) => {
       expect(effectiveVendorTabs(role, null)).toEqual(expected);
     });
 
-    test("an unknown or missing role is treated as OWNER, as the portal always did", () => {
-      expect(effectiveVendorTabs(null, null)).toEqual(ROLE_DEFAULT_TABS.OWNER);
-      expect(effectiveVendorTabs(undefined, null)).toEqual(ROLE_DEFAULT_TABS.OWNER);
-      expect(effectiveVendorTabs("SOMETHING_ELSE", null)).toEqual(ROLE_DEFAULT_TABS.OWNER);
+    test("an unknown or missing role is treated as ADMIN, as the portal always treated OWNER", () => {
+      expect(effectiveVendorTabs(null, null)).toEqual(ROLE_DEFAULT_TABS.ADMIN);
+      expect(effectiveVendorTabs(undefined, null)).toEqual(ROLE_DEFAULT_TABS.ADMIN);
+      expect(effectiveVendorTabs("SOMETHING_ELSE", null)).toEqual(ROLE_DEFAULT_TABS.ADMIN);
     });
   });
 
@@ -43,7 +51,7 @@ describe("vendorTabService", () => {
 
     test("an explicit empty list means no tabs, which is different from inherit", () => {
       expect(effectiveVendorTabs("OWNER", [])).toEqual([]);
-      expect(effectiveVendorTabs("OWNER", null)).toEqual(ROLE_DEFAULT_TABS.OWNER);
+      expect(effectiveVendorTabs("OWNER", null)).toEqual(ROLE_DEFAULT_TABS.ADMIN);
     });
   });
 

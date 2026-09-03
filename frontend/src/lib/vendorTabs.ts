@@ -22,19 +22,40 @@ export const VENDOR_TAB_ORDER: VendorTab[] = [
   "SETTINGS",
 ];
 
+/** The shared six-type matrix (edit #8), in presentation order. */
+export const VENDOR_ROLE_ORDER: VendorPortalRole[] = [
+  "ADMIN",
+  "OPS_MANAGER",
+  "SUPERVISOR",
+  "ACCOUNTANT",
+  "ACCOUNT_MANAGER",
+  "VIEWER",
+];
+
+/** Legacy stored values normalise into the matrix; mirrors the server. */
+export function normalizeVendorRole(role: string | null | undefined): VendorPortalRole {
+  if (role && (VENDOR_ROLE_ORDER as string[]).includes(role)) return role as VendorPortalRole;
+  if (role === "FINANCE") return "ACCOUNTANT";
+  if (role === "ORDER_TRACKING") return "SUPERVISOR";
+  return "ADMIN";
+}
+
 /**
- * What each role opens with no override. These reproduce the fences that were
- * already in force before per-user tabs existed, so a login with no override
- * behaves exactly as it did.
+ * What each role opens with no override — mirrors the server's
+ * ROLE_DEFAULT_TABS. ADMIN/ACCOUNTANT/SUPERVISOR reproduce the fences that
+ * OWNER/FINANCE/ORDER_TRACKING already had.
  */
 const ROLE_DEFAULTS: Record<VendorPortalRole, VendorTab[]> = {
-  OWNER: ["ORDERS", "WALLET", "GROW", "SUPPORT", "TEAM", "SETTINGS"],
-  FINANCE: ["ORDERS", "WALLET", "GROW", "SUPPORT"],
-  ORDER_TRACKING: ["ORDERS", "SUPPORT"],
+  ADMIN: ["ORDERS", "WALLET", "GROW", "SUPPORT", "TEAM", "SETTINGS"],
+  OPS_MANAGER: ["ORDERS", "GROW", "SUPPORT"],
+  SUPERVISOR: ["ORDERS", "SUPPORT"],
+  ACCOUNTANT: ["ORDERS", "WALLET", "GROW", "SUPPORT"],
+  ACCOUNT_MANAGER: ["ORDERS", "GROW", "SUPPORT"],
+  VIEWER: ["ORDERS", "SUPPORT"],
 };
 
-export function roleDefaultTabs(role: VendorPortalRole | null | undefined): VendorTab[] {
-  return ROLE_DEFAULTS[role ?? "OWNER"] ?? ROLE_DEFAULTS.OWNER;
+export function roleDefaultTabs(role: string | null | undefined): VendorTab[] {
+  return ROLE_DEFAULTS[normalizeVendorRole(role)];
 }
 
 /** Which tab owns a portal route. Anything unlisted is infrastructure. */

@@ -24,7 +24,12 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/Toast";
 import FleetTabPicker from "@/components/fleet/FleetTabPicker";
 import { fleetApi } from "@/lib/darbApi";
-import { FLEET_TAB_ORDER, fleetRoleDefaultTabs } from "@/lib/fleetTabs";
+import {
+  FLEET_ROLE_ORDER,
+  FLEET_TAB_ORDER,
+  fleetRoleDefaultTabs,
+  normalizeFleetRole,
+} from "@/lib/fleetTabs";
 import type { FleetPortalRole, FleetTab, FleetTeamUser } from "@/types/darb";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -33,11 +38,14 @@ import { formatDate } from "@/i18n/format";
 const inputClass =
   "w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20";
 
-/** What each role is for, in the delivery company's own words. */
+/** What each role is for — the shared matrix (edit #8). */
 const ROLE_HINT: Record<FleetPortalRole, string> = {
-  OWNER: "fleetTeam.hintOwner",
-  OPERATIONS: "fleetTeam.hintOperations",
-  FINANCE: "fleetTeam.hintFinance",
+  ADMIN: "portalRoles.hintADMIN",
+  OPS_MANAGER: "portalRoles.hintOPS_MANAGER",
+  SUPERVISOR: "portalRoles.hintSUPERVISOR",
+  ACCOUNTANT: "portalRoles.hintACCOUNTANT",
+  ACCOUNT_MANAGER: "portalRoles.hintACCOUNT_MANAGER",
+  VIEWER: "portalRoles.hintVIEWER",
 };
 
 export default function FleetTeamPage() {
@@ -53,7 +61,7 @@ export default function FleetTeamPage() {
     email: "",
     phone: "",
     password: "",
-    fleetRole: "OPERATIONS" as FleetPortalRole,
+    fleetRole: "OPS_MANAGER" as FleetPortalRole,
     // null means every company in the group, which is what an owner wants for
     // most of their staff and what a one-company fleet always wants.
     companies: null as string[] | null,
@@ -76,7 +84,7 @@ export default function FleetTeamPage() {
 
   // Undefined while /me is in flight, so the buttons appear once the answer
   // lands rather than flashing and vanishing.
-  const isOwner = (meQuery.data?.portalRole ?? "OWNER") === "OWNER";
+  const isOwner = normalizeFleetRole(meQuery.data?.portalRole ?? "ADMIN") === "ADMIN";
   const companies = teamQuery.data?.companies ?? [];
 
   const fail = (err: unknown) =>
@@ -101,7 +109,7 @@ export default function FleetTeamPage() {
       setOpen(false);
       setForm({
         name: "", email: "", phone: "", password: "",
-        fleetRole: "OPERATIONS", companies: null, fleetTabs: null,
+        fleetRole: "OPS_MANAGER", companies: null, fleetTabs: null,
       });
       await queryClient.invalidateQueries({ queryKey: ["darb", "fleet", "team"] });
     } catch (err) {
@@ -193,7 +201,7 @@ export default function FleetTeamPage() {
           {
             key: "fleetRole",
             label: t("vendorTeam.role"),
-            render: (value: FleetPortalRole) => <span>{t(`fleetTeam.role${value}`)}</span>,
+            render: (value: string) => <span>{t(`portalRoles.${normalizeFleetRole(value)}`)}</span>,
           },
           {
             // The vendor portal's branch column, in fleet terms.
@@ -376,9 +384,11 @@ export default function FleetTeamPage() {
               }
               className={inputClass}
             >
-              <option value="OWNER">{t("fleetTeam.roleOWNER")}</option>
-              <option value="OPERATIONS">{t("fleetTeam.roleOPERATIONS")}</option>
-              <option value="FINANCE">{t("fleetTeam.roleFINANCE")}</option>
+              {FLEET_ROLE_ORDER.map((r) => (
+                <option key={r} value={r}>
+                  {t(`portalRoles.${r}`)}
+                </option>
+              ))}
             </select>
             <p className="mt-1.5 text-xs text-sand-600">{t(ROLE_HINT[form.fleetRole])}</p>
           </div>
@@ -421,7 +431,7 @@ export default function FleetTeamPage() {
               <p dir="auto" className="font-medium text-sand-900">{editing.name}</p>
               <p dir="ltr" className="text-xs text-sand-600">{editing.email}</p>
               <p className="text-xs text-sand-600">
-                {t("vendorTeam.role")}: {t(`fleetTeam.role${editing.fleetRole}`)}
+                {t("vendorTeam.role")}: {t(`portalRoles.${normalizeFleetRole(editing.fleetRole)}`)}
               </p>
             </div>
 
@@ -432,7 +442,7 @@ export default function FleetTeamPage() {
             />
 
             <FleetTabPicker
-              fleetRole={editing.fleetRole}
+              fleetRole={normalizeFleetRole(editing.fleetRole)}
               value={editTabs}
               onChange={setEditTabs}
             />

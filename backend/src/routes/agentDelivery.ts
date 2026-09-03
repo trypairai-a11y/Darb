@@ -42,7 +42,8 @@ import {
 } from "../services/orderStateMachine";
 import { enqueueFoodicsWriteback } from "../services/foodics/writebackHook";
 import { fireCustomerMilestone } from "../services/customerMessagingService";
-import { completeDelivery, failDelivery } from "../services/orderService";
+import { completeDelivery, failDelivery, returnToMerchant } from "../services/orderService";
+import { forceDriverOffline } from "../services/dispatch/driverPresence";
 import {
   getDriverWalletSummary,
   isDriverOverCeiling,
@@ -846,7 +847,53 @@ router.post("/orders/:id/failed", async (req: Request, res: Response) => {
       reason,
       actor: driverActor(driver),
     });
-    res.json({ ok: true, order: { id: failed.id, status: failed.status } });
+    // Client note (2026-08-31): a failed delivery goes back to the shop, so
+    // the app's next screen is the return leg. It needs the pickup point.
+    res.json({
+      ok: true,
+      order: { id: failed.id, status: failed.status },
+      returnTo: {
+        branchName: order.branch?.name ?? null,
+        address: order.branch?.address ?? null,
+        lat: order.branch?.lat ?? null,
+        lng: order.branch?.lng ?? null,
+        phone: order.branch?.phone ?? null,
+      },
+    });
+  } catch (err) {
+    handleAgentError(res, err);
+  }
+});
+
+// ─── POST /orders/:id/returned ──────────────────────────────────────────────
+// Client note (2026-08-31): "if delivery failed for any reason, it should be
+// returned to the vendor." The return is part of the driver's own flow now —
+// after reporting the failure the app walks them back to the shop and this is
+// the hand-back confirmation, FAILED → RETURNED. The staff button on the
+// order panel stays as the backstop for drivers who never confirm.
+router.post("/orders/:id/returned", async (req: Request, res: Response) => {
+  try {
+    const identity = await resolveDriverFromAgentRequest(req);
+    if (!identity) {
+      res.status(404).json({ error: "Device or driver not found" });
+      return;
+    }
+    const { driver } = identity;
+    const tenantId = driver.tenantId;
+
+    const order = await findDriverOrder(tenantId, driver.id, req.params.id);
+    if (!order) {
+      res.status(404).json({ error: "Order not found" });
+      return;
+    }
+
+    const returned = await returnToMerchant({
+      tenantId,
+      orderId: order.id,
+      actor: driverActor(driver),
+      note: "Returned to the shop by the driver",
+    });
+    res.json({ ok: true, order: { id: returned.id, status: returned.status } });
   } catch (err) {
     handleAgentError(res, err);
   }
@@ -916,6 +963,62 @@ router.post("/incidents", upload.array("photos", 3), async (req: Request, res: R
 
     const files = (req.files as Express.Multer.File[] | undefined) ?? [];
     const photos = files.map((f) => `/uploads/${f.filename}`);
+
+    // Client note (2026-08-31): the emergency workflow is only for a driver
+    // carrying an order. With nothing assigned there is no dispatch problem to
+    // solve, so HQ is not alarmed: the report is filed pre-resolved for the
+    // record and the driver's session simply goes offline — which is exactly
+    // what they would have done next anyway.
+    const activeOrder = await prisma.deliveryOrder.findFirst({
+      where: {
+        tenantId,
+        driverId: driver.id,
+        status: { in: ["ASSIGNED", "ARRIVED", "PICKED_UP"] },
+      },
+      select: { id: true },
+    });
+    if (!activeOrder) {
+      const now = new Date();
+      const incident = await prisma.incident.create({
+        data: {
+          tenantId,
+          type: type as never,
+          severity,
+          driverId: driver.id,
+          orderId,
+          lat: latitude,
+          lng: longitude,
+          description,
+          reportedVia: "AGENT_APP",
+          status: "RESOLVED",
+          resolvedAt: now,
+          resolutionNote: "No active order — driver taken offline, no dispatch impact.",
+          metadata: {
+            category,
+            photos,
+            autoResolved: true,
+            ...(accuracy != null && Number.isFinite(accuracy) ? { accuracy } : {}),
+          } as Prisma.InputJsonValue,
+        },
+      });
+      await forceDriverOffline(prisma, tenantId, driver.id);
+      void publishEvent({
+        type: "driver.offline",
+        tenantId,
+        payload: { driverId: driver.id, availability: "OFFLINE", at: now.toISOString() },
+        timestamp: now.toISOString(),
+      }).catch(() => {});
+
+      const supervisorPhone = await getSupervisorPhone(tenantId);
+      res.status(201).json({
+        id: incident.id,
+        status: incident.status,
+        supervisorPhone,
+        wentOffline: true,
+      });
+      return;
+    }
+    if (!orderId) orderId = activeOrder.id;
 
     const incident = await prisma.incident.create({
       data: {

@@ -5,16 +5,15 @@
 // only a type and an expiry date. The picker existed; it was rendered behind
 // `{storageConfigured && ...}` on the driver profile and the company documents
 // page, and R2 is not configured on the production API, so in production it
-// simply was not there. The roster's Add driver panel rendered its picker
-// unconditionally, so the three screens already disagreed with each other.
+// simply was not there.
 //
-// One field, used by all three, ALWAYS rendered. When storage is off it is
-// disabled and says why, instead of vanishing and leaving a panel that looks
-// unfinished. Nothing is faked: with storage off the submission still carries
-// the type and the expiry, and the documents table keeps saying "No file" for
-// that row, because that is the truth. The day R2 is configured the field goes
-// live with no code change, since `storageConfigured` comes from the server on
-// every payload.
+// Client note (2026-08-31): "still I can't see the documents". The disabled
+// state itself was the remaining gap — with storage off, the file never
+// travelled, so there was never anything to view. uploadFleetDocument now
+// falls back to inline bytes when the presign endpoint answers
+// STORAGE_NOT_CONFIGURED, so the field is ALWAYS live. `storageConfigured`
+// is kept on the signature so callers did not have to change, but it no
+// longer disables anything.
 import { Upload } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -25,12 +24,11 @@ const ACCEPT = "image/jpeg,image/png,image/webp,application/pdf";
 export default function DocumentFileField({
   file,
   onChange,
-  storageConfigured,
   compact = false,
 }: {
   file: File | null;
   onChange: (file: File | null) => void;
-  storageConfigured: boolean;
+  storageConfigured?: boolean;
   /** Sits beside an expiry input on the Add driver panel rather than under it. */
   compact?: boolean;
 }) {
@@ -48,9 +46,7 @@ export default function DocumentFileField({
         className={cn(
           "inline-flex items-center gap-2 h-10 px-3 rounded-xl border text-sm",
           compact ? "text-xs" : "w-full",
-          storageConfigured
-            ? "border-sand-300 text-sand-700 cursor-pointer hover:bg-sand-100"
-            : "border-sand-200 bg-sand-50 text-sand-400 cursor-not-allowed",
+          "border-sand-300 text-sand-700 cursor-pointer hover:bg-sand-100",
         )}
       >
         <Upload size={compact ? 14 : 15} aria-hidden="true" />
@@ -59,15 +55,9 @@ export default function DocumentFileField({
           type="file"
           className="hidden"
           accept={ACCEPT}
-          disabled={!storageConfigured}
           onChange={(e) => onChange(e.target.files?.[0] ?? null)}
         />
       </label>
-      {!storageConfigured && !compact && (
-        <p className="text-xs text-sand-500" dir="auto">
-          {t("fleetPortal.importOff")}
-        </p>
-      )}
     </div>
   );
 }

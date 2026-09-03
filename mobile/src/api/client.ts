@@ -778,10 +778,31 @@ export async function postPod(
 }
 
 /** POST /api/agent/orders/:id/failed → FAILED. */
-export async function postOrderFailed(orderId: string, reason: string, note?: string): Promise<{ ok: boolean }> {
+/** Where a failed order goes back to (client request 2026-08-31). */
+export interface ReturnTo {
+  branchName: string | null;
+  address: string | null;
+  lat: number | string | null;
+  lng: number | string | null;
+  phone: string | null;
+}
+
+export async function postOrderFailed(
+  orderId: string,
+  reason: string,
+  note?: string,
+): Promise<{ ok: boolean; returnTo?: ReturnTo }> {
   return agentFetch(`/api/agent/orders/${encodeURIComponent(orderId)}/failed`, {
     method: "POST",
     body: JSON.stringify({ reason, note }),
+  });
+}
+
+/** The hand-back confirmation of the return leg: FAILED → RETURNED. */
+export async function postOrderReturned(orderId: string): Promise<{ ok: boolean }> {
+  return agentFetch(`/api/agent/orders/${encodeURIComponent(orderId)}/returned`, {
+    method: "POST",
+    body: JSON.stringify({}),
   });
 }
 

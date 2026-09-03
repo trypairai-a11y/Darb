@@ -24,6 +24,7 @@ import { previousMonthPeriod } from "../services/wallet/vendorSettlementService"
 import { parseLocalDate, parseLocalDateEnd } from "../utils/date";
 import { presignGetUrl } from "../services/r2Service";
 import { sendInvoice } from "../services/fleet/fleetInvoiceService";
+import { FLEET_DOC_LIST_SELECT, toDocDto } from "../services/fleet/fleetDocumentService";
 import { getFleetDriverComparison } from "../services/fleet/fleetDriverScoreService";
 import {
   approveFleetRequest,
@@ -931,9 +932,10 @@ router.get("/requests/inbox", rbac(...READ), async (req: Request, res: Response)
     const docs = docIds.length
       ? await prisma.fleetDocument.findMany({
           where: { tenantId: req.user!.tenantId, id: { in: docIds } },
+          select: FLEET_DOC_LIST_SELECT,
         })
       : [];
-    const byId = new Map(docs.map((d) => [d.id, d]));
+    const byId = new Map(docs.map((d) => [d.id, toDocDto(d)]));
 
     res.json(
       rows.map((r) => ({
@@ -962,6 +964,41 @@ router.get("/documents/:docId/url", rbac(...READ), async (req: Request, res: Res
     if (!doc) { res.status(404).json({ error: "Document not found" }); return; }
     if (!doc.fileKey) { res.status(404).json({ error: "No file on this document" }); return; }
     res.json({ url: await presignGetUrl(doc.fileKey, 3600) });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/fleets/documents/{docId}/file:
+ *   get:
+ *     tags: [Fleets]
+ *     summary: The document itself — a redirect to R2 when configured, the bytes otherwise
+ *     description: >
+ *       Client note (2026-08-31) — the reviewer side of the same fix as the
+ *       portal's /file endpoint: documents submitted while R2 is unconfigured
+ *       live inline in Postgres, and this is where an approval screen reads
+ *       them from. Fetched with the bearer token as a blob.
+ */
+router.get("/documents/:docId/file", rbac(...READ), async (req: Request, res: Response) => {
+  try {
+    const doc = await prisma.fleetDocument.findFirst({
+      where: { id: req.params.docId, tenantId: req.user!.tenantId },
+      select: { fileKey: true, fileData: true, fileName: true, mimeType: true, type: true },
+    });
+    if (!doc) { res.status(404).json({ error: "Document not found" }); return; }
+    if (doc.fileKey) {
+      res.redirect(await presignGetUrl(doc.fileKey, 3600));
+      return;
+    }
+    if (!doc.fileData) { res.status(404).json({ error: "No file on this document" }); return; }
+    res.setHeader("Content-Type", doc.mimeType ?? "application/octet-stream");
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename="${(doc.fileName ?? doc.type).replace(/["\\]/g, "")}"`,
+    );
+    res.send(Buffer.from(doc.fileData));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -1022,9 +1059,10 @@ router.get("/:id/requests", rbac(...READ), async (req: Request, res: Response) =
     const docs = docIds.length
       ? await prisma.fleetDocument.findMany({
           where: { tenantId: req.user!.tenantId, id: { in: docIds } },
+          select: FLEET_DOC_LIST_SELECT,
         })
       : [];
-    const byId = new Map(docs.map((d) => [d.id, d]));
+    const byId = new Map(docs.map((d) => [d.id, toDocDto(d)]));
 
     res.json(
       rows.map((r) => ({
@@ -1125,11 +1163,11 @@ router.get("/:id/documents", rbac(...READ), async (req: Request, res: Response) 
   try {
     const docs = await prisma.fleetDocument.findMany({
       where: { tenantId: req.user!.tenantId, fleetPartnerId: req.params.id },
-      include: { driver: { select: { id: true, name: true } } },
+      select: { ...FLEET_DOC_LIST_SELECT, driver: { select: { id: true, name: true } } },
       orderBy: [{ driverId: "asc" }, { type: "asc" }, { createdAt: "desc" }],
       take: 500,
     });
-    res.json(docs);
+    res.json(docs.map(toDocDto));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

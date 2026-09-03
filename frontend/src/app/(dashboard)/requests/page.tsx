@@ -232,8 +232,10 @@ function ApprovalsTab() {
   async function openDocument(docId: string) {
     setOpeningDoc(docId);
     try {
-      const { url } = await fleetsApi.documentUrl(docId);
-      window.open(url, "_blank", "noopener,noreferrer");
+      // Client note (2026-08-31): the file endpoint hands back the bytes when
+      // R2 is unconfigured, a redirect to a signed URL when it is.
+      const { objectUrl } = await fleetsApi.documentFile(docId);
+      window.open(objectUrl, "_blank", "noopener,noreferrer");
     } catch (err) {
       toast.error(
         (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
@@ -371,7 +373,7 @@ function ApprovalsTab() {
                     <span className="text-xs text-sand-700" dir="auto">
                       {doc.fileName ?? doc.type.replace(/_/g, " ")}
                     </span>
-                    {doc.fileKey ? (
+                    {doc.fileKey || doc.hasFile ? (
                       <button
                         type="button"
                         data-testid="hq-view-document"

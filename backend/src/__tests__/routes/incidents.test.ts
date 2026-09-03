@@ -100,7 +100,10 @@ describe("Incidents route integration tests", () => {
             createdAt: expect.objectContaining({ gte: expect.any(Date), lte: expect.any(Date) }),
           }),
           orderBy: { createdAt: "desc" },
-          include: { driver: { select: { id: true, name: true, phone: true } } },
+          include: {
+            driver: { select: { id: true, name: true, phone: true } },
+            order: { select: { id: true, orderNumber: true, status: true, driverId: true } },
+          },
         })
       );
     });

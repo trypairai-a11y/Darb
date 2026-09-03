@@ -216,7 +216,20 @@ export interface VendorBranch {
  * Vendor portal sub-role (client revision #9). OWNER is vendor-wide and is
  * what every pre-existing portal user is treated as.
  */
-export type VendorPortalRole = "OWNER" | "FINANCE" | "ORDER_TRACKING";
+/**
+ * Client note (2026-08-31, edit #8): the portals share one role matrix — the
+ * same six types the HQ staff grid uses. The old trio survives only as stored
+ * legacy values; the server normalises them on every response.
+ */
+export type VendorPortalRole =
+  | "ADMIN"
+  | "OPS_MANAGER"
+  | "SUPERVISOR"
+  | "ACCOUNTANT"
+  | "ACCOUNT_MANAGER"
+  | "VIEWER";
+/** What an old row or JWT may still carry. */
+export type StoredVendorRole = VendorPortalRole | "OWNER" | "FINANCE" | "ORDER_TRACKING";
 
 export interface VendorUser {
   id: string;
@@ -464,7 +477,7 @@ export interface Incident {
   resolvedById?: string | null;
   createdAt: string;
   driver?: { id: string; name: string; phone?: string | null } | null;
-  order?: { id: string; orderNumber: string } | null;
+  order?: { id: string; orderNumber: string; status?: string; driverId?: string | null } | null;
   metadata?: Record<string, unknown> | null;
 }
 
@@ -816,7 +829,16 @@ export type FleetTab =
   | "SUPPORT"
   | "TEAM";
 
-export type FleetPortalRole = "OWNER" | "OPERATIONS" | "FINANCE";
+/** Same shared matrix as the vendor portal (edit #8). */
+export type FleetPortalRole =
+  | "ADMIN"
+  | "OPS_MANAGER"
+  | "SUPERVISOR"
+  | "ACCOUNTANT"
+  | "ACCOUNT_MANAGER"
+  | "VIEWER";
+/** What an old row or JWT may still carry. */
+export type StoredFleetRole = FleetPortalRole | "OWNER" | "OPERATIONS" | "FINANCE";
 
 /**
  * One login on a delivery company's own team. The vendor portal's branch
@@ -970,6 +992,8 @@ export interface FleetDocument {
   rejectionReason: string | null;
   reviewedAt: string | null;
   createdAt: string;
+  /** True when a file exists behind the row — R2 key or inline bytes. */
+  hasFile?: boolean;
   driver?: { id: string; name: string } | null;
 }
 
@@ -1116,6 +1140,8 @@ export interface FleetDocumentsPayload {
 export interface FleetDocumentInput {
   type: string;
   fileKey?: string | null;
+  /** Inline bytes while R2 is unconfigured (client note 2026-08-31). */
+  dataBase64?: string | null;
   fileName?: string | null;
   mimeType?: string | null;
   sizeBytes?: number | null;

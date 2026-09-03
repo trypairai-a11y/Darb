@@ -24,24 +24,40 @@ export const FLEET_TAB_ORDER: FleetTab[] = [
   "TEAM",
 ];
 
+/** The shared six-type matrix (edit #8), in presentation order. */
+export const FLEET_ROLE_ORDER: FleetPortalRole[] = [
+  "ADMIN",
+  "OPS_MANAGER",
+  "SUPERVISOR",
+  "ACCOUNTANT",
+  "ACCOUNT_MANAGER",
+  "VIEWER",
+];
+
+/** Legacy stored values normalise into the matrix; mirrors the server. */
+export function normalizeFleetRole(role: string | null | undefined): FleetPortalRole {
+  if (role && (FLEET_ROLE_ORDER as string[]).includes(role)) return role as FleetPortalRole;
+  if (role === "OPERATIONS") return "OPS_MANAGER";
+  if (role === "FINANCE") return "ACCOUNTANT";
+  return "ADMIN";
+}
+
 /**
- * What each role opens with no override.
- *
- * OPERATIONS is the supervisor who calls drivers: people and paperwork, no
- * money. FINANCE is the other half. Both keep Support, because a portal that
- * cannot ask Darb a question sends a WhatsApp instead.
+ * What each role opens with no override — mirrors the server's
+ * FLEET_ROLE_DEFAULT_TABS. Cash stays with the money roles (revision 14); an
+ * owner widens anyone through the per-user tab override.
  */
 const ROLE_DEFAULTS: Record<FleetPortalRole, FleetTab[]> = {
-  OWNER: ["ROSTER", "ISSUES", "DOCUMENTS", "SCORECARD", "PAYOUTS", "CASH", "SUPPORT", "TEAM"],
-  OPERATIONS: ["ROSTER", "ISSUES", "DOCUMENTS", "SUPPORT"],
-  // Revision 14 — Cash is money, so it lands with Finance rather than with the
-  // supervisor who collects the envelopes. An owner who wants their operations
-  // lead settling drivers grants it through the per-user tab override.
-  FINANCE: ["PAYOUTS", "SCORECARD", "CASH", "SUPPORT"],
+  ADMIN: ["ROSTER", "ISSUES", "DOCUMENTS", "SCORECARD", "PAYOUTS", "CASH", "SUPPORT", "TEAM"],
+  OPS_MANAGER: ["ROSTER", "ISSUES", "DOCUMENTS", "SUPPORT"],
+  SUPERVISOR: ["ROSTER", "ISSUES", "SUPPORT"],
+  ACCOUNTANT: ["PAYOUTS", "SCORECARD", "CASH", "SUPPORT"],
+  ACCOUNT_MANAGER: ["SCORECARD", "SUPPORT"],
+  VIEWER: ["SCORECARD", "SUPPORT"],
 };
 
-export function fleetRoleDefaultTabs(role: FleetPortalRole | null | undefined): FleetTab[] {
-  return ROLE_DEFAULTS[role ?? "OWNER"] ?? ROLE_DEFAULTS.OWNER;
+export function fleetRoleDefaultTabs(role: string | null | undefined): FleetTab[] {
+  return ROLE_DEFAULTS[normalizeFleetRole(role)];
 }
 
 /** Which tab owns a portal route. Anything unlisted is infrastructure. */

@@ -783,6 +783,9 @@ describe("GET /api/agent/wallet", () => {
 describe("POST /api/agent/incidents", () => {
   test("BREAKDOWN maps to VEHICLE_BREAKDOWN severity HIGH; sos.raised published", async () => {
     prisma.incident.create.mockResolvedValue({ id: "inc-1", status: "OPEN" });
+    // Client note (2026-08-31): the emergency workflow only runs for a driver
+    // carrying an order, so this test now gives them one.
+    prisma.deliveryOrder.findFirst.mockResolvedValue({ id: "ord-1" });
 
     const res = await auth(request(app).post("/api/agent/incidents")).send({
       category: "BREAKDOWN",
@@ -806,6 +809,25 @@ describe("POST /api/agent/incidents", () => {
     const sos = publishEvent.mock.calls.filter((c) => c[0]?.type === "sos.raised");
     expect(sos).toHaveLength(1);
     expect(sos[0][0].payload).toMatchObject({ incidentId: "inc-1", driverId: "drv-1" });
+  });
+
+  test("no active order → filed RESOLVED, driver offline, HQ not alarmed (client note 2026-08-31)", async () => {
+    prisma.incident.create.mockResolvedValue({ id: "inc-3", status: "RESOLVED" });
+    prisma.deliveryOrder.findFirst.mockResolvedValue(null);
+
+    const res = await auth(request(app).post("/api/agent/incidents")).send({
+      category: "BREAKDOWN",
+      latitude: 29.33,
+      longitude: 48.07,
+    });
+
+    expect(res.status).toBe(201);
+    expect(res.body).toMatchObject({ id: "inc-3", status: "RESOLVED", wentOffline: true });
+    const created = prisma.incident.create.mock.calls[0][0].data;
+    expect(created).toMatchObject({ status: "RESOLVED", type: "VEHICLE_BREAKDOWN" });
+    // The whole point: no alarm reaches the Live screen.
+    const sos = publishEvent.mock.calls.filter((c) => c[0]?.type === "sos.raised");
+    expect(sos).toHaveLength(0);
   });
 
   test("unknown category defaults to SOS with severity CRITICAL", async () => {

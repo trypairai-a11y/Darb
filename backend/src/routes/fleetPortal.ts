@@ -24,9 +24,11 @@ import { parseLocalDate, parseLocalDateEnd } from "../utils/date";
 import { presignPutUrl, presignGetUrl } from "../services/r2Service";
 import {
   COMPANY_DOC_TYPES,
+  FLEET_DOC_LIST_SELECT,
   isCompanyDocType,
   isDriverDocType,
   isStorageConfigured,
+  toDocDto,
 } from "../services/fleet/fleetDocumentService";
 import {
   createFleetRequest,
@@ -49,11 +51,11 @@ import {
 } from "../services/wallet/fleetCashService";
 import { toKwdString } from "../services/wallet/walletService";
 import {
+  ACCEPTED_FLEET_ROLE_INPUTS,
   FLEET_TABS,
   FleetPortalRole,
   FleetTab,
   effectiveFleetTabs,
-  isFleetPortalRole,
   isFleetTab,
   normaliseFleetRole,
   parseFleetPartnerIds,
@@ -131,7 +133,7 @@ async function loadFleetIdentity(req: Request, res: Response, next: NextFunction
 router.use(loadFleetIdentity);
 
 function fleetRoleOf(req: Request): FleetPortalRole {
-  return fleetIdentityOf(req)?.fleetRole ?? "OWNER";
+  return fleetIdentityOf(req)?.fleetRole ?? "ADMIN";
 }
 
 /** Guard a route to a set of portal sub-roles. */
@@ -610,7 +612,7 @@ router.get("/rate", requireFleetTab("PAYOUTS"), async (req: Request, res: Respon
       currentPerKmKwd: money(fleet.perKmFeeKwd),
       // Only an owner may ask, so the client can hide the control instead of
       // showing a button that answers 403 (revision 13 #6, same rule as Team).
-      canPropose: fleetRoleOf(req) === "OWNER",
+      canPropose: fleetRoleOf(req) === "ADMIN",
       pending: pending
         ? {
             id: pending.id,
@@ -644,7 +646,7 @@ router.post(
   requireFleetTab("PAYOUTS"),
   // Money, so it stays with the owner the way minting logins does. Enforced
   // here AND by hiding the control, so nobody is shown a button that 403s.
-  requireFleetRole("OWNER"),
+  requireFleetRole("ADMIN"),
   async (req: Request, res: Response) => {
     try {
       const ctx = await fleetContext(req);
@@ -748,7 +750,7 @@ router.post(
 router.delete(
   "/rate/:id",
   requireFleetTab("PAYOUTS"),
-  requireFleetRole("OWNER"),
+  requireFleetRole("ADMIN"),
   async (req: Request, res: Response) => {
     try {
       const ctx = await fleetContext(req);
@@ -1029,10 +1031,11 @@ router.get("/documents", requireFleetTab("DOCUMENTS"), async (req: Request, res:
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
     const docs = await prisma.fleetDocument.findMany({
       where: { tenantId: ctx.tenantId, fleetPartnerId: ctx.fleetPartnerId, driverId: null },
+      select: FLEET_DOC_LIST_SELECT,
       orderBy: [{ type: "asc" }, { createdAt: "desc" }],
     });
     res.json({
-      documents: docs,
+      documents: docs.map(toDocDto),
       requiredTypes: COMPANY_DOC_TYPES,
       storageConfigured: isStorageConfigured(),
     });
@@ -1113,6 +1116,43 @@ router.get("/documents/:id/url", requireFleetTab("DOCUMENTS"), async (req: Reque
 });
 
 /**
+ * @swagger
+ * /api/fleet/documents/{id}/file:
+ *   get:
+ *     tags: [Fleet Portal]
+ *     summary: The document itself — a redirect to R2 when configured, the bytes otherwise
+ *     description: >
+ *       Client note (2026-08-31) — documents were unviewable because with R2
+ *       unconfigured there was never a file behind them. Now that inline bytes
+ *       exist this is the one door they leave through, same shape as the
+ *       payout invoice endpoint. Fetched with the bearer token as a blob.
+ */
+router.get("/documents/:id/file", requireFleetTab("DOCUMENTS"), async (req: Request, res: Response) => {
+  try {
+    const ctx = await fleetContext(req);
+    if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+    const doc = await prisma.fleetDocument.findFirst({
+      where: { id: req.params.id, tenantId: ctx.tenantId, fleetPartnerId: ctx.fleetPartnerId },
+      select: { fileKey: true, fileData: true, fileName: true, mimeType: true, type: true },
+    });
+    if (!doc) { res.status(404).json({ error: "Document not found" }); return; }
+    if (doc.fileKey) {
+      res.redirect(await presignGetUrl(doc.fileKey, 3600));
+      return;
+    }
+    if (!doc.fileData) { res.status(404).json({ error: "No file on this document" }); return; }
+    res.setHeader("Content-Type", doc.mimeType ?? "application/octet-stream");
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename="${(doc.fileName ?? doc.type).replace(/["\\]/g, "")}"`,
+    );
+    res.send(Buffer.from(doc.fileData));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
  * Validate + normalise one document submission from the client.
  *
  * Returns both fields optional rather than a discriminated union: ts-jest
@@ -1123,6 +1163,7 @@ interface DocInputResult {
   value?: {
     type: string;
     fileKey: string | null;
+    fileData: Buffer | null;
     fileName: string | null;
     mimeType: string | null;
     sizeBytes: number | null;
@@ -1131,8 +1172,11 @@ interface DocInputResult {
   error?: string;
 }
 
+/** 3 MB — same ceiling as the payout invoice, for the same Vercel-edge reason. */
+const DOC_MAX_BYTES = 3 * 1024 * 1024;
+
 function readDocInput(body: any, keyPrefix?: string): DocInputResult {
-  const { type, fileKey, fileName, mimeType, sizeBytes, expiryDate } = body ?? {};
+  const { type, fileKey, fileName, mimeType, sizeBytes, expiryDate, dataBase64 } = body ?? {};
   if (!type || (!isCompanyDocType(type) && !isDriverDocType(type))) {
     return { error: "Unknown document type" };
   }
@@ -1142,7 +1186,22 @@ function readDocInput(body: any, keyPrefix?: string): DocInputResult {
   if (typeof fileKey === "string" && fileKey.length > 0 && keyPrefix && !fileKey.startsWith(keyPrefix)) {
     return { error: "That file does not belong to this account" };
   }
-  if (!fileKey && !expiryDate) {
+  // Client note (2026-08-31): with R2 unconfigured the bytes come inline,
+  // exactly like the payout invoice, so a document can actually carry a file.
+  let fileData: Buffer | null = null;
+  if (!fileKey && typeof dataBase64 === "string" && dataBase64.length > 0) {
+    const base64 = dataBase64.includes(",")
+      ? dataBase64.slice(dataBase64.indexOf(",") + 1)
+      : dataBase64;
+    try {
+      fileData = Buffer.from(base64, "base64");
+    } catch {
+      return { error: "The document file could not be read" };
+    }
+    if (fileData.length === 0) return { error: "The document file is empty" };
+    if (fileData.length > DOC_MAX_BYTES) return { error: "The document must be under 3 MB" };
+  }
+  if (!fileKey && !fileData && !expiryDate) {
     return { error: "Give a file or an expiry date" };
   }
   const expiry = expiryDate ? new Date(expiryDate) : null;
@@ -1153,9 +1212,10 @@ function readDocInput(body: any, keyPrefix?: string): DocInputResult {
     value: {
       type,
       fileKey: fileKey ?? null,
+      fileData,
       fileName: fileName ?? null,
       mimeType: mimeType ?? null,
-      sizeBytes: typeof sizeBytes === "number" ? sizeBytes : null,
+      sizeBytes: fileData ? fileData.length : typeof sizeBytes === "number" ? sizeBytes : null,
       expiryDate: expiry,
     },
   };
@@ -1202,7 +1262,7 @@ router.post("/documents", requireFleetTab("DOCUMENTS"), async (req: Request, res
       requestedById: req.user!.userId,
       fleetName: fleet?.name,
     });
-    res.status(201).json({ document: doc, requestId: request.id });
+    res.status(201).json({ document: toDocDto(doc), requestId: request.id });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
@@ -1226,6 +1286,7 @@ router.get("/drivers/:id", requireFleetTab("ROSTER"), async (req: Request, res: 
       getDriverRating(ctx.tenantId, driver.id),
       prisma.fleetDocument.findMany({
         where: { tenantId: ctx.tenantId, driverId: driver.id },
+        select: FLEET_DOC_LIST_SELECT,
         orderBy: [{ type: "asc" }, { createdAt: "desc" }],
       }),
       prisma.fleetChangeRequest.findMany({
@@ -1260,7 +1321,7 @@ router.get("/drivers/:id", requireFleetTab("ROSTER"), async (req: Request, res: 
         foodHandlingCertExpiry: driver.foodHandlingCertExpiry, foodHandlingCertStatus: driver.foodHandlingCertStatus,
       },
       rating,
-      documents,
+      documents: documents.map(toDocDto),
       requests,
       issues,
       activity,
@@ -1387,7 +1448,7 @@ router.post("/drivers", requireFleetTab("ROSTER"), async (req: Request, res: Res
       fleetName: fleet?.name,
     });
 
-    res.status(201).json({ request, documents: created });
+    res.status(201).json({ request, documents: created.map(toDocDto) });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
@@ -1503,7 +1564,7 @@ router.post("/drivers/:id/requests", requireFleetTab("ROSTER"), async (req: Requ
         requestedById: req.user!.userId,
         fleetName: fleet?.name,
       });
-      res.status(201).json({ request, document: doc });
+      res.status(201).json({ request, document: toDocDto(doc) });
       return;
     }
 
@@ -2486,7 +2547,7 @@ function readPartnerIdsInput(
  */
 router.post(
   "/team",
-  requireFleetRole("OWNER"),
+  requireFleetRole("ADMIN"),
   requireFleetTab("TEAM"),
   async (req: Request, res: Response) => {
     try {
@@ -2513,8 +2574,10 @@ router.post(
       if (!password || password.length < 8) {
         res.status(400).json({ error: "The password must be at least 8 characters" }); return;
       }
-      if (!isFleetPortalRole(fleetRole)) {
-        res.status(400).json({ error: "Role must be OWNER, OPERATIONS or FINANCE" }); return;
+      // The shared matrix (client note 2026-08-31, edit #8). Legacy trio
+      // values still normalise, so an older client keeps working.
+      if (!fleetRole || !ACCEPTED_FLEET_ROLE_INPUTS.includes(fleetRole)) {
+        res.status(400).json({ error: "Unknown role" }); return;
       }
 
       const existing = await prisma.user.findUnique({ where: { email: email.trim() } });
@@ -2542,7 +2605,7 @@ router.post(
           // fleet login has carried since revision 1.
           fleetPartnerId: scoped ? scoped[0] : ctx.fleetPartnerId,
           ownerGroupId,
-          fleetRole,
+          fleetRole: normaliseFleetRole(fleetRole),
           fleetTabs: tabs === undefined || tabs === null ? undefined : tabs,
           fleetPartnerIds: scoped ?? undefined,
         },
@@ -2575,7 +2638,7 @@ router.post(
  */
 router.patch(
   "/team/:id",
-  requireFleetRole("OWNER"),
+  requireFleetRole("ADMIN"),
   requireFleetTab("TEAM"),
   async (req: Request, res: Response) => {
     try {
@@ -2614,11 +2677,11 @@ router.patch(
       if (typeof req.body.phone === "string") data.phone = req.body.phone.trim() || null;
       if (typeof req.body.isActive === "boolean") data.isActive = req.body.isActive;
       if (req.body.fleetRole !== undefined) {
-        if (!isFleetPortalRole(req.body.fleetRole)) {
-          res.status(400).json({ error: "Role must be OWNER, OPERATIONS or FINANCE" });
+        if (!ACCEPTED_FLEET_ROLE_INPUTS.includes(req.body.fleetRole)) {
+          res.status(400).json({ error: "Unknown role" });
           return;
         }
-        data.fleetRole = req.body.fleetRole;
+        data.fleetRole = normaliseFleetRole(req.body.fleetRole);
       }
       if ("fleetTabs" in req.body) {
         const tabs = readFleetTabsInput(req.body.fleetTabs);

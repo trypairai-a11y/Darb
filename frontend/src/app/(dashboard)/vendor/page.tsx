@@ -51,7 +51,9 @@ const CANCELLABLE: DeliveryOrderStatus[] = [
 ];
 
 /** Only these portal roles may cancel; the endpoint enforces the same pair. */
-const CAN_CANCEL_ROLES = ["OWNER", "ORDER_TRACKING"];
+// Edit #8: the operational roles of the shared matrix. Accountants and
+// viewers watch; they do not call an order off.
+const CAN_CANCEL_ROLES = ["ADMIN", "OPS_MANAGER", "SUPERVISOR"];
 
 const EVENT_STATUS: Partial<Record<DarbLiveEvent["type"], DeliveryOrderStatus>> = {
   "order.rejected": "REJECTED",
@@ -314,7 +316,7 @@ export default function VendorBoardPage() {
   // accountant's login is refused by the endpoint, so neither is offered the
   // button. The role comes from the server's answer, not the token.
   const mayCancel =
-    !inspectVendorId && CAN_CANCEL_ROLES.includes(meQuery.data?.portalRole ?? "OWNER");
+    !inspectVendorId && CAN_CANCEL_ROLES.includes(meQuery.data?.portalRole ?? "ADMIN");
   const openCancel = (order: DeliveryOrder) => {
     setCancelReason("");
     setCancelTarget(order);

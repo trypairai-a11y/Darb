@@ -89,6 +89,15 @@ function startOfToday(): Date {
   return d;
 }
 
+/** Kuwait midnight of the current Kuwait day, as an instant. */
+function kuwaitTodayStart(): Date {
+  const shifted = new Date(Date.now() + 3 * 3_600_000);
+  return new Date(
+    Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate()) -
+      3 * 3_600_000,
+  );
+}
+
 /**
  * The reporting window for the period-scoped tiles (client revision #26).
  * Defaults to "today onwards", which is exactly the behaviour this service had
@@ -151,7 +160,11 @@ export async function getCockpitSummary(
     prisma.shiftRequest.findMany({
       where: {
         tenantId,
-        date: { gte: startOfToday(), lt: new Date(startOfToday().getTime() + 86_400_000) },
+        // ShiftRequest.date is stored as KUWAIT midnight (routes/agent.ts
+        // kuwaitMidnight), which on a UTC host is 21:00Z the previous day —
+        // filtering from server-local midnight silently dropped every booking
+        // for most of the day. Same +03:00 frame as the window bounds below.
+        date: { gte: kuwaitTodayStart(), lt: new Date(kuwaitTodayStart().getTime() + 86_400_000) },
         status: "APPROVED",
       },
       select: {

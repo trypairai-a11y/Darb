@@ -1945,6 +1945,7 @@ exports.Prisma.FleetDocumentScalarFieldEnum = {
   driverId: 'driverId',
   type: 'type',
   fileKey: 'fileKey',
+  fileData: 'fileData',
   fileName: 'fileName',
   mimeType: 'mimeType',
   sizeBytes: 'sizeBytes',

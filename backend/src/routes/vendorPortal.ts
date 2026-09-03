@@ -30,11 +30,15 @@ import {
   suggestTopUp,
 } from "../services/wallet/topUpService";
 import {
+  ACCEPTED_VENDOR_ROLE_INPUTS,
   VENDOR_TABS,
+  type VendorPortalRole,
   type VendorTab,
   effectiveVendorTabs,
   isVendorTab,
+  normaliseVendorRole,
   parseVendorTabs,
+  vendorRoleTakesBranch,
 } from "../services/vendorTabService";
 
 /**
@@ -80,8 +84,13 @@ const pauseSchema = z.object({
  *   ORDER_TRACKING — tracks orders and raises support requests. Pinned to one
  *                    branch when a branch was assigned, across all of them
  *                    when it was not. Never sees money.
+ *
+ * Client note (2026-08-31, edit #8): the portals share one role matrix now
+ * (ADMIN / OPS_MANAGER / SUPERVISOR / ACCOUNTANT / ACCOUNT_MANAGER / VIEWER).
+ * Every stored legacy value normalises into it in loadVendorIdentity, so all
+ * comparisons below are against canonical names only.
  */
-type VendorRole = "OWNER" | "FINANCE" | "ORDER_TRACKING";
+type VendorRole = VendorPortalRole;
 
 /**
  * Who this caller is, read from the User row rather than from their token
@@ -129,7 +138,7 @@ async function loadVendorIdentity(req: Request, res: Response, next: NextFunctio
     });
     const role = row?.vendorRole ?? req.user.vendorRole;
     (req as { _vendorIdentity?: VendorIdentity })._vendorIdentity = {
-      vendorRole: role === "FINANCE" || role === "ORDER_TRACKING" ? role : "OWNER",
+      vendorRole: normaliseVendorRole(role),
       // Falls back to the token only when the row could not be read at all, so
       // a login whose branch was cleared is not left pinned to the old one.
       branchId: row ? (row.branchId ?? null) : (req.user.branchId ?? null),
@@ -145,7 +154,7 @@ async function loadVendorIdentity(req: Request, res: Response, next: NextFunctio
 router.use(loadVendorIdentity);
 
 function vendorRoleOf(req: Request): VendorRole {
-  return identityOf(req)?.vendorRole ?? "OWNER";
+  return identityOf(req)?.vendorRole ?? "ADMIN";
 }
 
 /** The name to put on anything this caller writes. */
@@ -171,7 +180,7 @@ function scopedBranchId(req: Request): string | null {
   // A tracker with no branch assigned covers all of them and chooses like an
   // owner, which is the other half of how the client uses this role.
   const identity = identityOf(req);
-  if (identity?.vendorRole === "ORDER_TRACKING" && identity.branchId) return identity.branchId;
+  if (identity?.vendorRole === "SUPERVISOR" && identity.branchId) return identity.branchId;
   const chosen = typeof req.query.branchId === "string" ? req.query.branchId.trim() : "";
   return chosen.length > 0 ? chosen : null;
 }
@@ -304,7 +313,7 @@ router.get("/me", async (req: Request, res: Response) => {
     // asking for a filter, and it must not make the portal think this login is
     // fenced to one counter.
     const pinned =
-      identity?.vendorRole === "ORDER_TRACKING" ? (identity.branchId ?? null) : null;
+      identity?.vendorRole === "SUPERVISOR" ? (identity.branchId ?? null) : null;
     const branches = pinned ? vendor.branches.filter((b) => b.id === pinned) : vendor.branches;
     res.json({
       ...vendor,
@@ -543,7 +552,7 @@ function cellText(value: ExcelJS.CellValue): string {
  */
 router.get(
   "/orders/import-template.xlsx",
-  requireVendorRole("OWNER", "ORDER_TRACKING"),
+  requireVendorRole("ADMIN", "OPS_MANAGER", "SUPERVISOR"),
   requireVendorTab("ORDERS"),
   async (req: Request, res: Response) => {
     try {
@@ -652,7 +661,7 @@ interface ImportRowResult {
  */
 router.post(
   "/orders/bulk-import",
-  requireVendorRole("OWNER", "ORDER_TRACKING"),
+  requireVendorRole("ADMIN", "OPS_MANAGER", "SUPERVISOR"),
   requireVendorTab("ORDERS"),
   importUpload.single("file"),
   async (req: Request, res: Response) => {
@@ -970,7 +979,7 @@ router.get("/orders/:id", requireVendorTab("ORDERS"), async (req: Request, res: 
  */
 router.post(
   "/orders",
-  requireVendorRole("OWNER", "ORDER_TRACKING"),
+  requireVendorRole("ADMIN", "OPS_MANAGER", "SUPERVISOR"),
   requireVendorTab("ORDERS"),
   validateBody(vendorCreateOrderSchema),
   async (req: Request, res: Response) => {
@@ -1012,7 +1021,7 @@ router.post(
  */
 router.post(
   "/orders/:id/cancel",
-  requireVendorRole("OWNER", "ORDER_TRACKING"),
+  requireVendorRole("ADMIN", "OPS_MANAGER", "SUPERVISOR"),
   requireVendorTab("ORDERS"),
   validateBody(vendorCancelSchema),
   async (req: Request, res: Response) => {
@@ -1072,7 +1081,7 @@ router.post(
  */
 router.post(
   "/pause",
-  requireVendorRole("OWNER"),
+  requireVendorRole("ADMIN"),
   requireVendorTab("SETTINGS"),
   validateBody(pauseSchema),
   async (req: Request, res: Response) => {
@@ -1822,7 +1831,11 @@ const vendorTeamUserSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
   name: z.string().min(1).max(120),
   phone: z.string().max(30).optional(),
-  vendorRole: z.enum(["OWNER", "FINANCE", "ORDER_TRACKING"]),
+  // The shared matrix (client note 2026-08-31, edit #8); the legacy trio is
+  // still accepted from older clients and normalised before storing.
+  vendorRole: z
+    .string()
+    .refine((v) => ACCEPTED_VENDOR_ROLE_INPUTS.includes(v), "Unknown role"),
   branchId: z.string().min(1).optional().nullable(),
   // Revision 10 (#6). Omit to inherit the role's tabs, which is what every
   // login did before this existed. An explicit list narrows or widens it.
@@ -1853,6 +1866,8 @@ router.get("/team", requireVendorTab("TEAM"), async (req: Request, res: Response
     res.json(
       users.map((u) => ({
         ...u,
+        // Canonical matrix names on the wire, whatever the row still stores.
+        vendorRole: normaliseVendorRole(u.vendorRole),
         vendorTabs: parseVendorTabs(u.vendorTabs),
         effectiveTabs: effectiveVendorTabs(u.vendorRole, u.vendorTabs),
       })),
@@ -1864,7 +1879,7 @@ router.get("/team", requireVendorTab("TEAM"), async (req: Request, res: Response
 
 router.post(
   "/team",
-  requireVendorRole("OWNER"),
+  requireVendorRole("ADMIN"),
   requireVendorTab("TEAM"),
   validateBody(vendorTeamUserSchema),
   async (req: Request, res: Response) => {
@@ -1895,11 +1910,11 @@ router.post(
           phone,
           role: "VENDOR",
           vendorId: vendorId!,
-          vendorRole,
-          // Owner and finance are shop-wide, so they carry no branch even if
-          // one was posted. Only a tracker can be pinned, and only optionally:
-          // a tracker with no branch covers all of them.
-          branchId: vendorRole === "ORDER_TRACKING" ? (branchId ?? null) : null,
+          vendorRole: normaliseVendorRole(vendorRole),
+          // Every other role is shop-wide, so it carries no branch even if one
+          // was posted. Only a supervisor (the old tracker) can be pinned, and
+          // only optionally: one with no branch covers all of them.
+          branchId: vendorRoleTakesBranch(vendorRole) ? (branchId ?? null) : null,
           vendorTabs: Array.isArray(vendorTabs) ? (vendorTabs as string[]) : undefined,
         },
         select: {
@@ -1909,6 +1924,7 @@ router.post(
       });
       res.status(201).json({
         ...user,
+        vendorRole: normaliseVendorRole(user.vendorRole),
         vendorTabs: parseVendorTabs(user.vendorTabs),
         effectiveTabs: effectiveVendorTabs(user.vendorRole, user.vendorTabs),
       });
@@ -1918,7 +1934,7 @@ router.post(
   }
 );
 
-router.patch("/team/:id", requireVendorRole("OWNER"), requireVendorTab("TEAM"), async (req: Request, res: Response) => {
+router.patch("/team/:id", requireVendorRole("ADMIN"), requireVendorTab("TEAM"), async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId, userId } = req.user!;
     if (req.params.id === userId) {
@@ -1935,11 +1951,11 @@ router.patch("/team/:id", requireVendorRole("OWNER"), requireVendorTab("TEAM"), 
     const data: any = {};
     if (typeof req.body.isActive === "boolean") data.isActive = req.body.isActive;
     if (typeof req.body.vendorRole === "string") {
-      if (!["OWNER", "FINANCE", "ORDER_TRACKING"].includes(req.body.vendorRole)) {
+      if (!ACCEPTED_VENDOR_ROLE_INPUTS.includes(req.body.vendorRole)) {
         res.status(400).json({ error: "Unknown role" }); return;
       }
-      data.vendorRole = req.body.vendorRole;
-      if (req.body.vendorRole !== "ORDER_TRACKING") data.branchId = null;
+      data.vendorRole = normaliseVendorRole(req.body.vendorRole);
+      if (!vendorRoleTakesBranch(req.body.vendorRole)) data.branchId = null;
     }
     if ("branchId" in req.body) {
       const bid = req.body.branchId || null;
@@ -1969,6 +1985,7 @@ router.patch("/team/:id", requireVendorRole("OWNER"), requireVendorTab("TEAM"), 
     });
     res.json({
       ...user,
+      vendorRole: normaliseVendorRole(user.vendorRole),
       vendorTabs: parseVendorTabs(user.vendorTabs),
       effectiveTabs: effectiveVendorTabs(user.vendorRole, user.vendorTabs),
     });

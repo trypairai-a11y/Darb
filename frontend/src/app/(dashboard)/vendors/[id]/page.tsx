@@ -24,6 +24,7 @@ import type {
   WalletEntry,
 } from "@/types/darb";
 import { useRole } from "@/hooks/useRole";
+import { normalizeVendorRole, VENDOR_ROLE_ORDER } from "@/lib/vendorTabs";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd, formatDateTime } from "@/i18n/format";
 import { cn } from "@/lib/cn";
@@ -179,8 +180,6 @@ function ProfileTab({ vendor, onSaved }: { vendor: Vendor; onSaved: () => void }
     // Revision 4 (#7) — empty means no plan, which prices this merchant on the
     // tenant-wide default rather than leaving it unpriced.
     deliveryPlanId: vendor.deliveryPlanId ?? "",
-    pricingModel: vendor.pricingModel ?? "",
-    subscriptionKwd: vendor.subscriptionKwd == null ? "" : String(vendor.subscriptionKwd),
     requiresCarOnly: !!vendor.requiresCarOnly,
     isActive: vendor.isActive !== false,
   });
@@ -198,8 +197,6 @@ function ProfileTab({ vendor, onSaved }: { vendor: Vendor; onSaved: () => void }
       nameAr: vendor.nameAr ?? "",
       phone: vendor.phone ?? "",
       deliveryPlanId: vendor.deliveryPlanId ?? "",
-      pricingModel: vendor.pricingModel ?? "",
-      subscriptionKwd: vendor.subscriptionKwd == null ? "" : String(vendor.subscriptionKwd),
       requiresCarOnly: !!vendor.requiresCarOnly,
       isActive: vendor.isActive !== false,
     });
@@ -213,11 +210,6 @@ function ProfileTab({ vendor, onSaved }: { vendor: Vendor; onSaved: () => void }
         nameAr: form.nameAr.trim() || null,
         phone: form.phone.trim() || null,
         deliveryPlanId: form.deliveryPlanId || null,
-        pricingModel: form.pricingModel === "" ? null : (form.pricingModel as "SUBSCRIPTION" | "MARGIN"),
-        subscriptionKwd:
-          form.pricingModel === "SUBSCRIPTION" && form.subscriptionKwd.trim()
-            ? form.subscriptionKwd.trim()
-            : null,
         requiresCarOnly: form.requiresCarOnly,
         isActive: form.isActive,
       });
@@ -295,46 +287,10 @@ function ProfileTab({ vendor, onSaved }: { vendor: Vendor; onSaved: () => void }
           </select>
           <p className="text-xs text-sand-600 mt-2">{t("vendorsPage.deliveryPlanHint")}</p>
         </div>
-        {/* Edit #4 (2026-08-22). Replaces the old Target Price field. What
-            Darb has with the delivery companies is one of two models, and the
-            profile now says which: a flat monthly subscription, or the margin
-            — the difference between the company's price and the shop's
-            accepted price, taken per order and stored nowhere. */}
-        <div>
-          <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
-            {t("vendorsPage.pricingModel")}
-          </label>
-          <select
-            data-testid="vendor-pricing-model"
-            value={form.pricingModel}
-            onChange={(e) =>
-              setForm({ ...form, pricingModel: e.target.value })
-            }
-            className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-          >
-            <option value="">{t("vendorsPage.pricingModelNone")}</option>
-            <option value="SUBSCRIPTION">{t("vendorsPage.pricingModelSubscription")}</option>
-            <option value="MARGIN">{t("vendorsPage.pricingModelMargin")}</option>
-          </select>
-          {form.pricingModel === "SUBSCRIPTION" ? (
-            <div className="mt-2">
-              <label className="block text-xs font-medium text-sand-700 mb-1.5 uppercase tracking-wide">
-                {t("vendorsPage.subscriptionFee")}
-              </label>
-              <input
-                type="text"
-                inputMode="decimal"
-                dir="ltr"
-                data-testid="vendor-subscription-fee"
-                placeholder={t("vendorsPage.subscriptionFeeNone")}
-                value={form.subscriptionKwd}
-                onChange={(e) => setForm({ ...form, subscriptionKwd: e.target.value })}
-                className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-              />
-            </div>
-          ) : null}
-          <p className="text-xs text-sand-600 mt-2">{t("vendorsPage.pricingModelHint")}</p>
-        </div>
+        {/* Client note (2026-08-31): the pricing model belongs to the delivery
+            companies, so the field left this profile — a vendor is priced by
+            its Delivery Plan alone. The stored value is untouched; only the
+            control is gone, so nothing here can overwrite it either. */}
         <div className="flex items-center gap-6">
           <label className="flex items-center gap-2 text-sm text-sand-800 cursor-pointer">
             <input
@@ -576,6 +532,20 @@ function BranchesTab({ vendorId }: { vendorId: string }) {
         columns={columns}
         data={branches}
         loading={branchesQuery.isLoading}
+        // Client note (2026-08-31): "trying to press on it, not working" — the
+        // edit panel only opened from the small pencil icon, so the row itself
+        // read as broken. The whole row opens it now; the icons stopPropagation.
+        onRowClick={(row: VendorBranch) =>
+          setForm({
+            id: row.id,
+            name: row.name,
+            address: row.address ?? "",
+            phone: row.phone ?? "",
+            lat: String(row.lat ?? ""),
+            lng: String(row.lng ?? ""),
+            deliveryPlanId: row.deliveryPlanId ?? "",
+          })
+        }
         emptyMessage={t("vendorsPage.noBranches")}
       />
 
@@ -999,7 +969,7 @@ function UsersTab({ vendorId }: { vendorId: string }) {
     // list has always shown it; the create form was the one place that could
     // not fill it, so every portal login arrived without a number.
     phone: "",
-    vendorRole: "OWNER" as VendorPortalRole,
+    vendorRole: "ADMIN" as VendorPortalRole,
     branchId: "",
   });
   const [saving, setSaving] = useState(false);
@@ -1017,16 +987,12 @@ function UsersTab({ vendorId }: { vendorId: string }) {
   });
   const branches = useMemo(() => unwrapList<VendorBranch>(branchesQuery.data), [branchesQuery.data]);
 
-  // Only an order-tracking login is pinned to one branch; owner and finance
-  // are vendor-wide, so the branch picker is irrelevant for them.
-  const needsBranch = form.vendorRole === "ORDER_TRACKING";
+  // Only a supervisor login is pinned to one branch; every other role is
+  // vendor-wide, so the branch picker is irrelevant for them (edit #8).
+  const needsBranch = form.vendorRole === "SUPERVISOR";
 
-  const roleLabel = (role: VendorPortalRole | null | undefined) =>
-    role === "FINANCE"
-      ? t("vendorsPage.roleFinance")
-      : role === "ORDER_TRACKING"
-        ? t("vendorsPage.roleOrderTracking")
-        : t("vendorsPage.roleOwner");
+  const roleLabel = (role: string | null | undefined) =>
+    t(`portalRoles.${normalizeVendorRole(role)}`);
 
   async function handleCreate() {
     if (!form.name.trim() || !form.email.trim() || !form.password) return;
@@ -1050,7 +1016,7 @@ function UsersTab({ vendorId }: { vendorId: string }) {
         email: "",
         password: "",
         phone: "",
-        vendorRole: "OWNER",
+        vendorRole: "ADMIN",
         branchId: "",
       });
       await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", vendorId, "users"] });
@@ -1191,9 +1157,11 @@ function UsersTab({ vendorId }: { vendorId: string }) {
                 }
                 className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
-                <option value="OWNER">{t("vendorsPage.roleOwner")}</option>
-                <option value="FINANCE">{t("vendorsPage.roleFinance")}</option>
-                <option value="ORDER_TRACKING">{t("vendorsPage.roleOrderTracking")}</option>
+                {VENDOR_ROLE_ORDER.map((r) => (
+                  <option key={r} value={r}>
+                    {t(`portalRoles.${r}`)}
+                  </option>
+                ))}
               </select>
             </div>
             <div>

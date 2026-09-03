@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Redirect, useRouter } from "expo-router";
-import { Check } from "lucide-react-native";
-import { postOrderFailed } from "../../src/api/client";
+import { Check, Phone, Store } from "lucide-react-native";
+import { postOrderFailed, postOrderReturned, type ReturnTo } from "../../src/api/client";
 import { Button, NavBar, Screen } from "../../src/components/hig";
 import { t as tr } from "../../src/i18n/strings";
 import { hydrateNow } from "../../src/services/offerChannel";
@@ -22,22 +22,87 @@ export default function DeliveryFailedScreen() {
   const [reason, setReason] = useState<FailReason | null>(null);
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // Client request 2026-08-31: a failed delivery goes back to the shop, so
+  // reporting it opens the return leg instead of dropping straight to Home.
+  // Held locally because the store's activeOrder is already cleared by then.
+  const [returnLeg, setReturnLeg] = useState<{ orderId: string; to: ReturnTo | null } | null>(null);
 
   const submit = useCallback(async () => {
     if (!order || !reason || submitting) return;
     if (reason === "OTHER" && !note.trim()) return;
     setSubmitting(true);
     try {
-      await postOrderFailed(order.id, reason, note.trim() || undefined);
+      const res = await postOrderFailed(order.id, reason, note.trim() || undefined);
+      setReturnLeg({ orderId: order.id, to: res.returnTo ?? null });
       completeOrder();
       void hydrateNow();
-      router.replace("/(tabs)/home");
     } catch (e: any) {
       Alert.alert(tr("failed.title"), e?.message || tr("common.retry"));
     } finally {
       setSubmitting(false);
     }
-  }, [order, reason, note, submitting, completeOrder, router]);
+  }, [order, reason, note, submitting, completeOrder]);
+
+  const confirmReturned = useCallback(async () => {
+    if (!returnLeg || submitting) return;
+    setSubmitting(true);
+    try {
+      await postOrderReturned(returnLeg.orderId);
+      router.replace("/(tabs)/home");
+    } catch (e: any) {
+      Alert.alert(tr("failed.return_title"), e?.message || tr("common.retry"));
+    } finally {
+      setSubmitting(false);
+    }
+  }, [returnLeg, submitting, router]);
+
+  // ─── Return leg ───
+  if (returnLeg) {
+    const to = returnLeg.to;
+    return (
+      <Screen>
+        <NavBar title={tr("failed.return_title")} />
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <View style={styles.returnCard}>
+            <Store size={28} color={c.tint} />
+            <Text style={[t.headline, { marginTop: space.sm }]}>
+              {to?.branchName ?? tr("failed.return_shop")}
+            </Text>
+            {to?.address ? (
+              <Text style={[t.subheadline, { color: c.secondaryLabel, marginTop: 4, textAlign: "center" }]}>
+                {to.address}
+              </Text>
+            ) : null}
+            {to?.phone ? (
+              <TouchableOpacity
+                style={styles.callRow}
+                activeOpacity={0.7}
+                onPress={() => Linking.openURL(`tel:${to.phone}`).catch(() => {})}
+              >
+                <Phone size={15} color={c.tint} />
+                <Text style={[t.subheadline, { color: c.tint }]}>{to.phone}</Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+          <Text style={[t.subheadline, { color: c.secondaryLabel, marginTop: space.lg, textAlign: "center" }]}>
+            {tr("failed.return_body")}
+          </Text>
+          <Button
+            title={tr("failed.return_confirm")}
+            onPress={() => void confirmReturned()}
+            disabled={submitting}
+            style={{ marginTop: space.xl }}
+          />
+          <Button
+            title={tr("failed.return_later")}
+            variant="tinted"
+            onPress={() => router.replace("/(tabs)/home")}
+            style={{ marginTop: space.md }}
+          />
+        </ScrollView>
+      </Screen>
+    );
+  }
 
   if (!order) {
     return <Redirect href="/(tabs)/home" />;
@@ -105,4 +170,9 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     borderRadius: radius.field, borderWidth: 1, borderColor: c.hairline,
     padding: space.base, minHeight: 90, textAlignVertical: "top", marginTop: space.md, ...continuous,
   },
+  returnCard: {
+    alignItems: "center", backgroundColor: c.groupedSecondary, borderRadius: radius.card,
+    borderWidth: 1, borderColor: c.hairline, padding: space.lg, marginTop: space.lg, ...continuous,
+  },
+  callRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: space.sm, padding: 4 },
 });

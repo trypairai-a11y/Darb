@@ -185,6 +185,11 @@ const AR: Record<string, string> = {
   "failed.reason.OTHER": "سبب آخر",
   "failed.note_placeholder": "أضف ملاحظة قصيرة…",
   "failed.submit": "الإبلاغ عن فشل التوصيل",
+  "failed.return_title": "أعد الطلب",
+  "failed.return_shop": "المتجر",
+  "failed.return_body": "أعد الطلب إلى المتجر الذي استلمته منه وسلّمه لهم ثم أكّد هنا.",
+  "failed.return_confirm": "أعدت الطلب إلى المتجر",
+  "failed.return_later": "لا أستطيع إعادته الآن",
 
   // ─── Wallet ───
   "wallet.title": "المحفظة",

@@ -135,6 +135,51 @@ export async function missingRequiredDocs(
   return REQUIRED_DRIVER_DOCS.filter((t) => !held.has(t));
 }
 
+/**
+ * Client note (2026-08-31): "still I can't see the documents". Root cause —
+ * with R2 unconfigured (production today) the portal could only submit a
+ * document's metadata, so there was never a file to view. Documents now take
+ * the same inline-bytes fallback the payout invoice uses, and these helpers
+ * are the seam: list queries select everything EXCEPT the bytea column, and
+ * responses carry `hasFile` so the UI knows a chip is openable.
+ */
+export const FLEET_DOC_LIST_SELECT = {
+  id: true,
+  tenantId: true,
+  fleetPartnerId: true,
+  driverId: true,
+  type: true,
+  fileKey: true,
+  fileName: true,
+  mimeType: true,
+  sizeBytes: true,
+  expiryDate: true,
+  status: true,
+  rejectionReason: true,
+  uploadedById: true,
+  reviewedById: true,
+  reviewedAt: true,
+  supersededById: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
+/**
+ * Strip the bytes (a freshly created row still carries them) and answer
+ * whether a file exists at all. On select-queried rows fileData is absent, so
+ * sizeBytes stands in: it is only ever written alongside an actual file —
+ * expiry-date-only submissions leave it null.
+ */
+export function toDocDto<T extends { fileKey: string | null; sizeBytes: number | null }>(
+  doc: T,
+): Omit<T, "fileData"> & { hasFile: boolean } {
+  const { fileData, ...rest } = doc as T & { fileData?: Uint8Array | null };
+  return {
+    ...rest,
+    hasFile: doc.fileKey != null || fileData != null || doc.sizeBytes != null,
+  };
+}
+
 /** Is Cloudflare R2 wired up on this host? */
 export function isStorageConfigured(): boolean {
   return !!(

@@ -1931,6 +1931,8 @@ export interface Messages {
     call: string;
     putOffline: string;
     driverOffline: string;
+    reassignOrder: string;
+    orderReassigned: string;
     allClear: string;
     autoClearHint: string;
     clearedSection: string;
@@ -2480,6 +2482,21 @@ export interface Messages {
     cancelConfirm: string;
     cancelKeep: string;
     cancelDone: string;
+  };
+  // Client note (2026-08-31, edit #8): one role matrix across all portals.
+  portalRoles: {
+    ADMIN: string;
+    OPS_MANAGER: string;
+    SUPERVISOR: string;
+    ACCOUNTANT: string;
+    ACCOUNT_MANAGER: string;
+    VIEWER: string;
+    hintADMIN: string;
+    hintOPS_MANAGER: string;
+    hintSUPERVISOR: string;
+    hintACCOUNTANT: string;
+    hintACCOUNT_MANAGER: string;
+    hintVIEWER: string;
   };
   vendorTeam: {
     title: string;
@@ -4510,6 +4527,8 @@ export const en: Messages = {
     incidentAcked: "Incident acknowledged",
     putOffline: "Put offline",
     driverOffline: "Driver taken offline",
+    reassignOrder: "Reassign order",
+    orderReassigned: "Order sent back to dispatch",
     noIncidents: "No open incidents.",
     photos: "Photos",
     category: "Category",
@@ -5016,6 +5035,20 @@ export const en: Messages = {
     cancelConfirm: "Cancel the request",
     cancelKeep: "Keep it open",
     cancelDone: "Request cancelled",
+  },
+  portalRoles: {
+    ADMIN: "Admin",
+    OPS_MANAGER: "Ops manager",
+    SUPERVISOR: "Supervisor",
+    ACCOUNTANT: "Accountant",
+    ACCOUNT_MANAGER: "Account manager",
+    VIEWER: "Viewer",
+    hintADMIN: "Full access, including team and settings.",
+    hintOPS_MANAGER: "Runs the day-to-day work. No wallet, team or settings.",
+    hintSUPERVISOR: "Follows orders and raises support requests. In a shop, can be pinned to one branch.",
+    hintACCOUNTANT: "The money: wallet, statements and payouts.",
+    hintACCOUNT_MANAGER: "Watches performance and growth. Changes nothing financial.",
+    hintVIEWER: "Read-only view.",
   },
   vendorTeam: {
     title: "Team",
@@ -7029,6 +7062,8 @@ export const ar: Messages = {
     incidentAcked: "تم تأكيد استلام البلاغ",
     putOffline: "إيقاف الاستقبال",
     driverOffline: "تم إيقاف المندوب",
+    reassignOrder: "إعادة إسناد الطلب",
+    orderReassigned: "أُعيد الطلب إلى التوزيع",
     noIncidents: "لا توجد بلاغات مفتوحة.",
     photos: "الصور",
     category: "التصنيف",
@@ -7532,6 +7567,20 @@ export const ar: Messages = {
     cancelConfirm: "إلغاء الطلب",
     cancelKeep: "أبقه مفتوحا",
     cancelDone: "تم إلغاء الطلب",
+  },
+  portalRoles: {
+    ADMIN: "مدير",
+    OPS_MANAGER: "مدير العمليات",
+    SUPERVISOR: "مشرف",
+    ACCOUNTANT: "محاسب",
+    ACCOUNT_MANAGER: "مدير الحساب",
+    VIEWER: "مُشاهِد",
+    hintADMIN: "صلاحية كاملة تشمل الفريق والإعدادات.",
+    hintOPS_MANAGER: "يدير العمل اليومي، من دون المحفظة أو الفريق أو الإعدادات.",
+    hintSUPERVISOR: "يتابع الطلبات ويرفع طلبات الدعم، ويمكن تثبيته على فرع واحد.",
+    hintACCOUNTANT: "الأمور المالية: المحفظة والكشوف والمستحقات.",
+    hintACCOUNT_MANAGER: "يطّلع على الأداء والنمو من دون أي تغييرات مالية.",
+    hintVIEWER: "اطلاع فقط.",
   },
   vendorTeam: {
     title: "الفريق",

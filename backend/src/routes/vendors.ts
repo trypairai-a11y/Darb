@@ -13,6 +13,11 @@ import { validateBody } from "../utils/validate";
 import { getPagination, paginatedResponse } from "../utils/pagination";
 import { pointInBbox, Bbox } from "../utils/geo";
 import { confirmTopUp } from "../services/wallet/topUpService";
+import {
+  ACCEPTED_VENDOR_ROLE_INPUTS,
+  normaliseVendorRole,
+  vendorRoleTakesBranch,
+} from "../services/vendorTabService";
 
 /**
  * Staff-facing vendor management (Darb 2.0, plan §A8 /api/vendors).
@@ -126,20 +131,25 @@ const updateBranchSchema = z.object({
  *   OWNER          — everything, all branches
  *   FINANCE        — wallet and statements, all branches
  *   ORDER_TRACKING — orders only, and only for its own branch
+ *
+ * Client note (2026-08-31, edit #8): roles are the shared six-type matrix now
+ * (ADMIN / OPS_MANAGER / SUPERVISOR / ACCOUNTANT / ACCOUNT_MANAGER / VIEWER);
+ * the trio above is accepted as legacy input and normalised before storing.
  */
-const VENDOR_ROLES = ["OWNER", "FINANCE", "ORDER_TRACKING"] as const;
-
 const createVendorUserSchema = z
   .object({
     email: z.string().email("Valid email required"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     name: z.string().min(2, "Name must be at least 2 characters"),
     phone: z.string().optional(),
-    vendorRole: z.enum(VENDOR_ROLES).default("OWNER"),
+    vendorRole: z
+      .string()
+      .refine((v) => ACCEPTED_VENDOR_ROLE_INPUTS.includes(v), "Unknown role")
+      .default("ADMIN"),
     branchId: z.string().uuid().nullish(),
   })
-  .refine((v) => v.vendorRole !== "ORDER_TRACKING" || !!v.branchId, {
-    message: "An order-tracking user must be tied to a branch",
+  .refine((v) => !vendorRoleTakesBranch(v.vendorRole) || !!v.branchId, {
+    message: "A branch supervisor must be tied to a branch",
     path: ["branchId"],
   });
 
@@ -568,7 +578,8 @@ router.get("/:id/users", async (req: Request, res: Response) => {
         branch: { select: { id: true, name: true } },
       },
     });
-    res.json(users);
+    // Canonical matrix names on the wire (edit #8), whatever a row stores.
+    res.json(users.map((u) => ({ ...u, vendorRole: normaliseVendorRole(u.vendorRole) })));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -616,10 +627,10 @@ router.post(
           phone,
           role: "VENDOR",
           vendorId: vendor.id,
-          vendorRole,
-          // Owner and finance are vendor-wide, so they carry no branch even if
+          vendorRole: normaliseVendorRole(vendorRole),
+          // Every other role is vendor-wide, so it carries no branch even if
           // one was posted.
-          branchId: vendorRole === "ORDER_TRACKING" ? branchId : null,
+          branchId: vendorRoleTakesBranch(vendorRole) ? branchId : null,
         },
         select: {
           id: true, email: true, name: true, phone: true, role: true,

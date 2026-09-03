@@ -51,9 +51,13 @@ describe("ALLOWED transition table (§A2 legality matrix)", () => {
     ["ASSIGNED", "PICKED_UP"],
     ["ASSIGNED", "FAILED"],
     ["ASSIGNED", "CANCELLED"],
+    // Client note (2026-08-31): emergency reassign pulls a pre-pickup order
+    // back to dispatch. Pre-pickup only — PICKED_UP>DISPATCHING stays illegal.
+    ["ASSIGNED", "DISPATCHING"],
     ["ARRIVED", "PICKED_UP"],
     ["ARRIVED", "FAILED"],
     ["ARRIVED", "CANCELLED"],
+    ["ARRIVED", "DISPATCHING"],
     ["PICKED_UP", "DELIVERED"],
     ["PICKED_UP", "FAILED"],
     ["PICKED_UP", "CANCELLED"], // supervisor pre-DELIVERED cancel
