@@ -135,7 +135,7 @@ describe("Fleet portal team and tab access", () => {
     prisma.fleetPartner.findFirst.mockResolvedValue({ id: "f-1", name: "Sidra Delivery Co" });
     const res = await request(makeApp()).get("/api/fleet/me");
     expect(res.status).toBe(200);
-    expect(res.body.portalRole).toBe("OPERATIONS");
+    expect(res.body.portalRole).toBe("OPS_MANAGER");
     expect(res.body.portalTabs).toEqual(["ROSTER", "ISSUES", "DOCUMENTS", "SUPPORT"]);
   });
 
@@ -202,7 +202,7 @@ describe("Fleet portal team and tab access", () => {
       expect.objectContaining({
         data: expect.objectContaining({
           role: "FLEET",
-          fleetRole: "FINANCE",
+          fleetRole: "ACCOUNTANT",
           fleetPartnerIds: ["f-2", "f-3"],
           ownerGroupId: "g-1",
         }),

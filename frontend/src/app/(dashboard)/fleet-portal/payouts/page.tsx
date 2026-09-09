@@ -1,4 +1,6 @@
 "use client";
+import DocumentFileField from "@/components/fleet/DocumentFileField";
+import { uploadFleetDocument } from "@/lib/darbApi";
 // Darb 2.0 PRD build — /fleet-portal/payouts: monthly payout statements plus
 // the running current-month earnings (delivered orders x flat fee) with a
 // per-order breakdown and CSV export.
@@ -783,6 +785,7 @@ function FleetRateCard() {
   const [amount, setAmount] = useState("");
   const [perKm, setPerKm] = useState("");
   const [why, setWhy] = useState("");
+  const [supportFile, setSupportFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
 
   const rateQuery = useQuery({
@@ -795,6 +798,7 @@ function FleetRateCard() {
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["darb", "fleet", "rate"] });
 
   async function send() {
+    if (!supportFile) return;
     const n = Number(amount);
     if (!Number.isFinite(n) || n <= 0) {
       toast.error(t("fleetPortal.ratePriceInvalid"));
@@ -813,6 +817,7 @@ function FleetRateCard() {
     try {
       await fleetApi.proposeRate({
         flatFeePerOrderKwd: n.toFixed(3),
+        documents: [await uploadFleetDocument("SUPPORTING_DOCUMENT", supportFile)],
         ...(km === "" ? {} : { perKmFeeKwd: kmNumber.toFixed(3) }),
         reason: why.trim(),
       });
@@ -991,11 +996,13 @@ function FleetRateCard() {
           <p className="text-xs text-sand-600" dir="auto">
             {t("fleetPortal.rateApprovalHint")}
           </p>
+          <p className="text-xs text-sand-600">{t("revision19.supportRequired")}</p>
+          <DocumentFileField file={supportFile} onChange={setSupportFile} storageConfigured={true} />
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => void send()}
-              disabled={busy}
+              disabled={busy || !supportFile}
               className="btn-primary inline-flex items-center gap-2 px-4 h-10 disabled:opacity-50"
             >
               {busy ? t("common.processing") : t("fleetPortal.rateSend")}

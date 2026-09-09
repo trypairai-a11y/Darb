@@ -33,6 +33,7 @@ prisma.user = prisma.user ?? {
 };
 
 jest.mock("../../services/notificationService", () => ({
+  createSupportNotifications: jest.fn().mockResolvedValue(undefined),
   createViolationNotifications: jest.fn().mockResolvedValue(undefined),
 }));
 

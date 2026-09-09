@@ -107,12 +107,6 @@ export default function FleetDocumentsPage() {
         </button>
       </div>
 
-      {!storageOn && (
-        <p className="px-4 py-3 rounded-xl border border-amber-200 bg-amber-50 text-sm text-amber-800">
-          {t("fleetPortal.storageOff")}
-        </p>
-      )}
-
       <DataTable
         columns={[
           {
@@ -228,6 +222,7 @@ export default function FleetDocumentsPage() {
 
           {/* Revision 13 (#2). Always here, disabled with a reason when Darb
               has not switched storage on, rather than absent. */}
+          <p className="text-xs text-sand-600">{t("revision19.supportRequired")}</p>
           <DocumentFileField
             file={file}
             onChange={setFile}
@@ -236,7 +231,7 @@ export default function FleetDocumentsPage() {
 
           <button
             type="button"
-            disabled={saving || (!file && !expiry)}
+            disabled={saving || !file}
             onClick={submit}
             className="w-full h-10 rounded-full bg-primary text-white text-sm font-medium disabled:opacity-50"
           >

@@ -17,7 +17,6 @@ export const FLEET_TAB_ORDER: FleetTab[] = [
   "ROSTER",
   "ISSUES",
   "DOCUMENTS",
-  "SCORECARD",
   "PAYOUTS",
   "CASH",
   "SUPPORT",
@@ -48,12 +47,12 @@ export function normalizeFleetRole(role: string | null | undefined): FleetPortal
  * owner widens anyone through the per-user tab override.
  */
 const ROLE_DEFAULTS: Record<FleetPortalRole, FleetTab[]> = {
-  ADMIN: ["ROSTER", "ISSUES", "DOCUMENTS", "SCORECARD", "PAYOUTS", "CASH", "SUPPORT", "TEAM"],
+  ADMIN: ["ROSTER", "ISSUES", "DOCUMENTS", "PAYOUTS", "CASH", "SUPPORT", "TEAM"],
   OPS_MANAGER: ["ROSTER", "ISSUES", "DOCUMENTS", "SUPPORT"],
   SUPERVISOR: ["ROSTER", "ISSUES", "SUPPORT"],
-  ACCOUNTANT: ["PAYOUTS", "SCORECARD", "CASH", "SUPPORT"],
-  ACCOUNT_MANAGER: ["SCORECARD", "SUPPORT"],
-  VIEWER: ["SCORECARD", "SUPPORT"],
+  ACCOUNTANT: ["PAYOUTS", "CASH", "SUPPORT"],
+  ACCOUNT_MANAGER: ["SUPPORT"],
+  VIEWER: ["SUPPORT"],
 };
 
 export function fleetRoleDefaultTabs(role: string | null | undefined): FleetTab[] {
@@ -75,8 +74,16 @@ const ROUTE_TABS: Array<{ prefix: string; tab: FleetTab }> = [
 ];
 
 export function fleetTabForPath(pathname: string): FleetTab | null {
+  if (pathname === "/fleet-portal/scorecard") return null;
   const hit = ROUTE_TABS.find(
     (r) => pathname === r.prefix || pathname.startsWith(`${r.prefix}/`),
   );
   return hit?.tab ?? null;
+}
+
+/** Keep the company selected by an inspecting admin while navigating the portal. */
+export function fleetPortalHref(path: string): string {
+  if (typeof window === "undefined") return path;
+  const fleetPartnerId = new URLSearchParams(window.location.search).get("fleetPartnerId");
+  return fleetPartnerId ? `${path}?${new URLSearchParams({ fleetPartnerId })}` : path;
 }

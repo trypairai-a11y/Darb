@@ -1,3 +1,4 @@
+import { withCategoryDefaults } from "../services/notificationRuleDefaults";
 import { Router, Request, Response } from "express";
 import { prisma } from "../config";
 import { logger } from "../config/logger";
@@ -186,7 +187,7 @@ router.get("/rules", async (req: Request, res: Response) => {
       where: { tenantId: req.user!.tenantId },
       orderBy: [{ eventType: "asc" }, { role: "asc" }],
     });
-    res.json(rules);
+    res.json(withCategoryDefaults(rules));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

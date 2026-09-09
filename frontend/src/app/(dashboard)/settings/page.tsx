@@ -584,6 +584,8 @@ function PermissionsModal({
 }
 
 const VIOLATION_TYPES = [
+  { key: "FLEET_REQUEST_SUBMITTED", label: "Requests", severity: "MEDIUM" },
+  { key: "SUPPORT_REQUEST_SUBMITTED", label: "Support", severity: "MEDIUM" },
   { key: "CASH_THRESHOLD_EXCEEDED", label: "Cash Threshold Exceeded", severity: "CRITICAL" },
   { key: "GPS_OFF", label: "GPS Off", severity: "HIGH" },
   { key: "OUT_OF_ZONE", label: "Out of Zone", severity: "HIGH" },
@@ -670,7 +672,7 @@ function NotificationsTab() {
       <div className="mb-6 bg-white rounded-2xl shadow-sm p-5">
         <h3 className="text-sm font-semibold text-foreground mb-1">Support request routing</h3>
         <p className="text-xs text-secondary mb-3">
-          Support requests are grouped into categories and delivered to the right desk.
+          Support requests are grouped into categories for triage. The Support row below controls which roles are notified.
           Account managers are only notified about the companies assigned to them.
         </p>
         <div className="grid gap-2 sm:grid-cols-3" data-testid="support-routing">
@@ -689,7 +691,7 @@ function NotificationsTab() {
       </div>
 
       <p className="text-sm text-secondary mb-4">
-        Configure which roles receive in-app notifications for each violation type. Toggle cells to enable or disable.
+        Configure which roles receive in-app notifications for each notification category. Toggle cells to enable or disable.
       </p>
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -697,7 +699,7 @@ function NotificationsTab() {
             <thead>
               <tr className="border-b border-gray-100">
                 <th className="text-left text-xs font-medium text-secondary px-5 py-3 sticky left-0 bg-white min-w-[220px]">
-                  Violation Type
+                  Notification Category
                 </th>
                 {ROLES.map((role) => (
                   <th key={role} className="text-center text-xs font-medium text-secondary px-4 py-3 min-w-[100px]">

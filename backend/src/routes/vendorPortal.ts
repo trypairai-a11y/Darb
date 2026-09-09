@@ -1,3 +1,4 @@
+import { createSupportNotifications } from "../services/notificationService";
 import { Router, Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import ExcelJS from "exceljs";
@@ -1705,6 +1706,11 @@ router.post(
         },
         include: { messages: { orderBy: { createdAt: "asc" } } },
       });
+      await createSupportNotifications({
+        tenantId, vendorId: vendorId!, category: type === "WALLET" ? "MONEY" : type === "TECHNICAL" ? "TECH" : "OPERATIONS",
+        title: "New merchant support request", message: subject, sourceId: ticket.id,
+        metadata: { ticketId: ticket.id, vendorId },
+      }).catch(() => {});
       res.status(201).json(ticket);
     } catch (err: any) {
       res.status(400).json({ error: err.message });

@@ -12,6 +12,7 @@
 //      is visibly somewhere rather than apparently nowhere.
 //   3. Rows open a profile, which is where documents, leave and resignation
 //      live.
+import { fleetPortalHref } from "@/lib/fleetTabs";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -151,6 +152,7 @@ export default function FleetRosterPage() {
       // Upload first, then submit. If a file fails we stop before the request
       // exists, so the fleet never sees "submitted" for a driver whose civil
       // ID never arrived.
+      if (ONBOARD_DOCS.some(type => !files[type])) throw new Error(t("revision19.supportRequired"));
       const documents: FleetDocumentInput[] = [];
       for (const type of ONBOARD_DOCS) {
         const file = files[type];
@@ -220,7 +222,7 @@ export default function FleetRosterPage() {
       {openIssues > 0 && (
         <button
           type="button"
-          onClick={() => router.push("/fleet-portal/issues")}
+          onClick={() => router.push(fleetPortalHref("/fleet-portal/issues"))}
           className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-red-200 bg-red-50 text-start hover:bg-red-100/70"
         >
           <TriangleAlert size={17} className="text-red-600 shrink-0" aria-hidden="true" />
@@ -371,7 +373,7 @@ export default function FleetRosterPage() {
         data={drivers}
         // A pending driver has no profile to open: there is no Driver row yet.
         onRowClick={(row: FleetDriverRow) => {
-          if (!row.pending) router.push(`/fleet-portal/drivers/${row.id}`);
+          if (!row.pending) router.push(fleetPortalHref(`/fleet-portal/drivers/${row.id}`));
         }}
         exportFilename="fleet-roster"
         emptyMessage={t("errors.noData")}
@@ -407,14 +409,10 @@ export default function FleetRosterPage() {
 
           <div className="pt-2 border-t border-sand-200 space-y-3">
             <p className="text-xs font-medium text-sand-700">{t("fleetPortal.driverDocuments")}</p>
-            {/* The compact fields have no room for their own note, so the
-                reason storage is off is said once for the group. */}
-            {!storageConfigured && (
-              <p className="text-xs text-sand-500" dir="auto">{t("fleetPortal.importOff")}</p>
-            )}
+            <p className="text-xs text-sand-600">{t("revision19.onboardingRequired")}</p>
             {ONBOARD_DOCS.map((type) => (
               <div key={type} className="space-y-1.5">
-                <span className="text-xs text-sand-600">{type.replace(/_/g, " ")}</span>
+                <span className="text-xs text-sand-600">{type.replace(/_/g, " ")} *</span>
                 <div className="flex gap-2">
                   <input
                     type="date"
@@ -437,7 +435,8 @@ export default function FleetRosterPage() {
 
           <button
             type="button"
-            disabled={saving || name.trim().length < 2 || phone.trim().length < 8}
+            title={t("revision19.supportRequired")}
+            disabled={saving || name.trim().length < 2 || phone.trim().length < 8 || ONBOARD_DOCS.some(type => !files[type])}
             onClick={submitDriver}
             className="w-full h-10 rounded-full bg-primary text-white text-sm font-medium disabled:opacity-50"
           >

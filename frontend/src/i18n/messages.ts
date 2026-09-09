@@ -4,6 +4,7 @@ export const LOCALES: Locale[] = ["en", "ar"];
 export const DEFAULT_LOCALE: Locale = "en";
 
 export interface Messages {
+  revision19: { activeOrders: string; noActiveOrders: string; offline: string; activate: string; deactivate: string; freeze: string; unfreeze: string; frozen: string; restore: string; supportRequired: string; requests: string; noRequests: string; equipment: string; noEquipment: string; all: string; new: string; acknowledged: string; resolved: string; status: string; issued: string; returned: string; notIssued: string; onboardingRequired: string };
   common: {
     global: string;
     platforms: string;
@@ -2578,6 +2579,7 @@ export interface Messages {
 }
 
 export const en: Messages = {
+  revision19: {"activeOrders": "Active orders", "noActiveOrders": "No active order", "offline": "Offline", "activate": "Activate", "deactivate": "Deactivate", "freeze": "Freeze account", "unfreeze": "Unfreeze account", "frozen": "Frozen", "restore": "Return to normal", "supportRequired": "Supporting documents are required before submitting.", "requests": "Submitted requests", "noRequests": "No requests submitted for this driver.", "equipment": "Driver equipment", "noEquipment": "No equipment issued to this driver.", "all": "All statuses", "new": "New", "acknowledged": "Acknowledged", "resolved": "Resolved", "status": "Status", "issued": "Issued", "returned": "Returned", "notIssued": "Not issued", "onboardingRequired": "Attach every driver document listed below before submitting."},
   common: {
     global: "Global",
     platforms: "Platforms",
@@ -4256,7 +4258,7 @@ export const en: Messages = {
     redispatch: "Auto-redispatch",
     redispatchConfirmTitle: "Re-run dispatch?",
     redispatchConfirmMessage: "The dispatch engine will search for a driver again from round 1.",
-    returnToMerchant: "Return to merchant",
+    returnToMerchant: "Confirm returned to vendor",
     returnConfirmTitle: "Mark this order returned?",
     returnConfirmMessage: "Confirm the goods have gone back to the shop. The order moves from Failed to Returned, which is its final status.",
     cancelOrder: "Cancel order",
@@ -5130,6 +5132,7 @@ export const en: Messages = {
 };
 
 export const ar: Messages = {
+  revision19: {"activeOrders": "الطلبات النشطة", "noActiveOrders": "لا يوجد طلب نشط", "offline": "غير متصل", "activate": "تفعيل", "deactivate": "إلغاء التفعيل", "freeze": "تجميد الحساب", "unfreeze": "إلغاء تجميد الحساب", "frozen": "مجمد", "restore": "إعادة إلى الوضع الطبيعي", "supportRequired": "يجب إرفاق المستندات الداعمة قبل الإرسال.", "requests": "الطلبات المقدمة", "noRequests": "لا توجد طلبات مقدمة لهذا السائق.", "equipment": "معدات السائق", "noEquipment": "لم يتم تسليم معدات لهذا السائق.", "all": "كل الحالات", "new": "جديد", "acknowledged": "تم الاستلام", "resolved": "تم الحل", "status": "الحالة", "issued": "تم التسليم", "returned": "تم الإرجاع", "notIssued": "لم يتم التسليم", "onboardingRequired": "أرفق جميع مستندات السائق المدرجة أدناه قبل الإرسال."},
   common: {
     global: "عام",
     platforms: "المنصات",

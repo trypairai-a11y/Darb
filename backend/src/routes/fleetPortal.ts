@@ -3,6 +3,7 @@
 // vendorPortal). Containment: middleware/fleetContainment fences FLEET
 // tokens to /api/auth + /api/fleet + /api/events.
 
+import { REQUIRED_DRIVER_DOCS } from "../services/fleet/fleetDocumentService";
 import { Router, Request, Response, NextFunction } from "express";
 import bcrypt from "bcryptjs";
 import { Prisma } from "../generated/prisma";
@@ -159,10 +160,10 @@ function requireFleetRole(...allowed: FleetPortalRole[]) {
  * deliberately carries no code — a supervisor refused the Add login button has
  * not lost the Team tab.
  */
-function requireFleetTab(tab: FleetTab) {
+function requireFleetTab(tab: FleetTab, ...alternatives: FleetTab[]) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const identity = fleetIdentityOf(req);
-    if (identity && !identity.tabs.includes(tab)) {
+    if (identity && ![tab, ...alternatives].some(t => identity.tabs.includes(t))) {
       res
         .status(403)
         .json({ error: "This tab is not part of your access", code: "TAB_NOT_GRANTED", tab });
@@ -716,6 +717,7 @@ router.post(
         tenantId: ctx.tenantId,
         fleetPartnerId: ctx.fleetPartnerId,
         type: "RATE_CHANGE",
+        documentIds: await supportingDocuments(ctx, req.body, req.user!.userId),
         payload: {
           flatFeePerOrderKwd: rate.toFixed(3),
           ...(perKm == null ? {} : { perKmFeeKwd: perKm.toFixed(3) }),
@@ -732,7 +734,7 @@ router.post(
 
       res.status(201).json({ id: request.id, status: request.status });
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      res.status(400).json({ error: err.message });
     }
   },
 );
@@ -772,7 +774,7 @@ router.delete(
       }
       res.json({ ok: true });
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      res.status(400).json({ error: err.message });
     }
   },
 );
@@ -1030,7 +1032,7 @@ router.get("/documents", requireFleetTab("DOCUMENTS"), async (req: Request, res:
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
     const docs = await prisma.fleetDocument.findMany({
-      where: { tenantId: ctx.tenantId, fleetPartnerId: ctx.fleetPartnerId, driverId: null },
+      where: { tenantId: ctx.tenantId, fleetPartnerId: ctx.fleetPartnerId, driverId: null, isStaged: false },
       select: FLEET_DOC_LIST_SELECT,
       orderBy: [{ type: "asc" }, { createdAt: "desc" }],
     });
@@ -1056,7 +1058,7 @@ router.get("/documents", requireFleetTab("DOCUMENTS"), async (req: Request, res:
  *       file picker that dies. Same posture as WhatsApp and the payment
  *       gateway elsewhere in this codebase.
  */
-router.post("/documents/upload-url", requireFleetTab("DOCUMENTS"), async (req: Request, res: Response) => {
+router.post("/documents/upload-url", requireFleetTab("DOCUMENTS", "ROSTER", "PAYOUTS"), async (req: Request, res: Response) => {
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
@@ -1071,7 +1073,7 @@ router.post("/documents/upload-url", requireFleetTab("DOCUMENTS"), async (req: R
     const { type, contentType, fileName } = req.body as {
       type?: string; contentType?: string; fileName?: string;
     };
-    if (!type || (!isCompanyDocType(type) && !isDriverDocType(type))) {
+    if (!type || (!isCompanyDocType(type) && !isDriverDocType(type) && type !== "SUPPORTING_DOCUMENT")) {
       res.status(400).json({ error: "Unknown document type" });
       return;
     }
@@ -1160,6 +1162,7 @@ router.get("/documents/:id/file", requireFleetTab("DOCUMENTS"), async (req: Requ
  * the shape that works everywhere is the one that needs no narrowing.
  */
 interface DocInputResult {
+  sourceId?: string;
   value?: {
     type: string;
     fileKey: string | null;
@@ -1175,11 +1178,22 @@ interface DocInputResult {
 /** 3 MB — same ceiling as the payout invoice, for the same Vercel-edge reason. */
 const DOC_MAX_BYTES = 3 * 1024 * 1024;
 
-function readDocInput(body: any, keyPrefix?: string): DocInputResult {
+async function readDocInput(body: any, keyPrefix?: string): Promise<DocInputResult> {
+  if (body?.documentId) {
+    const [tenantId, , fleetPartnerId] = (keyPrefix ?? "").split("/");
+    if (!tenantId || !fleetPartnerId || typeof body.documentId !== "string") return { error: "Invalid document reference" };
+    const doc = await prisma.fleetDocument.findFirst({ where: { id: body.documentId, tenantId, fleetPartnerId, isStaged: true } });
+    if (!doc || doc.type !== body.type || (!doc.fileKey && !doc.fileData?.length)) return { error: "Attach a file belonging to this company and document type" };
+    const expiry = body.expiryDate ? new Date(body.expiryDate) : doc.expiryDate;
+    if (expiry && Number.isNaN(expiry.getTime())) return { error: "expiryDate must be a date" };
+    return { sourceId: doc.id, value: { type: doc.type, fileKey: doc.fileKey, fileData: doc.fileData,
+      fileName: doc.fileName, mimeType: doc.mimeType, sizeBytes: doc.sizeBytes, expiryDate: expiry } };
+  }
   const { type, fileKey, fileName, mimeType, sizeBytes, expiryDate, dataBase64 } = body ?? {};
-  if (!type || (!isCompanyDocType(type) && !isDriverDocType(type))) {
+  if (!type || (!isCompanyDocType(type) && !isDriverDocType(type) && type !== "SUPPORTING_DOCUMENT")) {
     return { error: "Unknown document type" };
   }
+  if (fileKey != null && (typeof fileKey !== "string" || !fileKey.trim())) return { error: "Invalid file key" };
   // Same fence as the invoice: a document row carries the key the download
   // endpoint later presigns, so a key from outside this fleet's own prefix
   // would be a read of somebody else's object.
@@ -1201,8 +1215,8 @@ function readDocInput(body: any, keyPrefix?: string): DocInputResult {
     if (fileData.length === 0) return { error: "The document file is empty" };
     if (fileData.length > DOC_MAX_BYTES) return { error: "The document must be under 3 MB" };
   }
-  if (!fileKey && !fileData && !expiryDate) {
-    return { error: "Give a file or an expiry date" };
+  if (!fileKey && !fileData) {
+    return { error: "Attach a supporting document file before submitting" };
   }
   const expiry = expiryDate ? new Date(expiryDate) : null;
   if (expiry && Number.isNaN(expiry.getTime())) {
@@ -1221,6 +1235,38 @@ function readDocInput(body: any, keyPrefix?: string): DocInputResult {
   };
 }
 
+router.post("/documents/stage", requireFleetTab("DOCUMENTS", "ROSTER", "PAYOUTS"), async (req: Request, res: Response) => {
+  try {
+    const ctx = await fleetContext(req);
+    if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+    if (req.body.documentId) { res.status(400).json({ error: "Upload a file" }); return; }
+    const parsed = await readDocInput(req.body, `${ctx.tenantId}/fleet/${ctx.fleetPartnerId}/`);
+    if (!parsed.value) { res.status(400).json({ error: parsed.error }); return; }
+    const doc = await prisma.fleetDocument.create({ data: { ...parsed.value,
+      tenantId: ctx.tenantId, fleetPartnerId: ctx.fleetPartnerId, isStaged: true, uploadedById: req.user!.userId } });
+    res.status(201).json({ documentId: doc.id, type: doc.type });
+  } catch (err: any) { res.status(400).json({ error: err.message }); }
+});
+
+async function persistDoc(ctx: { tenantId: string; fleetPartnerId: string }, parsed: DocInputResult, userId: string, driverId: string | null = null) {
+  if (parsed.sourceId) {
+    const changed = await prisma.fleetDocument.updateMany({ where: { id: parsed.sourceId, tenantId: ctx.tenantId, fleetPartnerId: ctx.fleetPartnerId, isStaged: true,
+      OR: [{ driverId: null }, { driverId }] }, data: { driverId, expiryDate: parsed.value!.expiryDate, isStaged: false } });
+    if (!changed.count) throw new Error("That document belongs to another driver");
+    return prisma.fleetDocument.findFirstOrThrow({ where: { id: parsed.sourceId, tenantId: ctx.tenantId, fleetPartnerId: ctx.fleetPartnerId } });
+  }
+  return prisma.fleetDocument.create({ data: { ...parsed.value!, tenantId: ctx.tenantId,
+    fleetPartnerId: ctx.fleetPartnerId, driverId, uploadedById: userId } });
+}
+
+async function supportingDocuments(ctx: { tenantId: string; fleetPartnerId: string }, body: any, userId: string, driverId: string | null = null) {
+  if (!Array.isArray(body.documents) || body.documents.length === 0) throw new Error("Supporting documents are required before submitting a request");
+  const parsed = await Promise.all(body.documents.map((raw: any) => readDocInput({ ...raw, type: "SUPPORTING_DOCUMENT" }, `${ctx.tenantId}/fleet/${ctx.fleetPartnerId}/`)));
+  if (parsed.some((p: DocInputResult) => !p.value)) throw new Error(parsed.find((p: DocInputResult) => !p.value)?.error);
+  const docs = await Promise.all(parsed.map((p: DocInputResult) => persistDoc(ctx, p, userId, driverId)));
+  return docs.map(d => d.id);
+}
+
 /**
  * @swagger
  * /api/fleet/documents:
@@ -1232,7 +1278,7 @@ router.post("/documents", requireFleetTab("DOCUMENTS"), async (req: Request, res
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
-    const parsed = readDocInput(req.body, `${ctx.tenantId}/fleet/${ctx.fleetPartnerId}/`);
+    const parsed = await readDocInput(req.body, `${ctx.tenantId}/fleet/${ctx.fleetPartnerId}/`);
     if (!parsed.value) { res.status(400).json({ error: parsed.error }); return; }
     if (!isCompanyDocType(parsed.value.type)) {
       res.status(400).json({ error: "That is a driver document. Upload it from the driver's profile." });
@@ -1244,15 +1290,7 @@ router.post("/documents", requireFleetTab("DOCUMENTS"), async (req: Request, res
       select: { name: true },
     });
 
-    const doc = await prisma.fleetDocument.create({
-      data: {
-        tenantId: ctx.tenantId,
-        fleetPartnerId: ctx.fleetPartnerId,
-        driverId: null,
-        ...parsed.value,
-        uploadedById: req.user!.userId,
-      },
-    });
+    const doc = await persistDoc(ctx, parsed, req.user!.userId);
     const request = await createFleetRequest({
       tenantId: ctx.tenantId,
       fleetPartnerId: ctx.fleetPartnerId,
@@ -1282,17 +1320,16 @@ router.get("/drivers/:id", requireFleetTab("ROSTER"), async (req: Request, res: 
     const driver = await ownDriverOr404(ctx, req.params.id);
     if (!driver) { res.status(404).json({ error: "Driver not found" }); return; }
 
-    const [rating, documents, requests, issues, activity] = await Promise.all([
+    const [rating, documents, requests, issues, activity, equipment, assignedDevice] = await Promise.all([
       getDriverRating(ctx.tenantId, driver.id),
       prisma.fleetDocument.findMany({
-        where: { tenantId: ctx.tenantId, driverId: driver.id },
+        where: { tenantId: ctx.tenantId, driverId: driver.id, isStaged: false },
         select: FLEET_DOC_LIST_SELECT,
         orderBy: [{ type: "asc" }, { createdAt: "desc" }],
       }),
       prisma.fleetChangeRequest.findMany({
         where: { tenantId: ctx.tenantId, driverId: driver.id },
         orderBy: { createdAt: "desc" },
-        take: 20,
       }),
       prisma.fleetIssue.findMany({
         where: { tenantId: ctx.tenantId, driverId: driver.id, status: { not: "RESOLVED" } },
@@ -1303,6 +1340,8 @@ router.get("/drivers/:id", requireFleetTab("ROSTER"), async (req: Request, res: 
         driver.id,
         typeof req.query.month === "string" ? req.query.month : "",
       ),
+      prisma.driverInventory.findMany({ where: { driverId: driver.id, driver: { tenantId: ctx.tenantId, fleetPartnerId: ctx.fleetPartnerId } }, orderBy: { itemType: "asc" } }),
+      prisma.device.findFirst({ where: { driverId: driver.id, tenantId: ctx.tenantId }, select: { id: true, model: true, status: true, createdAt: true } }),
     ]);
 
     res.json({
@@ -1323,6 +1362,7 @@ router.get("/drivers/:id", requireFleetTab("ROSTER"), async (req: Request, res: 
       rating,
       documents: documents.map(toDocDto),
       requests,
+      equipment: [...equipment, ...(assignedDevice ? [{ id: `device-${assignedDevice.id}`, itemType: `Device · ${assignedDevice.model}`, quantity: 1, issued: true, issuedDate: assignedDevice.createdAt, returnedDate: null, condition: assignedDevice.status, conditionNote: null }] : [])],
       issues,
       activity,
       storageConfigured: isStorageConfigured(),
@@ -1401,15 +1441,20 @@ router.post("/drivers", requireFleetTab("ROSTER"), async (req: Request, res: Res
       return;
     }
 
+    if (!Array.isArray(documents) || documents.length === 0) {
+      res.status(400).json({ error: "Supporting documents are required before submitting a request" }); return;
+    }
+    const missing = REQUIRED_DRIVER_DOCS.filter(type => !documents.some(d => d.type === type));
+    if (missing.length) { res.status(400).json({ error: `Attach the required driver documents: ${missing.join(", ")}` }); return; }
     const docInputs: any[] = [];
     for (const raw of Array.isArray(documents) ? documents : []) {
-      const parsed = readDocInput(raw, `${ctx.tenantId}/fleet/${ctx.fleetPartnerId}/`);
+      const parsed = await readDocInput(raw, `${ctx.tenantId}/fleet/${ctx.fleetPartnerId}/`);
       if (!parsed.value) { res.status(400).json({ error: parsed.error }); return; }
       if (!isDriverDocType(parsed.value.type)) {
         res.status(400).json({ error: `${parsed.value.type} is a company document` });
         return;
       }
-      docInputs.push(parsed.value);
+      docInputs.push(parsed);
     }
 
     const fleet = await prisma.fleetPartner.findFirst({
@@ -1418,19 +1463,7 @@ router.post("/drivers", requireFleetTab("ROSTER"), async (req: Request, res: Res
     });
 
     // driverId stays null on these until approval creates the driver.
-    const created = await Promise.all(
-      docInputs.map((d) =>
-        prisma.fleetDocument.create({
-          data: {
-            tenantId: ctx.tenantId,
-            fleetPartnerId: ctx.fleetPartnerId,
-            driverId: null,
-            ...d,
-            uploadedById: req.user!.userId,
-          },
-        }),
-      ),
-    );
+    const created = await Promise.all(docInputs.map(d => persistDoc(ctx, d, req.user!.userId)));
 
     const request = await createFleetRequest({
       tenantId: ctx.tenantId,
@@ -1497,6 +1530,7 @@ router.post("/drivers/:id/requests", requireFleetTab("ROSTER"), async (req: Requ
         tenantId: ctx.tenantId,
         fleetPartnerId: ctx.fleetPartnerId,
         type: "DRIVER_STATUS",
+        documentIds: await supportingDocuments(ctx, req.body, req.user!.userId, driver.id),
         driverId: driver.id,
         payload: {
           status,
@@ -1523,6 +1557,7 @@ router.post("/drivers/:id/requests", requireFleetTab("ROSTER"), async (req: Requ
         tenantId: ctx.tenantId,
         fleetPartnerId: ctx.fleetPartnerId,
         type: "DRIVER_PROFILE",
+        documentIds: await supportingDocuments(ctx, req.body, req.user!.userId, driver.id),
         driverId: driver.id,
         payload: { name, vehicleType, zone, driverName: driver.name },
         requestedById: req.user!.userId,
@@ -1536,7 +1571,7 @@ router.post("/drivers/:id/requests", requireFleetTab("ROSTER"), async (req: Requ
       // `type` on this endpoint names the KIND of request, so the document's
       // own type arrives as `documentType`. Reading `type` here would label
       // every driver document "DRIVER_DOCUMENT".
-      const parsed = readDocInput(
+      const parsed = await readDocInput(
         { ...req.body, type: req.body?.documentType },
         `${ctx.tenantId}/fleet/${ctx.fleetPartnerId}/`,
       );
@@ -1545,15 +1580,7 @@ router.post("/drivers/:id/requests", requireFleetTab("ROSTER"), async (req: Requ
         res.status(400).json({ error: `${parsed.value.type} is a company document` });
         return;
       }
-      const doc = await prisma.fleetDocument.create({
-        data: {
-          tenantId: ctx.tenantId,
-          fleetPartnerId: ctx.fleetPartnerId,
-          driverId: driver.id,
-          ...parsed.value,
-          uploadedById: req.user!.userId,
-        },
-      });
+      const doc = await persistDoc(ctx, parsed, req.user!.userId, driver.id);
       const request = await createFleetRequest({
         tenantId: ctx.tenantId,
         fleetPartnerId: ctx.fleetPartnerId,
@@ -1688,12 +1715,14 @@ router.get("/issues", requireFleetTab("ISSUES"), async (req: Request, res: Respo
   try {
     const ctx = await fleetContext(req);
     if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
-    const includeResolved = req.query.includeResolved === "true";
+    const status = typeof req.query.status === "string" ? req.query.status : "ALL";
+    if (!["ALL", "NEW", "ACKNOWLEDGED", "RESOLVED"].includes(status)) { res.status(400).json({ error: "Invalid issue status" }); return; }
+    const includeResolved = req.query.includeResolved === "true" || status !== "ALL";
     const rows = await prisma.fleetIssue.findMany({
       where: {
         tenantId: ctx.tenantId,
         fleetPartnerId: ctx.fleetPartnerId,
-        ...(includeResolved ? {} : { status: { not: "RESOLVED" } }),
+        ...(status === "NEW" ? { status: { in: ["OPEN", "ESCALATED"] } } : status !== "ALL" ? { status: status as "ACKNOWLEDGED" | "RESOLVED" } : includeResolved ? {} : { status: { not: "RESOLVED" } }),
       },
       include: { driver: { select: { id: true, name: true, phone: true } } },
       orderBy: [{ status: "asc" }, { openedAt: "desc" }],
@@ -1934,7 +1963,7 @@ router.post("/support", requireFleetTab("SUPPORT"), async (req: Request, res: Re
       TECHNICAL: "TECH",
     };
     const category = SUPPORT_CATEGORY[(type && allowedTypes.includes(type) ? type : "OTHER") as string] ?? "OPERATIONS";
-    void createSupportNotifications({
+    await createSupportNotifications({
       tenantId: ctx.tenantId,
       category,
       title: `New ${category.toLowerCase()} support request`,
@@ -2418,6 +2447,8 @@ router.post(
         return;
       }
 
+      await createSupportNotifications({ tenantId: ctx.tenantId, category: "MONEY", title: "New payout support request", message: ticket.subject, sourceId: ticket.id,
+        fleetPartnerId: ctx.fleetPartnerId, metadata: { ticketId: ticket.id, fleetPartnerId: ctx.fleetPartnerId } }).catch(() => {});
       res.status(201).json({ ok: true, ticketId: ticket.id });
     } catch (err: any) {
       res.status(400).json({ error: err.message });

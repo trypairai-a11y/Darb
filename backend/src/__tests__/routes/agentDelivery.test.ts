@@ -76,6 +76,8 @@ app.use("/api/agent", agentDeliveryRouter);
 
 const TENANT = "t-1";
 const DRIVER = {
+  status: "ACTIVE",
+  isFrozen: false,
   id: "drv-1",
   tenantId: TENANT,
   name: "Qadir Baloch",
@@ -145,6 +147,7 @@ beforeEach(() => {
   (getDriverWalletSummary as jest.Mock).mockResolvedValue({ ...WALLET_SUMMARY });
   (isDriverOverCeiling as jest.Mock).mockResolvedValue(false);
   prisma.tenant.findUnique.mockResolvedValue({ settings: { supervisorPhone: "+96599990000" } });
+  prisma.courierOnlineSession.updateMany.mockResolvedValue({ count: 1 });
   prisma.courierOnlineSession.findFirst.mockResolvedValue(null);
   prisma.dispatchOffer.findFirst.mockResolvedValue(null);
   prisma.deliveryOrder.findFirst.mockResolvedValue(null);

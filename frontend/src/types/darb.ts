@@ -476,7 +476,7 @@ export interface Incident {
   resolvedAt?: string | null;
   resolvedById?: string | null;
   createdAt: string;
-  driver?: { id: string; name: string; phone?: string | null } | null;
+  driver?: { id: string; name: string; phone?: string | null; deliveryOrders?: Array<{ id: string; orderNumber: string; status: string; driverId: string | null }>; courierOnlineSessions?: Array<{ id: string }> } | null;
   order?: { id: string; orderNumber: string; status?: string; driverId?: string | null } | null;
   metadata?: Record<string, unknown> | null;
 }
@@ -1121,6 +1121,7 @@ export interface FleetDriverProfile {
   rating: { avg: number | null; count: number };
   documents: FleetDocument[];
   requests: FleetChangeRequest[];
+  equipment: Array<{ id: string; itemType: string; issued: boolean; quantity: number; issuedDate: string | null; returnedDate: string | null; condition: string; conditionNote: string | null }>;
   issues: FleetIssue[];
   activity: FleetMonthActivity;
   storageConfigured: boolean;
@@ -1138,6 +1139,7 @@ export interface FleetDocumentsPayload {
 
 /** One document being submitted, after the browser has PUT it to R2. */
 export interface FleetDocumentInput {
+  documentId?: string;
   type: string;
   fileKey?: string | null;
   /** Inline bytes while R2 is unconfigured (client note 2026-08-31). */

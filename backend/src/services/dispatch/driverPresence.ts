@@ -49,17 +49,16 @@ export async function forceDriverOffline(
   tenantId: string,
   driverId: string
 ): Promise<boolean> {
-  const existing = await tx.courierOnlineSession.findFirst({
+  const result = await tx.courierOnlineSession.updateMany({
     where: { tenantId, driverId, isOnline: true },
-    orderBy: { startTime: "desc" },
-    select: { id: true },
-  });
-  if (!existing) return false;
-  await tx.courierOnlineSession.update({
-    where: { id: existing.id },
     data: { availability: "OFFLINE", isOnline: false, endTime: new Date() },
   });
-  return true;
+  // An offer already on the phone must not be accepted after HQ takes the driver offline.
+  await tx.dispatchOffer.updateMany({
+    where: { tenantId, driverId, status: "OFFERED" },
+    data: { status: "EXPIRED", expiresAt: new Date() },
+  });
+  return result.count > 0;
 }
 
 export async function releaseDriverToOnline(

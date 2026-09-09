@@ -30,6 +30,7 @@ type FleetRow = FleetProfile & {
     name: string;
     phone: string | null;
     status: string;
+    isFrozen: boolean;
     vehicleType: string;
     performanceTier: string | null;
     throttledUntil: Date | string | null;
@@ -377,6 +378,18 @@ function DeductionsSection({ fleet }: { fleet: FleetRow }) {
 
 /* ── Every driver under the company, with documents and expiries ── */
 function DriversDocumentsSection({ fleet }: { fleet: FleetRow }) {
+  const { isOpsManager } = useRole();
+  const queryClient = useQueryClient();
+  const [busyDriver, setBusyDriver] = useState<string | null>(null);
+  async function updateAccount(driverId: string, body: { status?: "ACTIVE" | "INACTIVE"; isFrozen?: boolean }) {
+    setBusyDriver(driverId);
+    try {
+      await fleetsApi.driverAccount(fleet.id, driverId, body);
+      await queryClient.invalidateQueries({ queryKey: ["darb", "fleets", fleet.id] });
+      toast.success(t("toast.updated"));
+    } catch (err) { toast.error((err as { response?: { data?: { error?: string } } }).response?.data?.error ?? t("toast.failedSave")); }
+    finally { setBusyDriver(null); }
+  }
   const { t, locale } = useI18n();
   const toast = useToast();
 
@@ -461,7 +474,18 @@ function DriversDocumentsSection({ fleet }: { fleet: FleetRow }) {
                       {docs.length === 1 ? "" : "s"}
                     </p>
                   </div>
-                  <StatusBadge status={driver.status} />
+                  <div className="flex items-center gap-2 flex-wrap justify-end">
+                    <StatusBadge status={driver.status} />
+                    {driver.isFrozen && <span className="text-xs text-blue-700">{t("revision19.frozen")}</span>}
+                    {isOpsManager && <>
+                      <button className="h-8 px-3 rounded-full border border-sand-300 text-xs disabled:opacity-50" disabled={busyDriver === driver.id} onClick={() => updateAccount(driver.id, { status: driver.status === "ACTIVE" ? "INACTIVE" : "ACTIVE" })}>
+                        {t(driver.status === "ACTIVE" ? "revision19.deactivate" : "revision19.activate")}
+                      </button>
+                      <button className="h-8 px-3 rounded-full border border-blue-200 text-blue-700 text-xs disabled:opacity-50" disabled={busyDriver === driver.id} onClick={() => updateAccount(driver.id, { isFrozen: !driver.isFrozen })}>
+                        {t(driver.isFrozen ? "revision19.unfreeze" : "revision19.freeze")}
+                      </button>
+                    </>}
+                  </div>
                 </div>
                 {docs.length > 0 && (
                   <ul className="flex flex-wrap gap-2 mt-2">
@@ -1017,8 +1041,20 @@ function ScorecardSection({ fleet }: { fleet: FleetRow }) {
 }
 
 export default function FleetDetailPage() {
+  const toast = useToast();
+  const [restoring, setRestoring] = useState(false);
+  async function restoreDiscipline() {
+    if (!fleet) return;
+    setRestoring(true);
+    try {
+      await fleetsApi.discipline(fleet.id, "OK", "Returned to normal from the company profile");
+      await fleetQuery.refetch();
+      toast.success(t("toast.updated"));
+    } catch { toast.error(t("toast.failedSave")); }
+    finally { setRestoring(false); }
+  }
   const { t } = useI18n();
-  const { isAdmin } = useRole();
+  const { isAdmin, isOpsManager } = useRole();
   const params = useParams<{ id: string }>();
   const fleetId = params?.id;
   const router = useRouter();
@@ -1072,6 +1108,7 @@ export default function FleetDetailPage() {
         </div>
         <div className="flex items-center gap-2">
           <StatusBadge status={fleet.disciplineStatus} />
+          {isOpsManager && ["THROTTLED", "WARNED"].includes(fleet.disciplineStatus) && <button disabled={restoring} onClick={restoreDiscipline} className="h-9 px-3 rounded-full bg-primary text-white text-xs disabled:opacity-50">{t("revision19.restore")}</button>}
           <StatusBadge status={fleet.isActive ? "ACTIVE" : "INACTIVE"} />
         </div>
       </div>

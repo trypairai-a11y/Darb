@@ -212,6 +212,7 @@ type SessionWithDriver = {
     name: string;
     phone: string | null;
     status: string;
+    isFrozen?: boolean;
     vehicleType: string | null;
     expoPushToken: string | null;
     throttledUntil: Date | null;
@@ -318,6 +319,7 @@ export async function selectCandidates(
           name: true,
           phone: true,
           status: true,
+          isFrozen: true,
           vehicleType: true,
           expoPushToken: true,
           throttledUntil: true,
@@ -341,7 +343,7 @@ export async function selectCandidates(
   let prelim: Prelim[] = [];
   for (const session of latestSessionPerDriver(sessions)) {
     const { driver } = session;
-    if (!driver || driver.status !== "ACTIVE") continue;
+    if (!driver || driver.status !== "ACTIVE" || driver.isFrozen) continue;
     if (order.requiresCarOnly && driver.vehicleType !== "CAR") continue;
     const lat = toNum(session.lastGpsLat);
     const lng = toNum(session.lastGpsLng);

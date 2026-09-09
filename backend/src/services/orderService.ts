@@ -836,7 +836,7 @@ export async function assignDriverManually(args: {
   }
 
   const driver = await prisma.driver.findFirst({
-    where: { id: driverId, tenantId },
+    where: { id: driverId, tenantId, status: "ACTIVE", isFrozen: false },
     select: { id: true, name: true },
   });
   if (!driver) throw new Error(`Driver ${driverId} not found`);

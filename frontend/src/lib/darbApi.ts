@@ -629,6 +629,7 @@ export const fleetApi = {
   rate: () => get<FleetRate>("/api/fleet/rate"),
   proposeRate: (body: {
     flatFeePerOrderKwd: string;
+    documents?: FleetDocumentInput[];
     /** Revision 14 (#3). Omitted means "leave the kilometre rate alone", never
      *  zero: an empty box must not quietly take a company off distance pay. */
     perKmFeeKwd?: string;
@@ -684,6 +685,7 @@ export const fleetApi = {
     id: string,
     body: {
       status: string;
+      documents?: FleetDocumentInput[];
       reason?: string;
       // Revision 13 (#4, #5). Required by the endpoint for LEAVE and
       // TERMINATED respectively, as calendar dates (YYYY-MM-DD).
@@ -698,7 +700,7 @@ export const fleetApi = {
     }),
   requestDriverProfile: (
     id: string,
-    body: { name?: string; vehicleType?: string; zone?: string },
+    body: { name?: string; vehicleType?: string; zone?: string; documents?: FleetDocumentInput[] },
   ) =>
     post<FleetChangeRequest>(`/api/fleet/drivers/${id}/requests`, {
       type: "DRIVER_PROFILE",
@@ -738,7 +740,7 @@ export const fleetApi = {
     get<FleetChangeRequest[]>("/api/fleet/requests", params as Params),
   withdrawRequest: (id: string) => post<{ ok: true }>(`/api/fleet/requests/${id}/withdraw`),
 
-  issues: (params?: { includeResolved?: boolean }) =>
+  issues: (params?: { includeResolved?: boolean; status?: string }) =>
     get<{ issues: FleetIssue[]; openCount: number }>("/api/fleet/issues", params as Params),
   acknowledgeIssue: (id: string) => post<{ ok: true }>(`/api/fleet/issues/${id}/acknowledge`),
   /**
@@ -861,13 +863,9 @@ export async function uploadFleetDocument(
         reader.onerror = () => reject(new Error("The file could not be read. Try again."));
         reader.readAsDataURL(file);
       });
-      return {
-        type,
-        dataBase64,
-        fileName: file.name,
-        mimeType: file.type,
-        sizeBytes: file.size,
-      };
+      return post<FleetDocumentInput>("/api/fleet/documents/stage", {
+        type, dataBase64, fileName: file.name, mimeType: file.type, sizeBytes: file.size,
+      });
     }
     throw new Error(
       e?.response?.data?.error ?? "Could not start the upload. Contact Darb operations.",
@@ -943,6 +941,7 @@ export const fleetsApi = {
    * moved by the automatic sweep, so a supervisor who wanted to lift a throttle
    * or warn a company by hand had no way to.
    */
+  driverAccount: (fleetId: string, driverId: string, body: { status?: "ACTIVE" | "INACTIVE"; isFrozen?: boolean }) => patch<{ ok: true }>(`/api/fleets/${fleetId}/drivers/${driverId}/account`, body),
   discipline: (id: string, status: string, note: string) =>
     post<FleetProfile>(`/api/fleets/${id}/discipline`, { status, note }),
   issues: (id: string, params?: { includeResolved?: boolean }) =>

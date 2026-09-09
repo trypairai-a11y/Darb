@@ -115,6 +115,7 @@ export default function EmergencyPanel({ onClose }: { onClose: () => void }) {
       await staffDriversApi.putOffline(incident.driverId);
       toast.success(t("opsPages.driverOffline"));
       await queryClient.invalidateQueries({ queryKey: ["darb", "dispatch"] });
+      await queryClient.invalidateQueries({ queryKey: ["darb", "incidents"] });
     } catch {
       toast.error(t("toast.failedSave"));
     } finally {
@@ -133,6 +134,7 @@ export default function EmergencyPanel({ onClose }: { onClose: () => void }) {
       toast.success(`${t("opsPages.orderReassigned")} · ${orderNumber}`);
       await queryClient.invalidateQueries({ queryKey: ["darb", "incidents"] });
       await queryClient.invalidateQueries({ queryKey: ["darb", "dispatch"] });
+      await queryClient.invalidateQueries({ queryKey: ["darb", "incidents"] });
     } catch (err) {
       toast.error(
         (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
@@ -229,6 +231,9 @@ export default function EmergencyPanel({ onClose }: { onClose: () => void }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {incidents.map((incident) => {
             const photos = incidentPhotos(incident);
+            const activeOrders = incident.driver?.deliveryOrders ?? [];
+            const reassignable = activeOrders.find(o => ["ASSIGNED", "ARRIVED"].includes(o.status));
+            const offline = incident.driver?.courierOnlineSessions?.length === 0;
             const open = incident.status === "OPEN";
             return (
               <article
@@ -261,6 +266,9 @@ export default function EmergencyPanel({ onClose }: { onClose: () => void }) {
                             {incident.order.orderNumber}
                           </span>
                         )}
+                      </p>
+                      <p className="text-xs font-medium text-sand-700 mt-2">
+                        {activeOrders.length ? `${t("revision19.activeOrders")}: ${activeOrders.map(o => o.orderNumber).join(", ")}` : t("revision19.noActiveOrders")}
                       </p>
                       {incident.description && (
                         <p className="text-xs text-sand-700 mt-1" dir="auto">
@@ -355,9 +363,7 @@ export default function EmergencyPanel({ onClose }: { onClose: () => void }) {
                         emergency gets a way OFF this driver. Pre-pickup only:
                         once the bag is collected the answer is the failed →
                         returned flow, not a reassign. */}
-                    {incident.order &&
-                      incident.order.driverId === incident.driverId &&
-                      ["ASSIGNED", "ARRIVED"].includes(incident.order.status ?? "") && (
+                    {reassignable && (
                         <button
                           type="button"
                           onClick={() => void reassignOrder(incident)}
@@ -378,12 +384,12 @@ export default function EmergencyPanel({ onClose }: { onClose: () => void }) {
                       <button
                         type="button"
                         onClick={() => void putOffline(incident)}
-                        disabled={busyId === incident.id}
+                        disabled={busyId === incident.id || offline}
                         className="inline-flex items-center gap-1.5 px-4 h-9 rounded-pill bg-sand-100 text-sand-800 text-xs font-medium hover:bg-sand-200 transition-colors disabled:opacity-50"
                         data-testid="incident-put-offline"
                       >
                         <PowerOff size={13} aria-hidden="true" />
-                        {busyId === incident.id ? t("common.processing") : t("opsPages.putOffline")}
+                        {busyId === incident.id ? t("common.processing") : offline ? t("revision19.offline") : t("opsPages.putOffline")}
                       </button>
                     )}
                   </div>

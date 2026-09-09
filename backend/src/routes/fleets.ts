@@ -3,6 +3,7 @@
 // statements, and the manual discipline override (the auto ladder only
 // escalates; de-escalation is an explicit ops decision recorded here).
 
+import { forceDriverOffline } from "../services/dispatch/driverPresence";
 import { Router, Request, Response } from "express";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
@@ -441,6 +442,27 @@ router.get("/export.xlsx", rbac(...READ), async (req: Request, res: Response) =>
  *     tags: [Fleets]
  *     summary: Fleet detail with drivers and portal users
  */
+router.patch("/:id/drivers/:driverId/account", rbac(...MUTATE), validateBody(z.object({
+  status: z.enum(["ACTIVE", "INACTIVE"]).optional(),
+  isFrozen: z.boolean().optional(),
+}).refine(v => v.status !== undefined || v.isFrozen !== undefined, "Choose an account action")), async (req: Request, res: Response) => {
+  const tenantId = req.user!.tenantId;
+  const where = { id: req.params.driverId, tenantId, fleetPartnerId: req.params.id };
+  try {
+    const driver = await prisma.driver.findFirst({ where, select: { id: true } });
+    if (!driver) { res.status(404).json({ error: "Driver not found" }); return; }
+    await prisma.$transaction(async tx => {
+      await tx.driver.updateMany({ where, data: req.body });
+      if (req.body.isFrozen === true || req.body.status === "INACTIVE") {
+        await forceDriverOffline(tx, tenantId, driver.id);
+      }
+      await tx.auditLog.create({ data: { tenantId, userId: req.user!.userId,
+        action: "DRIVER_ACCOUNT_UPDATED", entityType: "Driver", entityId: driver.id, changes: req.body } });
+    });
+    res.json({ ok: true });
+  } catch (err: any) { res.status(400).json({ error: err.message }); }
+});
+
 router.get("/:id", rbac(...READ), async (req: Request, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
@@ -449,7 +471,7 @@ router.get("/:id", rbac(...READ), async (req: Request, res: Response) => {
       include: {
         drivers: {
           select: {
-            id: true, name: true, phone: true, status: true, vehicleType: true,
+            id: true, name: true, phone: true, status: true, isFrozen: true, vehicleType: true,
             performanceTier: true, throttledUntil: true,
           },
         },
@@ -1162,7 +1184,7 @@ router.post(
 router.get("/:id/documents", rbac(...READ), async (req: Request, res: Response) => {
   try {
     const docs = await prisma.fleetDocument.findMany({
-      where: { tenantId: req.user!.tenantId, fleetPartnerId: req.params.id },
+      where: { tenantId: req.user!.tenantId, fleetPartnerId: req.params.id, isStaged: false },
       select: { ...FLEET_DOC_LIST_SELECT, driver: { select: { id: true, name: true } } },
       orderBy: [{ driverId: "asc" }, { type: "asc" }, { createdAt: "desc" }],
       take: 500,

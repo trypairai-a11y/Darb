@@ -363,6 +363,10 @@ router.post("/availability", async (req: Request, res: Response) => {
     // than blocked, so a weak signal never costs somebody a shift's earnings.
     let zoneWarning: string | null = null;
 
+    if (availability === "ONLINE" && driver.status !== "ACTIVE") {
+      res.status(409).json({ error: "This driver is not active", code: "DRIVER_INACTIVE" });
+      return;
+    }
     if (availability === "ONLINE") {
       const over = await isDriverOverCeiling(tenantId, driver.id);
       if (over) {
@@ -490,6 +494,7 @@ router.post("/offers/:id/accept", async (req: Request, res: Response) => {
       return;
     }
     const { driver } = identity;
+    if (driver.status !== "ACTIVE") { res.status(409).json({ error: "This driver is not active", code: "DRIVER_INACTIVE" }); return; }
     const tenantId = driver.tenantId;
 
     // Unknown offer / another driver's offer → 404 (410 is reserved for

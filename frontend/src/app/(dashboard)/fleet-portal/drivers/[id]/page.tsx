@@ -13,6 +13,7 @@
 //      The client asked for that exception because drivers change SIMs
 //      constantly. The hint under the field says what it costs: the driver
 //      signs into the app with this number.
+import { fleetPortalHref } from "@/lib/fleetTabs";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -67,6 +68,7 @@ export default function FleetDriverProfilePage() {
   const [docFile, setDocFile] = useState<File | null>(null);
   const [newPhone, setNewPhone] = useState("");
   const [reason, setReason] = useState("");
+  const [supportFile, setSupportFile] = useState<File | null>(null);
   // Revision 13 (#4, #5). A leave request with no dates and a resignation with
   // no last day are both a phone call Darb has to make anyway, which is the
   // work this screen exists to remove.
@@ -102,7 +104,7 @@ export default function FleetDriverProfilePage() {
     );
   }
 
-  const { driver, rating, documents, issues, activity, storageConfigured } = profileQuery.data;
+  const { driver, rating, documents, requests, equipment, issues, activity, storageConfigured } = profileQuery.data;
 
   async function openFile(id: string) {
     try {
@@ -131,11 +133,12 @@ export default function FleetDriverProfilePage() {
   }
 
   async function submitStatus() {
-    if (!statusOpen) return;
+    if (!statusOpen || !supportFile) return;
     setSaving(true);
     try {
       await fleetApi.requestDriverStatus(driverId, {
         status: statusOpen,
+        documents: [await uploadFleetDocument("SUPPORTING_DOCUMENT", supportFile)],
         reason: reason.trim() || undefined,
         // Sent only for the status that requires them. The endpoint validates
         // the same rule, so a stale tab cannot post a leave with no end.
@@ -146,6 +149,7 @@ export default function FleetDriverProfilePage() {
       });
       toast.success(t("fleetPortal.statusRequested"));
       setStatusOpen(null);
+      setSupportFile(null);
       setReason("");
       setLeaveStart("");
       setReturnDate("");
@@ -177,7 +181,7 @@ export default function FleetDriverProfilePage() {
     <div className="space-y-6">
       <button
         type="button"
-        onClick={() => router.push("/fleet-portal")}
+        onClick={() => router.push(fleetPortalHref("/fleet-portal"))}
         className="inline-flex items-center gap-1.5 text-sm text-sand-600 hover:text-sand-900"
       >
         <ArrowLeft size={15} aria-hidden="true" />
@@ -244,6 +248,27 @@ export default function FleetDriverProfilePage() {
           </button>
         </div>
       </div>
+
+      <section className="rounded-2xl border border-sand-200 bg-white p-5 space-y-3" data-testid="driver-requests">
+        <h2 className="font-display text-lg text-sand-900">{t("revision19.requests")}</h2>
+        {!requests?.length ? <p className="text-sm text-sand-600">{t("revision19.noRequests")}</p> : <ul className="divide-y divide-sand-200">
+          {requests.map(r => <li key={r.id} className="py-3 space-y-1">
+            <div className="flex justify-between gap-3"><p className="text-sm font-medium">{r.type.replaceAll("_", " ")}{r.payload.status ? ` · ${String(r.payload.status)}` : ""}</p><StatusBadge status={r.status} /></div>
+            <p className="text-xs text-sand-500">{formatDate(r.createdAt, locale)}{r.reviewedAt ? ` · ${formatDate(r.reviewedAt, locale)}` : ""}</p>
+            {r.payload.reason ? <p className="text-sm text-sand-700" dir="auto">{String(r.payload.reason)}</p> : null}
+            {r.reviewNote && <p className="text-sm text-sand-700" dir="auto">{r.reviewNote}</p>}
+          </li>)}
+        </ul>}
+      </section>
+      <section className="rounded-2xl border border-sand-200 bg-white p-5 space-y-3" data-testid="driver-equipment">
+        <h2 className="font-display text-lg text-sand-900">{t("revision19.equipment")}</h2>
+        {!equipment?.length ? <p className="text-sm text-sand-600">{t("revision19.noEquipment")}</p> : <ul className="divide-y divide-sand-200">
+          {equipment.map(item => <li key={item.id} className="py-2 text-sm flex justify-between gap-3">
+            <div><p className="font-medium">{item.itemType.replaceAll("_", " ")} · {item.quantity}</p><p className="text-xs text-sand-500">{item.condition}{item.conditionNote ? ` · ${item.conditionNote}` : ""}</p></div>
+            <p className="text-xs text-sand-600">{t(item.returnedDate ? "revision19.returned" : item.issued ? "revision19.issued" : "revision19.notIssued")} · {item.returnedDate || item.issuedDate ? formatDate((item.returnedDate || item.issuedDate)!, locale) : "—"}</p>
+          </li>)}
+        </ul>}
+      </section>
 
       {issues.length > 0 && (
         <ul className="space-y-2">
@@ -339,12 +364,6 @@ export default function FleetDriverProfilePage() {
           </button>
         </div>
 
-        {!storageConfigured && (
-          <p className="px-4 py-3 rounded-xl border border-amber-200 bg-amber-50 text-sm text-amber-800">
-            {t("fleetPortal.storageOff")}
-          </p>
-        )}
-
         <DataTable
           columns={[
             {
@@ -417,6 +436,7 @@ export default function FleetDriverProfilePage() {
               on the panel: it used to disappear entirely when Darb had not
               switched storage on, which is what "there must be an import
               button" was reporting. */}
+          <p className="text-xs text-sand-600">{t("revision19.supportRequired")}</p>
           <DocumentFileField
             file={docFile}
             onChange={setDocFile}
@@ -424,7 +444,7 @@ export default function FleetDriverProfilePage() {
           />
           <button
             type="button"
-            disabled={saving || (!docFile && !docExpiry)}
+            disabled={saving || !docFile}
             onClick={submitDocument}
             className="w-full h-10 rounded-full bg-primary text-white text-sm font-medium disabled:opacity-50"
           >
@@ -505,10 +525,12 @@ export default function FleetDriverProfilePage() {
               onChange={(e) => setReason(e.target.value)}
             />
           </label>
+          <p className="text-xs text-sand-600">{t("revision19.supportRequired")}</p>
+          <DocumentFileField file={supportFile} onChange={setSupportFile} storageConfigured={storageConfigured} />
           <button
             type="button"
             disabled={
-              saving ||
+              saving || !supportFile ||
               (statusOpen === "LEAVE" &&
                 (!leaveStart || !returnDate || returnDate < leaveStart)) ||
               (statusOpen === "TERMINATED" && !lastWorkingDate)

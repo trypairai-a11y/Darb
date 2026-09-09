@@ -43,6 +43,7 @@ prisma.fleetDocument = prisma.fleetDocument ?? {
   update: jest.fn(),
   updateMany: jest.fn(),
 };
+prisma.fleetDocument.findFirstOrThrow = prisma.fleetDocument.findFirstOrThrow ?? jest.fn();
 prisma.fleetChangeRequest = prisma.fleetChangeRequest ?? {
   findMany: jest.fn(),
   findFirst: jest.fn(),
@@ -112,6 +113,8 @@ function makeApp(user: Record<string, unknown> | null = FLEET_USER) {
   return app;
 }
 
+const supporting = [{ type: "SUPPORTING_DOCUMENT", dataBase64: "c3VwcG9ydA==", fileName: "proof.pdf", mimeType: "application/pdf" }];
+const onboardingDocs = ["CIVIL_ID", "DRIVING_LICENSE", "WORK_PERMIT", "HEALTH_CERT", "VEHICLE_REG", "POLICE_CLEARANCE", "PASSPORT", "DRIVER_SELFIE"].map(type => ({ ...supporting[0], type }));
 const OWN_DRIVER = {
   id: "d-1",
   tenantId: "t-1",
@@ -148,10 +151,12 @@ describe("Fleet portal request desk", () => {
       id: "req-1",
       ...data,
     }));
-    prisma.fleetDocument.create.mockImplementation(async ({ data }: any) => ({
-      id: "doc-1",
-      ...data,
-    }));
+    const storedDocs: any[] = [];
+    prisma.fleetDocument.create.mockImplementation(async ({ data }: any) => {
+      const doc = { id: `doc-${storedDocs.length + 1}`, ...data };
+      storedDocs.push(doc); return doc;
+    });
+    prisma.fleetDocument.findMany.mockImplementation(async ({ where }: any) => storedDocs.filter(d => (!where.id || where.id.in.includes(d.id)) && d.tenantId === where.tenantId && (!where.fleetPartnerId || d.fleetPartnerId === where.fleetPartnerId)));
   });
 
   // ─── Access control ──────────────────────────────────────────────────────
@@ -166,7 +171,7 @@ describe("Fleet portal request desk", () => {
     prisma.fleetPartner.findFirst.mockResolvedValue({ id: "f-1" });
     const res = await request(makeApp(admin))
       .post("/api/fleet/drivers?fleetPartnerId=f-1")
-      .send({ name: "New Driver", phone: "+96599999999", vehicleType: "CAR" });
+      .send({ name: "New Driver", phone: "+96599999999", vehicleType: "CAR", documents: onboardingDocs });
     expect(res.status).toBe(403);
     expect(prisma.fleetChangeRequest.create).not.toHaveBeenCalled();
   });
@@ -210,7 +215,7 @@ describe("Fleet portal request desk", () => {
     prisma.driver.findFirst.mockResolvedValue(null); // no phone clash
     const res = await request(makeApp())
       .post("/api/fleet/drivers")
-      .send({ name: "Bilal Hussain", phone: "+96562697534", vehicleType: "CAR" });
+      .send({ name: "Bilal Hussain", phone: "+96562697534", vehicleType: "CAR", documents: onboardingDocs });
 
     expect(res.status).toBe(201);
     expect(prisma.driver.create).not.toHaveBeenCalled();
@@ -236,6 +241,7 @@ describe("Fleet portal request desk", () => {
         phone: "+96562697534",
         vehicleType: "CAR",
         fleetPartnerId: "f-somebody-else",
+        documents: onboardingDocs,
       });
 
     expect(prisma.fleetChangeRequest.create).toHaveBeenCalledWith(
@@ -249,7 +255,7 @@ describe("Fleet portal request desk", () => {
     prisma.driver.findFirst.mockResolvedValue({ id: "d-existing" });
     const res = await request(makeApp())
       .post("/api/fleet/drivers")
-      .send({ name: "Bilal Hussain", phone: "+96562697534", vehicleType: "CAR" });
+      .send({ name: "Bilal Hussain", phone: "+96562697534", vehicleType: "CAR", documents: onboardingDocs });
     expect(res.status).toBe(409);
     expect(prisma.fleetChangeRequest.create).not.toHaveBeenCalled();
   });
@@ -261,7 +267,7 @@ describe("Fleet portal request desk", () => {
     const res = await request(makeApp())
       .post("/api/fleet/drivers/d-1/requests")
       .send({
-        type: "DRIVER_STATUS",
+        type: "DRIVER_STATUS", documents: supporting,
         status: "TERMINATED",
         reason: "Left the company",
         lastWorkingDate: "2026-08-14",
@@ -282,7 +288,7 @@ describe("Fleet portal request desk", () => {
     prisma.driver.findFirst.mockResolvedValue(OWN_DRIVER);
     const res = await request(makeApp())
       .post("/api/fleet/drivers/d-1/requests")
-      .send({ type: "DRIVER_STATUS", status: "TERMINATED", reason: "Left" });
+      .send({ type: "DRIVER_STATUS", documents: supporting, status: "TERMINATED", reason: "Left" });
     expect(res.status).toBe(400);
     expect(prisma.fleetChangeRequest.create).not.toHaveBeenCalled();
   });
@@ -292,7 +298,7 @@ describe("Fleet portal request desk", () => {
     const res = await request(makeApp())
       .post("/api/fleet/drivers/d-1/requests")
       .send({
-        type: "DRIVER_STATUS",
+        type: "DRIVER_STATUS", documents: supporting,
         status: "LEAVE",
         leaveStartDate: "2026-08-01",
         returnDate: "2026-08-20",
@@ -316,7 +322,7 @@ describe("Fleet portal request desk", () => {
     prisma.driver.findFirst.mockResolvedValue(OWN_DRIVER);
     const res = await request(makeApp())
       .post("/api/fleet/drivers/d-1/requests")
-      .send({ type: "DRIVER_STATUS", status: "LEAVE", leaveStartDate: "2026-08-01" });
+      .send({ type: "DRIVER_STATUS", documents: supporting, status: "LEAVE", leaveStartDate: "2026-08-01" });
     expect(res.status).toBe(400);
     expect(prisma.fleetChangeRequest.create).not.toHaveBeenCalled();
   });
@@ -326,7 +332,7 @@ describe("Fleet portal request desk", () => {
     const res = await request(makeApp())
       .post("/api/fleet/drivers/d-1/requests")
       .send({
-        type: "DRIVER_STATUS",
+        type: "DRIVER_STATUS", documents: supporting,
         status: "LEAVE",
         leaveStartDate: "2026-08-20",
         returnDate: "2026-08-01",
@@ -339,7 +345,7 @@ describe("Fleet portal request desk", () => {
     prisma.driver.findFirst.mockResolvedValue(OWN_DRIVER);
     const res = await request(makeApp())
       .post("/api/fleet/drivers/d-1/requests")
-      .send({ type: "DRIVER_STATUS", status: "ACTIVE" });
+      .send({ type: "DRIVER_STATUS", documents: supporting, status: "ACTIVE" });
     expect(res.status).toBe(201);
   });
 
@@ -347,7 +353,7 @@ describe("Fleet portal request desk", () => {
     prisma.driver.findFirst.mockResolvedValue(OWN_DRIVER);
     const res = await request(makeApp())
       .post("/api/fleet/drivers/d-1/requests")
-      .send({ type: "DRIVER_STATUS", status: "SUSPENDED" });
+      .send({ type: "DRIVER_STATUS", documents: supporting, status: "SUSPENDED" });
     expect(res.status).toBe(400);
     expect(prisma.fleetChangeRequest.create).not.toHaveBeenCalled();
   });
@@ -359,7 +365,7 @@ describe("Fleet portal request desk", () => {
     prisma.driver.findFirst.mockResolvedValue(OWN_DRIVER);
     const res = await request(makeApp())
       .post("/api/fleet/drivers/d-1/requests")
-      .send({ type: "DRIVER_DOCUMENT", documentType: "CIVIL_ID", expiryDate: "2027-01-01" });
+      .send({ type: "DRIVER_DOCUMENT", documentType: "CIVIL_ID", dataBase64: "c3VwcG9ydA==", expiryDate: "2027-01-01" });
 
     expect(res.status).toBe(201);
     expect(prisma.fleetDocument.create).toHaveBeenCalledWith(
@@ -481,7 +487,7 @@ describe("Fleet portal request desk", () => {
 
     const res = await request(makeApp())
       .post("/api/fleet/rate")
-      .send({ flatFeePerOrderKwd: "1.400", reason: "Fuel" });
+      .send({ flatFeePerOrderKwd: "1.400", reason: "Fuel", documents: supporting });
 
     expect(res.status).toBe(201);
     expect(prisma.fleetChangeRequest.create).toHaveBeenCalledWith(
@@ -550,7 +556,7 @@ describe("Fleet portal request desk", () => {
     prisma.fleetPartner.findFirst.mockResolvedValue({ flatFeePerOrderKwd: "1.100" });
     prisma.fleetChangeRequest.findFirst.mockResolvedValue({
       id: "req-9",
-      payload: { flatFeePerOrderKwd: "1.400", reason: "Fuel" },
+      payload: { flatFeePerOrderKwd: "1.400", reason: "Fuel", documents: supporting },
       createdAt: new Date("2026-08-03T12:00:00Z"),
     });
 
@@ -569,4 +575,64 @@ describe("Fleet portal request desk", () => {
 
     expect(res.status).toBe(409);
   });
+  test("rejects onboarding without attachments before creating any records", async () => {
+    prisma.driver.findFirst.mockResolvedValue(null);
+    const res = await request(makeApp()).post("/api/fleet/drivers").send({ name: "New Driver", phone: "99887766", vehicleType: "CAR" });
+    expect(res.status).toBe(400);
+    expect(prisma.fleetDocument.create).not.toHaveBeenCalled();
+    expect(prisma.fleetChangeRequest.create).not.toHaveBeenCalled();
+  });
+  test("expiry dates alone do not count as attached onboarding documents", async () => {
+    prisma.driver.findFirst.mockResolvedValue(null);
+    const res = await request(makeApp()).post("/api/fleet/drivers").send({ name: "New Driver", phone: "99887766", vehicleType: "CAR", documents: onboardingDocs.map(d => ({ type: d.type, expiryDate: "2027-01-01" })) });
+    expect(res.status).toBe(400);
+    expect(prisma.fleetChangeRequest.create).not.toHaveBeenCalled();
+  });
+  test("a resignation with valid dates still needs an attached document", async () => {
+    prisma.driver.findFirst.mockResolvedValue(OWN_DRIVER);
+    const res = await request(makeApp()).post("/api/fleet/drivers/d-1/requests").send({ type: "DRIVER_STATUS", status: "TERMINATED", lastWorkingDate: "2026-09-09" });
+    expect(res.status).toBe(400);
+    expect(prisma.fleetChangeRequest.create).not.toHaveBeenCalled();
+  });
+  test("a staged file from another company cannot support a request", async () => {
+    prisma.driver.findFirst.mockResolvedValue(OWN_DRIVER);
+    prisma.fleetDocument.findFirst.mockResolvedValue(null);
+    const res = await request(makeApp()).post("/api/fleet/drivers/d-1/requests").send({ type: "DRIVER_STATUS", status: "ACTIVE", documents: [{ documentId: "foreign-doc" }] });
+    expect(res.status).toBe(400);
+    expect(prisma.fleetDocument.findFirst).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "foreign-doc", tenantId: "t-1", fleetPartnerId: "f-1", isStaged: true } }));
+    expect(prisma.fleetChangeRequest.create).not.toHaveBeenCalled();
+  });
+  test("New issues includes escalations and scopes before pagination", async () => {
+    prisma.fleetIssue.findMany.mockResolvedValue([]);
+    const res = await request(makeApp()).get("/api/fleet/issues?status=NEW");
+    expect(res.status).toBe(200);
+    expect(prisma.fleetIssue.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { tenantId: "t-1", fleetPartnerId: "f-1", status: { in: ["OPEN", "ESCALATED"] } } }));
+  });
+  test("invalid issue status is refused", async () => {
+    const res = await request(makeApp()).get("/api/fleet/issues?status=INVALID");
+    expect(res.status).toBe(400);
+    expect(prisma.fleetIssue.findMany).not.toHaveBeenCalled();
+  });
+
+  test("upload staging stores one file without opening an approval request", async () => {
+    const res = await request(makeApp()).post("/api/fleet/documents/stage").send(supporting[0]);
+    expect(res.status).toBe(201);
+    expect(res.body).toMatchObject({ documentId: "doc-1", type: "SUPPORTING_DOCUMENT" });
+    expect(prisma.fleetDocument.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ isStaged: true, fileData: expect.any(Buffer), tenantId: "t-1", fleetPartnerId: "f-1" }) }));
+    expect(prisma.fleetChangeRequest.create).not.toHaveBeenCalled();
+  });
+  test("a staged file is claimed once and linked to the submitted driver request", async () => {
+    prisma.driver.findFirst.mockResolvedValue(OWN_DRIVER);
+    const doc = { id: "staged1", tenantId: "t-1", fleetPartnerId: "f-1", driverId: null, isStaged: true, type: "SUPPORTING_DOCUMENT", fileData: Buffer.from("proof"), fileKey: null };
+    prisma.fleetDocument.findFirst.mockResolvedValue(doc);
+    prisma.fleetDocument.updateMany.mockResolvedValue({ count: 1 });
+    prisma.fleetDocument.findFirstOrThrow.mockResolvedValue({ ...doc, isStaged: false, driverId: "d-1" });
+    prisma.fleetDocument.findMany.mockResolvedValue([doc]);
+    const res = await request(makeApp()).post("/api/fleet/drivers/d-1/requests").send({ type: "DRIVER_STATUS", status: "ACTIVE", documents: [{ documentId: "staged1" }] });
+    expect(res.status).toBe(201);
+    expect(prisma.fleetDocument.updateMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ id: "staged1", tenantId: "t-1", fleetPartnerId: "f-1", isStaged: true }), data: expect.objectContaining({ driverId: "d-1", isStaged: false }) }));
+    expect(prisma.fleetChangeRequest.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ documentIds: ["staged1"] }) }));
+    expect(prisma.fleetDocument.create).not.toHaveBeenCalled();
+  });
+
 });

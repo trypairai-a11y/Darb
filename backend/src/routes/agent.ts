@@ -123,6 +123,8 @@ router.post("/register", async (req: Request, res: Response) => {
       return;
     }
 
+    if (driver.isFrozen) { res.status(403).json({ error: "This driver account is frozen", code: "ACCOUNT_FROZEN" }); return; }
+
     const deviceImei =
       String(imei || "").trim() ||
       `agent-${driver.id}`;
@@ -233,7 +235,7 @@ export async function resolveDriverFromAgentRequest(req: Request) {
     },
   });
 
-  if (!device?.driver) return null;
+  if (!device?.driver || device.driver.isFrozen) return null;
   return { device, driver: device.driver };
 }
 
@@ -1628,19 +1630,9 @@ router.post(
               lastGpsLng: last.longitude,
             },
           });
-        } else {
-          await prisma.courierOnlineSession.create({
-            data: {
-              tenantId,
-              driverId,
-              isOnline: true,
-              startTime: lastCapturedAt,
-              lastGpsAt: lastCapturedAt,
-              lastGpsLat: last.latitude,
-              lastGpsLng: last.longitude,
-            },
-          });
         }
+
+        // GPS updates location only. Going online requires an explicit availability action.
 
         // Live-floor + Darb 2.0 SSE fan-out. Best-effort: tenantId comes from
         // the Device→Driver join (NEVER the request body), and a bus failure
@@ -1652,15 +1644,6 @@ router.post(
           payload: { driverId, lat: last.latitude, lng: last.longitude, capturedAt: last.capturedAt },
           timestamp: nowIso,
         }).catch(() => {});
-        if (!existing) {
-          // offline → online transition
-          void publishEvent({
-            type: "online_session_update",
-            tenantId,
-            payload: { driverId, isOnline: true },
-            timestamp: nowIso,
-          }).catch(() => {});
-        }
         const lastPublishedAt = _driverLocationLastPublish.get(driverId) ?? 0;
         if (Date.now() - lastPublishedAt >= DRIVER_LOCATION_THROTTLE_MS) {
           _driverLocationLastPublish.set(driverId, Date.now());
@@ -2120,7 +2103,7 @@ async function resolveDriverFromDeviceId(deviceId: string | undefined) {
     where: { id: deviceId },
     include: { driver: true },
   });
-  if (!device?.driver) return null;
+  if (!device?.driver || device.driver.isFrozen) return null;
   return device.driver;
 }
 

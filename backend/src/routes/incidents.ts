@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import { Prisma } from "../generated/prisma";
 import { z } from "zod";
 import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
@@ -21,7 +22,11 @@ const SUPERVISOR_PLUS = ["ADMIN", "OPS_MANAGER", "SUPERVISOR"];
 const INCIDENT_TYPES = ["SOS", "ACCIDENT", "VEHICLE_BREAKDOWN", "CUSTOMER_ISSUE", "OTHER"] as const;
 const INCIDENT_STATUSES = ["OPEN", "ACKNOWLEDGED", "RESOLVED"] as const;
 
-const DRIVER_SELECT = { id: true, name: true, phone: true } as const;
+const DRIVER_SELECT = { id: true, name: true, phone: true,
+  deliveryOrders: { where: { status: { in: ["ASSIGNED", "ARRIVED", "PICKED_UP"] } },
+    select: { id: true, orderNumber: true, status: true, driverId: true } },
+  courierOnlineSessions: { where: { isOnline: true }, select: { id: true }, take: 1 },
+} satisfies Prisma.DriverSelect;
 // Client note (2026-08-31): the emergency card decides whether "reassign the
 // order" is offered from the order's own status, so the list carries it.
 const ORDER_SELECT = { id: true, orderNumber: true, status: true, driverId: true } as const;
@@ -395,13 +400,8 @@ router.post(
       // The order named on the report when it is still this driver's; the
       // driver's live order otherwise (an older app build may not send one).
       const order = await prisma.deliveryOrder.findFirst({
-        where: incident.orderId
-          ? { id: incident.orderId, tenantId, driverId: incident.driverId }
-          : {
-              tenantId,
-              driverId: incident.driverId,
-              status: { in: ["ASSIGNED", "ARRIVED", "PICKED_UP"] },
-            },
+        where: { tenantId, driverId: incident.driverId, status: { in: ["ASSIGNED", "ARRIVED"] } },
+        orderBy: { createdAt: "asc" },
         select: { id: true, orderNumber: true, status: true },
       });
       if (!order) {

@@ -55,6 +55,15 @@ export async function createFleetRequest(params: {
   requestedById?: string | null;
   fleetName?: string | null;
 }) {
+  const ids = [...new Set(params.documentIds ?? [])];
+  if (!ids.length) throw new Error("Supporting documents are required before submitting a request");
+  const docs = await prisma.fleetDocument.findMany({
+    where: { id: { in: ids }, tenantId: params.tenantId, fleetPartnerId: params.fleetPartnerId },
+    select: { id: true, fileKey: true, fileData: true },
+  });
+  if (docs.length !== ids.length || docs.some(d => !d.fileKey && !d.fileData?.length)) {
+    throw new Error("Every supporting document must have an attached file belonging to this company");
+  }
   const request = await prisma.fleetChangeRequest.create({
     data: {
       tenantId: params.tenantId,

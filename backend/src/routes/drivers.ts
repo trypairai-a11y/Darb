@@ -1,3 +1,4 @@
+import { forceDriverOffline } from "../services/dispatch/driverPresence";
 import { Router, Request, Response } from "express";
 import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
@@ -39,25 +40,14 @@ router.post("/:id/offline", rbac(...MUTATORS), async (req: Request, res: Respons
       return;
     }
     const now = new Date();
-    // No @@unique on CourierOnlineSession — findFirst + update mirrors the
-    // agent's availability ingest in routes/agentDelivery.ts.
-    const existing = await prisma.courierOnlineSession.findFirst({
-      where: { tenantId, driverId: driver.id, isOnline: true },
-      orderBy: { startTime: "desc" },
-    });
-    if (existing) {
-      await prisma.courierOnlineSession.update({
-        where: { id: existing.id },
-        data: { availability: "OFFLINE", isOnline: false, endTime: now },
-      });
-    }
+    const changed = await prisma.$transaction((tx) => forceDriverOffline(tx, tenantId, driver.id));
     void publishEvent({
       type: "driver.offline",
       tenantId,
       payload: { driverId: driver.id, availability: "OFFLINE", at: now.toISOString() },
       timestamp: now.toISOString(),
     }).catch(() => {});
-    res.json({ ok: true, alreadyOffline: !existing });
+    res.json({ ok: true, alreadyOffline: !changed });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

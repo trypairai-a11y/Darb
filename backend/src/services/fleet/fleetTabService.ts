@@ -28,7 +28,6 @@ export const FLEET_TABS = [
   "ROSTER",
   "ISSUES",
   "DOCUMENTS",
-  "SCORECARD",
   "PAYOUTS",
   // Revision 14 — the company's own cash account with Darb: what it has
   // deposited, and clearing its drivers' cash-on-hand out of it.
@@ -37,7 +36,7 @@ export const FLEET_TABS = [
   "TEAM",
 ] as const;
 
-export type FleetTab = (typeof FLEET_TABS)[number];
+export type FleetTab = (typeof FLEET_TABS)[number] | "SCORECARD";
 
 /**
  * Client note (2026-08-31, edit #8): the three portals share ONE role matrix —
@@ -83,12 +82,12 @@ export const ACCEPTED_FLEET_ROLE_INPUTS: readonly string[] = [
  * money roles (revision 14) — an owner widens anyone through the tab override.
  */
 export const FLEET_ROLE_DEFAULT_TABS: Record<FleetPortalRole, FleetTab[]> = {
-  ADMIN: ["ROSTER", "ISSUES", "DOCUMENTS", "SCORECARD", "PAYOUTS", "CASH", "SUPPORT", "TEAM"],
+  ADMIN: ["ROSTER", "ISSUES", "DOCUMENTS", "PAYOUTS", "CASH", "SUPPORT", "TEAM"],
   OPS_MANAGER: ["ROSTER", "ISSUES", "DOCUMENTS", "SUPPORT"],
   SUPERVISOR: ["ROSTER", "ISSUES", "SUPPORT"],
-  ACCOUNTANT: ["PAYOUTS", "SCORECARD", "CASH", "SUPPORT"],
-  ACCOUNT_MANAGER: ["SCORECARD", "SUPPORT"],
-  VIEWER: ["SCORECARD", "SUPPORT"],
+  ACCOUNTANT: ["PAYOUTS", "CASH", "SUPPORT"],
+  ACCOUNT_MANAGER: ["SUPPORT"],
+  VIEWER: ["SUPPORT"],
 };
 
 export function isFleetTab(value: unknown): value is FleetTab {

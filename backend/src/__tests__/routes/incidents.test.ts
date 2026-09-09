@@ -101,7 +101,7 @@ describe("Incidents route integration tests", () => {
           }),
           orderBy: { createdAt: "desc" },
           include: {
-            driver: { select: { id: true, name: true, phone: true } },
+            driver: { select: expect.objectContaining({ id: true, name: true, phone: true, deliveryOrders: expect.objectContaining({ where: { status: { in: ["ASSIGNED", "ARRIVED", "PICKED_UP"] } } }) }) },
             order: { select: { id: true, orderNumber: true, status: true, driverId: true } },
           },
         })

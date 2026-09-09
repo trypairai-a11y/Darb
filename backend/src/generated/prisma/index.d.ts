@@ -23493,6 +23493,7 @@ export namespace Prisma {
     assignedZoneId: string | null
     batchNumber: string | null
     status: $Enums.DriverStatus | null
+    isFrozen: boolean | null
     hireDate: Date | null
     photoUrl: string | null
     supervisorId: string | null
@@ -23546,6 +23547,7 @@ export namespace Prisma {
     assignedZoneId: string | null
     batchNumber: string | null
     status: $Enums.DriverStatus | null
+    isFrozen: boolean | null
     hireDate: Date | null
     photoUrl: string | null
     supervisorId: string | null
@@ -23599,6 +23601,7 @@ export namespace Prisma {
     assignedZoneId: number
     batchNumber: number
     status: number
+    isFrozen: number
     hireDate: number
     photoUrl: number
     supervisorId: number
@@ -23664,6 +23667,7 @@ export namespace Prisma {
     assignedZoneId?: true
     batchNumber?: true
     status?: true
+    isFrozen?: true
     hireDate?: true
     photoUrl?: true
     supervisorId?: true
@@ -23717,6 +23721,7 @@ export namespace Prisma {
     assignedZoneId?: true
     batchNumber?: true
     status?: true
+    isFrozen?: true
     hireDate?: true
     photoUrl?: true
     supervisorId?: true
@@ -23770,6 +23775,7 @@ export namespace Prisma {
     assignedZoneId?: true
     batchNumber?: true
     status?: true
+    isFrozen?: true
     hireDate?: true
     photoUrl?: true
     supervisorId?: true
@@ -23910,6 +23916,7 @@ export namespace Prisma {
     assignedZoneId: string | null
     batchNumber: string | null
     status: $Enums.DriverStatus
+    isFrozen: boolean
     hireDate: Date
     photoUrl: string | null
     supervisorId: string | null
@@ -23982,6 +23989,7 @@ export namespace Prisma {
     assignedZoneId?: boolean
     batchNumber?: boolean
     status?: boolean
+    isFrozen?: boolean
     hireDate?: boolean
     photoUrl?: boolean
     supervisorId?: boolean
@@ -24090,6 +24098,7 @@ export namespace Prisma {
     assignedZoneId?: boolean
     batchNumber?: boolean
     status?: boolean
+    isFrozen?: boolean
     hireDate?: boolean
     photoUrl?: boolean
     supervisorId?: boolean
@@ -24148,6 +24157,7 @@ export namespace Prisma {
     assignedZoneId?: boolean
     batchNumber?: boolean
     status?: boolean
+    isFrozen?: boolean
     hireDate?: boolean
     photoUrl?: boolean
     supervisorId?: boolean
@@ -24324,6 +24334,7 @@ export namespace Prisma {
       assignedZoneId: string | null
       batchNumber: string | null
       status: $Enums.DriverStatus
+      isFrozen: boolean
       hireDate: Date
       photoUrl: string | null
       supervisorId: string | null
@@ -24827,6 +24838,7 @@ export namespace Prisma {
     readonly assignedZoneId: FieldRef<"Driver", 'String'>
     readonly batchNumber: FieldRef<"Driver", 'String'>
     readonly status: FieldRef<"Driver", 'DriverStatus'>
+    readonly isFrozen: FieldRef<"Driver", 'Boolean'>
     readonly hireDate: FieldRef<"Driver", 'DateTime'>
     readonly photoUrl: FieldRef<"Driver", 'String'>
     readonly supervisorId: FieldRef<"Driver", 'String'>
@@ -142541,6 +142553,7 @@ export namespace Prisma {
     sizeBytes: number | null
     expiryDate: Date | null
     status: $Enums.FleetDocumentStatus | null
+    isStaged: boolean | null
     rejectionReason: string | null
     uploadedById: string | null
     reviewedById: string | null
@@ -142563,6 +142576,7 @@ export namespace Prisma {
     sizeBytes: number | null
     expiryDate: Date | null
     status: $Enums.FleetDocumentStatus | null
+    isStaged: boolean | null
     rejectionReason: string | null
     uploadedById: string | null
     reviewedById: string | null
@@ -142585,6 +142599,7 @@ export namespace Prisma {
     sizeBytes: number
     expiryDate: number
     status: number
+    isStaged: number
     rejectionReason: number
     uploadedById: number
     reviewedById: number
@@ -142617,6 +142632,7 @@ export namespace Prisma {
     sizeBytes?: true
     expiryDate?: true
     status?: true
+    isStaged?: true
     rejectionReason?: true
     uploadedById?: true
     reviewedById?: true
@@ -142639,6 +142655,7 @@ export namespace Prisma {
     sizeBytes?: true
     expiryDate?: true
     status?: true
+    isStaged?: true
     rejectionReason?: true
     uploadedById?: true
     reviewedById?: true
@@ -142661,6 +142678,7 @@ export namespace Prisma {
     sizeBytes?: true
     expiryDate?: true
     status?: true
+    isStaged?: true
     rejectionReason?: true
     uploadedById?: true
     reviewedById?: true
@@ -142770,6 +142788,7 @@ export namespace Prisma {
     sizeBytes: number | null
     expiryDate: Date | null
     status: $Enums.FleetDocumentStatus
+    isStaged: boolean
     rejectionReason: string | null
     uploadedById: string | null
     reviewedById: string | null
@@ -142811,6 +142830,7 @@ export namespace Prisma {
     sizeBytes?: boolean
     expiryDate?: boolean
     status?: boolean
+    isStaged?: boolean
     rejectionReason?: boolean
     uploadedById?: boolean
     reviewedById?: boolean
@@ -142838,6 +142858,7 @@ export namespace Prisma {
     sizeBytes?: boolean
     expiryDate?: boolean
     status?: boolean
+    isStaged?: boolean
     rejectionReason?: boolean
     uploadedById?: boolean
     reviewedById?: boolean
@@ -142865,6 +142886,7 @@ export namespace Prisma {
     sizeBytes?: boolean
     expiryDate?: boolean
     status?: boolean
+    isStaged?: boolean
     rejectionReason?: boolean
     uploadedById?: boolean
     reviewedById?: boolean
@@ -142931,6 +142953,7 @@ export namespace Prisma {
       sizeBytes: number | null
       expiryDate: Date | null
       status: $Enums.FleetDocumentStatus
+      isStaged: boolean
       rejectionReason: string | null
       uploadedById: string | null
       reviewedById: string | null
@@ -143348,6 +143371,7 @@ export namespace Prisma {
     readonly sizeBytes: FieldRef<"FleetDocument", 'Int'>
     readonly expiryDate: FieldRef<"FleetDocument", 'DateTime'>
     readonly status: FieldRef<"FleetDocument", 'FleetDocumentStatus'>
+    readonly isStaged: FieldRef<"FleetDocument", 'Boolean'>
     readonly rejectionReason: FieldRef<"FleetDocument", 'String'>
     readonly uploadedById: FieldRef<"FleetDocument", 'String'>
     readonly reviewedById: FieldRef<"FleetDocument", 'String'>
@@ -156410,6 +156434,7 @@ export namespace Prisma {
     assignedZoneId: 'assignedZoneId',
     batchNumber: 'batchNumber',
     status: 'status',
+    isFrozen: 'isFrozen',
     hireDate: 'hireDate',
     photoUrl: 'photoUrl',
     supervisorId: 'supervisorId',
@@ -158482,6 +158507,7 @@ export namespace Prisma {
     sizeBytes: 'sizeBytes',
     expiryDate: 'expiryDate',
     status: 'status',
+    isStaged: 'isStaged',
     rejectionReason: 'rejectionReason',
     uploadedById: 'uploadedById',
     reviewedById: 'reviewedById',
@@ -162285,6 +162311,7 @@ export namespace Prisma {
     assignedZoneId?: StringNullableFilter<"Driver"> | string | null
     batchNumber?: StringNullableFilter<"Driver"> | string | null
     status?: EnumDriverStatusFilter<"Driver"> | $Enums.DriverStatus
+    isFrozen?: BoolFilter<"Driver"> | boolean
     hireDate?: DateTimeFilter<"Driver"> | Date | string
     photoUrl?: StringNullableFilter<"Driver"> | string | null
     supervisorId?: StringNullableFilter<"Driver"> | string | null
@@ -162392,6 +162419,7 @@ export namespace Prisma {
     assignedZoneId?: SortOrderInput | SortOrder
     batchNumber?: SortOrderInput | SortOrder
     status?: SortOrder
+    isFrozen?: SortOrder
     hireDate?: SortOrder
     photoUrl?: SortOrderInput | SortOrder
     supervisorId?: SortOrderInput | SortOrder
@@ -162504,6 +162532,7 @@ export namespace Prisma {
     assignedZoneId?: StringNullableFilter<"Driver"> | string | null
     batchNumber?: StringNullableFilter<"Driver"> | string | null
     status?: EnumDriverStatusFilter<"Driver"> | $Enums.DriverStatus
+    isFrozen?: BoolFilter<"Driver"> | boolean
     hireDate?: DateTimeFilter<"Driver"> | Date | string
     photoUrl?: StringNullableFilter<"Driver"> | string | null
     supervisorId?: StringNullableFilter<"Driver"> | string | null
@@ -162611,6 +162640,7 @@ export namespace Prisma {
     assignedZoneId?: SortOrderInput | SortOrder
     batchNumber?: SortOrderInput | SortOrder
     status?: SortOrder
+    isFrozen?: SortOrder
     hireDate?: SortOrder
     photoUrl?: SortOrderInput | SortOrder
     supervisorId?: SortOrderInput | SortOrder
@@ -162672,6 +162702,7 @@ export namespace Prisma {
     assignedZoneId?: StringNullableWithAggregatesFilter<"Driver"> | string | null
     batchNumber?: StringNullableWithAggregatesFilter<"Driver"> | string | null
     status?: EnumDriverStatusWithAggregatesFilter<"Driver"> | $Enums.DriverStatus
+    isFrozen?: BoolWithAggregatesFilter<"Driver"> | boolean
     hireDate?: DateTimeWithAggregatesFilter<"Driver"> | Date | string
     photoUrl?: StringNullableWithAggregatesFilter<"Driver"> | string | null
     supervisorId?: StringNullableWithAggregatesFilter<"Driver"> | string | null
@@ -173730,6 +173761,7 @@ export namespace Prisma {
     sizeBytes?: IntNullableFilter<"FleetDocument"> | number | null
     expiryDate?: DateTimeNullableFilter<"FleetDocument"> | Date | string | null
     status?: EnumFleetDocumentStatusFilter<"FleetDocument"> | $Enums.FleetDocumentStatus
+    isStaged?: BoolFilter<"FleetDocument"> | boolean
     rejectionReason?: StringNullableFilter<"FleetDocument"> | string | null
     uploadedById?: StringNullableFilter<"FleetDocument"> | string | null
     reviewedById?: StringNullableFilter<"FleetDocument"> | string | null
@@ -173757,6 +173789,7 @@ export namespace Prisma {
     sizeBytes?: SortOrderInput | SortOrder
     expiryDate?: SortOrderInput | SortOrder
     status?: SortOrder
+    isStaged?: SortOrder
     rejectionReason?: SortOrderInput | SortOrder
     uploadedById?: SortOrderInput | SortOrder
     reviewedById?: SortOrderInput | SortOrder
@@ -173788,6 +173821,7 @@ export namespace Prisma {
     sizeBytes?: IntNullableFilter<"FleetDocument"> | number | null
     expiryDate?: DateTimeNullableFilter<"FleetDocument"> | Date | string | null
     status?: EnumFleetDocumentStatusFilter<"FleetDocument"> | $Enums.FleetDocumentStatus
+    isStaged?: BoolFilter<"FleetDocument"> | boolean
     rejectionReason?: StringNullableFilter<"FleetDocument"> | string | null
     uploadedById?: StringNullableFilter<"FleetDocument"> | string | null
     reviewedById?: StringNullableFilter<"FleetDocument"> | string | null
@@ -173815,6 +173849,7 @@ export namespace Prisma {
     sizeBytes?: SortOrderInput | SortOrder
     expiryDate?: SortOrderInput | SortOrder
     status?: SortOrder
+    isStaged?: SortOrder
     rejectionReason?: SortOrderInput | SortOrder
     uploadedById?: SortOrderInput | SortOrder
     reviewedById?: SortOrderInput | SortOrder
@@ -173845,6 +173880,7 @@ export namespace Prisma {
     sizeBytes?: IntNullableWithAggregatesFilter<"FleetDocument"> | number | null
     expiryDate?: DateTimeNullableWithAggregatesFilter<"FleetDocument"> | Date | string | null
     status?: EnumFleetDocumentStatusWithAggregatesFilter<"FleetDocument"> | $Enums.FleetDocumentStatus
+    isStaged?: BoolWithAggregatesFilter<"FleetDocument"> | boolean
     rejectionReason?: StringNullableWithAggregatesFilter<"FleetDocument"> | string | null
     uploadedById?: StringNullableWithAggregatesFilter<"FleetDocument"> | string | null
     reviewedById?: StringNullableWithAggregatesFilter<"FleetDocument"> | string | null
@@ -176006,6 +176042,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -176111,6 +176148,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -176210,6 +176248,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -176315,6 +176354,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -176417,6 +176457,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -176467,6 +176508,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -176518,6 +176560,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -188568,6 +188611,7 @@ export namespace Prisma {
     sizeBytes?: number | null
     expiryDate?: Date | string | null
     status?: $Enums.FleetDocumentStatus
+    isStaged?: boolean
     rejectionReason?: string | null
     reviewedAt?: Date | string | null
     supersededById?: string | null
@@ -188593,6 +188637,7 @@ export namespace Prisma {
     sizeBytes?: number | null
     expiryDate?: Date | string | null
     status?: $Enums.FleetDocumentStatus
+    isStaged?: boolean
     rejectionReason?: string | null
     uploadedById?: string | null
     reviewedById?: string | null
@@ -188612,6 +188657,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     supersededById?: NullableStringFieldUpdateOperationsInput | string | null
@@ -188637,6 +188683,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
@@ -188659,6 +188706,7 @@ export namespace Prisma {
     sizeBytes?: number | null
     expiryDate?: Date | string | null
     status?: $Enums.FleetDocumentStatus
+    isStaged?: boolean
     rejectionReason?: string | null
     uploadedById?: string | null
     reviewedById?: string | null
@@ -188678,6 +188726,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     supersededById?: NullableStringFieldUpdateOperationsInput | string | null
@@ -188698,6 +188747,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
@@ -191698,6 +191748,7 @@ export namespace Prisma {
     assignedZoneId?: SortOrder
     batchNumber?: SortOrder
     status?: SortOrder
+    isFrozen?: SortOrder
     hireDate?: SortOrder
     photoUrl?: SortOrder
     supervisorId?: SortOrder
@@ -191756,6 +191807,7 @@ export namespace Prisma {
     assignedZoneId?: SortOrder
     batchNumber?: SortOrder
     status?: SortOrder
+    isFrozen?: SortOrder
     hireDate?: SortOrder
     photoUrl?: SortOrder
     supervisorId?: SortOrder
@@ -191809,6 +191861,7 @@ export namespace Prisma {
     assignedZoneId?: SortOrder
     batchNumber?: SortOrder
     status?: SortOrder
+    isFrozen?: SortOrder
     hireDate?: SortOrder
     photoUrl?: SortOrder
     supervisorId?: SortOrder
@@ -199995,6 +200048,7 @@ export namespace Prisma {
     sizeBytes?: SortOrder
     expiryDate?: SortOrder
     status?: SortOrder
+    isStaged?: SortOrder
     rejectionReason?: SortOrder
     uploadedById?: SortOrder
     reviewedById?: SortOrder
@@ -200021,6 +200075,7 @@ export namespace Prisma {
     sizeBytes?: SortOrder
     expiryDate?: SortOrder
     status?: SortOrder
+    isStaged?: SortOrder
     rejectionReason?: SortOrder
     uploadedById?: SortOrder
     reviewedById?: SortOrder
@@ -200043,6 +200098,7 @@ export namespace Prisma {
     sizeBytes?: SortOrder
     expiryDate?: SortOrder
     status?: SortOrder
+    isStaged?: SortOrder
     rejectionReason?: SortOrder
     uploadedById?: SortOrder
     reviewedById?: SortOrder
@@ -218682,6 +218738,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -218785,6 +218842,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -223160,6 +223218,7 @@ export namespace Prisma {
     sizeBytes?: number | null
     expiryDate?: Date | string | null
     status?: $Enums.FleetDocumentStatus
+    isStaged?: boolean
     rejectionReason?: string | null
     reviewedAt?: Date | string | null
     supersededById?: string | null
@@ -223183,6 +223242,7 @@ export namespace Prisma {
     sizeBytes?: number | null
     expiryDate?: Date | string | null
     status?: $Enums.FleetDocumentStatus
+    isStaged?: boolean
     rejectionReason?: string | null
     uploadedById?: string | null
     reviewedById?: string | null
@@ -223447,6 +223507,7 @@ export namespace Prisma {
     assignedZoneId?: StringNullableFilter<"Driver"> | string | null
     batchNumber?: StringNullableFilter<"Driver"> | string | null
     status?: EnumDriverStatusFilter<"Driver"> | $Enums.DriverStatus
+    isFrozen?: BoolFilter<"Driver"> | boolean
     hireDate?: DateTimeFilter<"Driver"> | Date | string
     photoUrl?: StringNullableFilter<"Driver"> | string | null
     supervisorId?: StringNullableFilter<"Driver"> | string | null
@@ -227107,6 +227168,7 @@ export namespace Prisma {
     sizeBytes?: IntNullableFilter<"FleetDocument"> | number | null
     expiryDate?: DateTimeNullableFilter<"FleetDocument"> | Date | string | null
     status?: EnumFleetDocumentStatusFilter<"FleetDocument"> | $Enums.FleetDocumentStatus
+    isStaged?: BoolFilter<"FleetDocument"> | boolean
     rejectionReason?: StringNullableFilter<"FleetDocument"> | string | null
     uploadedById?: StringNullableFilter<"FleetDocument"> | string | null
     reviewedById?: StringNullableFilter<"FleetDocument"> | string | null
@@ -227629,6 +227691,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -227732,6 +227795,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -229761,6 +229825,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -229865,6 +229930,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -230649,6 +230715,7 @@ export namespace Prisma {
     sizeBytes?: number | null
     expiryDate?: Date | string | null
     status?: $Enums.FleetDocumentStatus
+    isStaged?: boolean
     rejectionReason?: string | null
     reviewedAt?: Date | string | null
     supersededById?: string | null
@@ -230673,6 +230740,7 @@ export namespace Prisma {
     sizeBytes?: number | null
     expiryDate?: Date | string | null
     status?: $Enums.FleetDocumentStatus
+    isStaged?: boolean
     rejectionReason?: string | null
     reviewedById?: string | null
     reviewedAt?: Date | string | null
@@ -230701,6 +230769,7 @@ export namespace Prisma {
     sizeBytes?: number | null
     expiryDate?: Date | string | null
     status?: $Enums.FleetDocumentStatus
+    isStaged?: boolean
     rejectionReason?: string | null
     reviewedAt?: Date | string | null
     supersededById?: string | null
@@ -230725,6 +230794,7 @@ export namespace Prisma {
     sizeBytes?: number | null
     expiryDate?: Date | string | null
     status?: $Enums.FleetDocumentStatus
+    isStaged?: boolean
     rejectionReason?: string | null
     uploadedById?: string | null
     reviewedAt?: Date | string | null
@@ -234443,6 +234513,7 @@ export namespace Prisma {
     sizeBytes?: number | null
     expiryDate?: Date | string | null
     status?: $Enums.FleetDocumentStatus
+    isStaged?: boolean
     rejectionReason?: string | null
     reviewedAt?: Date | string | null
     supersededById?: string | null
@@ -234466,6 +234537,7 @@ export namespace Prisma {
     sizeBytes?: number | null
     expiryDate?: Date | string | null
     status?: $Enums.FleetDocumentStatus
+    isStaged?: boolean
     rejectionReason?: string | null
     uploadedById?: string | null
     reviewedById?: string | null
@@ -236392,6 +236464,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -236496,6 +236569,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -236871,6 +236945,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -236975,6 +237050,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -237073,6 +237149,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -237177,6 +237254,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -237291,6 +237369,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -237395,6 +237474,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -238387,6 +238467,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -238491,6 +238572,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -239159,6 +239241,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -239263,6 +239346,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -239773,6 +239857,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -239877,6 +239962,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -240319,6 +240405,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -240423,6 +240510,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -240776,6 +240864,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -240880,6 +240969,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -241425,6 +241515,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -241529,6 +241620,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -241930,6 +242022,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -242034,6 +242127,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -242514,6 +242608,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -242618,6 +242713,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -243082,6 +243178,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -243186,6 +243283,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -243626,6 +243724,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -243730,6 +243829,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -244154,6 +244254,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -244258,6 +244359,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -244698,6 +244800,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -244802,6 +244905,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -245226,6 +245330,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -245330,6 +245435,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -245705,6 +245811,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -245809,6 +245916,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -246162,6 +246270,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -246266,6 +246375,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -246641,6 +246751,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -246745,6 +246856,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -247098,6 +247210,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -247202,6 +247315,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -247577,6 +247691,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -247681,6 +247796,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -248095,6 +248211,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -248199,6 +248316,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -248641,6 +248759,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -248745,6 +248864,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -249159,6 +249279,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -249263,6 +249384,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -249766,6 +249888,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -249870,6 +249993,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -250035,6 +250159,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -250139,6 +250264,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -250403,6 +250529,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -250507,6 +250634,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -250940,6 +251068,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -251044,6 +251173,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -251468,6 +251598,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -251572,6 +251703,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -251774,6 +251906,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -251878,6 +252011,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -252047,6 +252181,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -252151,6 +252286,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -252298,6 +252434,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -252402,6 +252539,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -252571,6 +252709,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -252675,6 +252814,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -252822,6 +252962,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -252926,6 +253067,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -253095,6 +253237,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -253199,6 +253342,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -253872,6 +254016,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -253976,6 +254121,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -254351,6 +254497,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -254455,6 +254602,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -254808,6 +254956,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -254912,6 +255061,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -255453,6 +255603,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -255557,6 +255708,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -257120,6 +257272,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -257224,6 +257377,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -257576,6 +257730,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -257680,6 +257835,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -258116,6 +258272,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -258220,6 +258377,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -258596,6 +258754,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -258700,6 +258859,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -259120,6 +259280,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -259224,6 +259385,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -259704,6 +259866,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -259808,6 +259971,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -260272,6 +260436,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -260376,6 +260541,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -260896,6 +261062,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -261000,6 +261167,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -261456,6 +261624,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -261560,6 +261729,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -262002,6 +262172,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -262106,6 +262277,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -262277,6 +262449,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -262381,6 +262554,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -262562,6 +262736,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -262666,6 +262841,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -263092,6 +263268,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -263196,6 +263373,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -263571,6 +263749,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -263675,6 +263854,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -264544,6 +264724,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -264648,6 +264829,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -265023,6 +265205,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -265127,6 +265310,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -265480,6 +265664,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -265584,6 +265769,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -265959,6 +266145,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -266063,6 +266250,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -267448,6 +267636,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -267552,6 +267741,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -268005,6 +268195,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -268109,6 +268300,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -271404,6 +271596,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -271508,6 +271701,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -271883,6 +272077,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -271987,6 +272182,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -272340,6 +272536,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -272444,6 +272641,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -272866,6 +273064,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -272970,6 +273169,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -274460,6 +274660,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -274564,6 +274765,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -274974,6 +275176,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -275078,6 +275281,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -275577,6 +275781,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -275681,6 +275886,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -276167,6 +276373,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -276271,6 +276478,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -277656,6 +277864,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -277760,6 +277969,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -278135,6 +278345,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -278239,6 +278450,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -278592,6 +278804,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -278696,6 +278909,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -279138,6 +279352,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -279242,6 +279457,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -279627,6 +279843,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -279731,6 +279948,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -280155,6 +280373,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -280259,6 +280478,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -281764,6 +281984,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -281868,6 +282089,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -282243,6 +282465,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -282347,6 +282570,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -283732,6 +283956,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -283836,6 +284061,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -284211,6 +284437,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -284315,6 +284542,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -287411,6 +287639,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -287515,6 +287744,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -287935,6 +288165,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -288039,6 +288270,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -294039,6 +294271,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -294143,6 +294376,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -294518,6 +294752,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -294622,6 +294857,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -300941,6 +301177,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -301044,6 +301281,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -305529,6 +305767,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -305633,6 +305872,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -306382,6 +306622,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -306486,6 +306727,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -307168,6 +307410,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -307272,6 +307515,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -307764,6 +308008,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -307868,6 +308113,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -309981,6 +310227,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -310085,6 +310332,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -310525,6 +310773,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -310629,6 +310878,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -311569,6 +311819,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -311673,6 +311924,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -312159,6 +312411,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -312263,6 +312516,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -314140,6 +314394,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -314244,6 +314499,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -314736,6 +314992,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -314840,6 +315097,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -316746,6 +317004,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -316850,6 +317109,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -317126,6 +317386,7 @@ export namespace Prisma {
     sizeBytes?: number | null
     expiryDate?: Date | string | null
     status?: $Enums.FleetDocumentStatus
+    isStaged?: boolean
     rejectionReason?: string | null
     reviewedAt?: Date | string | null
     supersededById?: string | null
@@ -317149,6 +317410,7 @@ export namespace Prisma {
     sizeBytes?: number | null
     expiryDate?: Date | string | null
     status?: $Enums.FleetDocumentStatus
+    isStaged?: boolean
     rejectionReason?: string | null
     uploadedById?: string | null
     reviewedById?: string | null
@@ -320582,6 +320844,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -320686,6 +320949,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -321342,6 +321606,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -321446,6 +321711,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -322086,6 +322352,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -322190,6 +322457,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -322846,6 +323114,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -322950,6 +323219,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -323590,6 +323860,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -323694,6 +323965,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -324350,6 +324622,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -324454,6 +324727,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -331638,6 +331912,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -333206,6 +333481,7 @@ export namespace Prisma {
     sizeBytes?: number | null
     expiryDate?: Date | string | null
     status?: $Enums.FleetDocumentStatus
+    isStaged?: boolean
     rejectionReason?: string | null
     uploadedById?: string | null
     reviewedById?: string | null
@@ -333450,6 +333726,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -333553,6 +333830,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -333654,6 +333932,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -338428,6 +338707,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     supersededById?: NullableStringFieldUpdateOperationsInput | string | null
@@ -338451,6 +338731,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
@@ -338472,6 +338753,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
@@ -338651,6 +338933,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -338760,6 +339043,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -338863,6 +339147,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -338964,6 +339249,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -339523,6 +339809,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     preferredLanguage?: $Enums.Language
@@ -339824,6 +340111,7 @@ export namespace Prisma {
     sizeBytes?: number | null
     expiryDate?: Date | string | null
     status?: $Enums.FleetDocumentStatus
+    isStaged?: boolean
     rejectionReason?: string | null
     reviewedById?: string | null
     reviewedAt?: Date | string | null
@@ -339845,6 +340133,7 @@ export namespace Prisma {
     sizeBytes?: number | null
     expiryDate?: Date | string | null
     status?: $Enums.FleetDocumentStatus
+    isStaged?: boolean
     rejectionReason?: string | null
     uploadedById?: string | null
     reviewedAt?: Date | string | null
@@ -339999,6 +340288,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -340103,6 +340393,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -340204,6 +340495,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -341010,6 +341302,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     supersededById?: NullableStringFieldUpdateOperationsInput | string | null
@@ -341034,6 +341327,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -341055,6 +341349,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -341073,6 +341368,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     supersededById?: NullableStringFieldUpdateOperationsInput | string | null
@@ -341097,6 +341393,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -341118,6 +341415,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -342133,6 +342431,7 @@ export namespace Prisma {
     sizeBytes?: number | null
     expiryDate?: Date | string | null
     status?: $Enums.FleetDocumentStatus
+    isStaged?: boolean
     rejectionReason?: string | null
     uploadedById?: string | null
     reviewedById?: string | null
@@ -344433,6 +344732,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     supersededById?: NullableStringFieldUpdateOperationsInput | string | null
@@ -344456,6 +344756,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
@@ -344477,6 +344778,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
@@ -348349,6 +348651,7 @@ export namespace Prisma {
     zone?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -348891,6 +349194,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -348994,6 +349298,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -349095,6 +349400,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -349652,6 +349958,7 @@ export namespace Prisma {
     assignedZoneId?: string | null
     batchNumber?: string | null
     status?: $Enums.DriverStatus
+    isFrozen?: boolean
     hireDate: Date | string
     photoUrl?: string | null
     supervisorId?: string | null
@@ -349748,6 +350055,7 @@ export namespace Prisma {
     sizeBytes?: number | null
     expiryDate?: Date | string | null
     status?: $Enums.FleetDocumentStatus
+    isStaged?: boolean
     rejectionReason?: string | null
     uploadedById?: string | null
     reviewedById?: string | null
@@ -349887,6 +350195,7 @@ export namespace Prisma {
     zone?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: EnumLanguageFieldUpdateOperationsInput | $Enums.Language
@@ -349991,6 +350300,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -350092,6 +350402,7 @@ export namespace Prisma {
     assignedZoneId?: NullableStringFieldUpdateOperationsInput | string | null
     batchNumber?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -350336,6 +350647,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     supersededById?: NullableStringFieldUpdateOperationsInput | string | null
@@ -350359,6 +350671,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
@@ -350380,6 +350693,7 @@ export namespace Prisma {
     sizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
     expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumFleetDocumentStatusFieldUpdateOperationsInput | $Enums.FleetDocumentStatus
+    isStaged?: BoolFieldUpdateOperationsInput | boolean
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
     reviewedById?: NullableStringFieldUpdateOperationsInput | string | null

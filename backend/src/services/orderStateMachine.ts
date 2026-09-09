@@ -229,7 +229,7 @@ function describeTransition(
     case "CREATED":
       return `Order re-entered pipeline after dropoff fix (by ${by})`;
     case "RETURNED":
-      return `Return to merchant authorised (by ${by})`;
+      return `Order returned to vendor`;
     default:
       return `Order moved ${from} → ${to}`;
   }

@@ -210,7 +210,6 @@ export const NAV_SECTIONS: NavSection[] = [
       { i18n: "fleetPortal.navRoster", path: "/fleet-portal", icon: Users, fleetTab: "ROSTER" },
       { i18n: "fleetPortal.navIssues", path: "/fleet-portal/issues", icon: TriangleAlert, fleetTab: "ISSUES" },
       { i18n: "fleetPortal.navDocuments", path: "/fleet-portal/documents", icon: FileText, fleetTab: "DOCUMENTS" },
-      { i18n: "fleetPortal.navScorecard", path: "/fleet-portal/scorecard", icon: Gauge, fleetTab: "SCORECARD" },
       { i18n: "fleetPortal.navPayouts", path: "/fleet-portal/payouts", icon: Truck, fleetTab: "PAYOUTS" },
       // Revision 14 — the company's cash account with Darb, next to Payouts
       // because the two are the same conversation in opposite directions.

@@ -34,14 +34,14 @@ export default function FleetIssuesPage() {
   const toast = useToast();
   const queryClient = useQueryClient();
 
-  const [showResolved, setShowResolved] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("ALL");
   const [resolving, setResolving] = useState<FleetIssue | null>(null);
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
 
   const issuesQuery = useQuery({
-    queryKey: ["darb", "fleet", "issues", showResolved],
-    queryFn: () => fleetApi.issues({ includeResolved: showResolved }),
+    queryKey: ["darb", "fleet", "issues", statusFilter],
+    queryFn: () => fleetApi.issues({ status: statusFilter, includeResolved: true }),
     refetchInterval: 120_000,
   });
 
@@ -115,13 +115,10 @@ export default function FleetIssuesPage() {
           <p className="text-sm text-sand-600 mt-1">{t("fleetPortal.issuesSubtitle")}</p>
         </div>
         <label className="inline-flex items-center gap-2 text-sm text-sand-700">
-          <input
-            type="checkbox"
-            checked={showResolved}
-            onChange={(e) => setShowResolved(e.target.checked)}
-            className="rounded border-sand-300"
-          />
-          {t("fleetPortal.showResolved")}
+          {t("revision19.status")}
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="h-10 rounded-xl border border-sand-300 px-3 bg-white">
+            {[["ALL", "all"], ["NEW", "new"], ["ACKNOWLEDGED", "acknowledged"], ["RESOLVED", "resolved"]].map(([value, label]) => <option key={value} value={value}>{t(`revision19.${label}`)}</option>)}
+          </select>
         </label>
       </div>
 

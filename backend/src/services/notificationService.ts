@@ -1,3 +1,4 @@
+import { withCategoryDefaults } from "./notificationRuleDefaults";
 import { prisma } from "../config";
 import { sendWhatsApp, sendSms, sendEmail } from "./notificationChannels";
 import { enqueueNotification } from "../queues/notificationQueue";
@@ -111,9 +112,8 @@ export async function createViolationNotifications(params: {
   const { tenantId, eventType, severity, title, message, sourceId, metadata } = params;
 
   // Find notification rules for this event type
-  const rules = await prisma.notificationRule.findMany({
-    where: { tenantId, eventType, enabled: true },
-  });
+  const storedRules = await prisma.notificationRule.findMany({ where: { tenantId, eventType } });
+  const rules = withCategoryDefaults(storedRules).filter(r => r.eventType === eventType && r.enabled);
 
   if (rules.length === 0) return { created: 0 };
 
@@ -122,7 +122,7 @@ export async function createViolationNotifications(params: {
   const notifConfig = (platformSettings?.notificationConfig as any) || {};
   const channels = notifConfig.channels || { inApp: true, whatsapp: false, sms: false, email: false };
 
-  const targetRoles = rules.map((r) => r.role);
+  const targetRoles = rules.map((r) => r.role) as any;
 
   const users = await prisma.user.findMany({
     where: { tenantId, role: { in: targetRoles }, isActive: true },
@@ -288,28 +288,19 @@ export async function createSupportNotifications(params: {
     params;
   const route = SUPPORT_ROUTING[category] ?? SUPPORT_ROUTING.OPERATIONS;
 
-  let userIds: string[] = [];
-  if (route.role === "ACCOUNT_MANAGER") {
-    if (vendorId) {
-      const links = await prisma.accountManagerVendor.findMany({
-        where: { tenantId, vendorId },
-        select: { userId: true },
-      });
-      userIds = links.map((l: { userId: string }) => l.userId);
-    } else if (fleetPartnerId) {
-      const links = await prisma.accountManagerFleet.findMany({
-        where: { tenantId, fleetPartnerId },
-        select: { userId: true },
-      });
-      userIds = links.map((l: { userId: string }) => l.userId);
-    }
-  } else {
-    const users = await prisma.user.findMany({
-      where: { tenantId, role: route.role as any, isActive: true },
-      select: { id: true },
-    });
-    userIds = users.map((u: { id: string }) => u.id);
+  const storedRules = await prisma.notificationRule.findMany({ where: { tenantId, eventType: "SUPPORT_REQUEST_SUBMITTED" } });
+  const roles = withCategoryDefaults(storedRules).filter(r => r.eventType === "SUPPORT_REQUEST_SUBMITTED" && r.enabled).map(r => r.role);
+  let managerIds: string[] = [];
+  if (roles.includes("ACCOUNT_MANAGER")) {
+    if (vendorId) managerIds = (await prisma.accountManagerVendor.findMany({ where: { tenantId, vendorId }, select: { userId: true } })).map(l => l.userId);
+    else if (fleetPartnerId) managerIds = (await prisma.accountManagerFleet.findMany({ where: { tenantId, fleetPartnerId }, select: { userId: true } })).map(l => l.userId);
   }
+  const users = await prisma.user.findMany({ where: {
+    tenantId, isActive: true,
+    OR: [ { role: { in: roles.filter(r => r !== "ACCOUNT_MANAGER") as any } },
+      { role: "ACCOUNT_MANAGER", id: { in: managerIds } } ],
+  }, select: { id: true } });
+  const userIds = [...new Set(users.map(u => u.id))];
 
   if (userIds.length === 0) return { created: 0 };
 
