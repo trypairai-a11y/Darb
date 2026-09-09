@@ -19,7 +19,7 @@ import {
   getFleetScorecard,
   postFleetPayout,
 } from "../services/fleetService";
-import { LADDER } from "../services/fleetDiscipline";
+import { LADDER, THROTTLE_DAYS } from "../services/fleetDiscipline";
 import { WalletError } from "../services/wallet/walletService";
 import { previousMonthPeriod } from "../services/wallet/vendorSettlementService";
 import { parseLocalDate, parseLocalDateEnd } from "../utils/date";
@@ -662,6 +662,12 @@ router.post(
             isActive: status !== "REMOVED",
           },
         });
+        if (status === "THROTTLED") {
+          await tx.driver.updateMany({
+            where: { tenantId, fleetPartnerId: fleet.id },
+            data: { throttledUntil: new Date(Date.now() + THROTTLE_DAYS * 86_400_000) },
+          });
+        }
         if (status === "OK" || status === "WARNED") {
           // De-escalation clears the drivers' throttle.
           await tx.driver.updateMany({

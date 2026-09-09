@@ -1042,16 +1042,16 @@ function ScorecardSection({ fleet }: { fleet: FleetRow }) {
 
 export default function FleetDetailPage() {
   const toast = useToast();
-  const [restoring, setRestoring] = useState(false);
-  async function restoreDiscipline() {
+  const [updatingDiscipline, setUpdatingDiscipline] = useState(false);
+  async function updateDiscipline(status: "OK" | "THROTTLED") {
     if (!fleet) return;
-    setRestoring(true);
+    setUpdatingDiscipline(true);
     try {
-      await fleetsApi.discipline(fleet.id, "OK", "Returned to normal from the company profile");
+      await fleetsApi.discipline(fleet.id, status, status === "THROTTLED" ? "Company throttled from the company profile" : "Company unthrottled from the company profile");
       await fleetQuery.refetch();
       toast.success(t("toast.updated"));
     } catch { toast.error(t("toast.failedSave")); }
-    finally { setRestoring(false); }
+    finally { setUpdatingDiscipline(false); }
   }
   const { t } = useI18n();
   const { isAdmin, isOpsManager } = useRole();
@@ -1108,7 +1108,21 @@ export default function FleetDetailPage() {
         </div>
         <div className="flex items-center gap-2">
           <StatusBadge status={fleet.disciplineStatus} />
-          {isOpsManager && ["THROTTLED", "WARNED"].includes(fleet.disciplineStatus) && <button disabled={restoring} onClick={restoreDiscipline} className="h-9 px-3 rounded-full bg-primary text-white text-xs disabled:opacity-50">{t("revision19.restore")}</button>}
+          {isOpsManager && ["OK", "WARNED", "THROTTLED"].includes(fleet.disciplineStatus) && (
+            <button
+              type="button"
+              disabled={updatingDiscipline}
+              onClick={() => void updateDiscipline(fleet.disciplineStatus === "THROTTLED" ? "OK" : "THROTTLED")}
+              className="h-9 px-3 rounded-full bg-primary text-white text-xs disabled:opacity-50"
+            >
+              {t(fleet.disciplineStatus === "THROTTLED" ? "revision19.unthrottle" : "revision19.throttle")}
+            </button>
+          )}
+          {isOpsManager && fleet.disciplineStatus === "WARNED" && (
+            <button type="button" disabled={updatingDiscipline} onClick={() => void updateDiscipline("OK")} className="h-9 px-3 rounded-full bg-sand-100 text-sand-900 text-xs disabled:opacity-50">
+              {t("revision19.restore")}
+            </button>
+          )}
           <StatusBadge status={fleet.isActive ? "ACTIVE" : "INACTIVE"} />
         </div>
       </div>

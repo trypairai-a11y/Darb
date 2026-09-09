@@ -81,3 +81,35 @@ test("the retired scorecard disappears from stored overrides and default roles",
   expect(effectiveFleetTabs("ADMIN", null)).not.toContain("SCORECARD");
   expect(effectiveFleetTabs("ACCOUNTANT", ["SCORECARD", "PAYOUTS"])).toEqual(["PAYOUTS"]);
 });
+
+test.each(["ADMIN", "OPS_MANAGER"])("%s can throttle a company and its drivers with an audit record", async (role) => {
+  db.fleetPartner.findFirst.mockResolvedValue({ id: "f1", disciplineStatus: "OK" });
+  const before = Date.now();
+  const res = await request(staffApp(role)).post("/api/fleets/f1/discipline").send({ status: "THROTTLED", note: "Company throttled from the company profile" });
+  expect(res.status).toBe(200);
+  expect(db.fleetPartner.updateMany).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "f1", tenantId: "t1" }, data: expect.objectContaining({ disciplineStatus: "THROTTLED" }) }));
+  const update = db.driver.updateMany.mock.calls[0][0];
+  expect(update.where).toEqual({ tenantId: "t1", fleetPartnerId: "f1" });
+  expect(update.data.throttledUntil.getTime()).toBeGreaterThanOrEqual(before + 7 * 86400000);
+  expect(update.data.throttledUntil.getTime()).toBeLessThanOrEqual(Date.now() + 7 * 86400000);
+  expect(db.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ action: "FLEET_DISCIPLINE_OVERRIDE", entityId: "f1", changes: expect.objectContaining({ status: "THROTTLED" }) }) }));
+});
+test("unthrottling clears driver restrictions and restores the company", async () => {
+  db.fleetPartner.findFirst.mockResolvedValue({ id: "f1", disciplineStatus: "THROTTLED" });
+  const res = await request(staffApp()).post("/api/fleets/f1/discipline").send({ status: "OK", note: "Company unthrottled from the company profile" });
+  expect(res.status).toBe(200);
+  expect(db.driver.updateMany).toHaveBeenCalledWith({ where: { tenantId: "t1", fleetPartnerId: "f1" }, data: { throttledUntil: null } });
+  expect(db.fleetPartner.updateMany).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ disciplineStatus: "OK" }) }));
+});
+test("manual throttle cannot target another tenant's company", async () => {
+  db.fleetPartner.findFirst.mockResolvedValue(null);
+  const res = await request(staffApp()).post("/api/fleets/f2/discipline").send({ status: "THROTTLED", note: "Throttle company" });
+  expect(res.status).toBe(404);
+  expect(db.fleetPartner.findFirst).toHaveBeenCalledWith({ where: { id: "f2", tenantId: "t1" } });
+  expect(db.driver.updateMany).not.toHaveBeenCalled();
+});
+test("supervisors cannot throttle companies", async () => {
+  const res = await request(staffApp("SUPERVISOR")).post("/api/fleets/f1/discipline").send({ status: "THROTTLED", note: "Throttle company" });
+  expect(res.status).toBe(403);
+  expect(db.fleetPartner.updateMany).not.toHaveBeenCalled();
+});
