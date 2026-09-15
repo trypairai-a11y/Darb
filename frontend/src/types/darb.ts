@@ -254,7 +254,10 @@ export interface VendorUser {
 }
 
 /** Revision 10 (#6) — the merchant portal's own tabs. */
-export type VendorTab = "ORDERS" | "WALLET" | "GROW" | "SUPPORT" | "TEAM" | "SETTINGS";
+// Vendor-portal note #2 (2026-09-15) — GROW removed. Mirrors VENDOR_TABS on
+// the server, where dropping the value is the whole removal: a stored override
+// that still lists it reads back without it, so nothing needs a backfill.
+export type VendorTab = "ORDERS" | "WALLET" | "SUPPORT" | "TEAM" | "SETTINGS";
 
 export type VendorTopUpStatus = "PENDING" | "PAID" | "CANCELLED" | "FAILED";
 
@@ -1487,4 +1490,358 @@ export interface SupportTicket {
    */
   vendor?: { id: string; name: string; nameAr?: string | null } | null;
   fleet?: { id: string; name: string } | null;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// Revision 20 — the HQ portal's four tabs (client note, 2026-09-15).
+// ══════════════════════════════════════════════════════════════════════════
+
+// ── Compliance ───────────────────────────────────────────────────────────
+
+export type DocScope = "DRIVER" | "COMPANY" | "VENDOR";
+export type FreezeTarget = "DRIVER" | "FLEET" | "VENDOR";
+
+export type ComplianceDocStatus =
+  | "REQUESTED"
+  | "PENDING_REVIEW"
+  | "VALID"
+  | "REJECTED"
+  | "EXPIRED"
+  | "SUPERSEDED";
+
+/** One reason the automatic pass flagged a document. `code` is what we translate. */
+export interface AutoCheckNote {
+  code: string;
+  detail: string;
+}
+
+export interface ComplianceDocument {
+  id: string;
+  type: string;
+  status: ComplianceDocStatus;
+  scope: DocScope;
+  autoCheck: "PASS" | "FLAG" | null;
+  autoCheckNotes: AutoCheckNote[] | null;
+  expiryDate: string | null;
+  health: string;
+  hasFile: boolean;
+  fileKey: string | null;
+  fileName: string | null;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  rejectionReason: string | null;
+  requestNote: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+  driver: { id: string; name: string; driverCode: string | null; phone: string | null; isFrozen: boolean } | null;
+  fleet: { id: string; name: string } | null;
+  vendor: { id: string; name: string } | null;
+  uploadedBy: { id: string; name: string } | null;
+  reviewedBy: { id: string; name: string } | null;
+  requestedBy: { id: string; name: string } | null;
+}
+
+export interface ComplianceCounts {
+  driverPending: number;
+  companyPending: number;
+  vendorPending: number;
+  pending: number;
+  expiring: number;
+  expired: number;
+}
+
+export interface RenewalRow {
+  documentId: string | null;
+  scope: DocScope;
+  type: string;
+  expiryDate: string | null;
+  health: string;
+  daysLeft: number | null;
+  ownerId: string;
+  ownerName: string;
+  ownerRef: string | null;
+  fleetPartnerId: string | null;
+  fleetPartnerName: string | null;
+  frozen: boolean;
+}
+
+export interface ComplianceAccounts {
+  fleets: Array<{ id: string; name: string; complianceFrozenAt: string | null }>;
+  vendors: Array<{ id: string; name: string; code: string; complianceFrozenAt: string | null }>;
+  drivers: Array<{
+    id: string;
+    name: string;
+    driverCode: string | null;
+    isFrozen: boolean;
+    fleetPartner: { id: string; name: string } | null;
+  }>;
+}
+
+// ── Driver tracking ──────────────────────────────────────────────────────
+
+export interface DriverTrackingRow {
+  id: string;
+  name: string;
+  driverCode: string | null;
+  phone: string | null;
+  status: string;
+  isFrozen: boolean;
+  inTraining: boolean;
+  complianceFreezeReason: string | null;
+  vehicleType: string | null;
+  fleetPartnerId: string | null;
+  fleetPartnerName: string | null;
+  assignedZoneId: string | null;
+  assignedZoneName: string | null;
+  availability: string;
+  lastSeenAt: string | null;
+  delivered: number;
+  failed: number;
+  onTimeRate: number | null;
+  acceptanceRate: number | null;
+  rating: number | null;
+  docsValid: number;
+  docsRequired: number;
+  trainingSessionId: string | null;
+  trainingEndsAt: string | null;
+}
+
+export type DriverStateAction = "ACTIVATE" | "DEACTIVATE" | "SUSPEND" | "FREEZE" | "UNFREEZE";
+
+// ── Driver training ──────────────────────────────────────────────────────
+
+export type TrainingStatus = "SCHEDULED" | "IN_PROGRESS" | "PASSED" | "FAILED" | "CANCELLED";
+
+export interface TrainingScorecard {
+  assigned: number;
+  delivered: number;
+  failed: number;
+  cancelled: number;
+  inFlight: number;
+  onTimeRate: number | null;
+  avgMinutes: number | null;
+  podRate: number | null;
+}
+
+export interface TrainingSession {
+  id: string;
+  status: TrainingStatus;
+  periodDays: number;
+  startsAt: string;
+  endsAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  reason: string | null;
+  outcomeNote: string | null;
+  scorecard: TrainingScorecard | null;
+  createdAt?: string;
+  driver: {
+    id: string;
+    name: string;
+    driverCode: string | null;
+    phone: string | null;
+    status: string;
+    inTraining?: boolean;
+    vehicleType?: string | null;
+    fleetPartner?: { id: string; name: string } | null;
+  };
+  coach: { id: string; name: string } | null;
+}
+
+export interface TrainingSessionDetail extends TrainingSession {
+  orders: Array<{
+    id: string;
+    orderNumber: string;
+    status: string;
+    dropoffAddress: string | null;
+    customerName: string | null;
+    assignedAt: string | null;
+    arrivedAt: string | null;
+    pickedUpAt: string | null;
+    deliveredAt: string | null;
+    slaDeadline: string | null;
+    proofPhotoUrl: string | null;
+    failureReason: string | null;
+    createdAt: string;
+    branch: { id: string; name: string } | null;
+    vendor: { id: string; name: string } | null;
+  }>;
+}
+
+export interface TrainingPickupPoint {
+  id: string;
+  name: string;
+  address: string | null;
+  lat: string | number | null;
+  lng: string | number | null;
+  vendor: { id: string; name: string };
+  zone: { id: string; name: string } | null;
+}
+
+// ── Shift plan ───────────────────────────────────────────────────────────
+
+export type ShiftPlanStatus = "DRAFT" | "APPROVED" | "DISCARDED";
+
+export interface ShiftPlanEntry {
+  id: string;
+  zoneId: string;
+  dayOfWeek: number;
+  startTime: string;
+  proposedDrivers: number;
+  approvedDrivers: number;
+  suggestedDriverIds: string[];
+  demandOrders: number;
+}
+
+export interface ShiftPlanPayload {
+  plan: {
+    id: string;
+    weekStart: string;
+    status: ShiftPlanStatus;
+    basis: Record<string, unknown> | null;
+    generatedAt: string;
+    approvedAt: string | null;
+    note: string | null;
+    entries: ShiftPlanEntry[];
+    approvedBy: { id: string; name: string } | null;
+  } | null;
+  weekStart?: string;
+  zones?: Array<{ id: string; code: string; name: string; nameAr: string | null }>;
+  drivers?: Array<{ id: string; name: string; driverCode: string | null; assignedZoneId: string | null }>;
+  windows?: string[];
+  hours?: number;
+}
+
+// ── Onboarding ───────────────────────────────────────────────────────────
+
+export type OnboardingType = "VENDOR" | "FLEET";
+export type OnboardingStatus = "NEW" | "IN_REVIEW" | "APPROVED" | "REJECTED";
+
+export interface OnboardingRequest {
+  id: string;
+  type: OnboardingType;
+  companyName: string;
+  companyNameAr: string | null;
+  code: string | null;
+  contactName: string | null;
+  contactPhone: string | null;
+  contactEmail: string | null;
+  notes: string | null;
+  details: Record<string, unknown> | null;
+  status: OnboardingStatus;
+  reviewNote: string | null;
+  reviewedAt: string | null;
+  vendorId: string | null;
+  fleetPartnerId: string | null;
+  createdAt: string;
+  createdBy: { id: string; name: string; email: string } | null;
+  reviewedBy: { id: string; name: string } | null;
+}
+
+// ── Finance: payments and disputes ───────────────────────────────────────
+
+export interface PaymentRow {
+  kind: "VENDOR_TOP_UP" | "FLEET_DEPOSIT";
+  id: string;
+  accountId: string | null;
+  accountName: string | null;
+  accountRef: string | null;
+  amountKwd: string;
+  status: string;
+  reference: string | null;
+  provider: string | null;
+  providerRef: string | null;
+  paidAt: string | null;
+  createdAt: string;
+}
+
+export interface DisputeStatement {
+  id: string;
+  fleetPartnerId: string;
+  fleetPartnerName: string | null;
+  periodStart: string;
+  periodEnd: string;
+  deliveredOrders: number;
+  totalKwd: string;
+  netPayableKwd: string | null;
+  status: string;
+  disputedAt: string | null;
+  disputeReason: string | null;
+  ticket: SupportTicket | null;
+}
+
+export interface DisputesPayload {
+  statements: DisputeStatement[];
+  tickets: SupportTicket[];
+  counts: { statements: number; tickets: number };
+}
+
+// ── Admin dashboard + forecast ───────────────────────────────────────────
+
+export interface ForecastPoint {
+  date: string;
+  orders: number;
+  revenueKwd: number;
+}
+
+export interface ForecastSeries {
+  history: ForecastPoint[];
+  projection: ForecastPoint[];
+  projectedOrders: number | null;
+  projectedRevenueKwd: number | null;
+  growthFactor: number | null;
+  sampleDays: number;
+  basis: string;
+}
+
+export interface AdminSnapshot {
+  now: {
+    activeVendors: number;
+    activeFleets: number;
+    activeDrivers: number;
+    driversInTraining: number;
+    ordersToday: number;
+    deliveredToday: number;
+    revenueTodayKwd: number;
+    openDisputes: number;
+    documentsWaiting: number;
+    onboardingWaiting: number;
+  };
+  forecast: ForecastSeries;
+  monthToDate: {
+    orders: number;
+    revenueKwd: number;
+    previousOrders: number;
+    previousRevenueKwd: number;
+  };
+}
+
+// ── Vendor wallet: one, or one per branch ────────────────────────────────
+
+export type VendorWalletMode = "SINGLE" | "PER_BRANCH";
+
+export interface BranchWallet {
+  branchId: string;
+  branchName: string;
+  derivedKwd: string;
+  allocatedKwd: string;
+  availableKwd: string;
+}
+
+export interface VendorWalletView {
+  mode: VendorWalletMode;
+  totalKwd: string;
+  unallocatedKwd: string;
+  unallocatedByType: Record<string, string>;
+  mainAvailableKwd: string;
+  branches: BranchWallet[];
+}
+
+export interface BranchTransfer {
+  id: string;
+  amountKwd: string;
+  note: string | null;
+  createdAt: string;
+  branch: { id: string; name: string };
+  createdBy: { id: string; name: string } | null;
 }

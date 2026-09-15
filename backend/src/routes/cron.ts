@@ -24,6 +24,10 @@ import { logger } from "../config/logger";
 import { sweepDispatch } from "../services/dispatch/dispatchEngine";
 import { sweepStalePresence } from "../services/gpsMonitorService";
 import { sweepScheduledOrders } from "../services/orderService";
+// Revision 20 — the compliance desk's expiry sweep and the training desk's
+// lapsed-window release.
+import { autoCheckDocument, sweepExpiredDocuments } from "../services/compliance/complianceService";
+import { sweepLapsedTrainingWindows } from "../services/training/driverTrainingService";
 import { processTick as walletReconciliationTick } from "../queues/walletReconciliationWorker";
 import {
   generateMonthlyStatements,
@@ -206,6 +210,46 @@ router.get("/daily", async (req: Request, res: Response) => {
     } catch (err) {
       logger.error({ err }, "cron daily: fleet issue sweep failed");
       out.fleetIssues = { error: true };
+    }
+
+    // Revision 20 — a document whose expiry has passed must stop reading VALID,
+    // and the driver read-model columns have to move with it. Without this the
+    // renewal schedule is the only place in the platform that would notice.
+    let docsExpired = 0;
+    let trainingReleased = 0;
+    for (const tenant of tenants) {
+      try {
+        docsExpired += (await sweepExpiredDocuments(tenant.id)).expired;
+      } catch (err) {
+        logger.error({ err, tenantId: tenant.id }, "cron daily: document expiry sweep failed");
+      }
+      try {
+        trainingReleased += (await sweepLapsedTrainingWindows(tenant.id)).released;
+      } catch (err) {
+        logger.error({ err, tenantId: tenant.id }, "cron daily: training window sweep failed");
+      }
+    }
+    out.compliance = { documentsExpired: docsExpired };
+    out.training = { windowsReleased: trainingReleased };
+
+    // Re-run the automatic pass on everything still waiting. A document's
+    // verdict changes without the document changing: an expiry three months
+    // out when it landed is inside the warning window by the time somebody
+    // opens it, and the desk sorts its queue on that flag.
+    try {
+      // eslint-disable-next-line no-restricted-syntax -- cross-tenant by design (cron, same trust model as the sweeps above)
+      const waiting = await prisma.fleetDocument.findMany({
+        where: { status: "PENDING_REVIEW" },
+        select: { id: true, tenantId: true },
+        take: 500,
+      });
+      for (const doc of waiting) {
+        await autoCheckDocument(doc.tenantId, doc.id);
+      }
+      out.autoChecks = { rechecked: waiting.length };
+    } catch (err) {
+      logger.error({ err }, "cron daily: document auto-check pass failed");
+      out.autoChecks = { error: true };
     }
 
     // Performance tiers + daily snapshots (was the in-process scheduler's job).

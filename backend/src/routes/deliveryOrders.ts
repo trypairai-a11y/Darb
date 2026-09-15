@@ -182,6 +182,15 @@ router.get("/", async (req: Request, res: Response) => {
 
     const where: any = { tenantId };
 
+    // Revision 20 — practice orders are real rows on the real board, which is
+    // why they have to be filtered OUT of it by default rather than left to
+    // confuse a supervisor counting live work. `?training=only` is the driver
+    // training tab; `?training=include` is there for anyone reconciling the
+    // two counts and wondering where the difference went.
+    const training = typeof req.query.training === "string" ? req.query.training : "";
+    if (training === "only") where.isTraining = true;
+    else if (training !== "include") where.isTraining = false;
+
     if (typeof req.query.status === "string" && req.query.status.length > 0) {
       const statuses = req.query.status
         .split(",")

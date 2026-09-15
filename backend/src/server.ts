@@ -79,6 +79,10 @@ import fleetsRouter from "./routes/fleets";
 import supportRouter from "./routes/support";
 import fleetPortalRouter from "./routes/fleetPortal";
 import cockpitRouter from "./routes/cockpit";
+// Revision 20 — the HQ portal's four tabs.
+import complianceRouter from "./routes/compliance";
+import driverTrainingRouter from "./routes/driverTraining";
+import onboardingRouter from "./routes/onboarding";
 import { blockVendorOutsideAllowlist } from "./middleware/vendorContainment";
 import { blockFleetOutsideAllowlist } from "./middleware/fleetContainment";
 import { blockCashCollectorOutsideAllowlist } from "./middleware/cashDeskContainment";
@@ -332,6 +336,11 @@ app.use("/api/fleets", fleetsRouter);
 // Revision 15 (#2) — the HQ support inbox. Requests from shops and delivery
 // companies were only readable from inside the account that raised them.
 app.use("/api/support", supportRouter);
+// Revision 20 — Compliance (documents, renewals, freezes), the Ops tab's
+// driver training desk, and the sales team's onboarding queue.
+app.use("/api/compliance", complianceRouter);
+app.use("/api/driver-training", driverTrainingRouter);
+app.use("/api/onboarding", onboardingRouter);
 app.use("/api/fleet", fleetPortalRouter);
 app.use("/api/cockpit", cockpitRouter);
 app.use("/api/vendor", vendorPortalRouter);

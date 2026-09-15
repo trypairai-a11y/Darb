@@ -21,6 +21,14 @@ import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
 import { rbac } from "../middleware/rbac";
 import { SHIFT_HOURS, SHIFT_WINDOW_STARTS } from "./agent";
+import {
+  approveShiftPlan,
+  discardShiftPlan,
+  generateShiftPlan,
+  getShiftPlan,
+  updateShiftPlanEntries,
+  weekStartOf,
+} from "../services/shiftPlanService";
 
 /** Setting the roster is set-up work, which is OPS_MANAGER and above. */
 const PLANNERS = ["ADMIN", "OPS_MANAGER"];
@@ -170,6 +178,111 @@ router.patch("/drivers/:id/zone", rbac(...PLANNERS), async (req: Request, res: R
     res.json({ message: "Area saved", assignedZoneId: zoneId });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+
+// ══════════════════════════════════════════════════════════════════════════
+// Revision 20 — the proposed weekly plan.
+//
+// "system should give a proposed plan for each shift weekly, the system should
+// read the past data and arrange the driver shifts accordingly and the ops team
+// should be able to modify and approve the plan".
+//
+// The capacity grid above is what the driver app books against. NOTHING here
+// writes it except POST /plan/:id/approve, and that is the whole design: a
+// proposal that wrote through would move bookable capacity under drivers' feet
+// every time it ran, which is what the word "approve" was asking to prevent.
+// ══════════════════════════════════════════════════════════════════════════
+
+function planFail(res: Response, err: unknown) {
+  const status = (err as { statusCode?: number })?.statusCode ?? 500;
+  res.status(status).json({ error: err instanceof Error ? err.message : "Request failed" });
+}
+
+/** The week to plan, from ?weekStart=YYYY-MM-DD. Defaults to next week. */
+function requestedWeek(req: Request): Date {
+  const raw = typeof req.query.weekStart === "string" ? req.query.weekStart : "";
+  if (raw) {
+    const d = new Date(`${raw}T00:00:00`);
+    if (!Number.isNaN(d.getTime())) return weekStartOf(d);
+  }
+  // Planning is done for the week ahead, so that is what opens by default.
+  return weekStartOf(new Date(Date.now() + 7 * 86_400_000));
+}
+
+/** The plan for a week, or null when nothing has been generated for it yet. */
+router.get("/plan", async (req: Request, res: Response) => {
+  try {
+    const weekStart = requestedWeek(req);
+    const plan = await getShiftPlan(req.user!.tenantId, weekStart);
+    res.json(plan ?? { plan: null, weekStart: weekStart.toISOString() });
+  } catch (err) {
+    planFail(res, err);
+  }
+});
+
+/** Generate, or regenerate, the draft for a week. */
+router.post("/plan/generate", rbac(...PLANNERS), async (req: Request, res: Response) => {
+  try {
+    const raw = typeof req.body?.weekStart === "string" ? req.body.weekStart : "";
+    const weekStart = raw ? new Date(`${raw}T00:00:00`) : new Date(Date.now() + 7 * 86_400_000);
+    if (Number.isNaN(weekStart.getTime())) {
+      res.status(400).json({ error: "weekStart must be a date" });
+      return;
+    }
+    const result = await generateShiftPlan({
+      tenantId: req.user!.tenantId,
+      weekStart,
+      ...(req.body?.lookbackWeeks ? { lookbackWeeks: Number(req.body.lookbackWeeks) } : {}),
+    });
+    res.status(201).json(result);
+  } catch (err) {
+    planFail(res, err);
+  }
+});
+
+/** Save the planner's edits to the draft grid. */
+router.put("/plan/:id/entries", rbac(...PLANNERS), async (req: Request, res: Response) => {
+  try {
+    const entries = Array.isArray(req.body?.entries) ? req.body.entries : null;
+    if (!entries) {
+      res.status(400).json({ error: "entries must be an array" });
+      return;
+    }
+    res.json(
+      await updateShiftPlanEntries({
+        tenantId: req.user!.tenantId,
+        planId: req.params.id,
+        entries,
+      }),
+    );
+  } catch (err) {
+    planFail(res, err);
+  }
+});
+
+/** Approve, and write the capacity grid from what the planner left. */
+router.post("/plan/:id/approve", rbac(...PLANNERS), async (req: Request, res: Response) => {
+  try {
+    res.json(
+      await approveShiftPlan({
+        tenantId: req.user!.tenantId,
+        planId: req.params.id,
+        approvedById: req.user!.userId,
+        note: typeof req.body?.note === "string" ? req.body.note : null,
+      }),
+    );
+  } catch (err) {
+    planFail(res, err);
+  }
+});
+
+router.post("/plan/:id/discard", rbac(...PLANNERS), async (req: Request, res: Response) => {
+  try {
+    res.json(await discardShiftPlan(req.user!.tenantId, req.params.id));
+  } catch (err) {
+    planFail(res, err);
   }
 });
 

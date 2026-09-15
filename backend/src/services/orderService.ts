@@ -14,6 +14,7 @@ import { prisma } from "../config";
 import { logger } from "../config/logger";
 import { notifyOrderAssigned } from "./driverNotificationService";
 import { quoteDelivery } from "./pricingService";
+import { branchSpendableKwd } from "./wallet/vendorWalletModeService";
 import {
   isVendorOverCreditCap,
   postCodSettlement,
@@ -183,7 +184,7 @@ export interface CreateOrderInput {
  * constraint backstops concurrent creators; createDeliveryOrder retries once
  * on P2002.
  */
-async function nextOrderNumber(
+export async function nextOrderNumber(
   tx: Prisma.TransactionClient,
   tenantId: string,
   vendorCode: string,
@@ -744,18 +745,25 @@ export async function completeDelivery(args: {
       },
     });
 
-    const settlementOrder = {
-      id: order.id,
-      tenantId,
-      driverId: order.driverId as string,
-      vendorId: order.vendorId,
-      orderTotalKwd: new Prisma.Decimal(order.orderTotalKwd),
-      deliveryFeeKwd: new Prisma.Decimal(order.deliveryFeeKwd ?? 0),
-    };
-    if (order.paymentMethod === "COD") {
-      await postCodSettlement(trx, settlementOrder);
-    } else {
-      await postPrepaidSettlement(trx, settlementOrder);
+    // Revision 20 — a practice order delivers for real and settles for
+    // nothing. This guard is the single thing keeping training out of the
+    // ledger, so it sits at the posting itself rather than at the four callers
+    // that might one day forget: no wallet leg, no merchant charge, no driver
+    // cash, no platform revenue.
+    if (!order.isTraining) {
+      const settlementOrder = {
+        id: order.id,
+        tenantId,
+        driverId: order.driverId as string,
+        vendorId: order.vendorId,
+        orderTotalKwd: new Prisma.Decimal(order.orderTotalKwd),
+        deliveryFeeKwd: new Prisma.Decimal(order.deliveryFeeKwd ?? 0),
+      };
+      if (order.paymentMethod === "COD") {
+        await postCodSettlement(trx, settlementOrder);
+      } else {
+        await postPrepaidSettlement(trx, settlementOrder);
+      }
     }
 
     // Trip done — the driver's BUSY session goes back to ONLINE (contract #2).
@@ -768,8 +776,12 @@ export async function completeDelivery(args: {
   });
 
   flushOrderEvents(tx); // publishes order.delivered
-  fireFoodicsWriteback(orderId, "DELIVERED");
-  fireCustomerMilestone(orderId, tenantId, "DELIVERED");
+  if (!order.isTraining) {
+    // Neither of these has a real counterparty on a practice order: there is
+    // no POS ticket to close and no customer to tell.
+    fireFoodicsWriteback(orderId, "DELIVERED");
+    fireCustomerMilestone(orderId, tenantId, "DELIVERED");
+  }
 
   return { order: updated ?? { ...order, status: "DELIVERED" } };
 }

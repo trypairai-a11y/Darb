@@ -1,8 +1,12 @@
-// Merged into the merchant Grow screen (revision #31), then cut entirely: the
-// Messages tab could not send and its drafts never left the browser. Kept as a
-// redirect so old bookmarks and notification links still land somewhere real.
+// Vendor-portal note #2 (2026-09-15) — "Remove the Grow tab, no need for it
+// now."
+//
+// The route stays and forwards rather than 404ing. /vendor/analytics and
+// /vendor/campaigns have redirected here since revision #31, the tab was in
+// the rail for four revisions, and a merchant with it bookmarked or sitting in
+// an email should land on their orders rather than on a dead page.
 import { redirect } from "next/navigation";
 
-export default function VendorCampaignsRedirect() {
-  redirect("/vendor/grow");
+export default function RemovedGrowPage() {
+  redirect("/vendor");
 }

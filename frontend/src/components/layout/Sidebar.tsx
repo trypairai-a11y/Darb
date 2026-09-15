@@ -5,6 +5,7 @@ import { cn } from "@/lib/cn";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useQuery } from "@tanstack/react-query";
 import { useRole } from "@/hooks/useRole";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useAuth } from "@/contexts/AuthContext";
 import { fleetApi, vendorApi } from "@/lib/darbApi";
 import { normalizeVendorRole, roleDefaultTabs } from "@/lib/vendorTabs";
@@ -26,6 +27,10 @@ export default function Sidebar() {
   const { collapsed, open, setOpen } = useSidebar();
   const { role, hasRole } = useRole();
   const { user } = useAuth();
+  // Revision 20 — the caller's own surface map, as /api/auth/me returns it.
+  // Undefined until /me lands, which surfaceVisible below treats as "not yet
+  // known" rather than as "no access".
+  const { permissions } = usePermissions();
   const { t, dir } = useI18n();
 
   /**
@@ -99,6 +104,27 @@ export default function Sidebar() {
     return true;
   };
 
+  /**
+   * Revision 20 — the per-user surface gate, beside the hierarchy one.
+   *
+   * Settings has promised since revision 4 (#12) that the rail hides a surface
+   * set to No access. It did not, because nothing here read the map. It does
+   * now, and where an item carries both gates they AND together, so this can
+   * only ever narrow what a role already allowed.
+   *
+   * `surfaceOnly` is the exception that makes a compliance officer possible: a
+   * VIEWER granted that one surface must see the entry, so once the map has
+   * loaded the grant is the whole answer. Until it loads there is nothing to
+   * read, and `minRole` is the fallback — flashing an entry at somebody who
+   * cannot open it is the worse of the two wrong answers.
+   */
+  const surfaceVisible = (item: NavItem): boolean => {
+    if (!item.surface) return true;
+    if (role === "ADMIN") return true; // never gated, mirroring the server
+    if (!permissions) return !item.minRole || hasRole(item.minRole);
+    return permissions[item.surface] !== "NONE";
+  };
+
   // Items carry their own minRole on top of the section gate, which is how the
   // single staff section reproduces the old five-section role split.
   const visibleSections = NAV_SECTIONS.filter(sectionVisible)
@@ -106,7 +132,11 @@ export default function Sidebar() {
       ...section,
       items: section.items.filter(
         (item) =>
-          (!item.minRole || hasRole(item.minRole)) &&
+          // A surfaceOnly item defers to the surface once the map is known.
+          (item.surfaceOnly && permissions
+            ? true
+            : !item.minRole || hasRole(item.minRole)) &&
+          surfaceVisible(item) &&
           // A vendor login only sees the entries its portal role can open.
           // Staff are unaffected: no staff item carries vendorRoles.
           (!item.vendorRoles || (role === "VENDOR" && item.vendorRoles.includes(vendorRole))),

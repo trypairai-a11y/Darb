@@ -53,6 +53,8 @@ export async function getFleetDriverComparison(
         driverId: { in: driverIds },
         status: "DELIVERED",
         deliveredAt: { gte: range.from, lt: range.to },
+        // Revision 20 — practice orders are not the company's performance.
+        isTraining: false,
       },
       select: { driverId: true, deliveredAt: true, slaDeadline: true },
     }),

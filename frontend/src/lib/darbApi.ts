@@ -29,6 +29,28 @@ import type {
   ZoneQuote,
   ZoneSurcharge,
   VendorAnalytics,
+  // Revision 20 — the HQ portal's four tabs.
+  AdminSnapshot,
+  BranchTransfer,
+  ComplianceAccounts,
+  ComplianceCounts,
+  ComplianceDocument,
+  DisputesPayload,
+  DocScope,
+  DriverStateAction,
+  DriverTrackingRow,
+  ForecastSeries,
+  FreezeTarget,
+  OnboardingRequest,
+  OnboardingType,
+  PaymentRow,
+  RenewalRow,
+  ShiftPlanPayload,
+  TrainingPickupPoint,
+  TrainingSession,
+  TrainingSessionDetail,
+  VendorWalletMode,
+  VendorWalletView,
   RefundRow,
   DeliveryPlan,
   DeliveryPlanKmTier,
@@ -484,6 +506,117 @@ export const shiftPlanningApi = {
       `/api/shift-planning/drivers/${driverId}/zone`,
       { zoneId },
     ),
+
+  // Revision 20 — the proposed weekly plan. Nothing here writes the capacity
+  // grid except `approvePlan`, which is the whole point of the approval step.
+  plan: (weekStart?: string) =>
+    get<ShiftPlanPayload>("/api/shift-planning/plan", weekStart ? { weekStart } : undefined),
+  generatePlan: (weekStart: string, lookbackWeeks?: number) =>
+    post<{ planId: string; weekStart: string; entries: number }>(
+      "/api/shift-planning/plan/generate",
+      { weekStart, ...(lookbackWeeks ? { lookbackWeeks } : {}) },
+    ),
+  savePlanEntries: (
+    planId: string,
+    entries: Array<{ zoneId: string; dayOfWeek: number; startTime: string; approvedDrivers: number }>,
+  ) => put<unknown>(`/api/shift-planning/plan/${planId}/entries`, { entries }),
+  approvePlan: (planId: string, note?: string) =>
+    post<{ planId: string; windows: number }>(`/api/shift-planning/plan/${planId}/approve`, { note }),
+  discardPlan: (planId: string) =>
+    post<{ ok: boolean }>(`/api/shift-planning/plan/${planId}/discard`),
+};
+
+// ── /api/compliance (revision 20 — the Compliance tab) ───────────────────
+
+export const complianceApi = {
+  counts: () => get<ComplianceCounts>("/api/compliance/counts"),
+  docTypes: (scope: DocScope) => get<{ scope: DocScope; types: string[] }>("/api/compliance/doc-types", { scope }),
+  documents: (params?: Params) =>
+    get<Paginated<ComplianceDocument> | ComplianceDocument[]>("/api/compliance/documents", params),
+  recheck: (id: string) => post<unknown>(`/api/compliance/documents/${id}/recheck`),
+  approve: (id: string, expiryDate?: string | null) =>
+    post<unknown>(`/api/compliance/documents/${id}/approve`, expiryDate !== undefined ? { expiryDate } : {}),
+  reject: (id: string, reason: string) =>
+    post<unknown>(`/api/compliance/documents/${id}/reject`, { reason }),
+  requestDocument: (body: {
+    scope: DocScope;
+    type: string;
+    note?: string;
+    driverId?: string;
+    fleetPartnerId?: string;
+    vendorId?: string;
+  }) => post<ComplianceDocument>("/api/compliance/documents/request", body),
+  renewals: (params?: { withinDays?: number; scope?: DocScope; includeExpired?: boolean }) =>
+    get<{ rows: RenewalRow[]; counts: { expired: number; expiring: number; frozen: number } }>(
+      "/api/compliance/renewals",
+      params as Params,
+    ),
+  freeze: (body: { target: FreezeTarget; id: string; frozen: boolean; reason?: string }) =>
+    post<unknown>("/api/compliance/freeze", body),
+  accounts: () => get<ComplianceAccounts>("/api/compliance/accounts"),
+};
+
+// ── /api/driver-training (revision 20 — Ops › Driver training) ───────────
+
+export const driverTrainingApi = {
+  list: (params?: Params) => get<{ data: TrainingSession[] }>("/api/driver-training", params),
+  detail: (id: string) => get<TrainingSessionDetail>(`/api/driver-training/${id}`),
+  pickupPoints: () => get<{ data: TrainingPickupPoint[] }>("/api/driver-training/pickup-points"),
+  create: (body: { driverId: string; periodDays: number; startsAt?: string; reason?: string }) =>
+    post<TrainingSession>("/api/driver-training", body),
+  setPeriod: (id: string, periodDays: number) =>
+    patch<TrainingSession>(`/api/driver-training/${id}/period`, { periodDays }),
+  start: (id: string) => post<TrainingSession>(`/api/driver-training/${id}/start`),
+  issueOrder: (
+    id: string,
+    body: {
+      branchId: string;
+      dropoffAddress?: string;
+      dropoffLat?: number;
+      dropoffLng?: number;
+      customerName?: string;
+      customerPhone?: string;
+      slaMinutes?: number;
+    },
+  ) => post<DeliveryOrder>(`/api/driver-training/${id}/orders`, body),
+  complete: (id: string, outcome: "PASSED" | "FAILED", note?: string) =>
+    post<unknown>(`/api/driver-training/${id}/complete`, { outcome, note }),
+  cancel: (id: string, note?: string) => post<unknown>(`/api/driver-training/${id}/cancel`, { note }),
+};
+
+// ── /api/onboarding (revision 20 — Ops › New accounts) ───────────────────
+
+export const onboardingApi = {
+  list: (params?: Params) => get<{ data: OnboardingRequest[] }>("/api/onboarding", params),
+  counts: () => get<{ new: number; inReview: number; waiting: number }>("/api/onboarding/counts"),
+  create: (body: {
+    type: OnboardingType;
+    companyName: string;
+    companyNameAr?: string;
+    code?: string;
+    contactName?: string;
+    contactPhone?: string;
+    contactEmail?: string;
+    notes?: string;
+  }) => post<OnboardingRequest>("/api/onboarding", body),
+  update: (id: string, patchBody: Partial<OnboardingRequest>) =>
+    patch<OnboardingRequest>(`/api/onboarding/${id}`, patchBody),
+  claim: (id: string) => post<OnboardingRequest>(`/api/onboarding/${id}/claim`),
+  approve: (id: string, body?: { note?: string; code?: string }) =>
+    post<{ vendorId: string | null; fleetPartnerId: string | null }>(
+      `/api/onboarding/${id}/approve`,
+      body ?? {},
+    ),
+  reject: (id: string, reason: string) => post<unknown>(`/api/onboarding/${id}/reject`, { reason }),
+};
+
+// ── /api/drivers — the Ops tab's Driver tracking subtab ──────────────────
+
+export const driverTrackingApi = {
+  list: (params?: Params) =>
+    get<{ rows: DriverTrackingRow[]; windowDays: number }>("/api/drivers/tracking", params),
+  setState: (driverId: string, action: DriverStateAction, reason?: string) =>
+    post<unknown>(`/api/drivers/${driverId}/state`, { action, reason }),
 };
 
 // ── /api/vendor (vendor-portal scope — vendorId comes from the JWT) ──────
@@ -548,6 +681,17 @@ export const vendorApi = {
     post<{ ok: boolean }>(`/api/vendor/wallet/top-ups/${id}/cancel`, {}),
   walletEntries: (params?: Params) =>
     get<Paginated<WalletEntry> | WalletEntry[]>("/api/vendor/wallet/entries", params),
+
+  // Vendor-portal note #3 (2026-09-15) — one wallet for the shop, or one per
+  // branch. None of this writes a ledger posting: the account stays one and
+  // what moves is how much of the shop's own money each counter may spend.
+  walletView: () => get<VendorWalletView>("/api/vendor/wallet/mode"),
+  setWalletMode: (mode: VendorWalletMode) =>
+    patch<VendorWalletView>("/api/vendor/wallet/mode", { mode }),
+  transferToBranch: (body: { branchId: string; amountKwd: number; note?: string }) =>
+    post<VendorWalletView>("/api/vendor/wallet/transfers", body),
+  branchTransfers: (params?: { branchId?: string }) =>
+    get<{ data: BranchTransfer[] }>("/api/vendor/wallet/transfers", params as Params),
   /** Vendor-scoped Foodics status (vendorId comes from the JWT). */
   foodicsStatus: () => get<FoodicsStatus>("/api/vendor/foodics/status"),
   /** Returns { authUrl } — the caller redirects the browser there. */
@@ -1014,6 +1158,29 @@ export const cockpitApi = {
   /** `from`/`to` are YYYY-MM-DD; omitted, the API scopes to today. */
   summary: (params?: { from?: string; to?: string }) =>
     get<CockpitSummary>("/api/cockpit/summary", params),
+  // Revision 20 — the Admin tab's "where are we now, and what to expect".
+  snapshot: () => get<AdminSnapshot>("/api/cockpit/snapshot"),
+  forecast: (params?: { horizonDays?: number; lookbackDays?: number }) =>
+    get<ForecastSeries>("/api/cockpit/forecast", params as Params),
+};
+
+// ── Finance › Payments and Finance › Disputes (revision 20) ──────────────
+
+export const financeDeskApi = {
+  payments: (params?: { status?: string; side?: string }) =>
+    get<{ data: PaymentRow[]; counts: { pending: number; vendorPending: number; fleetPending: number } }>(
+      "/api/wallets/payments",
+      params as Params,
+    ),
+  confirmTopUp: (id: string) =>
+    post<{ ok: boolean; alreadyPaid: boolean }>(`/api/wallets/payments/vendor-top-ups/${id}/confirm`),
+  cancelTopUp: (id: string) =>
+    post<{ ok: boolean }>(`/api/wallets/payments/vendor-top-ups/${id}/cancel`),
+  confirmDeposit: (id: string) => post<unknown>(`/api/wallets/fleet-deposits/${id}/confirm`),
+  rejectDeposit: (id: string, reason: string) =>
+    post<unknown>(`/api/wallets/fleet-deposits/${id}/reject`, { reason }),
+  disputes: (params?: { status?: string }) =>
+    get<DisputesPayload>("/api/wallets/disputes", params as Params),
 };
 
 // ── /api/foodics ─────────────────────────────────────────────────────────

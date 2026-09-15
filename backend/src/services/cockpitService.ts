@@ -108,6 +108,9 @@ export interface CockpitRange {
   to?: Date;
 }
 
+// Revision 20 — every count on this dashboard filters `isTraining: false`.
+// A practice order is a real row and would otherwise inflate the founder's
+// order count, the fee total and the zone load with work nobody was paid for.
 export async function getCockpitSummary(
   tenantId: string,
   range: CockpitRange = {},
@@ -138,11 +141,11 @@ export async function getCockpitSummary(
   ] = await Promise.all([
     prisma.deliveryOrder.groupBy({
       by: ["status"],
-      where: { tenantId, status: { in: [...ACTIVE_STATUSES] } },
+      where: { tenantId, status: { in: [...ACTIVE_STATUSES] }, isTraining: false },
       _count: { _all: true },
     }),
     prisma.deliveryOrder.findMany({
-      where: { tenantId, status: "DELIVERED", deliveredAt: period },
+      where: { tenantId, status: "DELIVERED", deliveredAt: period, isTraining: false },
       select: {
         deliveredAt: true,
         slaDeadline: true,
@@ -179,23 +182,23 @@ export async function getCockpitSummary(
     // Edit #9 — orders currently moving through each zone, for the zone table.
     prisma.deliveryOrder.groupBy({
       by: ["pickupZoneId"],
-      where: { tenantId, status: { in: [...ACTIVE_STATUSES] }, pickupZoneId: { not: null } },
+      where: { tenantId, status: { in: [...ACTIVE_STATUSES] }, pickupZoneId: { not: null }, isTraining: false },
       _count: { _all: true },
     }),
     prisma.deliveryOrder.count({
-      where: { tenantId, status: "CANCELLED", cancelledAt: period },
+      where: { tenantId, status: "CANCELLED", cancelledAt: period, isTraining: false },
     }),
-    prisma.deliveryOrder.count({ where: { tenantId, status: "NO_DRIVER" } }),
+    prisma.deliveryOrder.count({ where: { tenantId, status: "NO_DRIVER", isTraining: false } }),
     prisma.deliveryZone.findMany({
       where: { tenantId, isActive: true },
       select: { id: true, code: true, name: true },
     }),
     prisma.deliveryOrder.aggregate({
-      where: { tenantId, status: "DELIVERED", deliveredAt: period },
+      where: { tenantId, status: "DELIVERED", deliveredAt: period, isTraining: false },
       _sum: { deliveryFeeKwd: true },
     }),
     prisma.deliveryOrder.aggregate({
-      where: { tenantId, status: "DELIVERED", deliveredAt: period, tipKwd: { not: null } },
+      where: { tenantId, status: "DELIVERED", deliveredAt: period, tipKwd: { not: null }, isTraining: false },
       _sum: { tipKwd: true },
     }),
     prisma.courierOnlineSession.findMany({

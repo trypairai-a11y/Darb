@@ -12,6 +12,7 @@ import { resolveDriverDateRange, batchLoadDriverStats, resolveTalabatStatus } fr
 import { listSnapshotsForDriver, listMemoriesByPrefix } from "../agent";
 import { explainScore } from "../services/driverFile/scoreExplainer";
 import { loadDriverAuditLog } from "../services/driverFile/decisionAuditFilter";
+import { driverTracking, setDriverOperationalState } from "../services/driverTrackingService";
 
 const router = Router();
 router.use(authMiddleware, tenantScope);
@@ -213,6 +214,63 @@ router.get("/", async (req: Request, res: Response) => {
     res.json(paginatedResponse(enriched, total, page, limit));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// Revision 20 — the Ops tab's Driver tracking subtab.
+//
+// "the ops team should be able to track driver performance and be able to
+// activate/deactivate/freeze also should be able to send the driver for
+// further training". The first half is GET /tracking, the second is
+// POST /:id/state; sending a driver for training is POST /api/driver-training,
+// which is its own router because the window it opens has a life of its own.
+// ══════════════════════════════════════════════════════════════════════════
+
+/**
+ * GET /api/drivers/tracking
+ *
+ * NOTE: declared before the `/:id` routes below. Express matches in order, so
+ * `/:id` would otherwise swallow "tracking" as a driver id and answer 404.
+ */
+router.get("/tracking", async (req: Request, res: Response) => {
+  try {
+    const days = Number(req.query.days);
+    const result = await driverTracking({
+      tenantId: req.user!.tenantId,
+      ...(Number.isFinite(days) && days > 0 ? { days } : {}),
+      ...(typeof req.query.fleetPartnerId === "string" && req.query.fleetPartnerId
+        ? { fleetPartnerId: req.query.fleetPartnerId }
+        : {}),
+      ...(typeof req.query.zoneId === "string" && req.query.zoneId ? { zoneId: req.query.zoneId } : {}),
+      ...(typeof req.query.status === "string" && req.query.status ? { status: req.query.status } : {}),
+      ...(typeof req.query.q === "string" && req.query.q ? { q: req.query.q } : {}),
+    });
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/** Activate, deactivate, suspend, freeze or unfreeze one driver. */
+router.post("/:id/state", rbac(...MUTATORS), async (req: Request, res: Response) => {
+  try {
+    const action = req.body?.action;
+    const ACTIONS = ["ACTIVATE", "DEACTIVATE", "SUSPEND", "FREEZE", "UNFREEZE"];
+    if (!ACTIONS.includes(action)) {
+      res.status(400).json({ error: `action must be one of ${ACTIONS.join(", ")}` });
+      return;
+    }
+    const driver = await setDriverOperationalState({
+      tenantId: req.user!.tenantId,
+      driverId: req.params.id,
+      action,
+      reason: typeof req.body?.reason === "string" ? req.body.reason : null,
+    });
+    res.json({ ok: true, driver });
+  } catch (err: any) {
+    const status = err?.statusCode ?? 400;
+    res.status(status).json({ error: err.message, ...(err?.code ? { code: err.code } : {}) });
   }
 });
 

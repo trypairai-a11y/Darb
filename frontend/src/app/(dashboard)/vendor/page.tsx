@@ -1,10 +1,22 @@
 "use client";
-// Darb 2.0 — /vendor: the vendor portal live order board. Status-grouped
-// columns (Incoming / Driver en route / Picked up / Done today) fed by
-// GET /api/vendor/orders, kept live by surgically merging order.* SSE events
-// into the TanStack cache (setQueryData) with a 15s refetch fallback while
-// the stream is down. Header: wallet balance, orders today, pause toggle and
-// the Live/Reconnecting pill.
+// Darb 2.0 — /vendor: the vendor portal order board, fed by
+// GET /api/vendor/orders and kept live by surgically merging order.* SSE
+// events into the TanStack cache (setQueryData), with a 15s refetch fallback
+// while the stream is down. Header: wallet balance, orders today, and the
+// Live/Reconnecting pill.
+//
+// Vendor-portal note #1 (2026-09-15): "For the vendor, change the layout for
+// the Orders tab and make it the same as the HQ Orders tab."
+//
+// So the four status-grouped columns are gone and this is a table — the same
+// DataTable, the same column shapes and the same sort/paginate behaviour the
+// HQ Orders screen uses. The kanban grouping survives as the thing that counts
+// the Live tab, because "how many are still moving" is still the question the
+// tab answers; what it no longer does is decide the layout.
+//
+// A table is also the layout that scales: a pharmacy chain running two hundred
+// orders a day could not read four columns of cards, which is the complaint
+// behind the request.
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -15,6 +27,7 @@ import { useToast } from "@/components/shared/Toast";
 import { downloadBlob } from "@/utils/downloadBlob";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
+import DataTable from "@/components/shared/DataTable";
 import OrderStatusBadge from "@/components/darb/OrderStatusBadge";
 import SlaCountdown from "@/components/darb/SlaCountdown";
 import { useVendorBranch } from "@/contexts/VendorBranchContext";
@@ -29,7 +42,7 @@ import type {
   Paginated,
 } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
-import { formatKwd } from "@/i18n/format";
+import { formatDateTime, formatKwd } from "@/i18n/format";
 import { cn } from "@/lib/cn";
 
 const ORDERS_KEY = ["darb", "vendor", "orders"];
@@ -404,9 +417,163 @@ export default function VendorBoardPage() {
     return out;
   }, [branchId, tab, columns, finishedToday]);
 
-  // With a branch selected every card on screen is that branch, so the per-card
-  // branch label only earns its line on the all-branches board.
+  // With a branch selected every row on screen is that branch, so the branch
+  // column only earns its width on the all-branches board.
   const showBranch = branchId === null;
+
+  /**
+   * The rows the table draws.
+   *
+   * Live is the four kanban buckets flattened back out, newest first. The
+   * buckets still exist because they are what the Live tab counts, and because
+   * their order is the order of the delivery — flattening them keeps a board
+   * that reads top-to-bottom the way the work actually moves.
+   */
+  const visibleOrders = useMemo(
+    () =>
+      tab === "delivered"
+        ? finishedToday
+        : columns
+            .flatMap((c) => c.items)
+            .sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+            ),
+    [tab, columns, finishedToday],
+  );
+
+  const orderColumns = useMemo(
+    () => [
+      {
+        key: "orderNumber",
+        label: t("dispatch.orderNumber"),
+        render: (v: string) => (
+          <span dir="ltr" className="font-mono text-xs font-medium text-sand-900">
+            {v}
+          </span>
+        ),
+      },
+      // Only on the all-branches board: with one branch chosen this column is
+      // the same value on every row.
+      ...(showBranch
+        ? [
+            {
+              key: "branch",
+              label: t("vendorPortal.branch"),
+              sortable: false,
+              render: (v: DeliveryOrder["branch"]) => (
+                <span dir="auto">{v?.name ?? "n/a"}</span>
+              ),
+            },
+          ]
+        : []),
+      {
+        key: "status",
+        label: t("dispatch.status"),
+        render: (v: DeliveryOrderStatus) => <OrderStatusBadge status={v} />,
+      },
+      {
+        key: "driver",
+        label: t("dispatch.driver"),
+        sortable: false,
+        render: (v: DeliveryOrder["driver"]) =>
+          v?.name ? (
+            <span dir="auto">
+              {v.name}
+              {v.phone && (
+                <a href={`tel:${v.phone}`} dir="ltr" className="block text-primary text-xs">
+                  {v.phone}
+                </a>
+              )}
+            </span>
+          ) : (
+            <span className="text-sand-400">n/a</span>
+          ),
+      },
+      {
+        key: "customerName",
+        label: t("dispatch.customer"),
+        sortable: false,
+        render: (v: string | null) => <span dir="auto">{v ?? "n/a"}</span>,
+      },
+      {
+        key: "orderTotalKwd",
+        label: t("dispatch.total"),
+        render: (v: DeliveryOrder["orderTotalKwd"]) => (
+          <span dir="ltr" className="tabular-nums">
+            {formatKwd(v, locale)}
+          </span>
+        ),
+      },
+      {
+        key: "deliveryFeeKwd",
+        label: t("dispatch.fee"),
+        render: (v: DeliveryOrder["deliveryFeeKwd"]) => (
+          <span dir="ltr" className="tabular-nums">
+            {formatKwd(v, locale)}
+          </span>
+        ),
+      },
+      {
+        key: "slaDeadline",
+        label: t("dispatch.sla"),
+        sortable: false,
+        render: (v: string | null, row: DeliveryOrder) =>
+          ["DELIVERED", "CANCELLED", "REJECTED", "RETURNED"].includes(row.status) ? (
+            <span className="text-sand-400">n/a</span>
+          ) : (
+            <SlaCountdown deadline={v} />
+          ),
+      },
+      {
+        key: "createdAt",
+        label: t("dispatch.createdAt"),
+        render: (v: string) => (
+          <span dir="ltr" className="text-xs text-sand-700 whitespace-nowrap">
+            {formatDateTime(v, locale)}
+          </span>
+        ),
+      },
+      {
+        // Revision 11 (#8) put cancel on the board as well as the detail page,
+        // and it stays on the board: the moment a kitchen discovers it cannot
+        // fulfil is the moment somebody is looking at this list.
+        key: "actions",
+        label: "",
+        sortable: false,
+        render: (_v: unknown, row: DeliveryOrder) => {
+          const cancel = cancelHandler(row);
+          return (
+            <div className="flex items-center justify-end gap-1">
+              <Link
+                href={`/vendor/orders/${row.id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="h-8 px-3 inline-flex items-center rounded-pill text-xs text-sand-600 hover:bg-sand-100"
+              >
+                {t("common.view")}
+              </Link>
+              {cancel && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    cancel(row);
+                  }}
+                  title={t("dispatch.cancelOrder")}
+                  className="h-8 w-8 rounded-pill grid place-items-center text-red-600 hover:bg-red-50"
+                >
+                  <XCircle size={15} aria-hidden="true" />
+                </button>
+              )}
+            </div>
+          );
+        },
+      },
+    ],
+    // `cancelHandler` closes over the confirm-modal setters, which are stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [t, locale, showBranch],
+  );
 
   const vendor = meQuery.data;
   const balance = walletQuery.data?.balanceKwd ?? walletQuery.data?.account?.balanceKwd;
@@ -541,46 +708,15 @@ export default function VendorBoardPage() {
         <BranchFilter counts={branchCounts} />
       </div>
 
-      {tab === "delivered" ? (
-        <section className="bg-card border border-sand-200 rounded-2xl shadow-soft">
-          <div className="p-3 space-y-2.5">
-            {finishedToday.length === 0 ? (
-              <p className="text-xs text-sand-500 px-1 py-6 text-center">
-                {t("vendorPortal.emptyColumn")}
-              </p>
-            ) : (
-              finishedToday.map((o) => (
-                <OrderCard key={o.id} order={o} showBranch={showBranch} />
-              ))
-            )}
-          </div>
-        </section>
-      ) : (
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {columns.map((col) => (
-          <section key={col.key} className="bg-card border border-sand-200 rounded-2xl shadow-soft flex flex-col">
-            <header className="px-4 py-3 border-b border-sand-200 flex items-center justify-between">
-              <h2 className="text-sm font-medium text-sand-900">{col.label}</h2>
-              <span className="text-xs text-sand-500 tabular-nums">{col.items.length}</span>
-            </header>
-            <div className="p-3 space-y-2.5 flex-1 min-h-[8rem] max-h-[32rem] overflow-y-auto">
-              {col.items.length === 0 ? (
-                <p className="text-xs text-sand-500 px-1 py-2">{t("vendorPortal.emptyColumn")}</p>
-              ) : (
-                col.items.map((o) => (
-                  <OrderCard
-                    key={o.id}
-                    order={o}
-                    showBranch={showBranch}
-                    onCancel={cancelHandler(o)}
-                  />
-                ))
-              )}
-            </div>
-          </section>
-        ))}
-      </div>
-      )}
+      {/* Vendor-portal note #1 — the HQ Orders layout, here. Same DataTable,
+          same column shapes, so a Darb operator and a merchant looking at the
+          same delivery are reading the same row. */}
+      <DataTable
+        columns={orderColumns}
+        data={visibleOrders}
+        emptyMessage={t("vendorPortal.emptyColumn")}
+        exportFilename={`darb-orders-${new Date().toISOString().slice(0, 10)}`}
+      />
 
       <ConfirmModal
         open={!!cancelTarget}

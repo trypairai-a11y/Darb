@@ -24,6 +24,14 @@ import { OrderStateConflictError } from "../services/orderStateMachine";
 import { quoteDelivery } from "../services/pricingService";
 import { RefundError, requestRefund } from "../services/wallet/refundService";
 import { getVendorBranchBalances } from "../services/wallet/vendorBranchBalanceService";
+// Vendor-portal note #3 (2026-09-15) — one wallet, or one per branch.
+import {
+  getVendorWalletView,
+  isWalletMode,
+  listBranchTransfers,
+  setVendorWalletMode,
+  transferToBranch,
+} from "../services/wallet/vendorWalletModeService";
 import {
   TopUpError,
   cancelTopUp,
@@ -184,6 +192,18 @@ function scopedBranchId(req: Request): string | null {
   if (identity?.vendorRole === "SUPERVISOR" && identity.branchId) return identity.branchId;
   const chosen = typeof req.query.branchId === "string" ? req.query.branchId.trim() : "";
   return chosen.length > 0 ? chosen : null;
+}
+
+/**
+ * Is this the shop's owner?
+ *
+ * The one capability a tab grant must never hand over: minting logins, pausing
+ * the shop, and (vendor-portal note #3) rearranging the shop's own money
+ * between wallets. Enforced on the endpoint AND by hiding the control, so
+ * nobody is shown a button that answers 403.
+ */
+function isVendorOwner(req: Request): boolean {
+  return vendorRoleOf(req) === "ADMIN";
 }
 
 /** Guard a route to a set of portal sub-roles. */
@@ -360,6 +380,10 @@ router.get("/orders", requireVendorTab("ORDERS"), async (req: Request, res: Resp
     // A branch-scoped login only ever sees its own branch's orders.
     const branchId = scopedBranchId(req);
     if (branchId) where.branchId = branchId;
+    // Revision 20 — a driver practising a delivery out of this shop's branch
+    // is Darb's business, not the merchant's. The order is real, so it would
+    // otherwise appear on their board with a customer they never took.
+    where.isTraining = false;
     if (typeof req.query.status === "string" && req.query.status.length > 0) {
       const statuses = req.query.status
         .split(",")
@@ -415,6 +439,8 @@ router.get("/orders/export.xlsx", requireVendorTab("ORDERS"), async (req: Reques
       where.createdAt = { ...(from ? { gte: from } : {}), ...(to ? { lte: to } : {}) };
     }
 
+    // Revision 20 — practice orders never appear on a merchant surface.
+    where.isTraining = false;
     const orders = await prisma.deliveryOrder.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -930,6 +956,7 @@ router.get("/orders/:id", requireVendorTab("ORDERS"), async (req: Request, res: 
         id: req.params.id,
         tenantId,
         vendorId: vendorId!,
+        isTraining: false,
         ...(branchId ? { branchId } : {}),
       },
       include: {
@@ -1031,7 +1058,7 @@ router.post(
       // Vendor ownership check BEFORE touching the state machine — a foreign
       // order id must look like a plain 404.
       const owned = await prisma.deliveryOrder.findFirst({
-        where: { id: req.params.id, tenantId, vendorId: vendorId! },
+        where: { id: req.params.id, tenantId, vendorId: vendorId!, isTraining: false },
         select: { id: true },
       });
       if (!owned) { res.status(404).json({ error: "Order not found" }); return; }
@@ -1168,7 +1195,14 @@ router.get("/wallet", requireVendorTab("WALLET"), async (req: Request, res: Resp
     const debt = balance && balance.isNegative() ? balance.neg() : null;
 
     const chosenBranch = scopedBranchId(req);
+    // Vendor-portal note #3 — the mode, the pool and each branch's spendable
+    // figure travel with the balance. A screen that had to make a second call
+    // before it could say which mode it was in would flash the wrong layout.
+    const walletView = await getVendorWalletView(tenantId, vendorId!);
     res.json({
+      walletMode: walletView.mode,
+      mainAvailableKwd: walletView.mainAvailableKwd,
+      branchWallets: walletView.branches,
       ownerKey: `VENDOR:${vendorId!}`,
       balanceKwd: fmtKwd(account?.balanceKwd),
       accountId: account?.id ?? null,
@@ -1212,6 +1246,105 @@ router.get("/wallet", requireVendorTab("WALLET"), async (req: Request, res: Resp
 });
 
 /**
+ * Vendor-portal note #3 (2026-09-15) — one wallet for the shop, or one per
+ * branch.
+ *
+ * The wallet ACCOUNT is still one (`VENDOR:{id}`), settled in revision 8 (#1)
+ * and unchanged here. What these three endpoints move is the SPLIT: how much
+ * of the shop's own money each counter may spend. No allocation writes a
+ * ledger posting, so switching modes moves nothing and the account total is
+ * identical either way.
+ *
+ * Changing the mode and moving money between wallets are OWNER-only, like
+ * every other decision about the shop's money, and enforced here as well as
+ * hidden on the screen.
+ */
+router.get("/wallet/mode", requireVendorTab("WALLET"), async (req: Request, res: Response) => {
+  try {
+    const { tenantId, vendorId } = req.user!;
+    res.json(await getVendorWalletView(tenantId, vendorId!));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.patch("/wallet/mode", requireVendorTab("WALLET"), async (req: Request, res: Response) => {
+  try {
+    if (!isVendorOwner(req)) {
+      res.status(403).json({ error: "Only the shop owner can change the wallet setup" });
+      return;
+    }
+    const mode = req.body?.mode;
+    if (typeof mode !== "string" || !isWalletMode(mode)) {
+      res.status(400).json({ error: "mode must be SINGLE or PER_BRANCH" });
+      return;
+    }
+    const { tenantId, vendorId } = req.user!;
+    res.json(await setVendorWalletMode({ tenantId, vendorId: vendorId!, mode }));
+  } catch (err: any) {
+    res.status(err?.statusCode ?? 500).json({ error: err.message });
+  }
+});
+
+/**
+ * "the vendor will top up the main wallet and manually transfer to each branch
+ * wallet". Positive fills a branch, negative returns it to the pool.
+ */
+router.post("/wallet/transfers", requireVendorTab("WALLET"), async (req: Request, res: Response) => {
+  try {
+    if (!isVendorOwner(req)) {
+      res.status(403).json({ error: "Only the shop owner can move money between wallets" });
+      return;
+    }
+    const { branchId, amountKwd, note } = req.body ?? {};
+    if (typeof branchId !== "string" || !branchId) {
+      res.status(400).json({ error: "branchId is required" });
+      return;
+    }
+    const amount = Number(amountKwd);
+    if (!Number.isFinite(amount)) {
+      res.status(400).json({ error: "amountKwd must be a number" });
+      return;
+    }
+    const { tenantId, vendorId, userId } = req.user!;
+    res.json(
+      await transferToBranch({
+        tenantId,
+        vendorId: vendorId!,
+        branchId,
+        amountKwd: amount,
+        note: typeof note === "string" ? note : null,
+        createdById: userId,
+      }),
+    );
+  } catch (err: any) {
+    res.status(err?.statusCode ?? 500).json({
+      error: err.message,
+      ...(err?.code ? { code: err.code } : {}),
+    });
+  }
+});
+
+/** The transfer history, which is the working behind every branch figure. */
+router.get("/wallet/transfers", requireVendorTab("WALLET"), async (req: Request, res: Response) => {
+  try {
+    const { tenantId, vendorId } = req.user!;
+    // A branch-pinned login only ever sees its own counter's transfers.
+    const pinned = scopedBranchId(req);
+    const asked = typeof req.query.branchId === "string" ? req.query.branchId : undefined;
+    res.json({
+      data: await listBranchTransfers({
+        tenantId,
+        vendorId: vendorId!,
+        ...(pinned ? { branchId: pinned } : asked ? { branchId: asked } : {}),
+      }),
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
  * @swagger
  * /api/vendor/wallet/entries:
  *   get:
@@ -1243,8 +1376,19 @@ router.get("/wallet/entries", requireVendorTab("WALLET"), async (req: Request, r
     // the account. Entries reach a branch through the order their transaction
     // settled; postings with no order (a payout, a correction) belong to the
     // vendor as a whole and drop out of a branch-scoped view.
+    //
+    // Vendor-portal note #3 (2026-09-15): "the vendor should be able to take a
+    // statement for each, whether they're using one wallet or more than one".
+    // `?scope=main` is the pool's own statement — every posting with NO order
+    // behind it, which is exactly what the main wallet holds: top-ups,
+    // corrections and refunds. Without it the main wallet was the only one of
+    // the shop's wallets with no way to pull a statement, because "everything"
+    // and "everything not belonging to a branch" are different documents.
+    const scope = typeof req.query.scope === "string" ? req.query.scope : "";
     const branchId = scopedBranchId(req);
-    if (branchId) {
+    if (scope === "main") {
+      where.transaction = { orderId: null };
+    } else if (branchId) {
       const branchOrders = await prisma.deliveryOrder.findMany({
         where: { tenantId, vendorId: vendorId!, branchId },
         select: { id: true },
@@ -2000,151 +2144,16 @@ router.patch("/team/:id", requireVendorRole("ADMIN"), requireVendorTab("TEAM"), 
   }
 });
 
-// ─── Analytics (PRD §7 Data Analytics tab — order-derived v1) ───────────────
-
-/**
- * @swagger
- * /api/vendor/analytics:
- *   get:
- *     tags: [Vendor Portal]
- *     summary: Order-derived analytics (totals, repeat buyers, top customers, by-day)
- *     parameters:
- *       - in: query
- *         name: from
- *         schema: { type: string, format: date }
- *       - in: query
- *         name: to
- *         schema: { type: string, format: date }
- *       - in: query
- *         name: branchId
- *         schema: { type: string }
- */
-router.get("/analytics", requireVendorTab("GROW"), async (req: Request, res: Response) => {
-  try {
-    const { tenantId, vendorId } = req.user!;
-    const to = typeof req.query.to === "string" ? new Date(`${req.query.to}T23:59:59.999`) : new Date();
-    const from =
-      typeof req.query.from === "string"
-        ? new Date(`${req.query.from}T00:00:00.000`)
-        : new Date(to.getTime() - 30 * 86_400_000);
-    // Revision 11 (#5). This read its own ?branchId= rather than going through
-    // scopedBranchId, so a tracker pinned to one counter could see the whole
-    // shop's numbers here while every other screen fenced them correctly.
-    const branchId = scopedBranchId(req);
-
-    const where: any = {
-      tenantId,
-      vendorId: vendorId!,
-      status: "DELIVERED",
-      deliveredAt: { gte: from, lte: to },
-      ...(branchId ? { branchId } : {}),
-    };
-
-    const orders = await prisma.deliveryOrder.findMany({
-      where,
-      select: {
-        orderTotalKwd: true,
-        customerPhone: true,
-        customerName: true,
-        deliveredAt: true,
-        // Revision 10 (#4) — the handover wait. arrivedAt is stamped when the
-        // driver reaches the shop, pickedUpAt when the shop hands the order
-        // over, so the gap between them is the shop's own preparation time.
-        arrivedAt: true,
-        pickedUpAt: true,
-        createdAt: true,
-      },
-      take: 10_000,
-    });
-
-    let revenue = 0;
-    // Only orders where the driver's arrival and the handover were both stamped
-    // can say anything about preparation. Historical rows predating arrivedAt
-    // simply do not count towards the average rather than dragging it to zero.
-    let prepMinutes = 0;
-    let prepSample = 0;
-    // Revision 11 (#3). arrivedAt only exists once a driver reports reaching
-    // the shop, and a driver who taps picked-up straight from assigned never
-    // stamps it — so on a real shop's history the card above read n/a forever
-    // and the client asked for it to be filled. This is the wider measure that
-    // every delivered order can answer: order placed → order left with a
-    // driver. It is NOT the same number, so it is a separate field with its own
-    // label rather than being averaged into the one above.
-    let handoverMinutes = 0;
-    let handoverSample = 0;
-    const byCustomer = new Map<string, { name: string | null; orders: number; totalKwd: number }>();
-    const byDay = new Map<string, { orders: number; totalKwd: number }>();
-    for (const o of orders) {
-      const total = Number(o.orderTotalKwd);
-      revenue += total;
-      if (o.customerPhone) {
-        const c = byCustomer.get(o.customerPhone) ?? { name: o.customerName, orders: 0, totalKwd: 0 };
-        c.orders += 1;
-        c.totalKwd += total;
-        if (!c.name && o.customerName) c.name = o.customerName;
-        byCustomer.set(o.customerPhone, c);
-      }
-      if (o.arrivedAt && o.pickedUpAt) {
-        const waited = (o.pickedUpAt.getTime() - o.arrivedAt.getTime()) / 60_000;
-        // A negative gap means the two stamps landed out of order, which is a
-        // data fault rather than a shop that handed over before arriving.
-        if (waited >= 0) {
-          prepMinutes += waited;
-          prepSample += 1;
-        }
-      }
-      if (o.pickedUpAt) {
-        const elapsed = (o.pickedUpAt.getTime() - o.createdAt.getTime()) / 60_000;
-        if (elapsed >= 0) {
-          handoverMinutes += elapsed;
-          handoverSample += 1;
-        }
-      }
-      const day = o.deliveredAt ? o.deliveredAt.toISOString().slice(0, 10) : "unknown";
-      const d = byDay.get(day) ?? { orders: 0, totalKwd: 0 };
-      d.orders += 1;
-      d.totalKwd += total;
-      byDay.set(day, d);
-    }
-
-    const repeatBuyers = [...byCustomer.values()].filter((c) => c.orders >= 2).length;
-    const topCustomers = [...byCustomer.entries()]
-      .sort((a, b) => b[1].totalKwd - a[1].totalKwd)
-      .slice(0, 10)
-      .map(([phone, c]) => ({
-        phone,
-        name: c.name,
-        orders: c.orders,
-        totalKwd: c.totalKwd.toFixed(3),
-      }));
-
-    res.json({
-      from,
-      to,
-      branchId: branchId ?? null,
-      ordersTotal: orders.length,
-      revenueKwd: revenue.toFixed(3),
-      avgOrderValueKwd: orders.length > 0 ? (revenue / orders.length).toFixed(3) : "0.000",
-      uniqueCustomers: byCustomer.size,
-      repeatBuyers,
-      // Revision 10 (#4). Null rather than 0 when nothing measurable happened:
-      // "no data yet" and "we are handing over instantly" are different claims.
-      avgPrepMinutes: prepSample > 0 ? Number((prepMinutes / prepSample).toFixed(1)) : null,
-      prepSampleSize: prepSample,
-      // The fallback the card falls back TO, not a replacement: order placed to
-      // order collected, which every delivered order can answer.
-      avgHandoverMinutes:
-        handoverSample > 0 ? Number((handoverMinutes / handoverSample).toFixed(1)) : null,
-      handoverSampleSize: handoverSample,
-      topCustomers,
-      byDay: [...byDay.entries()]
-        .filter(([day]) => day !== "unknown")
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([day, d]) => ({ day, orders: d.orders, totalKwd: d.totalKwd.toFixed(3) })),
-    });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// ─── Analytics — REMOVED, revision 20 ──────────────────────────────────────
+//
+// Vendor-portal note #2 (2026-09-15): "Remove the Grow tab, no need for it
+// now." The endpoint went with the tab rather than being left ungated: an
+// unreachable route with no fence on it is the shape a permissions bug takes
+// six months later, when somebody wires a screen back up to it.
+//
+// The numbers it computed were all derived from DeliveryOrder, so nothing was
+// stored for it and nothing needs migrating. /vendor/grow now redirects to the
+// order board, and GROW is gone from VENDOR_TABS, which means a stored
+// override that still lists it simply drops the value on read.
 
 export default router;

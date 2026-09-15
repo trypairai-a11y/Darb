@@ -3,7 +3,7 @@
  *
  * The shop's Team page could set a role and a branch, and nothing else. The
  * client asked three revisions running for control over which specific tabs a
- * person can open: an accountant who should not see Grow, a branch supervisor
+ * person can open: an accountant who should see money but not the team, a supervisor
  * who should see orders and nothing else. A role alone cannot express that,
  * because a role is a bundle and every shop draws the line somewhere different.
  *
@@ -24,10 +24,19 @@
  * still decides which of the dangerous buttons on them work.
  */
 
+/**
+ * Vendor-portal note #2 (2026-09-15) — GROW is gone. "Remove the Grow tab, no
+ * need for it now."
+ *
+ * Dropping the value from this list is the whole removal, and it is safe with
+ * no backfill: `parseVendorTabs` filters a stored override through
+ * `isVendorTab`, so a shop whose accountant was explicitly granted GROW simply
+ * reads back a list without it. Nothing 500s, nothing needs a migration, and
+ * re-adding the value later would restore those grants intact.
+ */
 export const VENDOR_TABS = [
   "ORDERS",
   "WALLET",
-  "GROW",
   "SUPPORT",
   "TEAM",
   "SETTINGS",
@@ -99,11 +108,11 @@ export function vendorRoleTakesBranch(raw: unknown): boolean {
  * between: managers see growth but not money, a viewer only watches.
  */
 export const ROLE_DEFAULT_TABS: Record<VendorPortalRole, VendorTab[]> = {
-  ADMIN: ["ORDERS", "WALLET", "GROW", "SUPPORT", "TEAM", "SETTINGS"],
-  OPS_MANAGER: ["ORDERS", "GROW", "SUPPORT"],
+  ADMIN: ["ORDERS", "WALLET", "SUPPORT", "TEAM", "SETTINGS"],
+  OPS_MANAGER: ["ORDERS", "SUPPORT"],
   SUPERVISOR: ["ORDERS", "SUPPORT"],
-  ACCOUNTANT: ["ORDERS", "WALLET", "GROW", "SUPPORT"],
-  ACCOUNT_MANAGER: ["ORDERS", "GROW", "SUPPORT"],
+  ACCOUNTANT: ["ORDERS", "WALLET", "SUPPORT"],
+  ACCOUNT_MANAGER: ["ORDERS", "SUPPORT"],
   VIEWER: ["ORDERS", "SUPPORT"],
 };
 

@@ -1,11 +1,12 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import HqTabs from "@/components/hq/HqTabs";
+import { ADMIN_TABS } from "@/lib/hqTabs";
 import { useApiGet } from "@/hooks/useApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/cn";
 import { Plus, X, Shield, UserX, UserCheck, Loader2, Bell, Check, Store } from "lucide-react";
 import api from "@/lib/api";
-import BackToSetup from "@/components/shared/BackToSetup";
 import { useI18n } from "@/i18n/I18nProvider";
 
 // Revision 4 (#11) — ACCOUNT_MANAGER joins the roles a notification rule can
@@ -367,14 +368,23 @@ function UsersTab() {
 // The rail hides what is set to No access, but the server enforces the same
 // map via requireSurface, so this is a real restriction and not a hidden menu.
 
+// The surface LIST comes from the server, so a surface added there appears here
+// whether or not it is named below — it would simply render its own key as its
+// label. Revision 20 added COMPLIANCE and relabelled the rest onto the four
+// tabs they now live in, because "Live" and "Setup" stopped being rail entries
+// and an admin granting access should read the name they see in the rail.
 const SURFACE_LABELS: Record<string, string> = {
-  LIVE: "Live",
-  ORDERS: "Orders",
-  MONEY: "Money",
-  SETUP: "Setup",
-  TODAY: "Today",
+  LIVE: "Ops — live control room",
+  ORDERS: "Ops — orders",
+  // Revision 20 — the compliance desk. This is the grant that makes somebody a
+  // compliance officer: the role stays VIEWER and this one surface goes to
+  // View and edit, which is the whole point of per-user access.
+  COMPLIANCE: "Compliance",
+  MONEY: "Finance",
+  SETUP: "Ops and Admin — configuration",
+  TODAY: "Admin — dashboard and forecast",
   CASH_DESK: "Cash desk",
-  PEOPLE: "People and access",
+  PEOPLE: "Admin — accounts and access",
 };
 
 const LEVELS = [
@@ -843,7 +853,9 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6 w-full max-w-none">
-      <BackToSetup />
+      {/* Revision 20 — a subtab of Admin, at its own URL for the same reason
+          the Ops subtabs are: it is linked to from outside the portal. */}
+      <HqTabs tabs={ADMIN_TABS} />
       <div>
         <h1 className="font-display text-display-sm text-sand-900">{t("simple.setupPeople")}</h1>
         <p className="text-sm text-sand-600 mt-1">{t("simple.setupPeopleDesc")}</p>

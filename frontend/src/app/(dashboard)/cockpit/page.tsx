@@ -3,6 +3,8 @@
 // with live operation KPIs, money position, fleet/cash rows, threshold
 // alerts, zone on-time and fleet partner tables. Refreshes every 30s.
 import Link from "next/link";
+import HqTabs from "@/components/hq/HqTabs";
+import { ADMIN_TABS } from "@/lib/hqTabs";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -124,6 +126,10 @@ export default function CockpitPage() {
 
   return (
     <div className="space-y-6">
+      {/* Revision 20 — the owner cockpit is what the Admin tab's Dashboard
+          subtab highlights on. /admin carries the forecast beside these same
+          numbers; this screen keeps its own URL and its own depth. */}
+      <HqTabs tabs={ADMIN_TABS} />
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="font-display text-display-sm text-sand-900">{t("cockpit.title")}</h1>

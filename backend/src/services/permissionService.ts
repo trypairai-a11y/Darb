@@ -21,6 +21,8 @@ export const APP_SURFACES: AppSurface[] = [
   "TODAY",
   "CASH_DESK",
   "PEOPLE",
+  // Revision 20 — the compliance desk.
+  "COMPLIANCE",
 ];
 
 /**
@@ -32,31 +34,35 @@ export const APP_SURFACES: AppSurface[] = [
 const ROLE_DEFAULTS: Record<string, Partial<Record<AppSurface, PermissionLevel>>> = {
   ADMIN: {
     LIVE: "EDIT", ORDERS: "EDIT", MONEY: "EDIT", SETUP: "EDIT",
-    TODAY: "EDIT", CASH_DESK: "EDIT", PEOPLE: "EDIT",
+    TODAY: "EDIT", CASH_DESK: "EDIT", PEOPLE: "EDIT", COMPLIANCE: "EDIT",
   },
   OPS_MANAGER: {
     LIVE: "EDIT", ORDERS: "EDIT", MONEY: "VIEW", SETUP: "EDIT",
     TODAY: "NONE", CASH_DESK: "VIEW", PEOPLE: "VIEW",
+    // Compliance is an ops manager's job by default. A dedicated compliance
+    // officer is a VIEWER or SUPERVISOR with this one surface granted, which
+    // is exactly what the per-user override exists for.
+    COMPLIANCE: "EDIT",
   },
   SUPERVISOR: {
     LIVE: "EDIT", ORDERS: "EDIT", MONEY: "NONE", SETUP: "NONE",
-    TODAY: "NONE", CASH_DESK: "EDIT", PEOPLE: "NONE",
+    TODAY: "NONE", CASH_DESK: "EDIT", PEOPLE: "NONE", COMPLIANCE: "VIEW",
   },
   ACCOUNTANT: {
     LIVE: "VIEW", ORDERS: "VIEW", MONEY: "EDIT", SETUP: "NONE",
-    TODAY: "NONE", CASH_DESK: "EDIT", PEOPLE: "NONE",
+    TODAY: "NONE", CASH_DESK: "EDIT", PEOPLE: "NONE", COMPLIANCE: "NONE",
   },
   ACCOUNT_MANAGER: {
     LIVE: "VIEW", ORDERS: "VIEW", MONEY: "NONE", SETUP: "NONE",
-    TODAY: "NONE", CASH_DESK: "NONE", PEOPLE: "NONE",
+    TODAY: "NONE", CASH_DESK: "NONE", PEOPLE: "NONE", COMPLIANCE: "NONE",
   },
   CASH_COLLECTOR: {
     LIVE: "NONE", ORDERS: "NONE", MONEY: "NONE", SETUP: "NONE",
-    TODAY: "NONE", CASH_DESK: "EDIT", PEOPLE: "NONE",
+    TODAY: "NONE", CASH_DESK: "EDIT", PEOPLE: "NONE", COMPLIANCE: "NONE",
   },
   VIEWER: {
     LIVE: "VIEW", ORDERS: "VIEW", MONEY: "NONE", SETUP: "NONE",
-    TODAY: "NONE", CASH_DESK: "NONE", PEOPLE: "NONE",
+    TODAY: "NONE", CASH_DESK: "NONE", PEOPLE: "NONE", COMPLIANCE: "NONE",
   },
 };
 

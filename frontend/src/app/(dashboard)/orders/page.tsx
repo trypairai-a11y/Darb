@@ -4,6 +4,8 @@
 // OfferTimeline, and actions: reassign (candidates → confirm → assign),
 // auto-redispatch and cancel.
 import { useMemo, useState } from "react";
+import HqTabs from "@/components/hq/HqTabs";
+import { OPS_TABS } from "@/lib/hqTabs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { RefreshCw, UserPlus2, XCircle } from "lucide-react";
 import DataTable from "@/components/shared/DataTable";
@@ -271,6 +273,10 @@ export default function DeliveryOrdersPage() {
 
   return (
     <div className="space-y-6">
+      {/* Revision 20 — this screen is a subtab of Ops now. It keeps its own
+          URL because notifications and bookmarks point at it, and carries the
+          strip so the user can see where they are and step sideways. */}
+      <HqTabs tabs={OPS_TABS} />
       <div>
         <h1 className="font-display text-display-sm text-sand-900">{t("dispatch.title")}</h1>
         <p className="text-sm text-sand-600 mt-1">{t("dispatch.subtitle")}</p>

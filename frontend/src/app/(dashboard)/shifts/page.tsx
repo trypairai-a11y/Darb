@@ -15,6 +15,8 @@
 // Default tab stays Today, so an existing /shifts link opens what it always
 // opened. The Setup card points at ?tab=coverage.
 import { Suspense, useEffect, useMemo, useState } from "react";
+import HqTabs from "@/components/hq/HqTabs";
+import { OPS_TABS } from "@/lib/hqTabs";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Clock, Users, Timer } from "lucide-react";
@@ -539,6 +541,11 @@ function ShiftsScreen() {
 
   return (
     <div className="space-y-6 w-full max-w-none">
+      {/* Revision 20 — this screen is what the Ops tab's Shift planning subtab
+          highlights on, so it carries the strip. Its own three tabs below are
+          the day's attendance, the capacity grid and the area assignments; the
+          weekly proposal lives at /ops?tab=shift-planning. */}
+      <HqTabs tabs={OPS_TABS} />
       <div>
         <h1 className="text-xl font-semibold">{t("shiftsPage.title")}</h1>
         <p className="text-sm text-secondary mt-1">{t("shiftsPage.subtitle")}</p>

@@ -11,6 +11,12 @@ interface User {
   name: string;
   role: string;
   tenantId: string;
+  // Revision 4 (#12) — the caller's own effective surface map, role defaults
+  // with their per-user overrides laid on top. /api/auth/me returns it and
+  // requireSurface enforces the same map on every endpoint, so a screen the
+  // rail hides is also one the API refuses rather than merely one nobody can
+  // see. Optional: the login response does not carry it, only /me does.
+  permissions?: Record<string, "NONE" | "VIEW" | "EDIT">;
   // Phase 2 Wave 5 — /api/auth/me now surfaces isSuperAdmin so the
   // frontend SidebarV2 + /admin routes can conditionally render. Optional
   // on the type (older sessions / mock users may not include it).

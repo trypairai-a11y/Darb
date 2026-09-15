@@ -15,15 +15,22 @@ describe("vendorTabService", () => {
   describe("effectiveVendorTabs — no override (the migration case)", () => {
     // Client note (2026-08-31, edit #8): the stored legacy trio must keep
     // opening exactly what it always opened, because nothing was backfilled.
+    //
+    // Vendor-portal note #2 (2026-09-15) removed GROW, and these lists moved
+    // with it. That is the one deliberate exception to the "nothing changes"
+    // contract above: a tab that no longer exists cannot be in a default set,
+    // and the removal is safe precisely because it needs no backfill — see the
+    // stored-override case further down, which proves a saved GROW drops out
+    // on read rather than throwing.
     test.each([
-      ["OWNER", ["ORDERS", "WALLET", "GROW", "SUPPORT", "TEAM", "SETTINGS"]],
-      ["FINANCE", ["ORDERS", "WALLET", "GROW", "SUPPORT"]],
+      ["OWNER", ["ORDERS", "WALLET", "SUPPORT", "TEAM", "SETTINGS"]],
+      ["FINANCE", ["ORDERS", "WALLET", "SUPPORT"]],
       ["ORDER_TRACKING", ["ORDERS", "SUPPORT"]],
-      ["ADMIN", ["ORDERS", "WALLET", "GROW", "SUPPORT", "TEAM", "SETTINGS"]],
-      ["ACCOUNTANT", ["ORDERS", "WALLET", "GROW", "SUPPORT"]],
+      ["ADMIN", ["ORDERS", "WALLET", "SUPPORT", "TEAM", "SETTINGS"]],
+      ["ACCOUNTANT", ["ORDERS", "WALLET", "SUPPORT"]],
       ["SUPERVISOR", ["ORDERS", "SUPPORT"]],
-      ["OPS_MANAGER", ["ORDERS", "GROW", "SUPPORT"]],
-      ["ACCOUNT_MANAGER", ["ORDERS", "GROW", "SUPPORT"]],
+      ["OPS_MANAGER", ["ORDERS", "SUPPORT"]],
+      ["ACCOUNT_MANAGER", ["ORDERS", "SUPPORT"]],
       ["VIEWER", ["ORDERS", "SUPPORT"]],
     ])("%s falls back to exactly the fences that were already in force", (role, expected) => {
       expect(effectiveVendorTabs(role, null)).toEqual(expected);
@@ -76,6 +83,32 @@ describe("vendorTabService", () => {
 
     test("every tab the portal has is accepted", () => {
       expect(parseVendorTabs([...VENDOR_TABS])).toEqual([...VENDOR_TABS]);
+    });
+  });
+
+  describe("a removed tab (vendor-portal note #2, 2026-09-15)", () => {
+    test("GROW is gone from the catalogue", () => {
+      expect(VENDOR_TABS).not.toContain("GROW");
+      for (const tabs of Object.values(ROLE_DEFAULT_TABS)) {
+        expect(tabs).not.toContain("GROW");
+      }
+    });
+
+    test("a stored override that still lists GROW reads back without it", () => {
+      // This is why the removal needed no backfill and no migration: the
+      // override is filtered through isVendorTab on every read, so a shop whose
+      // accountant was explicitly granted Grow simply stops being offered it.
+      expect(effectiveVendorTabs("ACCOUNTANT", ["ORDERS", "GROW", "WALLET"])).toEqual([
+        "ORDERS",
+        "WALLET",
+      ]);
+      expect(parseVendorTabs(["GROW"])).toEqual([]);
+    });
+
+    test("an override of ONLY GROW is an empty list, not a fallback to the role", () => {
+      // The distinction matters: [] means "no tabs", null means "inherit". A
+      // list that empties out on read must not silently re-open the role's set.
+      expect(effectiveVendorTabs("ADMIN", ["GROW"])).toEqual([]);
     });
   });
 });

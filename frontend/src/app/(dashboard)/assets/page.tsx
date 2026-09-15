@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import HqTabs from "@/components/hq/HqTabs";
+import { OPS_TABS } from "@/lib/hqTabs";
 import { useApiGet } from "@/hooks/useApi";
 import { cn } from "@/lib/cn";
 import DataTable from "@/components/shared/DataTable";
@@ -11,7 +13,6 @@ import AssignDriversModal from "@/components/shared/AssignDriversModal";
 import AddSimModal from "@/components/shared/AddSimModal";
 import AddDeviceModal from "@/components/shared/AddDeviceModal";
 import AddPlatformEquipmentModal from "@/components/shared/AddPlatformEquipmentModal";
-import BackToSetup from "@/components/shared/BackToSetup";
 import { useI18n } from "@/i18n/I18nProvider";
 import { itemDisplayName } from "@/lib/equipmentItems";
 
@@ -569,7 +570,10 @@ export default function GlobalAssetsPage() {
 
   return (
     <div className="space-y-6 w-full max-w-none">
-      <BackToSetup />
+      {/* Revision 20 — this screen is a subtab of Ops now. It keeps its own
+          URL because notifications and bookmarks point at it, and carries the
+          strip so the user can see where they are and step sideways. */}
+      <HqTabs tabs={OPS_TABS} />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

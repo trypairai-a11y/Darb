@@ -23,19 +23,38 @@ import StatCard from "@/components/shared/StatCard";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import ReportsPanel, { type ReportView } from "@/components/finance/ReportsPanel";
+// Revision 20 — the Finance tab's two new subtabs.
+import HqTabs from "@/components/hq/HqTabs";
+import PaymentsTab from "@/components/hq/PaymentsTab";
+import DisputesTab from "@/components/hq/DisputesTab";
+import { FINANCE_TABS } from "@/lib/hqTabs";
 import { walletsApi, fetchAllPages } from "@/lib/darbApi";
 import type { WalletAccount, WalletEntry } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd } from "@/i18n/format";
-import { cn } from "@/lib/cn";
 
-/** One flat strip of read-only reports. Cash hand-ins live at /cash-desk. */
-type Tab = ReportView;
+/**
+ * Revision 20 — the Finance tab.
+ *
+ * The first three are the client's "ledger/statements/nightly checks, same as
+ * HQ": exactly the three read-only report views this screen already had, at
+ * exactly the same URLs. Payments and Disputes are the two new ones, and they
+ * are work queues rather than reports — which is why they are components of
+ * their own rather than another ReportsPanel view.
+ *
+ * Cash hand-ins still live at /cash-desk.
+ */
+type Tab = ReportView | "payments" | "disputes";
 
-const TABS: Tab[] = ["ledger", "vendor-statements", "reconciliation"];
+const REPORT_TABS: ReportView[] = ["ledger", "vendor-statements", "reconciliation"];
+const TABS: Tab[] = [...REPORT_TABS, "payments", "disputes"];
 
 function isTab(value: string | null): value is Tab {
   return TABS.includes(value as Tab);
+}
+
+function isReportTab(value: Tab): value is ReportView {
+  return (REPORT_TABS as string[]).includes(value);
 }
 
 function sumBalances(accounts: WalletAccount[], ownerType: WalletAccount["ownerType"]): number {
@@ -49,10 +68,11 @@ function MoneyScreen() {
   const searchParams = useSearchParams();
 
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>(() => {
-    const requested = searchParams.get("tab");
-    return isTab(requested) ? requested : "ledger";
-  });
+  // Read from the URL on every render rather than seeded once into state: the
+  // strip navigates now, so a tab change arrives as a new searchParams value
+  // and a useState initialiser would only ever see the first one.
+  const requestedTab = searchParams.get("tab");
+  const tab: Tab = isTab(requestedTab) ? requestedTab : "ledger";
 
   // Revision 4 (#3): ?tab=cash used to open the hand-in desk here. It is its
   // own portal now, so the bookmark forwards rather than 404s.
@@ -61,7 +81,10 @@ function MoneyScreen() {
   }, [searchParams, router]);
   // Deep links from the stat cards and from the old /finance/reports URL can
   // pre-filter the ledger by entry type.
-  const [ledgerType, setLedgerType] = useState(() => searchParams.get("type") ?? "");
+  // Read from the URL, like the tab above it: a strip link that carries no
+  // ?type must clear the filter rather than leave the last deep link's value
+  // applied to a tab the user has since navigated away from and back to.
+  const ledgerType = searchParams.get("type") ?? "";
 
   // These feed totals, so they must not stop at the server's 100-row clamp —
   // with ~1 wallet account per driver, page 1 is all drivers and no platform
@@ -96,16 +119,13 @@ function MoneyScreen() {
     [entriesQuery.data]
   );
 
-  const tabLabels: Record<Tab, string> = {
-    ledger: t("reports.viewLedger"),
-    "vendor-statements": t("reports.viewVendorStatements"),
-    reconciliation: t("reports.viewReconciliation"),
-  };
-
   /** Jump straight to the detail behind a number, the way the cards always did. */
-  function openTab(next: Tab, type = "") {
-    setLedgerType(type);
-    setTab(next);
+  function openTab(next: ReportView, type = "") {
+    const query = new URLSearchParams();
+    if (next !== "ledger") query.set("tab", next);
+    if (type) query.set("type", type);
+    const suffix = query.toString();
+    router.push(suffix ? `/finance?${suffix}` : "/finance");
   }
 
   if (accountsQuery.isLoading) return <PageSkeleton statCards={3} tableRows={3} tableCols={3} />;
@@ -151,25 +171,24 @@ function MoneyScreen() {
         />
       </div>
 
-      <div className="flex gap-1 bg-sand-100 rounded-pill p-1 w-fit flex-wrap">
-        {TABS.map((key) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setTab(key)}
-            className={cn(
-              "px-4 h-9 text-sm font-medium rounded-pill transition-colors",
-              tab === key ? "bg-white text-sand-900 shadow-soft" : "text-sand-600 hover:text-sand-900"
-            )}
-          >
-            {tabLabels[key]}
-          </button>
-        ))}
-      </div>
+      {/* The strip is links now, not buttons: two of the five subtabs are work
+          queues an accountant sends somebody a URL to, and the other three
+          already had deep links from the stat cards above. */}
+      <HqTabs tabs={FINANCE_TABS} />
 
-      {/* Remounting on a type change is deliberate: it reseeds the panel's
-          own filter state from the deep link. */}
-      <ReportsPanel key={`${tab}:${ledgerType}`} view={tab} initialType={ledgerType} />
+      {tab === "payments" ? (
+        <PaymentsTab />
+      ) : tab === "disputes" ? (
+        <DisputesTab />
+      ) : (
+        /* Remounting on a type change is deliberate: it reseeds the panel's
+           own filter state from the deep link. */
+        <ReportsPanel
+          key={`${tab}:${ledgerType}`}
+          view={isReportTab(tab) ? tab : "ledger"}
+          initialType={ledgerType}
+        />
+      )}
     </div>
   );
 }

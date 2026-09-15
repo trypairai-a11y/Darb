@@ -18,17 +18,15 @@ import type { FleetTab, VendorTab } from "@/types/darb";
 import {
   LifeBuoy,
   Radio,
-  Briefcase,
   Wallet,
   Settings,
-  Gauge,
   ClipboardList,
-  TrendingUp,
   Truck,
   Users,
   HandCoins,
   History,
   FileText,
+  ShieldCheck,
   TriangleAlert,
   UserCog,
 } from "lucide-react";
@@ -46,6 +44,32 @@ export interface NavItem {
   owns?: string[];
   /** Hierarchy gate applied to this item alone, on top of the section gate. */
   minRole?: UserRole;
+  /**
+   * Revision 20 — the per-user surface this entry belongs to, and the staff
+   * mirror of `vendorTab` / `fleetTab` below.
+   *
+   * Two things it fixes.
+   *
+   * The Settings screen has promised since revision 4 (#12) that "the rail
+   * hides what is set to No access". It did not: the rail read `minRole` and
+   * nothing else, so a surface set to NONE left its entry in place and the
+   * screen 403'd when taken. Where an item carries BOTH, the two AND together
+   * and the result can only ever be narrower than the role gate alone.
+   *
+   * The second is the one that matters here. An item may carry a surface and
+   * NO minRole, and then the grant alone decides — which is what makes a
+   * compliance officer possible at all, because they are a VIEWER whose one
+   * granted surface is the compliance desk. A hierarchy gate on top of that
+   * would make the grant unusable, which is exactly what revision 11 (#9)
+   * found on the merchant side and revision 13 (#6) restated for the fleet:
+   * a granted surface must be able to appear.
+   */
+  surface?: string;
+  /**
+   * With a surface set, ignore `minRole` once the permission map has loaded.
+   * `minRole` then survives only as the gate to use while the map is unknown.
+   */
+  surfaceOnly?: boolean;
   /**
    * Which vendor portal roles may see this item. Omit for "any of them".
    *
@@ -95,45 +119,97 @@ export interface NavSection {
 
 export const NAV_SECTIONS: NavSection[] = [
   {
-    // No heading: at five items a heading is noise. The per-item minRole
-    // values are exactly the section gates the old five-section rail used, so
-    // who sees what has not changed.
+    // Revision 20 — four tabs, which is what the client asked for by name:
+    // Ops, Compliance, Finance, Admin. This is not another merge for its own
+    // sake. It is the org chart: the four groups of people who use the staff
+    // portal, each opening on the work they own.
+    //
+    // Everything the old five-item rail reached is still reachable and still
+    // at the same URL. Live, Orders, Zones and Equipment are subtabs of Ops;
+    // Money keeps its own route and gains two subtabs; Today, Prices and
+    // People are the three subtabs of Admin. /setup still resolves and still
+    // lists every configuration screen, it is simply no longer a rail slot,
+    // because a hub whose every card now has a home inside a tab is a door
+    // into rooms you are already standing in.
     key: "staff",
     minRole: "VIEWER",
     items: [
-      { i18n: "simple.today", path: "/cockpit", icon: Gauge, minRole: "ADMIN" },
       {
-        i18n: "simple.live",
+        i18n: "hq.ops",
         path: "/ops",
         icon: Radio,
         minRole: "SUPERVISOR",
-        // The four merged ops routes redirect into /ops?view=…, but a user can
-        // still be mid-redirect on one of them.
-        owns: ["/ops/sos", "/ops/jeopardy", "/ops/alerts", "/ops/zones"],
+        surface: "LIVE",
+        // The Ops tab owns the four merged live routes it always did, plus the
+        // three standalone screens that are now subtabs of it. They keep their
+        // own URLs — an ops manager who bookmarked /zones must not be told the
+        // page moved — so the rail has to know Ops owns them or the highlight
+        // goes dark the moment anybody uses one.
+        owns: [
+          "/ops/sos",
+          "/ops/jeopardy",
+          "/ops/alerts",
+          "/ops/zones",
+          "/orders",
+          "/zones",
+          "/assets",
+          "/shifts",
+          "/drivers",
+          "/requests",
+        ],
       },
-      { i18n: "simple.orders", path: "/orders", icon: Briefcase, minRole: "SUPERVISOR" },
       {
-        i18n: "simple.money",
+        i18n: "hq.compliance",
+        path: "/compliance",
+        // Governed by the surface ALONE. A compliance officer is a VIEWER
+        // whose one granted surface is this desk, so a hierarchy gate on top
+        // would make the grant unusable — the mistake revision 11 (#9) found
+        // on the merchant side. The COMPLIANCE role defaults reproduce the
+        // SUPERVISOR-and-above split exactly, so nobody who could see this
+        // yesterday loses it; what changes is that somebody below that line
+        // can now be given it.
+        //
+        // `minRole` is the pre-load fallback only: until /me lands there is no
+        // permission map to read, and falling back to the hierarchy is better
+        // than flashing an entry at somebody who cannot open it.
+        icon: ShieldCheck,
+        minRole: "SUPERVISOR",
+        surface: "COMPLIANCE",
+        surfaceOnly: true,
+      },
+      {
+        i18n: "hq.finance",
         path: "/finance",
         icon: Wallet,
         minRole: "ACCOUNTANT",
-        // /finance/remittances now forwards to the cash desk, but a user can
-        // still be mid-redirect on it.
+        surface: "MONEY",
         owns: ["/finance/remittances", "/finance/reports"],
       },
       {
-        i18n: "simple.setup",
-        path: "/setup",
+        i18n: "hq.admin",
+        path: "/admin",
         icon: Settings,
-        minRole: "OPS_MANAGER",
-        owns: ["/zones", "/pricing", "/vendors", "/fleets", "/settings", "/assets"],
+        minRole: "ADMIN",
+        // "admin: should have access to all tabs" — the other three are gated
+        // below ADMIN, so an admin already passes every one. What this entry
+        // adds is the three screens that are the admin's own: the dashboard
+        // and forecast, the price lists, and who may reach what.
+        owns: [
+          "/cockpit",
+          "/pricing",
+          "/settings",
+          "/setup",
+          "/vendors",
+          "/fleets",
+          "/delivery-plans",
+        ],
       },
-      {
-        i18n: "hqRequests.title",
-        path: "/requests",
-        icon: LifeBuoy,
-        minRole: "OPS_MANAGER",
-      },
+      // Revision 20 — the HQ desk (/requests) is no longer a rail slot. The
+      // client named four tabs and meant four. Both halves of that screen now
+      // have an owner: support requests are reached from Ops, and the pricing
+      // a delivery company proposes from Admin › Prices, which is the screen
+      // that sets the other side of the same number. The route still resolves
+      // and both tabs still work.
     ],
   },
   {
@@ -157,15 +233,8 @@ export const NAV_SECTIONS: NavSection[] = [
         icon: Wallet,
         vendorTab: "WALLET",
       },
-      {
-        i18n: "simple.grow",
-        // Not /vendor/analytics: blockers match that segment and killed the
-        // page chunk. See the redirect left behind at the old path.
-        path: "/vendor/grow",
-        icon: TrendingUp,
-        owns: ["/vendor/analytics", "/vendor/campaigns"],
-        vendorTab: "GROW",
-      },
+      // Vendor-portal note #2 (2026-09-15) — Grow removed. "No need for it
+      // now." /vendor/grow and the two older paths forward to the board.
       // Open to every role by default: a tracker who can see neither money nor
       // settings has no other way to tell Darb something went wrong. An owner
       // can still take the tab away from one person.

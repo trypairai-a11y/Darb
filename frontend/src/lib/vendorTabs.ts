@@ -16,7 +16,6 @@ import type { VendorPortalRole, VendorTab } from "@/types/darb";
 export const VENDOR_TAB_ORDER: VendorTab[] = [
   "ORDERS",
   "WALLET",
-  "GROW",
   "SUPPORT",
   "TEAM",
   "SETTINGS",
@@ -46,11 +45,11 @@ export function normalizeVendorRole(role: string | null | undefined): VendorPort
  * OWNER/FINANCE/ORDER_TRACKING already had.
  */
 const ROLE_DEFAULTS: Record<VendorPortalRole, VendorTab[]> = {
-  ADMIN: ["ORDERS", "WALLET", "GROW", "SUPPORT", "TEAM", "SETTINGS"],
-  OPS_MANAGER: ["ORDERS", "GROW", "SUPPORT"],
+  ADMIN: ["ORDERS", "WALLET", "SUPPORT", "TEAM", "SETTINGS"],
+  OPS_MANAGER: ["ORDERS", "SUPPORT"],
   SUPERVISOR: ["ORDERS", "SUPPORT"],
-  ACCOUNTANT: ["ORDERS", "WALLET", "GROW", "SUPPORT"],
-  ACCOUNT_MANAGER: ["ORDERS", "GROW", "SUPPORT"],
+  ACCOUNTANT: ["ORDERS", "WALLET", "SUPPORT"],
+  ACCOUNT_MANAGER: ["ORDERS", "SUPPORT"],
   VIEWER: ["ORDERS", "SUPPORT"],
 };
 
@@ -61,11 +60,9 @@ export function roleDefaultTabs(role: string | null | undefined): VendorTab[] {
 /** Which tab owns a portal route. Anything unlisted is infrastructure. */
 const ROUTE_TABS: Array<{ prefix: string; tab: VendorTab }> = [
   { prefix: "/vendor/wallet", tab: "WALLET" },
-  { prefix: "/vendor/grow", tab: "GROW" },
-  // Kept because both still redirect into /vendor/grow, and a user can be
-  // mid-redirect on either.
-  { prefix: "/vendor/analytics", tab: "GROW" },
-  { prefix: "/vendor/campaigns", tab: "GROW" },
+  // Vendor-portal note #2 (2026-09-15) — GROW is gone. /vendor/grow and the two
+  // older paths that redirected into it now forward to the order board, so
+  // there is no tab to map them to and no entry for the rail to lock.
   { prefix: "/vendor/support", tab: "SUPPORT" },
   { prefix: "/vendor/team", tab: "TEAM" },
   { prefix: "/vendor/settings", tab: "SETTINGS" },

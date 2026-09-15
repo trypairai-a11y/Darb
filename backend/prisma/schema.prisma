@@ -546,7 +546,13 @@ model Tenant {
   fleetChangeRequests       FleetChangeRequest[]
   fleetIssues               FleetIssue[]
   // Revision 17 — fleet deductions, account-manager scoping, POS integrations.
-  fleetDeductions      FleetDeduction[]
+  fleetDeductions           FleetDeduction[]
+  // Revision 20 — the HQ portal's four tabs.
+  driverTrainingSessions    DriverTrainingSession[]
+  onboardingRequests        OnboardingRequest[]
+  shiftPlans                ShiftPlan[]
+  shiftPlanEntries          ShiftPlanEntry[]
+  vendorBranchAllocations   VendorBranchAllocation[]
 }
 
 // 2. Company
@@ -651,27 +657,27 @@ model User {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  tenant                  Tenant                  @relation(fields: [tenantId], references: [id])
-  vendor                  Vendor?                 @relation(fields: [vendorId], references: [id])
-  fleetPartner            FleetPartner?           @relation(fields: [fleetPartnerId], references: [id])
-  ownerGroup              OwnerGroup?             @relation(fields: [ownerGroupId], references: [id])
-  branch                  VendorBranch?           @relation("BranchPortalUser", fields: [branchId], references: [id])
-  managedCompanies        Company[]               @relation("CompanyAccountManager")
-  supervisedDrivers       Driver[]                @relation("DriverSupervisor")
-  issuedCommands          DeviceCommand[]         @relation("CommandIssuer")
-  acknowledgedAlerts      Alert[]                 @relation("AlertAcknowledger")
-  reviewedLeaves          LeaveRequest[]          @relation("LeaveReviewer")
-  assignedTickets         Ticket[]                @relation("TicketAssignee")
-  decidedShiftRequests    ShiftRequest[]          @relation("ShiftRequestDecider")
-  submittedTickets        Ticket[]                @relation("TicketSubmitterUser")
+  tenant                  Tenant                   @relation(fields: [tenantId], references: [id])
+  vendor                  Vendor?                  @relation(fields: [vendorId], references: [id])
+  fleetPartner            FleetPartner?            @relation(fields: [fleetPartnerId], references: [id])
+  ownerGroup              OwnerGroup?              @relation(fields: [ownerGroupId], references: [id])
+  branch                  VendorBranch?            @relation("BranchPortalUser", fields: [branchId], references: [id])
+  managedCompanies        Company[]                @relation("CompanyAccountManager")
+  supervisedDrivers       Driver[]                 @relation("DriverSupervisor")
+  issuedCommands          DeviceCommand[]          @relation("CommandIssuer")
+  acknowledgedAlerts      Alert[]                  @relation("AlertAcknowledger")
+  reviewedLeaves          LeaveRequest[]           @relation("LeaveReviewer")
+  assignedTickets         Ticket[]                 @relation("TicketAssignee")
+  decidedShiftRequests    ShiftRequest[]           @relation("ShiftRequestDecider")
+  submittedTickets        Ticket[]                 @relation("TicketSubmitterUser")
   notifications           Notification[]
-  createdAmericanaRates   AmericanaChainRate[]    @relation("AmericanaChainRateCreator")
-  approvedAgentActions    AgentAction[]           @relation("AgentActionApprover")
-  pinnedViews             PinnedView[]            @relation("PinnedViewOwner")
-  metricEvents            MetricEvent[]           @relation("MetricEventActor")
+  createdAmericanaRates   AmericanaChainRate[]     @relation("AmericanaChainRateCreator")
+  approvedAgentActions    AgentAction[]            @relation("AgentActionApprover")
+  pinnedViews             PinnedView[]             @relation("PinnedViewOwner")
+  metricEvents            MetricEvent[]            @relation("MetricEventActor")
   // Phase 4 Wave 1 — chat ownership + briefing authorship.
-  chatThreads             ChatThread[]            @relation("ChatThreadOwner")
-  scheduledBriefings      ScheduledBriefing[]     @relation("ScheduledBriefingCreator")
+  chatThreads             ChatThread[]             @relation("ChatThreadOwner")
+  scheduledBriefings      ScheduledBriefing[]      @relation("ScheduledBriefingCreator")
   // Revision 4 (#12) — self-service password on invite, per-surface access,
   // and the merchants an account manager owns.
   invites                 UserInvite[]
@@ -679,62 +685,80 @@ model User {
   managedVendors          AccountManagerVendor[]
   managedFleets           AccountManagerFleet[]
   // Revision 12 — fleet portal request desk authorship.
-  uploadedFleetDocuments  FleetDocument[]         @relation("FleetDocumentUploader")
-  reviewedFleetDocuments  FleetDocument[]         @relation("FleetDocumentReviewer")
-  requestedFleetChanges   FleetChangeRequest[]    @relation("FleetRequestRequester")
-  reviewedFleetChanges    FleetChangeRequest[]    @relation("FleetRequestReviewer")
-  acknowledgedFleetIssues FleetIssue[]            @relation("FleetIssueAcknowledger")
-  resolvedFleetIssues     FleetIssue[]            @relation("FleetIssueResolver")
-  uploadedPayoutInvoices  FleetPayoutInvoice[]    @relation("FleetPayoutInvoiceUploader")
+  uploadedFleetDocuments  FleetDocument[]          @relation("FleetDocumentUploader")
+  reviewedFleetDocuments  FleetDocument[]          @relation("FleetDocumentReviewer")
+  requestedFleetChanges   FleetChangeRequest[]     @relation("FleetRequestRequester")
+  reviewedFleetChanges    FleetChangeRequest[]     @relation("FleetRequestReviewer")
+  acknowledgedFleetIssues FleetIssue[]             @relation("FleetIssueAcknowledger")
+  resolvedFleetIssues     FleetIssue[]             @relation("FleetIssueResolver")
+  uploadedPayoutInvoices  FleetPayoutInvoice[]     @relation("FleetPayoutInvoiceUploader")
+  // Revision 20 — the HQ portal's four tabs.
+  requestedFleetDocuments FleetDocument[]          @relation("FleetDocumentRequester")
+  coachedTrainingSessions DriverTrainingSession[]  @relation("TrainingCoach")
+  createdOnboarding       OnboardingRequest[]      @relation("OnboardingCreator")
+  reviewedOnboarding      OnboardingRequest[]      @relation("OnboardingReviewer")
+  approvedShiftPlans      ShiftPlan[]              @relation("ShiftPlanApprover")
+  vendorBranchAllocations VendorBranchAllocation[] @relation("BranchAllocationAuthor")
 
   @@index([tenantId])
 }
 
 // 4. Driver
 model Driver {
-  id                 String       @id @default(uuid())
-  tenantId           String
-  companyId          String
-  name               String
-  phone              String
+  id                     String       @id @default(uuid())
+  tenantId               String
+  companyId              String
+  name                   String
+  phone                  String
   // Revision 1 (#14) — the Darb-issued driver identifier ("DRB-0001"). Finance
   // searches remittances by this, not by name. platformDriverId below is the
   // inherited Keeta/Talabat id and is not unique to Darb.
-  driverCode         String?
-  platform           Platform
-  platformDriverId   String?
-  utr                String?
-  vehicleType        VehicleType
-  zone               String?
+  driverCode             String?
+  platform               Platform
+  platformDriverId       String?
+  utr                    String?
+  vehicleType            VehicleType
+  zone                   String?
   // Revision 15 — the zone Darb assigns this driver to work. `zone` above is
   // inherited free text from the aggregator era and nothing validates it; this
   // one is the real area, and it is what the driver app books shifts against.
   // A driver with none cannot book: the client's rule is that Darb decides the
   // area first and the driver only chooses the hours.
-  assignedZoneId     String?
-  batchNumber        String?
-  status             DriverStatus @default(ACTIVE)
-  isFrozen           Boolean      @default(false)
-  hireDate           DateTime
-  photoUrl           String?
-  supervisorId       String?
+  assignedZoneId         String?
+  batchNumber            String?
+  status                 DriverStatus @default(ACTIVE)
+  isFrozen               Boolean      @default(false)
+  /// Revision 20 — the driver is in a training window. Dispatch skips them the
+  /// way it skips a frozen driver, but their practice orders are handed to
+  /// them directly, so the flag stops REAL work without stopping the training.
+  /// Freezing instead would have done both.
+  inTraining             Boolean      @default(false)
+  /// Revision 20 — why the compliance desk froze this account and when. The
+  /// `isFrozen` flag above is what dispatch reads and it has always been a bare
+  /// boolean; a driver told "you are frozen" with nobody able to say which
+  /// document lapsed is a driver who phones the desk.
+  complianceFrozenAt     DateTime?
+  complianceFreezeReason String?
+  hireDate               DateTime
+  photoUrl               String?
+  supervisorId           String?
   // Phase 9 Wave 0 — bilingual outbound preferences + push token.
-  preferredLanguage  Language     @default(AUTO)
-  outboundOptIn      Boolean      @default(true)
-  smsOptOut          Boolean      @default(false)
-  expoPushToken      String? // ExponentPushToken[...] — rotated per Pitfall 4
-  monthlySalary      Float?
-  monthlyOffDaysUsed Int          @default(0)
-  offDaysResetMonth  String? // format: "YYYY-MM", reset tracker
-  performanceTier    String? // GOLD | SILVER | BRONZE | WATCHLIST (R9)
-  tierComputedAt     DateTime?
+  preferredLanguage      Language     @default(AUTO)
+  outboundOptIn          Boolean      @default(true)
+  smsOptOut              Boolean      @default(false)
+  expoPushToken          String? // ExponentPushToken[...] — rotated per Pitfall 4
+  monthlySalary          Float?
+  monthlyOffDaysUsed     Int          @default(0)
+  offDaysResetMonth      String? // format: "YYYY-MM", reset tracker
+  performanceTier        String? // GOLD | SILVER | BRONZE | WATCHLIST (R9)
+  tierComputedAt         DateTime?
   // PRD §9 fleet discipline ladder: while set and in the future, the driver
   // sorts after all non-throttled candidates in dispatch.
-  throttledUntil     DateTime?
+  throttledUntil         DateTime?
   // PRD §9 fleet governance: which delivery company employs this driver.
-  fleetPartnerId     String?
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
+  fleetPartnerId         String?
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
 
   // Document expiry dates and statuses
   healthCertExpiry       DateTime?
@@ -818,6 +842,10 @@ model Driver {
   fleetDocuments            FleetDocument[]
   fleetChangeRequests       FleetChangeRequest[]
   fleetIssues               FleetIssue[]
+  // Revision 20 — training windows run by the ops team.
+  trainingSessions          DriverTrainingSession[]
+  // Client request 2026-08-01 — the driver app's notification feed.
+  notifications             Notification[]
 
   @@unique([tenantId, driverCode])
   @@index([tenantId])
@@ -826,8 +854,6 @@ model Driver {
   @@index([tenantId, platform, status])
   @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
   @@index([phone(ops: raw("gin_trgm_ops"))], type: Gin)
-  // Client request 2026-08-01 — the driver app's notification feed.
-  notifications Notification[]
 }
 
 // 5. DriverRestriction
@@ -2940,22 +2966,22 @@ enum WebhookEventStatus {
 
 // D1. Vendor - restaurant / merchant that sends us delivery orders
 model Vendor {
-  id              String   @id @default(uuid())
-  tenantId        String
-  name            String
-  nameAr          String?
-  code            String // short code used in order numbers, e.g. "BRGB"
-  phone           String?
-  requiresCarOnly Boolean  @default(false)
-  isPaused        Boolean  @default(false) // paused vendors get orders REJECTED (VENDOR_PAUSED)
+  id                     String        @id @default(uuid())
+  tenantId               String
+  name                   String
+  nameAr                 String?
+  code                   String // short code used in order numbers, e.g. "BRGB"
+  phone                  String?
+  requiresCarOnly        Boolean       @default(false)
+  isPaused               Boolean       @default(false) // paused vendors get orders REJECTED (VENDOR_PAUSED)
   // PRD §11 credit line: NULL = no cap. When the vendor's outstanding debt
   // (negative VENDOR_PAYABLE balance) reaches the cap, new orders are
   // REJECTED (VENDOR_CREDIT_CAP) until settled.
-  creditCapKwd    Decimal? @db.Decimal(10, 3)
+  creditCapKwd           Decimal?      @db.Decimal(10, 3)
   // Revision 4 (#7) — the delivery plan this merchant is priced on. NULL
   // falls through to FulfillmentSettings + ZoneSurcharge, which is how every
   // vendor is priced until a plan is assigned.
-  deliveryPlanId  String?
+  deliveryPlanId         String?
   // Client revision notes, Edit #4 (2026-08-22) — Target Price is gone. What
   // Darb actually has with the delivery companies is one of two models:
   //
@@ -2969,25 +2995,40 @@ model Vendor {
   // NULL means "not agreed yet", which is every vendor until somebody sets
   // one. The old targetPriceKwd (revision 15) priced nothing and read as a
   // discount knob; it is dropped here along with its branch-level copy.
-  pricingModel    PricingModel?
-  subscriptionKwd Decimal?     @db.Decimal(10, 3)
+  pricingModel           PricingModel?
+  subscriptionKwd        Decimal?      @db.Decimal(10, 3)
   // Edit #5 (2026-08-22) — non-Foodics POS/e-commerce config (uPayments,
   // Salla, Shopify, custom), keyed by provider name. Foodics keeps its own
   // connection table; these are stored until each gets an OAuth flow.
-  integrationSettings Json?
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  integrationSettings    Json?
+  isActive               Boolean       @default(true)
+  /// Revision 20 — the compliance desk's freeze, distinct from `isPaused`.
+  /// Pausing is the shop's own switch (or Darb's, for an operational reason);
+  /// a compliance freeze is Darb's and the shop cannot lift it. Intake reads
+  /// both, so the effect is the same and the reason shown is not.
+  complianceFrozenAt     DateTime?
+  complianceFreezeReason String?
+  /// Revision 10 (#3 of the vendor-portal notes) — ONE wallet for the account,
+  /// or one per branch. The ledger is unchanged either way: postings still
+  /// belong to `VENDOR:{id}` and branch figures are still derived. What this
+  /// switches on is the SUB-LEDGER: an allocation the shop makes by hand from
+  /// the account to a branch, and a per-branch spendable balance that intake
+  /// checks instead of the account total.
+  walletMode             String        @default("SINGLE") // SINGLE | PER_BRANCH
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
 
-  tenant            Tenant                 @relation(fields: [tenantId], references: [id])
+  tenant            Tenant                   @relation(fields: [tenantId], references: [id])
   branches          VendorBranch[]
+  documents         FleetDocument[]
+  branchAllocations VendorBranchAllocation[]
   users             User[]
   orders            DeliveryOrder[]
   foodicsConnection FoodicsConnection?
   apiKeys           ApiKey[]
   statements        VendorStatement[]
   refunds           Refund[]
-  deliveryPlan      DeliveryPlan?          @relation(fields: [deliveryPlanId], references: [id])
+  deliveryPlan      DeliveryPlan?            @relation(fields: [deliveryPlanId], references: [id])
   accountManagers   AccountManagerVendor[]
   integrations      VendorIntegration[]
 
@@ -3029,13 +3070,15 @@ model VendorBranch {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  tenant       Tenant          @relation(fields: [tenantId], references: [id])
-  vendor       Vendor          @relation(fields: [vendorId], references: [id])
-  zone         DeliveryZone?   @relation(fields: [zoneId], references: [id])
-  deliveryPlan DeliveryPlan?   @relation(fields: [deliveryPlanId], references: [id])
+  tenant       Tenant                   @relation(fields: [tenantId], references: [id])
+  vendor       Vendor                   @relation(fields: [vendorId], references: [id])
+  zone         DeliveryZone?            @relation(fields: [zoneId], references: [id])
+  deliveryPlan DeliveryPlan?            @relation(fields: [deliveryPlanId], references: [id])
   orders       DeliveryOrder[]
   // Revision 1 (#9) — portal users scoped to this branch.
-  portalUsers  User[]          @relation("BranchPortalUser")
+  portalUsers  User[]                   @relation("BranchPortalUser")
+  // Revision 20 — manual transfers from the shop's account pool to this branch.
+  allocations  VendorBranchAllocation[]
 
   @@unique([tenantId, foodicsBranchId])
   @@index([tenantId])
@@ -3347,20 +3390,29 @@ model DeliveryOrder {
   pickedUpAt         DateTime?
   deliveredAt        DateTime?
   cancelledAt        DateTime?
+  // Revision 20 — a practice order run for a driver in training. It is a REAL
+  // row moving through the real FSM, the real driver app and the real POD,
+  // because a simulated flow teaches a driver the simulator. What is fake is
+  // the money: this flag is what keeps it out of settlement, the merchant's
+  // board, the vendor statement and the fleet payout count. Anything that
+  // totals money or counts work MUST filter on it.
+  isTraining         Boolean             @default(false)
+  trainingSessionId  String?
   metadata           Json?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
 
-  tenant      Tenant          @relation(fields: [tenantId], references: [id])
-  vendor      Vendor          @relation(fields: [vendorId], references: [id])
-  branch      VendorBranch    @relation(fields: [branchId], references: [id])
-  driver      Driver?         @relation(fields: [driverId], references: [id])
-  pickupZone  DeliveryZone?   @relation("OrderPickupZone", fields: [pickupZoneId], references: [id])
-  dropoffZone DeliveryZone?   @relation("OrderDropoffZone", fields: [dropoffZoneId], references: [id])
-  offers      DispatchOffer[]
-  incidents   Incident[]
-  rating      OrderRating?
-  refund      Refund?
+  tenant          Tenant                 @relation(fields: [tenantId], references: [id])
+  vendor          Vendor                 @relation(fields: [vendorId], references: [id])
+  trainingSession DriverTrainingSession? @relation(fields: [trainingSessionId], references: [id], onDelete: SetNull)
+  branch          VendorBranch           @relation(fields: [branchId], references: [id])
+  driver          Driver?                @relation(fields: [driverId], references: [id])
+  pickupZone      DeliveryZone?          @relation("OrderPickupZone", fields: [pickupZoneId], references: [id])
+  dropoffZone     DeliveryZone?          @relation("OrderDropoffZone", fields: [dropoffZoneId], references: [id])
+  offers          DispatchOffer[]
+  incidents       Incident[]
+  rating          OrderRating?
+  refund          Refund?
 
   @@unique([tenantId, orderNumber])
   @@unique([tenantId, foodicsOrderId])
@@ -3372,6 +3424,7 @@ model DeliveryOrder {
   @@index([tenantId, slaDeadline])
   @@index([tenantId, status, scheduledAt])
   @@index([tenantId, batchId])
+  @@index([tenantId, trainingSessionId])
   // The sweep's retry leg selects on exactly this pair.
   @@index([status, nextRedispatchAt])
 }
@@ -3667,46 +3720,52 @@ model Refund {
 //      rate). Deliberately separate from the legacy Company model, which is
 //      welded to the aggregator platforms.
 model FleetPartner {
-  id                   String   @id @default(uuid())
-  tenantId             String
-  name                 String
-  contactName          String?
-  contactPhone         String?
-  contactEmail         String?
+  id                     String    @id @default(uuid())
+  tenantId               String
+  name                   String
+  contactName            String?
+  contactPhone           String?
+  contactEmail           String?
   // Revision 14 (#3). What Darb pays this company for a delivery is a base fee
   // plus a rate for each kilometre travelled, the same shape the merchant side
   // is quoted on (DeliveryPlan.baseFeeKwd + perKmFeeKwd). This column IS the
   // base: a company on the old flat deal carries perKmFeeKwd NULL and is paid
   // exactly what it was before, so nothing reprices on the deploy.
-  flatFeePerOrderKwd   Decimal  @default(1.100) @db.Decimal(10, 3)
-  perKmFeeKwd          Decimal? @db.Decimal(10, 3)
-  minOnlineHoursPerDay Float?
-  minDriversOnline     Json? // { "<zoneId>": n } contractual commitment
-  disciplineStatus     String   @default("OK") // OK | WARNED | THROTTLED | SUSPENDED | REMOVED
-  disciplineNote       String?
-  isActive             Boolean  @default(true)
+  flatFeePerOrderKwd     Decimal   @default(1.100) @db.Decimal(10, 3)
+  perKmFeeKwd            Decimal?  @db.Decimal(10, 3)
+  minOnlineHoursPerDay   Float?
+  minDriversOnline       Json? // { "<zoneId>": n } contractual commitment
+  disciplineStatus       String    @default("OK") // OK | WARNED | THROTTLED | SUSPENDED | REMOVED
+  disciplineNote         String?
+  isActive               Boolean   @default(true)
+  /// Revision 20 — the compliance desk's freeze, kept apart from
+  /// `disciplineStatus` (which is about how the company PERFORMS) and from
+  /// `isActive` (which is whether Darb works with them at all). A lapsed trade
+  /// licence is neither of those things.
+  complianceFrozenAt     DateTime?
+  complianceFreezeReason String?
   // Revision 1 (#15/#27/#28) — Sidra, Marina and Nakheel are the same owner.
   // One login reaches the whole group and reporting can be combined.
-  ownerGroupId         String?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  ownerGroupId           String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 
-  tenant         Tenant                 @relation(fields: [tenantId], references: [id])
-  ownerGroup     OwnerGroup?            @relation(fields: [ownerGroupId], references: [id])
-  drivers        Driver[]
-  users          User[]
-  statements     FleetPayoutStatement[]
+  tenant          Tenant                 @relation(fields: [tenantId], references: [id])
+  ownerGroup      OwnerGroup?            @relation(fields: [ownerGroupId], references: [id])
+  drivers         Driver[]
+  users           User[]
+  statements      FleetPayoutStatement[]
   // Revision 12 — the portal's request desk.
-  documents      FleetDocument[]
-  changeRequests FleetChangeRequest[]
-  issues         FleetIssue[]
-  supportTickets SupportTicket[]
-  payoutInvoices FleetPayoutInvoice[]
+  documents       FleetDocument[]
+  changeRequests  FleetChangeRequest[]
+  issues          FleetIssue[]
+  supportTickets  SupportTicket[]
+  payoutInvoices  FleetPayoutInvoice[]
   // Revision 14 — the company's own cash account with Darb.
-  cashDeposits   FleetCashDeposit[]
-  remittances    Remittance[]
+  cashDeposits    FleetCashDeposit[]
+  remittances     Remittance[]
   // Revision 17 — invoice deductions and the Darb staff who own this company.
-  deductions     FleetDeduction[]
+  deductions      FleetDeduction[]
   accountManagers AccountManagerFleet[]
 
   @@index([tenantId, isActive])
@@ -3843,6 +3902,11 @@ model FleetPayoutInvoice {
 // them. The cost is real: phone is the driver app's sign-in identity.
 
 enum FleetDocumentStatus {
+  /// Revision 20 — compliance asked for this document and nobody has uploaded
+  /// it yet. The row IS the ask: the portal that must answer it sees the same
+  /// object the desk is waiting on, rather than a note in a separate table
+  /// that nothing joins back to the upload when it finally arrives.
+  REQUESTED
   /// Uploaded by the fleet, waiting on Darb.
   PENDING_REVIEW
   VALID
@@ -3855,10 +3919,19 @@ enum FleetDocumentStatus {
 
 /// One table for both company and driver documents. `driverId` null means the
 /// document belongs to the delivery company itself.
+/// Revision 20 — this table now also holds a MERCHANT's documents, which is
+/// why `fleetPartnerId` is nullable. Exactly one of `fleetPartnerId` and
+/// `vendorId` is set, the same shape SupportTicket already uses and for the
+/// same reason: compliance triages one queue. A second, near-identical
+/// VendorDocument table would have meant a second review screen, a second
+/// expiry sweep and two places to add the next document type to.
 model FleetDocument {
   id              String              @id @default(uuid())
   tenantId        String
-  fleetPartnerId  String
+  fleetPartnerId  String?
+  /// Revision 20 — set instead of fleetPartnerId for a merchant's own paper
+  /// (trade licence, commercial registration, VAT certificate).
+  vendorId        String?
   /// Null until a DRIVER_ONBOARD request is approved and the Driver exists.
   driverId        String?
   /// Company: TRADE_LICENSE | COMMERCIAL_REG | CIVIL_INSURANCE | VAT_CERT
@@ -3882,6 +3955,17 @@ model FleetDocument {
   status          FleetDocumentStatus @default(PENDING_REVIEW)
   isStaged        Boolean             @default(false)
   rejectionReason String?
+  /// Revision 20 — the machine's first pass, run the moment a file lands:
+  /// PASS or FLAG, with the reasons in autoCheckNotes. It is ADVISORY. The
+  /// desk still approves or rejects, because a checker that could reject on
+  /// its own would reject a valid licence for being a photo of a photo and
+  /// nobody would ever see it.
+  autoCheck       String?
+  autoCheckNotes  Json?
+  /// Set on a REQUESTED row: who on the compliance desk asked for it and what
+  /// they said they needed.
+  requestedById   String?
+  requestNote     String?
   uploadedById    String?
   reviewedById    String?
   reviewedAt      DateTime?
@@ -3889,13 +3973,16 @@ model FleetDocument {
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
 
-  tenant     Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  fleet      FleetPartner @relation(fields: [fleetPartnerId], references: [id], onDelete: Cascade)
-  driver     Driver?      @relation(fields: [driverId], references: [id], onDelete: SetNull)
-  uploadedBy User?        @relation("FleetDocumentUploader", fields: [uploadedById], references: [id])
-  reviewedBy User?        @relation("FleetDocumentReviewer", fields: [reviewedById], references: [id])
+  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fleet       FleetPartner? @relation(fields: [fleetPartnerId], references: [id], onDelete: Cascade)
+  vendor      Vendor?       @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  driver      Driver?       @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  uploadedBy  User?         @relation("FleetDocumentUploader", fields: [uploadedById], references: [id])
+  reviewedBy  User?         @relation("FleetDocumentReviewer", fields: [reviewedById], references: [id])
+  requestedBy User?         @relation("FleetDocumentRequester", fields: [requestedById], references: [id])
 
   @@index([tenantId, fleetPartnerId, status])
+  @@index([tenantId, vendorId, status])
   @@index([tenantId, driverId, type])
   @@index([tenantId, status, expiryDate])
 }
@@ -4058,6 +4145,10 @@ enum AppSurface {
   TODAY
   CASH_DESK
   PEOPLE
+  // Revision 20 — the compliance desk. Documents were reviewed from inside
+  // whichever portal uploaded them, so the people who actually own the paper
+  // trail had no screen of their own and no way to be granted one.
+  COMPLIANCE
 }
 
 // A per-user override of the role default. Absence of a row means "inherit the
@@ -4164,7 +4255,7 @@ model FleetDeduction {
 /// OTHER provider uses, including CUSTOM, where `config` holds whatever that
 /// shop's own system needs and there is no shared shape to model.
 model VendorIntegration {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   tenantId      String
   vendorId      String
   /// UPAYMENTS | SALLA | SHOPIFY | WOOCOMMERCE | ZID | MAGENTO | CUSTOM.
@@ -4173,7 +4264,7 @@ model VendorIntegration {
   /// Operator label, so two Shopify stores on one merchant stay tellable apart.
   label         String?
   /// PENDING | CONNECTED | ERROR | DISABLED
-  status        String   @default("PENDING")
+  status        String    @default("PENDING")
   /// AES-256-GCM, same key as the Foodics token. Never returned by the API.
   credentialEnc String?
   /// Non-secret provider settings: store domain, branch mapping, and for
@@ -4182,8 +4273,8 @@ model VendorIntegration {
   webhookSecret String?
   lastEventAt   DateTime?
   lastError     String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
   vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
@@ -4362,4 +4453,248 @@ enum SupportTicketType {
   /// Software: slow, orders not showing, cannot log in, and suggestions.
   TECHNICAL
   OTHER
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// Revision 20 — the HQ portal's four tabs (client note, 2026-09-15).
+//
+// The staff portal became Ops / Compliance / Finance / Admin. Most of what
+// the client listed under those headings already existed and only needed a
+// door: orders, equipment, zones, the ledger, the price lists, the people
+// screen. Four things did not exist at all, and they are what follows.
+// ══════════════════════════════════════════════════════════════════════════
+
+enum DriverTrainingStatus {
+  /// Booked with a period and a start date. Nothing has been handed out yet.
+  SCHEDULED
+  IN_PROGRESS
+  /// The ops team watched the numbers and activated the account.
+  PASSED
+  FAILED
+  /// Called off. Distinct from FAILED, which is a judgement about the driver.
+  CANCELLED
+}
+
+/// A driver's training window.
+///
+/// The client asked for "fake orders" and a period the ops team can set to one,
+/// two or three days. The period is therefore a number of days and not an enum:
+/// the three they named are the common cases, not the only ones, and a fourth
+/// would otherwise be a migration.
+///
+/// What runs inside the window is a REAL DeliveryOrder carrying `isTraining`.
+/// It moves through the real FSM, the real driver app, the real PIN and the
+/// real proof photo, because a driver taught on a simulator has learned the
+/// simulator. What is fake is the customer and the money, and `isTraining` is
+/// the one flag that keeps the money out of the ledger, the merchant's board
+/// and the delivery company's payout count.
+///
+/// Practice orders are ASSIGNED directly to the trainee rather than dispatched.
+/// Dispatch skips a driver with `inTraining` set, so there is no round in which
+/// a trainee could win a real customer's order, and no round in which somebody
+/// else could win the practice one.
+model DriverTrainingSession {
+  id          String               @id @default(uuid())
+  tenantId    String
+  driverId    String
+  status      DriverTrainingStatus @default(SCHEDULED)
+  /// 1, 2 or 3 in practice. Stored as a number so a longer window needs no
+  /// migration, validated as 1-14 on the endpoint.
+  periodDays  Int                  @default(1)
+  startsAt    DateTime
+  /// startsAt + periodDays, recomputed whenever the ops team changes the
+  /// period mid-window, which the client explicitly asked to be able to do.
+  endsAt      DateTime
+  startedAt   DateTime?
+  completedAt DateTime?
+  /// Who on the ops team is watching. Named `coach` rather than `supervisor`
+  /// so it does not read as Driver.supervisorId, which is a different job.
+  coachId     String?
+  /// Why the driver was sent: a free-text note from the Driver tracking tab,
+  /// which is where "send for further training" is pressed.
+  reason      String?
+  /// The ops team's verdict, written when the window closes.
+  outcomeNote String?
+  /// A snapshot of how the window went, frozen at completion so a later
+  /// reassignment of the practice orders cannot rewrite the verdict:
+  /// { assigned, delivered, failed, cancelled, onTimeRate, avgMinutes }
+  scorecard   Json?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  tenant Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  driver Driver          @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  coach  User?           @relation("TrainingCoach", fields: [coachId], references: [id])
+  orders DeliveryOrder[]
+
+  @@index([tenantId, status, startsAt])
+  @@index([tenantId, driverId, createdAt])
+}
+
+enum OnboardingRequestType {
+  VENDOR
+  FLEET
+}
+
+enum OnboardingRequestStatus {
+  NEW
+  IN_REVIEW
+  /// Approved AND created: the Vendor or FleetPartner row exists and its id is
+  /// stamped below. Approval is what creates the account, the same discipline
+  /// as FleetChangeRequest, so a rejected lead can never leave a half-account
+  /// in the network.
+  APPROVED
+  REJECTED
+}
+
+/// A sales lead for a new merchant or delivery company.
+///
+/// The client's words: "this tab is for the sales team to add the requests to
+/// create new vendor accounts or delivery companies accounts". A sales rep is
+/// not an ops manager and must not be able to write a live Vendor row, so this
+/// is a request like everything else the platform reviews.
+model OnboardingRequest {
+  id             String                  @id @default(uuid())
+  tenantId       String
+  type           OnboardingRequestType
+  companyName    String
+  companyNameAr  String?
+  /// The short code the merchant's order numbers will carry ("BRGB"). Checked
+  /// for a clash at APPROVAL, not at submission: a rep should not be blocked
+  /// by a collision with an account they cannot see.
+  code           String?
+  contactName    String?
+  contactPhone   String?
+  contactEmail   String?
+  /// Free text from the sales conversation.
+  notes          String?
+  /// Whatever else the rep collected — branch count, area, expected volume,
+  /// licence numbers. The approval path reads only the keys it knows, so a
+  /// form that grows does not need this model to.
+  details        Json?
+  status         OnboardingRequestStatus @default(NEW)
+  createdById    String?
+  reviewedById   String?
+  reviewedAt     DateTime?
+  reviewNote     String?
+  /// Stamped on approval — the account this lead became.
+  vendorId       String?
+  fleetPartnerId String?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+
+  tenant     Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdBy  User?  @relation("OnboardingCreator", fields: [createdById], references: [id])
+  reviewedBy User?  @relation("OnboardingReviewer", fields: [reviewedById], references: [id])
+
+  @@index([tenantId, status, createdAt])
+  @@index([tenantId, type, status])
+}
+
+enum ShiftPlanStatus {
+  /// The generator wrote it and nobody has looked yet.
+  DRAFT
+  /// The ops team approved it, and approval is what wrote ShiftCapacity.
+  APPROVED
+  DISCARDED
+}
+
+/// One week's proposed roster.
+///
+/// The client asked the system to "read the past data and arrange the driver
+/// shifts accordingly", with the ops team able to modify and approve. So the
+/// proposal is a DRAFT that touches nothing: ShiftCapacity — the grid the
+/// driver app actually books against — is written only by approval, and only
+/// from the numbers a human left in `approvedDrivers`.
+///
+/// A plan that wrote straight through would have meant the driver app's
+/// bookable capacity changing every time the generator ran, which is exactly
+/// the thing "and approve" was asking to prevent.
+model ShiftPlan {
+  id           String          @id @default(uuid())
+  tenantId     String
+  /// The Sunday the week starts on, at 00:00. Kuwait's week runs Sunday to
+  /// Saturday and ShiftCapacity.dayOfWeek is already 0 = Sunday.
+  weekStart    DateTime
+  status       ShiftPlanStatus @default(DRAFT)
+  /// What the generator read, so a planner can see why it proposed what it
+  /// did: { lookbackWeeks, ordersSampled, driversAvailable, method }.
+  basis        Json?
+  generatedAt  DateTime        @default(now())
+  approvedAt   DateTime?
+  approvedById String?
+  note         String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  tenant     Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  approvedBy User?            @relation("ShiftPlanApprover", fields: [approvedById], references: [id])
+  entries    ShiftPlanEntry[]
+
+  @@unique([tenantId, weekStart])
+  @@index([tenantId, status, weekStart])
+}
+
+/// One zone, one weekday, one three-hour window.
+model ShiftPlanEntry {
+  id                 String   @id @default(uuid())
+  tenantId           String
+  planId             String
+  zoneId             String
+  /// 0 = Sunday, matching ShiftCapacity and getDay().
+  dayOfWeek          Int
+  /// "HH:mm", one of the eight window starts the driver app books against.
+  startTime          String
+  /// What the past data says this window needs.
+  proposedDrivers    Int
+  /// What the ops team decided. Seeded from proposedDrivers, and THIS is the
+  /// number that becomes ShiftCapacity.maxDrivers on approval.
+  approvedDrivers    Int
+  /// Drivers the generator suggests, ranked by how often they have actually
+  /// worked this window. Advisory only: Darb assigns the area, the driver
+  /// still picks the hours, and nothing here books anybody.
+  suggestedDriverIds String[] @default([])
+  /// The demand the proposal was computed from, kept so the grid can show its
+  /// own working rather than a bare number nobody can argue with.
+  demandOrders       Int      @default(0)
+
+  tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  plan   ShiftPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, zoneId, dayOfWeek, startTime])
+  @@index([tenantId, planId])
+}
+
+/// Revision 20 (vendor-portal note #3) — a manual transfer between a shop's
+/// account pool and one of its branches.
+///
+/// The vendor wallet is still ONE account (`VENDOR:{id}`) and this does not
+/// change that: nothing here is a wallet posting, no double-entry leg is
+/// written, and the account total is untouched by every row in this table.
+/// What an allocation moves is the SPLIT — how much of the shop's own money
+/// each branch may spend — which is exactly what the client asked for: "the
+/// vendor will top up the main wallet and manually transfer to each branch".
+///
+/// Append-only, like the ledger it sits beside. A transfer back to the pool is
+/// a negative row, never an edit, so the history of what a shop gave a branch
+/// and when survives being changed.
+model VendorBranchAllocation {
+  id          String   @id @default(uuid())
+  tenantId    String
+  vendorId    String
+  branchId    String
+  /// Signed: positive moves money from the pool into the branch, negative
+  /// returns it. Never zero.
+  amountKwd   Decimal  @db.Decimal(10, 3)
+  note        String?
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  tenant    Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vendor    Vendor       @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  branch    VendorBranch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  createdBy User?        @relation("BranchAllocationAuthor", fields: [createdById], references: [id])
+
+  @@index([tenantId, vendorId, createdAt])
+  @@index([tenantId, branchId, createdAt])
 }

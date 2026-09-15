@@ -8,6 +8,7 @@ import { tenantScope } from "../middleware/tenantScope";
 import { rbac } from "../middleware/rbac";
 import { requireSurface } from "../middleware/requireSurface";
 import { getCockpitSummary } from "../services/cockpitService";
+import { adminSnapshot, buildForecast } from "../services/forecastService";
 
 const router = Router();
 // Revision 4 (#12) — the role gate, then the per-user one.
@@ -47,6 +48,41 @@ router.get("/summary", async (req: Request, res: Response) => {
     }
     const summary = await getCockpitSummary(req.user!.tenantId, { from, to });
     res.json(summary);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+/**
+ * Revision 20 — the Admin tab's "dashboard + forecast" subtab.
+ *
+ * "this tab will show where are we now and what to expect later in numbers."
+ * Where we are is the snapshot; what to expect is the projection beside it,
+ * carrying the sample it was built from. A forecast that cannot say how much
+ * history is behind it is a guess with a decimal point on it, and an owner
+ * shown one will act on it.
+ */
+router.get("/snapshot", async (req: Request, res: Response) => {
+  try {
+    res.json(await adminSnapshot(req.user!.tenantId));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/** The projection on its own, for a different horizon or lookback. */
+router.get("/forecast", async (req: Request, res: Response) => {
+  try {
+    const horizonDays = Number(req.query.horizonDays);
+    const lookbackDays = Number(req.query.lookbackDays);
+    res.json(
+      await buildForecast({
+        tenantId: req.user!.tenantId,
+        ...(Number.isFinite(horizonDays) && horizonDays > 0 ? { horizonDays } : {}),
+        ...(Number.isFinite(lookbackDays) && lookbackDays > 0 ? { lookbackDays } : {}),
+      }),
+    );
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

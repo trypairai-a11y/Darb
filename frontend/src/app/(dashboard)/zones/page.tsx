@@ -3,6 +3,8 @@
 // LiveMap with polygons on the right; New/Edit polygon enters the
 // click-to-add-vertex editor; metadata saved through a SlidePanel form.
 import { useMemo, useState } from "react";
+import HqTabs from "@/components/hq/HqTabs";
+import { OPS_TABS } from "@/lib/hqTabs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus, Trash2, Hexagon, Power } from "lucide-react";
 import DataTable from "@/components/shared/DataTable";
@@ -15,7 +17,6 @@ import LiveMap from "@/components/map/LiveMap";
 import { zoneColor, zoneRingLatLngs } from "@/components/map/zoneGeometry";
 import { zonesApi, unwrapList } from "@/lib/darbApi";
 import type { DeliveryZone, GeoJsonPolygon } from "@/types/darb";
-import BackToSetup from "@/components/shared/BackToSetup";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useRole } from "@/hooks/useRole";
 import { cn } from "@/lib/cn";
@@ -299,7 +300,10 @@ export default function ZonesPage() {
 
   return (
     <div className="space-y-6">
-      <BackToSetup />
+      {/* Revision 20 — this screen is a subtab of Ops now. It keeps its own
+          URL because notifications and bookmarks point at it, and carries the
+          strip so the user can see where they are and step sideways. */}
+      <HqTabs tabs={OPS_TABS} />
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="font-display text-display-sm text-sand-900">{t("zonesPage.title")}</h1>

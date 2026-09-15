@@ -213,6 +213,8 @@ type SessionWithDriver = {
     phone: string | null;
     status: string;
     isFrozen?: boolean;
+    /** Revision 20: in a training window, so out of the live candidate pool. */
+    inTraining?: boolean;
     vehicleType: string | null;
     expoPushToken: string | null;
     throttledUntil: Date | null;
@@ -320,6 +322,7 @@ export async function selectCandidates(
           phone: true,
           status: true,
           isFrozen: true,
+          inTraining: true,
           vehicleType: true,
           expoPushToken: true,
           throttledUntil: true,
@@ -343,7 +346,11 @@ export async function selectCandidates(
   let prelim: Prelim[] = [];
   for (const session of latestSessionPerDriver(sessions)) {
     const { driver } = session;
-    if (!driver || driver.status !== "ACTIVE" || driver.isFrozen) continue;
+    // Revision 20 — a driver in a training window is out of the real pool.
+    // Their practice orders are ASSIGNED to them directly, so skipping them
+    // here stops live work without stopping the training, which is why
+    // `inTraining` is a separate flag from `isFrozen` and not a reuse of it.
+    if (!driver || driver.status !== "ACTIVE" || driver.isFrozen || driver.inTraining) continue;
     if (order.requiresCarOnly && driver.vehicleType !== "CAR") continue;
     const lat = toNum(session.lastGpsLat);
     const lng = toNum(session.lastGpsLng);

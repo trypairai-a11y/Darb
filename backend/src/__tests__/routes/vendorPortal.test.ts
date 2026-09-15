@@ -53,6 +53,14 @@ prisma.vendorTopUp = prisma.vendorTopUp ?? {
 };
 // getVendorBranchBalances aggregates over the ledger in one grouped raw query.
 prisma.$queryRaw = prisma.$queryRaw ?? jest.fn();
+// Vendor-portal note #3 (2026-09-15) — GET /wallet now also reports the wallet
+// mode and the per-branch split, which reads the allocation sub-ledger. Nothing
+// here is a wallet posting; see services/wallet/vendorWalletModeService.ts.
+prisma.vendorBranchAllocation = prisma.vendorBranchAllocation ?? {
+  groupBy: jest.fn(),
+  create: jest.fn(),
+  findMany: jest.fn(),
+};
 // Revision 11 (#6) — the order detail carries the driver's last GPS fix, read
 // from the courier's open session the same way the customer tracking page does.
 prisma.courierOnlineSession = prisma.courierOnlineSession ?? { findFirst: jest.fn() };
@@ -102,6 +110,9 @@ describe("Vendor portal routes", () => {
     // override this to exercise a narrowed tab list.
     prisma.user.findFirst.mockResolvedValue(null);
     prisma.$queryRaw.mockResolvedValue([]);
+    // No branch allocations by default: the shop is on one wallet, which is
+    // every merchant until somebody turns the per-branch switch on.
+    prisma.vendorBranchAllocation.groupBy.mockResolvedValue([]);
   });
 
   // ─── Access control ────────────────────────────────────────────────────────
@@ -414,6 +425,13 @@ describe("Vendor portal routes", () => {
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
+        // Vendor-portal note #3 (2026-09-15): the mode and the per-branch split
+        // ride along with the balance, so the screen never has to make a second
+        // call before it knows which layout to draw. On one wallet the main
+        // figure IS the account balance — nothing is fenced off.
+        walletMode: "SINGLE",
+        mainAvailableKwd: "0.000",
+        branchWallets: [],
         ownerKey: "VENDOR:v-1",
         balanceKwd: "0.000",
         accountId: null,
@@ -655,7 +673,8 @@ describe("Vendor portal routes", () => {
       expect(res.status).toBe(200);
       // The rail and the route fence read this instead of deriving access from
       // vendorRole, which is what made a narrowed list invisible until it 403'd.
-      expect(res.body.portalTabs).toEqual(["ORDERS", "WALLET", "GROW", "SUPPORT"]);
+      // GROW was removed in vendor-portal note #2 (2026-09-15).
+      expect(res.body.portalTabs).toEqual(["ORDERS", "WALLET", "SUPPORT"]);
     });
   });
 

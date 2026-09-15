@@ -226,6 +226,7 @@ export async function getFleetScorecard(
         driverId: { in: driverIds },
         status: "DELIVERED",
         deliveredAt: { gte: range.from, lt: range.to },
+        isTraining: false,
       },
     }),
     prisma.deliveryOrder.count({
@@ -234,6 +235,7 @@ export async function getFleetScorecard(
         driverId: { in: driverIds },
         status: "DELIVERED",
         deliveredAt: { gte: range.from, lt: range.to },
+        isTraining: false,
         AND: [
           { slaDeadline: { not: null } },
           // deliveredAt <= slaDeadline expressed as a column comparison is not
@@ -297,6 +299,7 @@ export async function getFleetScorecard(
       driverId: { in: driverIds },
       status: { in: ["FAILED", "RETURNED"] },
       assignedAt: { gte: range.from, lt: range.to },
+      isTraining: false,
     },
   });
   void onTime; // superseded by the row pass above
@@ -411,6 +414,9 @@ export async function generateFleetStatements(
           status: "DELIVERED",
           deliveredAt: { gte: period.start, lt: period.end },
           driver: { fleetPartnerId: fleet.id },
+          // Revision 20 — a practice order is delivered work that nobody is
+          // paid for. It must never reach a payout statement.
+          isTraining: false,
         },
         select: { distanceKm: true },
       });

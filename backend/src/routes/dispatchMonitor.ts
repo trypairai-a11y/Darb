@@ -141,7 +141,10 @@ router.get("/overview", async (req: Request, res: Response) => {
         select: { gpsStaleAfterSec: true },
       }),
       prisma.deliveryOrder.findMany({
-        where: { tenantId, status: { in: [...ACTIVE_STATUSES] } },
+        // Revision 20 — a practice order is live work on a live map, but not
+        // the work the control room is answerable for. It is watched from the
+        // Driver training tab, which is the screen that knows what it is.
+        where: { tenantId, status: { in: [...ACTIVE_STATUSES] }, isTraining: false },
         orderBy: { slaDeadline: "asc" },
         take: 500,
         include: {

@@ -14,6 +14,8 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CreditCard, Download, Loader2, Plus, Wallet } from "lucide-react";
 import TopUpPanel from "@/components/vendor/TopUpPanel";
+// Vendor-portal note #3 (2026-09-15) — one wallet, or one per branch.
+import WalletModeCard from "@/components/vendor/WalletModeCard";
 import StatCard from "@/components/shared/StatCard";
 import DataTable from "@/components/shared/DataTable";
 import ErrorState from "@/components/shared/ErrorState";
@@ -37,12 +39,20 @@ export default function VendorWalletPage() {
   const [limit, setLimit] = useState(25);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [topUpOpen, setTopUpOpen] = useState(false);
+  /** "" is this wallet's own statement (branch pills apply); "main" is the pool's. */
+  const [ledgerScope, setLedgerScope] = useState<"" | "main">("");
+
 
   const meQuery = useQuery({
     queryKey: ["darb", "vendor", "me"],
     queryFn: () => vendorApi.me(),
     staleTime: 60_000,
   });
+
+  // Revision 11 (#5): the portal role comes from the User row via /me, never
+  // from the token. Moving somebody to a narrower role has to take effect on
+  // the next request, not when their JWT happens to expire.
+  const isWalletOwner = (meQuery.data?.portalRole ?? "ADMIN") === "ADMIN";
 
   // Revision 10 (#3). The balance figure follows the branch pills now: the
   // account total for All branches, that branch's own net when one is picked.
@@ -56,8 +66,17 @@ export default function VendorWalletPage() {
   });
 
   const entriesQuery = useQuery({
-    queryKey: ["darb", "vendor", "wallet-entries", page, limit, branchId],
-    queryFn: () => vendorApi.walletEntries({ page, limit, branchId: branchId ?? undefined }),
+    queryKey: ["darb", "vendor", "wallet-entries", page, limit, branchId, ledgerScope],
+    queryFn: () =>
+      vendorApi.walletEntries({
+        page,
+        limit,
+        // The main wallet's statement is every posting with no order behind it,
+        // so a branch filter would be meaningless on it and is not sent.
+        ...(ledgerScope === "main"
+          ? { scope: "main" }
+          : { branchId: branchId ?? undefined }),
+      }),
     refetchInterval: 30_000,
   });
   const entries = useMemo(() => unwrapList<WalletEntry>(entriesQuery.data), [entriesQuery.data]);
@@ -308,6 +327,45 @@ export default function VendorWalletPage() {
           )}
         </section>
       )}
+
+      {/* Vendor-portal note #3 — one wallet for the account, or one per
+          branch, with the manual transfers between them. Placed under the
+          balance and above the ledger, because that is the order of the
+          question: how much is there, how is it divided, what moved. */}
+      <WalletModeCard isOwner={isWalletOwner} />
+
+      {/* "the vendor should be able to take a statement for each, whether
+          they're using one wallet or more than one." The branch pills in the
+          header already scope this table to a branch; what had no statement of
+          its own was the MAIN wallet, because "everything" and "everything not
+          belonging to a branch" are two different documents. This is that
+          second one. */}
+      <div className="flex flex-wrap items-center gap-2">
+        {([
+          ["", "vendorWallet2.statement"],
+          ["main", "vendorWallet2.mainWallet"],
+        ] as const).map(([value, label]) => (
+          <button
+            key={value || "all"}
+            type="button"
+            onClick={() => {
+              setLedgerScope(value);
+              setPage(1);
+            }}
+            className={cn(
+              "px-4 h-8 text-sm font-medium rounded-pill transition-colors",
+              ledgerScope === value
+                ? "bg-white text-sand-900 shadow-soft border border-sand-200"
+                : "text-sand-600 hover:text-sand-900",
+            )}
+          >
+            {t(label)}
+          </button>
+        ))}
+        {ledgerScope === "main" && (
+          <span className="text-xs text-sand-500">{t("vendorWallet2.mainStatementHint")}</span>
+        )}
+      </div>
 
       <WalletLedgerTable
         entries={entries}

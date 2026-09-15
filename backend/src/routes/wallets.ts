@@ -30,6 +30,8 @@ import {
   listFleetDeposits,
   rejectFleetDeposit,
 } from "../services/wallet/fleetCashService";
+// Revision 20 — the Finance tab's Payments and Disputes subtabs.
+import { cancelTopUp, confirmTopUp } from "../services/wallet/topUpService";
 
 const FINANCE_READ = ["ADMIN", "OPS_MANAGER", "ACCOUNTANT"];
 // Revision 4 (#3): CASH_COLLECTOR is the cash desk login. Without it here the
@@ -1181,5 +1183,223 @@ router.post(
     }
   },
 );
+
+
+// ══════════════════════════════════════════════════════════════════════════
+// Revision 20 — Finance › Payments and Finance › Disputes.
+//
+// Payments: "this tab is for the finance team to acknowledge the top ups made
+// by the vendors/delivery companies, also to update the status of the pending
+// payments". Both halves of that already had storage and an endpoint, and both
+// were reachable only from inside one account's detail panel — so a transfer
+// from a shop nobody happened to open that day sat unconfirmed. This is the
+// desk: one list across merchants and delivery companies, and the confirm and
+// cancel verbs addressed by payment id rather than by account.
+//
+// Disputes: "this tab is where the finance team will receive the disputes and
+// communicate with vendor/delivery company". A dispute is already two rows —
+// the statement that was disputed and the SupportTicket that carries the
+// conversation — so this joins them rather than inventing a third.
+// ══════════════════════════════════════════════════════════════════════════
+
+/**
+ * GET /api/wallets/payments
+ *
+ * ?status=PENDING (default) | PAID | CANCELLED | FAILED | ALL
+ * ?side=VENDOR | FLEET | ALL (default)
+ */
+router.get("/payments", rbac(...FINANCE_READ), async (req: Request, res: Response) => {
+  try {
+    const { tenantId } = req.user!;
+    const requested = typeof req.query.status === "string" ? req.query.status : "PENDING";
+    const status = requested === "ALL" ? undefined : requested;
+    const side = typeof req.query.side === "string" ? req.query.side : "ALL";
+
+    const wantVendor = side === "ALL" || side === "VENDOR";
+    const wantFleet = side === "ALL" || side === "FLEET";
+
+    const [topUps, deposits] = await Promise.all([
+      wantVendor
+        ? prisma.vendorTopUp.findMany({
+            where: { tenantId, ...(status ? { status: status as never } : {}) },
+            orderBy: { createdAt: "desc" },
+            take: 200,
+            include: { vendor: { select: { id: true, name: true, code: true } } },
+          })
+        : Promise.resolve([]),
+      wantFleet
+        ? listFleetDeposits({
+            tenantId,
+            ...(status ? { status } : {}),
+            take: 200,
+            skip: 0,
+            withPartnerName: true,
+          })
+        : Promise.resolve({ data: [] as unknown[], total: 0 }),
+    ]);
+
+    // One shape for both sides, so the table is one table. `kind` is what the
+    // confirm and cancel calls key off, because the two live in different
+    // services and a single id space would be a lie.
+    const rows = [
+      ...topUps.map((t) => ({
+        kind: "VENDOR_TOP_UP" as const,
+        id: t.id,
+        accountId: t.vendorId,
+        accountName: t.vendor?.name ?? null,
+        accountRef: t.vendor?.code ?? null,
+        amountKwd: toKwdString(t.amountKwd),
+        status: t.status as string,
+        reference: t.reference,
+        provider: t.provider,
+        providerRef: t.providerRef,
+        paidAt: t.paidAt,
+        createdAt: t.createdAt,
+      })),
+      ...(deposits.data as Array<Record<string, any>>).map((d) => ({
+        kind: "FLEET_DEPOSIT" as const,
+        id: d.id as string,
+        accountId: (d.fleetPartnerId as string) ?? null,
+        accountName: (d.fleetPartnerName as string) ?? null,
+        accountRef: null,
+        amountKwd: toKwdString(d.amountKwd),
+        status: d.status as string,
+        reference: (d.reference as string) ?? null,
+        provider: (d.method as string) ?? null,
+        providerRef: (d.providerRef as string) ?? null,
+        paidAt: (d.confirmedAt as Date) ?? null,
+        createdAt: d.createdAt as Date,
+      })),
+    ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    res.json({
+      data: rows,
+      counts: {
+        pending: rows.filter((r) => r.status === "PENDING").length,
+        vendorPending: rows.filter((r) => r.kind === "VENDOR_TOP_UP" && r.status === "PENDING").length,
+        fleetPending: rows.filter((r) => r.kind === "FLEET_DEPOSIT" && r.status === "PENDING").length,
+      },
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * Acknowledge a merchant's transfer and credit the wallet.
+ *
+ * Addressed by top-up id alone, unlike the per-vendor endpoint it wraps: the
+ * desk works a list, not an account, and making it look the shop up first is
+ * how a payment gets confirmed against the wrong one.
+ */
+router.post(
+  "/payments/vendor-top-ups/:id/confirm",
+  rbac("ADMIN", "OPS_MANAGER", "ACCOUNTANT"),
+  async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.user!.tenantId;
+      const owned = await prisma.vendorTopUp.findFirst({
+        where: { id: req.params.id, tenantId },
+        select: { id: true },
+      });
+      if (!owned) { res.status(404).json({ error: "Top-up not found" }); return; }
+
+      const result = await confirmTopUp({ tenantId, topUpId: req.params.id, provider: "MANUAL" });
+      if (result.alreadyPaid) { res.json({ ok: true, alreadyPaid: true }); return; }
+      if (!result.ok) { res.status(409).json({ error: "This payment is not awaiting confirmation" }); return; }
+      res.json({ ok: true, alreadyPaid: false });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  },
+);
+
+/** "update the status of the pending payments" — the half that is not a credit. */
+router.post(
+  "/payments/vendor-top-ups/:id/cancel",
+  rbac("ADMIN", "OPS_MANAGER", "ACCOUNTANT"),
+  async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.user!.tenantId;
+      const owned = await prisma.vendorTopUp.findFirst({
+        where: { id: req.params.id, tenantId },
+        select: { id: true },
+      });
+      if (!owned) { res.status(404).json({ error: "Top-up not found" }); return; }
+      const ok = await cancelTopUp(tenantId, req.params.id);
+      if (!ok) { res.status(409).json({ error: "This payment is not awaiting confirmation" }); return; }
+      res.json({ ok: true });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  },
+);
+
+/**
+ * GET /api/wallets/disputes
+ *
+ * A disputed payout statement plus the ticket carrying the conversation. Both
+ * sides of a disagreement about money in one list, which is the thing the
+ * finance team could not previously see without opening each company in turn.
+ */
+router.get("/disputes", rbac(...FINANCE_READ), async (req: Request, res: Response) => {
+  try {
+    const { tenantId } = req.user!;
+    const open = req.query.status !== "ALL";
+
+    const [statements, tickets] = await Promise.all([
+      prisma.fleetPayoutStatement.findMany({
+        where: { tenantId, ...(open ? { status: "DISPUTED" } : {}) },
+        orderBy: { disputedAt: "desc" },
+        take: 200,
+        include: { fleet: { select: { id: true, name: true } } },
+      }),
+      // WALLET is the type both portals file a money problem under. Cancelled
+      // and resolved ones drop out unless the history is asked for.
+      prisma.supportTicket.findMany({
+        where: {
+          tenantId,
+          type: "WALLET",
+          ...(open ? { status: { in: ["OPEN", "ANSWERED"] } } : {}),
+        },
+        orderBy: { createdAt: "desc" },
+        take: 200,
+        include: {
+          vendor: { select: { id: true, name: true } },
+          fleet: { select: { id: true, name: true } },
+          messages: { orderBy: { createdAt: "asc" }, take: 50 },
+        },
+      }),
+    ]);
+
+    const byTicketId = new Map(tickets.map((t) => [t.id, t]));
+
+    res.json({
+      statements: statements.map((st) => ({
+        id: st.id,
+        fleetPartnerId: st.fleetPartnerId,
+        fleetPartnerName: st.fleet?.name ?? null,
+        periodStart: st.periodStart,
+        periodEnd: st.periodEnd,
+        deliveredOrders: st.deliveredOrders,
+        totalKwd: toKwdString(st.totalKwd),
+        netPayableKwd: st.netPayableKwd ? toKwdString(st.netPayableKwd) : null,
+        status: st.status,
+        disputedAt: st.disputedAt,
+        disputeReason: st.disputeReason,
+        // The thread, when the dispute opened one — which it always does now,
+        // but statements disputed before revision 13 (#8) carry no ticket.
+        ticket: st.disputeTicketId ? (byTicketId.get(st.disputeTicketId) ?? null) : null,
+      })),
+      tickets,
+      counts: {
+        statements: statements.filter((s) => s.status === "DISPUTED").length,
+        tickets: tickets.filter((t) => t.status === "OPEN" || t.status === "ANSWERED").length,
+      },
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 export default router;

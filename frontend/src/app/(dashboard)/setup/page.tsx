@@ -4,6 +4,17 @@
 // used to occupy six of the sixteen rail slots even though nobody opens them
 // on a normal day. They now live behind this one door, unmodified: the hub is
 // pure navigation, so nothing about those pages had to change.
+//
+// Revision 20 took it off the rail. Every card below now also has a home
+// inside one of the four tabs — areas and equipment under Ops, prices and
+// people under Admin — so a fifth rail slot pointing at a room you are already
+// standing in was a slot spent on nothing.
+//
+// The route is kept, and kept working, rather than redirected. It is linked
+// from BackToSetup on the shop and delivery-company registries, it is in
+// people's bookmarks, and it is still the one place that lists all seven
+// configuration screens together. A redirect would have had to pick one of
+// them and lose the other six.
 import Link from "next/link";
 import { Hexagon, Coins, Store, Truck, ShieldCheck, Package, CalendarRange } from "lucide-react";
 import type { LucideIcon } from "lucide-react";

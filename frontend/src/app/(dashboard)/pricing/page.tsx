@@ -11,6 +11,8 @@
 // instead of on a flag day. It is second on the page because plans are what
 // somebody comes here to edit now.
 import { useEffect, useMemo, useState } from "react";
+import HqTabs from "@/components/hq/HqTabs";
+import { ADMIN_TABS } from "@/lib/hqTabs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Save } from "lucide-react";
 import ErrorState from "@/components/shared/ErrorState";
@@ -19,7 +21,6 @@ import { useToast } from "@/components/shared/Toast";
 import DeliveryPlansPanel from "@/components/pricing/DeliveryPlansPanel";
 import { zonesApi, unwrapList } from "@/lib/darbApi";
 import type { DeliveryZone, FulfillmentSettings, ZoneSurcharge } from "@/types/darb";
-import BackToSetup from "@/components/shared/BackToSetup";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 
@@ -147,7 +148,9 @@ export default function PricingPage() {
 
   return (
     <div className="space-y-6">
-      <BackToSetup />
+      {/* Revision 20 — a subtab of Admin, at its own URL for the same reason
+          the Ops subtabs are: it is linked to from outside the portal. */}
+      <HqTabs tabs={ADMIN_TABS} />
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="font-display text-display-sm text-sand-900">{t("pricingPage.title")}</h1>
