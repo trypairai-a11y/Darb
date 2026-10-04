@@ -250,6 +250,13 @@ export default function TopUpPanel({
                         </span>
                       )}
                     </p>
+                    {/* Revision 21 (#5): what Darb's finance desk said when it
+                        decided, so a refused transfer explains itself here. */}
+                    {row.reviewNote && (
+                      <p dir="auto" className="text-xs text-sand-700 mt-1">
+                        {row.reviewNote}
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {row.status === "PENDING" && row.paymentUrl && (

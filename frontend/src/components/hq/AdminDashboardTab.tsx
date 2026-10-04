@@ -15,12 +15,14 @@
 // second rendering runtime for two paths is not a trade worth making.
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { Store, Truck, Users, GraduationCap, Package, CircleDollarSign, FileText, TriangleAlert } from "lucide-react";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import StatCard from "@/components/shared/StatCard";
-import { cockpitApi } from "@/lib/darbApi";
-import type { ForecastPoint } from "@/types/darb";
+import { cockpitApi, fleetsApi, unwrapList, vendorsApi } from "@/lib/darbApi";
+import { fleetGapKeys, setupIncomplete, vendorGapKeys } from "@/lib/setupGaps";
+import type { FleetProfile, ForecastPoint, Vendor } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd, formatNumber } from "@/i18n/format";
 import { cn } from "@/lib/cn";
@@ -88,6 +90,80 @@ function Delta({ now, before }: { now: number; before: number }) {
   );
 }
 
+/**
+ * Revision 21c (client note, 2026-09-21): "must show in the admin dashboard
+ * that a vendor/delivery company onboarding is still incomplete". Approval
+ * creates the account switched off; this is the list of the ones nobody has
+ * finished, each naming what is still empty and linking to where it is
+ * filled in. Derived from the same two lists the registries draw, so it
+ * cannot disagree with the badge on the row.
+ */
+function IncompleteOnboarding() {
+  const { t } = useI18n();
+  const vendorsQuery = useQuery({
+    queryKey: ["darb", "vendors", "setup"],
+    queryFn: () => vendorsApi.list(),
+    refetchInterval: 60_000,
+  });
+  const fleetsQuery = useQuery({
+    queryKey: ["darb", "fleets", "setup"],
+    queryFn: () => fleetsApi.list({ limit: 100 }),
+    refetchInterval: 60_000,
+  });
+  const rows = useMemo(() => {
+    const shops = unwrapList<Vendor>(vendorsQuery.data)
+      .filter(setupIncomplete)
+      .map((v) => ({
+        key: `v:${v.id}`,
+        href: `/vendors/${v.id}`,
+        kind: t("adminHub.setupShop"),
+        name: v.name,
+        gaps: vendorGapKeys(v.setupMissing).map((k) => t(k)).join(", "),
+      }));
+    const companies = unwrapList<FleetProfile>(fleetsQuery.data)
+      .filter(setupIncomplete)
+      .map((f) => ({
+        key: `f:${f.id}`,
+        href: `/fleets/${f.id}`,
+        kind: t("adminHub.setupCompany"),
+        name: f.name,
+        gaps: fleetGapKeys(f.setupMissing).map((k) => t(k)).join(", "),
+      }));
+    return [...shops, ...companies];
+  }, [vendorsQuery.data, fleetsQuery.data, t]);
+
+  if (rows.length === 0) return null;
+  return (
+    <section
+      className="bg-card border border-red-200 rounded-2xl shadow-soft p-4 space-y-3"
+      data-testid="admin-setup-incomplete"
+    >
+      <div className="flex items-center gap-2">
+        <TriangleAlert size={15} className="text-red-600 shrink-0" aria-hidden="true" />
+        <h2 className="font-display text-lg text-sand-900">{t("adminHub.setupIncomplete")}</h2>
+        <span className="text-xs text-sand-500 tabular-nums">({rows.length})</span>
+      </div>
+      <p className="text-xs text-sand-600">{t("adminHub.setupIncompleteHint")}</p>
+      <ul className="divide-y divide-sand-100">
+        {rows.map((row) => (
+          <li key={row.key}>
+            <Link
+              href={row.href}
+              className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm hover:text-primary transition-colors"
+            >
+              <span className="min-w-0 flex items-center gap-2">
+                <span className="text-[11px] px-2 py-0.5 rounded-pill bg-sand-100 text-sand-700 shrink-0">{row.kind}</span>
+                <span className="font-medium text-sand-900 truncate" dir="auto">{row.name}</span>
+              </span>
+              <span className="text-xs text-red-700">{row.gaps}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export default function AdminDashboardTab() {
   const { t, locale } = useI18n();
 
@@ -113,6 +189,10 @@ export default function AdminDashboardTab() {
 
   return (
     <div className="space-y-6">
+      {/* Accounts approved but not yet fillable, before the numbers: an owner
+          who approved a shop yesterday wants to know it is still not live. */}
+      <IncompleteOnboarding />
+
       {/* ── Where we are ────────────────────────────────────────────────── */}
       <section className="space-y-3">
         <h2 className="font-display text-lg text-sand-900">{t("adminHub.now")}</h2>

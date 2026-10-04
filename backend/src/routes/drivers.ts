@@ -252,11 +252,11 @@ router.get("/tracking", async (req: Request, res: Response) => {
   }
 });
 
-/** Activate, deactivate, suspend, freeze or unfreeze one driver. */
+/** Activate, deactivate, suspend, freeze, unfreeze or terminate one driver. */
 router.post("/:id/state", rbac(...MUTATORS), async (req: Request, res: Response) => {
   try {
     const action = req.body?.action;
-    const ACTIONS = ["ACTIVATE", "DEACTIVATE", "SUSPEND", "FREEZE", "UNFREEZE"];
+    const ACTIONS = ["ACTIVATE", "DEACTIVATE", "SUSPEND", "FREEZE", "UNFREEZE", "TERMINATE"];
     if (!ACTIONS.includes(action)) {
       res.status(400).json({ error: `action must be one of ${ACTIONS.join(", ")}` });
       return;

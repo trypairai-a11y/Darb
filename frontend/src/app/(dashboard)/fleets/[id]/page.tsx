@@ -22,6 +22,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { DirectionalIcon } from "@/i18n/directionalIcon";
 import { formatDate, formatKwd, formatNumber, formatPercent, localeTag } from "@/i18n/format";
 import type { Locale } from "@/i18n/messages";
+import { fleetGapKeys, setupIncomplete } from "@/lib/setupGaps";
 
 type FleetRow = FleetProfile & {
   _count?: { drivers?: number; users?: number };
@@ -1123,9 +1124,29 @@ export default function FleetDetailPage() {
               {t("revision19.restore")}
             </button>
           )}
-          <StatusBadge status={fleet.isActive ? "ACTIVE" : "INACTIVE"} />
+          {setupIncomplete(fleet) ? (
+            <span
+              className="inline-flex items-center px-3 py-1 rounded-pill text-xs font-medium bg-red-50 text-red-700"
+              title={t("vendorsPage.setupHint").replace(
+                "{items}",
+                fleetGapKeys(fleet.setupMissing).map((k) => t(k)).join(", "),
+              )}
+            >
+              {t("vendorsPage.setupIncomplete")}
+            </span>
+          ) : (
+            <StatusBadge status={fleet.isActive ? "ACTIVE" : "INACTIVE"} />
+          )}
         </div>
       </div>
+      {setupIncomplete(fleet) && (
+        <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-2xl px-4 py-2">
+          {t("vendorsPage.setupHint").replace(
+            "{items}",
+            fleetGapKeys(fleet.setupMissing).map((k) => t(k)).join(", "),
+          )}
+        </p>
+      )}
 
       {/* The way into the partner's own portal, read-only. ADMIN only,
           which is what the server admits (middleware/fleetScope). */}

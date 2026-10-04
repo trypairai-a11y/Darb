@@ -295,7 +295,11 @@ export default function FleetRosterPage() {
                 <StatusBadge status="PENDING" label={t("fleetPortal.pendingReview")} />
               ) : (
                 <span className="inline-flex items-center gap-1.5">
-                  <StatusBadge status={value} />
+                  {row.inTraining ? (
+                    <StatusBadge status="PENDING" label={t("fleetPortal.inTraining")} />
+                  ) : (
+                    <StatusBadge status={value} />
+                  )}
                   {isThrottled(row) && (
                     <StatusBadge status="THROTTLED" label={t("fleetPortal.throttled")} />
                   )}

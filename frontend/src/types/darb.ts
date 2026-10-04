@@ -121,6 +121,9 @@ export interface ZoneQuote {
 
 // ── Vendors ──────────────────────────────────────────────────────────────
 
+export type VendorSetupGap = "PHONE" | "BRANCH" | "LOGIN";
+export type FleetSetupGap = "CONTACT_PHONE" | "LOGIN";
+
 export interface Vendor {
   id: string;
   name: string;
@@ -130,6 +133,13 @@ export interface Vendor {
   requiresCarOnly: boolean;
   isPaused: boolean;
   isActive: boolean;
+  /**
+   * Revision 21c — which of "the cells" are still empty. Server-derived from
+   * phone, branch count and login count; the list badge, the detail checklist
+   * and the Admin card all read it, and the server refuses to activate while
+   * it is non-empty.
+   */
+  setupMissing?: VendorSetupGap[];
   /**
    * Revision 4 (#7) — the named price list this merchant is quoted on. Null
    * falls through to the tenant-wide flat fee plus surcharge grid.
@@ -277,6 +287,8 @@ export interface VendorTopUp {
   token?: string;
   paidAt?: string | null;
   createdAt?: string;
+  /** Revision 21 (#5): what Darb's finance desk said when it decided. */
+  reviewNote?: string | null;
 }
 
 /**
@@ -811,6 +823,8 @@ export interface FleetProfile {
   minDriversOnline: Record<string, number> | null;
   disciplineStatus: "OK" | "WARNED" | "THROTTLED" | "SUSPENDED" | "REMOVED";
   isActive: boolean;
+  /** Revision 21c — see Vendor.setupMissing. */
+  setupMissing?: FleetSetupGap[];
   /**
    * Revision 13 (#6) — the caller's own role and tab list, so the rail and the
    * route fence agree with the server instead of 403ing after the click. Null
@@ -889,6 +903,8 @@ export interface FleetDriverRow {
   /** Revision 13 (#3) — the Darb-issued id. Null until Darb approves. */
   driverCode: string | null;
   status: string;
+  /** Revision 21c — in a Darb training window; the status alone read Inactive. */
+  inTraining?: boolean;
   vehicleType: string;
   performanceTier: string | null;
   throttledUntil: string | null;
@@ -933,6 +949,8 @@ export interface FleetDeposit {
   receiptUrl: string | null;
   status: FleetDepositStatus;
   rejectReason: string | null;
+  /** Revision 21 (#5): feedback attached to an approval. */
+  reviewNote?: string | null;
   confirmedAt: string | null;
   createdAt: string;
   /**
@@ -1108,6 +1126,8 @@ export interface FleetDriverProfile {
     phone: string;
     driverCode: string | null;
     status: string;
+    /** Revision 21c — in a Darb training window (the row carries the flag). */
+    inTraining?: boolean;
     vehicleType: string;
     zone: string | null;
     hireDate: string | null;
@@ -1490,6 +1510,12 @@ export interface SupportTicket {
    */
   vendor?: { id: string; name: string; nameAr?: string | null } | null;
   fleet?: { id: string; name: string } | null;
+  /**
+   * Revision 21c: the order the request is about, joined by the HQ inbox when
+   * asked for `?about=orders` (the Live screen's Problems segment). Null when
+   * the order is gone or the ticket names none.
+   */
+  order?: { id: string; orderNumber: string; status: string } | null;
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -1600,13 +1626,19 @@ export interface DriverTrackingRow {
   onTimeRate: number | null;
   acceptanceRate: number | null;
   rating: number | null;
+  /** Revision 21 (#1): offers declined or left to expire, and the declined share. */
+  rejections: number;
+  declined: number;
+  /** Issues Darb raised about the driver in the window, and how many are still open. */
+  violations: number;
+  violationsOpen: number;
   docsValid: number;
   docsRequired: number;
   trainingSessionId: string | null;
   trainingEndsAt: string | null;
 }
 
-export type DriverStateAction = "ACTIVATE" | "DEACTIVATE" | "SUSPEND" | "FREEZE" | "UNFREEZE";
+export type DriverStateAction = "ACTIVATE" | "DEACTIVATE" | "SUSPEND" | "FREEZE" | "UNFREEZE" | "TERMINATE";
 
 // ── Driver training ──────────────────────────────────────────────────────
 
@@ -1633,6 +1665,8 @@ export interface TrainingSession {
   completedAt: string | null;
   reason: string | null;
   outcomeNote: string | null;
+  /** Revision 21 (#3): the next practice order is handed over on its own. */
+  autoIssue?: boolean;
   scorecard: TrainingScorecard | null;
   createdAt?: string;
   driver: {
@@ -1654,7 +1688,12 @@ export interface TrainingSessionDetail extends TrainingSession {
     orderNumber: string;
     status: string;
     dropoffAddress: string | null;
+    dropoffLat?: string | number | null;
+    dropoffLng?: string | number | null;
     customerName: string | null;
+    customerPhone?: string | null;
+    /** Revision 21b: shown to the coach, who plays the customer on a practice order. */
+    podPin?: string | null;
     assignedAt: string | null;
     arrivedAt: string | null;
     pickedUpAt: string | null;
@@ -1663,7 +1702,7 @@ export interface TrainingSessionDetail extends TrainingSession {
     proofPhotoUrl: string | null;
     failureReason: string | null;
     createdAt: string;
-    branch: { id: string; name: string } | null;
+    branch: { id: string; name: string; address?: string | null } | null;
     vendor: { id: string; name: string } | null;
   }>;
 }
@@ -1708,6 +1747,8 @@ export interface ShiftPlanPayload {
   weekStart?: string;
   zones?: Array<{ id: string; code: string; name: string; nameAr: string | null }>;
   drivers?: Array<{ id: string; name: string; driverCode: string | null; assignedZoneId: string | null }>;
+  /** Revision 21 (#2): drivers dispatch would offer to, in total and per area. */
+  availability?: { total: number; unassigned: number; byZone: Record<string, number> };
   windows?: string[];
   hours?: number;
 }
@@ -1753,6 +1794,8 @@ export interface PaymentRow {
   providerRef: string | null;
   paidAt: string | null;
   createdAt: string;
+  /** Revision 21 (#5): the desk's feedback on an approval or a rejection. */
+  note: string | null;
 }
 
 export interface DisputeStatement {
@@ -1844,4 +1887,32 @@ export interface BranchTransfer {
   createdAt: string;
   branch: { id: string; name: string };
   createdBy: { id: string; name: string } | null;
+}
+
+// ── Finance › Cash with companies (revision 21c) ─────────────────────────
+
+export interface CashOnHandDriver {
+  driverId: string;
+  name: string;
+  driverCode: string | null;
+  phone: string | null;
+  status: string;
+  cashOnHandKwd: string;
+}
+
+export interface CashOnHandCompany {
+  fleetPartnerId: string | null;
+  name: string;
+  driverCount: number;
+  driversCarrying: number;
+  cashOnHandKwd: string;
+  /** The company's own cash account with Darb; null for Darb's own drivers. */
+  walletKwd: string | null;
+  drivers: CashOnHandDriver[];
+}
+
+export interface CashOnHandPayload {
+  totalKwd: string;
+  asOf: string;
+  companies: CashOnHandCompany[];
 }

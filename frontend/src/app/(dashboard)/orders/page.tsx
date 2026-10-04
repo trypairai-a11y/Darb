@@ -7,7 +7,7 @@ import { useMemo, useState } from "react";
 import HqTabs from "@/components/hq/HqTabs";
 import { OPS_TABS } from "@/lib/hqTabs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { RefreshCw, UserPlus2, XCircle } from "lucide-react";
+import { PackageCheck, RefreshCw, UserPlus2, XCircle } from "lucide-react";
 import DataTable from "@/components/shared/DataTable";
 import FilterBar from "@/components/shared/FilterBar";
 import SlidePanel from "@/components/shared/SlidePanel";
@@ -54,6 +54,7 @@ type PendingAction =
   | { kind: "redispatch" }
   | { kind: "cancel" }
   | { kind: "reason" }
+  | { kind: "return" }
   | null;
 
 export default function DeliveryOrdersPage() {
@@ -159,6 +160,8 @@ export default function DeliveryOrdersPage() {
         await deliveryOrdersApi.redispatch(selectedId);
       } else if (pending.kind === "reason") {
         await deliveryOrdersApi.recordReason(selectedId, reasonDraft.trim());
+      } else if (pending.kind === "return") {
+        await deliveryOrdersApi.returnToMerchant(selectedId);
       } else {
         await deliveryOrdersApi.cancel(selectedId, cancelReason.trim() || undefined);
       }
@@ -270,6 +273,8 @@ export default function DeliveryOrdersPage() {
 
   const canAct =
     canEdit && order && !["DELIVERED", "CANCELLED", "REJECTED"].includes(order.status);
+  // FAILED is the only status RETURNED may be reached from (orderStateMachine).
+  const canReturn = canEdit && order?.status === "FAILED";
 
   return (
     <div className="space-y-6">
@@ -444,6 +449,25 @@ export default function DeliveryOrdersPage() {
               </section>
             )}
 
+            {/* Client note (2026-10-04): "still it not showing that the order
+                have been returned to store". The Return to store action only
+                existed in the Live tab's panel, so from this drawer a FAILED
+                order whose driver never confirmed the hand-back had no way to
+                be closed out, and its timeline stopped at Delivery failed. */}
+            {canReturn && (
+              <section className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setPending({ kind: "return" })}
+                  className="inline-flex items-center gap-1.5 px-3.5 h-9 text-xs font-medium rounded-pill bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors"
+                  data-testid="orders-return-button"
+                >
+                  <PackageCheck size={13} aria-hidden="true" />
+                  {t("dispatch.returnToMerchant")}
+                </button>
+              </section>
+            )}
+
             {/* Candidates for reassign */}
             {reassigning && (
               <section>
@@ -541,6 +565,16 @@ export default function DeliveryOrdersPage() {
         variant="default"
         loading={actionBusy}
         confirmLabel={t("dispatch.assign")}
+        onConfirm={() => void runPendingAction()}
+        onCancel={() => setPending(null)}
+      />
+      <ConfirmModal
+        open={pending?.kind === "return"}
+        title={t("dispatch.returnConfirmTitle")}
+        message={t("dispatch.returnConfirmMessage")}
+        variant="default"
+        loading={actionBusy}
+        confirmLabel={t("dispatch.returnToMerchant")}
         onConfirm={() => void runPendingAction()}
         onCancel={() => setPending(null)}
       />

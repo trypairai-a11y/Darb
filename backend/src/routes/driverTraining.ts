@@ -22,6 +22,7 @@ import {
   createTrainingSession,
   issuePracticeOrder,
   listTrainingSessions,
+  setTrainingAutoIssue,
   startTrainingSession,
   trainingSessionDetail,
 } from "../services/training/driverTrainingService";
@@ -123,6 +124,29 @@ router.patch("/:id/period", rbac(...RUN), async (req: Request, res: Response) =>
         tenantId: req.user!.tenantId,
         sessionId: req.params.id,
         periodDays: Number(req.body?.periodDays),
+      }),
+    );
+  } catch (err) {
+    fail(res, err);
+  }
+});
+
+/**
+ * Revision 21 (#3) — "orders should be sent automatically, with the option to
+ * send manual orders". The switch per window; the manual button below stays.
+ */
+router.patch("/:id/auto-issue", rbac(...RUN), async (req: Request, res: Response) => {
+  try {
+    const enabled = req.body?.enabled;
+    if (typeof enabled !== "boolean") {
+      res.status(400).json({ error: "enabled must be true or false" });
+      return;
+    }
+    res.json(
+      await setTrainingAutoIssue({
+        tenantId: req.user!.tenantId,
+        sessionId: req.params.id,
+        enabled,
       }),
     );
   } catch (err) {

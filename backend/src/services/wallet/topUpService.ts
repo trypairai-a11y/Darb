@@ -266,6 +266,9 @@ export async function confirmTopUp(opts: {
   topUpId: string;
   providerRef?: string | null;
   provider?: string | null;
+  /** Revision 21 (#5) — the desk's feedback, shown to the shop beside the row. */
+  note?: string | null;
+  actorId?: string | null;
 }): Promise<{ ok: boolean; alreadyPaid: boolean }> {
   /**
    * The claim and the credit are ONE transaction.
@@ -315,6 +318,8 @@ export async function confirmTopUp(opts: {
         paidAt: new Date(),
         ...(opts.providerRef ? { providerRef: opts.providerRef } : {}),
         ...(opts.provider ? { provider: opts.provider } : {}),
+        ...(opts.note?.trim() ? { reviewNote: opts.note.trim() } : {}),
+        ...(opts.actorId ? { reviewedById: opts.actorId } : {}),
       },
     });
 
@@ -345,11 +350,25 @@ export async function confirmTopUp(opts: {
   return result;
 }
 
-/** Give up on a pending top-up. Never touches a paid one. */
-export async function cancelTopUp(tenantId: string, topUpId: string): Promise<boolean> {
+/**
+ * Give up on a pending top-up. Never touches a paid one.
+ *
+ * The shop cancels its own with no note; the finance desk cancels with a
+ * reason (revision 21 #5), which is stored on the row so the shop reads why
+ * its transfer was refused instead of ringing to ask.
+ */
+export async function cancelTopUp(
+  tenantId: string,
+  topUpId: string,
+  opts?: { reason?: string | null; actorId?: string | null },
+): Promise<boolean> {
   const result = await prisma.vendorTopUp.updateMany({
     where: { id: topUpId, tenantId, status: "PENDING" },
-    data: { status: "CANCELLED" },
+    data: {
+      status: "CANCELLED",
+      ...(opts?.reason?.trim() ? { reviewNote: opts.reason.trim() } : {}),
+      ...(opts?.actorId ? { reviewedById: opts.actorId } : {}),
+    },
   });
   return result.count > 0;
 }

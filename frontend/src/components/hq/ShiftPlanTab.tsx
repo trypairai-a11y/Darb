@@ -16,6 +16,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarRange, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import ConfirmModal from "@/components/shared/ConfirmModal";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
@@ -73,8 +74,15 @@ export default function ShiftPlanTab() {
   const zones = payload?.zones ?? [];
   const windows = payload?.windows ?? [];
   const drivers = payload?.drivers ?? [];
+  // Revision 21 (#2): "put the total number of drivers available". Total in
+  // the header, per area in the row, and a cell that asks for more than the
+  // area has is marked, because the app can never fill it.
+  const availability = payload?.availability ?? { total: 0, unassigned: 0, byZone: {} };
   const isDraft = plan?.status === "DRAFT";
-  const editable = canPlan && isDraft;
+  const isApproved = plan?.status === "APPROVED";
+  // Revision 21b: "must give the option to adjust the plan after approving".
+  // An approved week stays editable; saving it rewrites the live grid.
+  const editable = canPlan && (isDraft || isApproved);
 
   const byCell = useMemo(() => {
     const map = new Map<string, ShiftPlanEntry>();
@@ -104,14 +112,27 @@ export default function ShiftPlanTab() {
     toast.error(message ?? t("errors.savingData"));
   }
 
+  // Revision 21c: "still I can't change the plan, need to be able to reset
+  // the plan". Build it again on an APPROVED week used to answer 409 and
+  // nothing on screen offered a way through. It now asks first, because the
+  // rebuild drops the approval: the week goes back to a draft that has to be
+  // signed off again, while the driver app keeps booking against the grid
+  // that was approved until then.
+  const [rebuildOpen, setRebuildOpen] = useState(false);
   const generateMutation = useMutation({
-    mutationFn: () => shiftPlanningApi.generatePlan(weekStart),
-    onSuccess: () => {
+    mutationFn: (opts?: { replaceApproved?: boolean }) => shiftPlanningApi.generatePlan(weekStart, opts),
+    onSuccess: (_result, opts) => {
+      if (opts?.replaceApproved) toast.success(t("shiftPlan.rebuilt"));
+      setRebuildOpen(false);
       setEdits({});
       refresh();
     },
     onError: failWith,
   });
+  function requestRebuild() {
+    if (isApproved) setRebuildOpen(true);
+    else generateMutation.mutate(undefined);
+  }
 
   const saveMutation = useMutation({
     mutationFn: () =>
@@ -123,7 +144,7 @@ export default function ShiftPlanTab() {
         }),
       ),
     onSuccess: () => {
-      toast.success(t("shiftPlan.saved"));
+      toast.success(t(isApproved ? "shiftPlan.amended" : "shiftPlan.saved"));
       setEdits({});
       refresh();
     },
@@ -203,7 +224,7 @@ export default function ShiftPlanTab() {
             <button
               type="button"
               disabled={generateMutation.isPending}
-              onClick={() => generateMutation.mutate()}
+              onClick={() => generateMutation.mutate(undefined)}
               className="mt-4 h-10 px-5 inline-flex items-center gap-2 rounded-pill bg-primary text-white text-sm font-medium disabled:opacity-40"
             >
               <Sparkles size={15} aria-hidden="true" />
@@ -240,6 +261,21 @@ export default function ShiftPlanTab() {
                 <span className="text-sm text-sand-700 tabular-nums">
                   {t("shiftPlan.totalDrivers").replace("{n}", formatNumber(totalSlots, locale))}
                 </span>
+                <span className="text-sand-300">·</span>
+                <span
+                  className="text-sm text-sand-900 font-medium tabular-nums"
+                  data-testid="shift-plan-drivers-available"
+                >
+                  {t("shiftPlan.driversAvailable").replace("{n}", formatNumber(availability.total, locale))}
+                </span>
+                {availability.unassigned > 0 && (
+                  <span className="text-xs text-amber-700 tabular-nums">
+                    {t("shiftPlan.driversUnassigned").replace(
+                      "{n}",
+                      formatNumber(availability.unassigned, locale),
+                    )}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-sand-500 mt-1">
                 <span className="font-medium">{t("shiftPlan.basis")}: </span>
@@ -258,23 +294,32 @@ export default function ShiftPlanTab() {
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
+                  data-testid="shift-plan-rebuild"
                   disabled={generateMutation.isPending}
-                  onClick={() => generateMutation.mutate()}
+                  onClick={requestRebuild}
                   className="h-9 px-4 inline-flex items-center gap-2 rounded-pill border border-sand-200 text-sand-700 text-sm disabled:opacity-40"
                 >
                   <Sparkles size={14} aria-hidden="true" />
                   {t("shiftPlan.regenerate")}
                 </button>
+                {(isDraft || isApproved) && (
+                  <button
+                    type="button"
+                    data-testid="shift-plan-save"
+                    disabled={Object.keys(edits).length === 0 || saveMutation.isPending}
+                    onClick={() => saveMutation.mutate()}
+                    className={cn(
+                      "h-9 px-4 rounded-pill text-sm disabled:opacity-40",
+                      isApproved
+                        ? "bg-primary text-white font-medium"
+                        : "border border-sand-200 text-sand-700",
+                    )}
+                  >
+                    {t("shiftPlan.save")}
+                  </button>
+                )}
                 {isDraft && (
                   <>
-                    <button
-                      type="button"
-                      disabled={Object.keys(edits).length === 0 || saveMutation.isPending}
-                      onClick={() => saveMutation.mutate()}
-                      className="h-9 px-4 rounded-pill border border-sand-200 text-sand-700 text-sm disabled:opacity-40"
-                    >
-                      {t("shiftPlan.save")}
-                    </button>
                     <button
                       type="button"
                       disabled={approveMutation.isPending}
@@ -302,7 +347,12 @@ export default function ShiftPlanTab() {
               {t("shiftPlan.approveWarning")}
             </p>
           )}
-          {!isDraft && (
+          {isApproved && canPlan && (
+            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-2">
+              {t("shiftPlan.amendWarning")}
+            </p>
+          )}
+          {!isDraft && !isApproved && (
             <p className="text-xs text-sand-600 bg-sand-50 border border-sand-200 rounded-2xl px-4 py-2">
               {t("shiftPlan.readOnly")}
             </p>
@@ -320,7 +370,9 @@ export default function ShiftPlanTab() {
                   day === index ? "bg-white text-sand-900 shadow-soft" : "text-sand-600 hover:text-sand-900",
                 )}
               >
-                {t(`shifts.${key}`)}
+                {/* `shiftsPage`, not `shifts`: the wrong namespace shipped in
+                    revision 20 and the tabs read "shifts.daySun" on prod. */}
+                {t(`shiftsPage.${key}`)}
               </button>
             ))}
           </div>
@@ -344,8 +396,14 @@ export default function ShiftPlanTab() {
                 <tbody className="divide-y divide-sand-100">
                   {zones.map((zone) => (
                     <tr key={zone.id} className="hover:bg-sand-50/60">
-                      <td className="px-4 py-2 font-medium text-sand-900 sticky start-0 bg-card">
-                        {zone.name}
+                      <td className="px-4 py-2 sticky start-0 bg-card">
+                        <p className="font-medium text-sand-900">{zone.name}</p>
+                        <p className="text-[11px] text-sand-500 tabular-nums">
+                          {t("shiftPlan.zoneDrivers").replace(
+                            "{n}",
+                            formatNumber(availability.byZone[zone.id] ?? 0, locale),
+                          )}
+                        </p>
                       </td>
                       {windows.map((w) => {
                         const key = `${zone.id}|${day}|${w}`;
@@ -353,6 +411,7 @@ export default function ShiftPlanTab() {
                         if (!entry) return <td key={w} className="px-3 py-2 text-center text-sand-400">n/a</td>;
                         const value = edits[key] ?? entry.approvedDrivers;
                         const changed = value !== entry.proposedDrivers;
+                        const over = value > (availability.byZone[zone.id] ?? 0);
                         const suggested = entry.suggestedDriverIds
                           .map((id) => driverName.get(id))
                           .filter(Boolean)
@@ -372,18 +431,22 @@ export default function ShiftPlanTab() {
                                 }))
                               }
                               title={
-                                suggested
-                                  ? `${t("shiftPlan.suggestedDrivers")}: ${suggested}`
-                                  : t("shiftPlan.noSuggestions")
+                                over
+                                  ? t("shiftPlan.overCapacity")
+                                  : suggested
+                                    ? `${t("shiftPlan.suggestedDrivers")}: ${suggested}`
+                                    : t("shiftPlan.noSuggestions")
                               }
                               className={cn(
                                 "w-14 h-9 text-center rounded-pill border bg-card tabular-nums",
                                 changed ? "border-primary text-primary font-medium" : "border-sand-200",
+                                over && "border-amber-400 bg-amber-50 text-amber-800",
                                 !editable && "opacity-60",
                               )}
                             />
-                            <p className="text-[10px] text-sand-400 mt-0.5 tabular-nums">
-                              {t("shiftPlan.proposed")} {entry.proposedDrivers} · {entry.demandOrders}
+                            <p className="text-[10px] text-sand-400 mt-0.5 tabular-nums whitespace-nowrap">
+                              {t("shiftPlan.proposed")} {entry.proposedDrivers} ·{" "}
+                              {t("shiftPlan.ordersCount").replace("{n}", String(entry.demandOrders))}
                             </p>
                           </td>
                         );
@@ -396,6 +459,17 @@ export default function ShiftPlanTab() {
           </div>
         </>
       )}
+
+      <ConfirmModal
+        open={rebuildOpen}
+        title={t("shiftPlan.rebuildTitle")}
+        message={t("shiftPlan.rebuildConfirm")}
+        confirmLabel={t("shiftPlan.rebuildAction")}
+        variant="warning"
+        loading={generateMutation.isPending}
+        onConfirm={() => generateMutation.mutate({ replaceApproved: true })}
+        onCancel={() => setRebuildOpen(false)}
+      />
     </div>
   );
 }

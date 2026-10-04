@@ -64,6 +64,8 @@ export const FINANCE_TABS: HqTab[] = [
   { key: "reconciliation", i18n: "reports.viewReconciliation", href: "/finance?tab=reconciliation" },
   { key: "payments", i18n: "financeDesk.tabPayments", href: "/finance?tab=payments" },
   { key: "disputes", i18n: "financeDesk.tabDisputes", href: "/finance?tab=disputes" },
+  // Revision 21c — cash still with each delivery company, by driver.
+  { key: "cash-on-hand", i18n: "financeDesk.tabCashOnHand", href: "/finance?tab=cash-on-hand" },
 ];
 
 /**

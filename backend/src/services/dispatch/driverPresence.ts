@@ -66,8 +66,10 @@ export async function releaseDriverToOnline(
   tenantId: string,
   driverId: string
 ): Promise<void> {
+  // FAILED is active too (revision 21c): the driver is carrying that order
+  // back to the shop, and is free only once it reads RETURNED.
   const stillActive = await tx.deliveryOrder.count({
-    where: { tenantId, driverId, status: { in: ["ASSIGNED", "PICKED_UP"] } },
+    where: { tenantId, driverId, status: { in: ["ASSIGNED", "PICKED_UP", "FAILED"] } },
   });
   if (stillActive > 0) return;
   await tx.courierOnlineSession.updateMany({

@@ -197,7 +197,11 @@ router.patch("/drivers/:id/zone", rbac(...PLANNERS), async (req: Request, res: R
 
 function planFail(res: Response, err: unknown) {
   const status = (err as { statusCode?: number })?.statusCode ?? 500;
-  res.status(status).json({ error: err instanceof Error ? err.message : "Request failed" });
+  const code = (err as { code?: string })?.code;
+  res.status(status).json({
+    error: err instanceof Error ? err.message : "Request failed",
+    ...(typeof code === "string" ? { code } : {}),
+  });
 }
 
 /** The week to plan, from ?weekStart=YYYY-MM-DD. Defaults to next week. */
@@ -222,7 +226,13 @@ router.get("/plan", async (req: Request, res: Response) => {
   }
 });
 
-/** Generate, or regenerate, the draft for a week. */
+/**
+ * Generate, or regenerate, the draft for a week.
+ *
+ * `replaceApproved: true` in the body rebuilds a week that is already
+ * APPROVED (revision 21c). The plan returns to DRAFT; the capacity grid the
+ * driver app books against stays as it was until the new draft is approved.
+ */
 router.post("/plan/generate", rbac(...PLANNERS), async (req: Request, res: Response) => {
   try {
     const raw = typeof req.body?.weekStart === "string" ? req.body.weekStart : "";
@@ -235,6 +245,7 @@ router.post("/plan/generate", rbac(...PLANNERS), async (req: Request, res: Respo
       tenantId: req.user!.tenantId,
       weekStart,
       ...(req.body?.lookbackWeeks ? { lookbackWeeks: Number(req.body.lookbackWeeks) } : {}),
+      replaceApproved: req.body?.replaceApproved === true,
     });
     res.status(201).json(result);
   } catch (err) {

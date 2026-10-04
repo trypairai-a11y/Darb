@@ -27,6 +27,7 @@ import ReportsPanel, { type ReportView } from "@/components/finance/ReportsPanel
 import HqTabs from "@/components/hq/HqTabs";
 import PaymentsTab from "@/components/hq/PaymentsTab";
 import DisputesTab from "@/components/hq/DisputesTab";
+import CashOnHandTab from "@/components/hq/CashOnHandTab";
 import { FINANCE_TABS } from "@/lib/hqTabs";
 import { walletsApi, fetchAllPages } from "@/lib/darbApi";
 import type { WalletAccount, WalletEntry } from "@/types/darb";
@@ -44,10 +45,10 @@ import { formatKwd } from "@/i18n/format";
  *
  * Cash hand-ins still live at /cash-desk.
  */
-type Tab = ReportView | "payments" | "disputes";
+type Tab = ReportView | "payments" | "disputes" | "cash-on-hand";
 
 const REPORT_TABS: ReportView[] = ["ledger", "vendor-statements", "reconciliation"];
-const TABS: Tab[] = [...REPORT_TABS, "payments", "disputes"];
+const TABS: Tab[] = [...REPORT_TABS, "payments", "disputes", "cash-on-hand"];
 
 function isTab(value: string | null): value is Tab {
   return TABS.includes(value as Tab);
@@ -180,6 +181,8 @@ function MoneyScreen() {
         <PaymentsTab />
       ) : tab === "disputes" ? (
         <DisputesTab />
+      ) : tab === "cash-on-hand" ? (
+        <CashOnHandTab />
       ) : (
         /* Remounting on a type change is deliberate: it reseeds the panel's
            own filter state from the deep link. */

@@ -1300,7 +1300,7 @@ export interface Messages {
     setupShiftsDesc: string;
     setupRequests: string;
     setupRequestsDesc: string;
-    backToSetup: string;
+    backTo: string;
     grow: string;
     growSubtitle: string;
   };
@@ -1381,13 +1381,13 @@ export interface Messages {
     zoneActivated: string;
   };
   hq: { ops: string; compliance: string; finance: string; admin: string; opsTitle: string; opsSubtitle: string; tabLive: string; tabOrders: string; tabEquipment: string; tabZones: string; tabDriverTracking: string; tabShiftPlanning: string; tabDriverTraining: string; tabOnboarding: string; openRequests: string; openFull: string };
-  driverTracking: { title: string; subtitle: string; windowDays: string; driver: string; company: string; area: string; state: string; delivered: string; failed: string; onTime: string; acceptance: string; rating: string; documents: string; lastSeen: string; actions: string; activate: string; deactivate: string; suspend: string; freeze: string; unfreeze: string; sendToTraining: string; frozen: string; inTraining: string; freezeReason: string; freezeReasonHint: string; trainingPeriod: string; days: string; oneDay: string; trainingReason: string; sent: string; stateSaved: string; empty: string; searchPlaceholder: string; allCompanies: string; allAreas: string; allStates: string; inTrainingBlocked: string };
-  shiftPlan: { title: string; subtitle: string; weekOf: string; generate: string; regenerate: string; approve: string; discard: string; statusDraft: string; statusApproved: string; statusDiscarded: string; noPlan: string; noPlanHint: string; basis: string; proposed: string; approved: string; demand: string; zone: string; window: string; save: string; saved: string; approvedToast: string; approveWarning: string; approvedBy: string; suggestedDrivers: string; noSuggestions: string; readOnly: string; weekAlreadyApproved: string; prevWeek: string; nextWeek: string; totalDrivers: string };
-  driverTraining: { title: string; subtitle: string; newSession: string; statusScheduled: string; statusInProgress: string; statusPassed: string; statusFailed: string; statusCancelled: string; period: string; changePeriod: string; ends: string; issueOrder: string; pickupPoint: string; dropoffAddress: string; customerName: string; minutes: string; orders: string; noOrders: string; assigned: string; deliveredCount: string; failedCount: string; inFlight: string; onTimeRate: string; avgMinutes: string; podRate: string; pass: string; fail: string; cancel: string; outcomeNote: string; passHint: string; failHint: string; empty: string; started: string; orderIssued: string; periodSaved: string; completed: string; practiceBadge: string; moneyNote: string; start: string; selectDriver: string; noEligibleDrivers: string };
+  driverTracking: { title: string; subtitle: string; windowDays: string; driver: string; company: string; area: string; state: string; delivered: string; failed: string; onTime: string; acceptance: string; rating: string; documents: string; lastSeen: string; actions: string; activate: string; deactivate: string; suspend: string; freeze: string; unfreeze: string; sendToTraining: string; frozen: string; inTraining: string; freezeReason: string; freezeReasonHint: string; trainingPeriod: string; days: string; oneDay: string; trainingReason: string; sent: string; stateSaved: string; empty: string; searchPlaceholder: string; allCompanies: string; allAreas: string; allStates: string; inTrainingBlocked: string; passTraining: string; failTraining: string; finishTrainingTitle: string; passTrainingConfirm: string; failTrainingConfirm: string; trainingFinished: string; violations: string; violationsHint: string; rejections: string; rejectionsHint: string; openIssues: string; filterBy: string; filterAny: string; filterNone: string; filterAtLeast: string; filterBelow: string; filterBetween: string; filterNotRated: string; docsComplete: string; docsMissing: string; clearFilters: string; sortHint: string; matching: string };
+  shiftPlan: { title: string; subtitle: string; weekOf: string; generate: string; regenerate: string; approve: string; discard: string; statusDraft: string; statusApproved: string; statusDiscarded: string; noPlan: string; noPlanHint: string; basis: string; proposed: string; approved: string; demand: string; zone: string; window: string; save: string; saved: string; approvedToast: string; approveWarning: string; approvedBy: string; suggestedDrivers: string; noSuggestions: string; readOnly: string; weekAlreadyApproved: string; prevWeek: string; nextWeek: string; totalDrivers: string; driversAvailable: string; driversUnassigned: string; zoneDrivers: string; overCapacity: string; ordersCount: string; amendWarning: string; amended: string; rebuildTitle: string; rebuildConfirm: string; rebuildAction: string; rebuilt: string };
+  driverTraining: { title: string; subtitle: string; newSession: string; statusScheduled: string; statusInProgress: string; statusPassed: string; statusFailed: string; statusCancelled: string; period: string; changePeriod: string; ends: string; issueOrder: string; pickupPoint: string; dropoffAddress: string; customerName: string; minutes: string; orders: string; noOrders: string; assigned: string; deliveredCount: string; failedCount: string; inFlight: string; onTimeRate: string; avgMinutes: string; podRate: string; pass: string; fail: string; cancel: string; outcomeNote: string; passHint: string; failHint: string; empty: string; started: string; orderIssued: string; periodSaved: string; completed: string; practiceBadge: string; moneyNote: string; start: string; selectDriver: string; noEligibleDrivers: string; autoIssue: string; autoIssueHint: string; autoIssueSaved: string; autoIssueOn: string; autoIssueOff: string; orderDetails: string; collectFrom: string; deliverTo: string; customer: string; pin: string; pinHint: string; given: string; arrived: string; pickedUp: string; delivered: string; due: string; minutesTaken: string; proofPhoto: string; failureReason: string; openOrder: string; hideDetails: string; failedNext: string; failedNextHint: string; retrain: string; retrainReason: string; retrained: string; terminate: string; terminateTitle: string; terminateConfirm: string; terminated: string };
   hqOnboarding: { title: string; subtitle: string; add: string; typeVendor: string; typeFleet: string; companyName: string; companyNameAr: string; code: string; codeHint: string; contactName: string; contactPhone: string; contactEmail: string; notes: string; statusNew: string; statusInReview: string; statusApproved: string; statusRejected: string; claim: string; approve: string; reject: string; rejectReason: string; approveHint: string; created: string; approvedToast: string; rejectedToast: string; empty: string; openAccount: string; raisedBy: string; codeInUse: string; allTypes: string };
-  compliance: { title: string; subtitle: string; tabDriverDocs: string; tabRenewals: string; tabPartnerDocs: string; autoPass: string; autoFlag: string; autoPending: string; recheck: string; approve: string; reject: string; rejectReason: string; rejectHint: string; requestDocument: string; requestNote: string; requestSent: string; statusREQUESTED: string; statusPENDING_REVIEW: string; statusVALID: string; statusREJECTED: string; statusEXPIRED: string; statusSUPERSEDED: string; owner: string; type: string; expiry: string; uploaded: string; file: string; noFile: string; viewFile: string; flaggedOnly: string; empty: string; approved: string; rejected: string; healthEXPIRED: string; healthEXPIRING: string; healthVALID: string; healthMISSING: string; daysLeft: string; daysOverdue: string; freeze: string; unfreeze: string; freezeReason: string; freezeHintDriver: string; freezeHintPartner: string; frozen: string; froze: string; unfroze: string; horizon: string; expiredCount: string; expiringCount: string; scopeDRIVER: string; scopeCOMPANY: string; scopeVENDOR: string; checkNO_FILE: string; checkNO_EXPIRY: string; checkALREADY_EXPIRED: string; checkEXPIRES_SOON: string; checkEXPIRY_IMPLAUSIBLE: string; checkUNKNOWN_TYPE: string; checkTYPE_MISMATCH: string; checkFILE_TOO_SMALL: string; checkFILE_TOO_LARGE: string; checkUNSUPPORTED_FORMAT: string; checkDUPLICATE_PENDING: string; permissionDenied: string };
-  financeDesk: { tabPayments: string; tabDisputes: string; paymentsTitle: string; paymentsSubtitle: string; account: string; kindVENDOR_TOP_UP: string; kindFLEET_DEPOSIT: string; amount: string; reference: string; requested: string; confirm: string; cancelPayment: string; rejectPayment: string; rejectReason: string; confirmed: string; cancelled: string; alreadyPaid: string; noPayments: string; showAll: string; showPending: string; sideAll: string; sideVendor: string; sideFleet: string; disputesTitle: string; disputesSubtitle: string; disputedStatement: string; period: string; reason: string; openStatement: string; noDisputes: string; reply: string; replyPlaceholder: string; send: string; sendAndResolve: string; replied: string; openTickets: string };
-  adminHub: { title: string; subtitle: string; tabDashboard: string; tabPrices: string; tabAccess: string; now: string; forecast: string; activeVendors: string; activeFleets: string; activeDrivers: string; driversInTraining: string; ordersToday: string; deliveredToday: string; revenueToday: string; openDisputes: string; documentsWaiting: string; onboardingWaiting: string; monthToDate: string; vsLastMonth: string; projectedOrders: string; projectedRevenue: string; growth: string; basisLabel: string; notEnoughHistory: string; darbFees: string; darbFeesHint: string; fleetFees: string; fleetFeesHint: string; openPricing: string; openFleets: string; openRateApprovals: string; company: string; baseFee: string; perKm: string; flatOnly: string; accessHint: string; openPeople: string; openVendors: string; accountManagers: string; manages: string; managesNone: string; staffAccounts: string; surfaces: string };
+  compliance: { title: string; subtitle: string; tabDriverDocs: string; tabRenewals: string; tabPartnerDocs: string; autoPass: string; autoFlag: string; autoPending: string; recheck: string; approve: string; reject: string; rejectReason: string; rejectHint: string; requestDocument: string; requestNote: string; requestSent: string; statusREQUESTED: string; statusPENDING_REVIEW: string; statusVALID: string; statusREJECTED: string; statusEXPIRED: string; statusSUPERSEDED: string; owner: string; type: string; expiry: string; uploaded: string; file: string; noFile: string; viewFile: string; flaggedOnly: string; empty: string; approved: string; rejected: string; healthEXPIRED: string; healthEXPIRING: string; healthVALID: string; healthMISSING: string; daysLeft: string; daysOverdue: string; freeze: string; unfreeze: string; freezeReason: string; freezeHintDriver: string; freezeHintPartner: string; frozen: string; froze: string; unfroze: string; horizon: string; expiredCount: string; expiringCount: string; stateFilter: string; expiringSoon: string; scopeDRIVER: string; scopeCOMPANY: string; scopeVENDOR: string; checkNO_FILE: string; checkNO_EXPIRY: string; checkALREADY_EXPIRED: string; checkEXPIRES_SOON: string; checkEXPIRY_IMPLAUSIBLE: string; checkUNKNOWN_TYPE: string; checkTYPE_MISMATCH: string; checkFILE_TOO_SMALL: string; checkFILE_TOO_LARGE: string; checkUNSUPPORTED_FORMAT: string; checkDUPLICATE_PENDING: string; permissionDenied: string };
+  financeDesk: { tabPayments: string; tabDisputes: string; tabCashOnHand: string; cashTitle: string; cashSubtitle: string; cashCompany: string; cashDrivers: string; cashCarrying: string; cashAmount: string; cashWallet: string; cashTotal: string; cashDownload: string; cashEmpty: string; cashNoDrivers: string; cashDriver: string; cashAsOf: string; paymentsTitle: string; paymentsSubtitle: string; account: string; kindVENDOR_TOP_UP: string; kindFLEET_DEPOSIT: string; amount: string; reference: string; requested: string; confirm: string; cancelPayment: string; rejectPayment: string; rejectReason: string; confirmed: string; cancelled: string; alreadyPaid: string; noPayments: string; showAll: string; showPending: string; sideAll: string; sideVendor: string; sideFleet: string; disputesTitle: string; disputesSubtitle: string; disputedStatement: string; period: string; reason: string; openStatement: string; noDisputes: string; reply: string; replyPlaceholder: string; send: string; sendAndResolve: string; replied: string; openTickets: string; approve: string; approveTitle: string; approveNote: string; approveHint: string; rejectHint: string; feedback: string; noFeedback: string };
+  adminHub: { title: string; subtitle: string; tabDashboard: string; tabPrices: string; tabAccess: string; now: string; forecast: string; activeVendors: string; activeFleets: string; activeDrivers: string; driversInTraining: string; ordersToday: string; deliveredToday: string; revenueToday: string; openDisputes: string; documentsWaiting: string; onboardingWaiting: string; setupIncomplete: string; setupIncompleteHint: string; setupShop: string; setupCompany: string; setupMissingContactPhone: string; monthToDate: string; vsLastMonth: string; projectedOrders: string; projectedRevenue: string; growth: string; basisLabel: string; notEnoughHistory: string; darbFees: string; darbFeesHint: string; fleetFees: string; fleetFeesHint: string; openPricing: string; openFleets: string; openRateApprovals: string; company: string; baseFee: string; perKm: string; flatOnly: string; accessHint: string; openPeople: string; openVendors: string; accountManagers: string; manages: string; managesNone: string; staffAccounts: string; surfaces: string };
   vendorWallet2: { modeTitle: string; modeSingle: string; modeSingleHint: string; modePerBranch: string; modePerBranchHint: string; modeSaved: string; mainWallet: string; branchWallet: string; available: string; allocated: string; spent: string; transfer: string; transferTo: string; transferBack: string; transferAmount: string; transferNote: string; transferred: string; transfers: string; noTransfers: string; statement: string; statementFor: string; mainStatementHint: string; insufficientMain: string; insufficientBranch: string; modeSingleOnly: string; ownerOnly: string; branchEmpty: string };
   hqRequests: {
     title: string;
@@ -1517,6 +1517,12 @@ export interface Messages {
     wallet: string;
     users: string;
     saveProfile: string;
+    setupIncomplete: string;
+    setupMissingPhone: string;
+    setupMissingBranch: string;
+    setupMissingLogin: string;
+    setupHint: string;
+    setupBlocked: string;
     vendorSaved: string;
     vendorDeleted: string;
     deleteConfirmTitle: string;
@@ -1577,6 +1583,11 @@ export interface Messages {
     viewingBranch: string;
     tabLive: string;
     tabDelivered: string;
+    tabPast: string;
+    pastFrom: string;
+    pastTo: string;
+    pastHint: string;
+    pastEmpty: string;
     waitingSince: string;
     etaStore: string;
     etaCustomer: string;
@@ -1955,6 +1966,9 @@ export interface Messages {
     allClear: string;
     autoClearHint: string;
     clearedSection: string;
+    orderTickets: string;
+    orderTicketsHint: string;
+    answerRequest: string;
     sosTitle: string;
     sosSubtitle: string;
     soundLocked: string;
@@ -2147,6 +2161,7 @@ export interface Messages {
     ordersToday: string;
     orders7d: string;
     pendingReview: string;
+    inTraining: string;
     addDriver: string;
     addDriverTitle: string;
     addDriverHint: string;
@@ -3883,7 +3898,7 @@ export const en: Messages = {
     setupShiftsDesc: "Driver areas, and how many drivers each window takes.",
     setupRequests: "Requests and approvals",
     setupRequestsDesc: "Support requests from shops and companies, and pricing waiting for your approval.",
-    backToSetup: "Back to Setup",
+    backTo: "Back to {tab}",
     grow: "Grow",
     growSubtitle: "How your orders are doing, and how to bring customers back.",
   },
@@ -4022,6 +4037,29 @@ export const en: Messages = {
     allAreas: "All areas",
     allStates: "All states",
     inTrainingBlocked: "Close the training window before activating this driver.",
+    passTraining: "Pass and activate",
+    failTraining: "Did not pass",
+    finishTrainingTitle: "Finish training for {name}?",
+    passTrainingConfirm: "The training window closes as passed. The driver becomes active and can be offered orders straight away.",
+    failTrainingConfirm: "The training window closes as not passed. The driver stays inactive; from Driver training you can train them again or terminate the account.",
+    trainingFinished: "Training window closed.",
+    violations: "Violations",
+    violationsHint: "Issues Darb raised about this driver in the window: late login, no orders, rating drop, low acceptance, expiring documents.",
+    rejections: "Rejections",
+    rejectionsHint: "Offers the driver declined or let expire.",
+    openIssues: "{n} still open",
+    filterBy: "Narrow by",
+    filterAny: "Any",
+    filterNone: "None",
+    filterAtLeast: "{n} or more",
+    filterBelow: "Below {n}",
+    filterBetween: "{a} to {b}",
+    filterNotRated: "Not rated yet",
+    docsComplete: "All valid",
+    docsMissing: "Missing some",
+    clearFilters: "Clear",
+    sortHint: "Click a column to sort by it",
+    matching: "{n} of {total} drivers",
   },
   shiftPlan: {
     title: "Shift planning",
@@ -4054,6 +4092,17 @@ export const en: Messages = {
     prevWeek: "Previous week",
     nextWeek: "Next week",
     totalDrivers: "{n} driver slots across the week",
+    driversAvailable: "{n} drivers available",
+    driversUnassigned: "{n} not yet assigned to an area",
+    zoneDrivers: "{n} drivers",
+    overCapacity: "More slots than this area has drivers",
+    ordersCount: "{n} orders",
+    amendWarning: "This week is approved. Saving a change updates the grid the driver app books against straight away.",
+    amended: "Plan updated. The driver app books against the new numbers now.",
+    rebuildTitle: "Start this week over?",
+    rebuildConfirm: "This week is approved. Building it again throws the current plan away and drafts a fresh proposal you will need to approve. Drivers keep booking against the approved grid until you do.",
+    rebuildAction: "Build it again",
+    rebuilt: "New proposal built. Approve it to send it to the driver app.",
   },
   driverTraining: {
     title: "Driver training",
@@ -4097,6 +4146,36 @@ export const en: Messages = {
     start: "Start now",
     selectDriver: "Driver",
     noEligibleDrivers: "Every driver already has an open training window.",
+    autoIssue: "Send practice orders automatically",
+    autoIssueHint: "The next practice order is given the moment the last one ends, until the window closes. You can still give one by hand.",
+    autoIssueSaved: "Saved",
+    autoIssueOn: "On",
+    autoIssueOff: "Off",
+    orderDetails: "Details",
+    collectFrom: "Collect from",
+    deliverTo: "Deliver to",
+    customer: "Customer",
+    pin: "Delivery PIN",
+    pinHint: "You are the customer on a practice order. The app asks the driver for this at the door.",
+    given: "Given",
+    arrived: "Arrived at the counter",
+    pickedUp: "Picked up",
+    delivered: "Delivered",
+    due: "Due by",
+    minutesTaken: "Minutes taken",
+    proofPhoto: "Proof photo",
+    failureReason: "Why it failed",
+    openOrder: "Open the full order",
+    hideDetails: "Hide",
+    failedNext: "What happens to this driver now?",
+    failedNextHint: "Run another training window, or let them go. Until you choose, the account stays inactive.",
+    retrain: "Train again",
+    retrainReason: "Retraining after a window that did not pass",
+    retrained: "A new training window is open for this driver.",
+    terminate: "Terminate the account",
+    terminateTitle: "Terminate this driver?",
+    terminateConfirm: "The account is closed. The driver leaves every roster and plan and cannot be offered an order. This cannot be undone from here.",
+    terminated: "Driver account terminated.",
   },
   hqOnboarding: {
     title: "New accounts",
@@ -4179,6 +4258,8 @@ export const en: Messages = {
     froze: "Account frozen",
     unfroze: "Account unfrozen",
     horizon: "Expiring within",
+    stateFilter: "Show",
+    expiringSoon: "Expiring soon",
     expiredCount: "{n} expired",
     expiringCount: "{n} expiring",
     scopeDRIVER: "Driver",
@@ -4200,6 +4281,20 @@ export const en: Messages = {
   financeDesk: {
     tabPayments: "Payments",
     tabDisputes: "Disputes",
+    tabCashOnHand: "Cash with companies",
+    cashTitle: "Cash with delivery companies",
+    cashSubtitle: "Customer cash the drivers have collected and not yet handed in, by company. Open a company to see each driver.",
+    cashCompany: "Company",
+    cashDrivers: "Drivers",
+    cashCarrying: "Carrying cash",
+    cashAmount: "Cash on hand",
+    cashWallet: "Wallet",
+    cashTotal: "Total with companies",
+    cashDownload: "Download",
+    cashEmpty: "No cash is outstanding with any company.",
+    cashNoDrivers: "No driver in this company is carrying cash.",
+    cashDriver: "Driver",
+    cashAsOf: "As of {time}",
     paymentsTitle: "Payments waiting to be acknowledged",
     paymentsSubtitle: "Transfers from shops and delivery companies. Confirming one credits the wallet.",
     account: "Account",
@@ -4234,6 +4329,13 @@ export const en: Messages = {
     sendAndResolve: "Send and close",
     replied: "Reply sent",
     openTickets: "Money questions",
+    approve: "Approve",
+    approveTitle: "Approve the payment",
+    approveNote: "Feedback for the shop or company",
+    approveHint: "Approving credits their wallet. Anything you write here is shown to them beside the payment.",
+    rejectHint: "They see this reason beside the payment.",
+    feedback: "Feedback",
+    noFeedback: "Optional",
   },
   adminHub: {
     title: "Admin",
@@ -4253,6 +4355,11 @@ export const en: Messages = {
     openDisputes: "Open disputes",
     documentsWaiting: "Documents waiting",
     onboardingWaiting: "New accounts waiting",
+    setupIncomplete: "Onboarding still incomplete",
+    setupIncompleteHint: "Approved accounts that cannot go live until their details are filled in.",
+    setupShop: "Shop",
+    setupCompany: "Delivery company",
+    setupMissingContactPhone: "a contact number",
     monthToDate: "This month so far",
     vsLastMonth: "Same days last month",
     projectedOrders: "Orders, next 30 days",
@@ -4440,6 +4547,12 @@ export const en: Messages = {
     wallet: "Wallet",
     users: "Users",
     saveProfile: "Save profile",
+    setupIncomplete: "Setup incomplete",
+    setupMissingPhone: "a phone number",
+    setupMissingBranch: "at least one branch",
+    setupMissingLogin: "a portal login",
+    setupHint: "Still needed before this account can be active: {items}.",
+    setupBlocked: "Fill in the missing details before activating this account.",
     vendorSaved: "Vendor saved",
     vendorDeleted: "Vendor deleted",
     deleteConfirmTitle: "Delete vendor?",
@@ -4500,6 +4613,11 @@ export const en: Messages = {
     viewingBranch: "Viewing",
     tabLive: "Live",
     tabDelivered: "Delivered",
+    tabPast: "Past orders",
+    pastFrom: "From",
+    pastTo: "To",
+    pastHint: "Every order placed between the two dates, whichever way it ended.",
+    pastEmpty: "No orders between those dates.",
     waitingSince: "waiting",
     etaStore: "to shop",
     etaCustomer: "to customer",
@@ -4882,6 +5000,9 @@ export const en: Messages = {
     allClear: "All clear. Nothing needs attention.",
     autoClearHint: "Alerts clear themselves the moment the problem resolves. Nothing to acknowledge.",
     clearedSection: "Cleared",
+    orderTickets: "Support requests about orders",
+    orderTicketsHint: "Raised by shops and delivery companies, still waiting for an answer.",
+    answerRequest: "Answer",
     sosTitle: "Emergency",
     sosSubtitle: "Open reports from the field. Answer fast, close with a note.",
     soundLocked: "Click anywhere to enable sound alerts.",
@@ -5057,6 +5178,7 @@ export const en: Messages = {
     ordersToday: "Today",
     orders7d: "7 days",
     pendingReview: "Pending Darb review",
+    inTraining: "In training",
     addDriver: "Add driver",
     addDriverTitle: "Put a driver forward",
     addDriverHint:
@@ -6784,7 +6906,7 @@ export const ar: Messages = {
     setupShiftsDesc: "مناطق السائقين، وعدد السائقين لكل فترة.",
     setupRequests: "الطلبات والموافقات",
     setupRequestsDesc: "طلبات الدعم من التجار والشركات، والأسعار المقترحة بانتظار موافقتك.",
-    backToSetup: "رجوع إلى الإعداد",
+    backTo: "رجوع إلى {tab}",
     grow: "النمو",
     growSubtitle: "كيف تسير طلباتك، وكيف تُعيد العملاء إليك.",
   },
@@ -6918,6 +7040,29 @@ export const ar: Messages = {
     allAreas: "كل المناطق",
     allStates: "كل الحالات",
     inTrainingBlocked: "أغلق فترة التدريب قبل تفعيل هذا المندوب.",
+    passTraining: "اجتاز وفعّل",
+    failTraining: "لم يجتز",
+    finishTrainingTitle: "إنهاء تدريب {name}؟",
+    passTrainingConfirm: "تُغلق فترة التدريب كمجتازة. يصبح المندوب نشطا ويمكن عرض الطلبات عليه فورا.",
+    failTrainingConfirm: "تُغلق فترة التدريب كغير مجتازة. يبقى المندوب غير نشط؛ من تبويب تدريب المندوبين يمكنك إعادة تدريبه أو إنهاء حسابه.",
+    trainingFinished: "أُغلقت فترة التدريب.",
+    violations: "المخالفات",
+    violationsHint: "الملاحظات التي رصدها درب على هذا المندوب خلال الفترة: تأخر الدخول، لا طلبات، تراجع التقييم، قبول منخفض، وثائق على وشك الانتهاء.",
+    rejections: "الرفض",
+    rejectionsHint: "العروض التي رفضها المندوب أو تركها تنتهي.",
+    openIssues: "{n} لا تزال مفتوحة",
+    filterBy: "تصفية حسب",
+    filterAny: "الكل",
+    filterNone: "لا شيء",
+    filterAtLeast: "{n} أو أكثر",
+    filterBelow: "أقل من {n}",
+    filterBetween: "من {a} إلى {b}",
+    filterNotRated: "لم يُقيَّم بعد",
+    docsComplete: "كلها سارية",
+    docsMissing: "ينقصه بعضها",
+    clearFilters: "مسح",
+    sortHint: "اضغط على عمود لترتيب الجدول به",
+    matching: "{n} من {total} مندوب",
   },
   shiftPlan: {
     title: "تخطيط الورديات",
@@ -6950,6 +7095,17 @@ export const ar: Messages = {
     prevWeek: "الأسبوع السابق",
     nextWeek: "الأسبوع التالي",
     totalDrivers: "{n} خانة مندوب خلال الأسبوع",
+    driversAvailable: "{n} مندوب متاح",
+    driversUnassigned: "{n} لم يُخصَّص لمنطقة بعد",
+    zoneDrivers: "{n} مندوب",
+    overCapacity: "الخانات أكثر من مندوبي هذه المنطقة",
+    ordersCount: "{n} طلب",
+    amendWarning: "هذا الأسبوع معتمد. حفظ أي تغيير يحدّث الشبكة التي يحجز عليها تطبيق المندوب فوراً.",
+    amended: "تم تحديث الخطة. تطبيق المندوب يحجز على الأرقام الجديدة الآن.",
+    rebuildTitle: "البدء من جديد لهذا الأسبوع؟",
+    rebuildConfirm: "هذا الأسبوع معتمد. إعادة البناء تلغي الخطة الحالية وتنشئ اقتراحا جديدا عليك اعتماده. يستمر المندوبون بالحجز على الجدول المعتمد حتى تعتمد الجديد.",
+    rebuildAction: "أعد البناء",
+    rebuilt: "تم إنشاء اقتراح جديد. اعتمده ليصل إلى تطبيق المندوب.",
   },
   driverTraining: {
     title: "تدريب المندوبين",
@@ -6993,6 +7149,36 @@ export const ar: Messages = {
     start: "ابدأ الآن",
     selectDriver: "المندوب",
     noEligibleDrivers: "كل المندوبين لديهم فترة تدريب مفتوحة.",
+    autoIssue: "إرسال طلبات التدريب تلقائياً",
+    autoIssueHint: "يُعطى الطلب التالي فور انتهاء السابق حتى تنتهي فترة التدريب. ويمكنك إعطاء طلب يدوياً في أي وقت.",
+    autoIssueSaved: "تم الحفظ",
+    autoIssueOn: "مفعّل",
+    autoIssueOff: "متوقف",
+    orderDetails: "التفاصيل",
+    collectFrom: "الاستلام من",
+    deliverTo: "التوصيل إلى",
+    customer: "العميل",
+    pin: "رمز التسليم",
+    pinHint: "أنت العميل في طلب التدريب. التطبيق يطلب هذا الرمز من المندوب عند الباب.",
+    given: "أُعطي",
+    arrived: "وصل إلى المحل",
+    pickedUp: "استلم الطلب",
+    delivered: "تم التوصيل",
+    due: "الموعد النهائي",
+    minutesTaken: "الدقائق المستغرقة",
+    proofPhoto: "صورة الإثبات",
+    failureReason: "سبب الفشل",
+    openOrder: "فتح الطلب كاملاً",
+    hideDetails: "إخفاء",
+    failedNext: "ماذا يحدث لهذا المندوب الآن؟",
+    failedNextHint: "ابدأ فترة تدريب أخرى، أو أنهِ حسابه. حتى تختار، يبقى الحساب غير نشط.",
+    retrain: "تدريب مرة أخرى",
+    retrainReason: "إعادة تدريب بعد فترة لم يجتزها",
+    retrained: "فُتحت فترة تدريب جديدة لهذا المندوب.",
+    terminate: "إنهاء الحساب",
+    terminateTitle: "إنهاء حساب هذا المندوب؟",
+    terminateConfirm: "يُغلق الحساب. يُزال المندوب من كل جدول وخطة ولا يمكن عرض أي طلب عليه. لا يمكن التراجع عن هذا من هنا.",
+    terminated: "تم إنهاء حساب المندوب.",
   },
   hqOnboarding: {
     title: "حسابات جديدة",
@@ -7075,6 +7261,8 @@ export const ar: Messages = {
     froze: "تم تجميد الحساب",
     unfroze: "تم إلغاء تجميد الحساب",
     horizon: "ينتهي خلال",
+    stateFilter: "عرض",
+    expiringSoon: "على وشك الانتهاء",
     expiredCount: "{n} منتهٍ",
     expiringCount: "{n} يوشك على الانتهاء",
     scopeDRIVER: "مندوب",
@@ -7096,6 +7284,20 @@ export const ar: Messages = {
   financeDesk: {
     tabPayments: "المدفوعات",
     tabDisputes: "الاعتراضات",
+    tabCashOnHand: "النقد لدى الشركات",
+    cashTitle: "النقد لدى شركات التوصيل",
+    cashSubtitle: "نقد العملاء الذي حصّله المندوبون ولم يسلموه بعد، حسب الشركة. افتح الشركة لترى كل مندوب.",
+    cashCompany: "الشركة",
+    cashDrivers: "المندوبون",
+    cashCarrying: "يحملون نقدا",
+    cashAmount: "النقد بحوزتهم",
+    cashWallet: "المحفظة",
+    cashTotal: "الإجمالي لدى الشركات",
+    cashDownload: "تنزيل",
+    cashEmpty: "لا يوجد نقد مستحق لدى أي شركة.",
+    cashNoDrivers: "لا يحمل أي مندوب في هذه الشركة نقدا.",
+    cashDriver: "المندوب",
+    cashAsOf: "حتى {time}",
     paymentsTitle: "مدفوعات بانتظار التأكيد",
     paymentsSubtitle: "تحويلات من المتاجر وشركات التوصيل. التأكيد يضيف الرصيد للمحفظة.",
     account: "الحساب",
@@ -7130,6 +7332,13 @@ export const ar: Messages = {
     sendAndResolve: "إرسال وإغلاق",
     replied: "تم إرسال الرد",
     openTickets: "استفسارات مالية",
+    approve: "اعتماد",
+    approveTitle: "اعتماد الدفعة",
+    approveNote: "ملاحظة للمتجر أو الشركة",
+    approveHint: "الاعتماد يضيف المبلغ إلى محفظتهم. وما تكتبه هنا يظهر لهم بجانب الدفعة.",
+    rejectHint: "يظهر لهم هذا السبب بجانب الدفعة.",
+    feedback: "ملاحظة",
+    noFeedback: "اختياري",
   },
   adminHub: {
     title: "الإدارة",
@@ -7149,6 +7358,11 @@ export const ar: Messages = {
     openDisputes: "اعتراضات مفتوحة",
     documentsWaiting: "مستندات بالانتظار",
     onboardingWaiting: "حسابات جديدة بالانتظار",
+    setupIncomplete: "تسجيل لم يكتمل بعد",
+    setupIncompleteHint: "حسابات معتمدة لا يمكن تشغيلها حتى تُستكمل بياناتها.",
+    setupShop: "متجر",
+    setupCompany: "شركة توصيل",
+    setupMissingContactPhone: "رقم تواصل",
     monthToDate: "هذا الشهر حتى الآن",
     vsLastMonth: "نفس الأيام الشهر الماضي",
     projectedOrders: "الطلبات، الـ30 يوما القادمة",
@@ -7336,6 +7550,12 @@ export const ar: Messages = {
     wallet: "المحفظة",
     users: "المستخدمون",
     saveProfile: "حفظ الملف",
+    setupIncomplete: "الإعداد غير مكتمل",
+    setupMissingPhone: "رقم هاتف",
+    setupMissingBranch: "فرع واحد على الأقل",
+    setupMissingLogin: "حساب دخول للبوابة",
+    setupHint: "ما زال مطلوبا قبل تفعيل هذا الحساب: {items}.",
+    setupBlocked: "أكمل البيانات الناقصة قبل تفعيل هذا الحساب.",
     vendorSaved: "تم حفظ المطعم",
     vendorDeleted: "تم حذف المطعم",
     deleteConfirmTitle: "حذف المطعم؟",
@@ -7396,6 +7616,11 @@ export const ar: Messages = {
     viewingBranch: "تعرض",
     tabLive: "الجارية",
     tabDelivered: "المُسلّمة",
+    tabPast: "الطلبات السابقة",
+    pastFrom: "من",
+    pastTo: "إلى",
+    pastHint: "كل الطلبات بين التاريخين، أيا كانت نتيجتها.",
+    pastEmpty: "لا توجد طلبات بين هذين التاريخين.",
     waitingSince: "بالانتظار",
     etaStore: "إلى المحل",
     etaCustomer: "إلى العميل",
@@ -7766,6 +7991,9 @@ export const ar: Messages = {
     allClear: "كل شيء على ما يرام. لا شيء يحتاج انتباهاً.",
     autoClearHint: "تُزال التنبيهات تلقائياً بمجرد انتهاء المشكلة. لا حاجة لتأكيد الاستلام.",
     clearedSection: "تمت المعالجة",
+    orderTickets: "طلبات دعم بخصوص الطلبات",
+    orderTicketsHint: "رفعتها المتاجر وشركات التوصيل ولا تزال بانتظار الرد.",
+    answerRequest: "رد",
     sosTitle: "طوارئ",
     sosSubtitle: "بلاغات مفتوحة من الميدان. استجب بسرعة وأغلقها بملاحظة.",
     soundLocked: "انقر في أي مكان لتفعيل التنبيهات الصوتية.",
@@ -7939,6 +8167,7 @@ export const ar: Messages = {
     ordersToday: "اليوم",
     orders7d: "٧ أيام",
     pendingReview: "بانتظار مراجعة درب",
+    inTraining: "قيد التدريب",
     addDriver: "إضافة سائق",
     addDriverTitle: "ترشيح سائق جديد",
     addDriverHint:

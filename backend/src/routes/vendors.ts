@@ -13,6 +13,7 @@ import { validateBody } from "../utils/validate";
 import { getPagination, paginatedResponse } from "../utils/pagination";
 import { pointInBbox, Bbox } from "../utils/geo";
 import { confirmTopUp } from "../services/wallet/topUpService";
+import { assertVendorSetupComplete, vendorSetupMissing } from "../services/onboarding/setupCompleteness";
 import {
   ACCEPTED_VENDOR_ROLE_INPUTS,
   normaliseVendorRole,
@@ -246,7 +247,7 @@ router.get("/", async (req: Request, res: Response) => {
         take: limit,
         orderBy: { name: "asc" },
         include: {
-          _count: { select: { branches: true } },
+          _count: { select: { branches: true, users: true } },
           foodicsConnection: { select: { status: true } },
         },
       }),
@@ -276,6 +277,13 @@ router.get("/", async (req: Request, res: Response) => {
       return {
         ...vendor,
         branchCount: _count?.branches ?? 0,
+        // Revision 21c: which of "the cells" are still empty. The badge and
+        // the Admin card read this; the activation guard enforces it.
+        setupMissing: vendorSetupMissing({
+          phone: v.phone,
+          branchCount: _count?.branches ?? 0,
+          userCount: _count?.users ?? 0,
+        }),
         // Tolerate absence of a FoodicsConnection row.
         foodicsConnected: foodicsConnection?.status === "CONNECTED",
         // null (not "0.000") when the vendor has no wallet account yet — the
@@ -337,9 +345,15 @@ router.get("/:id", async (req: Request, res: Response) => {
         },
         // Revision 4 (#7) — the profile tab shows which price list applies.
         deliveryPlan: { select: { id: true, name: true, type: true, isActive: true } },
+        _count: { select: { users: true } },
       },
     });
     if (!vendor) { res.status(404).json({ error: "Vendor not found" }); return; }
+    const setupMissing = vendorSetupMissing({
+      phone: vendor.phone,
+      branchCount: vendor.branches?.length ?? 0,
+      userCount: vendor._count?.users ?? 0,
+    });
 
     // Direct WalletAccount read — do NOT route through the wallet service
     // (parallel track). ownerKey convention: "VENDOR:{vendorId}".
@@ -347,9 +361,10 @@ router.get("/:id", async (req: Request, res: Response) => {
       where: { tenantId, ownerKey: `VENDOR:${vendor.id}` },
     });
 
-    const { foodicsConnection, ...rest } = vendor as any;
+    const { foodicsConnection, _count: _ignoredCount, ...rest } = vendor as any;
     res.json({
       ...rest,
+      setupMissing,
       foodics: {
         connected: foodicsConnection?.status === "CONNECTED",
         status: foodicsConnection?.status ?? null,
@@ -390,6 +405,24 @@ router.put(
         });
         if (!plan) { res.status(400).json({ error: "Delivery plan not found" }); return; }
       }
+      // Revision 21c: switching a shop on needs its details filled. The
+      // guard is on the transition only, so a shop that is already active
+      // can still have its other fields edited.
+      if ((req.body as { isActive?: boolean }).isActive === true) {
+        const current = await prisma.vendor.findFirst({
+          where: { id: req.params.id, tenantId },
+          select: { isActive: true },
+        });
+        if (current && !current.isActive) {
+          // The body's own phone counts: an admin typing the number and
+          // ticking Active in one save must not be refused for the number.
+          const bodyPhone = (req.body as { phone?: string | null }).phone;
+          if (typeof bodyPhone === "string" && bodyPhone.trim()) {
+            await prisma.vendor.updateMany({ where: { id: req.params.id, tenantId }, data: { phone: bodyPhone } });
+          }
+          await assertVendorSetupComplete(tenantId, req.params.id);
+        }
+      }
       const result = await prisma.vendor.updateMany({
         where: { id: req.params.id, tenantId },
         data: req.body,
@@ -402,6 +435,10 @@ router.put(
     } catch (err: any) {
       if (err?.code === "P2002") {
         res.status(400).json({ error: "Vendor code already in use" });
+        return;
+      }
+      if (err?.code === "SETUP_INCOMPLETE") {
+        res.status(409).json({ error: err.message, code: err.code, missing: err.missing });
         return;
       }
       res.status(400).json({ error: err.message });

@@ -9,6 +9,7 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
 import ExcelJS from "exceljs";
+import { Prisma } from "../generated/prisma";
 import { prisma } from "../config";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
@@ -16,7 +17,7 @@ import { rbac } from "../middleware/rbac";
 import { getPagination, paginatedResponse } from "../utils/pagination";
 import { parseLocalDate, parseLocalDateEnd } from "../utils/date";
 import { validateBody } from "../utils/validate";
-import { postAdjustment, toKwdString, WalletError } from "../services/wallet/walletService";
+import { fleetOwnerKey, postAdjustment, toKwdString, WalletError } from "../services/wallet/walletService";
 import { recordRemittance } from "../services/wallet/remittanceService";
 import {
   generateMonthlyStatements,
@@ -32,6 +33,7 @@ import {
 } from "../services/wallet/fleetCashService";
 // Revision 20 — the Finance tab's Payments and Disputes subtabs.
 import { cancelTopUp, confirmTopUp } from "../services/wallet/topUpService";
+import { driverCashBalances } from "../services/wallet/fleetCashService";
 
 const FINANCE_READ = ["ADMIN", "OPS_MANAGER", "ACCOUNTANT"];
 // Revision 4 (#3): CASH_COLLECTOR is the cash desk login. Without it here the
@@ -513,6 +515,133 @@ router.get("/fleet-deposits", rbac(...REMITTANCE_READ), async (req: Request, res
 
 /**
  * @swagger
+ * /api/wallets/cash-on-hand:
+ *   get:
+ *     tags: [Wallets]
+ *     summary: COD cash still with each delivery company, and with which driver
+ *     description: >
+ *       Revision 21c (client note, 2026-09-21): "in the finance I need a
+ *       record of how much cash is with each company, and if I press on the
+ *       company it will show me each driver's cash on hand, also the list
+ *       must be able to download". One grouped read over every driver's
+ *       DRIVER_CASH account, folded by company. ?format=xlsx returns the
+ *       same as a two-sheet workbook (companies, then every driver).
+ */
+router.get("/cash-on-hand", rbac(...FINANCE_READ), async (req: Request, res: Response) => {
+  try {
+    const { tenantId } = req.user!;
+    const drivers = await prisma.driver.findMany({
+      where: { tenantId, status: { not: "TERMINATED" } },
+      select: {
+        id: true, name: true, driverCode: true, phone: true, status: true,
+        fleetPartnerId: true,
+        fleetPartner: { select: { id: true, name: true } },
+      },
+      orderBy: { name: "asc" },
+    });
+    const balances = await driverCashBalances(tenantId, drivers.map((d) => d.id));
+    // Client note (2026-10-04): "add one more column, the wallet for each
+    // delivery company". The company's own cash account with Darb, the same
+    // balance its portal's Cash tab shows, read in one query for every company.
+    const partnerIds = [...new Set(drivers.map((d) => d.fleetPartnerId).filter((id): id is string => !!id))];
+    const walletAccounts = partnerIds.length
+      ? await prisma.walletAccount.findMany({
+          where: { tenantId, ownerKey: { in: partnerIds.map(fleetOwnerKey) } },
+          select: { ownerKey: true, balanceKwd: true },
+        })
+      : [];
+    const walletByKey = new Map(walletAccounts.map((a) => [a.ownerKey, a.balanceKwd]));
+
+    type DriverRow = { driverId: string; name: string; driverCode: string | null; phone: string | null; status: string; cashOnHandKwd: string };
+    type CompanyRow = { fleetPartnerId: string | null; name: string; driversCarrying: number; driverCount: number; cashOnHandKwd: string; walletKwd: string | null; drivers: DriverRow[] };
+    const byCompany = new Map<string, CompanyRow & { total: Prisma.Decimal }>();
+    for (const d of drivers) {
+      const key = d.fleetPartnerId ?? "";
+      const row = byCompany.get(key) ?? {
+        fleetPartnerId: d.fleetPartnerId,
+        // A driver with no company is Darb's own; they are listed, not lost.
+        name: d.fleetPartner?.name ?? "Darb",
+        driversCarrying: 0,
+        driverCount: 0,
+        cashOnHandKwd: "0.000",
+        // Darb's own drivers have no company wallet to show.
+        walletKwd: d.fleetPartnerId ? toKwdString(walletByKey.get(fleetOwnerKey(d.fleetPartnerId)) ?? 0) : null,
+        drivers: [],
+        total: new Prisma.Decimal(0),
+      };
+      row.driverCount += 1;
+      const cash = balances.get(d.id) ?? new Prisma.Decimal(0);
+      if (cash.greaterThan(0)) {
+        row.driversCarrying += 1;
+        row.total = row.total.plus(cash);
+        row.drivers.push({
+          driverId: d.id, name: d.name, driverCode: d.driverCode, phone: d.phone, status: d.status,
+          cashOnHandKwd: cash.toFixed(3),
+        });
+      }
+      byCompany.set(key, row);
+    }
+    const companies: CompanyRow[] = [...byCompany.values()]
+      .map(({ total, ...row }) => ({
+        ...row,
+        cashOnHandKwd: total.toFixed(3),
+        // Biggest debt first, inside each company too.
+        drivers: row.drivers.sort((a, b) => Number(b.cashOnHandKwd) - Number(a.cashOnHandKwd)),
+      }))
+      .sort((a, b) => Number(b.cashOnHandKwd) - Number(a.cashOnHandKwd));
+    const totalKwd = companies.reduce((sum, c) => sum.plus(c.cashOnHandKwd), new Prisma.Decimal(0)).toFixed(3);
+
+    if (req.query.format === "xlsx") {
+      const workbook = new ExcelJS.Workbook();
+      workbook.creator = "Darb";
+      workbook.created = new Date();
+      const KWD = "#,##0.000";
+      const companiesSheet = workbook.addWorksheet("Companies");
+      companiesSheet.columns = [
+        { header: "Company", key: "name", width: 32 },
+        { header: "Drivers", key: "driverCount", width: 10 },
+        { header: "Drivers carrying cash", key: "driversCarrying", width: 22 },
+        { header: "Cash on hand (KD)", key: "cash", width: 20, style: { numFmt: KWD } },
+        { header: "Wallet (KD)", key: "wallet", width: 16, style: { numFmt: KWD } },
+      ];
+      companiesSheet.getRow(1).font = { bold: true };
+      for (const c of companies) {
+        companiesSheet.addRow({ name: c.name, driverCount: c.driverCount, driversCarrying: c.driversCarrying, cash: Number(c.cashOnHandKwd), wallet: c.walletKwd == null ? "n/a" : Number(c.walletKwd) });
+      }
+      const totalRow = companiesSheet.addRow({ name: "Total", cash: Number(totalKwd) });
+      totalRow.font = { bold: true };
+
+      const driversSheet = workbook.addWorksheet("Drivers");
+      driversSheet.columns = [
+        { header: "Company", key: "company", width: 32 },
+        { header: "Driver", key: "name", width: 28 },
+        { header: "Darb ID", key: "code", width: 12 },
+        { header: "Phone", key: "phone", width: 16 },
+        { header: "Status", key: "status", width: 12 },
+        { header: "Cash on hand (KD)", key: "cash", width: 20, style: { numFmt: KWD } },
+      ];
+      driversSheet.getRow(1).font = { bold: true };
+      for (const c of companies) {
+        for (const d of c.drivers) {
+          driversSheet.addRow({ company: c.name, name: d.name, code: d.driverCode ?? "n/a", phone: d.phone ?? "n/a", status: d.status, cash: Number(d.cashOnHandKwd) });
+        }
+      }
+      const stamp = new Date().toISOString().slice(0, 10);
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="darb-cash-on-hand-${stamp}.xlsx"`);
+      await workbook.xlsx.write(res);
+      res.end();
+      return;
+    }
+
+    res.json({ totalKwd, companies, asOf: new Date().toISOString() });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
  * /api/wallets/fleet-deposits/{id}/confirm:
  *   post:
  *     tags: [Wallets]
@@ -524,10 +653,12 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       const { tenantId, userId } = req.user!;
+      const { note } = (req.body ?? {}) as { note?: string };
       const result = await confirmFleetDeposit({
         tenantId,
         depositId: req.params.id,
         actorId: userId,
+        note: typeof note === "string" ? note : null,
       });
       res.json(result);
     } catch (err: any) {
@@ -1255,6 +1386,8 @@ router.get("/payments", rbac(...FINANCE_READ), async (req: Request, res: Respons
         providerRef: t.providerRef,
         paidAt: t.paidAt,
         createdAt: t.createdAt,
+        // Revision 21 (#5): what the desk said when it decided.
+        note: t.reviewNote ?? null,
       })),
       ...(deposits.data as Array<Record<string, any>>).map((d) => ({
         kind: "FLEET_DEPOSIT" as const,
@@ -1269,6 +1402,7 @@ router.get("/payments", rbac(...FINANCE_READ), async (req: Request, res: Respons
         providerRef: (d.providerRef as string) ?? null,
         paidAt: (d.confirmedAt as Date) ?? null,
         createdAt: d.createdAt as Date,
+        note: ((d.reviewNote as string | null) ?? (d.rejectReason as string | null)) ?? null,
       })),
     ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -1304,7 +1438,14 @@ router.post(
       });
       if (!owned) { res.status(404).json({ error: "Top-up not found" }); return; }
 
-      const result = await confirmTopUp({ tenantId, topUpId: req.params.id, provider: "MANUAL" });
+      const { note } = (req.body ?? {}) as { note?: string };
+      const result = await confirmTopUp({
+        tenantId,
+        topUpId: req.params.id,
+        provider: "MANUAL",
+        note: typeof note === "string" ? note : null,
+        actorId: req.user!.userId,
+      });
       if (result.alreadyPaid) { res.json({ ok: true, alreadyPaid: true }); return; }
       if (!result.ok) { res.status(409).json({ error: "This payment is not awaiting confirmation" }); return; }
       res.json({ ok: true, alreadyPaid: false });
@@ -1326,7 +1467,15 @@ router.post(
         select: { id: true },
       });
       if (!owned) { res.status(404).json({ error: "Top-up not found" }); return; }
-      const ok = await cancelTopUp(tenantId, req.params.id);
+      // Revision 21 (#5): the desk refusing a shop's transfer says why. The
+      // shop's own cancel (vendor portal) needs no reason; this one does, for
+      // the same reason a rejected company deposit does.
+      const { reason } = (req.body ?? {}) as { reason?: string };
+      if (typeof reason !== "string" || !reason.trim()) {
+        res.status(400).json({ error: "A reason is required to cancel a payment" });
+        return;
+      }
+      const ok = await cancelTopUp(tenantId, req.params.id, { reason, actorId: req.user!.userId });
       if (!ok) { res.status(409).json({ error: "This payment is not awaiting confirmation" }); return; }
       res.json({ ok: true });
     } catch (err: any) {

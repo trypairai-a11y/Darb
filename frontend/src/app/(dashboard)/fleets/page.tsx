@@ -18,6 +18,7 @@ import type { FleetProfile } from "@/types/darb";
 import BackToSetup from "@/components/shared/BackToSetup";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd, formatNumber } from "@/i18n/format";
+import { setupIncomplete } from "@/lib/setupGaps";
 
 type FleetRow = FleetProfile & { _count?: { drivers?: number; users?: number } };
 
@@ -66,7 +67,7 @@ export default function FleetsPage() {
 
   return (
     <div className="space-y-6">
-      <BackToSetup />
+      <BackToSetup tab="admin" />
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="font-display text-display-sm text-sand-900">
@@ -116,9 +117,14 @@ export default function FleetsPage() {
           {
             key: "isActive",
             label: t("fleetPortal.status"),
-            render: (value: boolean) => (
-              <StatusBadge status={value ? "ACTIVE" : "INACTIVE"} />
-            ),
+            render: (value: boolean, row: FleetRow) =>
+              setupIncomplete(row) ? (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-pill text-[11px] font-medium bg-red-50 text-red-700">
+                  {t("vendorsPage.setupIncomplete")}
+                </span>
+              ) : (
+                <StatusBadge status={value ? "ACTIVE" : "INACTIVE"} />
+              ),
           },
         ]}
         data={fleets}

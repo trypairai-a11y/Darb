@@ -15,6 +15,7 @@
 import { getMockPrisma, resetAllMocks } from "../setup";
 import {
   approveShiftPlan,
+  generateShiftPlan,
   updateShiftPlanEntries,
   weekStartOf,
   MAX_COVER,
@@ -35,13 +36,19 @@ function attachPlanDelegates() {
   const p = prisma as any;
   p.shiftPlan = {
     findFirst: jest.fn(),
+    update: jest.fn(),
     updateMany: jest.fn(),
     findFirstOrThrow: jest.fn(),
   };
   p.shiftPlanEntry = {
     findMany: jest.fn(),
     updateMany: jest.fn(),
+    deleteMany: jest.fn(),
+    createMany: jest.fn(),
   };
+  p.deliveryZone = { findMany: jest.fn() };
+  p.deliveryOrder = { findMany: jest.fn() };
+  p.driver = { findMany: jest.fn() };
   p.shiftCapacity = {
     deleteMany: jest.fn(),
     createMany: jest.fn(),
@@ -126,8 +133,45 @@ describe("updateShiftPlanEntries", () => {
     );
   });
 
-  it("refuses to edit a plan that has already been approved", async () => {
+  it("amends an approved plan AND rewrites the capacity grid in the same transaction", async () => {
+    // Revision 21b: "must give the option to adjust the plan after approving".
     prisma.shiftPlan.findFirst.mockResolvedValue({ id: "p1", status: "APPROVED" });
+    prisma.shiftPlanEntry.updateMany.mockResolvedValue({ count: 1 });
+    prisma.shiftPlanEntry.findMany.mockResolvedValue([
+      { zoneId: "z1", dayOfWeek: 0, startTime: "10:00", approvedDrivers: 2 },
+    ]);
+    prisma.shiftCapacity.deleteMany.mockResolvedValue({ count: 1 });
+    prisma.shiftCapacity.createMany.mockResolvedValue({ count: 1 });
+
+    await updateShiftPlanEntries({
+      tenantId: "t1",
+      planId: "p1",
+      entries: [{ zoneId: "z1", dayOfWeek: 0, startTime: "10:00", approvedDrivers: 2 }],
+    });
+
+    expect(prisma.shiftPlanEntry.updateMany).toHaveBeenCalledTimes(1);
+    expect(prisma.shiftCapacity.deleteMany).toHaveBeenCalledWith({ where: { tenantId: "t1" } });
+    expect(prisma.shiftCapacity.createMany.mock.calls[0][0].data).toEqual([
+      { tenantId: "t1", zoneId: "z1", dayOfWeek: 0, startTime: "10:00", maxDrivers: 2 },
+    ]);
+  });
+
+  it("edits a draft without touching the capacity grid", async () => {
+    prisma.shiftPlan.findFirst.mockResolvedValue({ id: "p1", status: "DRAFT" });
+    prisma.shiftPlanEntry.updateMany.mockResolvedValue({ count: 1 });
+
+    await updateShiftPlanEntries({
+      tenantId: "t1",
+      planId: "p1",
+      entries: [{ zoneId: "z1", dayOfWeek: 0, startTime: "10:00", approvedDrivers: 2 }],
+    });
+
+    expect(prisma.shiftCapacity.deleteMany).not.toHaveBeenCalled();
+    expect(prisma.shiftCapacity.createMany).not.toHaveBeenCalled();
+  });
+
+  it("refuses to edit a discarded plan", async () => {
+    prisma.shiftPlan.findFirst.mockResolvedValue({ id: "p1", status: "DISCARDED" });
     await expect(
       updateShiftPlanEntries({
         tenantId: "t1",
@@ -149,5 +193,54 @@ describe("updateShiftPlanEntries", () => {
       }),
     ).rejects.toMatchObject({ statusCode: 400 });
     expect(prisma.shiftPlanEntry.updateMany).not.toHaveBeenCalled();
+  });
+});
+
+describe("generateShiftPlan on an approved week", () => {
+  // Revision 21c: "still I can't change the plan, need to be able to reset
+  // the plan". Build it again used to answer 409 on an approved week with no
+  // way through; now it goes through behind an explicit flag, and what the
+  // flag must NOT do is touch the grid the driver app books against.
+  beforeEach(() => {
+    resetAllMocks();
+    attachPlanDelegates();
+    prisma.$transaction.mockImplementation(async (fn: any) => fn(prisma));
+    prisma.shiftPlan.findFirst.mockResolvedValue({ id: "p1", status: "APPROVED" });
+    prisma.deliveryZone.findMany.mockResolvedValue([{ id: "z1", code: "Z1", name: "Zone" }]);
+    prisma.deliveryOrder.findMany.mockResolvedValue([]);
+    prisma.driver.findMany.mockResolvedValue([]);
+    prisma.shiftPlanEntry.deleteMany.mockResolvedValue({ count: 56 });
+    prisma.shiftPlanEntry.createMany.mockResolvedValue({ count: 56 });
+    prisma.shiftPlan.update.mockResolvedValue({ id: "p1", status: "DRAFT" });
+  });
+
+  it("still refuses without the flag, so a stale client cannot un-approve a week", async () => {
+    await expect(
+      generateShiftPlan({ tenantId: "t1", weekStart: new Date("2026-09-20T00:00:00") }),
+    ).rejects.toMatchObject({ statusCode: 409, code: "WEEK_APPROVED" });
+    expect(prisma.shiftPlan.update).not.toHaveBeenCalled();
+    expect(prisma.shiftPlanEntry.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it("rebuilds as a DRAFT with the approval cleared, and leaves the capacity grid alone", async () => {
+    const result = await generateShiftPlan({
+      tenantId: "t1",
+      weekStart: new Date("2026-09-20T00:00:00"),
+      replaceApproved: true,
+    });
+
+    expect(result.planId).toBe("p1");
+    expect(prisma.shiftPlan.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "p1" },
+        data: expect.objectContaining({ status: "DRAFT", approvedAt: null, approvedById: null }),
+      }),
+    );
+    // The proposal is replaced wholesale, one zone times seven days times eight windows.
+    expect(prisma.shiftPlanEntry.deleteMany).toHaveBeenCalledWith({ where: { planId: "p1" } });
+    expect(prisma.shiftPlanEntry.createMany.mock.calls[0][0].data).toHaveLength(56);
+    // Drivers keep booking against the last approved grid until the new draft is approved.
+    expect(prisma.shiftCapacity.deleteMany).not.toHaveBeenCalled();
+    expect(prisma.shiftCapacity.createMany).not.toHaveBeenCalled();
   });
 });

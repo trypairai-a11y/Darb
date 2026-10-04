@@ -224,7 +224,9 @@ export default function HomeScreen() {
         {activeOrder ? (
           <TouchableOpacity style={styles.resume} activeOpacity={0.85} onPress={() => router.replace("/delivery")}>
             <View style={{ flex: 1 }}>
-              <Text style={[t.headline, { color: c.onTint }]}>{tr("home.resume_delivery")}</Text>
+              <Text style={[t.headline, { color: c.onTint }]}>
+                {activeOrder.stage === "RETURNING" ? tr("failed.return_title") : tr("home.resume_delivery")}
+              </Text>
               <Text style={[t.footnote, { color: c.onTint, opacity: 0.75, marginTop: 1 }]} numberOfLines={1}>
                 {activeOrder.pickup?.name || activeOrder.orderNumber || activeOrder.id}
               </Text>

@@ -155484,6 +155484,8 @@ export namespace Prisma {
     providerRef: string | null
     provider: string | null
     paidAt: Date | null
+    reviewNote: string | null
+    reviewedById: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -155501,6 +155503,8 @@ export namespace Prisma {
     providerRef: string | null
     provider: string | null
     paidAt: Date | null
+    reviewNote: string | null
+    reviewedById: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -155518,6 +155522,8 @@ export namespace Prisma {
     providerRef: number
     provider: number
     paidAt: number
+    reviewNote: number
+    reviewedById: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -155545,6 +155551,8 @@ export namespace Prisma {
     providerRef?: true
     provider?: true
     paidAt?: true
+    reviewNote?: true
+    reviewedById?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -155562,6 +155570,8 @@ export namespace Prisma {
     providerRef?: true
     provider?: true
     paidAt?: true
+    reviewNote?: true
+    reviewedById?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -155579,6 +155589,8 @@ export namespace Prisma {
     providerRef?: true
     provider?: true
     paidAt?: true
+    reviewNote?: true
+    reviewedById?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -155683,6 +155695,8 @@ export namespace Prisma {
     providerRef: string | null
     provider: string | null
     paidAt: Date | null
+    reviewNote: string | null
+    reviewedById: string | null
     createdAt: Date
     updatedAt: Date
     _count: VendorTopUpCountAggregateOutputType | null
@@ -155719,6 +155733,8 @@ export namespace Prisma {
     providerRef?: boolean
     provider?: boolean
     paidAt?: boolean
+    reviewNote?: boolean
+    reviewedById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
@@ -155738,6 +155754,8 @@ export namespace Prisma {
     providerRef?: boolean
     provider?: boolean
     paidAt?: boolean
+    reviewNote?: boolean
+    reviewedById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
@@ -155757,6 +155775,8 @@ export namespace Prisma {
     providerRef?: boolean
     provider?: boolean
     paidAt?: boolean
+    reviewNote?: boolean
+    reviewedById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -155808,6 +155828,13 @@ export namespace Prisma {
        */
       provider: string | null
       paidAt: Date | null
+      /**
+       * Revision 21 (#5) — what the finance desk said when it approved or
+       * cancelled the payment. Shown to the shop beside the row, so a refused
+       * transfer never has to be explained by phone.
+       */
+      reviewNote: string | null
+      reviewedById: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["vendorTopUp"]>
@@ -156217,6 +156244,8 @@ export namespace Prisma {
     readonly providerRef: FieldRef<"VendorTopUp", 'String'>
     readonly provider: FieldRef<"VendorTopUp", 'String'>
     readonly paidAt: FieldRef<"VendorTopUp", 'DateTime'>
+    readonly reviewNote: FieldRef<"VendorTopUp", 'String'>
+    readonly reviewedById: FieldRef<"VendorTopUp", 'String'>
     readonly createdAt: FieldRef<"VendorTopUp", 'DateTime'>
     readonly updatedAt: FieldRef<"VendorTopUp", 'DateTime'>
   }
@@ -156589,6 +156618,7 @@ export namespace Prisma {
     confirmedById: string | null
     confirmedAt: Date | null
     rejectReason: string | null
+    reviewNote: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -156611,6 +156641,7 @@ export namespace Prisma {
     confirmedById: string | null
     confirmedAt: Date | null
     rejectReason: string | null
+    reviewNote: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -156633,6 +156664,7 @@ export namespace Prisma {
     confirmedById: number
     confirmedAt: number
     rejectReason: number
+    reviewNote: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -156665,6 +156697,7 @@ export namespace Prisma {
     confirmedById?: true
     confirmedAt?: true
     rejectReason?: true
+    reviewNote?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -156687,6 +156720,7 @@ export namespace Prisma {
     confirmedById?: true
     confirmedAt?: true
     rejectReason?: true
+    reviewNote?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -156709,6 +156743,7 @@ export namespace Prisma {
     confirmedById?: true
     confirmedAt?: true
     rejectReason?: true
+    reviewNote?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -156818,6 +156853,7 @@ export namespace Prisma {
     confirmedById: string | null
     confirmedAt: Date | null
     rejectReason: string | null
+    reviewNote: string | null
     createdAt: Date
     updatedAt: Date
     _count: FleetCashDepositCountAggregateOutputType | null
@@ -156859,6 +156895,7 @@ export namespace Prisma {
     confirmedById?: boolean
     confirmedAt?: boolean
     rejectReason?: boolean
+    reviewNote?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
@@ -156883,6 +156920,7 @@ export namespace Prisma {
     confirmedById?: boolean
     confirmedAt?: boolean
     rejectReason?: boolean
+    reviewNote?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
@@ -156907,6 +156945,7 @@ export namespace Prisma {
     confirmedById?: boolean
     confirmedAt?: boolean
     rejectReason?: boolean
+    reviewNote?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -156973,6 +157012,11 @@ export namespace Prisma {
       confirmedById: string | null
       confirmedAt: Date | null
       rejectReason: string | null
+      /**
+       * Revision 21 (#5) — feedback attached to an approval. A rejection keeps
+       * using rejectReason; the company reads whichever is set.
+       */
+      reviewNote: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["fleetCashDeposit"]>
@@ -157387,6 +157431,7 @@ export namespace Prisma {
     readonly confirmedById: FieldRef<"FleetCashDeposit", 'String'>
     readonly confirmedAt: FieldRef<"FleetCashDeposit", 'DateTime'>
     readonly rejectReason: FieldRef<"FleetCashDeposit", 'String'>
+    readonly reviewNote: FieldRef<"FleetCashDeposit", 'String'>
     readonly createdAt: FieldRef<"FleetCashDeposit", 'DateTime'>
     readonly updatedAt: FieldRef<"FleetCashDeposit", 'DateTime'>
   }
@@ -157754,6 +157799,7 @@ export namespace Prisma {
     coachId: string | null
     reason: string | null
     outcomeNote: string | null
+    autoIssue: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -157771,6 +157817,7 @@ export namespace Prisma {
     coachId: string | null
     reason: string | null
     outcomeNote: string | null
+    autoIssue: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -157788,6 +157835,7 @@ export namespace Prisma {
     coachId: number
     reason: number
     outcomeNote: number
+    autoIssue: number
     scorecard: number
     createdAt: number
     updatedAt: number
@@ -157816,6 +157864,7 @@ export namespace Prisma {
     coachId?: true
     reason?: true
     outcomeNote?: true
+    autoIssue?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -157833,6 +157882,7 @@ export namespace Prisma {
     coachId?: true
     reason?: true
     outcomeNote?: true
+    autoIssue?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -157850,6 +157900,7 @@ export namespace Prisma {
     coachId?: true
     reason?: true
     outcomeNote?: true
+    autoIssue?: true
     scorecard?: true
     createdAt?: true
     updatedAt?: true
@@ -157955,6 +158006,7 @@ export namespace Prisma {
     coachId: string | null
     reason: string | null
     outcomeNote: string | null
+    autoIssue: boolean
     scorecard: JsonValue | null
     createdAt: Date
     updatedAt: Date
@@ -157992,6 +158044,7 @@ export namespace Prisma {
     coachId?: boolean
     reason?: boolean
     outcomeNote?: boolean
+    autoIssue?: boolean
     scorecard?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -158015,6 +158068,7 @@ export namespace Prisma {
     coachId?: boolean
     reason?: boolean
     outcomeNote?: boolean
+    autoIssue?: boolean
     scorecard?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -158036,6 +158090,7 @@ export namespace Prisma {
     coachId?: boolean
     reason?: boolean
     outcomeNote?: boolean
+    autoIssue?: boolean
     scorecard?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -158094,6 +158149,13 @@ export namespace Prisma {
        * The ops team's verdict, written when the window closes.
        */
       outcomeNote: string | null
+      /**
+       * Revision 21 (#3) — hand the trainee the next practice order as soon as
+       * the last one ends, without anybody pressing a button. On by default,
+       * because a trainee waiting for a coach to notice is a trainee doing
+       * nothing. The manual button stays either way.
+       */
+      autoIssue: boolean
       /**
        * A snapshot of how the window went, frozen at completion so a later
        * reassignment of the practice orders cannot rewrite the verdict:
@@ -158511,6 +158573,7 @@ export namespace Prisma {
     readonly coachId: FieldRef<"DriverTrainingSession", 'String'>
     readonly reason: FieldRef<"DriverTrainingSession", 'String'>
     readonly outcomeNote: FieldRef<"DriverTrainingSession", 'String'>
+    readonly autoIssue: FieldRef<"DriverTrainingSession", 'Boolean'>
     readonly scorecard: FieldRef<"DriverTrainingSession", 'Json'>
     readonly createdAt: FieldRef<"DriverTrainingSession", 'DateTime'>
     readonly updatedAt: FieldRef<"DriverTrainingSession", 'DateTime'>
@@ -165589,6 +165652,8 @@ export namespace Prisma {
     providerRef: 'providerRef',
     provider: 'provider',
     paidAt: 'paidAt',
+    reviewNote: 'reviewNote',
+    reviewedById: 'reviewedById',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -165614,6 +165679,7 @@ export namespace Prisma {
     confirmedById: 'confirmedById',
     confirmedAt: 'confirmedAt',
     rejectReason: 'rejectReason',
+    reviewNote: 'reviewNote',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -165634,6 +165700,7 @@ export namespace Prisma {
     coachId: 'coachId',
     reason: 'reason',
     outcomeNote: 'outcomeNote',
+    autoIssue: 'autoIssue',
     scorecard: 'scorecard',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -167340,7 +167407,9 @@ export namespace Prisma {
     reference: 'reference',
     paymentUrl: 'paymentUrl',
     providerRef: 'providerRef',
-    provider: 'provider'
+    provider: 'provider',
+    reviewNote: 'reviewNote',
+    reviewedById: 'reviewedById'
   };
 
   export type VendorTopUpOrderByRelevanceFieldEnum = (typeof VendorTopUpOrderByRelevanceFieldEnum)[keyof typeof VendorTopUpOrderByRelevanceFieldEnum]
@@ -167359,7 +167428,8 @@ export namespace Prisma {
     providerRef: 'providerRef',
     provider: 'provider',
     confirmedById: 'confirmedById',
-    rejectReason: 'rejectReason'
+    rejectReason: 'rejectReason',
+    reviewNote: 'reviewNote'
   };
 
   export type FleetCashDepositOrderByRelevanceFieldEnum = (typeof FleetCashDepositOrderByRelevanceFieldEnum)[keyof typeof FleetCashDepositOrderByRelevanceFieldEnum]
@@ -182037,6 +182107,8 @@ export namespace Prisma {
     providerRef?: StringNullableFilter<"VendorTopUp"> | string | null
     provider?: StringNullableFilter<"VendorTopUp"> | string | null
     paidAt?: DateTimeNullableFilter<"VendorTopUp"> | Date | string | null
+    reviewNote?: StringNullableFilter<"VendorTopUp"> | string | null
+    reviewedById?: StringNullableFilter<"VendorTopUp"> | string | null
     createdAt?: DateTimeFilter<"VendorTopUp"> | Date | string
     updatedAt?: DateTimeFilter<"VendorTopUp"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
@@ -182056,6 +182128,8 @@ export namespace Prisma {
     providerRef?: SortOrderInput | SortOrder
     provider?: SortOrderInput | SortOrder
     paidAt?: SortOrderInput | SortOrder
+    reviewNote?: SortOrderInput | SortOrder
+    reviewedById?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     tenant?: TenantOrderByWithRelationInput
@@ -182079,6 +182153,8 @@ export namespace Prisma {
     providerRef?: StringNullableFilter<"VendorTopUp"> | string | null
     provider?: StringNullableFilter<"VendorTopUp"> | string | null
     paidAt?: DateTimeNullableFilter<"VendorTopUp"> | Date | string | null
+    reviewNote?: StringNullableFilter<"VendorTopUp"> | string | null
+    reviewedById?: StringNullableFilter<"VendorTopUp"> | string | null
     createdAt?: DateTimeFilter<"VendorTopUp"> | Date | string
     updatedAt?: DateTimeFilter<"VendorTopUp"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
@@ -182098,6 +182174,8 @@ export namespace Prisma {
     providerRef?: SortOrderInput | SortOrder
     provider?: SortOrderInput | SortOrder
     paidAt?: SortOrderInput | SortOrder
+    reviewNote?: SortOrderInput | SortOrder
+    reviewedById?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: VendorTopUpCountOrderByAggregateInput
@@ -182123,6 +182201,8 @@ export namespace Prisma {
     providerRef?: StringNullableWithAggregatesFilter<"VendorTopUp"> | string | null
     provider?: StringNullableWithAggregatesFilter<"VendorTopUp"> | string | null
     paidAt?: DateTimeNullableWithAggregatesFilter<"VendorTopUp"> | Date | string | null
+    reviewNote?: StringNullableWithAggregatesFilter<"VendorTopUp"> | string | null
+    reviewedById?: StringNullableWithAggregatesFilter<"VendorTopUp"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"VendorTopUp"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"VendorTopUp"> | Date | string
   }
@@ -182148,6 +182228,7 @@ export namespace Prisma {
     confirmedById?: StringNullableFilter<"FleetCashDeposit"> | string | null
     confirmedAt?: DateTimeNullableFilter<"FleetCashDeposit"> | Date | string | null
     rejectReason?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    reviewNote?: StringNullableFilter<"FleetCashDeposit"> | string | null
     createdAt?: DateTimeFilter<"FleetCashDeposit"> | Date | string
     updatedAt?: DateTimeFilter<"FleetCashDeposit"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
@@ -182172,6 +182253,7 @@ export namespace Prisma {
     confirmedById?: SortOrderInput | SortOrder
     confirmedAt?: SortOrderInput | SortOrder
     rejectReason?: SortOrderInput | SortOrder
+    reviewNote?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     tenant?: TenantOrderByWithRelationInput
@@ -182200,6 +182282,7 @@ export namespace Prisma {
     confirmedById?: StringNullableFilter<"FleetCashDeposit"> | string | null
     confirmedAt?: DateTimeNullableFilter<"FleetCashDeposit"> | Date | string | null
     rejectReason?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    reviewNote?: StringNullableFilter<"FleetCashDeposit"> | string | null
     createdAt?: DateTimeFilter<"FleetCashDeposit"> | Date | string
     updatedAt?: DateTimeFilter<"FleetCashDeposit"> | Date | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
@@ -182224,6 +182307,7 @@ export namespace Prisma {
     confirmedById?: SortOrderInput | SortOrder
     confirmedAt?: SortOrderInput | SortOrder
     rejectReason?: SortOrderInput | SortOrder
+    reviewNote?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: FleetCashDepositCountOrderByAggregateInput
@@ -182254,6 +182338,7 @@ export namespace Prisma {
     confirmedById?: StringNullableWithAggregatesFilter<"FleetCashDeposit"> | string | null
     confirmedAt?: DateTimeNullableWithAggregatesFilter<"FleetCashDeposit"> | Date | string | null
     rejectReason?: StringNullableWithAggregatesFilter<"FleetCashDeposit"> | string | null
+    reviewNote?: StringNullableWithAggregatesFilter<"FleetCashDeposit"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"FleetCashDeposit"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"FleetCashDeposit"> | Date | string
   }
@@ -182274,6 +182359,7 @@ export namespace Prisma {
     coachId?: StringNullableFilter<"DriverTrainingSession"> | string | null
     reason?: StringNullableFilter<"DriverTrainingSession"> | string | null
     outcomeNote?: StringNullableFilter<"DriverTrainingSession"> | string | null
+    autoIssue?: BoolFilter<"DriverTrainingSession"> | boolean
     scorecard?: JsonNullableFilter<"DriverTrainingSession">
     createdAt?: DateTimeFilter<"DriverTrainingSession"> | Date | string
     updatedAt?: DateTimeFilter<"DriverTrainingSession"> | Date | string
@@ -182296,6 +182382,7 @@ export namespace Prisma {
     coachId?: SortOrderInput | SortOrder
     reason?: SortOrderInput | SortOrder
     outcomeNote?: SortOrderInput | SortOrder
+    autoIssue?: SortOrder
     scorecard?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -182322,6 +182409,7 @@ export namespace Prisma {
     coachId?: StringNullableFilter<"DriverTrainingSession"> | string | null
     reason?: StringNullableFilter<"DriverTrainingSession"> | string | null
     outcomeNote?: StringNullableFilter<"DriverTrainingSession"> | string | null
+    autoIssue?: BoolFilter<"DriverTrainingSession"> | boolean
     scorecard?: JsonNullableFilter<"DriverTrainingSession">
     createdAt?: DateTimeFilter<"DriverTrainingSession"> | Date | string
     updatedAt?: DateTimeFilter<"DriverTrainingSession"> | Date | string
@@ -182344,6 +182432,7 @@ export namespace Prisma {
     coachId?: SortOrderInput | SortOrder
     reason?: SortOrderInput | SortOrder
     outcomeNote?: SortOrderInput | SortOrder
+    autoIssue?: SortOrder
     scorecard?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -182370,6 +182459,7 @@ export namespace Prisma {
     coachId?: StringNullableWithAggregatesFilter<"DriverTrainingSession"> | string | null
     reason?: StringNullableWithAggregatesFilter<"DriverTrainingSession"> | string | null
     outcomeNote?: StringNullableWithAggregatesFilter<"DriverTrainingSession"> | string | null
+    autoIssue?: BoolWithAggregatesFilter<"DriverTrainingSession"> | boolean
     scorecard?: JsonNullableWithAggregatesFilter<"DriverTrainingSession">
     createdAt?: DateTimeWithAggregatesFilter<"DriverTrainingSession"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"DriverTrainingSession"> | Date | string
@@ -197587,6 +197677,8 @@ export namespace Prisma {
     providerRef?: string | null
     provider?: string | null
     paidAt?: Date | string | null
+    reviewNote?: string | null
+    reviewedById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutVendorTopUpsInput
@@ -197606,6 +197698,8 @@ export namespace Prisma {
     providerRef?: string | null
     provider?: string | null
     paidAt?: Date | string | null
+    reviewNote?: string | null
+    reviewedById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -197621,6 +197715,8 @@ export namespace Prisma {
     providerRef?: NullableStringFieldUpdateOperationsInput | string | null
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutVendorTopUpsNestedInput
@@ -197640,6 +197736,8 @@ export namespace Prisma {
     providerRef?: NullableStringFieldUpdateOperationsInput | string | null
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -197657,6 +197755,8 @@ export namespace Prisma {
     providerRef?: string | null
     provider?: string | null
     paidAt?: Date | string | null
+    reviewNote?: string | null
+    reviewedById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -197672,6 +197772,8 @@ export namespace Prisma {
     providerRef?: NullableStringFieldUpdateOperationsInput | string | null
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -197689,6 +197791,8 @@ export namespace Prisma {
     providerRef?: NullableStringFieldUpdateOperationsInput | string | null
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -197709,6 +197813,7 @@ export namespace Prisma {
     confirmedById?: string | null
     confirmedAt?: Date | string | null
     rejectReason?: string | null
+    reviewNote?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutFleetCashDepositsInput
@@ -197733,6 +197838,7 @@ export namespace Prisma {
     confirmedById?: string | null
     confirmedAt?: Date | string | null
     rejectReason?: string | null
+    reviewNote?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -197753,6 +197859,7 @@ export namespace Prisma {
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutFleetCashDepositsNestedInput
@@ -197777,6 +197884,7 @@ export namespace Prisma {
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -197799,6 +197907,7 @@ export namespace Prisma {
     confirmedById?: string | null
     confirmedAt?: Date | string | null
     rejectReason?: string | null
+    reviewNote?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -197819,6 +197928,7 @@ export namespace Prisma {
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -197841,6 +197951,7 @@ export namespace Prisma {
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -197855,6 +197966,7 @@ export namespace Prisma {
     completedAt?: Date | string | null
     reason?: string | null
     outcomeNote?: string | null
+    autoIssue?: boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -197877,6 +197989,7 @@ export namespace Prisma {
     coachId?: string | null
     reason?: string | null
     outcomeNote?: string | null
+    autoIssue?: boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -197893,6 +198006,7 @@ export namespace Prisma {
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     outcomeNote?: NullableStringFieldUpdateOperationsInput | string | null
+    autoIssue?: BoolFieldUpdateOperationsInput | boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -197915,6 +198029,7 @@ export namespace Prisma {
     coachId?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     outcomeNote?: NullableStringFieldUpdateOperationsInput | string | null
+    autoIssue?: BoolFieldUpdateOperationsInput | boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -197934,6 +198049,7 @@ export namespace Prisma {
     coachId?: string | null
     reason?: string | null
     outcomeNote?: string | null
+    autoIssue?: boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -197949,6 +198065,7 @@ export namespace Prisma {
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     outcomeNote?: NullableStringFieldUpdateOperationsInput | string | null
+    autoIssue?: BoolFieldUpdateOperationsInput | boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -197967,6 +198084,7 @@ export namespace Prisma {
     coachId?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     outcomeNote?: NullableStringFieldUpdateOperationsInput | string | null
+    autoIssue?: BoolFieldUpdateOperationsInput | boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -209380,6 +209498,8 @@ export namespace Prisma {
     providerRef?: SortOrder
     provider?: SortOrder
     paidAt?: SortOrder
+    reviewNote?: SortOrder
+    reviewedById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -209401,6 +209521,8 @@ export namespace Prisma {
     providerRef?: SortOrder
     provider?: SortOrder
     paidAt?: SortOrder
+    reviewNote?: SortOrder
+    reviewedById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -209418,6 +209540,8 @@ export namespace Prisma {
     providerRef?: SortOrder
     provider?: SortOrder
     paidAt?: SortOrder
+    reviewNote?: SortOrder
+    reviewedById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -209467,6 +209591,7 @@ export namespace Prisma {
     confirmedById?: SortOrder
     confirmedAt?: SortOrder
     rejectReason?: SortOrder
+    reviewNote?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -209493,6 +209618,7 @@ export namespace Prisma {
     confirmedById?: SortOrder
     confirmedAt?: SortOrder
     rejectReason?: SortOrder
+    reviewNote?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -209515,6 +209641,7 @@ export namespace Prisma {
     confirmedById?: SortOrder
     confirmedAt?: SortOrder
     rejectReason?: SortOrder
+    reviewNote?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -209559,6 +209686,7 @@ export namespace Prisma {
     coachId?: SortOrder
     reason?: SortOrder
     outcomeNote?: SortOrder
+    autoIssue?: SortOrder
     scorecard?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -209581,6 +209709,7 @@ export namespace Prisma {
     coachId?: SortOrder
     reason?: SortOrder
     outcomeNote?: SortOrder
+    autoIssue?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -209598,6 +209727,7 @@ export namespace Prisma {
     coachId?: SortOrder
     reason?: SortOrder
     outcomeNote?: SortOrder
+    autoIssue?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -233142,6 +233272,8 @@ export namespace Prisma {
     providerRef?: string | null
     provider?: string | null
     paidAt?: Date | string | null
+    reviewNote?: string | null
+    reviewedById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     vendor: VendorCreateNestedOneWithoutTopUpsInput
@@ -233159,6 +233291,8 @@ export namespace Prisma {
     providerRef?: string | null
     provider?: string | null
     paidAt?: Date | string | null
+    reviewNote?: string | null
+    reviewedById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -233189,6 +233323,7 @@ export namespace Prisma {
     confirmedById?: string | null
     confirmedAt?: Date | string | null
     rejectReason?: string | null
+    reviewNote?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     fleetPartner: FleetPartnerCreateNestedOneWithoutCashDepositsInput
@@ -233211,6 +233346,7 @@ export namespace Prisma {
     confirmedById?: string | null
     confirmedAt?: Date | string | null
     rejectReason?: string | null
+    reviewNote?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -233465,6 +233601,7 @@ export namespace Prisma {
     completedAt?: Date | string | null
     reason?: string | null
     outcomeNote?: string | null
+    autoIssue?: boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -233485,6 +233622,7 @@ export namespace Prisma {
     coachId?: string | null
     reason?: string | null
     outcomeNote?: string | null
+    autoIssue?: boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -237331,6 +237469,8 @@ export namespace Prisma {
     providerRef?: StringNullableFilter<"VendorTopUp"> | string | null
     provider?: StringNullableFilter<"VendorTopUp"> | string | null
     paidAt?: DateTimeNullableFilter<"VendorTopUp"> | Date | string | null
+    reviewNote?: StringNullableFilter<"VendorTopUp"> | string | null
+    reviewedById?: StringNullableFilter<"VendorTopUp"> | string | null
     createdAt?: DateTimeFilter<"VendorTopUp"> | Date | string
     updatedAt?: DateTimeFilter<"VendorTopUp"> | Date | string
   }
@@ -237372,6 +237512,7 @@ export namespace Prisma {
     confirmedById?: StringNullableFilter<"FleetCashDeposit"> | string | null
     confirmedAt?: DateTimeNullableFilter<"FleetCashDeposit"> | Date | string | null
     rejectReason?: StringNullableFilter<"FleetCashDeposit"> | string | null
+    reviewNote?: StringNullableFilter<"FleetCashDeposit"> | string | null
     createdAt?: DateTimeFilter<"FleetCashDeposit"> | Date | string
     updatedAt?: DateTimeFilter<"FleetCashDeposit"> | Date | string
   }
@@ -237598,6 +237739,7 @@ export namespace Prisma {
     coachId?: StringNullableFilter<"DriverTrainingSession"> | string | null
     reason?: StringNullableFilter<"DriverTrainingSession"> | string | null
     outcomeNote?: StringNullableFilter<"DriverTrainingSession"> | string | null
+    autoIssue?: BoolFilter<"DriverTrainingSession"> | boolean
     scorecard?: JsonNullableFilter<"DriverTrainingSession">
     createdAt?: DateTimeFilter<"DriverTrainingSession"> | Date | string
     updatedAt?: DateTimeFilter<"DriverTrainingSession"> | Date | string
@@ -241703,6 +241845,7 @@ export namespace Prisma {
     completedAt?: Date | string | null
     reason?: string | null
     outcomeNote?: string | null
+    autoIssue?: boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -241723,6 +241866,7 @@ export namespace Prisma {
     completedAt?: Date | string | null
     reason?: string | null
     outcomeNote?: string | null
+    autoIssue?: boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -245701,6 +245845,7 @@ export namespace Prisma {
     completedAt?: Date | string | null
     reason?: string | null
     outcomeNote?: string | null
+    autoIssue?: boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -245721,6 +245866,7 @@ export namespace Prisma {
     coachId?: string | null
     reason?: string | null
     outcomeNote?: string | null
+    autoIssue?: boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -312456,6 +312602,8 @@ export namespace Prisma {
     providerRef?: string | null
     provider?: string | null
     paidAt?: Date | string | null
+    reviewNote?: string | null
+    reviewedById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutVendorTopUpsInput
@@ -312473,6 +312621,8 @@ export namespace Prisma {
     providerRef?: string | null
     provider?: string | null
     paidAt?: Date | string | null
+    reviewNote?: string | null
+    reviewedById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -319612,6 +319762,7 @@ export namespace Prisma {
     completedAt?: Date | string | null
     reason?: string | null
     outcomeNote?: string | null
+    autoIssue?: boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -319633,6 +319784,7 @@ export namespace Prisma {
     coachId?: string | null
     reason?: string | null
     outcomeNote?: string | null
+    autoIssue?: boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -320532,6 +320684,7 @@ export namespace Prisma {
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     outcomeNote?: NullableStringFieldUpdateOperationsInput | string | null
+    autoIssue?: BoolFieldUpdateOperationsInput | boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -320553,6 +320706,7 @@ export namespace Prisma {
     coachId?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     outcomeNote?: NullableStringFieldUpdateOperationsInput | string | null
+    autoIssue?: BoolFieldUpdateOperationsInput | boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -332098,6 +332252,7 @@ export namespace Prisma {
     confirmedById?: string | null
     confirmedAt?: Date | string | null
     rejectReason?: string | null
+    reviewNote?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutFleetCashDepositsInput
@@ -332120,6 +332275,7 @@ export namespace Prisma {
     confirmedById?: string | null
     confirmedAt?: Date | string | null
     rejectReason?: string | null
+    reviewNote?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -353923,6 +354079,8 @@ export namespace Prisma {
     providerRef?: string | null
     provider?: string | null
     paidAt?: Date | string | null
+    reviewNote?: string | null
+    reviewedById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -353944,6 +354102,7 @@ export namespace Prisma {
     confirmedById?: string | null
     confirmedAt?: Date | string | null
     rejectReason?: string | null
+    reviewNote?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -354050,6 +354209,7 @@ export namespace Prisma {
     coachId?: string | null
     reason?: string | null
     outcomeNote?: string | null
+    autoIssue?: boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -359183,6 +359343,8 @@ export namespace Prisma {
     providerRef?: NullableStringFieldUpdateOperationsInput | string | null
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     vendor?: VendorUpdateOneRequiredWithoutTopUpsNestedInput
@@ -359200,6 +359362,8 @@ export namespace Prisma {
     providerRef?: NullableStringFieldUpdateOperationsInput | string | null
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -359216,6 +359380,8 @@ export namespace Prisma {
     providerRef?: NullableStringFieldUpdateOperationsInput | string | null
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -359236,6 +359402,7 @@ export namespace Prisma {
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     fleetPartner?: FleetPartnerUpdateOneRequiredWithoutCashDepositsNestedInput
@@ -359258,6 +359425,7 @@ export namespace Prisma {
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -359279,6 +359447,7 @@ export namespace Prisma {
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -359563,6 +359732,7 @@ export namespace Prisma {
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     outcomeNote?: NullableStringFieldUpdateOperationsInput | string | null
+    autoIssue?: BoolFieldUpdateOperationsInput | boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -359583,6 +359753,7 @@ export namespace Prisma {
     coachId?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     outcomeNote?: NullableStringFieldUpdateOperationsInput | string | null
+    autoIssue?: BoolFieldUpdateOperationsInput | boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -359601,6 +359772,7 @@ export namespace Prisma {
     coachId?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     outcomeNote?: NullableStringFieldUpdateOperationsInput | string | null
+    autoIssue?: BoolFieldUpdateOperationsInput | boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -361175,6 +361347,7 @@ export namespace Prisma {
     completedAt?: Date | string | null
     reason?: string | null
     outcomeNote?: string | null
+    autoIssue?: boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -362835,6 +363008,7 @@ export namespace Prisma {
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     outcomeNote?: NullableStringFieldUpdateOperationsInput | string | null
+    autoIssue?: BoolFieldUpdateOperationsInput | boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -362855,6 +363029,7 @@ export namespace Prisma {
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     outcomeNote?: NullableStringFieldUpdateOperationsInput | string | null
+    autoIssue?: BoolFieldUpdateOperationsInput | boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -362873,6 +363048,7 @@ export namespace Prisma {
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     outcomeNote?: NullableStringFieldUpdateOperationsInput | string | null
+    autoIssue?: BoolFieldUpdateOperationsInput | boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -363893,6 +364069,7 @@ export namespace Prisma {
     coachId?: string | null
     reason?: string | null
     outcomeNote?: string | null
+    autoIssue?: boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -366350,6 +366527,7 @@ export namespace Prisma {
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     outcomeNote?: NullableStringFieldUpdateOperationsInput | string | null
+    autoIssue?: BoolFieldUpdateOperationsInput | boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -366370,6 +366548,7 @@ export namespace Prisma {
     coachId?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     outcomeNote?: NullableStringFieldUpdateOperationsInput | string | null
+    autoIssue?: BoolFieldUpdateOperationsInput | boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -366388,6 +366567,7 @@ export namespace Prisma {
     coachId?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     outcomeNote?: NullableStringFieldUpdateOperationsInput | string | null
+    autoIssue?: BoolFieldUpdateOperationsInput | boolean
     scorecard?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -369039,6 +369219,8 @@ export namespace Prisma {
     providerRef?: string | null
     provider?: string | null
     paidAt?: Date | string | null
+    reviewNote?: string | null
+    reviewedById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -369758,6 +369940,8 @@ export namespace Prisma {
     providerRef?: NullableStringFieldUpdateOperationsInput | string | null
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutVendorTopUpsNestedInput
@@ -369775,6 +369959,8 @@ export namespace Prisma {
     providerRef?: NullableStringFieldUpdateOperationsInput | string | null
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -369791,6 +369977,8 @@ export namespace Prisma {
     providerRef?: NullableStringFieldUpdateOperationsInput | string | null
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -371927,6 +372115,7 @@ export namespace Prisma {
     confirmedById?: string | null
     confirmedAt?: Date | string | null
     rejectReason?: string | null
+    reviewNote?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -372730,6 +372919,7 @@ export namespace Prisma {
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutFleetCashDepositsNestedInput
@@ -372752,6 +372942,7 @@ export namespace Prisma {
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -372773,6 +372964,7 @@ export namespace Prisma {
     confirmedById?: NullableStringFieldUpdateOperationsInput | string | null
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewNote?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

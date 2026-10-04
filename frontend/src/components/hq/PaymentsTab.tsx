@@ -45,6 +45,11 @@ export default function PaymentsTab() {
 
   const [status, setStatus] = useState<"PENDING" | "ALL">("PENDING");
   const [side, setSide] = useState<"ALL" | "VENDOR" | "FLEET">("ALL");
+  // Revision 21 (#5): "must be able to approve the payment or give feedback".
+  // Both verbs open a panel with a note. Approving takes an optional one;
+  // refusing requires it, for a shop top-up as much as for a company deposit,
+  // because a refused transfer with no reason is a phone call.
+  const [approving, setApproving] = useState<PaymentRow | null>(null);
   const [rejecting, setRejecting] = useState<PaymentRow | null>(null);
   const [reason, setReason] = useState("");
 
@@ -67,11 +72,13 @@ export default function PaymentsTab() {
   const confirmMutation = useMutation({
     mutationFn: (row: PaymentRow) =>
       row.kind === "VENDOR_TOP_UP"
-        ? financeDeskApi.confirmTopUp(row.id)
-        : financeDeskApi.confirmDeposit(row.id),
+        ? financeDeskApi.confirmTopUp(row.id, reason.trim() || undefined)
+        : financeDeskApi.confirmDeposit(row.id, reason.trim() || undefined),
     onSuccess: (data) => {
       const already = (data as { alreadyPaid?: boolean })?.alreadyPaid;
       toast.success(already ? t("financeDesk.alreadyPaid") : t("financeDesk.confirmed"));
+      setApproving(null);
+      setReason("");
       refresh();
     },
     onError: failWith,
@@ -80,7 +87,7 @@ export default function PaymentsTab() {
   const rejectMutation = useMutation({
     mutationFn: (row: PaymentRow) =>
       row.kind === "VENDOR_TOP_UP"
-        ? financeDeskApi.cancelTopUp(row.id)
+        ? financeDeskApi.cancelTopUp(row.id, reason.trim())
         : financeDeskApi.rejectDeposit(row.id, reason.trim()),
     onSuccess: () => {
       toast.success(t("financeDesk.cancelled"));
@@ -147,6 +154,7 @@ export default function PaymentsTab() {
                 <th className="text-start font-medium px-4 py-3">{t("financeDesk.reference")}</th>
                 <th className="text-start font-medium px-4 py-3">{t("financeDesk.requested")}</th>
                 <th className="text-start font-medium px-4 py-3">{t("driverTracking.state")}</th>
+                <th className="text-start font-medium px-4 py-3">{t("financeDesk.feedback")}</th>
                 {canSettle && (
                   <th className="text-end font-medium px-4 py-3">{t("driverTracking.actions")}</th>
                 )}
@@ -155,7 +163,7 @@ export default function PaymentsTab() {
             <tbody className="divide-y divide-sand-100">
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={canSettle ? 6 : 5} className="px-4 py-10 text-center text-sand-500">
+                  <td colSpan={canSettle ? 7 : 6} className="px-4 py-10 text-center text-sand-500">
                     {t("financeDesk.noPayments")}
                   </td>
                 </tr>
@@ -195,18 +203,25 @@ export default function PaymentsTab() {
                       {row.status}
                     </span>
                   </td>
+                  <td className="px-4 py-3 text-xs text-sand-600 max-w-[16rem]" dir="auto">
+                    {row.note ?? "n/a"}
+                  </td>
                   {canSettle && (
                     <td className="px-4 py-3">
                       {row.status === "PENDING" ? (
                         <div className="flex items-center justify-end gap-1">
                           <button
                             type="button"
+                            data-testid="payment-approve"
                             disabled={confirmMutation.isPending}
-                            onClick={() => confirmMutation.mutate(row)}
+                            onClick={() => {
+                              setApproving(row);
+                              setReason("");
+                            }}
                             className="h-8 px-4 inline-flex items-center gap-1.5 rounded-pill bg-forest-600 text-white text-xs font-medium disabled:opacity-40"
                           >
                             <Check size={13} aria-hidden="true" />
-                            {t("financeDesk.confirm")}
+                            {t("financeDesk.approve")}
                           </button>
                           <button
                             type="button"
@@ -234,6 +249,44 @@ export default function PaymentsTab() {
         </div>
       </div>
 
+      {/* ── Approve, with feedback ──────────────────────────────────────── */}
+      <SlidePanel
+        open={approving !== null}
+        onClose={() => setApproving(null)}
+        title={t("financeDesk.approveTitle")}
+        subtitle={
+          approving
+            ? `${approving.accountName ?? "n/a"} · ${formatKwd(approving.amountKwd, locale)}`
+            : ""
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-sand-900 mb-1">
+              {t("financeDesk.approveNote")}
+              <span className="ms-2 text-xs font-normal text-sand-500">{t("financeDesk.noFeedback")}</span>
+            </label>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={3}
+              className="w-full rounded-2xl border border-sand-200 bg-card p-3 text-sm"
+            />
+            <p className="text-xs text-sand-500 mt-1">{t("financeDesk.approveHint")}</p>
+          </div>
+          <button
+            type="button"
+            data-testid="payment-approve-confirm"
+            disabled={confirmMutation.isPending}
+            onClick={() => approving && confirmMutation.mutate(approving)}
+            className="h-10 px-5 inline-flex items-center gap-2 rounded-pill bg-forest-600 text-white text-sm font-medium disabled:opacity-40"
+          >
+            <Check size={15} aria-hidden="true" />
+            {t("financeDesk.confirm")}
+          </button>
+        </div>
+      </SlidePanel>
+
       <SlidePanel
         open={rejecting !== null}
         onClose={() => setRejecting(null)}
@@ -245,27 +298,23 @@ export default function PaymentsTab() {
         subtitle={rejecting?.accountName ?? ""}
       >
         <div className="space-y-4">
-          {/* A company deposit needs a reason; a shop top-up is simply
-              cancelled, which is what the endpoint behind it accepts. */}
-          {rejecting?.kind === "FLEET_DEPOSIT" && (
-            <div>
-              <label className="block text-sm font-medium text-sand-900 mb-1">
-                {t("financeDesk.rejectReason")}
-              </label>
-              <textarea
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                rows={3}
-                className="w-full rounded-2xl border border-sand-200 bg-card p-3 text-sm"
-              />
-            </div>
-          )}
+          {/* Both kinds need a reason now (revision 21 #5). It is stored on
+              the row and shown to the shop or company beside the payment. */}
+          <div>
+            <label className="block text-sm font-medium text-sand-900 mb-1">
+              {t("financeDesk.rejectReason")}
+            </label>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={3}
+              className="w-full rounded-2xl border border-sand-200 bg-card p-3 text-sm"
+            />
+            <p className="text-xs text-sand-500 mt-1">{t("financeDesk.rejectHint")}</p>
+          </div>
           <button
             type="button"
-            disabled={
-              rejectMutation.isPending ||
-              (rejecting?.kind === "FLEET_DEPOSIT" && !reason.trim())
-            }
+            disabled={rejectMutation.isPending || !reason.trim()}
             onClick={() => rejecting && rejectMutation.mutate(rejecting)}
             className="h-10 px-5 rounded-pill bg-primary text-white text-sm font-medium disabled:opacity-40"
           >

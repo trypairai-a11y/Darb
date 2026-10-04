@@ -58,6 +58,12 @@ router.get("/", rbac(...READ), async (req: Request, res: Response) => {
     }
     if (source === "vendor") where.vendorId = { not: null };
     if (source === "fleet") where.fleetPartnerId = { not: null };
+    // Revision 21c (client note, 2026-09-21): "add the support requests
+    // regarding the orders to appear in the problems tab". A request is about
+    // an order when the shop filed it under ORDER or attached one; the Live
+    // screen's Problems segment reads this slice and nothing else.
+    const aboutOrders = req.query.about === "orders";
+    if (aboutOrders) where.OR = [{ type: "ORDER" }, { orderId: { not: null } }];
 
     const [rows, total] = await Promise.all([
       prisma.supportTicket.findMany({
@@ -76,7 +82,23 @@ router.get("/", rbac(...READ), async (req: Request, res: Response) => {
       prisma.supportTicket.count({ where: where as never }),
     ]);
 
-    res.json(paginatedResponse(rows, total, page, limit));
+    // The ticket carries only the order id. The Problems list needs the
+    // number the ops team knows the order by, so it is joined here rather
+    // than by a second call from the browser.
+    let out: unknown[] = rows;
+    if (aboutOrders) {
+      const orderIds = rows.map((r) => r.orderId).filter((id): id is string => !!id);
+      const orders = orderIds.length
+        ? await prisma.deliveryOrder.findMany({
+            where: { tenantId, id: { in: orderIds } },
+            select: { id: true, orderNumber: true, status: true },
+          })
+        : [];
+      const byId = new Map(orders.map((o) => [o.id, o]));
+      out = rows.map((r) => ({ ...r, order: r.orderId ? (byId.get(r.orderId) ?? null) : null }));
+    }
+
+    res.json(paginatedResponse(out, total, page, limit));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

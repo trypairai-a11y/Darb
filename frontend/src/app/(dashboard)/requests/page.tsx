@@ -496,7 +496,7 @@ function RequestsScreen() {
 
   return (
     <div className="space-y-6">
-      <BackToSetup />
+      <BackToSetup tab="ops" />
       <div>
         <h1 className="font-display text-display-sm text-sand-900 inline-flex items-center gap-2">
           <LifeBuoy size={22} aria-hidden="true" />

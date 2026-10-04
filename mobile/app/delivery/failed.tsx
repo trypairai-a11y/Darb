@@ -19,13 +19,17 @@ export default function DeliveryFailedScreen() {
 
   const order = useDriverStore((s) => s.activeOrder);
   const completeOrder = useDriverStore((s) => s.completeOrder);
+  const advanceOrder = useDriverStore((s) => s.advanceOrder);
   const [reason, setReason] = useState<FailReason | null>(null);
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   // Client request 2026-08-31: a failed delivery goes back to the shop, so
-  // reporting it opens the return leg instead of dropping straight to Home.
-  // Held locally because the store's activeOrder is already cleared by then.
-  const [returnLeg, setReturnLeg] = useState<{ orderId: string; to: ReturnTo | null } | null>(null);
+  // reporting it opens the return leg. Revision 21c (client note,
+  // 2026-09-21): the return is not optional. The order stays the driver's
+  // active order, at stage RETURNING, until they confirm the hand-back, so
+  // closing the app or pressing Home lands them straight back here, and
+  // the server offers them nothing new in between.
+  const [returnTo, setReturnTo] = useState<ReturnTo | null>(null);
 
   const submit = useCallback(async () => {
     if (!order || !reason || submitting) return;
@@ -33,32 +37,46 @@ export default function DeliveryFailedScreen() {
     setSubmitting(true);
     try {
       const res = await postOrderFailed(order.id, reason, note.trim() || undefined);
-      setReturnLeg({ orderId: order.id, to: res.returnTo ?? null });
-      completeOrder();
+      setReturnTo(res.returnTo ?? null);
+      advanceOrder("RETURNING");
       void hydrateNow();
     } catch (e: any) {
       Alert.alert(tr("failed.title"), e?.message || tr("common.retry"));
     } finally {
       setSubmitting(false);
     }
-  }, [order, reason, note, submitting, completeOrder]);
+  }, [order, reason, note, submitting, advanceOrder]);
 
   const confirmReturned = useCallback(async () => {
-    if (!returnLeg || submitting) return;
+    if (!order || submitting) return;
     setSubmitting(true);
     try {
-      await postOrderReturned(returnLeg.orderId);
+      await postOrderReturned(order.id);
+      completeOrder();
+      void hydrateNow();
       router.replace("/(tabs)/home");
     } catch (e: any) {
       Alert.alert(tr("failed.return_title"), e?.message || tr("common.retry"));
     } finally {
       setSubmitting(false);
     }
-  }, [returnLeg, submitting, router]);
+  }, [order, submitting, router, completeOrder]);
 
   // ─── Return leg ───
-  if (returnLeg) {
-    const to = returnLeg.to;
+  // Reached from the report above, or on reopen when the server still says
+  // FAILED. The pickup on the order itself is the fallback for the latter.
+  if (order && order.stage === "RETURNING") {
+    const to: ReturnTo | null =
+      returnTo ??
+      (order.pickup
+        ? {
+            branchName: order.pickup.name ?? null,
+            address: order.pickup.address ?? null,
+            lat: order.pickup.lat ?? null,
+            lng: order.pickup.lng ?? null,
+            phone: order.pickup.phone ?? null,
+          }
+        : null);
     return (
       <Screen>
         <NavBar title={tr("failed.return_title")} />
@@ -93,12 +111,9 @@ export default function DeliveryFailedScreen() {
             disabled={submitting}
             style={{ marginTop: space.xl }}
           />
-          <Button
-            title={tr("failed.return_later")}
-            variant="tinted"
-            onPress={() => router.replace("/(tabs)/home")}
-            style={{ marginTop: space.md }}
-          />
+          <Text style={[t.footnote, { color: c.secondaryLabel, marginTop: space.md, textAlign: "center" }]}>
+            {tr("failed.return_required")}
+          </Text>
         </ScrollView>
       </Screen>
     );

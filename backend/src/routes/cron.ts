@@ -27,7 +27,10 @@ import { sweepScheduledOrders } from "../services/orderService";
 // Revision 20 — the compliance desk's expiry sweep and the training desk's
 // lapsed-window release.
 import { autoCheckDocument, sweepExpiredDocuments } from "../services/compliance/complianceService";
-import { sweepLapsedTrainingWindows } from "../services/training/driverTrainingService";
+import {
+  sweepLapsedTrainingWindows,
+  sweepTrainingAutoIssue,
+} from "../services/training/driverTrainingService";
 import { processTick as walletReconciliationTick } from "../queues/walletReconciliationWorker";
 import {
   generateMonthlyStatements,
@@ -126,6 +129,16 @@ router.get("/dispatch-sweep", async (req: Request, res: Response) => {
 
     const dispatch = await sweepDispatch();
 
+    // Revision 21 (#3): a trainee with nothing in hand gets the next practice
+    // order. Normally the order ending does this itself; the sweep is the
+    // backstop for a window whose last order was cancelled from the board.
+    let trainingIssued = { issued: 0, checked: 0 };
+    try {
+      trainingIssued = await sweepTrainingAutoIssue();
+    } catch (err) {
+      logger.warn({ err }, "cron: training auto-issue sweep failed");
+    }
+
     // Demo tenants only, behind DEMO_AUTO_COURIER. Runs AFTER the dispatch leg
     // so an offer made on this tick is still fresh when it looks, and gets its
     // pause before being answered on the next one.
@@ -142,6 +155,7 @@ router.get("/dispatch-sweep", async (req: Request, res: Response) => {
       presenceUpkeep,
       scheduledAdvanced,
       ...dispatch,
+      trainingIssued,
       demoCouriers,
       durationMs: Date.now() - startedAt,
     });

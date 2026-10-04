@@ -638,6 +638,10 @@ export async function returnToMerchant(args: {
       data: { returnedAt: new Date() },
       eventMeta: { ...baseEventMeta(order), ...(note ? { note } : {}) },
     });
+    // The bag is back on the counter: NOW the driver is free (revision 21c).
+    if (order.driverId) {
+      await releaseDriverToOnline(trx, tenantId, order.driverId);
+    }
     return trx;
   });
   flushOrderEvents(tx);
@@ -781,9 +785,26 @@ export async function completeDelivery(args: {
     // no POS ticket to close and no customer to tell.
     fireFoodicsWriteback(orderId, "DELIVERED");
     fireCustomerMilestone(orderId, tenantId, "DELIVERED");
+  } else {
+    fireNextPracticeOrder(order);
   }
 
   return { order: updated ?? { ...order, status: "DELIVERED" } };
+}
+
+/**
+ * Revision 21 (#3) — a practice order ending is what hands the trainee the
+ * next one, so the driver is never left waiting for a coach to press a
+ * button. Fire and forget, after the commit: the training service imports
+ * this module for order numbers, so it is loaded lazily to keep the cycle
+ * out of module evaluation.
+ */
+function fireNextPracticeOrder(order: { isTraining: boolean; trainingSessionId: string | null; tenantId: string }) {
+  if (!order.isTraining || !order.trainingSessionId) return;
+  const { tenantId, trainingSessionId } = order;
+  void import("./training/driverTrainingService")
+    .then((m) => m.autoIssuePracticeOrder(tenantId, trainingSessionId))
+    .catch((err) => logger.warn({ err, trainingSessionId }, "training: next practice order not issued"));
 }
 
 // ─── Fail ──────────────────────────────────────────────────────────────────
@@ -812,10 +833,13 @@ export async function failDelivery(args: {
       data: { failureReason: reason },
       eventMeta: { ...baseEventMeta(order), reason },
     });
-    // Failed trip still frees the driver (contract #2).
-    if (order.driverId) {
-      await releaseDriverToOnline(trx, tenantId, order.driverId);
-    }
+    // Revision 21c (client note, 2026-09-21): "if delivery failed for any
+    // reason the driver must return the order to the vendor, after that he
+    // can report that the delivery failed". A failed trip no longer frees
+    // the driver: they are still carrying the shop's bag, and the return is
+    // the rest of the job. `returnToMerchant` is what releases them, and
+    // FAILED counts as an active order everywhere presence is read, so no
+    // new offer reaches them in between.
     const row = await trx.deliveryOrder.findFirst({ where: { id: orderId, tenantId } });
     return { tx: trx, updated: row };
   });
@@ -823,7 +847,8 @@ export async function failDelivery(args: {
   flushOrderEvents(tx); // publishes order.failed
   // Foodics has no FAILED milestone — the write-back worker maps it to a
   // cancellation on the POS side.
-  fireFoodicsWriteback(orderId, "CANCELLED");
+  if (!order.isTraining) fireFoodicsWriteback(orderId, "CANCELLED");
+  else fireNextPracticeOrder(order);
   return updated ?? { ...order, status: "FAILED", failureReason: reason };
 }
 

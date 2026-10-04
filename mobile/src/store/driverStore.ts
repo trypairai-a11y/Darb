@@ -70,6 +70,10 @@ export function canonicalStage(stage: OrderStage | null | undefined): OrderStage
 export function stageIndex(stage: OrderStage | null | undefined): number {
   const canonical = canonicalStage(stage);
   if (!canonical) return -1;
+  // The return leg sits past every delivery stage (revision 21c): it is not
+  // on the progress strip, but advanceOrder's "never regress" guard must
+  // let a delivery move INTO it and a hydrate must never move it back out.
+  if (canonical === "RETURNING") return STAGE_ORDER.length;
   return STAGE_ORDER.indexOf(canonical);
 }
 
@@ -100,6 +104,7 @@ function serverStage(order: AgentActiveOrder): OrderStage {
   const canonical = canonicalStage(order.stage);
   if (canonical && STAGE_ORDER.includes(canonical)) return canonical;
   const status = (order.status || "").toUpperCase();
+  if (status === "FAILED") return "RETURNING";
   if (status === "PICKED_UP") return "PICKED_UP";
   return "HEADING_TO_PICKUP";
 }

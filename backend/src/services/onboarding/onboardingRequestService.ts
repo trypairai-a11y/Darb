@@ -195,6 +195,10 @@ export async function approveOnboardingRequest(params: {
         // back with it and the reviewer is asked for a different code.
         throw Object.assign(new Error(`Code ${code} is already in use`), { statusCode: 409 });
       }
+      // Revision 21c: approval creates the account INACTIVE. A shop with no
+      // branch and no login is not one intake should accept orders for, and
+      // the list said Active for it. `services/onboarding/setupCompleteness`
+      // is what lets it be switched on.
       const vendor = await tx.vendor.create({
         data: {
           tenantId,
@@ -202,6 +206,7 @@ export async function approveOnboardingRequest(params: {
           nameAr: request.companyNameAr,
           code,
           phone: request.contactPhone,
+          isActive: false,
         },
       });
       await tx.onboardingRequest.update({
@@ -218,6 +223,8 @@ export async function approveOnboardingRequest(params: {
         contactName: request.contactName,
         contactPhone: request.contactPhone,
         contactEmail: request.contactEmail,
+        // Same rule as the shop above: inactive until its details are filled.
+        isActive: false,
       },
     });
     await tx.onboardingRequest.update({

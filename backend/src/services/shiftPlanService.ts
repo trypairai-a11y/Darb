@@ -20,6 +20,7 @@
  * gets through in that window, and floored at the cover the zone needs to be
  * open at all.
  */
+import { Prisma } from "../generated/prisma";
 import { prisma } from "../config";
 import { SHIFT_HOURS, SHIFT_WINDOW_STARTS } from "../routes/agent";
 
@@ -89,13 +90,24 @@ export interface GenerateResult {
  *
  * Rebuilding replaces the draft wholesale, the same discipline the capacity
  * grid and the delivery-plan rate grids use: a half-written grid is one nothing
- * on screen can describe. An APPROVED plan is never overwritten — regenerating
- * over a week somebody already signed off would silently un-approve it.
+ * on screen can describe.
+ *
+ * An APPROVED week is rebuilt only when the caller says so (`replaceApproved`,
+ * revision 21c, client note 2026-09-21: "still I can't change the plan, need to
+ * be able to reset the plan"). Without the flag it still answers 409, so an
+ * older client or a double-click cannot silently un-approve a week somebody
+ * signed off. With it, the plan goes back to DRAFT and the proposal is built
+ * fresh, and `ShiftCapacity` is NOT touched: the driver app keeps booking
+ * against the last approved grid until the new draft is approved in turn.
+ * A rebuild that wrote through would be the generator moving bookable
+ * capacity under drivers' feet, which is what the approval step exists to
+ * prevent.
  */
 export async function generateShiftPlan(params: {
   tenantId: string;
   weekStart: Date;
   lookbackWeeks?: number;
+  replaceApproved?: boolean;
 }): Promise<GenerateResult> {
   const { tenantId } = params;
   const weekStart = weekStartOf(params.weekStart);
@@ -105,8 +117,11 @@ export async function generateShiftPlan(params: {
     where: { tenantId, weekStart },
     select: { id: true, status: true },
   });
-  if (existing?.status === "APPROVED") {
-    throw Object.assign(new Error("That week has already been approved"), { statusCode: 409 });
+  if (existing?.status === "APPROVED" && !params.replaceApproved) {
+    throw Object.assign(new Error("That week has already been approved"), {
+      statusCode: 409,
+      code: "WEEK_APPROVED",
+    });
   }
 
   const zones = await prisma.deliveryZone.findMany({
@@ -216,6 +231,8 @@ export async function generateShiftPlan(params: {
   const plan = await prisma.$transaction(async (tx) => {
     if (existing) {
       await tx.shiftPlanEntry.deleteMany({ where: { planId: existing.id } });
+      // Back to DRAFT with the approval cleared: a rebuilt approved week is a
+      // proposal again and has to be signed off again before it lands.
       const updated = await tx.shiftPlan.update({
         where: { id: existing.id },
         data: { status: "DRAFT", basis, generatedAt: new Date(), approvedAt: null, approvedById: null },
@@ -256,11 +273,42 @@ export async function getShiftPlan(tenantId: string, weekStart: Date) {
     }),
     prisma.driver.findMany({
       where: { tenantId, status: { not: "TERMINATED" } },
-      select: { id: true, name: true, driverCode: true, assignedZoneId: true },
+      select: {
+        id: true,
+        name: true,
+        driverCode: true,
+        assignedZoneId: true,
+        status: true,
+        isFrozen: true,
+        inTraining: true,
+      },
     }),
   ]);
 
-  return { plan, zones, drivers, windows: [...SHIFT_WINDOW_STARTS], hours: SHIFT_HOURS };
+  // Revision 21 (#2): "put the total number of drivers available". A driver
+  // is available to a plan when dispatch would offer to them: ACTIVE, not
+  // frozen, not in training. The per-area figure is what a planner compares a
+  // cell against; a window asking for four drivers in an area that has two
+  // is a window the app can never fill, and nothing on the grid said so.
+  const availability = { total: 0, unassigned: 0, byZone: {} as Record<string, number> };
+  for (const d of drivers) {
+    if (d.status !== "ACTIVE" || d.isFrozen || d.inTraining) continue;
+    availability.total += 1;
+    if (!d.assignedZoneId) {
+      availability.unassigned += 1;
+      continue;
+    }
+    availability.byZone[d.assignedZoneId] = (availability.byZone[d.assignedZoneId] ?? 0) + 1;
+  }
+
+  return {
+    plan,
+    zones,
+    drivers,
+    availability,
+    windows: [...SHIFT_WINDOW_STARTS],
+    hours: SHIFT_HOURS,
+  };
 }
 
 /**
@@ -270,6 +318,13 @@ export async function getShiftPlan(tenantId: string, weekStart: Date) {
  * `demandOrders` are what the machine said, and a grid that lets a human
  * rewrite the machine's own working cannot later explain the difference
  * between the two — which is the only reason to show both.
+ *
+ * Revision 21b (client note, 2026-09-21): "must give the option to adjust the
+ * plan after approving". An APPROVED plan takes edits too, and saving them
+ * rewrites the capacity grid in the same transaction, through the same
+ * wholesale write approval uses. A DISCARDED plan stays closed. The invariant
+ * is unchanged in spirit: the grid is still written only from a plan's
+ * `approvedDrivers`, only by a human pressing a button on that plan.
  */
 export async function updateShiftPlanEntries(params: {
   tenantId: string;
@@ -287,8 +342,8 @@ export async function updateShiftPlanEntries(params: {
     select: { id: true, status: true },
   });
   if (!plan) throw Object.assign(new Error("Plan not found"), { statusCode: 404 });
-  if (plan.status !== "DRAFT") {
-    throw Object.assign(new Error("Only a draft plan can be edited"), { statusCode: 409 });
+  if (plan.status !== "DRAFT" && plan.status !== "APPROVED") {
+    throw Object.assign(new Error("A discarded plan cannot be edited"), { statusCode: 409 });
   }
 
   for (const e of params.entries) {
@@ -298,9 +353,9 @@ export async function updateShiftPlanEntries(params: {
     }
   }
 
-  await prisma.$transaction(
-    params.entries.map((e) =>
-      prisma.shiftPlanEntry.updateMany({
+  await prisma.$transaction(async (tx) => {
+    for (const e of params.entries) {
+      await tx.shiftPlanEntry.updateMany({
         where: {
           tenantId: params.tenantId,
           planId: params.planId,
@@ -312,10 +367,45 @@ export async function updateShiftPlanEntries(params: {
           approvedDrivers: Math.trunc(e.approvedDrivers),
           ...(e.suggestedDriverIds ? { suggestedDriverIds: e.suggestedDriverIds } : {}),
         },
-      }),
-    ),
-  );
+      });
+    }
+    // An amended approved week lands on the driver app at once, or the
+    // planner has changed a number nobody books against.
+    if (plan.status === "APPROVED") {
+      await writeCapacityFromPlan(tx, params.tenantId, params.planId);
+    }
+  });
   return getShiftPlanById(params.tenantId, params.planId);
+}
+
+/**
+ * The ONE write to `ShiftCapacity`: the grid is replaced wholesale from the
+ * plan's `approvedDrivers`. Used by approval and by amending an approved
+ * week, so the two can never disagree about what a plan means.
+ */
+async function writeCapacityFromPlan(
+  tx: Prisma.TransactionClient,
+  tenantId: string,
+  planId: string,
+): Promise<number> {
+  const entries = await tx.shiftPlanEntry.findMany({
+    where: { tenantId, planId },
+    select: { zoneId: true, dayOfWeek: true, startTime: true, approvedDrivers: true },
+  });
+
+  await tx.shiftCapacity.deleteMany({ where: { tenantId } });
+  if (entries.length) {
+    await tx.shiftCapacity.createMany({
+      data: entries.map((e) => ({
+        tenantId,
+        zoneId: e.zoneId,
+        dayOfWeek: e.dayOfWeek,
+        startTime: e.startTime,
+        maxDrivers: e.approvedDrivers,
+      })),
+    });
+  }
+  return entries.length;
 }
 
 export async function getShiftPlanById(tenantId: string, planId: string) {
@@ -359,25 +449,8 @@ export async function approveShiftPlan(params: {
       throw Object.assign(new Error("Only a draft plan can be approved"), { statusCode: 409 });
     }
 
-    const entries = await tx.shiftPlanEntry.findMany({
-      where: { tenantId, planId },
-      select: { zoneId: true, dayOfWeek: true, startTime: true, approvedDrivers: true },
-    });
-
-    await tx.shiftCapacity.deleteMany({ where: { tenantId } });
-    if (entries.length) {
-      await tx.shiftCapacity.createMany({
-        data: entries.map((e) => ({
-          tenantId,
-          zoneId: e.zoneId,
-          dayOfWeek: e.dayOfWeek,
-          startTime: e.startTime,
-          maxDrivers: e.approvedDrivers,
-        })),
-      });
-    }
-
-    return { planId, windows: entries.length };
+    const windows = await writeCapacityFromPlan(tx, tenantId, planId);
+    return { planId, windows };
   });
 }
 

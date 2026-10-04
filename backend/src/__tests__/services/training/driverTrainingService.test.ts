@@ -212,3 +212,77 @@ describe("completeTrainingSession", () => {
     expect(prisma.driver.update).not.toHaveBeenCalled();
   });
 });
+
+// ─── Revision 21 (#3): keeping the trainee busy ─────────────────────────────
+//
+// "orders should be sent automatically, with the option to send manual orders,
+// keep the driver busy". The one property worth locking down is idempotence
+// on what is in flight: the order ending, the minute sweep and a coach's click
+// can all fire within the same second, and the trainee must get ONE order.
+
+import { autoIssuePracticeOrder } from "../../../services/training/driverTrainingService";
+
+describe("autoIssuePracticeOrder", () => {
+  const running = {
+    id: "s1",
+    status: "IN_PROGRESS",
+    autoIssue: true,
+    endsAt: new Date(Date.now() + 86_400_000),
+    driver: { id: "d1", assignedZoneId: "z1" },
+  };
+
+  function attachAutoIssueDelegates() {
+    const p = prisma as any;
+    p.deliveryOrder = {
+      ...(p.deliveryOrder ?? {}),
+      count: jest.fn(),
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+    };
+    p.vendorBranch = { ...(p.vendorBranch ?? {}), findMany: jest.fn() };
+  }
+
+  beforeEach(attachAutoIssueDelegates);
+
+  it("does nothing while a practice order is still in the trainee's hands", async () => {
+    prisma.driverTrainingSession.findFirst.mockResolvedValue(running);
+    (prisma as any).deliveryOrder.count.mockResolvedValueOnce(1).mockResolvedValueOnce(0);
+    (prisma as any).deliveryOrder.findFirst.mockResolvedValue(null);
+
+    const r = await autoIssuePracticeOrder("t1", "s1");
+
+    expect(r).toEqual({ issued: null, reason: "IN_FLIGHT" });
+    expect((prisma as any).vendorBranch.findMany).not.toHaveBeenCalled();
+  });
+
+  it("does nothing when the switch is off, or the window is over", async () => {
+    prisma.driverTrainingSession.findFirst.mockResolvedValueOnce({ ...running, autoIssue: false });
+    expect(await autoIssuePracticeOrder("t1", "s1")).toMatchObject({ reason: "AUTO_OFF" });
+
+    prisma.driverTrainingSession.findFirst.mockResolvedValueOnce({
+      ...running,
+      endsAt: new Date(Date.now() - 1000),
+    });
+    expect(await autoIssuePracticeOrder("t1", "s1")).toMatchObject({ reason: "WINDOW_OVER" });
+  });
+
+  it("waits a minute between two orders, so a failing app cannot loop", async () => {
+    prisma.driverTrainingSession.findFirst.mockResolvedValue(running);
+    (prisma as any).deliveryOrder.count.mockResolvedValueOnce(0).mockResolvedValueOnce(3);
+    (prisma as any).deliveryOrder.findFirst.mockResolvedValue({
+      createdAt: new Date(Date.now() - 5_000),
+      branchId: "b1",
+    });
+
+    expect(await autoIssuePracticeOrder("t1", "s1")).toMatchObject({ reason: "TOO_SOON" });
+  });
+
+  it("reports when the network has no branch with coordinates to collect from", async () => {
+    prisma.driverTrainingSession.findFirst.mockResolvedValue(running);
+    (prisma as any).deliveryOrder.count.mockResolvedValue(0);
+    (prisma as any).deliveryOrder.findFirst.mockResolvedValue(null);
+    (prisma as any).vendorBranch.findMany.mockResolvedValue([]);
+
+    expect(await autoIssuePracticeOrder("t1", "s1")).toMatchObject({ reason: "NO_PICKUP_POINTS" });
+  });
+});

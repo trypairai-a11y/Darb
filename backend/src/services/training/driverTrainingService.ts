@@ -109,6 +109,12 @@ export async function createTrainingSession(params: {
     // tonight and be mid-delivery when the coach arrives.
     await tx.driver.update({ where: { id: driverId }, data: { inTraining: true } });
     return session;
+  }).then(async (session) => {
+    // Revision 21 (#3): a window that starts now gets its first practice order
+    // now. Best effort, outside the transaction: a branch table with no
+    // coordinates must not stop the window from opening.
+    if (started) await autoIssuePracticeOrder(tenantId, session.id).catch(() => null);
+    return session;
   });
 }
 
@@ -153,7 +159,36 @@ export async function startTrainingSession(tenantId: string, sessionId: string) 
   if (claimed.count === 0) {
     throw Object.assign(new Error("Training session is not scheduled"), { statusCode: 409 });
   }
+  await autoIssuePracticeOrder(tenantId, sessionId).catch(() => null);
   return prisma.driverTrainingSession.findFirst({ where: { id: sessionId, tenantId } });
+}
+
+/**
+ * Revision 21 (#3) — "orders should be sent automatically, with the option
+ * to send manual orders, keep the driver busy".
+ *
+ * The switch is per window, on by default. Turning it off stops the next
+ * order; it never recalls one already handed to the driver.
+ */
+export async function setTrainingAutoIssue(params: {
+  tenantId: string;
+  sessionId: string;
+  enabled: boolean;
+}) {
+  const session = await prisma.driverTrainingSession.findFirst({
+    where: { id: params.sessionId, tenantId: params.tenantId },
+    select: { id: true, status: true },
+  });
+  if (!session) throw Object.assign(new Error("Training session not found"), { statusCode: 404 });
+  if (session.status === "PASSED" || session.status === "FAILED" || session.status === "CANCELLED") {
+    throw Object.assign(new Error("That training window has already closed"), { statusCode: 409 });
+  }
+  const updated = await prisma.driverTrainingSession.update({
+    where: { id: session.id },
+    data: { autoIssue: params.enabled },
+  });
+  if (params.enabled) await autoIssuePracticeOrder(params.tenantId, session.id).catch(() => null);
+  return updated;
 }
 
 // ─── Practice orders ────────────────────────────────────────────────────────
@@ -264,6 +299,136 @@ export async function issuePracticeOrder(input: PracticeOrderInput) {
 
   flushOrderEvents(tx);
   return order;
+}
+
+// ─── Keeping the trainee busy ───────────────────────────────────────────────
+
+/** A practice order the trainee has not finished with yet. */
+const IN_FLIGHT: string[] = ["CREATED", "DISPATCHING", "ASSIGNED", "ARRIVED", "PICKED_UP"];
+
+/**
+ * The most a window hands out in one day, and the least time between two.
+ *
+ * Both are brakes on a loop, not a training policy: a trainee whose app fails
+ * every order the second it lands would otherwise be given a new one the same
+ * second, for as long as the window is open. Sixty a day is more than anybody
+ * delivers; a minute apart is shorter than any real pickup.
+ */
+export const AUTO_ISSUE_DAILY_CAP = 60;
+export const AUTO_ISSUE_MIN_GAP_MS = 60_000;
+
+/**
+ * Hand the trainee the next practice order if they have nothing in hand.
+ *
+ * Called when a practice order ends (delivered, failed, cancelled), when a
+ * window starts, and from the minute sweep as a backstop. Every call is
+ * idempotent on the state it reads: with an order in flight it does nothing,
+ * so three callers racing produce one order, not three. Returns the order it
+ * issued, or null with the reason it did not.
+ *
+ * Pickup is one of the network's real branches, dropoff is another real
+ * branch's address, because the whole point (revision 20) is that the trainee
+ * drives a route the map can navigate. Same area as the trainee's when one
+ * is assigned, any area otherwise.
+ */
+export async function autoIssuePracticeOrder(
+  tenantId: string,
+  sessionId: string,
+  now = new Date(),
+): Promise<{ issued: Awaited<ReturnType<typeof issuePracticeOrder>> | null; reason: string | null }> {
+  const session = await prisma.driverTrainingSession.findFirst({
+    where: { id: sessionId, tenantId },
+    select: {
+      id: true,
+      status: true,
+      autoIssue: true,
+      endsAt: true,
+      driver: { select: { id: true, assignedZoneId: true } },
+    },
+  });
+  if (!session) return { issued: null, reason: "NOT_FOUND" };
+  if (session.status !== "IN_PROGRESS") return { issued: null, reason: "NOT_RUNNING" };
+  if (!session.autoIssue) return { issued: null, reason: "AUTO_OFF" };
+  if (session.endsAt.getTime() <= now.getTime()) return { issued: null, reason: "WINDOW_OVER" };
+
+  const [inFlight, today, last] = await Promise.all([
+    prisma.deliveryOrder.count({
+      where: { tenantId, trainingSessionId: sessionId, status: { in: IN_FLIGHT as never } },
+    }),
+    prisma.deliveryOrder.count({
+      where: {
+        tenantId,
+        trainingSessionId: sessionId,
+        createdAt: { gte: new Date(now.getTime() - 86_400_000) },
+      },
+    }),
+    prisma.deliveryOrder.findFirst({
+      where: { tenantId, trainingSessionId: sessionId },
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true, branchId: true },
+    }),
+  ]);
+  if (inFlight > 0) return { issued: null, reason: "IN_FLIGHT" };
+  if (today >= AUTO_ISSUE_DAILY_CAP) return { issued: null, reason: "DAILY_CAP" };
+  if (last && now.getTime() - last.createdAt.getTime() < AUTO_ISSUE_MIN_GAP_MS) {
+    return { issued: null, reason: "TOO_SOON" };
+  }
+
+  const branches = await prisma.vendorBranch.findMany({
+    where: { tenantId, isActive: true, lat: { not: null }, lng: { not: null } },
+    select: { id: true, address: true, lat: true, lng: true, zoneId: true, name: true },
+    take: 500,
+  });
+  if (branches.length === 0) return { issued: null, reason: "NO_PICKUP_POINTS" };
+
+  const zoneId = session.driver.assignedZoneId;
+  const inZone = zoneId ? branches.filter((b) => b.zoneId === zoneId) : [];
+  const pool = inZone.length ? inZone : branches;
+  // Not the branch they just collected from, when there is a choice: the same
+  // counter twice in a row teaches one route.
+  const pickupPool = pool.length > 1 && last ? pool.filter((b) => b.id !== last.branchId) : pool;
+  const pickup = pickupPool[randomInt(0, pickupPool.length)]!;
+  const dropPool = branches.filter((b) => b.id !== pickup.id);
+  const drop = dropPool.length ? dropPool[randomInt(0, dropPool.length)]! : null;
+
+  const issued = await issuePracticeOrder({
+    tenantId,
+    sessionId,
+    branchId: pickup.id,
+    dropoffAddress: drop ? (drop.address ?? drop.name) : (pickup.address ?? pickup.name),
+    dropoffLat: drop?.lat != null ? Number(drop.lat) : null,
+    dropoffLng: drop?.lng != null ? Number(drop.lng) : null,
+    customerName: "Training customer",
+    actor: SYSTEM_ACTOR,
+  });
+  return { issued, reason: null };
+}
+
+/**
+ * The minute sweep's backstop across every running window with the switch
+ * on. The event-driven call (an order ending) is what normally issues the
+ * next one; this catches a window whose last order was cancelled from the
+ * board, or a server that restarted between the two.
+ */
+export async function sweepTrainingAutoIssue(now = new Date()): Promise<{ issued: number; checked: number }> {
+  // Cross-tenant on purpose: a cron sweep, not a request. Every session found
+  // here is re-read under its own tenantId before anything is written.
+  // eslint-disable-next-line no-prisma-without-tenant -- cron-internal: cross-tenant by design; autoIssuePracticeOrder re-reads each session under its own tenantId before writing
+  const sessions = await prisma.driverTrainingSession.findMany({
+    where: { status: "IN_PROGRESS", autoIssue: true, endsAt: { gt: now } },
+    select: { id: true, tenantId: true },
+    take: 200,
+  });
+  let issued = 0;
+  for (const s of sessions) {
+    try {
+      const r = await autoIssuePracticeOrder(s.tenantId, s.id, now);
+      if (r.issued) issued += 1;
+    } catch {
+      // One window's bad branch data must not stop the rest.
+    }
+  }
+  return { issued, checked: sessions.length };
 }
 
 // ─── The scorecard ──────────────────────────────────────────────────────────
@@ -424,6 +589,7 @@ export async function listTrainingSessions(params: {
       completedAt: true,
       reason: true,
       outcomeNote: true,
+      autoIssue: true,
       scorecard: true,
       createdAt: true,
       driver: {
@@ -469,6 +635,7 @@ export async function trainingSessionDetail(tenantId: string, sessionId: string)
       completedAt: true,
       reason: true,
       outcomeNote: true,
+      autoIssue: true,
       scorecard: true,
       driver: {
         select: { id: true, name: true, driverCode: true, phone: true, status: true, inTraining: true },
@@ -486,7 +653,15 @@ export async function trainingSessionDetail(tenantId: string, sessionId: string)
       orderNumber: true,
       status: true,
       dropoffAddress: true,
+      dropoffLat: true,
+      dropoffLng: true,
       customerName: true,
+      customerPhone: true,
+      // The PIN is shown to the coach on purpose (revision 21b, "must show the
+      // order details for each order"): on a practice order the coach IS the
+      // customer, and the app asks for this at the door. Every row in this
+      // query is a training order; a real order's PIN never leaves /api/track.
+      podPin: true,
       assignedAt: true,
       arrivedAt: true,
       pickedUpAt: true,
@@ -495,7 +670,7 @@ export async function trainingSessionDetail(tenantId: string, sessionId: string)
       proofPhotoUrl: true,
       failureReason: true,
       createdAt: true,
-      branch: { select: { id: true, name: true } },
+      branch: { select: { id: true, name: true, address: true } },
       vendor: { select: { id: true, name: true } },
     },
   });

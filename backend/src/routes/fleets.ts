@@ -14,6 +14,7 @@ import { tenantScope } from "../middleware/tenantScope";
 import { rbac } from "../middleware/rbac";
 import { validateBody } from "../utils/validate";
 import { getPagination, paginatedResponse } from "../utils/pagination";
+import { assertFleetSetupComplete, fleetSetupMissing } from "../services/onboarding/setupCompleteness";
 import {
   generateFleetStatements,
   getFleetScorecard,
@@ -172,7 +173,12 @@ router.get("/", rbac(...READ), async (req: Request, res: Response) => {
       }),
       prisma.fleetPartner.count({ where }),
     ]);
-    res.json(paginatedResponse(rows, total, page, limit));
+    // Revision 21c: which details are still empty, for the badge and the Admin card.
+    const data = rows.map((f) => ({
+      ...f,
+      setupMissing: fleetSetupMissing({ contactPhone: f.contactPhone, userCount: f._count.users }),
+    }));
+    res.json(paginatedResponse(data, total, page, limit));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -479,7 +485,10 @@ router.get("/:id", rbac(...READ), async (req: Request, res: Response) => {
       },
     });
     if (!fleet) { res.status(404).json({ error: "Fleet partner not found" }); return; }
-    res.json(fleet);
+    res.json({
+      ...fleet,
+      setupMissing: fleetSetupMissing({ contactPhone: fleet.contactPhone, userCount: fleet.users.length }),
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -506,6 +515,23 @@ router.put("/:id", rbac(...MUTATE), validateBody(updateFleetSchema), async (req:
       data.perKmFeeKwd = body.perKmFeeKwd == null ? null : String(body.perKmFeeKwd);
     }
     if (body.minDriversOnline !== undefined) data.minDriversOnline = body.minDriversOnline;
+    // Revision 21c: switching a company on needs its details filled; the
+    // guard is on the transition only. A phone in the same save counts.
+    if (data.isActive === true) {
+      const current = await prisma.fleetPartner.findFirst({
+        where: { id: req.params.id, tenantId },
+        select: { isActive: true },
+      });
+      if (current && !current.isActive) {
+        if (typeof data.contactPhone === "string" && data.contactPhone.trim()) {
+          await prisma.fleetPartner.updateMany({
+            where: { id: req.params.id, tenantId },
+            data: { contactPhone: data.contactPhone },
+          });
+        }
+        await assertFleetSetupComplete(tenantId, req.params.id);
+      }
+    }
     const updated = await prisma.fleetPartner.updateMany({
       where: { id: req.params.id, tenantId },
       data,
@@ -513,6 +539,10 @@ router.put("/:id", rbac(...MUTATE), validateBody(updateFleetSchema), async (req:
     if (updated.count === 0) { res.status(404).json({ error: "Fleet partner not found" }); return; }
     res.json(await findTenantFleet(tenantId, req.params.id));
   } catch (err: any) {
+    if (err?.code === "SETUP_INCOMPLETE") {
+      res.status(409).json({ error: err.message, code: err.code, missing: err.missing });
+      return;
+    }
     res.status(500).json({ error: err.message });
   }
 });

@@ -85,7 +85,10 @@ const INCIDENT_CATEGORY_TO_TYPE: Record<string, string> = {
   ROAD_BLOCKAGE: "OTHER",
 };
 
-const ACTIVE_ORDER_STATUSES = ["ASSIGNED", "PICKED_UP"] as const;
+// FAILED is included (revision 21c): the app rehydrates a failed order as
+// its return leg, so a driver who closed the app mid-return reopens on it
+// rather than on Home with the shop's bag still in the box.
+const ACTIVE_ORDER_STATUSES = ["ASSIGNED", "PICKED_UP", "FAILED"] as const;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -978,7 +981,7 @@ router.post("/incidents", upload.array("photos", 3), async (req: Request, res: R
       where: {
         tenantId,
         driverId: driver.id,
-        status: { in: ["ASSIGNED", "ARRIVED", "PICKED_UP"] },
+        status: { in: ["ASSIGNED", "ARRIVED", "PICKED_UP", "FAILED"] },
       },
       select: { id: true },
     });

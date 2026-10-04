@@ -15,7 +15,8 @@
 // 71% on the fleet portal is a driver nobody can have a conversation about.
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { GraduationCap, Search, Snowflake, Sun, UserCheck, UserX } from "lucide-react";
+import { ArrowDown, ArrowUp, CircleCheck, CircleX, GraduationCap, Search, Snowflake, Sun, UserCheck, UserX } from "lucide-react";
+import ConfirmModal from "@/components/shared/ConfirmModal";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import SlidePanel from "@/components/shared/SlidePanel";
@@ -28,6 +29,53 @@ import { useRole } from "@/hooks/useRole";
 import { cn } from "@/lib/cn";
 
 const WINDOWS = [7, 30, 90];
+
+/**
+ * Revision 21 (#1): "should be able to filter" every metric column, not just
+ * company, area and window. The list already arrives whole (one request, up
+ * to a thousand rows), so filtering and sorting happen here, on what is on
+ * screen, and every choice is a plain predicate over the row.
+ */
+type MetricKey =
+  | "delivered"
+  | "onTime"
+  | "acceptance"
+  | "rating"
+  | "documents"
+  | "violations"
+  | "rejections";
+
+type SortKey = "name" | MetricKey | "lastSeen";
+
+interface MetricOption {
+  value: string;
+  label: string;
+  test: (row: DriverTrackingRow) => boolean;
+}
+
+/** The sortable value behind a column. Absent sorts last whichever way. */
+function sortValue(row: DriverTrackingRow, key: SortKey): number | string | null {
+  switch (key) {
+    case "name":
+      return row.name.toLowerCase();
+    case "delivered":
+      return row.delivered;
+    case "onTime":
+      return row.onTimeRate;
+    case "acceptance":
+      return row.acceptanceRate;
+    case "rating":
+      return row.rating;
+    case "documents":
+      return row.docsValid;
+    case "violations":
+      return row.violations;
+    case "rejections":
+      return row.rejections;
+    case "lastSeen":
+      return row.lastSeenAt ? new Date(row.lastSeenAt).getTime() : null;
+  }
+}
 
 /** A rate as a whole percent, or the house "n/a" when there is nothing to rate. */
 function pct(value: number | null): string {
@@ -87,6 +135,9 @@ export default function DriverTrackingTab() {
   const [q, setQ] = useState("");
   const [fleetPartnerId, setFleetPartnerId] = useState("");
   const [zoneId, setZoneId] = useState("");
+  /** One chosen option per metric column; "" is "any". */
+  const [metric, setMetric] = useState<Partial<Record<MetricKey, string>>>({});
+  const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "name", dir: "asc" });
 
   // Which driver a modal is open for, and which of the two modals it is. Both
   // need a reason, and a freeze with no reason is the support call this screen
@@ -117,9 +168,134 @@ export default function DriverTrackingTab() {
     queryFn: () => zonesApi.list({ limit: 200 }),
   });
 
-  const rows = trackingQuery.data?.rows ?? [];
+  const allRows = useMemo(() => trackingQuery.data?.rows ?? [], [trackingQuery.data]);
   const fleets = useMemo(() => unwrapList<FleetProfile>(fleetsQuery.data), [fleetsQuery.data]);
   const zones = useMemo(() => unwrapList<DeliveryZone>(zonesQuery.data), [zonesQuery.data]);
+
+  // The filter vocabulary. Rates share one ladder (the same thresholds the
+  // cell colours use, so "below 70%" is exactly the red rows), counts share
+  // another, and "not rated yet" is its own answer because a new joiner with
+  // no offers is not a driver with 0% acceptance.
+  const metricFilters = useMemo<Array<{ key: MetricKey; label: string; options: MetricOption[] }>>(() => {
+    const any = t("driverTracking.filterAny");
+    const none = t("driverTracking.filterNone");
+    const atLeast = (n: number) => t("driverTracking.filterAtLeast").replace("{n}", String(n));
+    const below = (n: string) => t("driverTracking.filterBelow").replace("{n}", n);
+    const between = (a: string, b: string) =>
+      t("driverTracking.filterBetween").replace("{a}", a).replace("{b}", b);
+    const notRated = t("driverTracking.filterNotRated");
+
+    const rate = (pick: (r: DriverTrackingRow) => number | null): MetricOption[] => [
+      { value: "", label: any, test: () => true },
+      { value: "lt70", label: below("70%"), test: (r) => pick(r) !== null && pick(r)! < 0.7 },
+      { value: "lt85", label: below("85%"), test: (r) => pick(r) !== null && pick(r)! < 0.85 },
+      { value: "ge85", label: atLeast(85).replace("85", "85%"), test: (r) => pick(r) !== null && pick(r)! >= 0.85 },
+      { value: "na", label: notRated, test: (r) => pick(r) === null },
+    ];
+    const count = (pick: (r: DriverTrackingRow) => number, steps: [number, number]): MetricOption[] => [
+      { value: "", label: any, test: () => true },
+      { value: "0", label: none, test: (r) => pick(r) === 0 },
+      { value: `ge${steps[0]}`, label: atLeast(steps[0]), test: (r) => pick(r) >= steps[0] },
+      { value: `ge${steps[1]}`, label: atLeast(steps[1]), test: (r) => pick(r) >= steps[1] },
+    ];
+
+    return [
+      {
+        key: "delivered",
+        label: t("driverTracking.delivered"),
+        options: [
+          { value: "", label: any, test: () => true },
+          { value: "0", label: none, test: (r) => r.delivered === 0 },
+          { value: "1-9", label: between("1", "9"), test: (r) => r.delivered >= 1 && r.delivered <= 9 },
+          { value: "ge10", label: atLeast(10), test: (r) => r.delivered >= 10 },
+          { value: "ge50", label: atLeast(50), test: (r) => r.delivered >= 50 },
+        ],
+      },
+      { key: "onTime", label: t("driverTracking.onTime"), options: rate((r) => r.onTimeRate) },
+      { key: "acceptance", label: t("driverTracking.acceptance"), options: rate((r) => r.acceptanceRate) },
+      {
+        key: "rating",
+        label: t("driverTracking.rating"),
+        options: [
+          { value: "", label: any, test: () => true },
+          { value: "lt3", label: below("3"), test: (r) => r.rating !== null && r.rating < 3 },
+          { value: "3-4", label: between("3", "4"), test: (r) => r.rating !== null && r.rating >= 3 && r.rating < 4 },
+          { value: "ge4", label: atLeast(4), test: (r) => r.rating !== null && r.rating >= 4 },
+          { value: "na", label: notRated, test: (r) => r.rating === null },
+        ],
+      },
+      {
+        key: "documents",
+        label: t("driverTracking.documents"),
+        options: [
+          { value: "", label: any, test: () => true },
+          { value: "ok", label: t("driverTracking.docsComplete"), test: (r) => r.docsValid >= r.docsRequired },
+          { value: "gap", label: t("driverTracking.docsMissing"), test: (r) => r.docsValid < r.docsRequired },
+        ],
+      },
+      { key: "violations", label: t("driverTracking.violations"), options: count((r) => r.violations, [1, 3]) },
+      { key: "rejections", label: t("driverTracking.rejections"), options: count((r) => r.rejections, [1, 5]) },
+    ];
+  }, [t]);
+
+  const rows = useMemo(() => {
+    const active = metricFilters
+      .map((f) => f.options.find((o) => o.value === (metric[f.key] ?? "")) ?? f.options[0]!)
+      .filter((o) => o.value !== "");
+    const kept = allRows.filter((r) => active.every((o) => o.test(r)));
+    const dir = sort.dir === "asc" ? 1 : -1;
+    return [...kept].sort((a, b) => {
+      const av = sortValue(a, sort.key);
+      const bv = sortValue(b, sort.key);
+      // Absent goes to the bottom in both directions, so "sort by rating"
+      // never opens on a page of n/a.
+      if (av === null && bv === null) return 0;
+      if (av === null) return 1;
+      if (bv === null) return -1;
+      if (av < bv) return -1 * dir;
+      if (av > bv) return 1 * dir;
+      return 0;
+    });
+  }, [allRows, metricFilters, metric, sort]);
+
+  const filtersActive = Object.values(metric).some(Boolean);
+
+  function toggleSort(key: SortKey) {
+    setSort((cur) =>
+      cur.key === key
+        ? { key, dir: cur.dir === "asc" ? "desc" : "asc" }
+        : // Numbers open worst-first for rates and most-first for counts;
+          // names open A to Z.
+          { key, dir: key === "name" ? "asc" : key === "onTime" || key === "acceptance" || key === "rating" || key === "documents" ? "asc" : "desc" },
+    );
+  }
+
+  // A render helper rather than a nested component: a component declared
+  // inside render is a new type every pass and React would remount the header.
+  function sortableTh(k: SortKey, label: string, align: "start" | "end" = "end", hint?: string) {
+    const on = sort.key === k;
+    return (
+      <th key={k} className={cn("font-medium px-4 py-3", align === "end" ? "text-end" : "text-start")}>
+        <button
+          type="button"
+          onClick={() => toggleSort(k)}
+          title={hint ?? t("driverTracking.sortHint")}
+          className={cn(
+            "inline-flex items-center gap-1 hover:text-sand-900",
+            on && "text-sand-900",
+          )}
+        >
+          {label}
+          {on &&
+            (sort.dir === "asc" ? (
+              <ArrowUp size={12} aria-hidden="true" />
+            ) : (
+              <ArrowDown size={12} aria-hidden="true" />
+            ))}
+        </button>
+      </th>
+    );
+  }
 
   function invalidate() {
     void queryClient.invalidateQueries({ queryKey: ["darb", "driver-tracking"] });
@@ -145,6 +321,26 @@ export default function DriverTrackingTab() {
           ? t("driverTracking.inTrainingBlocked")
           : (payload?.error ?? t("errors.savingData")),
       );
+    },
+  });
+
+  // Revision 21c (client note, 2026-09-21): "must be able to finish training
+  // from this subtab". A driver in training showed nothing here but Freeze:
+  // Activate was hidden because the server refuses it past an open window,
+  // and the verbs that close the window lived on another tab. Pass and Did
+  // not pass sit on the row now, and passing is what activates.
+  const [finishing, setFinishing] = useState<{ row: DriverTrackingRow; outcome: "PASSED" | "FAILED" } | null>(null);
+  const finishMutation = useMutation({
+    mutationFn: ({ sessionId, outcome }: { sessionId: string; outcome: "PASSED" | "FAILED" }) =>
+      driverTrainingApi.complete(sessionId, outcome),
+    onSuccess: () => {
+      toast.success(t("driverTracking.trainingFinished"));
+      setFinishing(null);
+      invalidate();
+    },
+    onError: (err: unknown) => {
+      const payload = (err as { response?: { data?: { error?: string } } })?.response?.data;
+      toast.error(payload?.error ?? t("errors.savingData"));
     },
   });
 
@@ -237,22 +433,64 @@ export default function DriverTrackingTab() {
         </div>
       </div>
 
+      {/* ── Per-column filters (revision 21 #1) ─────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-2" data-testid="driver-metric-filters">
+        <span className="text-sm text-sand-600">{t("driverTracking.filterBy")}</span>
+        {metricFilters.map((f) => {
+          const chosen = metric[f.key] ?? "";
+          return (
+            <select
+              key={f.key}
+              aria-label={f.label}
+              value={chosen}
+              onChange={(e) => setMetric((prev) => ({ ...prev, [f.key]: e.target.value }))}
+              className={cn(
+                "h-8 px-2 rounded-pill border bg-card text-xs",
+                chosen ? "border-primary text-primary font-medium" : "border-sand-200 text-sand-700",
+              )}
+            >
+              {f.options.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {`${f.label}: ${o.label}`}
+                </option>
+              ))}
+            </select>
+          );
+        })}
+        {filtersActive && (
+          <button
+            type="button"
+            onClick={() => setMetric({})}
+            className="h-8 px-3 rounded-pill text-xs text-sand-600 hover:bg-sand-100"
+          >
+            {t("driverTracking.clearFilters")}
+          </button>
+        )}
+        <span className="text-xs text-sand-500 tabular-nums ms-auto">
+          {t("driverTracking.matching")
+            .replace("{n}", formatNumber(rows.length, locale))
+            .replace("{total}", formatNumber(allRows.length, locale))}
+        </span>
+      </div>
+
       {/* ── The table ───────────────────────────────────────────────────── */}
       <div className="bg-card border border-sand-200 rounded-2xl shadow-soft overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-sand-50 text-sand-600">
               <tr>
-                <th className="text-start font-medium px-4 py-3">{t("driverTracking.driver")}</th>
+                {sortableTh("name", t("driverTracking.driver"), "start")}
                 <th className="text-start font-medium px-4 py-3">{t("driverTracking.company")}</th>
                 <th className="text-start font-medium px-4 py-3">{t("driverTracking.area")}</th>
                 <th className="text-start font-medium px-4 py-3">{t("driverTracking.state")}</th>
-                <th className="text-end font-medium px-4 py-3">{t("driverTracking.delivered")}</th>
-                <th className="text-end font-medium px-4 py-3">{t("driverTracking.onTime")}</th>
-                <th className="text-end font-medium px-4 py-3">{t("driverTracking.acceptance")}</th>
-                <th className="text-end font-medium px-4 py-3">{t("driverTracking.rating")}</th>
-                <th className="text-end font-medium px-4 py-3">{t("driverTracking.documents")}</th>
-                <th className="text-start font-medium px-4 py-3">{t("driverTracking.lastSeen")}</th>
+                {sortableTh("delivered", t("driverTracking.delivered"))}
+                {sortableTh("onTime", t("driverTracking.onTime"))}
+                {sortableTh("acceptance", t("driverTracking.acceptance"))}
+                {sortableTh("rejections", t("driverTracking.rejections"), "end", t("driverTracking.rejectionsHint"))}
+                {sortableTh("violations", t("driverTracking.violations"), "end", t("driverTracking.violationsHint"))}
+                {sortableTh("rating", t("driverTracking.rating"))}
+                {sortableTh("documents", t("driverTracking.documents"))}
+                {sortableTh("lastSeen", t("driverTracking.lastSeen"), "start")}
                 {canEdit && (
                   <th className="text-end font-medium px-4 py-3">{t("driverTracking.actions")}</th>
                 )}
@@ -261,7 +499,7 @@ export default function DriverTrackingTab() {
             <tbody className="divide-y divide-sand-100">
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={canEdit ? 11 : 10} className="px-4 py-10 text-center text-sand-500">
+                  <td colSpan={canEdit ? 13 : 12} className="px-4 py-10 text-center text-sand-500">
                     {t("driverTracking.empty")}
                   </td>
                 </tr>
@@ -291,6 +529,29 @@ export default function DriverTrackingTab() {
                   <td className={cn("px-4 py-3 text-end tabular-nums", rateTone(row.acceptanceRate))}>
                     {pct(row.acceptanceRate)}
                   </td>
+                  <td
+                    className={cn(
+                      "px-4 py-3 text-end tabular-nums",
+                      row.rejections >= 5 ? "text-red-600 font-medium" : row.rejections > 0 ? "text-amber-600" : "text-sand-900",
+                    )}
+                    title={t("driverTracking.rejectionsHint")}
+                  >
+                    {formatNumber(row.rejections, locale)}
+                  </td>
+                  <td
+                    className={cn(
+                      "px-4 py-3 text-end tabular-nums",
+                      row.violationsOpen > 0 ? "text-red-600 font-medium" : row.violations > 0 ? "text-amber-600" : "text-sand-900",
+                    )}
+                    title={t("driverTracking.violationsHint")}
+                  >
+                    {formatNumber(row.violations, locale)}
+                    {row.violationsOpen > 0 && (
+                      <span className="block text-[10px] font-normal text-red-600">
+                        {t("driverTracking.openIssues").replace("{n}", formatNumber(row.violationsOpen, locale))}
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-end tabular-nums text-sand-900">
                     {row.rating === null ? "n/a" : row.rating.toFixed(1)}
                   </td>
@@ -308,7 +569,30 @@ export default function DriverTrackingTab() {
                   {canEdit && (
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
-                        {row.status !== "ACTIVE" && !row.inTraining && (
+                        {row.inTraining && row.trainingSessionId && (
+                          <>
+                            <button
+                              type="button"
+                              data-testid="tracking-pass-training"
+                              title={t("driverTracking.passTraining")}
+                              onClick={() => setFinishing({ row, outcome: "PASSED" })}
+                              className="h-8 w-8 rounded-pill grid place-items-center text-forest-700 hover:bg-forest-50"
+                            >
+                              <CircleCheck size={15} aria-hidden="true" />
+                            </button>
+                            <button
+                              type="button"
+                              title={t("driverTracking.failTraining")}
+                              onClick={() => setFinishing({ row, outcome: "FAILED" })}
+                              className="h-8 w-8 rounded-pill grid place-items-center text-red-600 hover:bg-red-50"
+                            >
+                              <CircleX size={15} aria-hidden="true" />
+                            </button>
+                          </>
+                        )}
+                        {/* A flag with no open window behind it is cleared by
+                            Activate itself, so the button shows for it. */}
+                        {row.status !== "ACTIVE" && !(row.inTraining && row.trainingSessionId) && (
                           <button
                             type="button"
                             title={t("driverTracking.activate")}
@@ -407,6 +691,25 @@ export default function DriverTrackingTab() {
           </button>
         </div>
       </SlidePanel>
+
+      {/* ── Finish training from this row ───────────────────────────────── */}
+      <ConfirmModal
+        open={finishing !== null}
+        title={t("driverTracking.finishTrainingTitle").replace("{name}", finishing?.row.name ?? "")}
+        message={t(
+          finishing?.outcome === "PASSED"
+            ? "driverTracking.passTrainingConfirm"
+            : "driverTracking.failTrainingConfirm",
+        )}
+        confirmLabel={t(finishing?.outcome === "PASSED" ? "driverTracking.passTraining" : "driverTracking.failTraining")}
+        variant={finishing?.outcome === "PASSED" ? "default" : "warning"}
+        loading={finishMutation.isPending}
+        onConfirm={() => {
+          if (!finishing?.row.trainingSessionId) return;
+          finishMutation.mutate({ sessionId: finishing.row.trainingSessionId, outcome: finishing.outcome });
+        }}
+        onCancel={() => setFinishing(null)}
+      />
 
       {/* ── Send for training ───────────────────────────────────────────── */}
       <SlidePanel

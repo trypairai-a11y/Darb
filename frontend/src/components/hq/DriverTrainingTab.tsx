@@ -17,13 +17,15 @@
 // asking for a PIN at the door.
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircleCheck, Info, Plus, TriangleAlert } from "lucide-react";
+import { ChevronDown, ChevronUp, CircleCheck, ExternalLink, Info, Plus, RotateCcw, TriangleAlert, UserX } from "lucide-react";
+import Link from "next/link";
+import ConfirmModal from "@/components/shared/ConfirmModal";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import SlidePanel from "@/components/shared/SlidePanel";
 import { useToast } from "@/components/shared/Toast";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { driverTrainingApi } from "@/lib/darbApi";
+import { driverTrackingApi, driverTrainingApi } from "@/lib/darbApi";
 import type { TrainingSession, TrainingStatus } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDateTime, formatNumber } from "@/i18n/format";
@@ -50,6 +52,18 @@ function pct(value: number | null): string {
   return value === null ? "n/a" : `${Math.round(value * 100)}%`;
 }
 
+/** One line of an order's details; absent reads as the house n/a. */
+function Detail({ label, value, mono }: { label: string; value: string | null | undefined; mono?: boolean }) {
+  return (
+    <div className="min-w-0">
+      <p className="text-[11px] text-sand-500">{label}</p>
+      <p className={cn("text-sm text-sand-900 break-words", mono && "font-mono tracking-widest")} dir="auto">
+        {value || "n/a"}
+      </p>
+    </div>
+  );
+}
+
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-sand-50 rounded-2xl px-3 py-2">
@@ -72,6 +86,8 @@ export default function DriverTrainingTab() {
   const [dropoffAddress, setDropoffAddress] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [outcomeNote, setOutcomeNote] = useState("");
+  /** Revision 21b: which practice order is opened for its details. */
+  const [openOrderId, setOpenOrderId] = useState<string | null>(null);
 
   const listQuery = useQuery({
     queryKey: ["darb", "driver-training", "list"],
@@ -154,6 +170,53 @@ export default function DriverTrainingTab() {
       driverTrainingApi.complete(id, outcome, outcomeNote.trim() || undefined),
     onSuccess: () => {
       toast.success(t("driverTraining.completed"));
+      setOutcomeNote("");
+      refresh();
+    },
+    onError: failWith,
+  });
+
+  // Revision 21 (#3): "orders should be sent automatically, with the option
+  // to send manual orders". The switch lives beside the manual button, so
+  // the two ways of giving an order sit together.
+  const autoIssueMutation = useMutation({
+    mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) =>
+      driverTrainingApi.setAutoIssue(id, enabled),
+    onSuccess: () => {
+      toast.success(t("driverTraining.autoIssueSaved"));
+      refresh();
+    },
+    onError: failWith,
+  });
+
+  // Revision 21c (client note, 2026-09-21): "for the training I pressed did
+  // not pass, must give the option to reset the training or terminate the
+  // account". A window that did not pass left the driver INACTIVE with no
+  // button anywhere on this screen, so the coach's next move was a hunt
+  // through Driver tracking. Both moves live on the failed window itself.
+  const [terminateOpen, setTerminateOpen] = useState(false);
+  const retrainMutation = useMutation({
+    mutationFn: (s: { driverId: string; periodDays: number }) =>
+      driverTrainingApi.create({
+        driverId: s.driverId,
+        periodDays: s.periodDays,
+        reason: t("driverTraining.retrainReason"),
+      }),
+    onSuccess: (created) => {
+      toast.success(t("driverTraining.retrained"));
+      setOutcomeNote("");
+      refresh();
+      // Land on the new window, not the failed one it replaces.
+      setOpenId(created.id);
+    },
+    onError: failWith,
+  });
+  const terminateMutation = useMutation({
+    mutationFn: (driverId: string) =>
+      driverTrackingApi.setState(driverId, "TERMINATE", outcomeNote.trim() || undefined),
+    onSuccess: () => {
+      toast.success(t("driverTraining.terminated"));
+      setTerminateOpen(false);
       setOutcomeNote("");
       refresh();
     },
@@ -317,17 +380,45 @@ export default function DriverTrainingTab() {
 
               {/* ── The practice orders ──────────────────────────────── */}
               <div>
-                <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
                   <p className="text-sm font-medium text-sand-900">{t("driverTraining.orders")}</p>
                   {canRun && detail.status === "IN_PROGRESS" && (
-                    <button
-                      type="button"
-                      onClick={() => setIssuing(true)}
-                      className="h-8 px-3 inline-flex items-center gap-1 rounded-pill bg-primary text-white text-xs font-medium"
-                    >
-                      <Plus size={13} aria-hidden="true" />
-                      {t("driverTraining.issueOrder")}
-                    </button>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <label
+                        className="inline-flex items-center gap-2 h-8 px-3 rounded-pill border border-sand-200 bg-card text-xs text-sand-700 cursor-pointer"
+                        title={t("driverTraining.autoIssueHint")}
+                      >
+                        <input
+                          type="checkbox"
+                          data-testid="training-auto-issue"
+                          checked={detail.autoIssue !== false}
+                          disabled={autoIssueMutation.isPending}
+                          onChange={(e) =>
+                            autoIssueMutation.mutate({ id: detail.id, enabled: e.target.checked })
+                          }
+                          className="accent-primary"
+                        />
+                        {t("driverTraining.autoIssue")}
+                        <span
+                          className={cn(
+                            "px-1.5 h-5 inline-flex items-center rounded-pill text-[10px] font-medium",
+                            detail.autoIssue !== false
+                              ? "bg-forest-100 text-forest-700"
+                              : "bg-sand-200 text-sand-600",
+                          )}
+                        >
+                          {t(detail.autoIssue !== false ? "driverTraining.autoIssueOn" : "driverTraining.autoIssueOff")}
+                        </span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setIssuing(true)}
+                        className="h-8 px-3 inline-flex items-center gap-1 rounded-pill bg-primary text-white text-xs font-medium"
+                      >
+                        <Plus size={13} aria-hidden="true" />
+                        {t("driverTraining.issueOrder")}
+                      </button>
+                    </div>
                   )}
                   {canRun && detail.status === "SCHEDULED" && (
                     <button
@@ -339,29 +430,115 @@ export default function DriverTrainingTab() {
                     </button>
                   )}
                 </div>
+                {canRun && detail.status === "IN_PROGRESS" && detail.autoIssue !== false && (
+                  <p className="text-xs text-sand-500 mb-2">{t("driverTraining.autoIssueHint")}</p>
+                )}
                 {detail.orders.length === 0 ? (
                   <p className="text-sm text-sand-500 py-6 text-center bg-sand-50 rounded-2xl">
                     {t("driverTraining.noOrders")}
                   </p>
                 ) : (
                   <ul className="divide-y divide-sand-100 border border-sand-200 rounded-2xl overflow-hidden">
-                    {detail.orders.map((o) => (
-                      <li key={o.id} className="px-3 py-2 flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-sm text-sand-900 truncate">
-                            {o.orderNumber}
-                            <span className="ms-2 text-[10px] uppercase tracking-wide text-primary">
-                              {t("driverTraining.practiceBadge")}
+                    {detail.orders.map((o) => {
+                      const open = openOrderId === o.id;
+                      const minutes =
+                        o.assignedAt && o.deliveredAt
+                          ? Math.round((new Date(o.deliveredAt).getTime() - new Date(o.assignedAt).getTime()) / 60_000)
+                          : null;
+                      const when = (v: string | null) => (v ? formatDateTime(v, locale) : null);
+                      return (
+                        <li key={o.id}>
+                          {/* Revision 21b: "must show the order details for each
+                              order". The row opens on click; the whole story of
+                              the run sits underneath it, and the coach gets the
+                              PIN because on a practice order they are the
+                              customer at the door. */}
+                          <button
+                            type="button"
+                            data-testid="training-order-row"
+                            onClick={() => setOpenOrderId(open ? null : o.id)}
+                            className={cn(
+                              "w-full text-start px-3 py-2 flex items-center justify-between gap-3 hover:bg-sand-50",
+                              open && "bg-sand-50",
+                            )}
+                          >
+                            <div className="min-w-0">
+                              <p className="text-sm text-sand-900 truncate">
+                                {o.orderNumber}
+                                <span className="ms-2 text-[10px] uppercase tracking-wide text-primary">
+                                  {t("driverTraining.practiceBadge")}
+                                </span>
+                              </p>
+                              <p className="text-xs text-sand-500 truncate">
+                                {o.branch?.name ?? "n/a"}
+                                {o.dropoffAddress ? ` → ${o.dropoffAddress}` : ""}
+                              </p>
+                            </div>
+                            <span className="flex items-center gap-2 shrink-0">
+                              <StatusBadge status={o.status} />
+                              {open ? (
+                                <ChevronUp size={14} className="text-sand-400" aria-hidden="true" />
+                              ) : (
+                                <ChevronDown size={14} className="text-sand-400" aria-hidden="true" />
+                              )}
                             </span>
-                          </p>
-                          <p className="text-xs text-sand-500 truncate">
-                            {o.branch?.name ?? "n/a"}
-                            {o.dropoffAddress ? ` → ${o.dropoffAddress}` : ""}
-                          </p>
-                        </div>
-                        <StatusBadge status={o.status} />
-                      </li>
-                    ))}
+                          </button>
+                          {open && (
+                            <div className="px-3 pb-3 pt-1 bg-sand-50 border-t border-sand-100 space-y-3" data-testid="training-order-details">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <Detail
+                                  label={t("driverTraining.collectFrom")}
+                                  value={[o.vendor?.name, o.branch?.name, o.branch?.address].filter(Boolean).join(" · ")}
+                                />
+                                <Detail label={t("driverTraining.deliverTo")} value={o.dropoffAddress} />
+                                <Detail
+                                  label={t("driverTraining.customer")}
+                                  value={[o.customerName, o.customerPhone].filter(Boolean).join(" · ")}
+                                />
+                                <div>
+                                  <Detail label={t("driverTraining.pin")} value={o.podPin ?? null} mono />
+                                  <p className="text-[11px] text-sand-500 mt-0.5">{t("driverTraining.pinHint")}</p>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                                <Detail label={t("driverTraining.given")} value={when(o.assignedAt ?? o.createdAt)} />
+                                <Detail label={t("driverTraining.arrived")} value={when(o.arrivedAt)} />
+                                <Detail label={t("driverTraining.pickedUp")} value={when(o.pickedUpAt)} />
+                                <Detail label={t("driverTraining.delivered")} value={when(o.deliveredAt)} />
+                                <Detail label={t("driverTraining.due")} value={when(o.slaDeadline)} />
+                                <Detail
+                                  label={t("driverTraining.minutesTaken")}
+                                  value={minutes === null ? null : formatNumber(minutes, locale)}
+                                />
+                              </div>
+                              {o.failureReason && (
+                                <Detail label={t("driverTraining.failureReason")} value={o.failureReason} />
+                              )}
+                              <div className="flex flex-wrap items-center gap-3">
+                                {o.proofPhotoUrl && (
+                                  <a
+                                    href={o.proofPhotoUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs font-medium text-primary hover:underline inline-flex items-center gap-1"
+                                  >
+                                    <ExternalLink size={12} aria-hidden="true" />
+                                    {t("driverTraining.proofPhoto")}
+                                  </a>
+                                )}
+                                <Link
+                                  href={`/orders/${o.id}`}
+                                  className="text-xs font-medium text-primary hover:underline inline-flex items-center gap-1"
+                                >
+                                  <ExternalLink size={12} aria-hidden="true" />
+                                  {t("driverTraining.openOrder")}
+                                </Link>
+                              </div>
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
@@ -411,6 +588,44 @@ export default function DriverTrainingTab() {
               {!live && detail.outcomeNote && (
                 <p className="text-sm text-sand-600 border-t border-sand-100 pt-4">{detail.outcomeNote}</p>
               )}
+
+              {/* ── After a window that did not pass ─────────────────── */}
+              {canRun &&
+                detail.status === "FAILED" &&
+                detail.driver.status !== "TERMINATED" &&
+                !detail.driver.inTraining && (
+                  <div
+                    className="border-t border-sand-100 pt-4 space-y-3"
+                    data-testid="training-failed-next"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-sand-900">{t("driverTraining.failedNext")}</p>
+                      <p className="text-xs text-sand-500 mt-0.5">{t("driverTraining.failedNextHint")}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        disabled={retrainMutation.isPending}
+                        onClick={() =>
+                          retrainMutation.mutate({ driverId: detail.driver.id, periodDays: detail.periodDays })
+                        }
+                        className="h-10 px-5 inline-flex items-center gap-2 rounded-pill bg-primary text-white text-sm font-medium disabled:opacity-40"
+                      >
+                        <RotateCcw size={15} aria-hidden="true" />
+                        {t("driverTraining.retrain")}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={terminateMutation.isPending}
+                        onClick={() => setTerminateOpen(true)}
+                        className="h-10 px-5 inline-flex items-center gap-2 rounded-pill border border-red-200 text-red-700 text-sm font-medium hover:bg-red-50 disabled:opacity-40"
+                      >
+                        <UserX size={15} aria-hidden="true" />
+                        {t("driverTraining.terminate")}
+                      </button>
+                    </div>
+                  </div>
+                )}
             </>
           )}
         </div>
@@ -471,6 +686,17 @@ export default function DriverTrainingTab() {
           </button>
         </div>
       </SlidePanel>
+
+      <ConfirmModal
+        open={terminateOpen}
+        title={t("driverTraining.terminateTitle")}
+        message={t("driverTraining.terminateConfirm")}
+        confirmLabel={t("driverTraining.terminate")}
+        variant="danger"
+        loading={terminateMutation.isPending}
+        onConfirm={() => detail && terminateMutation.mutate(detail.driver.id)}
+        onCancel={() => setTerminateOpen(false)}
+      />
     </div>
   );
 }

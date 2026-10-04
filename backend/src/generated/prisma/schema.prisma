@@ -4372,6 +4372,11 @@ model VendorTopUp {
   /// "MYFATOORAH" | "MANUAL" — which rail actually took the money.
   provider      String?
   paidAt        DateTime?
+  /// Revision 21 (#5) — what the finance desk said when it approved or
+  /// cancelled the payment. Shown to the shop beside the row, so a refused
+  /// transfer never has to be explained by phone.
+  reviewNote    String?
+  reviewedById  String?
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 
@@ -4427,6 +4432,9 @@ model FleetCashDeposit {
   confirmedById  String?
   confirmedAt    DateTime?
   rejectReason   String?
+  /// Revision 21 (#5) — feedback attached to an approval. A rejection keeps
+  /// using rejectReason; the company reads whichever is set.
+  reviewNote     String?
   createdAt      DateTime               @default(now())
   updatedAt      DateTime               @updatedAt
 
@@ -4515,6 +4523,11 @@ model DriverTrainingSession {
   reason      String?
   /// The ops team's verdict, written when the window closes.
   outcomeNote String?
+  /// Revision 21 (#3) — hand the trainee the next practice order as soon as
+  /// the last one ends, without anybody pressing a button. On by default,
+  /// because a trainee waiting for a coach to notice is a trainee doing
+  /// nothing. The manual button stays either way.
+  autoIssue   Boolean              @default(true)
   /// A snapshot of how the window went, frozen at completion so a later
   /// reassignment of the practice orders cannot rewrite the verdict:
   /// { assigned, delivered, failed, cancelled, onTimeRate, avgMinutes }

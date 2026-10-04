@@ -246,7 +246,17 @@ export default function VendorBoardPage() {
   const { branchId, inspectVendorId } = useVendorBranch();
   // Live work and finished work are two different questions, so they are two
   // tabs rather than a fourth column of things nobody needs to act on.
-  const [tab, setTab] = useState<"live" | "delivered">("live");
+  const [tab, setTab] = useState<"live" | "delivered" | "past">("live");
+  // Revision 21c (client note, 2026-09-21): "must be date filter to check
+  // past orders". The board only ever held today's finished work; a shop
+  // chasing last week's complaint had nowhere to look. Its own query, its
+  // own dates, so the live board's cache and polling are untouched.
+  const [pastFrom, setPastFrom] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 7);
+    return d.toISOString().slice(0, 10);
+  });
+  const [pastTo, setPastTo] = useState(() => new Date().toISOString().slice(0, 10));
   const [exporting, setExporting] = useState(false);
   // The order the shop is calling off, and the reason the endpoint requires.
   // Held here rather than inside the card so the modal renders outside the
@@ -324,6 +334,16 @@ export default function VendorBoardPage() {
     refetchInterval: connected ? false : 15_000,
   });
   const orders = useMemo(() => unwrapList<DeliveryOrder>(ordersQuery.data), [ordersQuery.data]);
+
+  const pastQuery = useQuery({
+    queryKey: [...ORDERS_KEY, "past", branchId, pastFrom, pastTo],
+    queryFn: () =>
+      fetchAllPages<DeliveryOrder>((params) =>
+        vendorApi.orders({ ...params, branchId: branchId ?? undefined, from: pastFrom, to: pastTo }),
+      ),
+    enabled: tab === "past" && !!pastFrom && !!pastTo,
+  });
+  const pastOrders = useMemo(() => unwrapList<DeliveryOrder>(pastQuery.data), [pastQuery.data]);
 
   // An inspecting admin gets GETs only (middleware/vendorScope), and an
   // accountant's login is refused by the endpoint, so neither is offered the
@@ -409,13 +429,14 @@ export default function VendorBoardPage() {
   // any number next to them would be a zero that means "not fetched".
   const branchCounts = useMemo(() => {
     if (branchId !== null) return undefined;
-    const visible = tab === "live" ? columns.flatMap((c) => c.items) : finishedToday;
+    const visible =
+      tab === "live" ? columns.flatMap((c) => c.items) : tab === "past" ? pastOrders : finishedToday;
     const out: Record<string, number> & { all?: number } = { all: visible.length };
     for (const o of visible) {
       if (o.branchId) out[o.branchId] = (out[o.branchId] ?? 0) + 1;
     }
     return out;
-  }, [branchId, tab, columns, finishedToday]);
+  }, [branchId, tab, columns, finishedToday, pastOrders]);
 
   // With a branch selected every row on screen is that branch, so the branch
   // column only earns its width on the all-branches board.
@@ -431,7 +452,9 @@ export default function VendorBoardPage() {
    */
   const visibleOrders = useMemo(
     () =>
-      tab === "delivered"
+      tab === "past"
+        ? pastOrders
+        : tab === "delivered"
         ? finishedToday
         : columns
             .flatMap((c) => c.items)
@@ -439,7 +462,7 @@ export default function VendorBoardPage() {
               (a, b) =>
                 new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
             ),
-    [tab, columns, finishedToday],
+    [tab, columns, finishedToday, pastOrders],
   );
 
   const orderColumns = useMemo(
@@ -686,27 +709,64 @@ export default function VendorBoardPage() {
           looking at. */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
       <div className="flex gap-1 bg-sand-100 rounded-pill p-1 w-fit">
-        {(["live", "delivered"] as const).map((key) => (
+        {(["live", "delivered", "past"] as const).map((key) => (
           <button
             key={key}
             type="button"
+            data-testid={`vendor-tab-${key}`}
             onClick={() => setTab(key)}
             className={cn(
               "px-4 h-9 text-sm font-medium rounded-pill transition-colors",
               tab === key ? "bg-white text-sand-900 shadow-soft" : "text-sand-600 hover:text-sand-900"
             )}
           >
-            {key === "live" ? t("vendorPortal.tabLive") : t("vendorPortal.tabDelivered")}
-            <span className="ms-1.5 text-xs text-sand-500 tabular-nums">
-              {key === "live"
-                ? columns.reduce((n, c) => n + c.items.length, 0)
-                : finishedToday.length}
-            </span>
+            {key === "live"
+              ? t("vendorPortal.tabLive")
+              : key === "delivered"
+                ? t("vendorPortal.tabDelivered")
+                : t("vendorPortal.tabPast")}
+            {key !== "past" && (
+              <span className="ms-1.5 text-xs text-sand-500 tabular-nums">
+                {key === "live"
+                  ? columns.reduce((n, c) => n + c.items.length, 0)
+                  : finishedToday.length}
+              </span>
+            )}
           </button>
         ))}
       </div>
         <BranchFilter counts={branchCounts} />
       </div>
+
+      {tab === "past" && (
+        <div className="bg-card border border-sand-200 rounded-2xl shadow-soft p-4 flex flex-wrap items-end gap-3" data-testid="vendor-past-filter">
+          <label className="block">
+            <span className="block text-xs font-medium text-sand-700 mb-1">{t("vendorPortal.pastFrom")}</span>
+            <input
+              type="date"
+              value={pastFrom}
+              max={pastTo}
+              onChange={(e) => setPastFrom(e.target.value)}
+              className="h-10 px-3 rounded-pill border border-sand-200 bg-card text-sm"
+            />
+          </label>
+          <label className="block">
+            <span className="block text-xs font-medium text-sand-700 mb-1">{t("vendorPortal.pastTo")}</span>
+            <input
+              type="date"
+              value={pastTo}
+              min={pastFrom}
+              onChange={(e) => setPastTo(e.target.value)}
+              className="h-10 px-3 rounded-pill border border-sand-200 bg-card text-sm"
+            />
+          </label>
+          <p className="text-xs text-sand-500 pb-2">
+            {pastQuery.isFetching
+              ? t("common.processing")
+              : `${t("vendorPortal.pastHint")} (${pastOrders.length})`}
+          </p>
+        </div>
+      )}
 
       {/* Vendor-portal note #1 — the HQ Orders layout, here. Same DataTable,
           same column shapes, so a Darb operator and a merchant looking at the
@@ -714,7 +774,7 @@ export default function VendorBoardPage() {
       <DataTable
         columns={orderColumns}
         data={visibleOrders}
-        emptyMessage={t("vendorPortal.emptyColumn")}
+        emptyMessage={tab === "past" ? t("vendorPortal.pastEmpty") : t("vendorPortal.emptyColumn")}
         exportFilename={`darb-orders-${new Date().toISOString().slice(0, 10)}`}
       />
 

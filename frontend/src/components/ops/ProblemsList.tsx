@@ -13,9 +13,10 @@
 // loses is the record that something *had* been wrong, so rows that vanish drop
 // into the "cleared" list at the bottom with the time they recovered.
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, Check, ChevronDown, Phone, SatelliteDish, Timer } from "lucide-react";
+import Link from "next/link";
+import { AlertTriangle, Check, ChevronDown, MessageSquare, Phone, SatelliteDish, Timer } from "lucide-react";
 import SlaCountdown from "@/components/darb/SlaCountdown";
-import type { DeliveryOrder, DriverPosition, StalledDriver } from "@/types/darb";
+import type { DeliveryOrder, DriverPosition, StalledDriver, SupportTicket } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatRelativeTime, formatTime } from "@/i18n/format";
 import { cn } from "@/lib/cn";
@@ -113,6 +114,12 @@ export interface ProblemsListProps {
   stalled: StalledDriver[];
   /** overview.gpsStale — drivers whose last position fix has gone cold. */
   gpsStale: DriverPosition[];
+  /**
+   * Revision 21c: open support requests about orders, from shops and delivery
+   * companies. A merchant asking "where is my driver" is a problem on this
+   * shift, and until now it sat in an inbox nobody on the Live screen opened.
+   */
+  tickets?: SupportTicket[];
   /** Shared 1Hz tick, so the countdowns re-sort live. */
   now: number;
   /** Opens the shared OrderOpsPanel, same as clicking a task row. */
@@ -126,6 +133,7 @@ export default function ProblemsList({
   jeopardy,
   stalled,
   gpsStale,
+  tickets = [],
   now,
   onSelectOrder,
   selectedOrderId,
@@ -177,7 +185,8 @@ export default function ProblemsList({
     );
   }, [ready, stalled, gpsStale]);
 
-  const allClear = late.length === 0 && stalled.length === 0 && gpsStale.length === 0;
+  const allClear =
+    late.length === 0 && stalled.length === 0 && gpsStale.length === 0 && tickets.length === 0;
 
   return (
     <div className="space-y-5">
@@ -261,6 +270,64 @@ export default function ProblemsList({
               lastSeen={p.at}
             />
           ))}
+        </Section>
+      )}
+
+      {tickets.length > 0 && (
+        <Section
+          icon={MessageSquare}
+          tone="text-primary"
+          title={t("opsPages.orderTickets")}
+          hint={t("opsPages.orderTicketsHint")}
+          count={tickets.length}
+        >
+          {tickets.map((ticket) => {
+            const raisedBy = ticket.vendor?.name ?? ticket.fleet?.name ?? "n/a";
+            const orderId = ticket.order?.id ?? ticket.orderId ?? null;
+            const body = (
+              <>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-sand-900 truncate" dir="auto">
+                    {ticket.subject}
+                  </p>
+                  <p className="text-[11px] text-sand-600 mt-0.5 truncate" dir="auto">
+                    {ticket.order?.orderNumber && (
+                      <span dir="ltr" className="font-mono me-2">
+                        {ticket.order.orderNumber}
+                      </span>
+                    )}
+                    {raisedBy}
+                    {" · "}
+                    {formatRelativeTime(ticket.createdAt, locale)}
+                  </p>
+                </div>
+                <Link
+                  href="/requests"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center h-7 px-2.5 rounded-pill bg-primary/10 text-primary text-[11px] font-medium hover:bg-primary/15 transition-colors shrink-0"
+                >
+                  {t("opsPages.answerRequest")}
+                </Link>
+              </>
+            );
+            const rowClass = cn(
+              "w-full text-start flex items-center gap-2 px-3 py-2 rounded-xl border bg-white transition-colors",
+              orderId && selectedOrderId === orderId
+                ? "border-primary ring-1 ring-primary/20"
+                : "border-sand-200 hover:border-primary/40"
+            );
+            return (
+              <li key={ticket.id} data-testid="problem-ticket">
+                {orderId ? (
+                  <button type="button" onClick={() => onSelectOrder(orderId)} className={rowClass}>
+                    {body}
+                  </button>
+                ) : (
+                  <div className={rowClass}>{body}</div>
+                )}
+              </li>
+            );
+          })}
         </Section>
       )}
 

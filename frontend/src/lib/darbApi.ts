@@ -36,6 +36,7 @@ import type {
   ComplianceCounts,
   ComplianceDocument,
   DisputesPayload,
+  CashOnHandPayload,
   DocScope,
   DriverStateAction,
   DriverTrackingRow,
@@ -511,10 +512,17 @@ export const shiftPlanningApi = {
   // grid except `approvePlan`, which is the whole point of the approval step.
   plan: (weekStart?: string) =>
     get<ShiftPlanPayload>("/api/shift-planning/plan", weekStart ? { weekStart } : undefined),
-  generatePlan: (weekStart: string, lookbackWeeks?: number) =>
+  // `replaceApproved` rebuilds a week that is already approved (revision
+  // 21c). The server refuses without it, so a stale tab cannot un-approve a
+  // week by accident; the capacity grid stays until the new draft is approved.
+  generatePlan: (weekStart: string, opts?: { lookbackWeeks?: number; replaceApproved?: boolean }) =>
     post<{ planId: string; weekStart: string; entries: number }>(
       "/api/shift-planning/plan/generate",
-      { weekStart, ...(lookbackWeeks ? { lookbackWeeks } : {}) },
+      {
+        weekStart,
+        ...(opts?.lookbackWeeks ? { lookbackWeeks: opts.lookbackWeeks } : {}),
+        ...(opts?.replaceApproved ? { replaceApproved: true } : {}),
+      },
     ),
   savePlanEntries: (
     planId: string,
@@ -567,6 +575,8 @@ export const driverTrainingApi = {
   setPeriod: (id: string, periodDays: number) =>
     patch<TrainingSession>(`/api/driver-training/${id}/period`, { periodDays }),
   start: (id: string) => post<TrainingSession>(`/api/driver-training/${id}/start`),
+  setAutoIssue: (id: string, enabled: boolean) =>
+    patch<TrainingSession>(`/api/driver-training/${id}/auto-issue`, { enabled }),
   issueOrder: (
     id: string,
     body: {
@@ -1142,7 +1152,7 @@ export const fleetsApi = {
 // happened to open that day was invisible. This reads across both.
 
 export const supportApi = {
-  list: (params?: { status?: string; source?: "vendor" | "fleet"; limit?: number }) =>
+  list: (params?: { status?: string; source?: "vendor" | "fleet"; about?: "orders"; limit?: number }) =>
     get<Paginated<SupportTicket> | SupportTicket[]>("/api/support", params as Params),
   counts: () =>
     get<{ openSupport: number; pendingApprovals: number; total: number }>(
@@ -1172,15 +1182,22 @@ export const financeDeskApi = {
       "/api/wallets/payments",
       params as Params,
     ),
-  confirmTopUp: (id: string) =>
-    post<{ ok: boolean; alreadyPaid: boolean }>(`/api/wallets/payments/vendor-top-ups/${id}/confirm`),
-  cancelTopUp: (id: string) =>
-    post<{ ok: boolean }>(`/api/wallets/payments/vendor-top-ups/${id}/cancel`),
-  confirmDeposit: (id: string) => post<unknown>(`/api/wallets/fleet-deposits/${id}/confirm`),
+  // Revision 21 (#5): every decision may carry feedback; a refusal must.
+  confirmTopUp: (id: string, note?: string) =>
+    post<{ ok: boolean; alreadyPaid: boolean }>(`/api/wallets/payments/vendor-top-ups/${id}/confirm`, {
+      note,
+    }),
+  cancelTopUp: (id: string, reason: string) =>
+    post<{ ok: boolean }>(`/api/wallets/payments/vendor-top-ups/${id}/cancel`, { reason }),
+  confirmDeposit: (id: string, note?: string) =>
+    post<unknown>(`/api/wallets/fleet-deposits/${id}/confirm`, { note }),
   rejectDeposit: (id: string, reason: string) =>
     post<unknown>(`/api/wallets/fleet-deposits/${id}/reject`, { reason }),
   disputes: (params?: { status?: string }) =>
     get<DisputesPayload>("/api/wallets/disputes", params as Params),
+  // Revision 21c — cash still with each delivery company, by driver.
+  cashOnHand: () => get<CashOnHandPayload>("/api/wallets/cash-on-hand"),
+  cashOnHandXlsxUrl: "/api/wallets/cash-on-hand?format=xlsx",
 };
 
 // ── /api/foodics ─────────────────────────────────────────────────────────

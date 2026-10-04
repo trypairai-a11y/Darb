@@ -333,6 +333,10 @@ router.get("/drivers", requireFleetTab("ROSTER"), async (req: Request, res: Resp
       where: { tenantId: ctx.tenantId, fleetPartnerId: ctx.fleetPartnerId },
       select: {
         id: true, name: true, phone: true, status: true, vehicleType: true,
+        // Revision 21c (client note, 2026-09-21): "must show if driver is in
+        // training, it is showing only inactive". The flag is Darb's, set by
+        // the training desk, and the company could not see it.
+        inTraining: true,
         // Revision 13 (#3) — the Darb-issued identifier the roster now shows.
         // A driver Darb has not approved does not have one: it is issued at
         // approval, and inventing it earlier would put a Darb number on
@@ -383,6 +387,7 @@ router.get("/drivers", requireFleetTab("ROSTER"), async (req: Request, res: Resp
           phone: p.phone ?? "",
           driverCode: null,
           status: "PENDING_REVIEW",
+          inTraining: false,
           vehicleType: p.vehicleType ?? "MOTORCYCLE",
           performanceTier: null,
           throttledUntil: null,

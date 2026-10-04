@@ -393,6 +393,17 @@ router.get("/orders", requireVendorTab("ORDERS"), async (req: Request, res: Resp
         );
       if (statuses.length > 0) where.status = { in: statuses };
     }
+    // Revision 21c (client note, 2026-09-21): "in the vendor portal must be
+    // date filter to check past orders". Same shape the export already
+    // takes: YYYY-MM-DD, `to` inclusive of its whole day.
+    const from = typeof req.query.from === "string" && req.query.from ? new Date(req.query.from) : null;
+    const to = typeof req.query.to === "string" && req.query.to ? new Date(`${req.query.to}T23:59:59.999`) : null;
+    if ((from && !Number.isNaN(from.getTime())) || (to && !Number.isNaN(to.getTime()))) {
+      where.createdAt = {
+        ...(from && !Number.isNaN(from.getTime()) ? { gte: from } : {}),
+        ...(to && !Number.isNaN(to.getTime()) ? { lte: to } : {}),
+      };
+    }
 
     const [data, total] = await Promise.all([
       prisma.deliveryOrder.findMany({
@@ -1525,6 +1536,8 @@ router.get("/wallet/top-ups", requireVendorTab("WALLET"), async (req: Request, r
       select: {
         id: true, amountKwd: true, status: true, reference: true,
         paymentUrl: true, provider: true, paidAt: true, createdAt: true,
+        // Revision 21 (#5): the finance desk's feedback, when it left any.
+        reviewNote: true,
       },
     });
     res.json(

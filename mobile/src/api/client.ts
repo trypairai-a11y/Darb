@@ -639,7 +639,9 @@ export type OrderStage =
   | "ARRIVED_AT_PICKUP"
   | "PICKED_UP"
   | "HEADING_TO_DROPOFF"
-  | "ARRIVED_AT_DROPOFF";
+  | "ARRIVED_AT_DROPOFF"
+  /** The return leg after a failed delivery (revision 21c). Server status FAILED. */
+  | "RETURNING";
 
 export interface AgentOfferSummary {
   id: string;

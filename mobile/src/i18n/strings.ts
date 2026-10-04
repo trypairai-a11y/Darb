@@ -205,7 +205,7 @@ const EN: Record<string, string> = {
   "failed.return_shop": "The shop",
   "failed.return_body": "Take the order back to the shop it came from, hand it over, then confirm here.",
   "failed.return_confirm": "I returned it to the shop",
-  "failed.return_later": "I can't return it now",
+  "failed.return_required": "You stay on this order until it is back at the shop. New orders resume after you confirm.",
 
   // ─── Wallet ───
   "wallet.title": "Wallet",

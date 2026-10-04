@@ -14,6 +14,7 @@ import { useToast } from "@/components/shared/Toast";
 import { vendorsApi, unwrapList } from "@/lib/darbApi";
 import type { Vendor } from "@/types/darb";
 import BackToSetup from "@/components/shared/BackToSetup";
+import { setupIncomplete } from "@/lib/setupGaps";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd } from "@/i18n/format";
 import { useRole } from "@/hooks/useRole";
@@ -148,20 +149,25 @@ export default function VendorsPage() {
       label: t("table.status"),
       render: (paused: boolean, row: Vendor) => (
         <span
+          data-testid="vendor-status"
           className={cn(
             "inline-flex items-center px-2.5 py-0.5 rounded-pill text-[11px] font-medium",
             paused
               ? "bg-amber-50 text-amber-700"
-              : row.isActive !== false
-                ? "bg-green-50 text-green-700"
-                : "bg-sand-200 text-sand-700"
+              : setupIncomplete(row)
+                ? "bg-red-50 text-red-700"
+                : row.isActive !== false
+                  ? "bg-green-50 text-green-700"
+                  : "bg-sand-200 text-sand-700"
           )}
         >
           {paused
             ? t("vendorsPage.paused")
-            : row.isActive !== false
-              ? t("vendorsPage.active")
-              : t("status.inactive")}
+            : setupIncomplete(row)
+              ? t("vendorsPage.setupIncomplete")
+              : row.isActive !== false
+                ? t("vendorsPage.active")
+                : t("status.inactive")}
         </span>
       ),
     },
@@ -174,7 +180,7 @@ export default function VendorsPage() {
 
   return (
     <div className="space-y-6">
-      <BackToSetup />
+      <BackToSetup tab="admin" />
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="font-display text-display-sm text-sand-900">{t("vendorsPage.title")}</h1>

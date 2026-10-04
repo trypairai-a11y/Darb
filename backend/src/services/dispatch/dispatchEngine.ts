@@ -431,7 +431,8 @@ export async function selectCandidates(
       where: {
         tenantId,
         driverId: { in: driverIds },
-        status: { in: ["ASSIGNED", "PICKED_UP"] },
+        // FAILED: still carrying the bag back to the shop (revision 21c).
+        status: { in: ["ASSIGNED", "PICKED_UP", "FAILED"] },
       },
       select: { driverId: true, status: true, dropoffLat: true, dropoffLng: true },
     }),

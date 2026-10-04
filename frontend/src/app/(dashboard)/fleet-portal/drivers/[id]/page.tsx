@@ -194,7 +194,11 @@ export default function FleetDriverProfilePage() {
             {driver.name}
           </h1>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap text-sm text-sand-600">
-            <StatusBadge status={driver.status} />
+            {driver.inTraining ? (
+              <StatusBadge status="PENDING" label={t("fleetPortal.inTraining")} />
+            ) : (
+              <StatusBadge status={driver.status} />
+            )}
             <span dir="ltr" className="tabular-nums">{driver.phone}</span>
             {driver.driverCode && (
               <span className="text-xs text-sand-500">

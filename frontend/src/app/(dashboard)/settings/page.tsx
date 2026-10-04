@@ -8,6 +8,9 @@ import { cn } from "@/lib/cn";
 import { Plus, X, Shield, UserX, UserCheck, Loader2, Bell, Check, Store } from "lucide-react";
 import api from "@/lib/api";
 import { useI18n } from "@/i18n/I18nProvider";
+import TabPicker from "@/components/vendor/TabPicker";
+import FleetTabPicker from "@/components/fleet/FleetTabPicker";
+import type { FleetPortalRole, FleetTab, VendorPortalRole, VendorTab } from "@/types/darb";
 
 // Revision 4 (#11) — ACCOUNT_MANAGER joins the roles a notification rule can
 // name. The rules API was already keyed on an arbitrary role string, so the
@@ -368,24 +371,35 @@ function UsersTab() {
 // The rail hides what is set to No access, but the server enforces the same
 // map via requireSurface, so this is a real restriction and not a hidden menu.
 
-// The surface LIST comes from the server, so a surface added there appears here
-// whether or not it is named below — it would simply render its own key as its
-// label. Revision 20 added COMPLIANCE and relabelled the rest onto the four
-// tabs they now live in, because "Live" and "Setup" stopped being rail entries
-// and an admin granting access should read the name they see in the rail.
-const SURFACE_LABELS: Record<string, string> = {
-  LIVE: "Ops — live control room",
-  ORDERS: "Ops — orders",
-  // Revision 20 — the compliance desk. This is the grant that makes somebody a
-  // compliance officer: the role stays VIEWER and this one surface goes to
-  // View and edit, which is the whole point of per-user access.
-  COMPLIANCE: "Compliance",
-  MONEY: "Finance",
-  SETUP: "Ops and Admin — configuration",
-  TODAY: "Admin — dashboard and forecast",
-  CASH_DESK: "Cash desk",
-  PEOPLE: "Admin — accounts and access",
-};
+// Revision 21c (client note, 2026-09-21): "for the users permissions should be
+// the same as the main tabs". The server still keeps eight surfaces, because
+// that is what every requireSurface gate and the rail read, and rewriting the
+// enum would touch every one of them for no gain. What changed is the SHAPE
+// an admin is asked to reason in: one row per rail tab, and a level chosen on
+// a row is written to every surface behind that tab. A surface the server
+// adds later that no tab claims still renders on its own row, so nothing a
+// future revision grants can become invisible here.
+const TAB_GROUPS: Array<{ key: string; label: string; surfaces: string[] }> = [
+  { key: "ops", label: "Ops", surfaces: ["LIVE", "ORDERS"] },
+  { key: "compliance", label: "Compliance", surfaces: ["COMPLIANCE"] },
+  { key: "finance", label: "Finance", surfaces: ["MONEY", "CASH_DESK"] },
+  { key: "admin", label: "Admin", surfaces: ["TODAY", "PEOPLE", "SETUP"] },
+];
+
+const LEVEL_RANK: Record<string, number> = { NONE: 0, VIEW: 1, EDIT: 2 };
+
+/** The level a group reads as: the one every surface agrees on, else "" (mixed). */
+function groupChoice(overrides: Record<string, string>, surfaces: string[]): string {
+  const values = surfaces.map((sf) => overrides[sf] ?? "");
+  return values.every((v) => v === values[0]) ? values[0]! : "";
+}
+
+/** What the role gives the group with no override: the widest of its surfaces. */
+function groupInherited(defaults: Record<string, string>, surfaces: string[]): string {
+  return surfaces
+    .map((sf) => defaults[sf] ?? "NONE")
+    .sort((a, b) => (LEVEL_RANK[b] ?? 0) - (LEVEL_RANK[a] ?? 0))[0] ?? "NONE";
+}
 
 const LEVELS = [
   { value: "", label: "Role default" },
@@ -401,6 +415,14 @@ interface PermissionsPayload {
   overrides: Record<string, string>;
   effective: Record<string, string>;
   managedVendorIds: string[];
+  /**
+   * Set for a vendor or delivery-company login (client note, 2026-10-04). Such
+   * a login never sees the HQ rail, so its permissions are its portal's own
+   * tabs; the surface fields above are absent. portalTabs null = role default.
+   */
+  portal?: "VENDOR" | "FLEET";
+  portalRole?: string;
+  portalTabs?: string[] | null;
 }
 
 function PermissionsModal({
@@ -422,29 +444,57 @@ function PermissionsModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [seeded, setSeeded] = useState(false);
+  const [portalTabs, setPortalTabs] = useState<string[] | null>(null);
 
   useEffect(() => {
     if (!data || seeded) return;
     setOverrides(data.overrides ?? {});
     setVendorIds(data.managedVendorIds ?? []);
+    setPortalTabs(data.portalTabs ?? null);
     setSeeded(true);
   }, [data, seeded]);
 
+  const portal = data?.portal ?? null;
+
   const vendors: any[] = vendorsData?.data ?? [];
 
-  function setLevel(surface: string, value: string) {
+  /** One choice per tab, written to every surface the tab owns. */
+  function setLevel(surfaces: string[], value: string) {
     setOverrides((prev) => {
       const next = { ...prev };
-      if (value === "") delete next[surface];
-      else next[surface] = value;
+      for (const surface of surfaces) {
+        if (value === "") delete next[surface];
+        else next[surface] = value;
+      }
       return next;
     });
   }
+
+  // The four tabs, then any surface the server knows that no tab has claimed.
+  const rows = (() => {
+    const known = new Set(data?.surfaces ?? []);
+    const claimed = new Set<string>();
+    const out = TAB_GROUPS.map((g) => {
+      const surfaces = g.surfaces.filter((sf) => known.has(sf));
+      surfaces.forEach((sf) => claimed.add(sf));
+      return { key: g.key, label: g.label, surfaces };
+    }).filter((g) => g.surfaces.length > 0);
+    for (const sf of data?.surfaces ?? []) {
+      if (!claimed.has(sf)) out.push({ key: sf, label: sf, surfaces: [sf] });
+    }
+    return out;
+  })();
 
   async function handleSave() {
     setSaving(true);
     setError(null);
     try {
+      if (portal) {
+        await api.put(`/api/users/${user.id}/permissions`, { portalTabs });
+        refetch();
+        onClose();
+        return;
+      }
       // Surfaces the user cleared must be sent as null, not omitted, or the
       // server has no way to tell "put this back on the role default" apart
       // from "leave it alone".
@@ -495,27 +545,52 @@ function PermissionsModal({
             <div className="py-10 flex justify-center">
               <Loader2 size={18} className="animate-spin text-secondary" />
             </div>
+          ) : portal ? (
+            <div className="pb-2" data-testid="permission-portal-tabs">
+              <p className="text-xs text-secondary mb-3">
+                {portal === "FLEET" ? "Delivery company portal" : "Vendor portal"} tabs this login can open.
+              </p>
+              {portal === "FLEET" ? (
+                <FleetTabPicker
+                  fleetRole={(data.portalRole ?? "ADMIN") as FleetPortalRole}
+                  value={portalTabs as FleetTab[] | null}
+                  onChange={setPortalTabs}
+                />
+              ) : (
+                <TabPicker
+                  vendorRole={(data.portalRole ?? "ADMIN") as VendorPortalRole}
+                  value={portalTabs as VendorTab[] | null}
+                  onChange={setPortalTabs}
+                />
+              )}
+            </div>
           ) : (
             <>
-              <div className="space-y-2">
-                {data.surfaces.map((surface) => {
-                  const chosen = overrides[surface] ?? "";
-                  const inherited = data.defaults[surface];
+              <div className="space-y-2" data-testid="permission-tabs">
+                {rows.map((row) => {
+                  const chosen = groupChoice(overrides, row.surfaces);
+                  const inherited = groupInherited(data.defaults, row.surfaces);
+                  const mixed =
+                    chosen === "" && row.surfaces.some((sf) => (overrides[sf] ?? "") !== "");
                   return (
-                    <div key={surface} className="flex items-center justify-between gap-3">
+                    <div key={row.key} className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="text-sm font-medium">
-                          {SURFACE_LABELS[surface] ?? surface}
-                        </div>
-                        {chosen === "" && (
-                          <div className="text-xs text-secondary">
-                            Inherits {LEVELS.find((l) => l.value === inherited)?.label ?? inherited}
+                        <div className="text-sm font-medium">{row.label}</div>
+                        {mixed ? (
+                          <div className="text-xs text-amber-700">
+                            Mixed settings from before. Choose a level to align the tab.
                           </div>
+                        ) : (
+                          chosen === "" && (
+                            <div className="text-xs text-secondary">
+                              Inherits {LEVELS.find((l) => l.value === inherited)?.label ?? inherited}
+                            </div>
+                          )
                         )}
                       </div>
                       <select
                         value={chosen}
-                        onChange={(e) => setLevel(surface, e.target.value)}
+                        onChange={(e) => setLevel(row.surfaces, e.target.value)}
                         className="px-3 py-1.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                       >
                         {LEVELS.map((l) => (

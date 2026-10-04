@@ -34,6 +34,23 @@ export interface DriverTrackingRow {
   onTimeRate: number | null;
   acceptanceRate: number | null;
   rating: number | null;
+  /**
+   * Revision 21 (#1) — "must add a column for violations and rejections".
+   * Rejections are offers the driver declined or let expire in the window: a
+   * driver who never presses Decline and simply waits 15 seconds has refused
+   * the order just the same, and counting only the button would let them hide.
+   * `declined` is kept beside it so the two can be told apart on the row.
+   */
+  rejections: number;
+  declined: number;
+  /**
+   * Issues Darb's nightly sweep raised about this driver in the window (late
+   * login, no orders, rating drop, low acceptance, expiring paper), plus how
+   * many of them are still open. This is what a "violation" is on Darb 2.0:
+   * the legacy Violation table belongs to the deleted aggregator modules.
+   */
+  violations: number;
+  violationsOpen: number;
   /** Required documents currently valid, over the number required. */
   docsValid: number;
   docsRequired: number;
@@ -108,7 +125,7 @@ export async function driverTracking(params: {
 
   const ids = drivers.map((d) => d.id);
 
-  const [delivered, failed, onTimeRows, offers, ratings, sessions, training] = await Promise.all([
+  const [delivered, failed, onTimeRows, offers, ratings, sessions, training, issues] = await Promise.all([
     prisma.deliveryOrder.groupBy({
       by: ["driverId"],
       where: {
@@ -169,6 +186,11 @@ export async function driverTracking(params: {
       where: { tenantId, driverId: { in: ids }, status: { in: ["SCHEDULED", "IN_PROGRESS"] } },
       select: { id: true, driverId: true, endsAt: true },
     }),
+    prisma.fleetIssue.groupBy({
+      by: ["driverId", "status"],
+      where: { tenantId, driverId: { in: ids }, openedAt: { gte: from } },
+      _count: { _all: true },
+    }),
   ]);
 
   const deliveredBy = new Map(delivered.map((d) => [d.driverId as string, d._count._all]));
@@ -183,13 +205,26 @@ export async function driverTracking(params: {
     onTimeBy.set(r.driverId, row);
   }
 
-  const offerBy = new Map<string, { accepted: number; total: number }>();
+  const offerBy = new Map<string, { accepted: number; declined: number; expired: number; total: number }>();
   for (const o of offers) {
     if (!o.driverId) continue;
-    const row = offerBy.get(o.driverId) ?? { accepted: 0, total: 0 };
+    const row = offerBy.get(o.driverId) ?? { accepted: 0, declined: 0, expired: 0, total: 0 };
     row.total += o._count._all;
     if (o.status === "ACCEPTED") row.accepted += o._count._all;
+    else if (o.status === "DECLINED") row.declined += o._count._all;
+    else row.expired += o._count._all;
     offerBy.set(o.driverId, row);
+  }
+
+  const issueBy = new Map<string, { total: number; open: number }>();
+  for (const i of issues) {
+    if (!i.driverId) continue;
+    const row = issueBy.get(i.driverId) ?? { total: 0, open: 0 };
+    row.total += i._count._all;
+    if (i.status === "OPEN" || i.status === "ACKNOWLEDGED" || i.status === "ESCALATED") {
+      row.open += i._count._all;
+    }
+    issueBy.set(i.driverId, row);
   }
 
   const ratingBy = new Map(ratings.map((r) => [r.driverId as string, r._avg.stars]));
@@ -217,6 +252,7 @@ export async function driverTracking(params: {
   const rows: DriverTrackingRow[] = drivers.map((d) => {
     const onTime = onTimeBy.get(d.id);
     const offer = offerBy.get(d.id);
+    const issue = issueBy.get(d.id);
     const session = sessionBy.get(d.id);
     const t = trainingBy.get(d.id);
     const docsValid = DOC_COLUMNS.filter(
@@ -244,6 +280,10 @@ export async function driverTracking(params: {
       onTimeRate: onTime && onTime.total > 0 ? onTime.onTime / onTime.total : null,
       acceptanceRate: offer && offer.total > 0 ? offer.accepted / offer.total : null,
       rating: ratingBy.get(d.id) ?? null,
+      rejections: offer ? offer.declined + offer.expired : 0,
+      declined: offer?.declined ?? 0,
+      violations: issue?.total ?? 0,
+      violationsOpen: issue?.open ?? 0,
       docsValid,
       docsRequired: DOC_COLUMNS.length,
       trainingSessionId: t?.id ?? null,
@@ -265,7 +305,7 @@ export async function driverTracking(params: {
 export async function setDriverOperationalState(params: {
   tenantId: string;
   driverId: string;
-  action: "ACTIVATE" | "DEACTIVATE" | "SUSPEND" | "FREEZE" | "UNFREEZE";
+  action: "ACTIVATE" | "DEACTIVATE" | "SUSPEND" | "FREEZE" | "UNFREEZE" | "TERMINATE";
   reason?: string | null;
 }) {
   const { tenantId, driverId } = params;
@@ -275,17 +315,30 @@ export async function setDriverOperationalState(params: {
   });
   if (!driver) throw Object.assign(new Error("Driver not found"), { statusCode: 404 });
 
+  const data: Record<string, unknown> = {};
   if (params.action === "ACTIVATE" && driver.inTraining) {
-    // Activating past an open window would leave `inTraining` set on an ACTIVE
+    // Activating past an OPEN window would leave `inTraining` set on an ACTIVE
     // driver, which dispatch skips: the driver would read active on every
     // screen and never be offered an order. Close the window instead.
-    throw Object.assign(
-      new Error("That driver is in training. Close the training window to activate them."),
-      { statusCode: 409, code: "IN_TRAINING" },
-    );
+    //
+    // Revision 21c (client note, 2026-09-21): "I deactivated the driver
+    // account but I can't activate it again". A flag with no open window
+    // behind it (the window lapsed, or was cancelled by a path that did not
+    // clear it) is not a reason to refuse; it is cleared on the way through,
+    // or the driver is stuck with nobody able to say which window to close.
+    const open = await prisma.driverTrainingSession.findFirst({
+      where: { tenantId, driverId, status: { in: ["SCHEDULED", "IN_PROGRESS"] } },
+      select: { id: true },
+    });
+    if (open) {
+      throw Object.assign(
+        new Error("That driver is in training. Close the training window to activate them."),
+        { statusCode: 409, code: "IN_TRAINING" },
+      );
+    }
+    data.inTraining = false;
   }
 
-  const data: Record<string, unknown> = {};
   switch (params.action) {
     case "ACTIVATE":
       data.status = "ACTIVE";
@@ -300,6 +353,15 @@ export async function setDriverOperationalState(params: {
       break;
     case "SUSPEND":
       data.status = "SUSPENDED";
+      break;
+    case "TERMINATE":
+      // Revision 21c (client note, 2026-09-21): a trainee who did not pass
+      // must be able to be let go from the training screen. TERMINATED is
+      // the status every roster, plan and candidate pool already excludes,
+      // and the training flag comes off with it so nothing keeps waiting for
+      // a window that will never be run.
+      data.status = "TERMINATED";
+      data.inTraining = false;
       break;
     case "FREEZE":
       if (!params.reason?.trim()) {

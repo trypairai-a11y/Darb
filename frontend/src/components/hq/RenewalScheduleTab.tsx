@@ -31,6 +31,19 @@ import { cn } from "@/lib/cn";
 
 const HORIZONS = [7, 30, 90];
 
+/**
+ * Revision 21 (#4): "should filter Expiring soon / Expired / Frozen". The
+ * three states the summary tiles already count, as a filter on the same rows,
+ * so the tile and the table can never disagree about what "Expired 86" means.
+ */
+type StateFilter = "ALL" | "EXPIRING" | "EXPIRED" | "FROZEN";
+
+function matchesState(row: RenewalRow, state: StateFilter): boolean {
+  if (state === "ALL") return true;
+  if (state === "FROZEN") return row.frozen;
+  return row.health === state;
+}
+
 function humanType(type: string): string {
   return type
     .toLowerCase()
@@ -53,6 +66,7 @@ export default function RenewalScheduleTab() {
 
   const [withinDays, setWithinDays] = useState(30);
   const [scope, setScope] = useState<DocScope | "">("");
+  const [state, setState] = useState<StateFilter>("ALL");
   const [freezing, setFreezing] = useState<RenewalRow | null>(null);
   const [reason, setReason] = useState("");
 
@@ -93,8 +107,19 @@ export default function RenewalScheduleTab() {
     );
   }
 
-  const rows = query.data?.rows ?? [];
+  const allRows = query.data?.rows ?? [];
+  const rows = allRows.filter((r) => matchesState(r, state));
   const counts = query.data?.counts ?? { expired: 0, expiring: 0, frozen: 0 };
+
+  // A tile is the filter it counts: pressing it again clears it.
+  const toggleState = (next: StateFilter) => setState((cur) => (cur === next ? "ALL" : next));
+
+  const STATES: Array<{ key: StateFilter; label: string }> = [
+    { key: "ALL", label: t("labels.all") },
+    { key: "EXPIRING", label: t("compliance.expiringSoon") },
+    { key: "EXPIRED", label: t("compliance.healthEXPIRED") },
+    { key: "FROZEN", label: t("compliance.frozen") },
+  ];
 
   return (
     <div className="space-y-4">
@@ -103,13 +128,43 @@ export default function RenewalScheduleTab() {
           title={t("compliance.healthEXPIRED")}
           value={String(counts.expired)}
           icon={Snowflake}
-          highlight={counts.expired > 0}
+          highlight={state === "EXPIRED" || (state === "ALL" && counts.expired > 0)}
+          onClick={() => toggleState("EXPIRED")}
         />
-        <StatCard title={t("compliance.healthEXPIRING")} value={String(counts.expiring)} icon={Sun} />
-        <StatCard title={t("compliance.frozen")} value={String(counts.frozen)} icon={Snowflake} />
+        <StatCard
+          title={t("compliance.expiringSoon")}
+          value={String(counts.expiring)}
+          icon={Sun}
+          highlight={state === "EXPIRING"}
+          onClick={() => toggleState("EXPIRING")}
+        />
+        <StatCard
+          title={t("compliance.frozen")}
+          value={String(counts.frozen)}
+          icon={Snowflake}
+          highlight={state === "FROZEN"}
+          onClick={() => toggleState("FROZEN")}
+        />
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm text-sand-600">{t("compliance.stateFilter")}</span>
+        <div className="flex gap-1 bg-sand-100 rounded-pill p-1" data-testid="renewal-state-filter">
+          {STATES.map((st) => (
+            <button
+              key={st.key}
+              type="button"
+              onClick={() => setState(st.key)}
+              className={cn(
+                "px-3 h-7 text-xs font-medium rounded-pill transition-colors",
+                state === st.key ? "bg-white text-sand-900 shadow-soft" : "text-sand-600 hover:text-sand-900",
+              )}
+            >
+              {st.label}
+            </button>
+          ))}
+        </div>
+        <span className="text-sand-300 hidden sm:inline">|</span>
         <span className="text-sm text-sand-600">{t("compliance.horizon")}</span>
         <div className="flex gap-1 bg-sand-100 rounded-pill p-1">
           {HORIZONS.map((d) => (

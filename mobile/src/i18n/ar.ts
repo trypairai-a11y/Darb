@@ -189,7 +189,7 @@ const AR: Record<string, string> = {
   "failed.return_shop": "المتجر",
   "failed.return_body": "أعد الطلب إلى المتجر الذي استلمته منه وسلّمه لهم ثم أكّد هنا.",
   "failed.return_confirm": "أعدت الطلب إلى المتجر",
-  "failed.return_later": "لا أستطيع إعادته الآن",
+  "failed.return_required": "تبقى على هذا الطلب حتى يعود إلى المتجر. تستأنف الطلبات الجديدة بعد تأكيدك.",
 
   // ─── Wallet ───
   "wallet.title": "المحفظة",

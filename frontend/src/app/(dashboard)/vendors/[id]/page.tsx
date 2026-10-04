@@ -29,6 +29,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd, formatDateTime } from "@/i18n/format";
 import { cn } from "@/lib/cn";
 import { DirectionalIcon } from "@/i18n/directionalIcon";
+import { setupIncomplete, vendorGapKeys } from "@/lib/setupGaps";
 
 type Tab = "profile" | "branches" | "integrations" | "wallet" | "users";
 
@@ -113,16 +114,20 @@ export default function VendorDetailPage() {
             "inline-flex items-center px-3 py-1 rounded-pill text-xs font-medium",
             vendor.isPaused
               ? "bg-amber-50 text-amber-700"
-              : vendor.isActive !== false
-                ? "bg-green-50 text-green-700"
-                : "bg-sand-200 text-sand-700"
+              : setupIncomplete(vendor)
+                ? "bg-red-50 text-red-700"
+                : vendor.isActive !== false
+                  ? "bg-green-50 text-green-700"
+                  : "bg-sand-200 text-sand-700"
           )}
         >
           {vendor.isPaused
             ? t("vendorsPage.paused")
-            : vendor.isActive !== false
-              ? t("vendorsPage.active")
-              : t("status.inactive")}
+            : setupIncomplete(vendor)
+              ? t("vendorsPage.setupIncomplete")
+              : vendor.isActive !== false
+                ? t("vendorsPage.active")
+                : t("status.inactive")}
         </span>
       </div>
 
@@ -202,6 +207,8 @@ function ProfileTab({ vendor, onSaved }: { vendor: Vendor; onSaved: () => void }
     });
   }, [vendor]);
 
+  const gapsBesidePhone = (vendor.setupMissing ?? []).filter((g) => g !== "PHONE");
+
   async function handleSave() {
     setSaving(true);
     try {
@@ -215,8 +222,9 @@ function ProfileTab({ vendor, onSaved }: { vendor: Vendor; onSaved: () => void }
       });
       toast.success(t("vendorsPage.vendorSaved"));
       onSaved();
-    } catch {
-      toast.error(t("toast.failedSave"));
+    } catch (err) {
+      const payload = (err as { response?: { data?: { code?: string } } })?.response?.data;
+      toast.error(payload?.code === "SETUP_INCOMPLETE" ? t("vendorsPage.setupBlocked") : t("toast.failedSave"));
     } finally {
       setSaving(false);
     }
@@ -305,12 +313,23 @@ function ProfileTab({ vendor, onSaved }: { vendor: Vendor; onSaved: () => void }
             <input
               type="checkbox"
               checked={form.isActive}
+              // Revision 21c: a phone typed in this same form counts, so the
+              // box only locks while a branch or a login is still missing.
+              disabled={!form.isActive && gapsBesidePhone.length > 0}
               onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-              className="h-4 w-4 rounded border-sand-400 text-primary focus:ring-primary/30"
+              className="h-4 w-4 rounded border-sand-400 text-primary focus:ring-primary/30 disabled:opacity-40"
             />
             {t("vendorsPage.active")}
           </label>
         </div>
+        {!form.isActive && (vendor.setupMissing?.length ?? 0) > 0 && (
+          <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-2xl px-4 py-2" data-testid="vendor-setup-hint">
+            {t("vendorsPage.setupHint").replace(
+              "{items}",
+              vendorGapKeys(vendor.setupMissing).map((k) => t(k)).join(", "),
+            )}
+          </p>
+        )}
         <div className="pt-2">
           <button type="submit" disabled={saving} className="btn-primary px-5 h-10 disabled:opacity-50">
             {saving ? t("common.processing") : t("vendorsPage.saveProfile")}

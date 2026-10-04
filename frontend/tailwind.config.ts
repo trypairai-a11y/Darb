@@ -66,6 +66,26 @@ const config: Config = {
 
         clay: "#C57B59",
         moss: "#468254",
+
+        /**
+         * Success green. Twenty-five call sites across the HQ tabs use
+         * `forest-*` (the Confirm and Activate buttons, the ACTIVE badge) and
+         * until revision 21 (#5) the ramp was not defined, so those buttons
+         * rendered white text on a transparent background and the client
+         * reported that a payment had no way to be approved. Built from moss.
+         */
+        forest: {
+          50: "#F1F7F2",
+          100: "#DDEEE1",
+          200: "#B9DCC2",
+          300: "#8FC49E",
+          400: "#62A777",
+          500: "#468254",
+          600: "#3A6F47",
+          700: "#2F5A3A",
+          800: "#24452D",
+          900: "#182F1F",
+        },
         slate2: "#27455C",
         linkBlue: "#3860BE",
 

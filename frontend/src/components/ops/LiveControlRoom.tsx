@@ -44,9 +44,9 @@ import {
   useDriverPositions,
 } from "@/lib/driverPositionStore";
 import { copyText, formatCopyBlock } from "@/lib/clipboard";
-import { deliveryOrdersApi, dispatchApi, incidentsApi, unwrapList, zonesApi } from "@/lib/darbApi";
+import { deliveryOrdersApi, dispatchApi, incidentsApi, supportApi, unwrapList, zonesApi } from "@/lib/darbApi";
 import { driverMapStatus, type DriverMapStatus } from "@/types/darb";
-import type { DeliveryOrder, DeliveryZone, DriverPosition, Incident } from "@/types/darb";
+import type { DeliveryOrder, DeliveryZone, DriverPosition, Incident, SupportTicket } from "@/types/darb";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useRole } from "@/hooks/useRole";
@@ -218,7 +218,18 @@ export default function LiveControlRoom() {
   const stalled = useMemo(() => overview?.stalled ?? [], [overview?.stalled]);
   const gpsStale = useMemo<DriverPosition[]>(() => overview?.gpsStale ?? [], [overview?.gpsStale]);
   const jeopardy = useMemo<DeliveryOrder[]>(() => overview?.jeopardy ?? [], [overview?.jeopardy]);
-  const problemCount = jeopardy.length + stalled.length + gpsStale.length;
+  // Revision 21c: support requests about orders count as problems. Polled
+  // rather than pushed, because nothing emits an event when a shop files one.
+  const ticketsQuery = useQuery({
+    queryKey: ["darb", "support", "about-orders"],
+    queryFn: () => supportApi.list({ about: "orders", limit: 50 }),
+    refetchInterval: 30_000,
+  });
+  const orderTickets = useMemo(
+    () => unwrapList<SupportTicket>(ticketsQuery.data),
+    [ticketsQuery.data]
+  );
+  const problemCount = jeopardy.length + stalled.length + gpsStale.length + orderTickets.length;
 
   /** Signals the order rows do not carry, folded in for the quick filters. */
   const signals = useMemo<OrderSignals>(
@@ -575,6 +586,7 @@ export default function LiveControlRoom() {
               jeopardy={jeopardy}
               stalled={stalled}
               gpsStale={gpsStale}
+              tickets={orderTickets}
               now={now}
               onSelectOrder={setSelectedId}
               selectedOrderId={selectedId}

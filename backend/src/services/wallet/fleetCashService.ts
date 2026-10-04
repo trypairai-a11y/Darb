@@ -198,6 +198,8 @@ export interface FleetDepositRow {
   receiptUrl: string | null;
   status: string;
   rejectReason: string | null;
+  /** The desk's feedback on an approval. A rejection carries rejectReason. */
+  reviewNote?: string | null;
   confirmedAt: Date | null;
   createdAt: Date;
   /** Where to pay. Null only on rows created before links existed. */
@@ -215,6 +217,7 @@ function serializeDeposit(row: {
   receiptUrl: string | null;
   status: string;
   rejectReason: string | null;
+  reviewNote?: string | null;
   confirmedAt: Date | null;
   createdAt: Date;
   paymentUrl?: string | null;
@@ -232,6 +235,7 @@ function serializeDeposit(row: {
     receiptUrl: row.receiptUrl,
     status: row.status,
     rejectReason: row.rejectReason,
+    reviewNote: row.reviewNote ?? null,
     confirmedAt: row.confirmedAt,
     createdAt: row.createdAt,
     paymentUrl: row.paymentUrl ?? null,
@@ -400,6 +404,8 @@ export async function confirmFleetDeposit(opts: {
   tenantId: string;
   depositId: string;
   actorId: string;
+  /** Revision 21 (#5) — feedback shown to the company beside the deposit. */
+  note?: string | null;
 }): Promise<{ ok: boolean; alreadyConfirmed: boolean; balanceKwd: string }> {
   const postCredit = async (
     tx: Prisma.TransactionClient,
@@ -436,7 +442,12 @@ export async function confirmFleetDeposit(opts: {
   const result = await prisma.$transaction(async (tx) => {
     const claimed = await tx.fleetCashDeposit.updateMany({
       where: { id: opts.depositId, tenantId: opts.tenantId, status: "PENDING" },
-      data: { status: "CONFIRMED", confirmedAt: new Date(), confirmedById: opts.actorId },
+      data: {
+        status: "CONFIRMED",
+        confirmedAt: new Date(),
+        confirmedById: opts.actorId,
+        ...(opts.note?.trim() ? { reviewNote: opts.note.trim() } : {}),
+      },
     });
 
     const row = await tx.fleetCashDeposit.findFirst({

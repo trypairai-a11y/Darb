@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated, Easing, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import * as Location from "expo-location";
 import { Check, ChevronRight, LifeBuoy, Phone, Siren } from "lucide-react-native";
 import { Button, Screen } from "../../src/components/hig";
@@ -121,7 +121,12 @@ export default function DeliveryScreen() {
         </View>
       </Screen>
     );
+  }  // Revision 21c: a failed delivery is not over until the bag is back at the
+  // shop. The return leg has its own screen; nothing here applies to it.
+  if (order.stage === "RETURNING") {
+    return <Redirect href="/delivery/failed" />;
   }
+
 
   const beforePickup = stageIndex(order.stage) < stageIndex("PICKED_UP");
   const target = beforePickup ? order.pickup : order.dropoff;

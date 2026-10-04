@@ -7,7 +7,7 @@ import { requireSurface } from "../middleware/requireSurface";
 import { getPagination, paginatedResponse } from "../utils/pagination";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "crypto";
-import { AppSurface, PermissionLevel } from "../generated/prisma";
+import { AppSurface, PermissionLevel, Prisma } from "../generated/prisma";
 import { createInvite, emailInvite } from "../services/inviteService";
 import {
   APP_SURFACES,
@@ -15,6 +15,8 @@ import {
   managedVendorIds,
   resolvePermissions,
 } from "../services/permissionService";
+import { effectiveVendorTabs, normaliseVendorRole, parseVendorTabs } from "../services/vendorTabService";
+import { effectiveFleetTabs, normaliseFleetRole, parseFleetTabs } from "../services/fleet/fleetTabService";
 
 const router = Router();
 // Revision 4 (#12): rbac() answers "is this role allowed here"; requireSurface
@@ -178,6 +180,24 @@ router.post("/:id/invite", rbac("ADMIN"), async (req: Request, res: Response) =>
   }
 });
 
+// Client note (2026-10-04): opening Permissions on a delivery-company login
+// showed Ops, Compliance, Finance and Admin, none of which that person can ever
+// reach. A portal login is fenced by its portal's own tab list (vendorTabs /
+// fleetTabs), so that list is what an admin edits for them. HQ surfaces stay
+// for HQ staff only.
+type PortalKind = "VENDOR" | "FLEET";
+
+const PORTAL_USER_SELECT = {
+  id: true, role: true, vendorId: true, fleetPartnerId: true,
+  vendorRole: true, vendorTabs: true, fleetRole: true, fleetTabs: true,
+} as const;
+
+function portalOfUser(u: { role: string; vendorId: string | null; fleetPartnerId: string | null }): PortalKind | null {
+  if (u.role === "FLEET" || u.fleetPartnerId) return "FLEET";
+  if (u.role === "VENDOR" || u.vendorId) return "VENDOR";
+  return null;
+}
+
 // ─── Per-surface permissions (revision 4 #12) ───────────────────────────────
 //
 // GET returns the effective map plus the role's defaults, so the page can show
@@ -188,9 +208,29 @@ router.get("/:id/permissions", rbac("ADMIN"), async (req: Request, res: Response
     const tenantId = req.user!.tenantId;
     const user = await prisma.user.findFirst({
       where: { id: req.params.id, tenantId },
-      select: { id: true, role: true },
+      select: PORTAL_USER_SELECT,
     });
     if (!user) { res.status(404).json({ error: "User not found" }); return; }
+
+    const portal = portalOfUser(user);
+    if (portal) {
+      res.json(
+        portal === "FLEET"
+          ? {
+              portal,
+              portalRole: normaliseFleetRole(user.fleetRole),
+              portalTabs: parseFleetTabs(user.fleetTabs),
+              effectiveTabs: effectiveFleetTabs(user.fleetRole, user.fleetTabs),
+            }
+          : {
+              portal,
+              portalRole: normaliseVendorRole(user.vendorRole),
+              portalTabs: parseVendorTabs(user.vendorTabs),
+              effectiveTabs: effectiveVendorTabs(user.vendorRole, user.vendorTabs),
+            },
+      );
+      return;
+    }
 
     const [effective, overrides, vendorIds] = await Promise.all([
       resolvePermissions(tenantId, user.id),
@@ -219,9 +259,28 @@ router.put("/:id/permissions", rbac("ADMIN"), async (req: Request, res: Response
     const tenantId = req.user!.tenantId;
     const user = await prisma.user.findFirst({
       where: { id: req.params.id, tenantId },
-      select: { id: true, role: true },
+      select: PORTAL_USER_SELECT,
     });
     if (!user) { res.status(404).json({ error: "User not found" }); return; }
+
+    // A portal login takes its portal's tab list and nothing else: writing HQ
+    // surface overrides onto it would grant nothing and only confuse an audit.
+    const portal = portalOfUser(user);
+    if (portal) {
+      const raw = (req.body as { portalTabs?: unknown }).portalTabs;
+      if (raw === undefined) { res.status(400).json({ error: "portalTabs is required" }); return; }
+      if (raw !== null && !Array.isArray(raw)) { res.status(400).json({ error: "portalTabs must be a list or null" }); return; }
+      if (portal === "FLEET") {
+        const tabs = raw === null ? null : parseFleetTabs(raw);
+        await prisma.user.update({ where: { id: user.id }, data: { fleetTabs: tabs ?? Prisma.DbNull } });
+        res.json({ portal, portalTabs: tabs, effectiveTabs: effectiveFleetTabs(user.fleetRole, tabs) });
+      } else {
+        const tabs = raw === null ? null : parseVendorTabs(raw);
+        await prisma.user.update({ where: { id: user.id }, data: { vendorTabs: tabs ?? Prisma.DbNull } });
+        res.json({ portal, portalTabs: tabs, effectiveTabs: effectiveVendorTabs(user.vendorRole, tabs) });
+      }
+      return;
+    }
 
     const body = req.body as {
       overrides?: Record<string, string | null>;

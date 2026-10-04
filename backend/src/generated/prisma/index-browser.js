@@ -2121,6 +2121,8 @@ exports.Prisma.VendorTopUpScalarFieldEnum = {
   providerRef: 'providerRef',
   provider: 'provider',
   paidAt: 'paidAt',
+  reviewNote: 'reviewNote',
+  reviewedById: 'reviewedById',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -2143,6 +2145,7 @@ exports.Prisma.FleetCashDepositScalarFieldEnum = {
   confirmedById: 'confirmedById',
   confirmedAt: 'confirmedAt',
   rejectReason: 'rejectReason',
+  reviewNote: 'reviewNote',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -2160,6 +2163,7 @@ exports.Prisma.DriverTrainingSessionScalarFieldEnum = {
   coachId: 'coachId',
   reason: 'reason',
   outcomeNote: 'outcomeNote',
+  autoIssue: 'autoIssue',
   scorecard: 'scorecard',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -3464,7 +3468,9 @@ exports.Prisma.VendorTopUpOrderByRelevanceFieldEnum = {
   reference: 'reference',
   paymentUrl: 'paymentUrl',
   providerRef: 'providerRef',
-  provider: 'provider'
+  provider: 'provider',
+  reviewNote: 'reviewNote',
+  reviewedById: 'reviewedById'
 };
 
 exports.Prisma.FleetCashDepositOrderByRelevanceFieldEnum = {
@@ -3480,7 +3486,8 @@ exports.Prisma.FleetCashDepositOrderByRelevanceFieldEnum = {
   providerRef: 'providerRef',
   provider: 'provider',
   confirmedById: 'confirmedById',
-  rejectReason: 'rejectReason'
+  rejectReason: 'rejectReason',
+  reviewNote: 'reviewNote'
 };
 
 exports.Prisma.DriverTrainingSessionOrderByRelevanceFieldEnum = {

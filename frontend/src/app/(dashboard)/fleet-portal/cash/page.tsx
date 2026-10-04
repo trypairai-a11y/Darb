@@ -312,6 +312,11 @@ export default function FleetCashPage() {
                           {row.rejectReason}
                         </span>
                       )}
+                      {value !== "REJECTED" && row.reviewNote && (
+                        <span className="text-xs text-sand-700" dir="auto">
+                          {row.reviewNote}
+                        </span>
+                      )}
                     </span>
                   ),
                 },
