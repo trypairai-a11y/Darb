@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "crypto";
+import { createInvite, emailInvite } from "../services/inviteService";
 import { hashApiKey } from "../middleware/partnerAuth";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { point } from "@turf/helpers";
@@ -140,7 +141,7 @@ const updateBranchSchema = z.object({
 const createVendorUserSchema = z
   .object({
     email: z.string().email("Valid email required"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    password: z.string().min(8, "Password must be at least 8 characters").optional(),
     name: z.string().min(2, "Name must be at least 2 characters"),
     phone: z.string().optional(),
     vendorRole: z
@@ -653,8 +654,14 @@ router.post(
         if (!branch) { res.status(400).json({ error: "Branch does not belong to this vendor" }); return; }
       }
 
+      // Client note, 2026-07-28: "user should create his own password". Staff
+      // invites already worked that way; shop and company logins still took a
+      // password typed by Darb. With no password posted, the login is created
+      // with an unusable hash and the person chooses their own from an invite
+      // link that expires. A typed password still works, for a login set up
+      // on the phone with the shop.
       // Same hashing helper + cost as AuthService.register (bcryptjs, 12).
-      const passwordHash = await bcrypt.hash(password, 12);
+      const passwordHash = await bcrypt.hash(password || randomBytes(32).toString("hex"), 12);
       const user = await prisma.user.create({
         data: {
           tenantId,
@@ -675,6 +682,12 @@ router.post(
           isActive: true, createdAt: true,
         },
       });
+      if (!password) {
+        const invite = await createInvite({ tenantId, userId: user.id });
+        const delivery = await emailInvite({ email: user.email, name: user.name, url: invite.url, expiresAt: invite.expiresAt });
+        res.status(201).json({ ...user, inviteUrl: invite.url, inviteExpiresAt: invite.expiresAt, emailSent: delivery.ok });
+        return;
+      }
       res.status(201).json(user);
     } catch (err: any) {
       res.status(400).json({ error: err.message });

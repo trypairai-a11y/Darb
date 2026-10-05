@@ -564,17 +564,43 @@ export async function cancelTrainingSession(params: {
 
 // ─── Reading ────────────────────────────────────────────────────────────────
 
+/**
+ * Client note of 2026-10-05: the training tab "must show only the drivers that
+ * are currently training and the ones that finished but still we did not take
+ * an action on them". Every window ever run stayed on the list, so a driver
+ * already passed, retrained or terminated still sat there under an old
+ * "Did not pass", and the screen read as though nothing had been done.
+ *
+ * A window still needs the coach when it is running (or ran out with no
+ * verdict), or when it did not pass and nothing has followed: the driver is
+ * not terminated, not reactivated, not back in training, and no newer window
+ * exists for them. Everything else lives on the driver's profile.
+ */
+export function failedWindowAwaitsAction(
+  session: { createdAt: Date; driver: { status: string; inTraining: boolean } },
+  latestForDriver: Date | undefined,
+): boolean {
+  if (session.driver.status === "TERMINATED" || session.driver.status === "ACTIVE") return false;
+  if (session.driver.inTraining) return false;
+  return !latestForDriver || latestForDriver.getTime() <= session.createdAt.getTime();
+}
+
 /** The training tab's list, with each window's numbers computed live. */
 export async function listTrainingSessions(params: {
   tenantId: string;
   status?: string;
   driverId?: string;
   take?: number;
+  /** Only windows that still need the coach (see failedWindowAwaitsAction). */
+  needsAction?: boolean;
 }) {
-  const sessions = await prisma.driverTrainingSession.findMany({
+  const found = await prisma.driverTrainingSession.findMany({
     where: {
       tenantId: params.tenantId,
       ...(params.status ? { status: params.status as never } : {}),
+      ...(params.needsAction && !params.status
+        ? { status: { in: ["SCHEDULED", "IN_PROGRESS", "FAILED"] as never } }
+        : {}),
       ...(params.driverId ? { driverId: params.driverId } : {}),
     },
     orderBy: [{ status: "asc" }, { startsAt: "desc" }],
@@ -599,6 +625,7 @@ export async function listTrainingSessions(params: {
           driverCode: true,
           phone: true,
           status: true,
+          inTraining: true,
           vehicleType: true,
           fleetPartner: { select: { id: true, name: true } },
         },
@@ -606,6 +633,23 @@ export async function listTrainingSessions(params: {
       coach: { select: { id: true, name: true } },
     },
   });
+
+  let sessions = found;
+  if (params.needsAction) {
+    const failedDrivers = [...new Set(found.filter((s) => s.status === "FAILED").map((s) => s.driver.id))];
+    const latest = new Map<string, Date>();
+    if (failedDrivers.length > 0) {
+      const groups = await prisma.driverTrainingSession.groupBy({
+        by: ["driverId"],
+        where: { tenantId: params.tenantId, driverId: { in: failedDrivers } },
+        _max: { createdAt: true },
+      });
+      for (const g of groups) if (g._max.createdAt) latest.set(g.driverId, g._max.createdAt);
+    }
+    sessions = found.filter(
+      (s) => s.status !== "FAILED" || failedWindowAwaitsAction(s, latest.get(s.driver.id)),
+    );
+  }
 
   // A closed window reads its snapshot; a live one is computed, because the
   // whole point of the tab is watching the numbers move.

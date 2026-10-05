@@ -16,12 +16,12 @@
 // would ever see it, which is why the only two buttons here are human ones.
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircleCheck, CircleX, FileQuestion, RefreshCw, Search, TriangleAlert } from "lucide-react";
+import { CircleCheck, CircleX, Eye, FileQuestion, RefreshCw, Search, TriangleAlert } from "lucide-react";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import SlidePanel from "@/components/shared/SlidePanel";
 import { useToast } from "@/components/shared/Toast";
-import { complianceApi, unwrapList } from "@/lib/darbApi";
+import { complianceApi, fleetsApi, unwrapList } from "@/lib/darbApi";
 import type { ComplianceDocStatus, ComplianceDocument, DocScope } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDate, formatDateTime } from "@/i18n/format";
@@ -302,6 +302,27 @@ export default function ComplianceDocumentsTab({ scope }: { scope: "DRIVER" | "P
 
                   {canDecide && (
                     <div className="flex items-center gap-1 shrink-0">
+                      {/* Client note, 2026-09-10: compliance approves or
+                          rejects a document, so it has to be able to read it
+                          first. The desk only knew whether a file existed. */}
+                      {doc.hasFile && (
+                        <button
+                          type="button"
+                          data-testid="compliance-view-file"
+                          onClick={async () => {
+                            try {
+                              const { objectUrl } = await fleetsApi.documentFile(doc.id);
+                              window.open(objectUrl, "_blank", "noopener,noreferrer");
+                            } catch {
+                              toast.error(t("errors.loadingData"));
+                            }
+                          }}
+                          className="h-9 px-3 inline-flex items-center gap-1.5 rounded-pill border border-sand-200 text-sand-700 text-xs font-medium hover:bg-sand-50"
+                        >
+                          <Eye size={14} aria-hidden="true" />
+                          {t("compliance.viewFile")}
+                        </button>
+                      )}
                       <button
                         type="button"
                         title={t("compliance.recheck")}

@@ -56,6 +56,8 @@ export default function VendorNewOrderPage() {
   // the portal simply never offered a way to set one.
   const [timing, setTiming] = useState<"NOW" | "SCHEDULED">("NOW");
   const [pickupAt, setPickupAt] = useState("");
+  // Client note, 2026-07-29: a big order should be able to go by car.
+  const [needsCar, setNeedsCar] = useState(false);
 
   const [quote, setQuote] = useState<ZoneQuote | null>(null);
   const [quoting, setQuoting] = useState(false);
@@ -130,6 +132,7 @@ export default function VendorNewOrderPage() {
         orderTotalKwd: orderTotal,
         paymentMethod,
         scheduledAt: timing === "SCHEDULED" ? new Date(pickupAt).toISOString() : undefined,
+        requiresCarOnly: needsCar || undefined,
       });
       toast.success(t("vendorPortal.orderPlaced"));
       await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", "orders"] });
@@ -327,6 +330,19 @@ export default function VendorNewOrderPage() {
               </div>
             )}
           </div>
+
+          <label className="flex items-start gap-2.5 text-sm text-sand-800 cursor-pointer" data-testid="new-order-needs-car">
+            <input
+              type="checkbox"
+              checked={needsCar}
+              onChange={(e) => setNeedsCar(e.target.checked)}
+              className="mt-0.5 accent-primary"
+            />
+            <span>
+              {t("vendorPortal.needsCar")}
+              <span className="block text-xs text-sand-500">{t("vendorPortal.needsCarHint")}</span>
+            </span>
+          </label>
 
           {/* Quote banner */}
           {(quoting || quote) && (

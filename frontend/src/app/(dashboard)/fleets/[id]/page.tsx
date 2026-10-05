@@ -701,6 +701,7 @@ function PortalLoginsSection({ fleet }: { fleet: FleetRow }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
+  const [issuedInvite, setIssuedInvite] = useState<string | null>(null);
 
   const usersQuery = useQuery({
     queryKey: ["darb", "fleets", fleet.id, "users"],
@@ -714,19 +715,24 @@ function PortalLoginsSection({ fleet }: { fleet: FleetRow }) {
   }
 
   async function handleCreate() {
-    if (!form.name.trim() || !form.email.trim() || form.password.length < 8) return;
+    // Blank password: they choose their own from an invite link (client
+    // note, 2026-07-28). A typed one still has to be 8 characters.
+    if (!form.name.trim() || !form.email.trim()) return;
+    if (form.password && form.password.length < 8) return;
     setSaving(true);
     setError(null);
     try {
-      await fleetsApi.createUser(fleet.id, {
+      const created = await fleetsApi.createUser(fleet.id, {
         name: form.name.trim(),
         email: form.email.trim(),
-        password: form.password,
+        password: form.password || undefined,
         phone: form.phone.trim() || undefined,
       });
       toast.success(t("fleetPortal.portalLoginCreated"));
       reset();
-      setOpen(false);
+      // Keep the form open while there is a link to copy.
+      setIssuedInvite(created.inviteUrl ?? null);
+      if (!created.inviteUrl) setOpen(false);
       await queryClient.invalidateQueries({
         queryKey: ["darb", "fleets", fleet.id, "users"],
       });
@@ -825,10 +831,22 @@ function PortalLoginsSection({ fleet }: { fleet: FleetRow }) {
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               className={inputClass}
               minLength={8}
-              required
             />
+            <p className="mt-1 text-[11px] text-sand-500">{t("vendorsPage.passwordOptionalHint")}</p>
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
+          {issuedInvite && (
+            <div className="rounded-xl border border-sand-200 bg-sand-50 px-3 py-2.5 space-y-1.5" data-testid="portal-login-invite">
+              <p className="text-xs text-sand-700">{t("vendorsPage.inviteLinkReady")}</p>
+              <input
+                readOnly
+                dir="ltr"
+                value={issuedInvite}
+                onFocus={(e) => e.currentTarget.select()}
+                className="w-full px-3 h-9 rounded-lg bg-white border border-sand-300 text-xs font-mono"
+              />
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <button
               type="submit"

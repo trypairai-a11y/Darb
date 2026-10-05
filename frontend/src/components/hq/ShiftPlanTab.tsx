@@ -16,12 +16,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarRange, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import Link from "next/link";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
 import { shiftPlanningApi } from "@/lib/darbApi";
-import type { ShiftPlanEntry } from "@/types/darb";
+import type { ShiftPlanEntry, ShiftPlanPayload } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDate, formatNumber } from "@/i18n/format";
 import { useRole } from "@/hooks/useRole";
@@ -29,6 +30,19 @@ import { cn } from "@/lib/cn";
 
 /** Index IS the stored day number, 0 = Sunday, matching getDay(). */
 const WEEKDAY_KEYS = ["daySun", "dayMon", "dayTue", "dayWed", "dayThu", "dayFri", "daySat"] as const;
+
+/**
+ * Client note of 2026-10-05: "the drivers are working 12 hours per day ... we
+ * are trying to put enough drivers 24/7, it is managing the timing of duty".
+ * The grid reads as a day's two duties, not eight unrelated windows: the day
+ * duty, then the night duty that starts that evening and runs into the next
+ * morning's 01:00 and 04:00 windows. Mirrors the server's DUTIES, which wins
+ * when it is in the payload.
+ */
+const FALLBACK_DUTIES: NonNullable<ShiftPlanPayload["duties"]> = [
+  { key: "DAY", starts: ["07:00", "10:00", "13:00", "16:00"], nextDay: [] },
+  { key: "NIGHT", starts: ["19:00", "22:00"], nextDay: ["01:00", "04:00"] },
+];
 
 /** Sunday 00:00 of the week containing `d`, as YYYY-MM-DD. */
 function weekStartIso(d: Date): string {
@@ -71,8 +85,21 @@ export default function ShiftPlanTab() {
 
   const payload = planQuery.data;
   const plan = payload?.plan ?? null;
-  const zones = payload?.zones ?? [];
-  const windows = payload?.windows ?? [];
+  const zones = useMemo(() => payload?.zones ?? [], [payload]);
+  const duties = payload?.duties ?? FALLBACK_DUTIES;
+  // The selected day's columns, grouped by duty. A night column past
+  // midnight belongs to the following day's stored cells.
+  const dutyColumns = useMemo(
+    () =>
+      duties.map((d) => ({
+        key: d.key,
+        cols: [
+          ...d.starts.map((start) => ({ day, start })),
+          ...d.nextDay.map((start) => ({ day: (day + 1) % 7, start })),
+        ],
+      })),
+    [duties, day],
+  );
   const drivers = payload?.drivers ?? [];
   // Revision 21 (#2): "put the total number of drivers available". Total in
   // the header, per area in the row, and a cell that asks for more than the
@@ -95,14 +122,28 @@ export default function ShiftPlanTab() {
     [drivers],
   );
 
-  const totalSlots = useMemo(
-    () =>
-      (plan?.entries ?? []).reduce((sum, e) => {
-        const key = `${e.zoneId}|${e.dayOfWeek}|${e.startTime}`;
-        return sum + (edits[key] ?? e.approvedDrivers);
-      }, 0),
-    [plan, edits],
-  );
+  /**
+   * People an area needs on the selected day: each duty's busiest window,
+   * summed over the two duties, because one driver works one 12-hour duty.
+   * This is the number to hold against the drivers an area has.
+   */
+  const neededByZone = useMemo(() => {
+    const out: Record<string, number> = {};
+    for (const zone of zones) {
+      out[zone.id] = dutyColumns.reduce((sum, duty) => {
+        const peak = Math.max(
+          0,
+          ...duty.cols.map(({ day: d, start }) => {
+            const key = `${zone.id}|${d}|${start}`;
+            return edits[key] ?? byCell.get(key)?.approvedDrivers ?? 0;
+          }),
+        );
+        return sum + peak;
+      }, 0);
+    }
+    return out;
+  }, [zones, dutyColumns, edits, byCell]);
+  const neededOnDay = Object.values(neededByZone).reduce((a, b) => a + b, 0);
 
   function refresh() {
     void queryClient.invalidateQueries({ queryKey: ["darb", "shift-plan"] });
@@ -192,6 +233,16 @@ export default function ShiftPlanTab() {
           <p className="text-sm text-sand-600 mt-1">{t("shiftPlan.subtitle")}</p>
         </div>
         <div className="flex items-center gap-1">
+          {/* Today's shifts, the coverage grid and which area each driver
+              works in live at /shifts. The old Setup hub was its only link,
+              and drivers with no area cannot book a shift at all. */}
+          <Link
+            href="/shifts?tab=areas"
+            data-testid="shift-plan-open-shifts"
+            className="h-9 px-4 me-2 inline-flex items-center rounded-pill border border-sand-200 text-sm text-sand-700 hover:bg-sand-50"
+          >
+            {t("shiftPlan.driverAreas")}
+          </Link>
           <button
             type="button"
             onClick={() => setWeekStart((w) => shiftWeek(w, -1))}
@@ -258,8 +309,10 @@ export default function ShiftPlanTab() {
                         : "shiftPlan.statusDiscarded",
                   )}
                 </span>
-                <span className="text-sm text-sand-700 tabular-nums">
-                  {t("shiftPlan.totalDrivers").replace("{n}", formatNumber(totalSlots, locale))}
+                <span className="text-sm text-sand-700 tabular-nums" data-testid="shift-plan-needed-on-day">
+                  {t("shiftPlan.neededOnDay")
+                    .replace("{n}", formatNumber(neededOnDay, locale))
+                    .replace("{day}", t(`shiftsPage.${WEEKDAY_KEYS[day]}`))}
                 </span>
                 <span className="text-sand-300">·</span>
                 <span
@@ -268,13 +321,20 @@ export default function ShiftPlanTab() {
                 >
                   {t("shiftPlan.driversAvailable").replace("{n}", formatNumber(availability.total, locale))}
                 </span>
+                {/* Client note, 2026-08-04: ops assigns drivers to areas. That
+                    screen lives at /shifts?tab=areas and nothing linked to it,
+                    so the warning is the way in. */}
                 {availability.unassigned > 0 && (
-                  <span className="text-xs text-amber-700 tabular-nums">
+                  <Link
+                    href="/shifts?tab=areas"
+                    data-testid="shift-plan-assign-areas"
+                    className="text-xs text-amber-700 tabular-nums underline underline-offset-2 hover:text-amber-800"
+                  >
                     {t("shiftPlan.driversUnassigned").replace(
                       "{n}",
                       formatNumber(availability.unassigned, locale),
                     )}
-                  </span>
+                  </Link>
                 )}
               </div>
               <p className="text-xs text-sand-500 mt-1">
@@ -382,15 +442,37 @@ export default function ShiftPlanTab() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-sand-50 text-sand-600">
-                  <tr>
-                    <th className="text-start font-medium px-4 py-3 sticky start-0 bg-sand-50">
+                  <tr data-testid="shift-plan-duty-headers">
+                    <th rowSpan={2} className="text-start font-medium px-4 py-3 sticky start-0 bg-sand-50">
                       {t("shiftPlan.zone")}
                     </th>
-                    {windows.map((w) => (
-                      <th key={w} className="text-center font-medium px-3 py-3 whitespace-nowrap">
-                        {w}
+                    {dutyColumns.map((duty) => (
+                      <th
+                        key={duty.key}
+                        colSpan={duty.cols.length}
+                        className={cn(
+                          "text-center font-medium px-3 pt-3 pb-1 whitespace-nowrap text-sand-900",
+                          duty.key === "NIGHT" && "border-s border-sand-200",
+                        )}
+                      >
+                        {t(duty.key === "DAY" ? "shiftPlan.dayDuty" : "shiftPlan.nightDuty")}
                       </th>
                     ))}
+                  </tr>
+                  <tr>
+                    {dutyColumns.flatMap((duty) =>
+                      duty.cols.map((c, i) => (
+                        <th
+                          key={`${duty.key}-${c.start}`}
+                          className={cn(
+                            "text-center font-medium px-3 pb-3 whitespace-nowrap",
+                            duty.key === "NIGHT" && i === 0 && "border-s border-sand-200",
+                          )}
+                        >
+                          {c.start}
+                        </th>
+                      )),
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-sand-100">
@@ -404,11 +486,28 @@ export default function ShiftPlanTab() {
                             formatNumber(availability.byZone[zone.id] ?? 0, locale),
                           )}
                         </p>
+                        {(() => {
+                          const needed = neededByZone[zone.id] ?? 0;
+                          const short = needed - (availability.byZone[zone.id] ?? 0);
+                          return (
+                            <p
+                              className={cn(
+                                "text-[11px] tabular-nums",
+                                short > 0 ? "text-amber-700 font-medium" : "text-sand-500",
+                              )}
+                              data-testid="shift-plan-zone-needed"
+                            >
+                              {t("shiftPlan.zoneNeeded").replace("{n}", formatNumber(needed, locale))}
+                              {short > 0 &&
+                                ` · ${t("shiftPlan.zoneShort").replace("{n}", formatNumber(short, locale))}`}
+                            </p>
+                          );
+                        })()}
                       </td>
-                      {windows.map((w) => {
-                        const key = `${zone.id}|${day}|${w}`;
+                      {dutyColumns.flatMap((duty) => duty.cols.map((c, i) => ({ ...c, divider: duty.key === "NIGHT" && i === 0 }))).map(({ day: cellDay, start: w, divider }) => {
+                        const key = `${zone.id}|${cellDay}|${w}`;
                         const entry = byCell.get(key);
-                        if (!entry) return <td key={w} className="px-3 py-2 text-center text-sand-400">n/a</td>;
+                        if (!entry) return <td key={key} className="px-3 py-2 text-center text-sand-400">n/a</td>;
                         const value = edits[key] ?? entry.approvedDrivers;
                         const changed = value !== entry.proposedDrivers;
                         const over = value > (availability.byZone[zone.id] ?? 0);
@@ -417,7 +516,7 @@ export default function ShiftPlanTab() {
                           .filter(Boolean)
                           .join(", ");
                         return (
-                          <td key={w} className="px-3 py-2 text-center">
+                          <td key={key} className={cn("px-3 py-2 text-center", divider && "border-s border-sand-200")}>
                             <input
                               type="number"
                               min={0}

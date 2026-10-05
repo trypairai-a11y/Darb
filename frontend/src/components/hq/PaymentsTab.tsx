@@ -40,8 +40,14 @@ export default function PaymentsTab() {
   const { t, locale } = useI18n();
   const toast = useToast();
   const queryClient = useQueryClient();
-  const { hasRole } = useRole();
-  const canSettle = hasRole("ACCOUNTANT");
+  const { isRole } = useRole();
+  // The server decides per kind: a shop top-up takes ADMIN, OPS_MANAGER or
+  // ACCOUNTANT; a company deposit is money on Darb's books, ACCOUNTANT or
+  // ADMIN only. hasRole("ACCOUNTANT") also let SUPERVISOR see buttons that
+  // only ever answered 403.
+  const canSettle = isRole("ADMIN", "OPS_MANAGER", "ACCOUNTANT");
+  const canSettleRow = (row: PaymentRow) =>
+    row.kind === "FLEET_DEPOSIT" ? isRole("ADMIN", "ACCOUNTANT") : canSettle;
 
   const [status, setStatus] = useState<"PENDING" | "ALL">("PENDING");
   const [side, setSide] = useState<"ALL" | "VENDOR" | "FLEET">("ALL");
@@ -208,7 +214,7 @@ export default function PaymentsTab() {
                   </td>
                   {canSettle && (
                     <td className="px-4 py-3">
-                      {row.status === "PENDING" ? (
+                      {row.status === "PENDING" && canSettleRow(row) ? (
                         <div className="flex items-center justify-end gap-1">
                           <button
                             type="button"

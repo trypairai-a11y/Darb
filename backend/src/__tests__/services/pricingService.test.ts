@@ -202,8 +202,79 @@ describe("quoteDelivery", () => {
     expect(result).toEqual({ ok: false, reason: "NO_COORDINATES" });
   });
 
-  test("OUT_OF_ZONE_DROPOFF: dropoff point outside every polygon", async () => {
+  // Client note (2026-07-28): "If out of zone drop off the price changes only,
+  // no need to review." A plan-less vendor used to land every such order in
+  // Needs review; it is now priced as a drop in the nearest zone.
+  // A pin far past every zone is a bad address, not a delivery: pricing it at
+  // a border zone's rate would send a driver somewhere nobody meant.
+  test("out of zone by more than the cap: still sent to review", async () => {
     prisma.vendorBranch.findFirst.mockResolvedValue({ zoneId: "zone-a" });
+
+    // About 20 km east of Salmiya's edge, out at sea.
+    const result = await quoteDelivery(TENANT, {
+      branchId: "branch-1",
+      dropoff: { lat: 29.32, lng: 48.31 },
+    });
+    expect(result).toEqual({ ok: false, reason: "OUT_OF_ZONE_DROPOFF" });
+  });
+
+  test("out of zone, no plan: priced as the nearest zone, not sent to review", async () => {
+    prisma.vendorBranch.findFirst.mockResolvedValue({ zoneId: "zone-a" });
+    prisma.zoneSurcharge.findFirst.mockResolvedValue({
+      surchargeKwd: new Prisma.Decimal("0.750"),
+    });
+
+    // Just east of Salmiya's edge (48.10), far from Kuwait City.
+    const result = await quoteDelivery(TENANT, {
+      branchId: "branch-1",
+      dropoff: { lat: 29.32, lng: 48.12 },
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.feeKwd.toFixed(3)).toBe("2.000"); // 1.250 + A→B 0.750
+    expect(result.dropoffZoneId).toBeNull();
+    expect(result.dropoffZone).toBeNull();
+    expect(result.outOfZone).toBe(true);
+    expect(result.pricedAsZone.id).toBe("zone-b");
+    expect(result.outOfZoneKm).toBeGreaterThan(1.8);
+    expect(result.outOfZoneKm).toBeLessThan(2.1);
+    expect(prisma.zoneSurcharge.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ originZoneId: "zone-a", destZoneId: "zone-b" }),
+      }),
+    );
+  });
+
+  test("out of zone, no plan: nearest is the pickup zone, so the flat fee alone", async () => {
+    prisma.vendorBranch.findFirst.mockResolvedValue({ zoneId: "zone-a" });
+
+    // Just north of Kuwait City's top edge (29.40).
+    const result = await quoteDelivery(TENANT, {
+      branchId: "branch-1",
+      dropoff: { lat: 29.41, lng: 47.97 },
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.feeKwd.toFixed(3)).toBe("1.250");
+    expect(result.pricedAsZone.id).toBe("zone-a");
+    expect(prisma.zoneSurcharge.findFirst).not.toHaveBeenCalled();
+  });
+
+  test("out of zone, no plan: nearest pair unserviceable stays UNSERVICEABLE_PAIR", async () => {
+    prisma.vendorBranch.findFirst.mockResolvedValue({ zoneId: "zone-a" });
+    prisma.zoneSurcharge.findFirst.mockResolvedValue(null);
+
+    const result = await quoteDelivery(TENANT, {
+      branchId: "branch-1",
+      dropoff: { lat: 29.32, lng: 48.12 },
+    });
+    expect(result).toEqual({ ok: false, reason: "UNSERVICEABLE_PAIR" });
+  });
+
+  // The one case still left for a person: nothing drawn to measure against.
+  test("OUT_OF_ZONE_DROPOFF: tenant has no zone geometry at all", async () => {
+    prisma.vendorBranch.findFirst.mockResolvedValue({ zoneId: "zone-a" });
+    prisma.deliveryZone.findMany.mockResolvedValue([]);
 
     const result = await quoteDelivery(TENANT, {
       branchId: "branch-1",
@@ -553,17 +624,51 @@ describe("quoteDelivery with a delivery plan", () => {
     expect(result.feeKwd.toFixed(3)).toBe("2.000");
   });
 
-  test("by-zone plan: a dropoff outside every zone has no cell to read", async () => {
+  // Client note (2026-07-28): an out-of-zone drop on a by-zone plan used to
+  // go to Needs review. It now reads the cell for the nearest zone.
+  test("by-zone plan: a dropoff outside every zone is priced off the nearest zone's cell", async () => {
     primeBranchOnPlan({ id: "plan-z", type: "ZONE", kmTiers: [] });
+    prisma.deliveryPlanZoneRate.findFirst.mockResolvedValue({ feeKwd: D("2.250") });
 
     const result = await quoteDelivery(TENANT, {
       branchId: "branch-1",
-      dropoff: OUTSIDE_ALL,
+      dropoff: { lat: 29.32, lng: 48.12 }, // just past Salmiya's east edge
     });
 
-    // Still a supervisor's call: a grid cannot price a zone that is not drawn.
-    expect(result).toEqual({ ok: false, reason: "OUT_OF_ZONE_DROPOFF" });
+    expect(result.ok).toBe(true);
+    expect(result.feeKwd.toFixed(3)).toBe("2.250");
+    expect(result.planId).toBe("plan-z");
+    expect(result.dropoffZoneId).toBeNull();
+    expect(result.outOfZone).toBe(true);
+    expect(result.pricedAsZone.id).toBe("zone-b");
+    const q = prisma.deliveryPlanZoneRate.findFirst.mock.calls[0][0];
+    expect(q.where).toMatchObject({ originZoneId: "zone-a", destZoneId: "zone-b" });
+  });
+
+  test("by-zone plan: out of zone next to the pickup zone takes the plan's intra-zone fee", async () => {
+    primeBranchOnPlan({ id: "plan-z", type: "ZONE", kmTiers: [], intraZoneFeeKwd: D("0.900") });
+
+    const result = await quoteDelivery(TENANT, {
+      branchId: "branch-1",
+      dropoff: { lat: 29.41, lng: 47.97 }, // just north of Kuwait City
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.feeKwd.toFixed(3)).toBe("0.900");
+    expect(result.pricedAsZone.id).toBe("zone-a");
     expect(prisma.deliveryPlanZoneRate.findFirst).not.toHaveBeenCalled();
+  });
+
+  test("by-zone plan: out of zone whose nearest cell is blank stays unserviceable", async () => {
+    primeBranchOnPlan({ id: "plan-z", type: "ZONE", kmTiers: [] });
+    prisma.deliveryPlanZoneRate.findFirst.mockResolvedValue(null);
+
+    const result = await quoteDelivery(TENANT, {
+      branchId: "branch-1",
+      dropoff: { lat: 29.32, lng: 48.12 },
+    });
+
+    expect(result).toEqual({ ok: false, reason: "UNSERVICEABLE_PAIR" });
   });
 
   test("by-km plan: a dropoff given only as a zone has no distance to price", async () => {

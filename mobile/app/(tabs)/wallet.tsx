@@ -65,6 +65,12 @@ export default function WalletScreen() {
           <Text style={[t.hero, { color: c.tint, marginTop: 6 }]} numberOfLines={1} adjustsFontSizeToFit>
             {formatKwd(wallet?.todayCollectedKwd)}
           </Text>
+          {/* Client note 2026-08-03: drivers read "Collected today" and "Cash on
+              hand" as two names for one number and asked which one they owe.
+              Each figure now says what it counts. */}
+          <Text style={[t.footnote, { color: c.secondaryLabel, marginTop: 4, textAlign: "center" }]}>
+            {tr("wallet.today_hint")}
+          </Text>
         </View>
 
         {/* ─── Cash on hand vs ceiling ─── */}
@@ -85,6 +91,11 @@ export default function WalletScreen() {
           <View style={styles.barTrack}>
             <View style={[styles.barFill, { width: `${Math.round(ratio * 100)}%`, backgroundColor: barColor }]} />
           </View>
+          {/* Same hint Home was given for this figure (2026-08-03): it is the
+              unreturned total across all days, not today's takings. */}
+          <Text style={[t.footnote, { color: c.secondaryLabel, marginTop: space.sm }]}>
+            {tr("home.cash_on_hand_hint")}
+          </Text>
         </View>
 
         {/* ─── Tips (driver keeps 100%) — only when the backend sends them ─── */}

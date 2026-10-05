@@ -46,6 +46,7 @@ router.get("/", async (req: Request, res: Response) => {
         tenantId: req.user!.tenantId,
         status: typeof req.query.status === "string" ? req.query.status : undefined,
         driverId: typeof req.query.driverId === "string" ? req.query.driverId : undefined,
+        needsAction: req.query.view === "needs-action",
       }),
     });
   } catch (err) {

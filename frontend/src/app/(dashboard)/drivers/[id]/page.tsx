@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import {
   CalendarClock,
   CheckCircle2,
@@ -12,11 +13,13 @@ import {
   Wallet,
 } from "lucide-react";
 import { useApiQuery } from "@/hooks/useApi";
+import { driverTrainingApi } from "@/lib/darbApi";
+import type { TrainingSession } from "@/types/darb";
 import type { DriverFileData } from "@/types/driver-file";
 import ScoreTrendChart from "@/components/driver-file/ScoreTrendChart";
 import AskDarbWhyDrawer from "@/components/driver-file/AskDarbWhyDrawer";
 
-const TABS = ["Overview", "Work", "Money", "Compliance", "Notes"] as const;
+const TABS = ["Overview", "Work", "Training", "Money", "Compliance", "Notes"] as const;
 type DriverFileTab = (typeof TABS)[number];
 
 const fallback = "Not set";
@@ -219,7 +222,22 @@ function ErrorState({ title, message }: { title: string; message?: string }) {
 export default function DriverFilePage() {
   const params = useParams<{ id: string }>();
   const id = params?.id;
-  const [tab, setTab] = useState<DriverFileTab>("Overview");
+  const searchParams = useSearchParams();
+  const askedTab = searchParams?.get("tab");
+  const [tab, setTab] = useState<DriverFileTab>(
+    (TABS as readonly string[]).includes(askedTab ?? "") ? (askedTab as DriverFileTab) : "Overview",
+  );
+  // Client note of 2026-10-05: once a training window is decided it leaves
+  // Ops > Driver training, and its score lives here, pass and fail both.
+  const trainingQuery = useQuery({
+    queryKey: ["darb", "driver-training", "driver", id],
+    queryFn: () => driverTrainingApi.list({ driverId: id! }),
+    enabled: Boolean(id) && tab === "Training",
+  });
+  const trainingSessions = useMemo(
+    () => (trainingQuery.data?.data ?? []).filter((s) => s.status === "PASSED" || s.status === "FAILED"),
+    [trainingQuery.data],
+  );
   const { data, isLoading, error } = useApiQuery<DriverFileData>(
     ["driver-file", id ?? ""],
     id ? `/api/drivers/${id}/file` : null,
@@ -294,7 +312,7 @@ export default function DriverFilePage() {
       </div>
 
       <nav className="rounded-lg border border-sand-200 bg-white p-1">
-        <div className="grid gap-1 sm:grid-cols-5">
+        <div className="grid gap-1 sm:grid-cols-6">
           {TABS.map((item) => (
             <button
               key={item}
@@ -384,6 +402,52 @@ export default function DriverFilePage() {
             />
           </Panel>
         </div>
+      )}
+
+      {tab === "Training" && (
+        <Panel title="Training sessions">
+          {trainingQuery.isLoading ? (
+            <p className="text-sm text-sand-700">Loading training sessions.</p>
+          ) : (
+            <SimpleTable<TrainingSession>
+              rows={trainingSessions}
+              empty="No finished training sessions for this driver."
+              columns={[
+                { key: "ended", label: "Finished", render: (row) => formatDate(row.completedAt ?? row.endsAt) },
+                { key: "period", label: "Period", render: (row) => `${row.periodDays} ${row.periodDays === 1 ? "day" : "days"}` },
+                {
+                  key: "result",
+                  label: "Result",
+                  render: (row) => (
+                    <span data-testid="driver-training-result">
+                      <Pill tone={statusTone(row.status === "PASSED" ? "PASS" : "FAIL")}>
+                        {row.status === "PASSED" ? "Passed" : "Did not pass"}
+                      </Pill>
+                    </span>
+                  ),
+                },
+                {
+                  key: "delivered",
+                  label: "Delivered",
+                  render: (row) => (row.scorecard ? `${row.scorecard.delivered} of ${row.scorecard.assigned}` : fallback),
+                },
+                {
+                  key: "onTime",
+                  label: "On time",
+                  render: (row) =>
+                    row.scorecard?.onTimeRate == null ? fallback : `${Math.round(row.scorecard.onTimeRate * 100)}%`,
+                },
+                {
+                  key: "minutes",
+                  label: "Average minutes",
+                  render: (row) => (row.scorecard?.avgMinutes == null ? fallback : String(row.scorecard.avgMinutes)),
+                },
+                { key: "coach", label: "Coach", render: (row) => row.coach?.name ?? fallback },
+                { key: "note", label: "Note", render: (row) => row.outcomeNote ?? fallback },
+              ]}
+            />
+          )}
+        </Panel>
       )}
 
       {tab === "Money" && (

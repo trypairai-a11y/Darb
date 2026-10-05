@@ -8,6 +8,10 @@ import { t as tr } from "../src/i18n/strings";
 import { showAlert } from "../src/utils/alert";
 import { useTheme, type Palette, space, radius, continuous, fontFamily } from "../src/theme";
 
+// Read as a literal so Expo inlines it at build time; anything other than
+// exactly "true" (unset included) keeps the demo button hidden.
+const DEMO_LOGIN_ENABLED = process.env.EXPO_PUBLIC_DEMO_LOGIN === "true";
+
 export default function EnrollmentScreen() {
   const router = useRouter();
   const { c, t } = useTheme();
@@ -83,9 +87,14 @@ export default function EnrollmentScreen() {
           disabled={loading || !code.trim() || !phone.trim()}
           style={{ marginTop: space.lg }}
         />
-        {/* Demo is a REAL enrollment against the backend's DEMO code — same
-            device-token auth, same live delivery loop, demo tenant data. */}
-        <Button title={tr("enroll.demo")} variant="tinted" onPress={() => handleEnroll("DEMO")} disabled={loading} style={{ marginTop: space.md }} />
+        {/* Demo is a REAL enrollment against the backend's DEMO code, same
+            device-token auth, same live delivery loop, demo tenant data.
+            Client told 2026-08-01 that this button was switched off, yet it
+            still rendered for every driver. It now shows only on a build made
+            with EXPO_PUBLIC_DEMO_LOGIN=true. */}
+        {DEMO_LOGIN_ENABLED ? (
+          <Button title={tr("enroll.demo")} variant="tinted" onPress={() => handleEnroll("DEMO")} disabled={loading} style={{ marginTop: space.md }} />
+        ) : null}
       </View>
     </Screen>
   );

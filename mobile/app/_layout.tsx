@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AppState, I18nManager, Platform, View, type AppStateStatus } from "react-native";
 import { Stack, usePathname, useRouter } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -100,6 +100,36 @@ function DeliveryLoopController() {
   return null;
 }
 
+// Client note 2026-08-02: darb-driver.vercel.app opened on a laptop stretched
+// every screen edge to edge, so the app looked broken rather than like the
+// phone app drivers get. On web only, the whole app sits in a centred column
+// no wider than a large phone, full height, on a neutral backdrop. Native
+// returns the children untouched, so nothing changes on a real phone.
+const WEB_PHONE_MAX_WIDTH = 430;
+function WebPhoneFrame({ children }: { children: ReactNode }) {
+  if (Platform.OS !== "web") return <>{children}</>;
+  return (
+    <View style={{ flex: 1, backgroundColor: "#E7E5E1", alignItems: "center" }}>
+      <View
+        style={{
+          flex: 1,
+          width: "100%",
+          maxWidth: WEB_PHONE_MAX_WIDTH,
+          backgroundColor: "#FBFAF8",
+          overflow: "hidden",
+          // Hairline edge instead of a shadow, so the column reads as a phone
+          // on a wide screen and disappears on a narrow one.
+          borderLeftWidth: 1,
+          borderRightWidth: 1,
+          borderColor: "rgba(0,0,0,0.06)",
+        }}
+      >
+        {children}
+      </View>
+    </View>
+  );
+}
+
 export default function RootLayout() {
   // Language store hydrates from AsyncStorage before first render (gated with
   // the same fail-open timeout as fonts). `lang` re-keys the navigator so a
@@ -126,29 +156,31 @@ export default function RootLayout() {
   }, []);
 
   if ((!fontsLoaded && !fontError && !timedOut) || (!langHydrated && !timedOut)) {
-    return <View style={{ flex: 1, backgroundColor: "#FBFAF8" }} />;
+    return <WebPhoneFrame><View style={{ flex: 1, backgroundColor: "#FBFAF8" }} /></WebPhoneFrame>;
   }
 
   return (
-    <SafeAreaProvider>
-      <StatusBar style="dark" />
-      <DeliveryLoopController />
-      <Stack key={lang} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#FBFAF8" } }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="enrollment" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen
-          name="offer"
-          options={{ presentation: "fullScreenModal", gestureEnabled: false, animation: "fade" }}
-        />
-        <Stack.Screen name="delivery/index" options={{ gestureEnabled: false }} />
-        <Stack.Screen name="delivery/pod" />
-        <Stack.Screen name="delivery/failed" />
-        <Stack.Screen name="sos" options={{ presentation: "modal" }} />
-        {/* settings moved into (tabs) on 2026-08-04; declaring it here too would
-            register a second route for the same file and shadow the tab. */}
-        <Stack.Screen name="points" />
-      </Stack>
-    </SafeAreaProvider>
+    <WebPhoneFrame>
+      <SafeAreaProvider>
+        <StatusBar style="dark" />
+        <DeliveryLoopController />
+        <Stack key={lang} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#FBFAF8" } }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="enrollment" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="offer"
+            options={{ presentation: "fullScreenModal", gestureEnabled: false, animation: "fade" }}
+          />
+          <Stack.Screen name="delivery/index" options={{ gestureEnabled: false }} />
+          <Stack.Screen name="delivery/pod" />
+          <Stack.Screen name="delivery/failed" />
+          <Stack.Screen name="sos" options={{ presentation: "modal" }} />
+          {/* settings moved into (tabs) on 2026-08-04; declaring it here too would
+              register a second route for the same file and shadow the tab. */}
+          <Stack.Screen name="points" />
+        </Stack>
+      </SafeAreaProvider>
+    </WebPhoneFrame>
   );
 }

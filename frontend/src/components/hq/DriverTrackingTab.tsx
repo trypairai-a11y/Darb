@@ -16,6 +16,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, CircleCheck, CircleX, GraduationCap, Search, Snowflake, Sun, UserCheck, UserX } from "lucide-react";
+import Link from "next/link";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
@@ -90,6 +91,23 @@ function rateTone(value: number | null): string {
   return "text-sand-900";
 }
 
+/**
+ * Client note of 2026-10-05: "should have a filter for the status of the
+ * driver active/frozen/in training/terminated". The buckets follow the same
+ * precedence StateBadge draws (training, then frozen, then status), so a row
+ * always lands in the bucket whose badge it shows.
+ */
+type StateFilter = "" | "ACTIVE" | "FROZEN" | "TRAINING" | "INACTIVE" | "SUSPENDED" | "TERMINATED";
+
+function stateBucket(row: DriverTrackingRow): Exclude<StateFilter, ""> {
+  if (row.status === "TERMINATED") return "TERMINATED";
+  if (row.inTraining) return "TRAINING";
+  if (row.isFrozen) return "FROZEN";
+  if (row.status === "ACTIVE") return "ACTIVE";
+  if (row.status === "SUSPENDED") return "SUSPENDED";
+  return "INACTIVE";
+}
+
 function StateBadge({ row }: { row: DriverTrackingRow }) {
   const { t } = useI18n();
   if (row.inTraining) {
@@ -114,7 +132,7 @@ function StateBadge({ row }: { row: DriverTrackingRow }) {
   const tone =
     row.status === "ACTIVE"
       ? "bg-forest-100 text-forest-700"
-      : row.status === "SUSPENDED"
+      : row.status === "SUSPENDED" || row.status === "TERMINATED"
         ? "bg-red-100 text-red-700"
         : "bg-sand-200 text-sand-700";
   return (
@@ -135,6 +153,7 @@ export default function DriverTrackingTab() {
   const [q, setQ] = useState("");
   const [fleetPartnerId, setFleetPartnerId] = useState("");
   const [zoneId, setZoneId] = useState("");
+  const [stateFilter, setStateFilter] = useState<StateFilter>("");
   /** One chosen option per metric column; "" is "any". */
   const [metric, setMetric] = useState<Partial<Record<MetricKey, string>>>({});
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "name", dir: "asc" });
@@ -149,10 +168,13 @@ export default function DriverTrackingTab() {
   const [trainingReason, setTrainingReason] = useState("");
 
   const trackingQuery = useQuery({
-    queryKey: ["darb", "driver-tracking", days, q, fleetPartnerId, zoneId],
+    queryKey: ["darb", "driver-tracking", days, q, fleetPartnerId, zoneId, stateFilter === "TERMINATED"],
     queryFn: () =>
       driverTrackingApi.list({
         days,
+        // Terminated drivers are left out of the list unless asked for, so
+        // the everyday view stays the people who can still work.
+        ...(stateFilter === "TERMINATED" ? { status: "TERMINATED" } : {}),
         ...(q.trim() ? { q: q.trim() } : {}),
         ...(fleetPartnerId ? { fleetPartnerId } : {}),
         ...(zoneId ? { zoneId } : {}),
@@ -242,7 +264,9 @@ export default function DriverTrackingTab() {
     const active = metricFilters
       .map((f) => f.options.find((o) => o.value === (metric[f.key] ?? "")) ?? f.options[0]!)
       .filter((o) => o.value !== "");
-    const kept = allRows.filter((r) => active.every((o) => o.test(r)));
+    const kept = allRows.filter(
+      (r) => (!stateFilter || stateBucket(r) === stateFilter) && active.every((o) => o.test(r)),
+    );
     const dir = sort.dir === "asc" ? 1 : -1;
     return [...kept].sort((a, b) => {
       const av = sortValue(a, sort.key);
@@ -256,9 +280,9 @@ export default function DriverTrackingTab() {
       if (av > bv) return 1 * dir;
       return 0;
     });
-  }, [allRows, metricFilters, metric, sort]);
+  }, [allRows, metricFilters, metric, sort, stateFilter]);
 
-  const filtersActive = Object.values(metric).some(Boolean);
+  const filtersActive = Object.values(metric).some(Boolean) || !!stateFilter;
 
   function toggleSort(key: SortKey) {
     setSort((cur) =>
@@ -436,6 +460,30 @@ export default function DriverTrackingTab() {
       {/* ── Per-column filters (revision 21 #1) ─────────────────────────── */}
       <div className="flex flex-wrap items-center gap-2" data-testid="driver-metric-filters">
         <span className="text-sm text-sand-600">{t("driverTracking.filterBy")}</span>
+        <select
+          aria-label={t("driverTracking.state")}
+          data-testid="driver-state-filter"
+          value={stateFilter}
+          onChange={(e) => setStateFilter(e.target.value as StateFilter)}
+          className={cn(
+            "h-8 px-2 rounded-pill border bg-card text-xs",
+            stateFilter ? "border-primary text-primary font-medium" : "border-sand-200 text-sand-700",
+          )}
+        >
+          {(
+            [
+              ["", t("driverTracking.filterAny")],
+              ["ACTIVE", t("driverTracking.stateActive")],
+              ["FROZEN", t("driverTracking.frozen")],
+              ["TRAINING", t("driverTracking.inTraining")],
+              ["INACTIVE", t("driverTracking.stateInactive")],
+              ["SUSPENDED", t("driverTracking.stateSuspended")],
+              ["TERMINATED", t("driverTracking.stateTerminated")],
+            ] as Array<[StateFilter, string]>
+          ).map(([v, label]) => (
+            <option key={v} value={v}>{`${t("driverTracking.state")}: ${label}`}</option>
+          ))}
+        </select>
         {metricFilters.map((f) => {
           const chosen = metric[f.key] ?? "";
           return (
@@ -460,7 +508,10 @@ export default function DriverTrackingTab() {
         {filtersActive && (
           <button
             type="button"
-            onClick={() => setMetric({})}
+            onClick={() => {
+              setMetric({});
+              setStateFilter("");
+            }}
             className="h-8 px-3 rounded-pill text-xs text-sand-600 hover:bg-sand-100"
           >
             {t("driverTracking.clearFilters")}
@@ -507,7 +558,9 @@ export default function DriverTrackingTab() {
               {rows.map((row) => (
                 <tr key={row.id} className="hover:bg-sand-50/60">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-sand-900">{row.name}</p>
+                    <Link href={`/drivers/${row.id}`} className="font-medium text-sand-900 hover:underline">
+                      {row.name}
+                    </Link>
                     <p className="text-xs text-sand-500">{row.driverCode ?? row.phone ?? "n/a"}</p>
                   </td>
                   <td className="px-4 py-3 text-sand-700">{row.fleetPartnerName ?? "n/a"}</td>
@@ -612,7 +665,8 @@ export default function DriverTrackingTab() {
                             <UserX size={15} aria-hidden="true" />
                           </button>
                         )}
-                        {row.isFrozen ? (
+                        {/* A terminated driver only offers Activate, to take them back on. */}
+                        {row.status === "TERMINATED" ? null : row.isFrozen ? (
                           <button
                             type="button"
                             title={t("driverTracking.unfreeze")}
@@ -634,7 +688,7 @@ export default function DriverTrackingTab() {
                             <Snowflake size={15} aria-hidden="true" />
                           </button>
                         )}
-                        {!row.inTraining && (
+                        {!row.inTraining && row.status !== "TERMINATED" && (
                           <button
                             type="button"
                             title={t("driverTracking.sendToTraining")}

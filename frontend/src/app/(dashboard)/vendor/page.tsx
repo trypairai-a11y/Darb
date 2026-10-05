@@ -20,7 +20,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ClipboardList, Download, Phone, PlusCircle, Store, Wallet, XCircle } from "lucide-react";
+import { Car, ClipboardList, Download, Phone, PlusCircle, Store, Wallet, XCircle } from "lucide-react";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import StatCard from "@/components/shared/StatCard";
 import { useToast } from "@/components/shared/Toast";
@@ -358,6 +358,31 @@ export default function VendorBoardPage() {
   const cancelHandler = (order: DeliveryOrder) =>
     mayCancel && CANCELLABLE.includes(order.status) ? openCancel : undefined;
 
+  // Client note, 2026-07-29: "in the incoming there should be an option to
+  // dispatch to car if the order is big". Only before a driver has it.
+  const CAR_SWITCHABLE: DeliveryOrderStatus[] = ["CREATED", "DISPATCHING", "NO_DRIVER"];
+  const [carTarget, setCarTarget] = useState<DeliveryOrder | null>(null);
+  const [sendingCar, setSendingCar] = useState(false);
+  async function confirmCar() {
+    if (!carTarget) return;
+    setSendingCar(true);
+    try {
+      await vendorApi.sendCar(carTarget.id);
+      toast.success(t("vendorPortal.carRequested"));
+      setCarTarget(null);
+      await queryClient.invalidateQueries({ queryKey: ORDERS_KEY });
+    } catch (err) {
+      const resp = (err as { response?: { status?: number; data?: { error?: string } } }).response;
+      toast.error(resp?.data?.error ?? t("toast.failedSave"));
+      if (resp?.status === 409) {
+        setCarTarget(null);
+        await queryClient.invalidateQueries({ queryKey: ORDERS_KEY });
+      }
+    } finally {
+      setSendingCar(false);
+    }
+  }
+
   async function confirmCancel() {
     if (!cancelTarget) return;
     setCancelling(true);
@@ -493,7 +518,16 @@ export default function VendorBoardPage() {
       {
         key: "status",
         label: t("dispatch.status"),
-        render: (v: DeliveryOrderStatus) => <OrderStatusBadge status={v} />,
+        // Client note, 2026-07-29: the shop sees how long the courier has
+        // been standing at the counter. That timer lived on the old board's
+        // cards and went with them when the board became a table (vendor
+        // note #1), so it rides under the status here.
+        render: (v: DeliveryOrderStatus, row: DeliveryOrder) => (
+          <span className="inline-flex flex-col gap-0.5" data-testid="vendor-order-status-cell">
+            <OrderStatusBadge status={v} />
+            {v === "ARRIVED" && row.arrivedAt && <WaitingSince since={row.arrivedAt} />}
+          </span>
+        ),
       },
       {
         key: "driver",
@@ -545,7 +579,16 @@ export default function VendorBoardPage() {
           ["DELIVERED", "CANCELLED", "REJECTED", "RETURNED"].includes(row.status) ? (
             <span className="text-sand-400">n/a</span>
           ) : (
-            <SlaCountdown deadline={v} />
+            <span className="inline-flex flex-col gap-0.5">
+              <SlaCountdown deadline={v} />
+              {/* Same note: the stage says where the driver is heading, this
+                  says which leg the countdown is for. */}
+              {(row.status === "ASSIGNED" || row.status === "PICKED_UP") && (
+                <span className="text-[11px] text-sand-500" data-testid="vendor-order-eta-leg">
+                  {row.status === "ASSIGNED" ? t("vendorPortal.etaStore") : t("vendorPortal.etaCustomer")}
+                </span>
+              )}
+            </span>
           ),
       },
       {
@@ -575,6 +618,21 @@ export default function VendorBoardPage() {
               >
                 {t("common.view")}
               </Link>
+              {mayCancel && CAR_SWITCHABLE.includes(row.status) && !row.requiresCarOnly && (
+                <button
+                  type="button"
+                  data-testid="vendor-order-send-car"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCarTarget(row);
+                  }}
+                  title={t("vendorPortal.sendCar")}
+                  className="h-8 px-3 inline-flex items-center gap-1 rounded-pill text-xs text-sand-700 hover:bg-sand-100"
+                >
+                  <Car size={14} aria-hidden="true" />
+                  {t("vendorPortal.sendCar")}
+                </button>
+              )}
               {cancel && (
                 <button
                   type="button"
@@ -778,6 +836,16 @@ export default function VendorBoardPage() {
         exportFilename={`darb-orders-${new Date().toISOString().slice(0, 10)}`}
       />
 
+      <ConfirmModal
+        open={!!carTarget}
+        title={t("vendorPortal.sendCar")}
+        message={t("vendorPortal.sendCarConfirm")}
+        variant="warning"
+        loading={sendingCar}
+        confirmLabel={t("vendorPortal.sendCar")}
+        onConfirm={() => void confirmCar()}
+        onCancel={() => setCarTarget(null)}
+      />
       <ConfirmModal
         open={!!cancelTarget}
         title={t("dispatch.cancelConfirmTitle")}

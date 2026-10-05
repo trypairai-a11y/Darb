@@ -1751,6 +1751,9 @@ export interface ShiftPlanPayload {
   availability?: { total: number; unassigned: number; byZone: Record<string, number> };
   windows?: string[];
   hours?: number;
+  /** Client note 2026-10-05: drivers work one 12-hour duty a day. */
+  dutyHours?: number;
+  duties?: Array<{ key: "DAY" | "NIGHT"; starts: string[]; nextDay: string[] }>;
 }
 
 // ── Onboarding ───────────────────────────────────────────────────────────

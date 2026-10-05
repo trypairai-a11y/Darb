@@ -5,12 +5,14 @@ import { ADMIN_TABS } from "@/lib/hqTabs";
 import { useApiGet } from "@/hooks/useApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/cn";
-import { Plus, X, Shield, UserX, UserCheck, Loader2, Bell, Check, Store } from "lucide-react";
+import { Plus, X, Shield, UserX, UserCheck, Loader2, Bell, Check, Store, Truck } from "lucide-react";
 import api from "@/lib/api";
 import { useI18n } from "@/i18n/I18nProvider";
 import TabPicker from "@/components/vendor/TabPicker";
 import FleetTabPicker from "@/components/fleet/FleetTabPicker";
 import type { FleetPortalRole, FleetTab, VendorPortalRole, VendorTab } from "@/types/darb";
+import { VENDOR_ROLE_ORDER } from "@/lib/vendorTabs";
+import { FLEET_ROLE_ORDER } from "@/lib/fleetTabs";
 
 // Revision 4 (#11) — ACCOUNT_MANAGER joins the roles a notification rule can
 // name. The rules API was already keyed on an arbitrary role string, so the
@@ -42,8 +44,14 @@ const ROLE_COLORS: Record<string, string> = {
   VIEWER: "bg-gray-100 text-gray-500",
 };
 
-/** Roles that can own a company as its Darb account manager (revision #20). */
-const INTERNAL_ROLES = ["ADMIN", "OPS_MANAGER", "SUPERVISOR"];
+/**
+ * Roles that can own a company as its Darb account manager (revision #20).
+ * ACCOUNT_MANAGER is listed because the client asked on 2026-07-28 for "a cell
+ * for selecting account manager" when adding a company, and the picker left
+ * out the very role that exists for the job: anyone made an account manager
+ * could never be chosen, although /api/companies accepts them.
+ */
+const INTERNAL_ROLES = ["ADMIN", "OPS_MANAGER", "SUPERVISOR", "ACCOUNT_MANAGER"];
 
 /**
  * Revision 17 (#10) — which portal a login signs into.
@@ -66,6 +74,7 @@ function portalOf(u: { vendorId?: string | null; fleetPartnerId?: string | null;
 type Tab = "companies" | "users" | "notifications" | "profile";
 
 function UsersTab() {
+  const { t } = useI18n();
   const { data, refetch } = useApiGet<any>("/api/users?limit=100");
   const users = data?.data || [];
   const [showInvite, setShowInvite] = useState(false);
@@ -148,6 +157,16 @@ function UsersTab() {
     }
   }
 
+  async function handlePortalRoleChange(userId: string, portalRole: string) {
+    setError(null);
+    try {
+      await api.put(`/api/users/${userId}`, { portalRole });
+      refetch();
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message);
+    }
+  }
+
   return (
     <div>
       <div className="flex justify-end mb-4">
@@ -157,6 +176,9 @@ function UsersTab() {
         </button>
       </div>
 
+      {error && !showInvite && (
+        <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-sm">{error}</div>
+      )}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         <table className="w-full">
           <thead>
@@ -190,7 +212,26 @@ function UsersTab() {
                     );
                   })()}
                 </td>
-                <td className="px-5 py-3">
+                <td className="px-5 py-3" data-testid="user-role-cell">
+                  {u.portalRole ? (
+                    // Client note of 2026-10-05: a shop or delivery company
+                    // login showed its staff role here (ADMIN for everyone)
+                    // and its portal role on the shop's Users tab, so the
+                    // same person read as Admin here and Supervisor there.
+                    // Its portal role is what governs it, so that is shown
+                    // and edited here.
+                    <select
+                      value={u.portalRole}
+                      onChange={(e) => handlePortalRoleChange(u.id, e.target.value)}
+                      data-testid="user-portal-role-select"
+                      className="appearance-none px-2 py-0.5 rounded-md text-xs font-medium border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      style={{ backgroundColor: "transparent" }}
+                    >
+                      {(u.portal === "FLEET" ? FLEET_ROLE_ORDER : VENDOR_ROLE_ORDER).map((r) => (
+                        <option key={r} value={r}>{t(`portalRoles.${r}`)}</option>
+                      ))}
+                    </select>
+                  ) : (
                   <select
                     value={u.role}
                     onChange={(e) => handleRoleChange(u.id, e.target.value)}
@@ -201,6 +242,7 @@ function UsersTab() {
                       <option key={r} value={r}>{r.replace("_", " ")}</option>
                     ))}
                   </select>
+                  )}
                   <span className={cn("px-2 py-0.5 rounded-md text-xs font-medium sr-only", ROLE_COLORS[u.role])}>
                     {u.role.replace("_", " ")}
                   </span>
@@ -415,6 +457,8 @@ interface PermissionsPayload {
   overrides: Record<string, string>;
   effective: Record<string, string>;
   managedVendorIds: string[];
+  /** The delivery companies this account manager handles (AccountManagerFleet). */
+  managedFleetIds?: string[];
   /**
    * Set for a vendor or delivery-company login (client note, 2026-10-04). Such
    * a login never sees the HQ rail, so its permissions are its portal's own
@@ -438,9 +482,16 @@ function PermissionsModal({
   const { data: vendorsData } = useApiGet<any>(
     user.role === "ACCOUNT_MANAGER" ? "/api/vendors?limit=200" : null
   );
+  // Client note of 2026-08-16: support for a delivery company goes to that
+  // company's account manager. Only merchants could be linked here, so no
+  // account manager ever heard from a delivery company.
+  const { data: fleetsData } = useApiGet<any>(
+    user.role === "ACCOUNT_MANAGER" ? "/api/fleets?limit=200" : null
+  );
 
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [vendorIds, setVendorIds] = useState<string[]>([]);
+  const [fleetIds, setFleetIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [seeded, setSeeded] = useState(false);
@@ -450,6 +501,7 @@ function PermissionsModal({
     if (!data || seeded) return;
     setOverrides(data.overrides ?? {});
     setVendorIds(data.managedVendorIds ?? []);
+    setFleetIds(data.managedFleetIds ?? []);
     setPortalTabs(data.portalTabs ?? null);
     setSeeded(true);
   }, [data, seeded]);
@@ -457,6 +509,7 @@ function PermissionsModal({
   const portal = data?.portal ?? null;
 
   const vendors: any[] = vendorsData?.data ?? [];
+  const fleets: any[] = fleetsData?.data ?? [];
 
   /** One choice per tab, written to every surface the tab owns. */
   function setLevel(surfaces: string[], value: string) {
@@ -504,7 +557,7 @@ function PermissionsModal({
       }
       await api.put(`/api/users/${user.id}/permissions`, {
         overrides: payload,
-        ...(user.role === "ACCOUNT_MANAGER" ? { managedVendorIds: vendorIds } : {}),
+        ...(user.role === "ACCOUNT_MANAGER" ? { managedVendorIds: vendorIds, managedFleetIds: fleetIds } : {}),
       });
       refetch();
       onClose();
@@ -636,6 +689,39 @@ function PermissionsModal({
                         />
                         <span>{v.name}</span>
                         <span className="text-xs text-secondary font-mono">{v.code}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2 mb-2 mt-4">
+                    <Truck size={14} className="text-secondary" />
+                    <span className="text-sm font-medium">Delivery companies</span>
+                  </div>
+                  <p className="text-xs text-secondary mb-3">
+                    The delivery companies this person is responsible for. Their
+                    operations support requests go to this person.
+                  </p>
+                  <div className="space-y-1 max-h-56 overflow-y-auto" data-testid="am-fleet-list">
+                    {fleets.length === 0 && (
+                      <p className="text-xs text-secondary">n/a</p>
+                    )}
+                    {fleets.map((f: any) => (
+                      <label
+                        key={f.id}
+                        className="flex items-center gap-2 text-sm py-1 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={fleetIds.includes(f.id)}
+                          onChange={(e) =>
+                            setFleetIds((prev) =>
+                              e.target.checked
+                                ? [...prev, f.id]
+                                : prev.filter((id) => id !== f.id)
+                            )
+                          }
+                          className="rounded border-gray-300"
+                        />
+                        <span>{f.name}</span>
                       </label>
                     ))}
                   </div>
@@ -804,6 +890,15 @@ function NotificationsTab() {
                   </td>
                   {ROLES.map((role) => {
                     const key = `${vt.key}-${role}`;
+                    // Client note, 2026-07-22 (#22): no accountant on cash
+                    // threshold. The server ignores the rule as well.
+                    if (vt.key === "CASH_THRESHOLD_EXCEEDED" && role === "ACCOUNTANT") {
+                      return (
+                        <td key={role} className="px-4 py-3 text-center text-sand-400" data-testid="cash-threshold-accountant-off">
+                          n/a
+                        </td>
+                      );
+                    }
                     const enabled = isEnabled(vt.key, role);
                     const isSaving = saving === key;
                     const justSaved = saved === key;

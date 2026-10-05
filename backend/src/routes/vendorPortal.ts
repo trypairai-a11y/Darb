@@ -19,6 +19,7 @@ import {
   OrderNotFoundError,
   cancelOrder,
   createDeliveryOrder,
+  sendCarForOrder,
 } from "../services/orderService";
 import { OrderStateConflictError } from "../services/orderStateMachine";
 import { quoteDelivery } from "../services/pricingService";
@@ -31,6 +32,7 @@ import {
   listBranchTransfers,
   setVendorWalletMode,
   transferToBranch,
+  vendorWalletStatement,
 } from "../services/wallet/vendorWalletModeService";
 import {
   TopUpError,
@@ -286,6 +288,8 @@ const vendorCreateOrderSchema = z.object({
   // which orderService already implements; the portal simply never offered it.
   scheduledAt: z.string().datetime({ offset: true }).optional().nullable(),
   metadata: z.record(z.unknown()).optional(),
+  // Client note 2026-07-29: a big order the shop wants sent by car.
+  requiresCarOnly: z.boolean().optional(),
 });
 
 const vendorCancelSchema = z.object({
@@ -1038,6 +1042,7 @@ router.post(
         dropoff: body.dropoff,
         scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : undefined,
         metadata: body.metadata,
+        requiresCarOnly: body.requiresCarOnly === true,
         actor: { type: "VENDOR", id: req.user!.userId, name: req.user!.email },
       });
       res.status(201).json(order);
@@ -1097,6 +1102,35 @@ router.post(
         return;
       }
       res.status(500).json({ error: err?.message ?? "Unexpected error" });
+    }
+  }
+);
+
+/**
+ * Send a car for an incoming order (client note, 2026-07-29: "in the incoming
+ * there should be an option to dispatch to car if the order is big"). Only
+ * before a driver has it; see sendCarForOrder.
+ */
+router.post(
+  "/orders/:id/car",
+  requireVendorRole("ADMIN", "OPS_MANAGER", "SUPERVISOR"),
+  requireVendorTab("ORDERS"),
+  async (req: Request, res: Response) => {
+    try {
+      const { tenantId, vendorId } = req.user!;
+      await sendCarForOrder({
+        tenantId,
+        vendorId: vendorId!,
+        orderId: req.params.id,
+        actor: { type: "VENDOR", id: req.user!.userId, name: req.user!.email },
+      });
+      res.json({ ok: true });
+    } catch (err: any) {
+      if (err instanceof OrderStateConflictError) {
+        res.status(409).json({ error: "A driver already has this order" });
+        return;
+      }
+      res.status(err?.statusCode ?? 500).json({ error: err?.message ?? "Unexpected error" });
     }
   }
 );
@@ -1337,6 +1371,32 @@ router.post("/wallet/transfers", requireVendorTab("WALLET"), async (req: Request
 });
 
 /** The transfer history, which is the working behind every branch figure. */
+/**
+ * One wallet's statement, main or a branch, with transfers in and out and a
+ * running balance of its own (vendor-portal note #3). A branch-pinned login
+ * only ever gets its own counter's statement.
+ */
+router.get("/wallet/statement", requireVendorTab("WALLET"), async (req: Request, res: Response) => {
+  try {
+    const { tenantId, vendorId } = req.user!;
+    const pinned = scopedBranchId(req);
+    const asked = typeof req.query.wallet === "string" && req.query.wallet ? req.query.wallet : "main";
+    const dateFrom = typeof req.query.dateFrom === "string" ? req.query.dateFrom : undefined;
+    const dateTo = typeof req.query.dateTo === "string" ? req.query.dateTo : undefined;
+    const from = dateFrom ? parseLocalDate(dateFrom) : null;
+    const to = dateTo ? parseLocalDateEnd(dateTo) : null;
+    if ((from && Number.isNaN(from.getTime())) || (to && Number.isNaN(to.getTime()))) {
+      res.status(400).json({ error: "dateFrom and dateTo must be YYYY-MM-DD dates" });
+      return;
+    }
+    res.json(
+      await vendorWalletStatement({ tenantId, vendorId: vendorId!, wallet: pinned ?? asked, from, to }),
+    );
+  } catch (err: any) {
+    res.status(err.statusCode ?? 500).json({ error: err.message });
+  }
+});
+
 router.get("/wallet/transfers", requireVendorTab("WALLET"), async (req: Request, res: Response) => {
   try {
     const { tenantId, vendorId } = req.user!;

@@ -271,8 +271,13 @@ export default function DeliveryOrdersPage() {
     );
   }
 
+  // FAILED and RETURNED are terminal for reassign, redispatch and cancel: the
+  // state machine only lets FAILED move to RETURNED, so those buttons on a
+  // failed order could only ever answer with an error.
   const canAct =
-    canEdit && order && !["DELIVERED", "CANCELLED", "REJECTED"].includes(order.status);
+    canEdit &&
+    order &&
+    !["DELIVERED", "CANCELLED", "REJECTED", "FAILED", "RETURNED"].includes(order.status);
   // FAILED is the only status RETURNED may be reached from (orderStateMachine).
   const canReturn = canEdit && order?.status === "FAILED";
 

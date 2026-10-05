@@ -171,6 +171,8 @@ export interface CreateOrderInput {
   externalRef?: string;
   /** PRD §6 scheduling: future dispatch time. Omit for immediate orders. */
   scheduledAt?: Date;
+  /** Client note 2026-07-29: a big order the shop wants sent by car. */
+  requiresCarOnly?: boolean;
   metadata?: Record<string, unknown>;
   actor: OrderActor;
 }
@@ -375,7 +377,7 @@ export async function createDeliveryOrder(input: CreateOrderInput): Promise<Deli
     foodicsOrderId: input.foodicsOrderId ?? null,
     externalRef: input.externalRef ?? null,
     trackingToken: generateTrackingToken(),
-    requiresCarOnly: vendor.requiresCarOnly,
+    requiresCarOnly: vendor.requiresCarOnly || input.requiresCarOnly === true,
     metadata: (input.metadata ?? undefined) as Prisma.InputJsonValue | undefined,
   };
 
@@ -503,6 +505,17 @@ export async function createDeliveryOrder(input: CreateOrderInput): Promise<Deli
             feeKwd: quote.feeKwd.toFixed(3),
             pickupZoneId: quote.pickupZoneId,
             dropoffZoneId: quote.dropoffZoneId,
+            // A drop outside every zone is priced as the nearest one rather
+            // than parked in Needs review (client note, 2026-07-28). The order
+            // row has no dropoff zone, so this is the only record of which
+            // zone set the price and how far outside it the pin was.
+            ...(quote.pricedAsZone
+              ? {
+                  pricedAsZoneId: quote.pricedAsZone.id,
+                  pricedAsZoneCode: quote.pricedAsZone.code,
+                  outOfZoneKm: quote.outOfZoneKm ?? null,
+                }
+              : {}),
             ...(scheduledAt ? { scheduledAt: scheduledAt.toISOString() } : {}),
           } as Prisma.InputJsonValue,
         },
@@ -1042,4 +1055,54 @@ export async function redispatchOrder(args: {
   flushOrderEvents(tx);
   removeExpiryJobs(cancelledOffers);
   await enqueueDispatchStart(orderId, tenantId);
+}
+
+/**
+ * Switch an incoming order to car-only and offer it again.
+ *
+ * Client note, 2026-07-29: "in the incoming there should be an option to
+ * dispatch to car if the order is big". Car-only was a per-shop setting staff
+ * flipped, so a pharmacy with one bulky order had no way to say so; it went
+ * out to a bike and came back. Only an order nobody has taken yet can change
+ * vehicle: once a driver has it, it is a reassignment, which is ops' call.
+ */
+export async function sendCarForOrder(args: {
+  tenantId: string;
+  vendorId: string;
+  orderId: string;
+  actor: OrderActor;
+}): Promise<void> {
+  const { tenantId, vendorId, orderId, actor } = args;
+  const order = await prisma.deliveryOrder.findFirst({
+    where: { id: orderId, tenantId, vendorId },
+    select: { id: true, status: true, requiresCarOnly: true },
+  });
+  if (!order) throw Object.assign(new Error("Order not found"), { statusCode: 404 });
+  if (!["CREATED", "DISPATCHING", "NO_DRIVER"].includes(order.status)) {
+    throw new OrderStateConflictError(orderId, order.status, "DISPATCHING");
+  }
+  if (!order.requiresCarOnly) {
+    await prisma.$transaction([
+      prisma.deliveryOrder.updateMany({ where: { id: orderId, tenantId }, data: { requiresCarOnly: true } }),
+      prisma.orderEvent.create({
+        data: {
+          tenantId,
+          orderId,
+          action: "order.car_requested",
+          description: `Car requested for a big order (by ${actor.name ?? actor.type})`,
+          operator: actor.name ?? actor.type,
+          operatorId: actor.id ?? null,
+          timestamp: new Date(),
+          metadata: { actorType: actor.type } as Prisma.InputJsonValue,
+        },
+      }),
+    ]);
+  }
+  // Offers already out went to whoever was nearest, bikes included, so they
+  // are withdrawn and the order goes round again with the car filter on. A
+  // scheduled order still in CREATED simply carries the flag into its first
+  // dispatch.
+  if (order.status !== "CREATED") {
+    await redispatchOrder({ tenantId, orderId, actor });
+  }
 }

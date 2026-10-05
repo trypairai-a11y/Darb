@@ -91,7 +91,10 @@ export default function DriverTrainingTab() {
 
   const listQuery = useQuery({
     queryKey: ["darb", "driver-training", "list"],
-    queryFn: () => driverTrainingApi.list(),
+    // Client note of 2026-10-05: only drivers training now, and finished
+    // windows nobody has acted on. A decided window moves to the driver's
+    // profile under Training sessions, pass and fail both.
+    queryFn: () => driverTrainingApi.list({ view: "needs-action" }),
     // A window with orders in flight changes under the coach's eyes, so the
     // list refreshes on its own rather than waiting to be reloaded.
     refetchInterval: 20_000,
@@ -99,11 +102,17 @@ export default function DriverTrainingTab() {
   const sessions = listQuery.data?.data ?? [];
 
   // Open the first running window by default: it is the one being watched.
+  // A window acted on drops off the list, so the panel moves on with it
+  // rather than keep showing a verdict that is no longer waiting.
   useEffect(() => {
+    if (openId && !listQuery.isFetching && !sessions.some((s) => s.id === openId)) {
+      setOpenId(null);
+      return;
+    }
     if (openId || sessions.length === 0) return;
     const running = sessions.find((s) => s.status === "IN_PROGRESS") ?? sessions[0];
     if (running) setOpenId(running.id);
-  }, [sessions, openId]);
+  }, [sessions, openId, listQuery.isFetching]);
 
   const detailQuery = useQuery({
     queryKey: ["darb", "driver-training", "detail", openId],
@@ -315,21 +324,42 @@ export default function DriverTrainingTab() {
             <>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h3 className="font-display text-lg text-sand-900">{detail.driver.name}</h3>
+                  <h3 className="font-display text-lg text-sand-900">
+                    <Link
+                      href={`/drivers/${detail.driver.id}?tab=Training`}
+                      className="hover:underline"
+                      data-testid="training-driver-profile-link"
+                    >
+                      {detail.driver.name}
+                    </Link>
+                  </h3>
                   <p className="text-sm text-sand-600">
                     {t("driverTraining.ends").replace("{date}", formatDateTime(detail.endsAt, locale))}
                     {detail.coach ? ` · ${detail.coach.name}` : ""}
                   </p>
                   {detail.reason && <p className="text-xs text-sand-500 mt-1">{detail.reason}</p>}
                 </div>
-                <span
-                  className={cn(
-                    "px-3 h-7 inline-flex items-center rounded-pill text-xs font-medium",
-                    STATUS_TONE[detail.status],
+                <div className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      "px-3 h-7 inline-flex items-center rounded-pill text-xs font-medium",
+                      STATUS_TONE[detail.status],
+                    )}
+                  >
+                    {t(STATUS_I18N[detail.status])}
+                  </span>
+                  {/* Client note of 2026-10-05: "I terminated this driver, must
+                      show that the driver is terminated". The badge above is the
+                      window's verdict; this one is the account's. */}
+                  {detail.driver.status === "TERMINATED" && (
+                    <span
+                      data-testid="training-driver-terminated"
+                      className="px-3 h-7 inline-flex items-center rounded-pill text-xs font-medium bg-red-600 text-white"
+                    >
+                      {t("driverTracking.stateTerminated")}
+                    </span>
                   )}
-                >
-                  {t(STATUS_I18N[detail.status])}
-                </span>
+                </div>
               </div>
 
               {/* The period, adjustable mid-window — the client asked for this

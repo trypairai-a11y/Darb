@@ -30,7 +30,9 @@ import { formatKwd, formatTime } from "@/i18n/format";
 // which is the moment a kitchen discovers it cannot fulfil the order. It was
 // missing on both sides, so the shop had no way to call one off at all.
 const CANCELLABLE = ["CREATED", "DISPATCHING", "NO_DRIVER", "ASSIGNED", "ARRIVED"];
-const TERMINAL = ["DELIVERED", "FAILED", "CANCELLED", "REJECTED"];
+// RETURNED is the last step of a failed delivery (client edit, 9 Sept): the bag
+// is back at the shop and nothing further can happen to the order.
+const TERMINAL = ["DELIVERED", "FAILED", "RETURNED", "CANCELLED", "REJECTED"];
 
 /** Timeline fallback derived from the order's own status timestamps. */
 function derivedTimeline(order: DeliveryOrder, t: (k: string) => string): DeliveryOrderEvent[] {

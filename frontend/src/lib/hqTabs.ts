@@ -44,6 +44,12 @@ export const OPS_TABS: HqTab[] = [
   { key: "shift-planning", i18n: "hq.tabShiftPlanning", href: "/ops?tab=shift-planning", matchPaths: ["/shifts"] },
   { key: "driver-training", i18n: "hq.tabDriverTraining", href: "/ops?tab=driver-training" },
   { key: "onboarding", i18n: "hq.tabOnboarding", href: "/ops?tab=onboarding" },
+  // Client note, 2026-08-04: "where do we see the support requests?". The
+  // inbox at /requests (support tickets from shops, companies and drivers,
+  // plus the approvals queue, price proposals included) lost its only way in
+  // when /setup became a redirect; Ops > Problems linked to order tickets
+  // alone. It is an Ops subtab at its own URL, like Orders and Areas.
+  { key: "requests", i18n: "hq.tabRequests", href: "/requests" },
 ];
 
 /** Tab 2 — Compliance. All three subtabs are new, so all three are queries. */

@@ -81,10 +81,19 @@ describe("getVendorWalletView", () => {
     expect(view.mainAvailableKwd).toBe("100.000");
   });
 
-  it("in PER_BRANCH, the main wallet is the pool: the total less what was handed out", async () => {
+  it("in PER_BRANCH, the main wallet is the pool: its own postings less what was handed out", async () => {
     primeShop("PER_BRANCH", [["b1", 40]]);
     const view = await getVendorWalletView("t1", "v1");
-    expect(view.mainAvailableKwd).toBe("60.000");
+    expect(view.mainAvailableKwd).toBe("90.000");
+  });
+
+  it("in PER_BRANCH, main plus every branch adds up to the account total", async () => {
+    // A branch's deliveries are paid from the branch. Counting them against
+    // the main wallet too had the shop's wallets summing to 70 of its 100.
+    primeShop("PER_BRANCH", [["b1", 40]]);
+    const view = await getVendorWalletView("t1", "v1");
+    const sum = view.branches.reduce((s, b) => s + Number(b.availableKwd), Number(view.mainAvailableKwd));
+    expect(sum.toFixed(3)).toBe(view.totalKwd);
   });
 
   it("a branch's spendable figure is its own net plus what was moved into it", async () => {
@@ -128,11 +137,11 @@ describe("transferToBranch", () => {
   });
 
   it("refuses a transfer out of a pool that does not hold it", async () => {
-    primeShop("PER_BRANCH", [["b1", 40]]); // pool = 60
+    primeShop("PER_BRANCH", [["b1", 40]]); // pool = 130 - 40 = 90
     prisma.vendorBranch.findFirst.mockResolvedValue({ id: "b1" });
 
     await expect(
-      transferToBranch({ tenantId: "t1", vendorId: "v1", branchId: "b1", amountKwd: 61 }),
+      transferToBranch({ tenantId: "t1", vendorId: "v1", branchId: "b1", amountKwd: 91 }),
     ).rejects.toMatchObject({ code: "INSUFFICIENT_MAIN_BALANCE" });
     expect(prisma.vendorBranchAllocation.create).not.toHaveBeenCalled();
   });

@@ -280,13 +280,14 @@ export const vendorsApi = {
     body: {
       name: string;
       email: string;
-      password: string;
+      /** Omit and the person chooses their own from an invite link. */
+      password?: string;
       /** Revision 4 (#9) — the branch calls this person when an order stalls. */
       phone?: string;
       vendorRole: VendorPortalRole;
       branchId?: string | null;
     }
-  ) => post<VendorUser>(`/api/vendors/${vendorId}/users`, body),
+  ) => post<VendorUser & { inviteUrl?: string }>(`/api/vendors/${vendorId}/users`, body),
   wallet: (vendorId: string, params?: Params) =>
     get<VendorWallet>(`/api/vendors/${vendorId}/wallet`, params),
 };
@@ -653,6 +654,8 @@ export const vendorApi = {
     paymentMethod: string;
     /** ISO timestamp for a scheduled pickup; omit to dispatch immediately. */
     scheduledAt?: string;
+    /** A big order the shop wants sent by car (client note 2026-07-29). */
+    requiresCarOnly?: boolean;
   }) => post<DeliveryOrder>("/api/vendor/orders", body),
   /** This vendor's orders as a workbook, honouring the branch/date filters. */
   ordersExportUrl: (params: { branchId?: string | null; from?: string; to?: string; vendorId?: string | null }) => {
@@ -667,6 +670,8 @@ export const vendorApi = {
   // reason is required by the backend schema — the caller must collect one.
   cancelOrder: (id: string, reason: string) =>
     post<DeliveryOrder>(`/api/vendor/orders/${id}/cancel`, { reason }),
+  /** Switch an incoming order to car-only and offer it again. */
+  sendCar: (id: string) => post<{ ok: boolean }>(`/api/vendor/orders/${id}/car`, {}),
   // Vendor-scoped mirrors of /api/zones — VENDOR tokens are contained to
   // /api/vendor and get a 403 on the staff zone routes.
   zones: () => get<DeliveryZone[]>("/api/vendor/zones"),
@@ -689,6 +694,24 @@ export const vendorApi = {
   topUps: () => get<VendorTopUp[]>("/api/vendor/wallet/top-ups"),
   cancelTopUp: (id: string) =>
     post<{ ok: boolean }>(`/api/vendor/wallet/top-ups/${id}/cancel`, {}),
+  /** One wallet's statement, main or a branch, transfers included (vendor note #3). */
+  walletStatement: (params: Params) =>
+    get<{
+      wallet: string;
+      walletName: string;
+      mode: "SINGLE" | "PER_BRANCH";
+      openingKwd: string;
+      closingKwd: string;
+      lines: Array<{
+        at: string;
+        kind: "POSTING" | "TRANSFER";
+        type: string;
+        reference: string | null;
+        debitKwd: string;
+        creditKwd: string;
+        balanceKwd: string;
+      }>;
+    }>("/api/vendor/wallet/statement", params),
   walletEntries: (params?: Params) =>
     get<Paginated<WalletEntry> | WalletEntry[]>("/api/vendor/wallet/entries", params),
 
@@ -1061,8 +1084,8 @@ export const fleetsApi = {
    */
   createUser: (
     id: string,
-    body: { name: string; email: string; password: string; phone?: string }
-  ) => post<FleetUser>(`/api/fleets/${id}/users`, body),
+    body: { name: string; email: string; password?: string; phone?: string }
+  ) => post<FleetUser & { inviteUrl?: string }>(`/api/fleets/${id}/users`, body),
 
   // ── Revision 12: reviewing what the delivery companies submit ──────────
 

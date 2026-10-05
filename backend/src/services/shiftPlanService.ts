@@ -45,6 +45,39 @@ export const MIN_COVER = 1;
 /** The ceiling, so one freak hour cannot propose the whole fleet into a zone. */
 export const MAX_COVER = 20;
 
+/**
+ * Client note of 2026-10-05: "the drivers are working 12 hours per day so it
+ * is not only about orders, also the available number of drivers. We are
+ * trying to put enough drivers 24/7, it is managing the timing of duty."
+ *
+ * So the proposal is built per DUTY, not per window. A driver works one
+ * 12-hour duty a day: day duty 07:00 to 19:00, night duty 19:00 to 07:00.
+ * Each is four of the three-hour windows, and the night duty that starts on a
+ * day runs into the next day's 01:00 and 04:00 windows. A duty is sized for
+ * its busiest window and the same number holds across all four, because the
+ * people on duty at 07:00 are the people still there at 18:59; sizing window
+ * by window had proposed cover that rose and fell every three hours, which no
+ * 12-hour roster can staff.
+ */
+export const DUTY_HOURS = 12;
+
+export const DUTIES = [
+  { key: "DAY", starts: ["07:00", "10:00", "13:00", "16:00"], nextDay: [] as string[] },
+  { key: "NIGHT", starts: ["19:00", "22:00"], nextDay: ["01:00", "04:00"] },
+] as const;
+
+/**
+ * The (day, window) cells a duty starting on `day` covers. The night duty's
+ * last two windows fall on the following day, and Saturday night wraps to the
+ * plan's own Sunday, because the plan is a repeating weekly template.
+ */
+export function dutyCells(duty: (typeof DUTIES)[number], day: number): Array<{ day: number; start: string }> {
+  return [
+    ...duty.starts.map((start) => ({ day, start })),
+    ...duty.nextDay.map((start) => ({ day: (day + 1) % 7, start })),
+  ];
+}
+
 /** Sunday 00:00 of the week containing `date`, in the server's own frame. */
 export function weekStartOf(date: Date): Date {
   const d = new Date(date);
@@ -184,7 +217,9 @@ export async function generateShiftPlan(params: {
     driversAvailable: drivers.length,
     zones: zones.length,
     ordersPerDriverPerWindow: ORDERS_PER_DRIVER_PER_WINDOW,
-    method: "same weekday and window over the trailing weeks, averaged, divided by throughput",
+    dutyHours: DUTY_HOURS,
+    method:
+      "two 12-hour duties a day (07:00 to 19:00 and 19:00 to 07:00), every area covered around the clock, each duty sized for its busiest window over the trailing weeks",
     generatedAt: new Date().toISOString(),
   };
 
@@ -197,33 +232,48 @@ export async function generateShiftPlan(params: {
     suggestedDriverIds: string[];
     demandOrders: number;
   }> = [];
-
   for (const zone of zones) {
     const zoneDrivers = byZone.get(zone.id) ?? [];
     for (let day = 0; day < 7; day++) {
-      for (const start of SHIFT_WINDOW_STARTS) {
-        const key = `${zone.id}|${day}|${start}`;
-        const total = demand.get(key) ?? 0;
-        const perWeek = total / lookbackWeeks;
-        const need = Math.ceil(perWeek / ORDERS_PER_DRIVER_PER_WINDOW);
-        const proposed = Math.min(MAX_COVER, Math.max(MIN_COVER, need));
-
-        // Rank the zone's own drivers by how often they have worked THIS
-        // window, longest-serving first, and keep as many as the cell needs.
-        const history = worked.get(key) ?? new Map<string, number>();
-        const suggested = [...zoneDrivers]
-          .sort((a, b) => (history.get(b) ?? 0) - (history.get(a) ?? 0))
-          .slice(0, proposed);
-
-        rows.push({
-          zoneId: zone.id,
-          dayOfWeek: day,
-          startTime: start,
-          proposedDrivers: proposed,
-          approvedDrivers: proposed,
-          suggestedDriverIds: suggested,
-          demandOrders: total,
+      // One duty a day per driver: whoever is suggested for the day duty is
+      // offered for the night only once nobody else in the area is left.
+      const onDayDuty = new Set<string>();
+      for (const duty of DUTIES) {
+        const cells = dutyCells(duty, day);
+        const needs = cells.map(({ day: d, start }) => {
+          const perWeek = (demand.get(`${zone.id}|${d}|${start}`) ?? 0) / lookbackWeeks;
+          return Math.ceil(perWeek / ORDERS_PER_DRIVER_PER_WINDOW);
         });
+        const proposed = Math.min(MAX_COVER, Math.max(MIN_COVER, ...needs));
+
+        // Rank the area's own drivers by how often they have worked any of
+        // this duty's windows, and keep the same people for all twelve hours.
+        const history = new Map<string, number>();
+        for (const { day: d, start } of cells) {
+          for (const [id, n] of worked.get(`${zone.id}|${d}|${start}`) ?? []) {
+            history.set(id, (history.get(id) ?? 0) + n);
+          }
+        }
+        const suggested = [...zoneDrivers]
+          .sort(
+            (a, b) =>
+              Number(onDayDuty.has(a)) - Number(onDayDuty.has(b)) ||
+              (history.get(b) ?? 0) - (history.get(a) ?? 0),
+          )
+          .slice(0, proposed);
+        if (duty.key === "DAY") suggested.forEach((id) => onDayDuty.add(id));
+
+        for (const { day: d, start } of cells) {
+          rows.push({
+            zoneId: zone.id,
+            dayOfWeek: d,
+            startTime: start,
+            proposedDrivers: proposed,
+            approvedDrivers: proposed,
+            suggestedDriverIds: suggested,
+            demandOrders: demand.get(`${zone.id}|${d}|${start}`) ?? 0,
+          });
+        }
       }
     }
   }
@@ -308,6 +358,8 @@ export async function getShiftPlan(tenantId: string, weekStart: Date) {
     availability,
     windows: [...SHIFT_WINDOW_STARTS],
     hours: SHIFT_HOURS,
+    dutyHours: DUTY_HOURS,
+    duties: DUTIES.map((d) => ({ key: d.key, starts: [...d.starts], nextDay: [...d.nextDay] })),
   };
 }
 

@@ -94,6 +94,66 @@ export async function resolveZone(
   return null;
 }
 
+/**
+ * Kilometres from a point to the nearest edge of a polygon (outer ring and
+ * holes alike). Projected flat around the point's own latitude, which is
+ * accurate to well under a percent at the few-kilometre scale of a Kuwait
+ * zone gap and saves pulling in another turf package for one comparison.
+ */
+function kmToPolygonEdge(lat: number, lng: number, polygon: GeoJsonPolygon): number {
+  const kmPerDegLat = 110.574;
+  const kmPerDegLng = 111.32 * Math.cos((lat * Math.PI) / 180);
+  let best = Infinity;
+  for (const ring of polygon.coordinates ?? []) {
+    for (let i = 0; i + 1 < ring.length; i++) {
+      // Segment endpoints in km, relative to the point at the origin.
+      const ax = (ring[i][0] - lng) * kmPerDegLng;
+      const ay = (ring[i][1] - lat) * kmPerDegLat;
+      const bx = (ring[i + 1][0] - lng) * kmPerDegLng;
+      const by = (ring[i + 1][1] - lat) * kmPerDegLat;
+      const dx = bx - ax;
+      const dy = by - ay;
+      const len2 = dx * dx + dy * dy;
+      const t = len2 === 0 ? 0 : Math.max(0, Math.min(1, -(ax * dx + ay * dy) / len2));
+      const d = Math.hypot(ax + t * dx, ay + t * dy);
+      if (d < best) best = d;
+    }
+  }
+  return best;
+}
+
+/**
+ * The active zone whose edge is closest to a point that fell outside every
+ * polygon, with how far outside it is. Null only when the tenant has no
+ * zones with geometry at all.
+ *
+ * Measured to the polygon edge, not the centroid: a long thin zone running
+ * along the coast would otherwise lose a pin a hundred metres past its edge
+ * to a compact neighbour whose middle happens to be nearer.
+ */
+export async function nearestZone(
+  tenantId: string,
+  lat: number,
+  lng: number,
+): Promise<{ zone: ResolvedZone; km: number } | null> {
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+
+  const zones = await getActiveZones(tenantId);
+  let best: { zone: ResolvedZone; km: number } | null = null;
+  for (const zone of zones) {
+    if (!zone.polygon?.coordinates) continue;
+    const km = kmToPolygonEdge(lat, lng, zone.polygon);
+    if (!Number.isFinite(km)) continue;
+    if (!best || km < best.km) {
+      best = {
+        zone: { id: zone.id, code: zone.code, name: zone.name, nameAr: zone.nameAr },
+        km,
+      };
+    }
+  }
+  return best;
+}
+
 // ─── Branch re-zoning ───────────────────────────────────────────────────────
 
 /**

@@ -22,8 +22,10 @@ const AR: Record<string, string> = {
   // ─── Enrollment / boot ───
   "enroll.kicker": "سائق درب",
   "enroll.title": "ابدأ وردّيتك بثقة.",
-  "enroll.subtitle": "أدخل الرمز من مشرفك، أو جرّب التطبيق بحساب السائق التجريبي.",
-  "enroll.placeholder": "رمز التسجيل",
+  "enroll.subtitle": "أدخل رقم درب ورقم الهاتف المسجّل لدى درب.",
+  "enroll.placeholder": "رقم درب، مثال DRB-0065",
+  "enroll.phone_placeholder": "رقم الهاتف",
+  "enroll.hint": "رقم درب موجود في قائمة السائقين، ومشرفك يقدر يقرأه لك.",
   "enroll.cta": "تسجيل الجهاز",
   "enroll.cta_busy": "جارٍ التسجيل…",
   "enroll.demo": "استخدم السائق التجريبي",
@@ -194,6 +196,7 @@ const AR: Record<string, string> = {
   // ─── Wallet ───
   "wallet.title": "المحفظة",
   "wallet.today": "المحصّل اليوم",
+  "wallet.today_hint": "الكاش من العملاء من بداية اليوم، سلّمته أو لا",
   "wallet.cash_on_hand": "الكاش بحوزتك",
   "wallet.ceiling": "من الحد {ceiling}",
   "wallet.lockout_title": "وصلت إلى حد الكاش",

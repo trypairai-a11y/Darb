@@ -15,10 +15,31 @@ import {
   managedVendorIds,
   resolvePermissions,
 } from "../services/permissionService";
-import { effectiveVendorTabs, normaliseVendorRole, parseVendorTabs } from "../services/vendorTabService";
-import { effectiveFleetTabs, normaliseFleetRole, parseFleetTabs } from "../services/fleet/fleetTabService";
+import {
+  ACCEPTED_VENDOR_ROLE_INPUTS,
+  effectiveVendorTabs,
+  normaliseVendorRole,
+  parseVendorTabs,
+  vendorRoleTakesBranch,
+} from "../services/vendorTabService";
+import {
+  ACCEPTED_FLEET_ROLE_INPUTS,
+  effectiveFleetTabs,
+  normaliseFleetRole,
+  parseFleetTabs,
+} from "../services/fleet/fleetTabService";
 
 const router = Router();
+
+/** The delivery companies an account manager is responsible for, the fleet
+ *  twin of managedVendorIds. Empty for other roles. */
+async function managedFleetIds(tenantId: string, userId: string): Promise<string[]> {
+  const rows = await prisma.accountManagerFleet.findMany({
+    where: { tenantId, userId },
+    select: { fleetPartnerId: true },
+  });
+  return rows.map((r) => r.fleetPartnerId);
+}
 // Revision 4 (#12): rbac() answers "is this role allowed here"; requireSurface
 // narrows it to "is this person allowed here", which is what a per-user
 // permissions page creates. ADMIN is exempt — see the middleware.
@@ -61,12 +82,31 @@ router.get("/", rbac("ADMIN", "OPS_MANAGER"), async (req: Request, res: Response
           fleetPartnerId: true,
           vendor: { select: { name: true } },
           fleetPartner: { select: { name: true } },
+          vendorRole: true,
+          fleetRole: true,
         },
       }),
       prisma.user.count({ where }),
     ]);
 
-    res.json(paginatedResponse(data, total, page, limit));
+    // Client note of 2026-10-05: the Role column showed a shop manager's staff
+    // `role` (ADMIN, the default every portal login is created with) while the
+    // shop's own Users tab showed their real portal role (Supervisor), so one
+    // person read as two different things. A portal login is governed by its
+    // portal role, so that is the one this list reports.
+    const rows = data.map(({ vendorRole, fleetRole, ...u }) => {
+      const portal = portalOfUser(u);
+      return {
+        ...u,
+        portal,
+        portalRole:
+          portal === "FLEET" ? normaliseFleetRole(fleetRole)
+          : portal === "VENDOR" ? normaliseVendorRole(vendorRole)
+          : null,
+      };
+    });
+
+    res.json(paginatedResponse(rows, total, page, limit));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -232,13 +272,14 @@ router.get("/:id/permissions", rbac("ADMIN"), async (req: Request, res: Response
       return;
     }
 
-    const [effective, overrides, vendorIds] = await Promise.all([
+    const [effective, overrides, vendorIds, fleetIds] = await Promise.all([
       resolvePermissions(tenantId, user.id),
       prisma.userSurfacePermission.findMany({
         where: { tenantId, userId: user.id },
         select: { surface: true, level: true },
       }),
       managedVendorIds(tenantId, user.id),
+      managedFleetIds(tenantId, user.id),
     ]);
 
     res.json({
@@ -248,6 +289,7 @@ router.get("/:id/permissions", rbac("ADMIN"), async (req: Request, res: Response
       overrides: Object.fromEntries(overrides.map((o) => [o.surface, o.level])),
       effective,
       managedVendorIds: vendorIds,
+      managedFleetIds: fleetIds,
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -285,6 +327,7 @@ router.put("/:id/permissions", rbac("ADMIN"), async (req: Request, res: Response
     const body = req.body as {
       overrides?: Record<string, string | null>;
       managedVendorIds?: string[];
+      managedFleetIds?: string[];
     };
 
     if (body.overrides) {
@@ -341,11 +384,33 @@ router.put("/:id/permissions", rbac("ADMIN"), async (req: Request, res: Response
       });
     }
 
-    const [effective, vendorIds] = await Promise.all([
+    // Client note of 2026-08-16: "only the vendor/delivery company account
+    // manager will get notifications regarding the companies he is handling".
+    // AccountManagerFleet existed but nothing wrote it, so a delivery
+    // company's operations requests reached no account manager at all. Same
+    // replace-the-whole-set semantics as the merchant links above.
+    if (body.managedFleetIds) {
+      const valid = await prisma.fleetPartner.findMany({
+        where: { tenantId, id: { in: body.managedFleetIds } },
+        select: { id: true },
+      });
+      const validIds = valid.map((f) => f.id);
+      await prisma.$transaction(async (tx) => {
+        await tx.accountManagerFleet.deleteMany({ where: { tenantId, userId: user.id } });
+        if (validIds.length > 0) {
+          await tx.accountManagerFleet.createMany({
+            data: validIds.map((fleetPartnerId) => ({ tenantId, userId: user.id, fleetPartnerId })),
+          });
+        }
+      });
+    }
+
+    const [effective, vendorIds, fleetIds] = await Promise.all([
       resolvePermissions(tenantId, user.id),
       managedVendorIds(tenantId, user.id),
+      managedFleetIds(tenantId, user.id),
     ]);
-    res.json({ effective, managedVendorIds: vendorIds });
+    res.json({ effective, managedVendorIds: vendorIds, managedFleetIds: fleetIds });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
@@ -355,11 +420,46 @@ router.put("/:id/permissions", rbac("ADMIN"), async (req: Request, res: Response
 
 router.put("/:id", rbac("ADMIN"), async (req: Request, res: Response) => {
   try {
-    const { name, phone, role } = req.body;
+    const { name, phone, role, portalRole } = req.body;
     const updateData: any = {};
     if (name) updateData.name = name;
     if (phone !== undefined) updateData.phone = phone;
     if (role) updateData.role = role;
+
+    // A portal login's role is edited here too, so the Admin list and the
+    // shop's or company's own Users tab never disagree about what it is.
+    if (typeof portalRole === "string") {
+      const target = await prisma.user.findFirst({
+        where: { id: req.params.id, tenantId: req.user!.tenantId },
+        select: PORTAL_USER_SELECT,
+      });
+      if (!target) { res.status(404).json({ error: "User not found" }); return; }
+      const portal = portalOfUser(target);
+      if (portal === "FLEET") {
+        if (!ACCEPTED_FLEET_ROLE_INPUTS.includes(portalRole)) {
+          res.status(400).json({ error: "Unknown role" }); return;
+        }
+        updateData.fleetRole = normaliseFleetRole(portalRole);
+      } else if (portal === "VENDOR") {
+        if (!ACCEPTED_VENDOR_ROLE_INPUTS.includes(portalRole)) {
+          res.status(400).json({ error: "Unknown role" }); return;
+        }
+        // A supervisor is scoped to one branch and this list has no branch
+        // picker, so the shop's Users tab is where that role is given.
+        if (vendorRoleTakesBranch(portalRole)) {
+          const row = await prisma.user.findUnique({ where: { id: target.id }, select: { branchId: true } });
+          if (!row?.branchId) {
+            res.status(400).json({ error: "A supervisor needs a branch. Set it from the shop's Users tab." });
+            return;
+          }
+        } else {
+          updateData.branchId = null;
+        }
+        updateData.vendorRole = normaliseVendorRole(portalRole);
+      } else {
+        res.status(400).json({ error: "This user has no portal role" }); return;
+      }
+    }
 
     const result = await prisma.user.updateMany({
       where: { id: req.params.id, tenantId: req.user!.tenantId },

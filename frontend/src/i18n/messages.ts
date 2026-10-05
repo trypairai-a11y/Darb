@@ -1380,15 +1380,15 @@ export interface Messages {
     zoneDeactivated: string;
     zoneActivated: string;
   };
-  hq: { ops: string; compliance: string; finance: string; admin: string; opsTitle: string; opsSubtitle: string; tabLive: string; tabOrders: string; tabEquipment: string; tabZones: string; tabDriverTracking: string; tabShiftPlanning: string; tabDriverTraining: string; tabOnboarding: string; openRequests: string; openFull: string };
-  driverTracking: { title: string; subtitle: string; windowDays: string; driver: string; company: string; area: string; state: string; delivered: string; failed: string; onTime: string; acceptance: string; rating: string; documents: string; lastSeen: string; actions: string; activate: string; deactivate: string; suspend: string; freeze: string; unfreeze: string; sendToTraining: string; frozen: string; inTraining: string; freezeReason: string; freezeReasonHint: string; trainingPeriod: string; days: string; oneDay: string; trainingReason: string; sent: string; stateSaved: string; empty: string; searchPlaceholder: string; allCompanies: string; allAreas: string; allStates: string; inTrainingBlocked: string; passTraining: string; failTraining: string; finishTrainingTitle: string; passTrainingConfirm: string; failTrainingConfirm: string; trainingFinished: string; violations: string; violationsHint: string; rejections: string; rejectionsHint: string; openIssues: string; filterBy: string; filterAny: string; filterNone: string; filterAtLeast: string; filterBelow: string; filterBetween: string; filterNotRated: string; docsComplete: string; docsMissing: string; clearFilters: string; sortHint: string; matching: string };
-  shiftPlan: { title: string; subtitle: string; weekOf: string; generate: string; regenerate: string; approve: string; discard: string; statusDraft: string; statusApproved: string; statusDiscarded: string; noPlan: string; noPlanHint: string; basis: string; proposed: string; approved: string; demand: string; zone: string; window: string; save: string; saved: string; approvedToast: string; approveWarning: string; approvedBy: string; suggestedDrivers: string; noSuggestions: string; readOnly: string; weekAlreadyApproved: string; prevWeek: string; nextWeek: string; totalDrivers: string; driversAvailable: string; driversUnassigned: string; zoneDrivers: string; overCapacity: string; ordersCount: string; amendWarning: string; amended: string; rebuildTitle: string; rebuildConfirm: string; rebuildAction: string; rebuilt: string };
+  hq: { ops: string; compliance: string; finance: string; admin: string; opsTitle: string; opsSubtitle: string; tabLive: string; tabOrders: string; tabEquipment: string; tabZones: string; tabDriverTracking: string; tabShiftPlanning: string; tabDriverTraining: string; tabOnboarding: string; tabRequests: string; openRequests: string; openFull: string };
+  driverTracking: { title: string; subtitle: string; windowDays: string; driver: string; company: string; area: string; state: string; delivered: string; failed: string; onTime: string; acceptance: string; rating: string; documents: string; lastSeen: string; actions: string; activate: string; deactivate: string; suspend: string; freeze: string; unfreeze: string; sendToTraining: string; frozen: string; inTraining: string; freezeReason: string; freezeReasonHint: string; trainingPeriod: string; days: string; oneDay: string; trainingReason: string; sent: string; stateSaved: string; empty: string; searchPlaceholder: string; allCompanies: string; allAreas: string; allStates: string; inTrainingBlocked: string; passTraining: string; failTraining: string; finishTrainingTitle: string; passTrainingConfirm: string; failTrainingConfirm: string; trainingFinished: string; violations: string; violationsHint: string; rejections: string; rejectionsHint: string; openIssues: string; filterBy: string; filterAny: string; filterNone: string; filterAtLeast: string; filterBelow: string; filterBetween: string; filterNotRated: string; docsComplete: string; docsMissing: string; clearFilters: string; sortHint: string; matching: string; stateActive: string; stateInactive: string; stateSuspended: string; stateTerminated: string };
+  shiftPlan: { title: string; subtitle: string; weekOf: string; generate: string; regenerate: string; approve: string; discard: string; statusDraft: string; statusApproved: string; statusDiscarded: string; noPlan: string; noPlanHint: string; basis: string; proposed: string; approved: string; demand: string; zone: string; window: string; save: string; saved: string; approvedToast: string; approveWarning: string; approvedBy: string; suggestedDrivers: string; noSuggestions: string; readOnly: string; weekAlreadyApproved: string; prevWeek: string; nextWeek: string; totalDrivers: string; driversAvailable: string; driversUnassigned: string; zoneDrivers: string; overCapacity: string; ordersCount: string; amendWarning: string; amended: string; rebuildTitle: string; rebuildConfirm: string; rebuildAction: string; rebuilt: string; dayDuty: string; nightDuty: string; neededOnDay: string; zoneNeeded: string; zoneShort: string; driverAreas: string };
   driverTraining: { title: string; subtitle: string; newSession: string; statusScheduled: string; statusInProgress: string; statusPassed: string; statusFailed: string; statusCancelled: string; period: string; changePeriod: string; ends: string; issueOrder: string; pickupPoint: string; dropoffAddress: string; customerName: string; minutes: string; orders: string; noOrders: string; assigned: string; deliveredCount: string; failedCount: string; inFlight: string; onTimeRate: string; avgMinutes: string; podRate: string; pass: string; fail: string; cancel: string; outcomeNote: string; passHint: string; failHint: string; empty: string; started: string; orderIssued: string; periodSaved: string; completed: string; practiceBadge: string; moneyNote: string; start: string; selectDriver: string; noEligibleDrivers: string; autoIssue: string; autoIssueHint: string; autoIssueSaved: string; autoIssueOn: string; autoIssueOff: string; orderDetails: string; collectFrom: string; deliverTo: string; customer: string; pin: string; pinHint: string; given: string; arrived: string; pickedUp: string; delivered: string; due: string; minutesTaken: string; proofPhoto: string; failureReason: string; openOrder: string; hideDetails: string; failedNext: string; failedNextHint: string; retrain: string; retrainReason: string; retrained: string; terminate: string; terminateTitle: string; terminateConfirm: string; terminated: string };
   hqOnboarding: { title: string; subtitle: string; add: string; typeVendor: string; typeFleet: string; companyName: string; companyNameAr: string; code: string; codeHint: string; contactName: string; contactPhone: string; contactEmail: string; notes: string; statusNew: string; statusInReview: string; statusApproved: string; statusRejected: string; claim: string; approve: string; reject: string; rejectReason: string; approveHint: string; created: string; approvedToast: string; rejectedToast: string; empty: string; openAccount: string; raisedBy: string; codeInUse: string; allTypes: string };
   compliance: { title: string; subtitle: string; tabDriverDocs: string; tabRenewals: string; tabPartnerDocs: string; autoPass: string; autoFlag: string; autoPending: string; recheck: string; approve: string; reject: string; rejectReason: string; rejectHint: string; requestDocument: string; requestNote: string; requestSent: string; statusREQUESTED: string; statusPENDING_REVIEW: string; statusVALID: string; statusREJECTED: string; statusEXPIRED: string; statusSUPERSEDED: string; owner: string; type: string; expiry: string; uploaded: string; file: string; noFile: string; viewFile: string; flaggedOnly: string; empty: string; approved: string; rejected: string; healthEXPIRED: string; healthEXPIRING: string; healthVALID: string; healthMISSING: string; daysLeft: string; daysOverdue: string; freeze: string; unfreeze: string; freezeReason: string; freezeHintDriver: string; freezeHintPartner: string; frozen: string; froze: string; unfroze: string; horizon: string; expiredCount: string; expiringCount: string; stateFilter: string; expiringSoon: string; scopeDRIVER: string; scopeCOMPANY: string; scopeVENDOR: string; checkNO_FILE: string; checkNO_EXPIRY: string; checkALREADY_EXPIRED: string; checkEXPIRES_SOON: string; checkEXPIRY_IMPLAUSIBLE: string; checkUNKNOWN_TYPE: string; checkTYPE_MISMATCH: string; checkFILE_TOO_SMALL: string; checkFILE_TOO_LARGE: string; checkUNSUPPORTED_FORMAT: string; checkDUPLICATE_PENDING: string; permissionDenied: string };
   financeDesk: { tabPayments: string; tabDisputes: string; tabCashOnHand: string; cashTitle: string; cashSubtitle: string; cashCompany: string; cashDrivers: string; cashCarrying: string; cashAmount: string; cashWallet: string; cashTotal: string; cashDownload: string; cashEmpty: string; cashNoDrivers: string; cashDriver: string; cashAsOf: string; paymentsTitle: string; paymentsSubtitle: string; account: string; kindVENDOR_TOP_UP: string; kindFLEET_DEPOSIT: string; amount: string; reference: string; requested: string; confirm: string; cancelPayment: string; rejectPayment: string; rejectReason: string; confirmed: string; cancelled: string; alreadyPaid: string; noPayments: string; showAll: string; showPending: string; sideAll: string; sideVendor: string; sideFleet: string; disputesTitle: string; disputesSubtitle: string; disputedStatement: string; period: string; reason: string; openStatement: string; noDisputes: string; reply: string; replyPlaceholder: string; send: string; sendAndResolve: string; replied: string; openTickets: string; approve: string; approveTitle: string; approveNote: string; approveHint: string; rejectHint: string; feedback: string; noFeedback: string };
   adminHub: { title: string; subtitle: string; tabDashboard: string; tabPrices: string; tabAccess: string; now: string; forecast: string; activeVendors: string; activeFleets: string; activeDrivers: string; driversInTraining: string; ordersToday: string; deliveredToday: string; revenueToday: string; openDisputes: string; documentsWaiting: string; onboardingWaiting: string; setupIncomplete: string; setupIncompleteHint: string; setupShop: string; setupCompany: string; setupMissingContactPhone: string; monthToDate: string; vsLastMonth: string; projectedOrders: string; projectedRevenue: string; growth: string; basisLabel: string; notEnoughHistory: string; darbFees: string; darbFeesHint: string; fleetFees: string; fleetFeesHint: string; openPricing: string; openFleets: string; openRateApprovals: string; company: string; baseFee: string; perKm: string; flatOnly: string; accessHint: string; openPeople: string; openVendors: string; accountManagers: string; manages: string; managesNone: string; staffAccounts: string; surfaces: string };
-  vendorWallet2: { modeTitle: string; modeSingle: string; modeSingleHint: string; modePerBranch: string; modePerBranchHint: string; modeSaved: string; mainWallet: string; branchWallet: string; available: string; allocated: string; spent: string; transfer: string; transferTo: string; transferBack: string; transferAmount: string; transferNote: string; transferred: string; transfers: string; noTransfers: string; statement: string; statementFor: string; mainStatementHint: string; insufficientMain: string; insufficientBranch: string; modeSingleOnly: string; ownerOnly: string; branchEmpty: string };
+  vendorWallet2: { modeTitle: string; modeSingle: string; modeSingleHint: string; modePerBranch: string; modePerBranchHint: string; modeSaved: string; mainWallet: string; branchWallet: string; available: string; allocated: string; spent: string; transfer: string; transferTo: string; transferBack: string; transferAmount: string; transferNote: string; transferred: string; transfers: string; noTransfers: string; statement: string; statementFor: string; mainStatementHint: string; insufficientMain: string; insufficientBranch: string; modeSingleOnly: string; ownerOnly: string; branchEmpty: string; downloadStatement: string; statementWallet: string; statementFrom: string; statementTo: string; openingBalance: string; transferIn: string; transferOut: string };
   hqRequests: {
     title: string;
     subtitle: string;
@@ -1545,6 +1545,8 @@ export interface Messages {
     userName: string;
     userEmail: string;
     userPassword: string;
+    passwordOptionalHint: string;
+    inviteLinkReady: string;
     userCreated: string;
     usersHint: string;
     noVendors: string;
@@ -1591,6 +1593,11 @@ export interface Messages {
     waitingSince: string;
     etaStore: string;
     etaCustomer: string;
+    needsCar: string;
+    needsCarHint: string;
+    sendCar: string;
+    sendCarConfirm: string;
+    carRequested: string;
     emptyColumn: string;
     pausedBanner: string;
     inspecting: string;
@@ -3996,6 +4003,7 @@ export const en: Messages = {
     tabShiftPlanning: "Shift planning",
     tabDriverTraining: "Driver training",
     tabOnboarding: "New accounts",
+    tabRequests: "Support and approvals",
     openRequests: "Requests and approvals",
     openFull: "Open the full screen",
   },
@@ -4058,6 +4066,10 @@ export const en: Messages = {
     docsComplete: "All valid",
     docsMissing: "Missing some",
     clearFilters: "Clear",
+    stateActive: "Active",
+    stateInactive: "Inactive",
+    stateSuspended: "Suspended",
+    stateTerminated: "Terminated",
     sortHint: "Click a column to sort by it",
     matching: "{n} of {total} drivers",
   },
@@ -4103,6 +4115,12 @@ export const en: Messages = {
     rebuildConfirm: "This week is approved. Building it again throws the current plan away and drafts a fresh proposal you will need to approve. Drivers keep booking against the approved grid until you do.",
     rebuildAction: "Build it again",
     rebuilt: "New proposal built. Approve it to send it to the driver app.",
+    dayDuty: "Day duty, 07:00 to 19:00",
+    nightDuty: "Night duty, 19:00 to 07:00",
+    neededOnDay: "{n} drivers needed on {day}, one 12-hour duty each",
+    zoneNeeded: "Needs {n} a day",
+    zoneShort: "{n} short",
+    driverAreas: "Driver areas and coverage",
   },
   driverTraining: {
     title: "Driver training",
@@ -4415,6 +4433,13 @@ export const en: Messages = {
     modeSingleOnly: "Turn on a wallet per branch first.",
     ownerOnly: "Only the shop owner can change this.",
     branchEmpty: "This branch's wallet is empty. Orders from it are being refused.",
+    downloadStatement: "Download statement",
+    statementWallet: "Wallet",
+    statementFrom: "From",
+    statementTo: "To",
+    openingBalance: "Opening balance",
+    transferIn: "Transfer in",
+    transferOut: "Transfer out",
   },
   hqRequests: {
     title: "Requests and approvals",
@@ -4575,6 +4600,8 @@ export const en: Messages = {
     userName: "Full name",
     userEmail: "Email",
     userPassword: "Password",
+    passwordOptionalHint: "Optional. Leave it blank and they choose their own from an invite link.",
+    inviteLinkReady: "Send them this link to choose their password. It expires in 3 days.",
     userCreated: "Portal user created",
     usersHint: "Portal users sign in at the vendor portal and only see this vendor's orders and wallet.",
     noVendors: "No vendors yet.",
@@ -4621,6 +4648,11 @@ export const en: Messages = {
     waitingSince: "waiting",
     etaStore: "to shop",
     etaCustomer: "to customer",
+    needsCar: "Big order, send a car",
+    needsCarHint: "Only drivers with a car are offered it.",
+    sendCar: "Send a car",
+    sendCarConfirm: "This order is offered again to drivers with a car only. Use it for a big order a bike cannot carry.",
+    carRequested: "Car requested. The order is being offered to drivers with a car.",
     emptyColumn: "Nothing here right now.",
     pausedBanner: "Incoming orders are paused. New orders will be rejected until you resume.",
     inspecting: "You are reading {vendor}'s portal as an admin. Nothing here can be changed.",
@@ -6999,6 +7031,7 @@ export const ar: Messages = {
     tabShiftPlanning: "تخطيط الورديات",
     tabDriverTraining: "تدريب المندوبين",
     tabOnboarding: "حسابات جديدة",
+    tabRequests: "الدعم والموافقات",
     openRequests: "الطلبات والموافقات",
     openFull: "فتح الشاشة كاملة",
   },
@@ -7061,6 +7094,10 @@ export const ar: Messages = {
     docsComplete: "كلها سارية",
     docsMissing: "ينقصه بعضها",
     clearFilters: "مسح",
+    stateActive: "نشط",
+    stateInactive: "غير نشط",
+    stateSuspended: "موقوف",
+    stateTerminated: "منهي",
     sortHint: "اضغط على عمود لترتيب الجدول به",
     matching: "{n} من {total} مندوب",
   },
@@ -7106,6 +7143,12 @@ export const ar: Messages = {
     rebuildConfirm: "هذا الأسبوع معتمد. إعادة البناء تلغي الخطة الحالية وتنشئ اقتراحا جديدا عليك اعتماده. يستمر المندوبون بالحجز على الجدول المعتمد حتى تعتمد الجديد.",
     rebuildAction: "أعد البناء",
     rebuilt: "تم إنشاء اقتراح جديد. اعتمده ليصل إلى تطبيق المندوب.",
+    dayDuty: "الدوام النهاري، 07:00 إلى 19:00",
+    nightDuty: "الدوام الليلي، 19:00 إلى 07:00",
+    neededOnDay: "{n} مندوب مطلوب يوم {day}، دوام 12 ساعة لكل واحد",
+    zoneNeeded: "يحتاج {n} في اليوم",
+    zoneShort: "ناقص {n}",
+    driverAreas: "مناطق المندوبين والتغطية",
   },
   driverTraining: {
     title: "تدريب المندوبين",
@@ -7418,6 +7461,13 @@ export const ar: Messages = {
     modeSingleOnly: "فعّل محفظة لكل فرع أولا.",
     ownerOnly: "فقط مالك المتجر يمكنه تغيير هذا.",
     branchEmpty: "محفظة هذا الفرع فارغة. طلباتها مرفوضة.",
+    downloadStatement: "تنزيل كشف الحساب",
+    statementWallet: "المحفظة",
+    statementFrom: "من",
+    statementTo: "إلى",
+    openingBalance: "الرصيد الافتتاحي",
+    transferIn: "تحويل وارد",
+    transferOut: "تحويل صادر",
   },
   hqRequests: {
     title: "الطلبات والموافقات",
@@ -7578,6 +7628,8 @@ export const ar: Messages = {
     userName: "الاسم الكامل",
     userEmail: "البريد الإلكتروني",
     userPassword: "كلمة المرور",
+    passwordOptionalHint: "اختياري. اتركه فاضي ويختار كلمة المرور بنفسه من رابط الدعوة.",
+    inviteLinkReady: "أرسل له هذا الرابط ليختار كلمة المرور. ينتهي خلال 3 أيام.",
     userCreated: "تم إنشاء مستخدم البوابة",
     usersHint: "يسجل مستخدمو البوابة الدخول إلى بوابة المطعم ويرون طلبات ومحفظة هذا المطعم فقط.",
     noVendors: "لا توجد مطاعم بعد.",
@@ -7624,6 +7676,11 @@ export const ar: Messages = {
     waitingSince: "بالانتظار",
     etaStore: "إلى المحل",
     etaCustomer: "إلى العميل",
+    needsCar: "طلب كبير، أرسل سيارة",
+    needsCarHint: "يُعرض فقط على المناديب اللي عندهم سيارة.",
+    sendCar: "أرسل سيارة",
+    sendCarConfirm: "يُعرض الطلب من جديد على المناديب اللي عندهم سيارة فقط. استخدمه للطلب الكبير اللي ما يشيله السيكل.",
+    carRequested: "تم طلب سيارة لهذا الطلب.",
     emptyColumn: "لا يوجد شيء هنا حالياً.",
     pausedBanner: "الطلبات الواردة موقوفة مؤقتاً. سيتم رفض الطلبات الجديدة حتى تستأنف الاستقبال.",
     inspecting: "أنت تطالع بوابة {vendor} بصفة مشرف. لا يمكن تغيير أي شيء هنا.",

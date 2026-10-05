@@ -201,6 +201,37 @@ describe("createDeliveryOrder", () => {
     expect(order.status).toBe("DISPATCHING");
   });
 
+  // Client note (2026-07-28): an out-of-zone drop is priced, not reviewed.
+  // The row has no dropoff zone, so the timeline is where the zone that set
+  // the price is recorded.
+  test("out-of-zone drop priced as the nearest zone dispatches and records which zone priced it", async () => {
+    primeHappyCreate();
+    quoteDelivery.mockResolvedValue({
+      ...GOOD_QUOTE,
+      dropoffZoneId: null,
+      dropoffZone: null,
+      outOfZone: true,
+      pricedAsZone: GOOD_QUOTE.dropoffZone,
+      outOfZoneKm: 1.934,
+    });
+
+    const order = await createDeliveryOrder(CREATE_INPUT);
+
+    expect(order.status).toBe("DISPATCHING");
+    const data = prisma.deliveryOrder.create.mock.calls[0][0].data;
+    expect(data.dropoffZoneId).toBeNull();
+    expect(data.deliveryFeeKwd.toFixed(3)).toBe("1.750");
+    const created = prisma.orderEvent.create.mock.calls
+      .map((c: any) => c[0].data)
+      .find((d: any) => d.action === "order.created");
+    expect(created.metadata).toMatchObject({
+      pricedAsZoneId: "zone-b",
+      pricedAsZoneCode: "SAL",
+      outOfZoneKm: 1.934,
+    });
+    expect(enqueueDispatchStart).toHaveBeenCalledWith("ord-1", TENANT);
+  });
+
   test("orderNumber increments from the tenant/vendor max (ticketNumber pattern)", async () => {
     primeHappyCreate("DRB-BRGB-000007");
 

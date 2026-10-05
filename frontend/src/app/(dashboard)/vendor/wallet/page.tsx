@@ -41,6 +41,20 @@ export default function VendorWalletPage() {
   const [topUpOpen, setTopUpOpen] = useState(false);
   /** "" is this wallet's own statement (branch pills apply); "main" is the pool's. */
   const [ledgerScope, setLedgerScope] = useState<"" | "main">("");
+  // Vendor-portal note #3: "a statement for each" wallet. The ledger above is
+  // postings only, so a branch's transfers in were in nobody's statement. The
+  // download is the wallet's own statement, transfers and running balance
+  // included, for whichever wallet is picked.
+  const [statementWallet, setStatementWallet] = useState<string>("main");
+  const [statementFrom, setStatementFrom] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+  });
+  const [statementTo, setStatementTo] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
+  const [downloadingWallet, setDownloadingWallet] = useState(false);
 
 
   const meQuery = useQuery({
@@ -135,6 +149,48 @@ export default function VendorWalletPage() {
       toast.error(t("reportsPage.exportFailed"));
     } finally {
       setDownloadingId(null);
+    }
+  }
+
+  async function downloadWalletStatement() {
+    const wallet = statementWallet || "main";
+    setDownloadingWallet(true);
+    try {
+      const st = await vendorApi.walletStatement({ wallet, dateFrom: statementFrom, dateTo: statementTo });
+      const typeLabel = (type: string) =>
+        type === "TRANSFER_IN"
+          ? t("vendorWallet2.transferIn")
+          : type === "TRANSFER_OUT"
+            ? t("vendorWallet2.transferOut")
+            : TX_I18N[type as WalletTxType]
+              ? t(TX_I18N[type as WalletTxType])
+              : type;
+      downloadCsv(
+        `statement-${st.walletName.replace(/[^A-Za-z0-9]+/g, "-").toLowerCase()}-${statementFrom}-to-${statementTo}`,
+        [
+          t("wallet.date"),
+          t("wallet.type"),
+          t("wallet.orderRef"),
+          t("wallet.debit"),
+          t("wallet.credit"),
+          t("wallet.runningBalance"),
+        ],
+        [
+          [statementFrom, t("vendorWallet2.openingBalance"), st.walletName, "", "", st.openingKwd],
+          ...st.lines.map((l) => [
+            l.at,
+            typeLabel(l.type),
+            l.reference ?? "",
+            l.debitKwd === "0.000" ? "" : l.debitKwd,
+            l.creditKwd === "0.000" ? "" : l.creditKwd,
+            l.balanceKwd,
+          ]),
+        ],
+      );
+    } catch {
+      toast.error(t("reportsPage.exportFailed"));
+    } finally {
+      setDownloadingWallet(false);
     }
   }
 
@@ -365,6 +421,58 @@ export default function VendorWalletPage() {
         {ledgerScope === "main" && (
           <span className="text-xs text-sand-500">{t("vendorWallet2.mainStatementHint")}</span>
         )}
+      </div>
+
+      <div
+        className="flex flex-wrap items-end gap-2 bg-card border border-sand-200 rounded-2xl px-4 py-3"
+        data-testid="wallet-statement-download"
+      >
+        <label className="text-xs text-sand-600">
+          <span className="block mb-1">{t("vendorWallet2.statementWallet")}</span>
+          <select
+            value={statementWallet}
+            onChange={(e) => setStatementWallet(e.target.value)}
+            className="h-9 px-3 rounded-pill border border-sand-200 bg-card text-sm text-sand-900"
+          >
+            <option value="main">{t("vendorWallet2.mainWallet")}</option>
+            {(meQuery.data?.branches ?? []).map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="text-xs text-sand-600">
+          <span className="block mb-1">{t("vendorWallet2.statementFrom")}</span>
+          <input
+            type="date"
+            value={statementFrom}
+            onChange={(e) => setStatementFrom(e.target.value)}
+            className="h-9 px-3 rounded-pill border border-sand-200 bg-card text-sm text-sand-900"
+          />
+        </label>
+        <label className="text-xs text-sand-600">
+          <span className="block mb-1">{t("vendorWallet2.statementTo")}</span>
+          <input
+            type="date"
+            value={statementTo}
+            onChange={(e) => setStatementTo(e.target.value)}
+            className="h-9 px-3 rounded-pill border border-sand-200 bg-card text-sm text-sand-900"
+          />
+        </label>
+        <button
+          type="button"
+          disabled={downloadingWallet || !statementFrom || !statementTo}
+          onClick={downloadWalletStatement}
+          className="h-9 px-4 inline-flex items-center gap-2 rounded-pill bg-primary text-white text-sm font-medium disabled:opacity-40"
+        >
+          {downloadingWallet ? (
+            <Loader2 size={14} className="animate-spin" aria-hidden="true" />
+          ) : (
+            <Download size={14} aria-hidden="true" />
+          )}
+          {t("vendorWallet2.downloadStatement")}
+        </button>
       </div>
 
       <WalletLedgerTable

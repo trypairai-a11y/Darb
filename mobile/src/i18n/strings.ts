@@ -210,6 +210,7 @@ const EN: Record<string, string> = {
   // ─── Wallet ───
   "wallet.title": "Wallet",
   "wallet.today": "Collected today",
+  "wallet.today_hint": "Cash from customers since midnight, handed in or not",
   "wallet.cash_on_hand": "Cash on hand",
   "wallet.ceiling": "of {ceiling} ceiling",
   "wallet.lockout_title": "Cash ceiling reached",

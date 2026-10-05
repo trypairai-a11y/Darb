@@ -18,7 +18,8 @@ import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Eye, FileText, LifeBuoy, Store, Truck } from "lucide-react";
-import BackToSetup from "@/components/shared/BackToSetup";
+import HqTabs from "@/components/hq/HqTabs";
+import { OPS_TABS } from "@/lib/hqTabs";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
@@ -496,7 +497,7 @@ function RequestsScreen() {
 
   return (
     <div className="space-y-6">
-      <BackToSetup tab="ops" />
+      <HqTabs tabs={OPS_TABS} />
       <div>
         <h1 className="font-display text-display-sm text-sand-900 inline-flex items-center gap-2">
           <LifeBuoy size={22} aria-hidden="true" />

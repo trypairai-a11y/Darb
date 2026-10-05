@@ -52,8 +52,9 @@ export interface WalletView {
    * The main wallet's spendable figure.
    *
    * SINGLE: the whole account balance, because nothing is fenced off.
-   * PER_BRANCH: the pool, which is the account total less everything the shop
-   * has handed to its branches.
+   * PER_BRANCH: the pool, which is the postings with no branch behind them
+   * (top-ups, corrections) less everything the shop has handed to its
+   * branches. Main plus every branch adds up to the account total.
    */
   mainAvailableKwd: string;
   branches: Array<{
@@ -104,7 +105,11 @@ export async function getVendorWalletView(tenantId: string, vendorId: string): P
     totalKwd: fmt(total),
     unallocatedKwd: balances.unallocatedKwd,
     unallocatedByType: balances.unallocatedByType,
-    mainAvailableKwd: fmt(mode === "SINGLE" ? total : total.minus(totalAllocated)),
+    // Not total less allocated: the total already carries every branch's own
+    // delivery charges, and those are paid from the branch's wallet. Taking
+    // them off the main wallet as well charged each delivery twice, so the
+    // shop's wallets added up to less than the money it actually had.
+    mainAvailableKwd: fmt(mode === "SINGLE" ? total : dec(balances.unallocatedKwd).minus(totalAllocated)),
     branches: branches.map((b) => {
       const derived = dec(balances.byBranch[b.id] ?? 0);
       const allocated = allocatedBy.get(b.id) ?? dec(0);
@@ -248,4 +253,149 @@ export async function branchSpendableKwd(
   if (view.mode !== "PER_BRANCH") return null;
   const row = view.branches.find((b) => b.branchId === branchId);
   return dec(row?.availableKwd ?? 0);
+}
+
+export interface WalletStatementLine {
+  at: Date;
+  kind: "POSTING" | "TRANSFER";
+  /** The ledger transaction type, or TRANSFER_IN / TRANSFER_OUT. */
+  type: string;
+  /** An order number, the other wallet in a transfer, or a memo. */
+  reference: string | null;
+  debitKwd: string;
+  creditKwd: string;
+  balanceKwd: string;
+}
+
+/**
+ * One wallet's own statement: the main wallet, or one branch.
+ *
+ * Vendor-portal note #3 (2026-09-15): "the vendor should be able to take a
+ * statement for each, whether they're using one wallet or more than one".
+ * The ledger list could already be narrowed to a branch, but a transfer is an
+ * allocation row and not a posting, so it appeared in nobody's statement: a
+ * branch's statement showed it spending money that never arrived, and the
+ * main wallet's never showed the money leaving. This merges the two, with a
+ * running balance for THIS wallet, so each statement ties to the figure the
+ * wallet card shows.
+ *
+ * SINGLE: the main wallet is the whole account and transfers do not apply; a
+ * branch statement lists that counter's own orders.
+ * PER_BRANCH: main holds postings with no branch behind them, less transfers
+ * out; a branch holds its own orders plus transfers in.
+ */
+export async function vendorWalletStatement(params: {
+  tenantId: string;
+  vendorId: string;
+  /** "main" or a branch id. */
+  wallet: string;
+  from?: Date | null;
+  to?: Date | null;
+}) {
+  const { tenantId, vendorId } = params;
+  const isMain = params.wallet === "main";
+
+  const [vendor, branches, account] = await Promise.all([
+    prisma.vendor.findFirst({ where: { id: vendorId, tenantId }, select: { walletMode: true } }),
+    prisma.vendorBranch.findMany({ where: { tenantId, vendorId }, select: { id: true, name: true } }),
+    prisma.walletAccount.findFirst({ where: { tenantId, ownerKey: `VENDOR:${vendorId}` }, select: { id: true } }),
+  ]);
+  const branchName = new Map(branches.map((b) => [b.id, b.name]));
+  if (!isMain && !branchName.has(params.wallet)) {
+    throw Object.assign(new Error("Branch not found"), { statusCode: 404 });
+  }
+  const mode: WalletMode =
+    vendor && isWalletMode(vendor.walletMode) ? (vendor.walletMode as WalletMode) : "SINGLE";
+
+  const upTo = params.to ? { createdAt: { lte: params.to } } : {};
+  const entries = account
+    ? await prisma.walletEntry.findMany({
+        where: { tenantId, accountId: account.id, ...upTo },
+        orderBy: { createdAt: "asc" },
+        select: {
+          direction: true,
+          amountKwd: true,
+          createdAt: true,
+          transaction: { select: { type: true, orderId: true, memo: true } },
+        },
+      })
+    : [];
+
+  const orderIds = [...new Set(entries.map((e) => e.transaction.orderId).filter((id): id is string => !!id))];
+  const orders = orderIds.length
+    ? await prisma.deliveryOrder.findMany({
+        where: { tenantId, vendorId, id: { in: orderIds } },
+        select: { id: true, branchId: true, orderNumber: true },
+      })
+    : [];
+  const orderOf = new Map(orders.map((o) => [o.id, o]));
+
+  const rows: Array<{ at: Date; kind: "POSTING" | "TRANSFER"; type: string; reference: string | null; signed: Prisma.Decimal }> = [];
+  for (const e of entries) {
+    const order = e.transaction.orderId ? orderOf.get(e.transaction.orderId) : undefined;
+    const branchId = order?.branchId ?? null;
+    const mine = isMain ? mode === "SINGLE" || branchId === null : branchId === params.wallet;
+    if (!mine) continue;
+    const amount = dec(e.amountKwd);
+    rows.push({
+      at: e.createdAt,
+      kind: "POSTING",
+      type: e.transaction.type,
+      reference: order?.orderNumber ?? e.transaction.memo ?? null,
+      // VENDOR_PAYABLE is liability-like: a CREDIT raises the balance.
+      signed: e.direction === "CREDIT" ? amount : amount.neg(),
+    });
+  }
+
+  if (mode === "PER_BRANCH") {
+    const transfers = await prisma.vendorBranchAllocation.findMany({
+      where: { tenantId, vendorId, ...(isMain ? {} : { branchId: params.wallet }), ...upTo },
+      orderBy: { createdAt: "asc" },
+      select: { branchId: true, amountKwd: true, createdAt: true, note: true },
+    });
+    for (const t of transfers) {
+      const amount = dec(t.amountKwd);
+      // A positive row moves money main -> branch.
+      const signed = isMain ? amount.neg() : amount;
+      const other = isMain ? (branchName.get(t.branchId) ?? null) : "Main wallet";
+      rows.push({
+        at: t.createdAt,
+        kind: "TRANSFER",
+        type: signed.greaterThan(0) ? "TRANSFER_IN" : "TRANSFER_OUT",
+        reference: t.note ? `${other ?? ""} · ${t.note}` : other,
+        signed,
+      });
+    }
+  }
+
+  rows.sort((a, b) => a.at.getTime() - b.at.getTime());
+
+  let balance = dec(0);
+  let opening = dec(0);
+  const lines: WalletStatementLine[] = [];
+  for (const r of rows) {
+    balance = balance.plus(r.signed);
+    if (params.from && r.at < params.from) {
+      opening = balance;
+      continue;
+    }
+    lines.push({
+      at: r.at,
+      kind: r.kind,
+      type: r.type,
+      reference: r.reference,
+      debitKwd: r.signed.lessThan(0) ? fmt(r.signed.abs()) : "0.000",
+      creditKwd: r.signed.greaterThan(0) ? fmt(r.signed) : "0.000",
+      balanceKwd: fmt(balance),
+    });
+  }
+
+  return {
+    wallet: isMain ? "main" : params.wallet,
+    walletName: isMain ? "Main wallet" : branchName.get(params.wallet)!,
+    mode,
+    openingKwd: fmt(opening),
+    closingKwd: fmt(balance),
+    lines,
+  };
 }

@@ -20,7 +20,7 @@ import { Store, Truck, Users, GraduationCap, Package, CircleDollarSign, FileText
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import StatCard from "@/components/shared/StatCard";
-import { cockpitApi, fleetsApi, unwrapList, vendorsApi } from "@/lib/darbApi";
+import { cockpitApi, fetchAllPages, fleetsApi, unwrapList, vendorsApi } from "@/lib/darbApi";
 import { fleetGapKeys, setupIncomplete, vendorGapKeys } from "@/lib/setupGaps";
 import type { FleetProfile, ForecastPoint, Vendor } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -102,12 +102,14 @@ function IncompleteOnboarding() {
   const { t } = useI18n();
   const vendorsQuery = useQuery({
     queryKey: ["darb", "vendors", "setup"],
-    queryFn: () => vendorsApi.list(),
+    // Every page, not the first: the list defaults to 20 by name, so an
+    // incomplete shop past the twentieth never showed on this card.
+    queryFn: () => fetchAllPages<Vendor>((p) => vendorsApi.list(p), { limit: 100 }),
     refetchInterval: 60_000,
   });
   const fleetsQuery = useQuery({
     queryKey: ["darb", "fleets", "setup"],
-    queryFn: () => fleetsApi.list({ limit: 100 }),
+    queryFn: () => fetchAllPages<FleetProfile>((p) => fleetsApi.list(p), { limit: 100 }),
     refetchInterval: 60_000,
   });
   const rows = useMemo(() => {
@@ -195,7 +197,21 @@ export default function AdminDashboardTab() {
 
       {/* ── Where we are ────────────────────────────────────────────────── */}
       <section className="space-y-3">
-        <h2 className="font-display text-lg text-sand-900">{t("adminHub.now")}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-display text-lg text-sand-900">{t("adminHub.now")}</h2>
+          {/* Client notes, 2026-07-22 and 2026-08-16: a calendar by day, week
+              or month, drivers and orders per zone and per driver, and the
+              companies with one owner averaged together. All of that is the
+              full dashboard at /cockpit, which lost its only link when the
+              rail became four tabs. */}
+          <Link
+            href="/cockpit"
+            data-testid="admin-open-full-dashboard"
+            className="text-sm text-primary hover:underline"
+          >
+            {t("hq.openFull")}
+          </Link>
+        </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             title={t("adminHub.ordersToday")}

@@ -96,6 +96,20 @@ async function deliverExternal(params: {
 }
 
 /**
+ * Client note, 2026-07-22 (#22): "Remove the accountant view for cash
+ * threshold." Cash a driver is carrying past the limit is an ops problem, not
+ * a ledger one. Revision 1 claimed the removal but the toggle stayed, so an
+ * accountant could still be switched onto it. A stored rule saying otherwise
+ * is ignored.
+ */
+const EXCLUDED_ROLES: Record<string, string[]> = {
+  CASH_THRESHOLD_EXCEEDED: ["ACCOUNTANT"],
+};
+export function roleExcludedFrom(eventType: string, role: string): boolean {
+  return EXCLUDED_ROLES[eventType]?.includes(role) ?? false;
+}
+
+/**
  * Create notifications for all users matching the notification rules
  * for a given violation type within a tenant.
  * Supports in-app, WhatsApp, email, and SMS channels.
@@ -113,7 +127,9 @@ export async function createViolationNotifications(params: {
 
   // Find notification rules for this event type
   const storedRules = await prisma.notificationRule.findMany({ where: { tenantId, eventType } });
-  const rules = withCategoryDefaults(storedRules).filter(r => r.eventType === eventType && r.enabled);
+  const rules = withCategoryDefaults(storedRules).filter(
+    (r) => r.eventType === eventType && r.enabled && !roleExcludedFrom(eventType, r.role),
+  );
 
   if (rules.length === 0) return { created: 0 };
 
@@ -256,8 +272,8 @@ export function getViolationSeverity(type: string): string {
 }
 
 /**
- * Edit #11 (2026-08-22) — support requests are grouped into categories and
- * each category lands on one desk, fixed rather than rule-configured:
+ * Edit #11 (2026-08-22) - support requests are grouped into categories and
+ * each category lands on one desk:
  *
  *   MONEY       -> Accountant
  *   OPERATIONS  -> Account Manager
@@ -266,16 +282,59 @@ export function getViolationSeverity(type: string): string {
  * And the Account Manager column is scoped: an AM only hears about the
  * companies they actually handle - resolved through the AccountManagerVendor /
  * AccountManagerFleet links, never network-wide.
+ *
+ * Client note of 2026-08-16: "anything regarding money will go to Darb
+ * accountant, anything regarding operations will go to the account manager
+ * and tech will go to ops manager". The route used to be computed and only
+ * written into metadata while the request went to every enabled role, so the
+ * accountant was paged about a late driver and the ops manager about an
+ * invoice. The category now decides the desk; the Support row in Settings >
+ * Notifications stays the on/off switch for each desk.
  */
-const SUPPORT_ROUTING: Record<string, { role: string; label: string }> = {
+export type SupportCategory = "MONEY" | "OPERATIONS" | "TECH";
+
+const SUPPORT_ROUTING: Record<SupportCategory, { role: string; label: string }> = {
   MONEY: { role: "ACCOUNTANT", label: "Money" },
   OPERATIONS: { role: "ACCOUNT_MANAGER", label: "Operations" },
   TECH: { role: "OPS_MANAGER", label: "Tech" },
 };
 
+/** The roles that are a support desk. Any other role with the Support rule on
+ *  (ADMIN today) keeps hearing about every request, as it did before routing. */
+const SUPPORT_DESK_ROLES = new Set(Object.values(SUPPORT_ROUTING).map((r) => r.role));
+
+/**
+ * SupportTicketType (schema enum, the kinds a shop or delivery company picks
+ * on its Support tab) to the desk that owns it:
+ *
+ *   WALLET    -> MONEY       payment, invoice query, failed payment, refund
+ *   ORDER     -> OPERATIONS  driver late, delivery complaint, damaged order
+ *   TECHNICAL -> TECH        slow, orders not showing, cannot log in
+ *   OTHER     -> OPERATIONS  the account manager owns the relationship, so an
+ *                            untyped request goes to the person who knows the
+ *                            company rather than to nobody
+ *
+ * Kept here, next to the routing, so the vendor and fleet portals cannot map
+ * the same type to two different desks.
+ */
+export const SUPPORT_TYPE_CATEGORY: Record<string, SupportCategory> = {
+  WALLET: "MONEY",
+  ORDER: "OPERATIONS",
+  TECHNICAL: "TECH",
+  OTHER: "OPERATIONS",
+};
+
+/** A SupportCategory passes through; a SupportTicketType is mapped; anything
+ *  unknown is OPERATIONS. */
+export function supportCategoryFor(categoryOrType: string | null | undefined): SupportCategory {
+  if (categoryOrType && categoryOrType in SUPPORT_ROUTING) return categoryOrType as SupportCategory;
+  return SUPPORT_TYPE_CATEGORY[categoryOrType ?? ""] ?? "OPERATIONS";
+}
+
 export async function createSupportNotifications(params: {
   tenantId: string;
-  category: keyof typeof SUPPORT_ROUTING;
+  /** MONEY / OPERATIONS / TECH, or the ticket's SupportTicketType. */
+  category: SupportCategory | string;
   title: string;
   message: string;
   sourceId?: string;
@@ -284,22 +343,45 @@ export async function createSupportNotifications(params: {
   vendorId?: string | null;
   fleetPartnerId?: string | null;
 }) {
-  const { tenantId, category, title, message, sourceId, metadata, vendorId, fleetPartnerId } =
-    params;
-  const route = SUPPORT_ROUTING[category] ?? SUPPORT_ROUTING.OPERATIONS;
+  const { tenantId, title, message, sourceId, metadata, vendorId, fleetPartnerId } = params;
+  const category = supportCategoryFor(params.category);
+  const route = SUPPORT_ROUTING[category];
 
   const storedRules = await prisma.notificationRule.findMany({ where: { tenantId, eventType: "SUPPORT_REQUEST_SUBMITTED" } });
-  const roles = withCategoryDefaults(storedRules).filter(r => r.eventType === "SUPPORT_REQUEST_SUBMITTED" && r.enabled).map(r => r.role);
+  const enabledRoles = withCategoryDefaults(storedRules)
+    .filter((r) => r.eventType === "SUPPORT_REQUEST_SUBMITTED" && r.enabled)
+    .map((r) => r.role);
+
+  // The category's own desk, when its rule is on, plus every non-desk role
+  // whose rule is on. The other two desks never see this request.
+  const deskOn = enabledRoles.includes(route.role);
+  const roles = [...new Set(enabledRoles.filter((r) => !SUPPORT_DESK_ROLES.has(r)))];
+  if (deskOn && route.role !== "ACCOUNT_MANAGER") roles.push(route.role);
+
+  // Account managers are scoped to the companies they handle (client note of
+  // 2026-08-16: "only the vendor/delivery company account manager will get
+  // notifications regarding the companies he is handling").
   let managerIds: string[] = [];
-  if (roles.includes("ACCOUNT_MANAGER")) {
+  if (deskOn && route.role === "ACCOUNT_MANAGER") {
     if (vendorId) managerIds = (await prisma.accountManagerVendor.findMany({ where: { tenantId, vendorId }, select: { userId: true } })).map(l => l.userId);
     else if (fleetPartnerId) managerIds = (await prisma.accountManagerFleet.findMany({ where: { tenantId, fleetPartnerId }, select: { userId: true } })).map(l => l.userId);
+    // A company nobody has been given yet still has a request somebody must
+    // answer. With no account manager linked, operations falls to the ops
+    // manager rather than to nobody.
+    if (managerIds.length === 0 && enabledRoles.includes("OPS_MANAGER") && !roles.includes("OPS_MANAGER")) {
+      roles.push("OPS_MANAGER");
+    }
   }
-  const users = await prisma.user.findMany({ where: {
-    tenantId, isActive: true,
-    OR: [ { role: { in: roles.filter(r => r !== "ACCOUNT_MANAGER") as any } },
-      { role: "ACCOUNT_MANAGER", id: { in: managerIds } } ],
-  }, select: { id: true } });
+
+  const or: any[] = [];
+  if (roles.length > 0) or.push({ role: { in: roles as any } });
+  if (managerIds.length > 0) or.push({ role: "ACCOUNT_MANAGER", id: { in: managerIds } });
+  if (or.length === 0) return { created: 0 };
+
+  const users = await prisma.user.findMany({
+    where: { tenantId, isActive: true, OR: or },
+    select: { id: true },
+  });
   const userIds = [...new Set(users.map(u => u.id))];
 
   if (userIds.length === 0) return { created: 0 };

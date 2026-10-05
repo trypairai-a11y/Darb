@@ -23,7 +23,7 @@ import OnboardingTab from "@/components/hq/OnboardingTab";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { OPS_TABS } from "@/lib/hqTabs";
 import { useQuery } from "@tanstack/react-query";
-import { onboardingApi } from "@/lib/darbApi";
+import { onboardingApi, supportApi } from "@/lib/darbApi";
 
 function OpsScreen() {
   const searchParams = useSearchParams();
@@ -37,9 +37,19 @@ function OpsScreen() {
     refetchInterval: 120_000,
   });
 
+  // Open tickets plus pending approvals (a company's price proposal among
+  // them), so something waiting shows on the strip before anyone opens it.
+  const requestsQuery = useQuery({
+    queryKey: ["darb", "support", "counts"],
+    queryFn: () => supportApi.counts(),
+    refetchInterval: 120_000,
+  });
+  const waitingRequests =
+    (requestsQuery.data?.openSupport ?? 0) + (requestsQuery.data?.pendingApprovals ?? 0);
+
   return (
     <div className="space-y-5">
-      <HqTabs tabs={OPS_TABS} counts={{ onboarding: onboardingQuery.data?.waiting }} />
+      <HqTabs tabs={OPS_TABS} counts={{ onboarding: onboardingQuery.data?.waiting, requests: waitingRequests }} />
       {tab === "driver-tracking" ? (
         <DriverTrackingTab />
       ) : tab === "shift-planning" ? (

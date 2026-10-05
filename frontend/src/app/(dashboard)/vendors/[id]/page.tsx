@@ -1009,27 +1009,31 @@ function UsersTab({ vendorId }: { vendorId: string }) {
   // Only a supervisor login is pinned to one branch; every other role is
   // vendor-wide, so the branch picker is irrelevant for them (edit #8).
   const needsBranch = form.vendorRole === "SUPERVISOR";
+  const [issuedInvite, setIssuedInvite] = useState<string | null>(null);
 
   const roleLabel = (role: string | null | undefined) =>
     t(`portalRoles.${normalizeVendorRole(role)}`);
 
   async function handleCreate() {
-    if (!form.name.trim() || !form.email.trim() || !form.password) return;
+    if (!form.name.trim() || !form.email.trim()) return;
     if (needsBranch && !form.branchId) {
       toast.error(t("vendorsPage.branchRequired"));
       return;
     }
     setSaving(true);
     try {
-      await vendorsApi.createUser(vendorId, {
+      // Client note, 2026-07-28: people choose their own password. Blank
+      // here sends an invite link instead of a password Darb typed for them.
+      const created = await vendorsApi.createUser(vendorId, {
         name: form.name.trim(),
         email: form.email.trim(),
-        password: form.password,
+        password: form.password || undefined,
         phone: form.phone.trim() || undefined,
         vendorRole: form.vendorRole,
         branchId: needsBranch ? form.branchId : null,
       });
       toast.success(t("vendorsPage.userCreated"));
+      setIssuedInvite(created.inviteUrl ?? null);
       setForm({
         name: "",
         email: "",
@@ -1158,11 +1162,23 @@ function UsersTab({ vendorId }: { vendorId: string }) {
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                required
                 minLength={8}
               />
+              <p className="mt-1 text-[11px] text-sand-500">{t("vendorsPage.passwordOptionalHint")}</p>
             </div>
           </div>
+          {issuedInvite && (
+            <div className="rounded-xl border border-sand-200 bg-sand-50 px-3 py-2.5 space-y-1.5" data-testid="portal-login-invite">
+              <p className="text-xs text-sand-700">{t("vendorsPage.inviteLinkReady")}</p>
+              <input
+                readOnly
+                dir="ltr"
+                value={issuedInvite}
+                onFocus={(e) => e.currentTarget.select()}
+                className="w-full px-3 h-9 rounded-lg bg-white border border-sand-300 text-xs font-mono"
+              />
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <div>

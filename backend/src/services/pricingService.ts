@@ -22,13 +22,20 @@
  * That fallback is what lets plans ship dark and vendors move onto them one at
  * a time instead of all at once behind a flag day.
  *
+ * A drop pinned outside every zone is priced, never sent to review: a by-km
+ * plan measures it like any other, and every zone-keyed path prices it as a
+ * drop in the zone whose edge is nearest (client note, 2026-07-28).
+ *
  * A missing rate means the pair or the band is unserviceable by design
  * (absence of a row = UNSERVICEABLE_PAIR). All money math uses Prisma.Decimal
  * — never JS floats.
  */
 import { Prisma } from "../generated/prisma";
 import { prisma } from "../config";
-import { ResolvedZone, resolveZone } from "./zoneService";
+import { ResolvedZone, nearestZone, resolveZone } from "./zoneService";
+
+/** How far past the nearest zone's edge a drop is still priced rather than reviewed. */
+export const MAX_OUT_OF_ZONE_KM = 10;
 import { DistanceSource, drivingDistanceKm } from "./distanceService";
 
 // ─── Contract types ─────────────────────────────────────────────────────────
@@ -44,8 +51,8 @@ export type QuoteResult =
       ok: true;
       pickupZoneId: string;
       /**
-       * Null when the pin fell outside every zone polygon and the plan priced
-       * it anyway (by-kilometre plans, which measure rather than look up).
+       * Null when the pin fell outside every zone polygon and was priced
+       * anyway (by distance on a by-km plan, as the nearest zone otherwise).
        */
       dropoffZoneId: string | null;
       feeKwd: Prisma.Decimal;
@@ -53,6 +60,14 @@ export type QuoteResult =
       dropoffZone: ResolvedZone | null;
       /** True when the drop is outside every zone but was still priced. */
       outOfZone?: boolean;
+      /**
+       * The zone an out-of-zone drop was priced as: the one whose edge is
+       * nearest the pin. Set only on zone-keyed pricing (by-zone plans and the
+       * tenant-wide card); a by-km plan never needs a zone to price.
+       */
+      pricedAsZone?: ResolvedZone;
+      /** How far outside that zone's edge the pin sits, in km. */
+      outOfZoneKm?: number;
       /**
        * Branch-to-drop routing distance. Set on every quote that has two pins
        * to measure between, not only on by-kilometre plans (revision 14 #3):
@@ -181,10 +196,11 @@ function kmPlanFee(
  * `dropoff.zoneId` directly, or lat/lng resolved point-in-polygon (no
  * coordinates AND no zoneId → NO_COORDINATES).
  *
- * A pin that resolves to no zone only rejects on the paths that need a zone to
- * find a price — by-zone plans and the tenant-wide fallback. A by-kilometre
- * plan prices it from the distance and returns `outOfZone: true` with a null
- * dropoffZoneId.
+ * A pin that resolves to no zone is still priced, and returns `outOfZone: true`
+ * with a null dropoffZoneId. A by-kilometre plan prices it from the distance;
+ * the zone-keyed paths price it as a drop in the nearest zone and say which in
+ * `pricedAsZone`. OUT_OF_ZONE_DROPOFF is left for a dropoff zone id that names
+ * no zone, and for a tenant with no zone geometry to measure against.
  *
  * Throws when a plan-less vendor has no FulfillmentSettings for the tenant —
  * that is a configuration error, not a quotable rejection (routes map it to
@@ -225,8 +241,8 @@ export async function quoteDelivery(
   // measures the trip and never looks the zone up. Rejecting both alike meant
   // a km-priced merchant was refused an order it had a perfectly good price
   // for, purely because the map has gaps. So the miss is carried down as
-  // `dropoffZone = null` and only turned into OUT_OF_ZONE_DROPOFF at 3b, where
-  // it actually matters.
+  // `dropoffZone = null` and resolved at 3b, where a zone is actually needed
+  // (as the nearest zone, since the client note of 2026-07-28).
   const dropoff = input.dropoff ?? {};
   let dropoffZone: ResolvedZone | null = null;
 
@@ -318,10 +334,41 @@ export async function quoteDelivery(
   }
 
   // ── 3b. By-zone plan ─────────────────────────────────────────────────────
-  // From here down a zone is genuinely required: the price is a cell in a
-  // grid, and there is no row to read for a pin that is in no zone. Draw the
-  // zone and the plan prices it; until then it is a supervisor's call.
-  if (!dropoffZone) return { ok: false, reason: "OUT_OF_ZONE_DROPOFF" };
+  // From here down the price is keyed on a zone: a cell in a plan's grid, or
+  // a row in the tenant-wide surcharge table.
+  //
+  // A pin in no zone used to stop here with OUT_OF_ZONE_DROPOFF, which landed
+  // the order in Needs review for a person to price by hand. The client's note
+  // (2026-07-28): "If out of zone drop off the price changes only, no need to
+  // review." Only by-km plans did that; every by-zone merchant and every
+  // merchant with no plan had each such order parked until somebody noticed.
+  //
+  // Nothing in a zone grid or the surcharge table holds a figure for "outside
+  // the map", and neither carries a rate per kilometre to charge the extra
+  // distance with. What the data does hold is the price to every drawn zone,
+  // and a driver reaching a pin past a zone's edge drives through that zone to
+  // get there. So the drop is priced as a drop in the zone whose edge is
+  // nearest, and the quote says which (`pricedAsZone`) and how far out
+  // (`outOfZoneKm`), so the price can be read back and argued with. The order
+  // itself still records no dropoff zone, because it is in none.
+  //
+  // A tenant with no zone geometry at all has nothing to measure against, and
+  // that one case still goes to review. So does a pin more than
+  // MAX_OUT_OF_ZONE_KM past the nearest edge: that is a mistyped address or a
+  // pin dropped on the wrong country, and pricing it at a border zone's rate
+  // would dispatch a driver to somewhere nobody meant.
+  let priceZone: ResolvedZone;
+  let snapped: { pricedAsZone: ResolvedZone; outOfZoneKm: number } | null = null;
+  if (dropoffZone) {
+    priceZone = dropoffZone;
+  } else {
+    const nearest =
+      destLat != null && destLng != null ? await nearestZone(tenantId, destLat, destLng) : null;
+    if (!nearest || nearest.km > MAX_OUT_OF_ZONE_KM) return { ok: false, reason: "OUT_OF_ZONE_DROPOFF" };
+    priceZone = nearest.zone;
+    snapped = { pricedAsZone: nearest.zone, outOfZoneKm: Number(nearest.km.toFixed(3)) };
+  }
+  const priced = { ...base, ...measured, ...(snapped ?? {}) };
 
   // A by-zone plan with NOT ONE rate in it has never been configured, and
   // reading it as "every pair unserviceable" refuses that merchant's entire
@@ -346,24 +393,22 @@ export async function quoteDelivery(
     // A plan written before this column has no fee of its own, so the diagonal
     // of its grid still answers — that is where the value used to be kept, and
     // those plans keep quoting exactly what they quoted yesterday.
-    if (pickupZone.id === dropoffZone.id && plan.intraZoneFeeKwd != null) {
+    if (pickupZone.id === priceZone.id && plan.intraZoneFeeKwd != null) {
       return {
         ok: true,
-        ...base,
-        ...measured,
+        ...priced,
         feeKwd: new Prisma.Decimal(plan.intraZoneFeeKwd as unknown as Prisma.Decimal.Value),
         planId: plan.id,
       };
     }
     const rate = await prisma.deliveryPlanZoneRate.findFirst({
-      where: { planId: plan.id, originZoneId: pickupZone.id, destZoneId: dropoffZone.id },
+      where: { planId: plan.id, originZoneId: pickupZone.id, destZoneId: priceZone.id },
       select: { feeKwd: true },
     });
     if (!rate) return { ok: false, reason: "UNSERVICEABLE_PAIR" };
     return {
       ok: true,
-      ...base,
-      ...measured,
+      ...priced,
       feeKwd: new Prisma.Decimal(rate.feeKwd as unknown as Prisma.Decimal.Value),
       planId: plan.id,
     };
@@ -381,9 +426,9 @@ export async function quoteDelivery(
 
   let feeKwd = new Prisma.Decimal(settings.intraZoneFeeKwd as unknown as Prisma.Decimal.Value);
 
-  if (pickupZone.id !== dropoffZone.id) {
+  if (pickupZone.id !== priceZone.id) {
     const surcharge = await prisma.zoneSurcharge.findFirst({
-      where: { tenantId, originZoneId: pickupZone.id, destZoneId: dropoffZone.id },
+      where: { tenantId, originZoneId: pickupZone.id, destZoneId: priceZone.id },
       select: { surchargeKwd: true },
     });
     if (!surcharge) return { ok: false, reason: "UNSERVICEABLE_PAIR" };
@@ -392,5 +437,5 @@ export async function quoteDelivery(
     );
   }
 
-  return { ok: true, ...base, ...measured, feeKwd };
+  return { ok: true, ...priced, feeKwd };
 }
