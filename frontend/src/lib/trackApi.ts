@@ -11,6 +11,7 @@ export interface TrackPayload {
     | "DISPATCHING"
     | "NO_DRIVER"
     | "ASSIGNED"
+    | "ARRIVED"
     | "PICKED_UP"
     | "DELIVERED"
     | "FAILED"

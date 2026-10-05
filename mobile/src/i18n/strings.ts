@@ -206,6 +206,15 @@ const EN: Record<string, string> = {
   "failed.return_body": "Take the order back to the shop it came from, hand it over, then confirm here.",
   "failed.return_confirm": "I returned it to the shop",
   "failed.return_required": "You stay on this order until it is back at the shop. New orders resume after you confirm.",
+  // Client note 2026-10-05: return first, then report at the shop.
+  "failed.start_title": "Take the order back to the shop",
+  "failed.start_body": "If you cannot deliver, return the order to the shop first. You report what happened when you hand it over.",
+  "failed.start_return": "Return to the shop",
+  "failed.start_confirm_title": "Take the order back?",
+  "failed.start_confirm_body": "The delivery stops here. Take the order back to the shop, and report what happened there.",
+  "failed.return_body_report": "Hand the order over at the shop, then choose what happened and confirm.",
+  "failed.report_title": "What happened?",
+  "failed.return_and_report": "Handed back, report failed delivery",
 
   // ─── Wallet ───
   "wallet.title": "Wallet",

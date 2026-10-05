@@ -90,6 +90,43 @@ export const ALLOWED: Record<DeliveryOrderStatus, DeliveryOrderStatus[]> = {
   RETURNED: [],
 };
 
+/**
+ * Statuses in which an order is still the driver's job: they hold it, are on
+ * their way to it, or (FAILED, revision 21c) are carrying it back to the shop.
+ * Presence, the dispatch busy query and the driver app's /state all read this
+ * one list. ARRIVED (revision 8 #3) was missing from all three copies, so a
+ * driver who tapped Arrived at the shop dropped out of /state and could no
+ * longer report a failed delivery or take the order back.
+ */
+export const DRIVER_ACTIVE_STATUSES = ["ASSIGNED", "ARRIVED", "PICKED_UP", "FAILED"] as const;
+
+/**
+ * Statuses a driver can turn back to the shop from: holding the order or
+ * about to (client note, 2026-10-05, "return first, then report").
+ */
+export const RETURNABLE_STATUSES = ["ASSIGNED", "ARRIVED", "PICKED_UP"] as const;
+
+/** When the return leg started (order.metadata.returnStartedAt), or null. */
+export function returnStartedAt(order: { metadata?: unknown }): string | null {
+  const meta = order.metadata;
+  if (!meta || typeof meta !== "object" || Array.isArray(meta)) return null;
+  const at = (meta as Record<string, unknown>).returnStartedAt;
+  return typeof at === "string" ? at : null;
+}
+
+/**
+ * True while the driver is carrying the order back to the shop: the return
+ * leg was started on an in-flight order, or (older app builds) the failure
+ * was reported first and the order sits in FAILED.
+ */
+export function isReturningToMerchant(order: { status: string; metadata?: unknown }): boolean {
+  if (order.status === "FAILED") return true;
+  return (
+    (RETURNABLE_STATUSES as readonly string[]).includes(order.status) &&
+    returnStartedAt(order) !== null
+  );
+}
+
 /** Pure legality check for a from→to pair. */
 export function isTransitionAllowed(
   from: DeliveryOrderStatus,

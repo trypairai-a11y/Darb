@@ -17,7 +17,13 @@ import PeriodPicker, { type Period, presetRange } from "@/components/shared/Peri
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/Toast";
 import { fleetsApi, unwrapList } from "@/lib/darbApi";
-import type { FleetDocument, FleetProfile, FleetStatementRow, FleetUser } from "@/types/darb";
+import type {
+  FleetCommercialModel,
+  FleetDocument,
+  FleetProfile,
+  FleetStatementRow,
+  FleetUser,
+} from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { DirectionalIcon } from "@/i18n/directionalIcon";
 import { formatDate, formatKwd, formatNumber, formatPercent, localeTag } from "@/i18n/format";
@@ -81,8 +87,16 @@ function ProfilePricingSection({ fleet }: { fleet: FleetRow }) {
     flatFeePerOrderKwd:
       fleet.flatFeePerOrderKwd == null ? "" : String(fleet.flatFeePerOrderKwd),
     perKmFeeKwd: fleet.perKmFeeKwd == null ? "" : String(fleet.perKmFeeKwd),
+    commercialModel: (fleet.commercialModel ?? "MARGIN") as FleetCommercialModel,
+    subscriptionFeeKwd:
+      fleet.subscriptionFeeKwd == null ? "" : String(fleet.subscriptionFeeKwd),
   });
   const [saving, setSaving] = useState(false);
+  const subscription = form.commercialModel === "SUBSCRIPTION";
+  // Client note, 2026-08-16: the server refuses a subscription with no fee
+  // (it would pay the company the full shop fee while Darb earns nothing), so
+  // the button says so before the round trip does.
+  const feeMissing = subscription && !(Number(form.subscriptionFeeKwd) > 0);
 
   async function save() {
     setSaving(true);
@@ -94,6 +108,10 @@ function ProfilePricingSection({ fleet }: { fleet: FleetRow }) {
         contactEmail: form.contactEmail.trim() || null,
         flatFeePerOrderKwd: form.flatFeePerOrderKwd.trim() || null,
         perKmFeeKwd: form.perKmFeeKwd.trim() || null,
+        commercialModel: form.commercialModel,
+        // Kept on the row when switching back to MARGIN, so flipping the
+        // model twice does not lose the agreed fee.
+        subscriptionFeeKwd: form.subscriptionFeeKwd.trim() || null,
       });
       toast.success(t("toast.saved"));
       // The list row and this page's header show the fee and the name.
@@ -155,6 +173,55 @@ function ProfilePricingSection({ fleet }: { fleet: FleetRow }) {
       <h3 className="text-xs uppercase tracking-wide font-medium text-sand-600 pt-2">
         Delivery pricing
       </h3>
+      {/* Client note, 2026-08-16 (Osama): two models with delivery companies,
+          a monthly subscription or Darb's margin on each order. */}
+      <div>
+        <span className={labelClass}>Commercial model</span>
+        <div
+          role="radiogroup"
+          aria-label="Commercial model"
+          data-testid="fleet-commercial-model"
+          className="inline-flex rounded-pill bg-sand-100 p-1 gap-1"
+        >
+          {(
+            [
+              ["MARGIN", "Margin"],
+              ["SUBSCRIPTION", "Monthly subscription"],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={form.commercialModel === value}
+              onClick={() => setForm({ ...form, commercialModel: value })}
+              className={cn(
+                "px-3 h-8 rounded-pill text-xs font-medium transition-colors",
+                form.commercialModel === value
+                  ? "bg-white text-sand-900 shadow-soft"
+                  : "text-sand-600 hover:text-sand-900",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {subscription && (
+        <label className="block max-w-[calc(50%-0.375rem)]">
+          <span className={labelClass}>Subscription fee per month (KD)</span>
+          <input
+            type="text"
+            inputMode="decimal"
+            dir="ltr"
+            data-testid="fleet-subscription-fee"
+            placeholder="0.000"
+            className={cn(inputClass, "tabular-nums")}
+            value={form.subscriptionFeeKwd}
+            onChange={(e) => setForm({ ...form, subscriptionFeeKwd: e.target.value })}
+          />
+        </label>
+      )}
       <div className="grid grid-cols-2 gap-3">
         <label>
           <span className={labelClass}>{t("fleetPortal.feePerOrder")}</span>
@@ -184,14 +251,20 @@ function ProfilePricingSection({ fleet }: { fleet: FleetRow }) {
         </label>
       </div>
       <p className="text-xs text-sand-600">
-        What this company earns per delivered order. Per-km is only for companies on the
-        kilometre rate; leave it empty for a flat fee.
+        {subscription
+          ? "On a monthly subscription the company is paid the delivery fee the shop was charged for each order, and the monthly fee is deducted on its statement. The fees above are kept but not used while it is on a subscription."
+          : "What this company earns per delivered order. Per-km is only for companies on the kilometre rate; leave it empty for a flat fee."}
       </p>
+      {feeMissing && (
+        <p className="text-xs text-red-600" role="alert">
+          Enter a monthly subscription fee greater than 0.
+        </p>
+      )}
 
       <button
         type="button"
         onClick={() => void save()}
-        disabled={saving}
+        disabled={saving || feeMissing}
         data-testid="fleet-profile-save"
         className="inline-flex items-center gap-1.5 px-4 h-9 rounded-pill bg-primary text-white text-xs font-medium hover:opacity-90 disabled:opacity-50"
       >
@@ -940,7 +1013,11 @@ function ScorecardSection({ fleet }: { fleet: FleetRow }) {
     <div className="space-y-6 max-w-2xl">
       <div className="flex items-center gap-2 flex-wrap">
         <span dir="ltr" className="text-sm text-sand-700 tabular-nums">
-          {t("fleetPortal.feePerOrder")}: {formatKwd(fleet.flatFeePerOrderKwd, locale)}
+          {/* Client note, 2026-08-16: a subscription company is not paid the
+              per-order fee, so quoting it here would be the wrong number. */}
+          {fleet.commercialModel === "SUBSCRIPTION"
+            ? `Monthly subscription: ${formatKwd(fleet.subscriptionFeeKwd ?? "0", locale)}`
+            : `${t("fleetPortal.feePerOrder")}: ${formatKwd(fleet.flatFeePerOrderKwd, locale)}`}
         </span>
         <button
           type="button"

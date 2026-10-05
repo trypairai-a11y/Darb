@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eye, ExternalLink, MapPin, Plus, Pencil, Trash2 } from "lucide-react";
+import { Copy, Eye, ExternalLink, MapPin, Plus, Pencil, Trash2 } from "lucide-react";
 import DataTable from "@/components/shared/DataTable";
 import SlidePanel from "@/components/shared/SlidePanel";
 import ConfirmModal from "@/components/shared/ConfirmModal";
@@ -863,8 +863,279 @@ function IntegrationsTab({ vendor }: { vendor: Vendor }) {
           custom
           placeholder={t("vendorsPage.integrationCustomPlaceholder")}
         />
+        {/* Client note, 2026-08-16: uPayments is in the client's list, but it is
+            the shop's payment gateway, not an order source. Say so, so nobody
+            waits for uPayments orders to appear. */}
+        <p className="text-xs text-sand-600">{t("vendorsPage.upaymentsHint")}</p>
+      </div>
+
+      {/* Client note, 2026-08-16: "more than Foodics, such as uPayments, Salla,
+          Shopify, and others, and sometimes it is a custom system." Shopify and
+          Salla push orders to /api/integrations; a custom system uses the
+          partner API with an API key. */}
+      <div className="bg-card border border-sand-200 rounded-2xl shadow-soft p-6 max-w-xl space-y-5">
+        <div>
+          <h2 className="font-medium text-sand-900">{t("vendorsPage.storeOrdersTitle")}</h2>
+          <p className="text-xs text-sand-600 mt-1">{t("vendorsPage.storeOrdersHint")}</p>
+        </div>
+        <StoreWebhookConfig vendor={vendor} platform="shopify" label="Shopify" setupHint={t("vendorsPage.shopifySetup")} />
+        <StoreWebhookConfig vendor={vendor} platform="salla" label="Salla" setupHint={t("vendorsPage.sallaSetup")} />
+      </div>
+
+      <div className="bg-card border border-sand-200 rounded-2xl shadow-soft p-6 max-w-xl space-y-3">
+        <h2 className="font-medium text-sand-900">{t("vendorsPage.customIntakeTitle")}</h2>
+        <CopyableUrl url={`${apiOrigin()}/api/partner/orders`} />
+        <p className="text-xs text-sand-600">{t("vendorsPage.customIntakeHint")}</p>
+        <ApiKeysPanel vendorId={vendor.id} />
       </div>
     </>
+  );
+}
+
+/**
+ * Where store platforms and custom systems reach the Darb API. The env the
+ * axios layer proxies to, else this origin (the Next middleware rewrites /api
+ * to the backend, so the portal's own host also accepts the webhook).
+ */
+function apiOrigin(): string {
+  const env = (process.env.NEXT_PUBLIC_API_URL ?? "").trim();
+  if (env) return env.replace(/\/+$/, "");
+  return typeof window !== "undefined" ? window.location.origin : "";
+}
+
+/**
+ * Keys for a shop's own system to call the partner API. The endpoints have
+ * existed since the partner intake shipped, but nothing on screen issued one,
+ * so "sometimes it is a custom system" (client note, 2026-08-16) needed a
+ * developer. The raw key is shown once, as the server only keeps its hash.
+ */
+function ApiKeysPanel({ vendorId }: { vendorId: string }) {
+  const { t } = useI18n();
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const { isAdmin } = useRole();
+  const [name, setName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [issued, setIssued] = useState<string | null>(null);
+  const keysQuery = useQuery({
+    queryKey: ["darb", "vendor", vendorId, "api-keys"],
+    queryFn: () => vendorsApi.apiKeys(vendorId),
+    enabled: isAdmin,
+  });
+  if (!isAdmin) return null;
+  const keys = (keysQuery.data ?? []).filter((k) => k.isActive);
+
+  async function create() {
+    if (name.trim().length < 2) return;
+    setBusy(true);
+    try {
+      const created = await vendorsApi.createApiKey(vendorId, name.trim());
+      setIssued(created.rawKey);
+      setName("");
+      await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", vendorId, "api-keys"] });
+    } catch {
+      toast.error(t("toast.failedSave"));
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function revoke(id: string) {
+    try {
+      await vendorsApi.revokeApiKey(id);
+      await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", vendorId, "api-keys"] });
+    } catch {
+      toast.error(t("toast.failedSave"));
+    }
+  }
+
+  return (
+    <div className="space-y-2 pt-2 border-t border-sand-100" data-testid="vendor-api-keys">
+      <p className="text-sm font-medium text-sand-900">{t("vendorsPage.apiKeysTitle")}</p>
+      {keys.map((k) => (
+        <div key={k.id} className="flex items-center justify-between gap-2 text-sm">
+          <span>
+            {k.name} <span className="font-mono text-xs text-sand-500" dir="ltr">{k.keyPrefix}…</span>
+          </span>
+          <button type="button" onClick={() => revoke(k.id)} className="text-xs text-red-600 hover:underline">
+            {t("vendorsPage.apiKeyRevoke")}
+          </button>
+        </div>
+      ))}
+      <div className="flex gap-2">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={t("vendorsPage.apiKeyName")}
+          className="flex-1 px-3 h-9 rounded-xl bg-white border border-sand-300 text-sm"
+        />
+        <button
+          type="button"
+          disabled={busy || name.trim().length < 2}
+          onClick={create}
+          className="h-9 px-4 rounded-pill bg-primary text-white text-sm font-medium disabled:opacity-40"
+        >
+          {t("vendorsPage.apiKeyCreate")}
+        </button>
+      </div>
+      {issued && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 space-y-1">
+          <p className="text-xs text-amber-800">{t("vendorsPage.apiKeyOnce")}</p>
+          <CopyableUrl url={issued} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CopyableUrl({ url }: { url: string }) {
+  const { t } = useI18n();
+  const [copied, setCopied] = useState(false);
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* clipboard refused: the URL is still selectable on screen */
+    }
+  }
+  return (
+    <div className="flex items-center gap-2">
+      <code dir="ltr" className="flex-1 min-w-0 truncate px-3 h-9 leading-9 rounded-xl bg-sand-100 border border-sand-200 text-xs font-mono select-all">
+        {url}
+      </code>
+      <button
+        type="button"
+        onClick={() => void copy()}
+        className="inline-flex items-center gap-1 px-3 h-9 rounded-pill bg-primary/10 text-primary text-xs font-medium hover:bg-primary/15 transition-colors"
+      >
+        <Copy size={12} aria-hidden="true" />
+        {copied ? t("common.copied") : t("common.copy")}
+      </button>
+    </div>
+  );
+}
+
+type StorePlatformKey = "shopify" | "salla";
+
+function readStoreSettings(vendor: Vendor, platform: StorePlatformKey) {
+  const block = vendor.integrationSettings?.[platform];
+  const obj: Record<string, string | null> = block && typeof block === "object" ? block : {};
+  return {
+    webhookSecret: (obj.webhookSecret ?? "").trim(),
+    branchId: (obj.branchId ?? "").trim(),
+  };
+}
+
+/**
+ * Client note, 2026-08-16: one store platform's order webhook. The secret is
+ * the one the store admin signs with (Darb only verifies), the branch is where
+ * the orders are created, and the URL is what the store admin pastes in. Saved
+ * as integrationSettings.<platform> = { webhookSecret, branchId }, which is
+ * what backend/src/services/integrations/storePlatforms.ts reads.
+ */
+function StoreWebhookConfig({
+  vendor,
+  platform,
+  label,
+  setupHint,
+}: {
+  vendor: Vendor;
+  platform: StorePlatformKey;
+  label: string;
+  setupHint: string;
+}) {
+  const { t } = useI18n();
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const saved = readStoreSettings(vendor, platform);
+  const [secret, setSecret] = useState(saved.webhookSecret);
+  const [branchId, setBranchId] = useState(saved.branchId);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    const next = readStoreSettings(vendor, platform);
+    setSecret(next.webhookSecret);
+    setBranchId(next.branchId);
+  }, [vendor.updatedAt, platform]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const branchesQuery = useQuery({
+    queryKey: ["darb", "vendor", vendor.id, "branches"],
+    queryFn: () => vendorsApi.listBranches(vendor.id),
+  });
+  const branches = useMemo(() => unwrapList<VendorBranch>(branchesQuery.data), [branchesQuery.data]);
+
+  const configured = !!saved.webhookSecret && !!saved.branchId;
+  const dirty = secret.trim() !== saved.webhookSecret || branchId !== saved.branchId;
+  const webhookUrl = `${apiOrigin()}/api/integrations/${platform}/${vendor.id}/orders`;
+
+  async function save() {
+    setBusy(true);
+    try {
+      const value = secret.trim() || branchId ? { webhookSecret: secret.trim() || null, branchId: branchId || null } : null;
+      await vendorsApi.update(vendor.id, {
+        integrationSettings: { ...(vendor.integrationSettings ?? {}), [platform]: value },
+      });
+      await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", vendor.id] });
+      toast.success(t("toast.saved"));
+    } catch {
+      toast.error(t("toast.failedSave"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="border border-sand-200 rounded-xl p-4 space-y-3" data-testid={`store-webhook-${platform}`}>
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium text-sand-900">{label}</span>
+        {configured && (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-pill bg-green-50 text-green-700 text-[11px] font-medium">
+            {t("vendorsPage.integrationConfigured")}
+          </span>
+        )}
+      </div>
+      <div>
+        <p className="text-xs uppercase tracking-wide text-sand-600 mb-1">{t("vendorsPage.webhookUrl")}</p>
+        <CopyableUrl url={webhookUrl} />
+      </div>
+      <label className="block">
+        <span className="block text-xs uppercase tracking-wide text-sand-600 mb-1">{t("vendorsPage.webhookSecret")}</span>
+        <input
+          type="password"
+          dir="ltr"
+          autoComplete="off"
+          value={secret}
+          onChange={(e) => setSecret(e.target.value)}
+          className="w-full px-3 h-9 rounded-xl bg-white border border-sand-300 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary/20"
+        />
+      </label>
+      <label className="block">
+        <span className="block text-xs uppercase tracking-wide text-sand-600 mb-1">{t("vendorsPage.webhookBranch")}</span>
+        <select
+          value={branchId}
+          onChange={(e) => setBranchId(e.target.value)}
+          className="w-full px-3 h-9 rounded-xl bg-white border border-sand-300 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+        >
+          <option value="">{t("vendorsPage.webhookBranchNone")}</option>
+          {branches.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <p className="text-xs text-sand-600">{setupHint}</p>
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => void save()}
+          disabled={busy || !dirty}
+          className="px-3 h-9 rounded-pill bg-primary/10 text-primary text-xs font-medium hover:bg-primary/15 transition-colors disabled:opacity-50"
+        >
+          {busy ? t("common.processing") : t("common.save")}
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -889,6 +1160,7 @@ function IntegrationConfigRow({
 }) {
   const { t } = useI18n();
   const toast = useToast();
+  const queryClient = useQueryClient();
   // The key the value is stored under: named providers store under their own
   // name, the custom system stores under "custom" with its label inside.
   const storageKey = custom ? "custom" : name;
@@ -907,6 +1179,9 @@ function IntegrationConfigRow({
       await vendorsApi.update(vendorId, {
         integrationSettings: { ...(vendor.integrationSettings ?? {}), [storageKey]: value.trim() || null },
       });
+      // Refresh the vendor so the next save (here or in the store webhook
+      // config) spreads the current integrationSettings, not a stale copy.
+      await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", vendorId] });
       toast.success(t("toast.saved"));
     } catch {
       toast.error(t("toast.failedSave"));

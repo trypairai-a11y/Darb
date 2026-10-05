@@ -640,7 +640,8 @@ export type OrderStage =
   | "PICKED_UP"
   | "HEADING_TO_DROPOFF"
   | "ARRIVED_AT_DROPOFF"
-  /** The return leg after a failed delivery (revision 21c). Server status FAILED. */
+  /** The return leg after a failed delivery (revision 21c). Server status
+   *  RETURNING (turned back, not yet reported) or FAILED (older builds). */
   | "RETURNING";
 
 export interface AgentOfferSummary {
@@ -658,7 +659,10 @@ export interface AgentOfferSummary {
 export interface AgentActiveOrder {
   id: string;
   orderNumber?: string | null;
-  status: string; // server coarse status (ASSIGNED | PICKED_UP | …)
+  status: string; // server coarse status (ASSIGNED | PICKED_UP | …), or RETURNING
+  /** True when the failure is already on record (an older build reported it
+   *  before the return leg), so the hand-back needs no reason. */
+  failureReported?: boolean;
   stage?: OrderStage | null; // furthest milestone the server has seen
   slaDeadline?: string | null;
   paymentMethod?: "COD" | "PREPAID";
@@ -800,11 +804,33 @@ export async function postOrderFailed(
   });
 }
 
-/** The hand-back confirmation of the return leg: FAILED → RETURNED. */
-export async function postOrderReturned(orderId: string): Promise<{ ok: boolean }> {
-  return agentFetch(`/api/agent/orders/${encodeURIComponent(orderId)}/returned`, {
+/**
+ * Client note (2026-10-05): the driver turns back to the shop BEFORE the
+ * failure is reported. No status change on the server; the order is marked
+ * as on its way back and stays the driver's active order.
+ */
+export async function postReturnStarted(
+  orderId: string,
+): Promise<{ ok: boolean; returnTo?: ReturnTo }> {
+  return agentFetch(`/api/agent/orders/${encodeURIComponent(orderId)}/return-started`, {
     method: "POST",
     body: JSON.stringify({}),
+  });
+}
+
+/**
+ * The hand-back at the shop. With a reason this is also where the failure is
+ * reported (in-flight → FAILED → RETURNED on the server). Without one it only
+ * closes an order an older build already reported (FAILED → RETURNED).
+ */
+export async function postOrderReturned(
+  orderId: string,
+  reason?: string,
+  note?: string,
+): Promise<{ ok: boolean }> {
+  return agentFetch(`/api/agent/orders/${encodeURIComponent(orderId)}/returned`, {
+    method: "POST",
+    body: JSON.stringify(reason ? { reason, note } : {}),
   });
 }
 

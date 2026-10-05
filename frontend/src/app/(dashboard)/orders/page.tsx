@@ -16,7 +16,8 @@ import ConfirmModal from "@/components/shared/ConfirmModal";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
-import OrderStatusBadge from "@/components/darb/OrderStatusBadge";
+import OrderStatusBadge, { ReturningPill, STATUS_I18N } from "@/components/darb/OrderStatusBadge";
+import { isReturningToStore } from "@/lib/orderReturn";
 import {
   OrderOutcomeBanner,
   OrderOutcomeCell,
@@ -37,15 +38,20 @@ import { useRole } from "@/hooks/useRole";
 import { formatDateTime, formatKwd, formatTime } from "@/i18n/format";
 import { cn } from "@/lib/cn";
 
+// RETURNED and ARRIVED were missing (client note, 2026-10-05, "still it is
+// not showing that the order has been returned to store"): a returned order
+// could not be filtered for at all.
 const STATUS_OPTIONS: DeliveryOrderStatus[] = [
   "CREATED",
   "REJECTED",
   "DISPATCHING",
   "NO_DRIVER",
   "ASSIGNED",
+  "ARRIVED",
   "PICKED_UP",
   "DELIVERED",
   "FAILED",
+  "RETURNED",
   "CANCELLED",
 ];
 
@@ -202,7 +208,12 @@ export default function DeliveryOrdersPage() {
     {
       key: "status",
       label: t("dispatch.status"),
-      render: (v: DeliveryOrderStatus) => <OrderStatusBadge status={v} />,
+      render: (v: DeliveryOrderStatus, row: DeliveryOrder) => (
+        <span className="inline-flex items-center gap-1.5 flex-wrap">
+          <OrderStatusBadge status={v} />
+          {isReturningToStore(row) && <ReturningPill />}
+        </span>
+      ),
     },
     {
       key: "driver",
@@ -274,12 +285,17 @@ export default function DeliveryOrdersPage() {
   // FAILED and RETURNED are terminal for reassign, redispatch and cancel: the
   // state machine only lets FAILED move to RETURNED, so those buttons on a
   // failed order could only ever answer with an error.
+  // An order on its way back to the shop (client note, 2026-10-05) has one
+  // next step, the hand-back, so it gets Return to store and not these.
+  const returning = isReturningToStore(order);
   const canAct =
     canEdit &&
     order &&
+    !returning &&
     !["DELIVERED", "CANCELLED", "REJECTED", "FAILED", "RETURNED"].includes(order.status);
   // FAILED is the only status RETURNED may be reached from (orderStateMachine).
-  const canReturn = canEdit && order?.status === "FAILED";
+  // A returning order gets there through FAILED on the server in one step.
+  const canReturn = canEdit && (order?.status === "FAILED" || returning);
 
   return (
     <div className="space-y-6">
@@ -299,7 +315,7 @@ export default function DeliveryOrdersPage() {
             key: "status",
             label: t("dispatch.status"),
             type: "select",
-            options: STATUS_OPTIONS.map((s) => ({ value: s, label: s.replace(/_/g, " ") })),
+            options: STATUS_OPTIONS.map((s) => ({ value: s, label: t(STATUS_I18N[s]) })),
           },
           {
             key: "vendorId",
@@ -352,7 +368,10 @@ export default function DeliveryOrdersPage() {
         {order && (
           <div className="space-y-6">
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <OrderStatusBadge status={order.status} size="md" />
+              <span className="inline-flex items-center gap-2 flex-wrap">
+                <OrderStatusBadge status={order.status} size="md" />
+                {returning && <ReturningPill />}
+              </span>
               {order.slaDeadline &&
                 !["DELIVERED", "CANCELLED", "REJECTED"].includes(order.status) && (
                   <div className="text-sm">

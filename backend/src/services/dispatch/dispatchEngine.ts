@@ -26,6 +26,7 @@ import { prisma } from "../../config";
 import { logger } from "../../config/logger";
 import { haversineMeters } from "../../utils/geo";
 import {
+  DRIVER_ACTIVE_STATUSES,
   OrderStateConflictError,
   SYSTEM_ACTOR,
   flushOrderEvents,
@@ -416,9 +417,12 @@ export async function selectCandidates(
   }
 
   const orderDistanceKm = (order as { distanceKm?: Prisma.Decimal | null }).distanceKm ?? null;
+  // Client note, 2026-08-16: what a SUBSCRIPTION company costs is the shop fee.
+  const orderShopFeeKwd =
+    (order as { deliveryFeeKwd?: Prisma.Decimal | null }).deliveryFeeKwd ?? null;
   for (const c of prelim) {
     const rate = c.fleetPartnerId ? (fleetRates.get(c.fleetPartnerId) ?? null) : null;
-    c.costKwd = estimatedOrderCostKwd(rate, orderDistanceKm);
+    c.costKwd = estimatedOrderCostKwd(rate, orderDistanceKm, orderShopFeeKwd);
   }
 
   const driverIds = prelim.map((c) => c.driverId);
@@ -432,7 +436,8 @@ export async function selectCandidates(
         tenantId,
         driverId: { in: driverIds },
         // FAILED: still carrying the bag back to the shop (revision 21c).
-        status: { in: ["ASSIGNED", "PICKED_UP", "FAILED"] },
+        // ARRIVED: standing at a shop counter, which is busy too.
+        status: { in: [...DRIVER_ACTIVE_STATUSES] },
       },
       select: { driverId: true, status: true, dropoffLat: true, dropoffLng: true },
     }),

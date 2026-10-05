@@ -22,8 +22,16 @@ import { Prisma } from "../../generated/prisma";
 import { prisma } from "../../config";
 import { fleetRateOf, orderPayoutKwd, type FleetRate } from "../fleetService";
 
-/** A company paid a base fee and nothing for distance. */
+/**
+ * A company paid a base fee and nothing for distance.
+ *
+ * Client note, 2026-08-16: a SUBSCRIPTION company is never flat-rate here. It
+ * is paid the fee the shop was charged for the order, which already prices
+ * the distance on a by-kilometre plan, so a cross-zone order costs Darb no
+ * margin and fencing the company out would only shrink the pool.
+ */
 export function isFlatRateFleet(rate: FleetRate): boolean {
+  if (rate.model === "SUBSCRIPTION") return false;
   return rate.perKmKwd == null || rate.perKmKwd.isZero();
 }
 
@@ -39,15 +47,17 @@ export function isFlatRateFleet(rate: FleetRate): boolean {
 export function estimatedOrderCostKwd(
   rate: FleetRate | null,
   distanceKm: Prisma.Decimal | null,
+  shopFeeKwd?: Prisma.Decimal | null,
 ): number {
   if (!rate) return 0;
-  return orderPayoutKwd(rate, distanceKm).toNumber();
+  return orderPayoutKwd(rate, distanceKm, shopFeeKwd).toNumber();
 }
 
 export interface FleetRateRow {
   id: string;
   flatFeePerOrderKwd: Prisma.Decimal;
   perKmFeeKwd: Prisma.Decimal | null;
+  commercialModel?: string | null;
 }
 
 /** Rates for the companies behind a set of drivers, keyed by fleet id. */
@@ -59,7 +69,7 @@ export async function loadFleetRates(
   if (ids.length === 0) return new Map();
   const rows = (await prisma.fleetPartner.findMany({
     where: { tenantId, id: { in: ids } },
-    select: { id: true, flatFeePerOrderKwd: true, perKmFeeKwd: true },
+    select: { id: true, flatFeePerOrderKwd: true, perKmFeeKwd: true, commercialModel: true },
   })) as unknown as FleetRateRow[];
   return new Map(rows.map((r) => [r.id, fleetRateOf(r)]));
 }

@@ -214,6 +214,7 @@ export async function getCockpitSummary(
         minDriversOnline: true,
         flatFeePerOrderKwd: true,
         perKmFeeKwd: true,
+        commercialModel: true,
         ownerGroup: { select: { id: true, name: true } },
       },
     }),
@@ -310,7 +311,10 @@ export async function getCockpitSummary(
   // the kilometres those deliveries covered (revision 14 #3). Summed through
   // the same helper the statements are cut with, so the cockpit's cost line
   // and the month's payout cannot drift apart.
+  // Client note, 2026-08-16: a SUBSCRIPTION company is paid the shop fee per
+  // order, so the fees ride along index-aligned with the kilometres.
   const kmByFleet = new Map<string, Array<Prisma.Decimal | null>>();
+  const shopFeesByFleet = new Map<string, Array<Prisma.Decimal | null>>();
   const deliveredByFleet = new Map<string, number>();
   for (const r of deliveredRows) {
     const f = r.driver?.fleetPartnerId;
@@ -319,11 +323,18 @@ export async function getCockpitSummary(
     const list = kmByFleet.get(f) ?? [];
     list.push(r.distanceKm);
     kmByFleet.set(f, list);
+    const fees = shopFeesByFleet.get(f) ?? [];
+    fees.push(r.deliveryFeeKwd ?? null);
+    shopFeesByFleet.set(f, fees);
   }
   let fleetCost = 0;
   for (const fleet of fleets) {
     fleetCost += Number(
-      sumFleetPayout(fleetRateOf(fleet), kmByFleet.get(fleet.id) ?? []).totalKwd,
+      sumFleetPayout(
+        fleetRateOf(fleet),
+        kmByFleet.get(fleet.id) ?? [],
+        shopFeesByFleet.get(fleet.id) ?? [],
+      ).totalKwd,
     );
   }
 

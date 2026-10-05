@@ -72,6 +72,7 @@ import incidentsRouter from "./routes/incidents";
 import dispatchMonitorRouter from "./routes/dispatchMonitor";
 import cronRouter from "./routes/cron";
 import partnerRouter from "./routes/partner";
+import storeIntegrationsRouter from "./routes/storeIntegrations";
 import trackRouter from "./routes/track";
 import payRouter from "./routes/pay";
 import agentDeliveryRouter from "./routes/agentDelivery";
@@ -165,6 +166,10 @@ app.use(
     autoLogging: { ignore: (req) => req.url === "/api/health" || req.url === "/" },
   })
 );
+// Client note, 2026-08-16 (more integrations than Foodics): Shopify and Salla
+// order webhooks. Mounted BEFORE express.json because their signatures cover
+// the exact raw bytes; the router carries its own express.raw and limiter.
+app.use("/api/integrations", storeIntegrationsRouter);
 app.use(express.json({
   limit: "10mb",
   // Darb 2.0 — capture the raw request body for webhook HMAC verification

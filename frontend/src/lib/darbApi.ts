@@ -64,6 +64,7 @@ import type {
   FleetScorecard,
   FleetStatementRow,
   FleetUser,
+  FleetCommercialModel,
   FleetEarnings,
   FleetRate,
   FleetDocument,
@@ -274,6 +275,14 @@ export const vendorsApi = {
     put<VendorBranch>(`/api/vendors/branches/${branchId}`, body),
   removeBranch: (_vendorId: string, branchId: string) =>
     del<{ success?: boolean }>(`/api/vendors/branches/${branchId}`),
+  /** Partner API keys for a custom system (POST /api/partner). Raw key returned once. */
+  apiKeys: (vendorId: string) =>
+    get<Array<{ id: string; name: string; keyPrefix: string; isActive: boolean; lastUsedAt: string | null; createdAt: string }>>(
+      `/api/vendors/${vendorId}/api-keys`,
+    ),
+  createApiKey: (vendorId: string, name: string) =>
+    post<{ id: string; name: string; keyPrefix: string; rawKey: string }>(`/api/vendors/${vendorId}/api-keys`, { name }),
+  revokeApiKey: (keyId: string) => del<{ ok: boolean }>(`/api/vendors/api-keys/${keyId}`),
   users: (vendorId: string) => get<VendorUser[]>(`/api/vendors/${vendorId}/users`),
   createUser: (
     vendorId: string,
@@ -1140,6 +1149,9 @@ export const fleetsApi = {
       isActive?: boolean;
       flatFeePerOrderKwd?: string | number | null;
       perKmFeeKwd?: string | number | null;
+      // Client note, 2026-08-16: margin or a monthly subscription.
+      commercialModel?: FleetCommercialModel;
+      subscriptionFeeKwd?: string | number | null;
       minDriversOnline?: Record<string, number> | null;
     },
   ) => put<FleetProfile>(`/api/fleets/${id}`, body),

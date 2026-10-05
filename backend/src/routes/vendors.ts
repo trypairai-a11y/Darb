@@ -93,7 +93,13 @@ const updateVendorSchema = z.object({
   pricingModel: pricingModelSchema,
   subscriptionKwd: subscriptionKwdSchema,
   // Edit #5 (2026-08-22) — non-Foodics integration config, keyed by provider.
-  integrationSettings: z.record(z.string().nullable()).nullable().optional(),
+  // Client note, 2026-08-16: a provider may also hold a small object, which is
+  // how the Shopify and Salla order webhooks keep { webhookSecret, branchId }
+  // (see services/integrations/storePlatforms.ts).
+  integrationSettings: z
+    .record(z.union([z.string(), z.record(z.string().max(500).nullable())]).nullable())
+    .nullable()
+    .optional(),
 });
 
 const createBranchSchema = z.object({

@@ -100,12 +100,20 @@ function normalizeLockout(raw: AgentStateResponse["lockout"], wallet?: AgentWall
 }
 
 /** Derive a client stage from a server order (server `stage` wins; else map coarse status). */
-function serverStage(order: AgentActiveOrder): OrderStage {
+export function serverStage(order: AgentActiveOrder): OrderStage {
+  const status = (order.status || "").toUpperCase();
+  // The return leg outranks any delivery milestone the server remembers.
+  // RETURNING is what /state sends once the driver turned back (client note,
+  // 2026-10-05); FAILED is an order an older build reported first.
+  if (status === "RETURNING" || status === "FAILED") return "RETURNING";
   const canonical = canonicalStage(order.stage);
   if (canonical && STAGE_ORDER.includes(canonical)) return canonical;
-  const status = (order.status || "").toUpperCase();
-  if (status === "FAILED") return "RETURNING";
-  if (status === "PICKED_UP") return "PICKED_UP";
+  // /state sends the granular milestone in `status` (ARRIVED_AT_PICKUP,
+  // ARRIVED_AT_DROPOFF, ...). Read as a coarse status it fell through to
+  // HEADING_TO_PICKUP, so a relaunched app restarted a picked-up order.
+  const fromStatus = canonicalStage(status as OrderStage);
+  if (fromStatus && STAGE_ORDER.includes(fromStatus)) return fromStatus;
+  if (status === "ARRIVED") return "ARRIVED_AT_PICKUP";
   return "HEADING_TO_PICKUP";
 }
 

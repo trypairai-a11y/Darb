@@ -15,7 +15,8 @@ import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
 import { DirectionalIcon } from "@/i18n/directionalIcon";
 import DriverCard from "@/components/darb/DriverCard";
-import OrderStatusBadge from "@/components/darb/OrderStatusBadge";
+import OrderStatusBadge, { ReturningPill } from "@/components/darb/OrderStatusBadge";
+import { isReturningToStore } from "@/lib/orderReturn";
 import { OrderOutcomeBanner } from "@/components/darb/OrderOutcome";
 import SlaCountdown from "@/components/darb/SlaCountdown";
 import TrackingLink from "@/components/darb/TrackingLink";
@@ -235,6 +236,8 @@ export default function VendorOrderDetailPage() {
         <div className="flex items-center gap-3">
           {active && order.slaDeadline && <SlaCountdown deadline={order.slaDeadline} />}
           <OrderStatusBadge status={order.status} size="md" />
+          {/* Client note (2026-10-05): on its way back to this shop. */}
+          {isReturningToStore(order) && <ReturningPill />}
         </div>
       </div>
 

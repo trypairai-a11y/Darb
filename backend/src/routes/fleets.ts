@@ -57,6 +57,10 @@ const createFleetSchema = z.object({
   // Nullable so a partner can be put back on a flat deal explicitly, rather
   // than only ever being able to move one way.
   perKmFeeKwd: kwdSchema.nullable().optional(),
+  // Client note, 2026-08-16 (Osama): margin or a monthly subscription. The
+  // fee is nullable so switching back to MARGIN can clear it.
+  commercialModel: z.enum(["MARGIN", "SUBSCRIPTION"]).optional(),
+  subscriptionFeeKwd: kwdSchema.nullable().optional(),
   minOnlineHoursPerDay: z.number().min(0).max(24).nullable().optional(),
   minDriversOnline: z.record(z.number().int().min(0)).nullable().optional(),
 });
@@ -64,6 +68,25 @@ const createFleetSchema = z.object({
 const updateFleetSchema = createFleetSchema.partial().extend({
   isActive: z.boolean().optional(),
 });
+
+/**
+ * Client note, 2026-08-16. A SUBSCRIPTION company with no fee would be paid
+ * the full shop fee on every order while paying Darb nothing: the one
+ * configuration in which Darb earns zero from the company. Refused on the
+ * resulting state, so a partial update that only flips the model is checked
+ * against the fee already on the row, and one that only clears the fee is
+ * checked against the model already on the row.
+ */
+function subscriptionFeeError(
+  model: string | null | undefined,
+  fee: unknown,
+): string | null {
+  if (model !== "SUBSCRIPTION") return null;
+  const n = fee == null || fee === "" ? NaN : Number(fee);
+  return Number.isFinite(n) && n > 0
+    ? null
+    : "A monthly subscription needs a subscription fee greater than 0";
+}
 
 const disciplineSchema = z.object({
   status: z.enum(LADDER),
@@ -197,6 +220,8 @@ router.post("/", rbac(...MUTATE), validateBody(createFleetSchema), async (req: R
   try {
     const tenantId = req.user!.tenantId;
     const body = req.body as z.infer<typeof createFleetSchema>;
+    const feeError = subscriptionFeeError(body.commercialModel, body.subscriptionFeeKwd);
+    if (feeError) { res.status(400).json({ error: feeError }); return; }
     const fleet = await prisma.fleetPartner.create({
       data: {
         tenantId,
@@ -209,6 +234,13 @@ router.post("/", rbac(...MUTATE), validateBody(createFleetSchema), async (req: R
           : {}),
         ...(body.perKmFeeKwd !== undefined
           ? { perKmFeeKwd: body.perKmFeeKwd == null ? null : String(body.perKmFeeKwd) }
+          : {}),
+        ...(body.commercialModel !== undefined ? { commercialModel: body.commercialModel } : {}),
+        ...(body.subscriptionFeeKwd !== undefined
+          ? {
+              subscriptionFeeKwd:
+                body.subscriptionFeeKwd == null ? null : String(body.subscriptionFeeKwd),
+            }
           : {}),
         minOnlineHoursPerDay: body.minOnlineHoursPerDay ?? null,
         minDriversOnline: (body.minDriversOnline ?? undefined) as any,
@@ -517,6 +549,23 @@ router.put("/:id", rbac(...MUTATE), validateBody(updateFleetSchema), async (req:
       data.perKmFeeKwd = body.perKmFeeKwd == null ? null : String(body.perKmFeeKwd);
     }
     if (body.minDriversOnline !== undefined) data.minDriversOnline = body.minDriversOnline;
+    if (body.commercialModel !== undefined) data.commercialModel = body.commercialModel;
+    if (body.subscriptionFeeKwd !== undefined) {
+      data.subscriptionFeeKwd =
+        body.subscriptionFeeKwd == null ? null : String(body.subscriptionFeeKwd);
+    }
+    if (body.commercialModel !== undefined || body.subscriptionFeeKwd !== undefined) {
+      const current = await prisma.fleetPartner.findFirst({
+        where: { id: req.params.id, tenantId },
+        select: { commercialModel: true, subscriptionFeeKwd: true },
+      });
+      if (!current) { res.status(404).json({ error: "Fleet partner not found" }); return; }
+      const feeError = subscriptionFeeError(
+        data.commercialModel ?? current.commercialModel,
+        "subscriptionFeeKwd" in data ? data.subscriptionFeeKwd : current.subscriptionFeeKwd,
+      );
+      if (feeError) { res.status(400).json({ error: feeError }); return; }
+    }
     // Revision 21c: switching a company on needs its details filled; the
     // guard is on the transition only. A phone in the same save counts.
     if (data.isActive === true) {

@@ -30,17 +30,39 @@ import {
 
 // ─── The fleet rate ─────────────────────────────────────────────────────────
 
+/**
+ * Client note, 2026-08-16 (Osama): "We have two models with the delivery
+ * companies: either a monthly subscription fee, or we take the difference
+ * from what is offered from the delivery company and what is accepted by the
+ * shop." MARGIN is the second half of that sentence and every company's
+ * behaviour before it. SUBSCRIPTION pays the company the delivery fee the shop
+ * was charged, so Darb keeps nothing per order and earns the monthly fee
+ * instead, deducted on the statement.
+ */
+export type FleetCommercialModel = "MARGIN" | "SUBSCRIPTION";
+
+export function commercialModelOf(raw: string | null | undefined): FleetCommercialModel {
+  // Anything unrecognised reads as MARGIN: a typo in a hand-edited row must
+  // fall back to the deal every company was on, never to paying out the shop
+  // fee with no subscription behind it.
+  return raw === "SUBSCRIPTION" ? "SUBSCRIPTION" : "MARGIN";
+}
+
 /** What Darb pays a delivery company, revision 14 (#3). */
 export interface FleetRate {
   /** Base fee per delivered order. Always set. */
   baseKwd: Prisma.Decimal;
   /** Rate per kilometre. NULL means a flat-rate company: base only. */
   perKmKwd: Prisma.Decimal | null;
+  /** Client note, 2026-08-16. Absent means MARGIN; the key is only set on a
+   *  SUBSCRIPTION company so a MARGIN rate is the same object it always was. */
+  model?: FleetCommercialModel;
 }
 
 export function fleetRateOf(fleet: {
   flatFeePerOrderKwd: Prisma.Decimal | string | number;
   perKmFeeKwd?: Prisma.Decimal | string | number | null;
+  commercialModel?: string | null;
 }): FleetRate {
   return {
     baseKwd: new Prisma.Decimal(fleet.flatFeePerOrderKwd as Prisma.Decimal.Value),
@@ -48,7 +70,14 @@ export function fleetRateOf(fleet: {
       fleet.perKmFeeKwd == null
         ? null
         : new Prisma.Decimal(fleet.perKmFeeKwd as Prisma.Decimal.Value),
+    ...(commercialModelOf(fleet.commercialModel) === "SUBSCRIPTION"
+      ? { model: "SUBSCRIPTION" as const }
+      : {}),
   };
+}
+
+export function isSubscriptionRate(rate: FleetRate): boolean {
+  return rate.model === "SUBSCRIPTION";
 }
 
 /**
@@ -61,7 +90,19 @@ export function fleetRateOf(fleet: {
  * on. The statement lists every order with its kilometres beside it, so a run
  * of blanks is visible and disputable rather than quietly absorbed.
  */
-export function orderPayoutKwd(rate: FleetRate, distanceKm: Prisma.Decimal | null): Prisma.Decimal {
+export function orderPayoutKwd(
+  rate: FleetRate,
+  distanceKm: Prisma.Decimal | null,
+  shopFeeKwd?: Prisma.Decimal | string | number | null,
+): Prisma.Decimal {
+  // Client note, 2026-08-16. On SUBSCRIPTION the company is paid what the shop
+  // was charged for this order, base and kilometres do not apply. An order
+  // with no fee stamped on it pays 0: the shop was charged nothing, and
+  // paying the company the base instead would hand it a margin Darb never
+  // took. The line still lists, so a run of zeros is visible and disputable.
+  if (rate.model === "SUBSCRIPTION") {
+    return new Prisma.Decimal((shopFeeKwd ?? 0) as Prisma.Decimal.Value).toDecimalPlaces(3);
+  }
   if (rate.perKmKwd == null || distanceKm == null) return rate.baseKwd;
   return rate.baseKwd.plus(rate.perKmKwd.mul(distanceKm)).toDecimalPlaces(3);
 }
@@ -79,12 +120,16 @@ export function orderPayoutKwd(rate: FleetRate, distanceKm: Prisma.Decimal | nul
 export function sumFleetPayout(
   rate: FleetRate,
   distances: Array<Prisma.Decimal | null>,
+  /** Client note, 2026-08-16: the shop fee of each order, index-aligned with
+   *  `distances`. Only read on a SUBSCRIPTION rate. */
+  shopFees?: Array<Prisma.Decimal | string | number | null>,
 ): { totalKwd: Prisma.Decimal; totalKm: Prisma.Decimal; ordersMissingDistance: number } {
   let totalKwd = new Prisma.Decimal(0);
   let totalKm = new Prisma.Decimal(0);
   let ordersMissingDistance = 0;
-  for (const km of distances) {
-    totalKwd = totalKwd.plus(orderPayoutKwd(rate, km));
+  for (let i = 0; i < distances.length; i += 1) {
+    const km = distances[i];
+    totalKwd = totalKwd.plus(orderPayoutKwd(rate, km, shopFees?.[i]));
     if (km == null) ordersMissingDistance += 1;
     else totalKm = totalKm.plus(km);
   }
@@ -181,7 +226,7 @@ export async function getFleetScorecard(
     where: { id: fleetPartnerId, tenantId },
     select: {
       id: true, minOnlineHoursPerDay: true,
-      flatFeePerOrderKwd: true, perKmFeeKwd: true,
+      flatFeePerOrderKwd: true, perKmFeeKwd: true, commercialModel: true,
     },
   });
   if (!fleet) throw new Error("Fleet partner not found");
@@ -287,6 +332,8 @@ export async function getFleetScorecard(
       driverId: true, deliveredAt: true, slaDeadline: true, assignedAt: true,
       // Revision 14 (#3): earnings are per kilometre now, not per order.
       distanceKm: true,
+      // Client note, 2026-08-16: a SUBSCRIPTION company earns the shop fee.
+      deliveryFeeKwd: true,
     },
   });
 
@@ -348,6 +395,7 @@ export async function getFleetScorecard(
   const earnings = sumFleetPayout(
     fleetRateOf(fleet),
     deliveredRows.map((r) => r.distanceKm),
+    deliveredRows.map((r) => r.deliveryFeeKwd),
   );
   const assignedTotal = delivered + failedOrders;
 
@@ -394,7 +442,10 @@ export async function generateFleetStatements(
 ): Promise<number> {
   const fleets = await prisma.fleetPartner.findMany({
     where: { tenantId, isActive: true },
-    select: { id: true, flatFeePerOrderKwd: true, perKmFeeKwd: true },
+    select: {
+      id: true, flatFeePerOrderKwd: true, perKmFeeKwd: true,
+      commercialModel: true, subscriptionFeeKwd: true,
+    },
   });
 
   let created = 0;
@@ -418,11 +469,68 @@ export async function generateFleetStatements(
           // paid for. It must never reach a payout statement.
           isTraining: false,
         },
-        select: { distanceKm: true },
+        select: { distanceKm: true, deliveryFeeKwd: true },
       });
 
       const rate = fleetRateOf(fleet);
-      const { totalKwd, totalKm } = sumFleetPayout(rate, rows.map((r) => r.distanceKm));
+      const { totalKwd, totalKm } = sumFleetPayout(
+        rate,
+        rows.map((r) => r.distanceKm),
+        rows.map((r) => r.deliveryFeeKwd),
+      );
+
+      if (isSubscriptionRate(rate)) {
+        // Client note, 2026-08-16 (Osama): on a subscription the company is
+        // paid the shop's delivery fee for every order and pays Darb a monthly
+        // fee. The fee is withheld on this statement as an invoice deduction
+        // (revision 17 #1's FleetDeduction), so it prints as its own line
+        // under the orders instead of silently shrinking the total: a company
+        // checking the order lines against the total must find them agree.
+        // One fee per statement month, no pro-rating. Written in one nested
+        // create so a statement can never exist without its deduction.
+        const feeKwd = new Prisma.Decimal(
+          (fleet.subscriptionFeeKwd ?? 0) as Prisma.Decimal.Value,
+        ).toDecimalPlaces(3);
+        await prisma.fleetPayoutStatement.create({
+          data: {
+            tenantId,
+            fleetPartnerId: fleet.id,
+            periodStart: period.start,
+            periodEnd: period.end,
+            deliveredOrders: rows.length,
+            commercialModel: "SUBSCRIPTION",
+            // No base and no kilometre rate apply on a subscription month;
+            // the order lines are the shop fees. 0 rather than the stale
+            // MARGIN base, which would print a rate nobody is paid on.
+            feePerOrderKwd: new Prisma.Decimal(0),
+            perKmFeeKwd: null,
+            totalKm: null,
+            totalKwd,
+            deductionsKwd: feeKwd,
+            netPayableKwd: totalKwd.minus(feeKwd),
+            ...(feeKwd.gt(0)
+              ? {
+                  deductions: {
+                    create: [
+                      {
+                        tenantId,
+                        fleetPartnerId: fleet.id,
+                        amountKwd: feeKwd,
+                        reason: "SUBSCRIPTION",
+                        note: `Monthly subscription ${period.start.toISOString().slice(0, 7)}`,
+                        status: "APPLIED",
+                        incurredAt: period.start,
+                      },
+                    ],
+                  },
+                }
+              : {}),
+          },
+        });
+        created += 1;
+        continue;
+      }
+
       await prisma.fleetPayoutStatement.create({
         data: {
           tenantId,
@@ -472,7 +580,14 @@ export async function postFleetPayout(args: {
     if (!statement) throw new WalletError("Statement not found");
     if (statement.status === "PAID") return null;
 
-    if (statement.totalKwd.lte(0)) {
+    // Client note, 2026-08-16: what is paid is the net after deductions when
+    // the statement carries one (a SUBSCRIPTION month withholds the monthly
+    // fee). A MARGIN statement has netPayableKwd NULL and pays totalKwd as it
+    // always did. A subscription month whose fee exceeds the shop fees nets
+    // to zero or below and is closed with no transfer, like a zero total.
+    const payableKwd = statement.netPayableKwd ?? statement.totalKwd;
+
+    if (payableKwd.lte(0)) {
       await tx.fleetPayoutStatement.update({
         where: { id: statementId },
         data: { status: "PAID" },
@@ -495,20 +610,23 @@ export async function postFleetPayout(args: {
       tenantId,
       type: "FLEET_PAYOUT",
       idempotencyKey: `fleet-payout:${statementId}`,
-      memo: `Fleet payout ${statementId}: ${statement.deliveredOrders} orders x ${statement.feePerOrderKwd.toFixed(3)} KWD`,
+      memo:
+        statement.commercialModel === "SUBSCRIPTION"
+          ? `Fleet payout ${statementId}: ${statement.deliveredOrders} orders at shop fees ${statement.totalKwd.toFixed(3)} KWD less subscription ${statement.deductionsKwd.toFixed(3)} KWD`
+          : `Fleet payout ${statementId}: ${statement.deliveredOrders} orders x ${statement.feePerOrderKwd.toFixed(3)} KWD`,
       createdById: actorId,
       legs: [
         {
           accountId: revenue.id,
           ownerType: "PLATFORM_REVENUE",
           direction: "DEBIT", // fleet cost against fee income
-          amountKwd: statement.totalKwd,
+          amountKwd: payableKwd,
         },
         {
           accountId: clearing.id,
           ownerType: "PLATFORM_CLEARING",
           direction: "CREDIT", // cash out
-          amountKwd: statement.totalKwd,
+          amountKwd: payableKwd,
         },
       ],
     });

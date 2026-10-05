@@ -543,7 +543,21 @@ router.get("/cash-on-hand", rbac(...FINANCE_READ), async (req: Request, res: Res
     // Client note (2026-10-04): "add one more column, the wallet for each
     // delivery company". The company's own cash account with Darb, the same
     // balance its portal's Cash tab shows, read in one query for every company.
-    const partnerIds = [...new Set(drivers.map((d) => d.fleetPartnerId).filter((id): id is string => !!id))];
+    //
+    // Client note (2026-10-05), "Not done": the companies were folded out of
+    // the DRIVER list, so a delivery company with no drivers on the roster
+    // (new, or all drivers terminated) had no row and so no wallet at all,
+    // even when it had money deposited. Every company is listed now.
+    const partners = await prisma.fleetPartner.findMany({
+      where: { tenantId },
+      select: { id: true, name: true, isActive: true },
+    });
+    const partnerIds = [
+      ...new Set([
+        ...partners.map((p) => p.id),
+        ...drivers.map((d) => d.fleetPartnerId).filter((id): id is string => !!id),
+      ]),
+    ];
     const walletAccounts = partnerIds.length
       ? await prisma.walletAccount.findMany({
           where: { tenantId, ownerKey: { in: partnerIds.map(fleetOwnerKey) } },
@@ -581,6 +595,24 @@ router.get("/cash-on-hand", rbac(...FINANCE_READ), async (req: Request, res: Res
       }
       byCompany.set(key, row);
     }
+    // A company with nobody on the roster still has a wallet. Inactive
+    // companies are left out unless money is still sitting in theirs.
+    for (const p of partners) {
+      if (byCompany.has(p.id)) continue;
+      const wallet = walletByKey.get(fleetOwnerKey(p.id));
+      const holdsMoney = wallet != null && !new Prisma.Decimal(wallet).isZero();
+      if (!p.isActive && !holdsMoney) continue;
+      byCompany.set(p.id, {
+        fleetPartnerId: p.id,
+        name: p.name,
+        driversCarrying: 0,
+        driverCount: 0,
+        cashOnHandKwd: "0.000",
+        walletKwd: toKwdString(wallet ?? 0),
+        drivers: [],
+        total: new Prisma.Decimal(0),
+      });
+    }
     const companies: CompanyRow[] = [...byCompany.values()]
       .map(({ total, ...row }) => ({
         ...row,
@@ -590,6 +622,9 @@ router.get("/cash-on-hand", rbac(...FINANCE_READ), async (req: Request, res: Res
       }))
       .sort((a, b) => Number(b.cashOnHandKwd) - Number(a.cashOnHandKwd));
     const totalKwd = companies.reduce((sum, c) => sum.plus(c.cashOnHandKwd), new Prisma.Decimal(0)).toFixed(3);
+    const walletTotalKwd = companies
+      .reduce((sum, c) => (c.walletKwd == null ? sum : sum.plus(c.walletKwd)), new Prisma.Decimal(0))
+      .toFixed(3);
 
     if (req.query.format === "xlsx") {
       const workbook = new ExcelJS.Workbook();
@@ -608,7 +643,7 @@ router.get("/cash-on-hand", rbac(...FINANCE_READ), async (req: Request, res: Res
       for (const c of companies) {
         companiesSheet.addRow({ name: c.name, driverCount: c.driverCount, driversCarrying: c.driversCarrying, cash: Number(c.cashOnHandKwd), wallet: c.walletKwd == null ? "n/a" : Number(c.walletKwd) });
       }
-      const totalRow = companiesSheet.addRow({ name: "Total", cash: Number(totalKwd) });
+      const totalRow = companiesSheet.addRow({ name: "Total", cash: Number(totalKwd), wallet: Number(walletTotalKwd) });
       totalRow.font = { bold: true };
 
       const driversSheet = workbook.addWorksheet("Drivers");
@@ -634,7 +669,7 @@ router.get("/cash-on-hand", rbac(...FINANCE_READ), async (req: Request, res: Res
       return;
     }
 
-    res.json({ totalKwd, companies, asOf: new Date().toISOString() });
+    res.json({ totalKwd, walletTotalKwd, companies, asOf: new Date().toISOString() });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

@@ -164,8 +164,10 @@ export interface Vendor {
    * Edit #5 (2026-08-22) — non-Foodics POS/e-commerce config, keyed by
    * provider ("uPayments" | "Salla" | "Shopify" | "custom"). Foodics keeps its
    * own connection table; these are stored until each gets an OAuth flow.
+   * Client note, 2026-08-16: "shopify" and "salla" (lowercase) hold the order
+   * webhook config, { webhookSecret, branchId }, as a small object.
    */
-  integrationSettings?: Record<string, string | null> | null;
+  integrationSettings?: Record<string, string | Record<string, string | null> | null> | null;
   createdAt?: string;
   updatedAt?: string;
   branches?: VendorBranch[];
@@ -819,6 +821,11 @@ export interface FleetProfile {
   flatFeePerOrderKwd: string;
   /** Revision 14 (#3) — the kilometre half. Null on a flat-rate company. */
   perKmFeeKwd?: string | null;
+  /** Client note, 2026-08-16 (Osama): MARGIN pays the rate above and Darb
+   *  keeps the gap to the shop fee; SUBSCRIPTION pays the shop fee and the
+   *  company pays Darb subscriptionFeeKwd a month, deducted on the statement. */
+  commercialModel?: FleetCommercialModel;
+  subscriptionFeeKwd?: string | null;
   minOnlineHoursPerDay: number | null;
   minDriversOnline: Record<string, number> | null;
   disciplineStatus: "OK" | "WARNED" | "THROTTLED" | "SUSPENDED" | "REMOVED";
@@ -1241,6 +1248,12 @@ export interface FleetStatementRow {
   perKmFeeKwd?: string | null;
   totalKm?: string | null;
   totalKwd: string;
+  /** Client note, 2026-08-16: the model the month was cut on. On SUBSCRIPTION
+   *  totalKwd is the shop fees, deductionsKwd the monthly fee withheld, and
+   *  netPayableKwd what is actually paid. */
+  commercialModel?: FleetCommercialModel;
+  deductionsKwd?: string;
+  netPayableKwd?: string | null;
   /**
    * Revision 13 (#8) — the delivery company confirms before Darb pays.
    * postFleetPayout refuses anything that is not CONFIRMED.
@@ -1337,9 +1350,14 @@ export interface FleetRate {
   } | null;
 }
 
+export type FleetCommercialModel = "MARGIN" | "SUBSCRIPTION";
+
 export interface FleetEarnings {
   periodStart: string;
   periodEnd: string;
+  /** Client note, 2026-08-16. Older API builds omit it, which reads as MARGIN. */
+  commercialModel?: FleetCommercialModel;
+  subscriptionFeeKwd?: string | null;
   feePerOrderKwd: string;
   perKmFeeKwd: string | null;
   totalKm: string | null;
@@ -1916,6 +1934,9 @@ export interface CashOnHandCompany {
 
 export interface CashOnHandPayload {
   totalKwd: string;
+  /** Sum of every company's own wallet (client note, 2026-10-05). Optional
+   *  because a backend older than that note does not send it. */
+  walletTotalKwd?: string;
   asOf: string;
   companies: CashOnHandCompany[];
 }

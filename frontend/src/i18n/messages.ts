@@ -1386,7 +1386,7 @@ export interface Messages {
   driverTraining: { title: string; subtitle: string; newSession: string; statusScheduled: string; statusInProgress: string; statusPassed: string; statusFailed: string; statusCancelled: string; period: string; changePeriod: string; ends: string; issueOrder: string; pickupPoint: string; dropoffAddress: string; customerName: string; minutes: string; orders: string; noOrders: string; assigned: string; deliveredCount: string; failedCount: string; inFlight: string; onTimeRate: string; avgMinutes: string; podRate: string; pass: string; fail: string; cancel: string; outcomeNote: string; passHint: string; failHint: string; empty: string; started: string; orderIssued: string; periodSaved: string; completed: string; practiceBadge: string; moneyNote: string; start: string; selectDriver: string; noEligibleDrivers: string; autoIssue: string; autoIssueHint: string; autoIssueSaved: string; autoIssueOn: string; autoIssueOff: string; orderDetails: string; collectFrom: string; deliverTo: string; customer: string; pin: string; pinHint: string; given: string; arrived: string; pickedUp: string; delivered: string; due: string; minutesTaken: string; proofPhoto: string; failureReason: string; openOrder: string; hideDetails: string; failedNext: string; failedNextHint: string; retrain: string; retrainReason: string; retrained: string; terminate: string; terminateTitle: string; terminateConfirm: string; terminated: string };
   hqOnboarding: { title: string; subtitle: string; add: string; typeVendor: string; typeFleet: string; companyName: string; companyNameAr: string; code: string; codeHint: string; contactName: string; contactPhone: string; contactEmail: string; notes: string; statusNew: string; statusInReview: string; statusApproved: string; statusRejected: string; claim: string; approve: string; reject: string; rejectReason: string; approveHint: string; created: string; approvedToast: string; rejectedToast: string; empty: string; openAccount: string; raisedBy: string; codeInUse: string; allTypes: string };
   compliance: { title: string; subtitle: string; tabDriverDocs: string; tabRenewals: string; tabPartnerDocs: string; autoPass: string; autoFlag: string; autoPending: string; recheck: string; approve: string; reject: string; rejectReason: string; rejectHint: string; requestDocument: string; requestNote: string; requestSent: string; statusREQUESTED: string; statusPENDING_REVIEW: string; statusVALID: string; statusREJECTED: string; statusEXPIRED: string; statusSUPERSEDED: string; owner: string; type: string; expiry: string; uploaded: string; file: string; noFile: string; viewFile: string; flaggedOnly: string; empty: string; approved: string; rejected: string; healthEXPIRED: string; healthEXPIRING: string; healthVALID: string; healthMISSING: string; daysLeft: string; daysOverdue: string; freeze: string; unfreeze: string; freezeReason: string; freezeHintDriver: string; freezeHintPartner: string; frozen: string; froze: string; unfroze: string; horizon: string; expiredCount: string; expiringCount: string; stateFilter: string; expiringSoon: string; scopeDRIVER: string; scopeCOMPANY: string; scopeVENDOR: string; checkNO_FILE: string; checkNO_EXPIRY: string; checkALREADY_EXPIRED: string; checkEXPIRES_SOON: string; checkEXPIRY_IMPLAUSIBLE: string; checkUNKNOWN_TYPE: string; checkTYPE_MISMATCH: string; checkFILE_TOO_SMALL: string; checkFILE_TOO_LARGE: string; checkUNSUPPORTED_FORMAT: string; checkDUPLICATE_PENDING: string; permissionDenied: string };
-  financeDesk: { tabPayments: string; tabDisputes: string; tabCashOnHand: string; cashTitle: string; cashSubtitle: string; cashCompany: string; cashDrivers: string; cashCarrying: string; cashAmount: string; cashWallet: string; cashTotal: string; cashDownload: string; cashEmpty: string; cashNoDrivers: string; cashDriver: string; cashAsOf: string; paymentsTitle: string; paymentsSubtitle: string; account: string; kindVENDOR_TOP_UP: string; kindFLEET_DEPOSIT: string; amount: string; reference: string; requested: string; confirm: string; cancelPayment: string; rejectPayment: string; rejectReason: string; confirmed: string; cancelled: string; alreadyPaid: string; noPayments: string; showAll: string; showPending: string; sideAll: string; sideVendor: string; sideFleet: string; disputesTitle: string; disputesSubtitle: string; disputedStatement: string; period: string; reason: string; openStatement: string; noDisputes: string; reply: string; replyPlaceholder: string; send: string; sendAndResolve: string; replied: string; openTickets: string; approve: string; approveTitle: string; approveNote: string; approveHint: string; rejectHint: string; feedback: string; noFeedback: string };
+  financeDesk: { tabPayments: string; tabDisputes: string; tabCashOnHand: string; cashTitle: string; cashSubtitle: string; cashCompany: string; cashDrivers: string; cashCarrying: string; cashAmount: string; cashWallet: string; cashWalletTotal: string; cashTotal: string; cashDownload: string; cashEmpty: string; cashNoDrivers: string; cashDriver: string; cashAsOf: string; paymentsTitle: string; paymentsSubtitle: string; account: string; kindVENDOR_TOP_UP: string; kindFLEET_DEPOSIT: string; amount: string; reference: string; requested: string; confirm: string; cancelPayment: string; rejectPayment: string; rejectReason: string; confirmed: string; cancelled: string; alreadyPaid: string; noPayments: string; showAll: string; showPending: string; sideAll: string; sideVendor: string; sideFleet: string; disputesTitle: string; disputesSubtitle: string; disputedStatement: string; period: string; reason: string; openStatement: string; noDisputes: string; reply: string; replyPlaceholder: string; send: string; sendAndResolve: string; replied: string; openTickets: string; approve: string; approveTitle: string; approveNote: string; approveHint: string; rejectHint: string; feedback: string; noFeedback: string };
   adminHub: { title: string; subtitle: string; tabDashboard: string; tabPrices: string; tabAccess: string; now: string; forecast: string; activeVendors: string; activeFleets: string; activeDrivers: string; driversInTraining: string; ordersToday: string; deliveredToday: string; revenueToday: string; openDisputes: string; documentsWaiting: string; onboardingWaiting: string; setupIncomplete: string; setupIncompleteHint: string; setupShop: string; setupCompany: string; setupMissingContactPhone: string; monthToDate: string; vsLastMonth: string; projectedOrders: string; projectedRevenue: string; growth: string; basisLabel: string; notEnoughHistory: string; darbFees: string; darbFeesHint: string; fleetFees: string; fleetFeesHint: string; openPricing: string; openFleets: string; openRateApprovals: string; company: string; baseFee: string; perKm: string; flatOnly: string; accessHint: string; openPeople: string; openVendors: string; accountManagers: string; manages: string; managesNone: string; staffAccounts: string; surfaces: string };
   vendorWallet2: { modeTitle: string; modeSingle: string; modeSingleHint: string; modePerBranch: string; modePerBranchHint: string; modeSaved: string; mainWallet: string; branchWallet: string; available: string; allocated: string; spent: string; transfer: string; transferTo: string; transferBack: string; transferAmount: string; transferNote: string; transferred: string; transfers: string; noTransfers: string; statement: string; statementFor: string; mainStatementHint: string; insufficientMain: string; insufficientBranch: string; modeSingleOnly: string; ownerOnly: string; branchEmpty: string; downloadStatement: string; statementWallet: string; statementFrom: string; statementTo: string; openingBalance: string; transferIn: string; transferOut: string };
   hqRequests: {
@@ -1489,6 +1489,17 @@ export interface Messages {
     integrationCustom: string;
     integrationCustomPlaceholder: string;
     integrationConfigured: string;
+    storeOrdersTitle: string;
+    storeOrdersHint: string;
+    webhookUrl: string;
+    webhookSecret: string;
+    webhookBranch: string;
+    webhookBranchNone: string;
+    shopifySetup: string;
+    sallaSetup: string;
+    customIntakeTitle: string;
+    customIntakeHint: string;
+    upaymentsHint: string;
     portalRole: string;
     roleOwner: string;
     roleFinance: string;
@@ -1546,6 +1557,11 @@ export interface Messages {
     userEmail: string;
     userPassword: string;
     passwordOptionalHint: string;
+    apiKeysTitle: string;
+    apiKeyName: string;
+    apiKeyCreate: string;
+    apiKeyRevoke: string;
+    apiKeyOnce: string;
     inviteLinkReady: string;
     userCreated: string;
     usersHint: string;
@@ -1722,6 +1738,7 @@ export interface Messages {
     redispatchConfirmTitle: string;
     redispatchConfirmMessage: string;
     returnToMerchant: string;
+    returningToStore: string;
     returnConfirmTitle: string;
     returnConfirmMessage: string;
     cancelOrder: string;
@@ -2291,6 +2308,10 @@ export interface Messages {
     total: string;
     statementStatus: string;
     earningsTitle: string;
+    subscriptionModelNote: string;
+    subscriptionOrdersLine: string;
+    subscriptionDeducted: string;
+    netPayable: string;
     noStatements: string;
     disciplineBanner: string;
     /**
@@ -4307,6 +4328,7 @@ export const en: Messages = {
     cashCarrying: "Carrying cash",
     cashAmount: "Cash on hand",
     cashWallet: "Wallet",
+    cashWalletTotal: "Total in company wallets",
     cashTotal: "Total with companies",
     cashDownload: "Download",
     cashEmpty: "No cash is outstanding with any company.",
@@ -4544,6 +4566,17 @@ export const en: Messages = {
     integrationCustom: "Custom system",
     integrationCustomPlaceholder: "System name and contact",
     integrationConfigured: "Configured",
+    storeOrdersTitle: "Store orders (Shopify, Salla)",
+    storeOrdersHint: "The store sends every new order straight to Darb. Copy the webhook URL into the store admin, paste the signing secret from there here, and choose the branch the orders leave from.",
+    webhookUrl: "Webhook URL",
+    webhookSecret: "Webhook signing secret",
+    webhookBranch: "Create orders under branch",
+    webhookBranchNone: "Choose a branch",
+    shopifySetup: "Shopify admin: Settings › Notifications › Webhooks › Create webhook. Event: Order creation, format JSON, URL above. Copy the signing secret shown under the webhook list into the field here.",
+    sallaSetup: "Salla Partners: your app › Webhooks. Subscribe order.created to the URL above with the Signature strategy (Token also works), and paste the same secret here.",
+    customIntakeTitle: "Custom system (Darb API)",
+    customIntakeHint: "Any other system posts orders to this URL as JSON, with the shop's API key in the X-Api-Key header. Orders are matched on the shop's own order reference, so a resend never makes a duplicate. A Darb admin issues the API key for this shop.",
+    upaymentsHint: "uPayments takes the customer's payment; it does not send orders. Orders paid through it arrive from the store or the API marked prepaid.",
     portalRole: "Portal role",
     roleOwner: "Owner",
     roleFinance: "Finance",
@@ -4601,6 +4634,11 @@ export const en: Messages = {
     userEmail: "Email",
     userPassword: "Password",
     passwordOptionalHint: "Optional. Leave it blank and they choose their own from an invite link.",
+    apiKeysTitle: "API keys",
+    apiKeyName: "Key name, e.g. their ERP",
+    apiKeyCreate: "Create key",
+    apiKeyRevoke: "Revoke",
+    apiKeyOnce: "Copy this key now and send it to the shop's developer. It is shown only once.",
     inviteLinkReady: "Send them this link to choose their password. It expires in 3 days.",
     userCreated: "Portal user created",
     usersHint: "Portal users sign in at the vendor portal and only see this vendor's orders and wallet.",
@@ -4775,8 +4813,9 @@ export const en: Messages = {
     redispatchConfirmTitle: "Re-run dispatch?",
     redispatchConfirmMessage: "The dispatch engine will search for a driver again from round 1.",
     returnToMerchant: "Confirm returned to vendor",
+    returningToStore: "Returning to store",
     returnConfirmTitle: "Mark this order returned?",
-    returnConfirmMessage: "Confirm the goods have gone back to the shop. The order moves from Failed to Returned, which is its final status.",
+    returnConfirmMessage: "Confirm the goods have gone back to the shop. The order is recorded as failed and moves to Returned, which is its final status.",
     cancelOrder: "Cancel order",
     cancelConfirmTitle: "Cancel this order?",
     cancelConfirmMessage: "The customer and vendor flows stop here. This cannot be undone.",
@@ -5332,6 +5371,10 @@ export const en: Messages = {
     total: "Total",
     statementStatus: "Status",
     earningsTitle: "Earnings this month",
+    subscriptionModelNote: "You are on a monthly subscription of {fee}. Each order is paid at the delivery fee the shop was charged, and the subscription is deducted on your monthly statement.",
+    subscriptionOrdersLine: "{n} orders at the shop delivery fee",
+    subscriptionDeducted: "Subscription deducted",
+    netPayable: "Net payable",
     noStatements: "No statements yet. They generate on the 1st of each month.",
     disciplineBanner: "Your fleet is under review. Contact Darb operations.",
     portalLoginsTitle: "Portal logins",
@@ -7335,6 +7378,7 @@ export const ar: Messages = {
     cashCarrying: "يحملون نقدا",
     cashAmount: "النقد بحوزتهم",
     cashWallet: "المحفظة",
+    cashWalletTotal: "الإجمالي في محافظ الشركات",
     cashTotal: "الإجمالي لدى الشركات",
     cashDownload: "تنزيل",
     cashEmpty: "لا يوجد نقد مستحق لدى أي شركة.",
@@ -7572,6 +7616,17 @@ export const ar: Messages = {
     integrationCustom: "نظام مخصص",
     integrationCustomPlaceholder: "اسم النظام وجهة الاتصال",
     integrationConfigured: "مُعد",
+    storeOrdersTitle: "طلبات المتجر (Shopify، Salla)",
+    storeOrdersHint: "يرسل المتجر كل طلب جديد إلى درب مباشرة. انسخ رابط الـ Webhook إلى لوحة المتجر، والصق مفتاح التوقيع من هناك هنا، واختر الفرع الذي تخرج منه الطلبات.",
+    webhookUrl: "رابط الـ Webhook",
+    webhookSecret: "مفتاح توقيع الـ Webhook",
+    webhookBranch: "إنشاء الطلبات على فرع",
+    webhookBranchNone: "اختر الفرع",
+    shopifySetup: "لوحة Shopify: Settings › Notifications › Webhooks › Create webhook. الحدث: Order creation، الصيغة JSON، والرابط أعلاه. انسخ مفتاح التوقيع الظاهر تحت قائمة الـ Webhooks إلى الحقل هنا.",
+    sallaSetup: "Salla Partners: تطبيقك › Webhooks. اشترك في order.created على الرابط أعلاه بطريقة Signature (أو Token)، والصق نفس المفتاح هنا.",
+    customIntakeTitle: "نظام مخصص (Darb API)",
+    customIntakeHint: "أي نظام آخر يرسل الطلبات إلى هذا الرابط بصيغة JSON مع مفتاح الـ API الخاص بالمتجر في الترويسة X-Api-Key. تُطابق الطلبات برقم الطلب لدى المتجر، فإعادة الإرسال لا تنشئ طلبا مكررا. يصدر مسؤول درب مفتاح الـ API لهذا المتجر.",
+    upaymentsHint: "uPayments تستلم دفع العميل ولا ترسل طلبات. الطلبات المدفوعة عبرها تصل من المتجر أو من الـ API على أنها مدفوعة مسبقا.",
     portalRole: "دور البوابة",
     roleOwner: "المالك",
     roleFinance: "المالية",
@@ -7629,6 +7684,11 @@ export const ar: Messages = {
     userEmail: "البريد الإلكتروني",
     userPassword: "كلمة المرور",
     passwordOptionalHint: "اختياري. اتركه فاضي ويختار كلمة المرور بنفسه من رابط الدعوة.",
+    apiKeysTitle: "مفاتيح API",
+    apiKeyName: "اسم المفتاح، مثلا نظامهم",
+    apiKeyCreate: "إنشاء مفتاح",
+    apiKeyRevoke: "إلغاء",
+    apiKeyOnce: "انسخ المفتاح الحين وأرسله لمبرمج المحل. ما يظهر إلا مرة وحدة.",
     inviteLinkReady: "أرسل له هذا الرابط ليختار كلمة المرور. ينتهي خلال 3 أيام.",
     userCreated: "تم إنشاء مستخدم البوابة",
     usersHint: "يسجل مستخدمو البوابة الدخول إلى بوابة المطعم ويرون طلبات ومحفظة هذا المطعم فقط.",
@@ -7803,8 +7863,9 @@ export const ar: Messages = {
     redispatchConfirmTitle: "إعادة تشغيل الإسناد؟",
     redispatchConfirmMessage: "سيبحث محرك الإسناد عن سائق من جديد بدءاً من الجولة الأولى.",
     returnToMerchant: "إرجاع إلى المتجر",
+    returningToStore: "في طريق العودة إلى المتجر",
     returnConfirmTitle: "تسجيل الطلب كمُرجَع؟",
-    returnConfirmMessage: "أكّد أن البضاعة عادت إلى المتجر. ينتقل الطلب من فاشل إلى مُرجَع، وهي حالته النهائية.",
+    returnConfirmMessage: "أكّد أن البضاعة عادت إلى المتجر. يُسجَّل الطلب كفاشل وينتقل إلى مُرجَع، وهي حالته النهائية.",
     cancelOrder: "إلغاء الطلب",
     cancelConfirmTitle: "إلغاء هذا الطلب؟",
     cancelConfirmMessage: "تتوقف رحلة العميل والمطعم هنا. لا يمكن التراجع عن هذا الإجراء.",
@@ -8346,6 +8407,10 @@ export const ar: Messages = {
     total: "الإجمالي",
     statementStatus: "الحالة",
     earningsTitle: "أرباح هذا الشهر",
+    subscriptionModelNote: "اتفاقكم مع درب اشتراك شهري بقيمة {fee}. كل طلب ينحسب لكم بسعر التوصيل اللي دفعه المحل، والاشتراك ينخصم من كشف الحساب الشهري.",
+    subscriptionOrdersLine: "{n} طلب بسعر التوصيل اللي دفعه المحل",
+    subscriptionDeducted: "الاشتراك المخصوم",
+    netPayable: "الصافي المستحق",
     noStatements: "لا توجد كشوف بعد. تصدر أول كل شهر.",
     disciplineBanner: "أسطولك قيد المراجعة. تواصل مع عمليات درب.",
     portalLoginsTitle: "حسابات البوابة",

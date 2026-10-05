@@ -192,6 +192,14 @@ const AR: Record<string, string> = {
   "failed.return_body": "أعد الطلب إلى المتجر الذي استلمته منه وسلّمه لهم ثم أكّد هنا.",
   "failed.return_confirm": "أعدت الطلب إلى المتجر",
   "failed.return_required": "تبقى على هذا الطلب حتى يعود إلى المتجر. تستأنف الطلبات الجديدة بعد تأكيدك.",
+  "failed.start_title": "أعد الطلب إلى المتجر",
+  "failed.start_body": "إذا تعذّر التوصيل، أعد الطلب إلى المتجر أولاً. تبلّغ عمّا حدث عند تسليمه.",
+  "failed.start_return": "العودة إلى المتجر",
+  "failed.start_confirm_title": "إعادة الطلب إلى المتجر؟",
+  "failed.start_confirm_body": "يتوقف التوصيل هنا. أعد الطلب إلى المتجر، وبلّغ عمّا حدث هناك.",
+  "failed.return_body_report": "سلّم الطلب في المتجر، ثم اختر ما حدث وأكّد.",
+  "failed.report_title": "ماذا حدث؟",
+  "failed.return_and_report": "سلّمته للمتجر، أبلغ عن فشل التوصيل",
 
   // ─── Wallet ───
   "wallet.title": "المحفظة",

@@ -3733,6 +3733,14 @@ model FleetPartner {
   // exactly what it was before, so nothing reprices on the deploy.
   flatFeePerOrderKwd     Decimal   @default(1.100) @db.Decimal(10, 3)
   perKmFeeKwd            Decimal?  @db.Decimal(10, 3)
+  /// Client note, 2026-08-16 (Osama): Darb works with a delivery company on
+  /// one of two models. MARGIN is the rate above (Darb keeps the gap between
+  /// what the shop is charged and what the company is paid). SUBSCRIPTION:
+  /// the company pays Darb subscriptionFeeKwd a month and is paid the shop's
+  /// delivery fee per order with no margin taken; the fee is deducted on the
+  /// monthly statement. A string, not an enum, like disciplineStatus.
+  commercialModel        String    @default("MARGIN") // MARGIN | SUBSCRIPTION
+  subscriptionFeeKwd     Decimal?  @db.Decimal(10, 3)
   minOnlineHoursPerDay   Float?
   minDriversOnline       Json? // { "<zoneId>": n } contractual commitment
   disciplineStatus       String    @default("OK") // OK | WARNED | THROTTLED | SUSPENDED | REMOVED
@@ -3790,6 +3798,11 @@ model FleetPayoutStatement {
   /// Revision 14 (#3) — snapshots of the kilometre half. NULL on a flat month.
   perKmFeeKwd     Decimal?  @db.Decimal(10, 3)
   totalKm         Decimal?  @db.Decimal(12, 3)
+  /// Client note, 2026-08-16: the company's commercial model, snapshotted
+  /// like the rate. The order lines behind a SUBSCRIPTION month are the shop
+  /// fees, not base + km, and switching the company's model later must not
+  /// redraw the working of a month already cut.
+  commercialModel String    @default("MARGIN")
   totalKwd        Decimal   @db.Decimal(10, 3)
   /// Revision 13 (#8) — FINAL | CONFIRMED | DISPUTED | PAID. The delivery
   /// company confirms a statement before Darb processes it; postFleetPayout

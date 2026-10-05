@@ -15,6 +15,7 @@ import { fleetScope } from "../middleware/fleetScope";
 import {
   fleetRateOf,
   getFleetScorecard,
+  isSubscriptionRate,
   orderPayoutKwd,
   sumFleetPayout,
 } from "../services/fleetService";
@@ -499,7 +500,10 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
     const [fleet, orders, allDistances] = await Promise.all([
       prisma.fleetPartner.findFirst({
         where: { id: ctx.fleetPartnerId, tenantId: ctx.tenantId },
-        select: { flatFeePerOrderKwd: true, perKmFeeKwd: true },
+        select: {
+          flatFeePerOrderKwd: true, perKmFeeKwd: true,
+          commercialModel: true, subscriptionFeeKwd: true,
+        },
       }),
       prisma.deliveryOrder.findMany({
         where: {
@@ -510,6 +514,7 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
         },
         select: {
           id: true, orderNumber: true, deliveredAt: true, distanceKm: true,
+          deliveryFeeKwd: true,
           driver: { select: { id: true, name: true } },
         },
         orderBy: { deliveredAt: "desc" },
@@ -528,7 +533,7 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
           deliveredAt: { gte: start, lt: end },
           driver: { fleetPartnerId: ctx.fleetPartnerId },
         },
-        select: { distanceKm: true },
+        select: { distanceKm: true, deliveryFeeKwd: true },
       }),
     ]);
 
@@ -537,11 +542,22 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
     const { totalKwd, totalKm, ordersMissingDistance } = sumFleetPayout(
       rate,
       allDistances.map((r) => r.distanceKm),
+      allDistances.map((r) => r.deliveryFeeKwd),
     );
+    const subscription = isSubscriptionRate(rate);
 
     res.json({
       periodStart: start,
       periodEnd: end,
+      // Client note, 2026-08-16: the company's own model, read-only here. On
+      // SUBSCRIPTION each order line is the shop fee and the monthly fee is
+      // deducted on the statement, so the screen says that instead of
+      // printing "orders x base" for a base nobody is paid on.
+      commercialModel: subscription ? "SUBSCRIPTION" : "MARGIN",
+      subscriptionFeeKwd:
+        subscription && fleet?.subscriptionFeeKwd != null
+          ? fleet.subscriptionFeeKwd.toFixed(3)
+          : null,
       feePerOrderKwd: rate.baseKwd.toFixed(3),
       // Null on a flat-rate company, which is what the screen reads to decide
       // whether to draw a kilometre line at all.
@@ -550,7 +566,10 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
       // Orders Darb could not measure a distance for, so a company reading a
       // base-only line has the count in front of it rather than a discrepancy
       // to find by hand.
-      ordersMissingDistance: rate.perKmKwd == null ? 0 : ordersMissingDistance,
+      // A SUBSCRIPTION order is paid the shop fee, so a missing distance costs
+      // the company nothing and the warning would be false.
+      ordersMissingDistance:
+        rate.perKmKwd == null || subscription ? 0 : ordersMissingDistance,
       deliveredOrders: deliveredCount,
       totalKwd: totalKwd.toFixed(3),
       // The list is capped; the figures above are not. Say so rather than let
@@ -562,7 +581,7 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
         deliveredAt: o.deliveredAt,
         driverName: o.driver?.name ?? null,
         distanceKm: o.distanceKm == null ? null : Number(o.distanceKm).toFixed(3),
-        feeKwd: orderPayoutKwd(rate, o.distanceKm).toFixed(3),
+        feeKwd: orderPayoutKwd(rate, o.distanceKm, o.deliveryFeeKwd).toFixed(3),
       })),
     });
   } catch (err: any) {
@@ -2115,6 +2134,13 @@ router.get(
               id: true, fileName: true, mimeType: true, sizeBytes: true, uploadedAt: true,
             },
           },
+          // Client note, 2026-08-16: the monthly subscription fee is withheld
+          // as an applied deduction, and the company must see it as a line.
+          deductions: {
+            where: { status: "APPLIED" },
+            select: { id: true, amountKwd: true, reason: true, note: true, incurredAt: true },
+            orderBy: { incurredAt: "asc" },
+          },
         },
       });
       if (!statement) { res.status(404).json({ error: "Statement not found" }); return; }
@@ -2132,6 +2158,7 @@ router.get(
         },
         select: {
           id: true, orderNumber: true, deliveredAt: true, distanceKm: true,
+          deliveryFeeKwd: true,
           vendor: { select: { name: true } },
           driver: { select: { id: true, name: true, driverCode: true } },
         },
@@ -2142,10 +2169,13 @@ router.get(
       // The rate SNAPSHOTTED on the statement, never the company's rate today:
       // a rate change approved this morning must not rewrite what a closed
       // month was cut on (revision 14 #3).
-      const rate = {
-        baseKwd: statement.feePerOrderKwd,
-        perKmKwd: statement.perKmFeeKwd,
-      };
+      // The model is snapshotted too (client note, 2026-08-16), so a SUBSCRIPTION
+      // month keeps showing shop fees after the company moves back to MARGIN.
+      const rate = fleetRateOf({
+        flatFeePerOrderKwd: statement.feePerOrderKwd,
+        perKmFeeKwd: statement.perKmFeeKwd,
+        commercialModel: statement.commercialModel,
+      });
       const fee = statement.feePerOrderKwd;
 
       // Client note: the statement should say how many each driver did. The
@@ -2177,7 +2207,7 @@ router.get(
         // Accumulated per order, not orders × fee: with a kilometre half the
         // driver who took the long runs is worth more than the one beside them
         // on the same count, and that is the whole point of showing this.
-        row.earned = row.earned.plus(orderPayoutKwd(rate, o.distanceKm));
+        row.earned = row.earned.plus(orderPayoutKwd(rate, o.distanceKm, o.deliveryFeeKwd));
         byDriver.set(id, row);
       }
 
@@ -2189,6 +2219,13 @@ router.get(
             statement.perKmFeeKwd == null ? null : statement.perKmFeeKwd.toFixed(3),
           totalKm: statement.totalKm == null ? null : statement.totalKm.toFixed(3),
           totalKwd: statement.totalKwd.toFixed(3),
+          deductionsKwd: statement.deductionsKwd.toFixed(3),
+          netPayableKwd:
+            statement.netPayableKwd == null ? null : statement.netPayableKwd.toFixed(3),
+          deductions: statement.deductions.map((d) => ({
+            ...d,
+            amountKwd: d.amountKwd.toFixed(3),
+          })),
         },
         orders: orders.map((o) => ({
           id: o.id,
@@ -2198,7 +2235,7 @@ router.get(
           driverName: o.driver?.name ?? null,
           driverCode: o.driver?.driverCode ?? null,
           distanceKm: o.distanceKm == null ? null : Number(o.distanceKm).toFixed(3),
-          feeKwd: orderPayoutKwd(rate, o.distanceKm).toFixed(3),
+          feeKwd: orderPayoutKwd(rate, o.distanceKm, o.deliveryFeeKwd).toFixed(3),
         })),
         // Ordered by who did the most, because that is the order the question
         // "who carried this month" is asked in.
@@ -2420,9 +2457,16 @@ router.post(
               tenantId: ctx.tenantId,
               author: "FLEET",
               authorName: fleetIdentityOf(req)?.displayName ?? req.user!.email ?? null,
+              // Client note, 2026-08-16: a SUBSCRIPTION month has no per-order
+              // rate to quote; it is the shop fees less the monthly fee.
               body:
-                `${statement.deliveredOrders} orders x ${statement.feePerOrderKwd.toFixed(3)} KWD ` +
-                `= ${statement.totalKwd.toFixed(3)} KWD for ${period}.\n\n${reason.trim()}`,
+                (statement.commercialModel === "SUBSCRIPTION"
+                  ? `${statement.deliveredOrders} orders at shop fees ` +
+                    `= ${statement.totalKwd.toFixed(3)} KWD, less subscription ` +
+                    `${statement.deductionsKwd.toFixed(3)} KWD, for ${period}.`
+                  : `${statement.deliveredOrders} orders x ${statement.feePerOrderKwd.toFixed(3)} KWD ` +
+                    `= ${statement.totalKwd.toFixed(3)} KWD for ${period}.`) +
+                `\n\n${reason.trim()}`,
             },
           },
         },

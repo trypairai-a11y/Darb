@@ -16,7 +16,9 @@
  *   POST /orders/:id/status    — granular milestones (idempotencyKey replay,
  *                                monotonic guard); PICKED_UP runs the real FSM.
  *   POST /orders/:id/pod       — atomic PIN/PHOTO verify + DELIVERED + wallet.
- *   POST /orders/:id/failed    — ASSIGNED|PICKED_UP → FAILED.
+ *   POST /orders/:id/failed    : ASSIGNED|ARRIVED|PICKED_UP → FAILED (older builds).
+ *   POST /orders/:id/return-started : turn back to the shop (no status change).
+ *   POST /orders/:id/returned  : at the shop, report + X → FAILED → RETURNED.
  *   GET  /wallet               — wallet summary + lockout flag.
  *   POST /incidents            — multipart SOS (≤3 photos) → 201 + sos.raised.
  *   GET  /incidents/:id        — 10s status poll.
@@ -35,14 +37,22 @@ import {
   declineOffer,
 } from "../services/dispatch/dispatchEngine";
 import {
+  DRIVER_ACTIVE_STATUSES,
   OrderActor,
   OrderStateConflictError,
   flushOrderEvents,
+  isReturningToMerchant,
   transitionOrder,
 } from "../services/orderStateMachine";
 import { enqueueFoodicsWriteback } from "../services/foodics/writebackHook";
 import { fireCustomerMilestone } from "../services/customerMessagingService";
-import { completeDelivery, failDelivery, returnToMerchant } from "../services/orderService";
+import {
+  completeDelivery,
+  failAndReturnToMerchant,
+  failDelivery,
+  returnToMerchant,
+  startReturnToMerchant,
+} from "../services/orderService";
 import { forceDriverOffline } from "../services/dispatch/driverPresence";
 import {
   getDriverWalletSummary,
@@ -87,8 +97,10 @@ const INCIDENT_CATEGORY_TO_TYPE: Record<string, string> = {
 
 // FAILED is included (revision 21c): the app rehydrates a failed order as
 // its return leg, so a driver who closed the app mid-return reopens on it
-// rather than on Home with the shop's bag still in the box.
-const ACTIVE_ORDER_STATUSES = ["ASSIGNED", "PICKED_UP", "FAILED"] as const;
+// rather than on Home with the shop's bag still in the box. ARRIVED was
+// missing (revision 8 #3), so the order vanished from the app the moment the
+// driver tapped Arrived at the shop. One shared list now.
+const ACTIVE_ORDER_STATUSES = DRIVER_ACTIVE_STATUSES;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -173,6 +185,9 @@ type OrderRow = {
  */
 function granularStatus(order: OrderRow): string {
   const phase = metaOf(order).driverPhase as GranularStatus | undefined;
+  // ARRIVED is the server's name for the driver's ARRIVED_AT_PICKUP. Sent
+  // raw, the app could not place it and restarted the trip at "heading".
+  if (order.status === "ARRIVED") return "ARRIVED_AT_PICKUP";
   if (
     order.status === "ASSIGNED" &&
     (phase === "HEADING_TO_PICKUP" || phase === "ARRIVED_AT_PICKUP")
@@ -190,7 +205,12 @@ function granularStatus(order: OrderRow): string {
 
 /** Current monotonic rank of an order (status floor + persisted phase). */
 function currentPhaseRank(order: OrderRow): number {
-  const statusRank = order.status === "PICKED_UP" ? PHASE_RANK.PICKED_UP : 0;
+  const statusRank =
+    order.status === "PICKED_UP"
+      ? PHASE_RANK.PICKED_UP
+      : order.status === "ARRIVED"
+        ? PHASE_RANK.ARRIVED_AT_PICKUP
+        : 0;
   const phase = metaOf(order).driverPhase as GranularStatus | undefined;
   const phaseRank = phase && PHASE_RANK[phase] ? PHASE_RANK[phase] : 0;
   return Math.max(statusRank, phaseRank);
@@ -200,7 +220,15 @@ function currentPhaseRank(order: OrderRow): number {
 function shapeActiveOrder(order: OrderRow) {
   return {
     id: order.id,
-    status: granularStatus(order),
+    // RETURNING (client note, 2026-10-05): the driver turned back to the
+    // shop. The order keeps its in-flight status until they arrive, so this
+    // is what tells a reopened app to resume the return leg, not the trip.
+    status:
+      order.status !== "FAILED" && isReturningToMerchant(order)
+        ? "RETURNING"
+        : granularStatus(order),
+    /** The failure is already on record (older builds reported it first). */
+    failureReported: order.status === "FAILED",
     pickup: {
       name: order.branch?.name ?? null,
       address: order.branch?.address ?? null,
@@ -873,12 +901,56 @@ router.post("/orders/:id/failed", async (req: Request, res: Response) => {
   }
 });
 
+// ─── POST /orders/:id/return-started ────────────────────────────────────────
+// Client note (2026-10-05, answering 2026-09-21): "the driver must return the
+// order to the vendor, after that he can report that the delivery failed".
+// The driver turns back first; the status does not move, the order is marked
+// as on its way back, and the reason is asked for at the shop (below).
+router.post("/orders/:id/return-started", async (req: Request, res: Response) => {
+  try {
+    const identity = await resolveDriverFromAgentRequest(req);
+    if (!identity) {
+      res.status(404).json({ error: "Device or driver not found" });
+      return;
+    }
+    const { driver } = identity;
+    const tenantId = driver.tenantId;
+
+    const order = await findDriverOrder(tenantId, driver.id, req.params.id);
+    if (!order) {
+      res.status(404).json({ error: "Order not found" });
+      return;
+    }
+
+    const started = await startReturnToMerchant({
+      tenantId,
+      orderId: order.id,
+      actor: driverActor(driver),
+    });
+    res.json({
+      ok: true,
+      order: { id: started.id, status: started.status },
+      returnTo: {
+        branchName: order.branch?.name ?? null,
+        address: order.branch?.address ?? null,
+        lat: order.branch?.lat ?? null,
+        lng: order.branch?.lng ?? null,
+        phone: order.branch?.phone ?? null,
+      },
+    });
+  } catch (err) {
+    handleAgentError(res, err);
+  }
+});
+
 // ─── POST /orders/:id/returned ──────────────────────────────────────────────
 // Client note (2026-08-31): "if delivery failed for any reason, it should be
-// returned to the vendor." The return is part of the driver's own flow now —
-// after reporting the failure the app walks them back to the shop and this is
-// the hand-back confirmation, FAILED → RETURNED. The staff button on the
-// order panel stays as the backstop for drivers who never confirm.
+// returned to the vendor." This is the hand-back at the shop. Since the
+// 2026-10-05 note it is also where the failure is reported: an in-flight
+// order needs `reason` and goes X → FAILED → RETURNED in one step. An order
+// an older app build already failed needs no reason and goes FAILED →
+// RETURNED. The staff button on the order panel stays as the backstop for
+// drivers who never confirm.
 router.post("/orders/:id/returned", async (req: Request, res: Response) => {
   try {
     const identity = await resolveDriverFromAgentRequest(req);
@@ -895,11 +967,35 @@ router.post("/orders/:id/returned", async (req: Request, res: Response) => {
       return;
     }
 
-    const returned = await returnToMerchant({
+    const note = "Returned to the shop by the driver";
+    if (order.status === "FAILED") {
+      const returned = await returnToMerchant({
+        tenantId,
+        orderId: order.id,
+        actor: driverActor(driver),
+        note,
+      });
+      res.json({ ok: true, order: { id: returned.id, status: returned.status } });
+      return;
+    }
+
+    const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
+    if (!reason) {
+      res.status(400).json({ error: "reason required" });
+      return;
+    }
+    const detail =
+      typeof req.body?.note === "string" && req.body.note.trim()
+        ? req.body.note.trim().slice(0, 500)
+        : null;
+    const returned = await failAndReturnToMerchant({
       tenantId,
       orderId: order.id,
+      // The text typed for OTHER is kept with the reason, so the order says
+      // what "other" was.
+      reason: detail ? `${reason}: ${detail}` : reason,
       actor: driverActor(driver),
-      note: "Returned to the shop by the driver",
+      note,
     });
     res.json({ ok: true, order: { id: returned.id, status: returned.status } });
   } catch (err) {

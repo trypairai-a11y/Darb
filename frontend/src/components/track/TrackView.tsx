@@ -21,7 +21,10 @@ import {
 
 const LiveMap = dynamic(() => import("@/components/map/LiveMap"), { ssr: false });
 
-const TERMINAL = new Set(["DELIVERED", "CANCELLED", "FAILED", "RETURNED", "REJECTED"]);
+// FAILED is not terminal (client note, 2026-10-05): a failed delivery always
+// goes back to the shop and ends RETURNED, and with FAILED here the page
+// stopped polling and never showed "Returned to store" without a reload.
+const TERMINAL = new Set(["DELIVERED", "CANCELLED", "RETURNED", "REJECTED"]);
 
 const STATUS_KEY: Record<string, string> = {
   CREATED: "track.statusCreated",
@@ -29,6 +32,8 @@ const STATUS_KEY: Record<string, string> = {
   DISPATCHING: "track.statusDispatching",
   NO_DRIVER: "track.statusDispatching",
   ASSIGNED: "track.statusAssigned",
+  // The courier is at the shop collecting it: still "assigned" to a customer.
+  ARRIVED: "track.statusAssigned",
   PICKED_UP: "track.statusPickedUp",
   DELIVERED: "track.statusDelivered",
   FAILED: "track.statusFailed",

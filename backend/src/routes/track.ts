@@ -17,7 +17,7 @@ import rateLimit from "express-rate-limit";
 import { Prisma } from "../generated/prisma";
 import { prisma } from "../config";
 import { logger } from "../config/logger";
-import { publishOrderEvent } from "../services/orderStateMachine";
+import { isReturningToMerchant, publishOrderEvent } from "../services/orderStateMachine";
 import { postTip } from "../services/wallet/walletService";
 import { RatingError, submitRating } from "../services/ratingService";
 
@@ -87,13 +87,22 @@ router.get("/:token", readLimiter, async (req: Request, res: Response) => {
       return;
     }
 
+    // Client note (2026-10-05): a courier who could not deliver now turns
+    // back to the shop before the failure is recorded. To the customer that
+    // attempt has already failed, so the page says so rather than showing a
+    // courier "on the way" while driving away, then Returned on arrival.
+    const returning = order.status !== "FAILED" && isReturningToMerchant(order);
+    const publicStatus = returning ? "FAILED" : order.status;
+
     // Live driver position + ETA only while the order is on the road.
+    // ARRIVED (at the shop counter) is on the road too (revision 8 #3).
     let driverBlock: { firstName: string; phone: string | null } | null = null;
     let driverPosition: { lat: number; lng: number } | null = null;
     let etaMin: number | null = null;
     if (
       order.driver &&
-      (order.status === "ASSIGNED" || order.status === "PICKED_UP")
+      !returning &&
+      (order.status === "ASSIGNED" || order.status === "ARRIVED" || order.status === "PICKED_UP")
     ) {
       driverBlock = {
         firstName: order.driver.name.split(" ")[0],
@@ -121,7 +130,7 @@ router.get("/:token", readLimiter, async (req: Request, res: Response) => {
 
     res.json({
       orderNumber: order.orderNumber,
-      status: order.status,
+      status: publicStatus,
       vendor: { name: order.vendor.name, nameAr: order.vendor.nameAr ?? null },
       driver: driverBlock,
       driverPosition,
@@ -138,7 +147,8 @@ router.get("/:token", readLimiter, async (req: Request, res: Response) => {
       cancelledAt: order.cancelledAt,
       tipKwd: order.tipKwd ? order.tipKwd.toFixed(3) : null,
       rated: !!order.rating,
-      canCancel: ["CREATED", "DISPATCHING", "NO_DRIVER", "ASSIGNED"].includes(order.status),
+      canCancel:
+        !returning && ["CREATED", "DISPATCHING", "NO_DRIVER", "ASSIGNED"].includes(order.status),
     });
   } catch (err) {
     logger.error({ err }, "track: lookup failed");

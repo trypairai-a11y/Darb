@@ -22,7 +22,7 @@ const STATUS_STYLES: Record<DeliveryOrderStatus, string> = {
   CANCELLED: "bg-gray-100 text-gray-500",
 };
 
-const STATUS_I18N: Record<DeliveryOrderStatus, string> = {
+export const STATUS_I18N: Record<DeliveryOrderStatus, string> = {
   CREATED: "darbOrderStatus.created",
   REJECTED: "darbOrderStatus.rejected",
   DISPATCHING: "darbOrderStatus.dispatching",
@@ -53,5 +53,22 @@ export default function OrderStatusBadge({ status, size = "sm", className }: Ord
       showDot={false}
       className={known ? `${STATUS_STYLES[known]} ${className ?? ""}` : className}
     />
+  );
+}
+
+/**
+ * Client note (2026-10-05): the courier could not deliver and is taking the
+ * order back to the shop. Drawn beside the status badge, which still reads
+ * the in-flight status until the hand-back is confirmed.
+ */
+export function ReturningPill({ className }: { className?: string }) {
+  const { t } = useI18n();
+  return (
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded-pill text-[11px] font-medium bg-purple-50 text-purple-700 whitespace-nowrap ${className ?? ""}`}
+      data-testid="order-returning-pill"
+    >
+      {t("dispatch.returningToStore")}
+    </span>
   );
 }

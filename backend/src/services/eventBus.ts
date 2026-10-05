@@ -52,6 +52,9 @@ export type DarbEventType =
   | "wallet.reconciliation_failed"
   // Darb 2.0 PRD build (DARB2-PRD-001 v3.0):
   | "order.returned"
+  // Client note (2026-10-05): the driver could not deliver and is taking the
+  // order back to the shop. The status does not move until they arrive.
+  | "order.return_started"
   | "order.cancel_requested"
   | "order.rated"
   | "order.tipped"

@@ -23,9 +23,11 @@ import {
 import {
   OrderActor,
   OrderStateConflictError,
+  RETURNABLE_STATUSES,
   SYSTEM_ACTOR,
   flushOrderEvents,
   publishOrderEvent,
+  returnStartedAt,
   transitionOrder,
 } from "./orderStateMachine";
 import { enqueueDispatchStart, removeOfferExpiryJob } from "../queues/dispatchQueue";
@@ -663,6 +665,140 @@ export async function returnToMerchant(args: {
   return updated ?? { ...order, status: "RETURNED" as DeliveryOrderStatus };
 }
 
+// ─── Return first, then report (client note, 2026-10-05) ───────────────────
+//
+// "if delivery failed for any reason the driver must return the order to the
+// vendor, after that he can report that the delivery failed" (2026-09-21),
+// answered "Not done" on 2026-10-05. The app still asked for the failure
+// reason first and walked the driver back afterwards. Now the order is turned
+// around first and the failure is recorded on arrival back at the shop. The
+// state machine is untouched: the return leg is a marker on an order that
+// keeps its in-flight status, and the arrival runs X → FAILED → RETURNED in
+// one transaction, so FAILED stays the only way into RETURNED.
+
+const RETURNABLE_IN_FLIGHT: DeliveryOrderStatus[] = [...RETURNABLE_STATUSES];
+
+/**
+ * The driver cannot deliver and turns back to the shop. Writes the marker
+ * and a timeline entry; the status does not move, so the order stays the
+ * driver's active job and they stay BUSY. Idempotent: a repeat, or an order
+ * already FAILED by an older build, returns the row unchanged.
+ */
+export async function startReturnToMerchant(args: {
+  tenantId: string;
+  orderId: string;
+  actor: OrderActor;
+}): Promise<DeliveryOrder> {
+  const { tenantId, orderId, actor } = args;
+  const order = await getOrderOrThrow(tenantId, orderId);
+  if (order.status === "FAILED" || returnStartedAt(order)) return order;
+  if (!RETURNABLE_IN_FLIGHT.includes(order.status)) {
+    throw new OrderStateConflictError(orderId, order.status, "FAILED");
+  }
+
+  const startedAt = new Date();
+  const meta =
+    order.metadata && typeof order.metadata === "object" && !Array.isArray(order.metadata)
+      ? (order.metadata as Record<string, unknown>)
+      : {};
+  await prisma.$transaction(async (trx) => {
+    // Status-guarded like every FSM write: a concurrent cancel or delivery
+    // wins and this answers 409 rather than marking a finished order.
+    const result = await trx.deliveryOrder.updateMany({
+      where: { id: orderId, tenantId, status: order.status },
+      data: {
+        metadata: { ...meta, returnStartedAt: startedAt.toISOString() } as Prisma.InputJsonValue,
+      },
+    });
+    if (result.count === 0) {
+      throw new OrderStateConflictError(orderId, order.status, "FAILED");
+    }
+    await trx.orderEvent.create({
+      data: {
+        tenantId,
+        orderId,
+        action: "order.return_started",
+        description: `Delivery could not be completed. Courier is taking the order back to the shop`,
+        operator: actor.name ?? actor.type,
+        operatorId: actor.id ?? null,
+        timestamp: startedAt,
+        metadata: {
+          status: order.status,
+          actorType: actor.type,
+          ...baseEventMeta(order),
+        } as Prisma.InputJsonValue,
+      },
+    });
+  });
+  publishOrderEvent(tenantId, "order.return_started", {
+    orderId,
+    status: order.status,
+    returning: true,
+    ...baseEventMeta(order),
+  });
+
+  const updated = await prisma.deliveryOrder.findFirst({ where: { id: orderId, tenantId } });
+  return updated ?? order;
+}
+
+/**
+ * The order is back on the shop's counter and the failure is reported:
+ * in-flight → FAILED (with the reason) → RETURNED in one transaction, and the
+ * driver is released. An order an older build already moved to FAILED just
+ * takes the RETURNED step. Wallet: nothing to post, as in returnToMerchant.
+ */
+export async function failAndReturnToMerchant(args: {
+  tenantId: string;
+  orderId: string;
+  reason: string;
+  actor: OrderActor;
+  note?: string;
+}): Promise<DeliveryOrder> {
+  const { tenantId, orderId, reason, actor, note } = args;
+  const order = await getOrderOrThrow(tenantId, orderId);
+  if (order.status === "FAILED") {
+    return returnToMerchant({ tenantId, orderId, actor, note });
+  }
+  if (!RETURNABLE_IN_FLIGHT.includes(order.status)) {
+    throw new OrderStateConflictError(orderId, order.status, "FAILED");
+  }
+
+  const tx = await prisma.$transaction(async (trx) => {
+    await transitionOrder(trx, {
+      orderId,
+      tenantId,
+      from: order.status,
+      to: "FAILED",
+      actor,
+      data: { failureReason: reason },
+      eventMeta: { ...baseEventMeta(order), reason, reportedAtShop: true },
+    });
+    await transitionOrder(trx, {
+      orderId,
+      tenantId,
+      from: "FAILED",
+      to: "RETURNED",
+      actor,
+      data: { returnedAt: new Date() },
+      eventMeta: { ...baseEventMeta(order), ...(note ? { note } : {}) },
+    });
+    if (order.driverId) {
+      await releaseDriverToOnline(trx, tenantId, order.driverId);
+    }
+    return trx;
+  });
+  flushOrderEvents(tx); // order.failed, then order.returned
+
+  // Foodics has no FAILED milestone; the write-back maps it to a cancellation.
+  if (!order.isTraining) fireFoodicsWriteback(orderId, "CANCELLED");
+  else fireNextPracticeOrder(order);
+
+  const updated = await prisma.deliveryOrder.findFirst({ where: { id: orderId, tenantId } });
+  return (
+    updated ?? { ...order, status: "RETURNED" as DeliveryOrderStatus, failureReason: reason }
+  );
+}
+
 // ─── Cancel ────────────────────────────────────────────────────────────────
 
 const VENDOR_CANCELLABLE: DeliveryOrderStatus[] = [
@@ -822,7 +958,13 @@ function fireNextPracticeOrder(order: { isTraining: boolean; trainingSessionId: 
 
 // ─── Fail ──────────────────────────────────────────────────────────────────
 
-/** ASSIGNED | PICKED_UP → FAILED with a reason (driver-reported). */
+/**
+ * ASSIGNED | ARRIVED | PICKED_UP → FAILED with a reason (driver-reported).
+ *
+ * Kept for driver app builds that report the failure before the return leg.
+ * Current builds use startReturnToMerchant + failAndReturnToMerchant, which
+ * record the failure only once the order is back at the shop.
+ */
 export async function failDelivery(args: {
   tenantId: string;
   orderId: string;
@@ -832,7 +974,9 @@ export async function failDelivery(args: {
   const { tenantId, orderId, reason, actor } = args;
 
   const order = await getOrderOrThrow(tenantId, orderId);
-  if (order.status !== "ASSIGNED" && order.status !== "PICKED_UP") {
+  // ARRIVED is a legal FSM source (revision 8 #3) and was refused here, so a
+  // driver standing at the counter could not report anything.
+  if (!RETURNABLE_IN_FLIGHT.includes(order.status)) {
     throw new OrderStateConflictError(orderId, order.status, "FAILED");
   }
 

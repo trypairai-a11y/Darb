@@ -71,9 +71,12 @@ const router = Router();
 // read a named vendor's portal and refuses everything else. See vendorScope.
 router.use(authMiddleware, tenantScope, rbac("VENDOR", "ADMIN"), vendorScope);
 
+// ARRIVED and RETURNED were missing (client note, 2026-10-05, "still it is
+// not showing that the order has been returned to store"): ?status=RETURNED
+// was dropped and the shop got every order back instead.
 const DELIVERY_ORDER_STATUSES = [
-  "CREATED", "REJECTED", "DISPATCHING", "NO_DRIVER", "ASSIGNED",
-  "PICKED_UP", "DELIVERED", "FAILED", "CANCELLED",
+  "CREATED", "REJECTED", "DISPATCHING", "NO_DRIVER", "ASSIGNED", "ARRIVED",
+  "PICKED_UP", "DELIVERED", "FAILED", "CANCELLED", "RETURNED",
 ] as const;
 
 // Revision 10 (#7): a branchId pauses that counter alone; absent means the

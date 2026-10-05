@@ -61,11 +61,14 @@ const INTERNAL_ROLES = ["ADMIN", "OPS_MANAGER", "SUPERVISOR", "ACCOUNT_MANAGER"]
  * company were admins. A user carries at most one portal link; absent both,
  * they are Darb's own staff.
  */
-function portalOf(u: { vendorId?: string | null; fleetPartnerId?: string | null; vendor?: { name?: string } | null; fleetPartner?: { name?: string } | null }) {
-  if (u.fleetPartnerId) {
+function portalOf(u: { portal?: "VENDOR" | "FLEET" | null; vendorId?: string | null; fleetPartnerId?: string | null; vendor?: { name?: string } | null; fleetPartner?: { name?: string } | null }) {
+  // The server's answer first (client note, 2026-10-05): it also counts the
+  // role, so a FLEET login with no company link (an owner-group login) read
+  // "HQ" here while its Permissions dialog showed the delivery company tabs.
+  if (u.portal === "FLEET" || u.fleetPartnerId) {
     return { label: "Delivery company", detail: u.fleetPartner?.name ?? null, className: "bg-indigo-50 text-indigo-600" };
   }
-  if (u.vendorId) {
+  if (u.portal === "VENDOR" || u.vendorId) {
     return { label: "Vendor", detail: u.vendor?.name ?? null, className: "bg-amber-50 text-amber-700" };
   }
   return { label: "HQ", detail: null, className: "bg-sky-50 text-sky-700" };
@@ -476,9 +479,10 @@ function PermissionsModal({
   user: { id: string; name: string; role: string };
   onClose: () => void;
 }) {
-  const { data, loading, refetch } = useApiGet<PermissionsPayload>(
+  const { data, loading, error: loadError, refetch } = useApiGet<PermissionsPayload>(
     `/api/users/${user.id}/permissions`
   );
+  const { t } = useI18n();
   const { data: vendorsData } = useApiGet<any>(
     user.role === "ACCOUNT_MANAGER" ? "/api/vendors?limit=200" : null
   );
@@ -581,7 +585,12 @@ function PermissionsModal({
           <div>
             <h2 className="text-lg font-semibold">Permissions</h2>
             <p className="text-xs text-secondary mt-0.5">
-              {user.name} · {user.role.replace("_", " ")}
+              {/* A portal login is governed by its portal role, not the staff
+                  role every portal login carries (FLEET / VENDOR). */}
+              {user.name} ·{" "}
+              {data?.portal
+                ? `${data.portal === "FLEET" ? "Delivery company" : "Vendor"} · ${t(`portalRoles.${data.portalRole ?? "ADMIN"}`)}`
+                : user.role.replace("_", " ")}
             </p>
           </div>
           <button onClick={onClose} className="p-1 hover:bg-gray-50 rounded-lg">
@@ -594,7 +603,11 @@ function PermissionsModal({
         )}
 
         <div className="flex-1 overflow-y-auto px-6 space-y-5">
-          {loading || !data ? (
+          {loadError && !data ? (
+            // Without this a refused load (the endpoint is ADMIN only) spun
+            // forever.
+            <div className="py-6 text-sm text-red-600">{loadError}</div>
+          ) : loading || !data ? (
             <div className="py-10 flex justify-center">
               <Loader2 size={18} className="animate-spin text-secondary" />
             </div>

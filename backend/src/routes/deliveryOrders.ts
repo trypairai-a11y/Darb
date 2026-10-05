@@ -20,6 +20,7 @@ import {
   OrderActor,
   OrderStateConflictError,
   flushOrderEvents,
+  isReturningToMerchant,
   publishOrderEvent,
   transitionOrder,
 } from "../services/orderStateMachine";
@@ -29,6 +30,7 @@ import {
   assignDriverManually,
   cancelOrder,
   createDeliveryOrder,
+  failAndReturnToMerchant,
   redispatchOrder,
   returnToMerchant,
 } from "../services/orderService";
@@ -40,14 +42,16 @@ import { isR2Configured, presignGetUrl } from "../services/r2Service";
 
 const SUPERVISOR_PLUS = ["ADMIN", "OPS_MANAGER", "SUPERVISOR"];
 
+// ARRIVED (revision 8 #3) was missing, so ?status=ARRIVED was dropped and
+// the list came back unfiltered.
 const DELIVERY_ORDER_STATUSES = [
-  "CREATED", "REJECTED", "DISPATCHING", "NO_DRIVER", "ASSIGNED",
+  "CREATED", "REJECTED", "DISPATCHING", "NO_DRIVER", "ASSIGNED", "ARRIVED",
   "PICKED_UP", "DELIVERED", "FAILED", "CANCELLED", "RETURNED",
 ] as const;
 
 /** Supervisor cancel: any pre-DELIVERED state (§A2). */
 const SUPERVISOR_CANCELLABLE: DeliveryOrderStatus[] = [
-  "CREATED", "DISPATCHING", "NO_DRIVER", "ASSIGNED", "PICKED_UP",
+  "CREATED", "DISPATCHING", "NO_DRIVER", "ASSIGNED", "ARRIVED", "PICKED_UP",
 ];
 
 /** Rejection reasons a dropoff fix can cure (§A8 PATCH /:id/dropoff). */
@@ -516,18 +520,51 @@ router.post(
  *   post:
  *     tags: [Delivery Orders]
  *     summary: Authorise return-to-merchant after a FAILED delivery (PRD §6)
+ *     description: >
+ *       Also closes an order whose driver turned back to the shop and never
+ *       confirmed the hand-back (client note, 2026-10-05): that order is
+ *       still in flight, so it goes X → FAILED → RETURNED, with `reason` or
+ *       a default naming the staff confirmation.
  */
 router.post(
   "/:id/return",
   rbac(...SUPERVISOR_PLUS),
   async (req: Request, res: Response) => {
     try {
+      const tenantId = req.user!.tenantId;
+      const body = (req.body ?? {}) as { note?: unknown; reason?: unknown };
       const note =
-        typeof (req.body as { note?: unknown })?.note === "string"
-          ? String((req.body as { note: string }).note).slice(0, 500)
-          : undefined;
+        typeof body.note === "string" ? String(body.note).slice(0, 500) : undefined;
+
+      const current = await prisma.deliveryOrder.findFirst({
+        where: { id: req.params.id, tenantId },
+        select: { id: true, status: true, metadata: true },
+      });
+      if (!current) {
+        res.status(404).json({ error: "Order not found" });
+        return;
+      }
+      // A driver on the return leg has not reported yet; staff confirming the
+      // bag is back reports it for them. Any other in-flight order is still
+      // a delivery, and the state machine's 409 is the right answer.
+      if (current.status !== "FAILED" && isReturningToMerchant(current)) {
+        const reason =
+          typeof body.reason === "string" && body.reason.trim()
+            ? body.reason.trim().slice(0, 500)
+            : "Returned to the shop, confirmed by staff";
+        const order = await failAndReturnToMerchant({
+          tenantId,
+          orderId: current.id,
+          reason,
+          actor: staffActor(req),
+          note,
+        });
+        res.json(order);
+        return;
+      }
+
       const order = await returnToMerchant({
-        tenantId: req.user!.tenantId,
+        tenantId,
         orderId: req.params.id,
         actor: staffActor(req),
         note,

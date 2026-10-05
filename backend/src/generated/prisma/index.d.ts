@@ -139004,12 +139004,14 @@ export namespace Prisma {
   export type FleetPartnerAvgAggregateOutputType = {
     flatFeePerOrderKwd: Decimal | null
     perKmFeeKwd: Decimal | null
+    subscriptionFeeKwd: Decimal | null
     minOnlineHoursPerDay: number | null
   }
 
   export type FleetPartnerSumAggregateOutputType = {
     flatFeePerOrderKwd: Decimal | null
     perKmFeeKwd: Decimal | null
+    subscriptionFeeKwd: Decimal | null
     minOnlineHoursPerDay: number | null
   }
 
@@ -139022,6 +139024,8 @@ export namespace Prisma {
     contactEmail: string | null
     flatFeePerOrderKwd: Decimal | null
     perKmFeeKwd: Decimal | null
+    commercialModel: string | null
+    subscriptionFeeKwd: Decimal | null
     minOnlineHoursPerDay: number | null
     disciplineStatus: string | null
     disciplineNote: string | null
@@ -139042,6 +139046,8 @@ export namespace Prisma {
     contactEmail: string | null
     flatFeePerOrderKwd: Decimal | null
     perKmFeeKwd: Decimal | null
+    commercialModel: string | null
+    subscriptionFeeKwd: Decimal | null
     minOnlineHoursPerDay: number | null
     disciplineStatus: string | null
     disciplineNote: string | null
@@ -139062,6 +139068,8 @@ export namespace Prisma {
     contactEmail: number
     flatFeePerOrderKwd: number
     perKmFeeKwd: number
+    commercialModel: number
+    subscriptionFeeKwd: number
     minOnlineHoursPerDay: number
     minDriversOnline: number
     disciplineStatus: number
@@ -139079,12 +139087,14 @@ export namespace Prisma {
   export type FleetPartnerAvgAggregateInputType = {
     flatFeePerOrderKwd?: true
     perKmFeeKwd?: true
+    subscriptionFeeKwd?: true
     minOnlineHoursPerDay?: true
   }
 
   export type FleetPartnerSumAggregateInputType = {
     flatFeePerOrderKwd?: true
     perKmFeeKwd?: true
+    subscriptionFeeKwd?: true
     minOnlineHoursPerDay?: true
   }
 
@@ -139097,6 +139107,8 @@ export namespace Prisma {
     contactEmail?: true
     flatFeePerOrderKwd?: true
     perKmFeeKwd?: true
+    commercialModel?: true
+    subscriptionFeeKwd?: true
     minOnlineHoursPerDay?: true
     disciplineStatus?: true
     disciplineNote?: true
@@ -139117,6 +139129,8 @@ export namespace Prisma {
     contactEmail?: true
     flatFeePerOrderKwd?: true
     perKmFeeKwd?: true
+    commercialModel?: true
+    subscriptionFeeKwd?: true
     minOnlineHoursPerDay?: true
     disciplineStatus?: true
     disciplineNote?: true
@@ -139137,6 +139151,8 @@ export namespace Prisma {
     contactEmail?: true
     flatFeePerOrderKwd?: true
     perKmFeeKwd?: true
+    commercialModel?: true
+    subscriptionFeeKwd?: true
     minOnlineHoursPerDay?: true
     minDriversOnline?: true
     disciplineStatus?: true
@@ -139245,6 +139261,8 @@ export namespace Prisma {
     contactEmail: string | null
     flatFeePerOrderKwd: Decimal
     perKmFeeKwd: Decimal | null
+    commercialModel: string
+    subscriptionFeeKwd: Decimal | null
     minOnlineHoursPerDay: number | null
     minDriversOnline: JsonValue | null
     disciplineStatus: string
@@ -139285,6 +139303,8 @@ export namespace Prisma {
     contactEmail?: boolean
     flatFeePerOrderKwd?: boolean
     perKmFeeKwd?: boolean
+    commercialModel?: boolean
+    subscriptionFeeKwd?: boolean
     minOnlineHoursPerDay?: boolean
     minDriversOnline?: boolean
     disciplineStatus?: boolean
@@ -139321,6 +139341,8 @@ export namespace Prisma {
     contactEmail?: boolean
     flatFeePerOrderKwd?: boolean
     perKmFeeKwd?: boolean
+    commercialModel?: boolean
+    subscriptionFeeKwd?: boolean
     minOnlineHoursPerDay?: boolean
     minDriversOnline?: boolean
     disciplineStatus?: boolean
@@ -139344,6 +139366,8 @@ export namespace Prisma {
     contactEmail?: boolean
     flatFeePerOrderKwd?: boolean
     perKmFeeKwd?: boolean
+    commercialModel?: boolean
+    subscriptionFeeKwd?: boolean
     minOnlineHoursPerDay?: boolean
     minDriversOnline?: boolean
     disciplineStatus?: boolean
@@ -139405,6 +139429,16 @@ export namespace Prisma {
       contactEmail: string | null
       flatFeePerOrderKwd: Prisma.Decimal
       perKmFeeKwd: Prisma.Decimal | null
+      /**
+       * Client note, 2026-08-16 (Osama): Darb works with a delivery company on
+       * one of two models. MARGIN is the rate above (Darb keeps the gap between
+       * what the shop is charged and what the company is paid). SUBSCRIPTION:
+       * the company pays Darb subscriptionFeeKwd a month and is paid the shop's
+       * delivery fee per order with no margin taken; the fee is deducted on the
+       * monthly statement. A string, not an enum, like disciplineStatus.
+       */
+      commercialModel: string
+      subscriptionFeeKwd: Prisma.Decimal | null
       minOnlineHoursPerDay: number | null
       minDriversOnline: Prisma.JsonValue | null
       disciplineStatus: string
@@ -139836,6 +139870,8 @@ export namespace Prisma {
     readonly contactEmail: FieldRef<"FleetPartner", 'String'>
     readonly flatFeePerOrderKwd: FieldRef<"FleetPartner", 'Decimal'>
     readonly perKmFeeKwd: FieldRef<"FleetPartner", 'Decimal'>
+    readonly commercialModel: FieldRef<"FleetPartner", 'String'>
+    readonly subscriptionFeeKwd: FieldRef<"FleetPartner", 'Decimal'>
     readonly minOnlineHoursPerDay: FieldRef<"FleetPartner", 'Float'>
     readonly minDriversOnline: FieldRef<"FleetPartner", 'Json'>
     readonly disciplineStatus: FieldRef<"FleetPartner", 'String'>
@@ -140475,6 +140511,7 @@ export namespace Prisma {
     feePerOrderKwd: Decimal | null
     perKmFeeKwd: Decimal | null
     totalKm: Decimal | null
+    commercialModel: string | null
     totalKwd: Decimal | null
     status: string | null
     payoutTxId: string | null
@@ -140499,6 +140536,7 @@ export namespace Prisma {
     feePerOrderKwd: Decimal | null
     perKmFeeKwd: Decimal | null
     totalKm: Decimal | null
+    commercialModel: string | null
     totalKwd: Decimal | null
     status: string | null
     payoutTxId: string | null
@@ -140523,6 +140561,7 @@ export namespace Prisma {
     feePerOrderKwd: number
     perKmFeeKwd: number
     totalKm: number
+    commercialModel: number
     totalKwd: number
     status: number
     payoutTxId: number
@@ -140569,6 +140608,7 @@ export namespace Prisma {
     feePerOrderKwd?: true
     perKmFeeKwd?: true
     totalKm?: true
+    commercialModel?: true
     totalKwd?: true
     status?: true
     payoutTxId?: true
@@ -140593,6 +140633,7 @@ export namespace Prisma {
     feePerOrderKwd?: true
     perKmFeeKwd?: true
     totalKm?: true
+    commercialModel?: true
     totalKwd?: true
     status?: true
     payoutTxId?: true
@@ -140617,6 +140658,7 @@ export namespace Prisma {
     feePerOrderKwd?: true
     perKmFeeKwd?: true
     totalKm?: true
+    commercialModel?: true
     totalKwd?: true
     status?: true
     payoutTxId?: true
@@ -140728,6 +140770,7 @@ export namespace Prisma {
     feePerOrderKwd: Decimal
     perKmFeeKwd: Decimal | null
     totalKm: Decimal | null
+    commercialModel: string
     totalKwd: Decimal
     status: string
     payoutTxId: string | null
@@ -140771,6 +140814,7 @@ export namespace Prisma {
     feePerOrderKwd?: boolean
     perKmFeeKwd?: boolean
     totalKm?: boolean
+    commercialModel?: boolean
     totalKwd?: boolean
     status?: boolean
     payoutTxId?: boolean
@@ -140800,6 +140844,7 @@ export namespace Prisma {
     feePerOrderKwd?: boolean
     perKmFeeKwd?: boolean
     totalKm?: boolean
+    commercialModel?: boolean
     totalKwd?: boolean
     status?: boolean
     payoutTxId?: boolean
@@ -140826,6 +140871,7 @@ export namespace Prisma {
     feePerOrderKwd?: boolean
     perKmFeeKwd?: boolean
     totalKm?: boolean
+    commercialModel?: boolean
     totalKwd?: boolean
     status?: boolean
     payoutTxId?: boolean
@@ -140881,6 +140927,13 @@ export namespace Prisma {
        */
       perKmFeeKwd: Prisma.Decimal | null
       totalKm: Prisma.Decimal | null
+      /**
+       * Client note, 2026-08-16: the company's commercial model, snapshotted
+       * like the rate. The order lines behind a SUBSCRIPTION month are the shop
+       * fees, not base + km, and switching the company's model later must not
+       * redraw the working of a month already cut.
+       */
+      commercialModel: string
       totalKwd: Prisma.Decimal
       /**
        * Revision 13 (#8) — FINAL | CONFIRMED | DISPUTED | PAID. The delivery
@@ -141316,6 +141369,7 @@ export namespace Prisma {
     readonly feePerOrderKwd: FieldRef<"FleetPayoutStatement", 'Decimal'>
     readonly perKmFeeKwd: FieldRef<"FleetPayoutStatement", 'Decimal'>
     readonly totalKm: FieldRef<"FleetPayoutStatement", 'Decimal'>
+    readonly commercialModel: FieldRef<"FleetPayoutStatement", 'String'>
     readonly totalKwd: FieldRef<"FleetPayoutStatement", 'Decimal'>
     readonly status: FieldRef<"FleetPayoutStatement", 'String'>
     readonly payoutTxId: FieldRef<"FleetPayoutStatement", 'String'>
@@ -165373,6 +165427,8 @@ export namespace Prisma {
     contactEmail: 'contactEmail',
     flatFeePerOrderKwd: 'flatFeePerOrderKwd',
     perKmFeeKwd: 'perKmFeeKwd',
+    commercialModel: 'commercialModel',
+    subscriptionFeeKwd: 'subscriptionFeeKwd',
     minOnlineHoursPerDay: 'minOnlineHoursPerDay',
     minDriversOnline: 'minDriversOnline',
     disciplineStatus: 'disciplineStatus',
@@ -165398,6 +165454,7 @@ export namespace Prisma {
     feePerOrderKwd: 'feePerOrderKwd',
     perKmFeeKwd: 'perKmFeeKwd',
     totalKm: 'totalKm',
+    commercialModel: 'commercialModel',
     totalKwd: 'totalKwd',
     status: 'status',
     payoutTxId: 'payoutTxId',
@@ -167204,6 +167261,7 @@ export namespace Prisma {
     contactName: 'contactName',
     contactPhone: 'contactPhone',
     contactEmail: 'contactEmail',
+    commercialModel: 'commercialModel',
     disciplineStatus: 'disciplineStatus',
     disciplineNote: 'disciplineNote',
     complianceFreezeReason: 'complianceFreezeReason',
@@ -167217,6 +167275,7 @@ export namespace Prisma {
     id: 'id',
     tenantId: 'tenantId',
     fleetPartnerId: 'fleetPartnerId',
+    commercialModel: 'commercialModel',
     status: 'status',
     payoutTxId: 'payoutTxId',
     confirmedById: 'confirmedById',
@@ -180560,6 +180619,8 @@ export namespace Prisma {
     contactEmail?: StringNullableFilter<"FleetPartner"> | string | null
     flatFeePerOrderKwd?: DecimalFilter<"FleetPartner"> | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: DecimalNullableFilter<"FleetPartner"> | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFilter<"FleetPartner"> | string
+    subscriptionFeeKwd?: DecimalNullableFilter<"FleetPartner"> | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: FloatNullableFilter<"FleetPartner"> | number | null
     minDriversOnline?: JsonNullableFilter<"FleetPartner">
     disciplineStatus?: StringFilter<"FleetPartner"> | string
@@ -180595,6 +180656,8 @@ export namespace Prisma {
     contactEmail?: SortOrderInput | SortOrder
     flatFeePerOrderKwd?: SortOrder
     perKmFeeKwd?: SortOrderInput | SortOrder
+    commercialModel?: SortOrder
+    subscriptionFeeKwd?: SortOrderInput | SortOrder
     minOnlineHoursPerDay?: SortOrderInput | SortOrder
     minDriversOnline?: SortOrderInput | SortOrder
     disciplineStatus?: SortOrder
@@ -180634,6 +180697,8 @@ export namespace Prisma {
     contactEmail?: StringNullableFilter<"FleetPartner"> | string | null
     flatFeePerOrderKwd?: DecimalFilter<"FleetPartner"> | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: DecimalNullableFilter<"FleetPartner"> | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFilter<"FleetPartner"> | string
+    subscriptionFeeKwd?: DecimalNullableFilter<"FleetPartner"> | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: FloatNullableFilter<"FleetPartner"> | number | null
     minDriversOnline?: JsonNullableFilter<"FleetPartner">
     disciplineStatus?: StringFilter<"FleetPartner"> | string
@@ -180669,6 +180734,8 @@ export namespace Prisma {
     contactEmail?: SortOrderInput | SortOrder
     flatFeePerOrderKwd?: SortOrder
     perKmFeeKwd?: SortOrderInput | SortOrder
+    commercialModel?: SortOrder
+    subscriptionFeeKwd?: SortOrderInput | SortOrder
     minOnlineHoursPerDay?: SortOrderInput | SortOrder
     minDriversOnline?: SortOrderInput | SortOrder
     disciplineStatus?: SortOrder
@@ -180698,6 +180765,8 @@ export namespace Prisma {
     contactEmail?: StringNullableWithAggregatesFilter<"FleetPartner"> | string | null
     flatFeePerOrderKwd?: DecimalWithAggregatesFilter<"FleetPartner"> | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: DecimalNullableWithAggregatesFilter<"FleetPartner"> | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringWithAggregatesFilter<"FleetPartner"> | string
+    subscriptionFeeKwd?: DecimalNullableWithAggregatesFilter<"FleetPartner"> | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: FloatNullableWithAggregatesFilter<"FleetPartner"> | number | null
     minDriversOnline?: JsonNullableWithAggregatesFilter<"FleetPartner">
     disciplineStatus?: StringWithAggregatesFilter<"FleetPartner"> | string
@@ -180723,6 +180792,7 @@ export namespace Prisma {
     feePerOrderKwd?: DecimalFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: DecimalNullableFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string | null
     totalKm?: DecimalNullableFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFilter<"FleetPayoutStatement"> | string
     totalKwd?: DecimalFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string
     status?: StringFilter<"FleetPayoutStatement"> | string
     payoutTxId?: StringNullableFilter<"FleetPayoutStatement"> | string | null
@@ -180751,6 +180821,7 @@ export namespace Prisma {
     feePerOrderKwd?: SortOrder
     perKmFeeKwd?: SortOrderInput | SortOrder
     totalKm?: SortOrderInput | SortOrder
+    commercialModel?: SortOrder
     totalKwd?: SortOrder
     status?: SortOrder
     payoutTxId?: SortOrderInput | SortOrder
@@ -180784,6 +180855,7 @@ export namespace Prisma {
     feePerOrderKwd?: DecimalFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: DecimalNullableFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string | null
     totalKm?: DecimalNullableFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFilter<"FleetPayoutStatement"> | string
     totalKwd?: DecimalFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string
     status?: StringFilter<"FleetPayoutStatement"> | string
     payoutTxId?: StringNullableFilter<"FleetPayoutStatement"> | string | null
@@ -180812,6 +180884,7 @@ export namespace Prisma {
     feePerOrderKwd?: SortOrder
     perKmFeeKwd?: SortOrderInput | SortOrder
     totalKm?: SortOrderInput | SortOrder
+    commercialModel?: SortOrder
     totalKwd?: SortOrder
     status?: SortOrder
     payoutTxId?: SortOrderInput | SortOrder
@@ -180844,6 +180917,7 @@ export namespace Prisma {
     feePerOrderKwd?: DecimalWithAggregatesFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: DecimalNullableWithAggregatesFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string | null
     totalKm?: DecimalNullableWithAggregatesFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringWithAggregatesFilter<"FleetPayoutStatement"> | string
     totalKwd?: DecimalWithAggregatesFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string
     status?: StringWithAggregatesFilter<"FleetPayoutStatement"> | string
     payoutTxId?: StringNullableWithAggregatesFilter<"FleetPayoutStatement"> | string | null
@@ -196049,6 +196123,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -196083,6 +196159,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -196115,6 +196193,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -196149,6 +196229,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -196182,6 +196264,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -196202,6 +196286,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -196222,6 +196308,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -196242,6 +196330,7 @@ export namespace Prisma {
     feePerOrderKwd: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
     totalKm?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
@@ -196270,6 +196359,7 @@ export namespace Prisma {
     feePerOrderKwd: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
     totalKm?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
@@ -196294,6 +196384,7 @@ export namespace Prisma {
     feePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     totalKm?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -196322,6 +196413,7 @@ export namespace Prisma {
     feePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     totalKm?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -196348,6 +196440,7 @@ export namespace Prisma {
     feePerOrderKwd: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
     totalKm?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
@@ -196370,6 +196463,7 @@ export namespace Prisma {
     feePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     totalKm?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -196394,6 +196488,7 @@ export namespace Prisma {
     feePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     totalKm?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -208376,6 +208471,8 @@ export namespace Prisma {
     contactEmail?: SortOrder
     flatFeePerOrderKwd?: SortOrder
     perKmFeeKwd?: SortOrder
+    commercialModel?: SortOrder
+    subscriptionFeeKwd?: SortOrder
     minOnlineHoursPerDay?: SortOrder
     minDriversOnline?: SortOrder
     disciplineStatus?: SortOrder
@@ -208391,6 +208488,7 @@ export namespace Prisma {
   export type FleetPartnerAvgOrderByAggregateInput = {
     flatFeePerOrderKwd?: SortOrder
     perKmFeeKwd?: SortOrder
+    subscriptionFeeKwd?: SortOrder
     minOnlineHoursPerDay?: SortOrder
   }
 
@@ -208403,6 +208501,8 @@ export namespace Prisma {
     contactEmail?: SortOrder
     flatFeePerOrderKwd?: SortOrder
     perKmFeeKwd?: SortOrder
+    commercialModel?: SortOrder
+    subscriptionFeeKwd?: SortOrder
     minOnlineHoursPerDay?: SortOrder
     disciplineStatus?: SortOrder
     disciplineNote?: SortOrder
@@ -208423,6 +208523,8 @@ export namespace Prisma {
     contactEmail?: SortOrder
     flatFeePerOrderKwd?: SortOrder
     perKmFeeKwd?: SortOrder
+    commercialModel?: SortOrder
+    subscriptionFeeKwd?: SortOrder
     minOnlineHoursPerDay?: SortOrder
     disciplineStatus?: SortOrder
     disciplineNote?: SortOrder
@@ -208437,6 +208539,7 @@ export namespace Prisma {
   export type FleetPartnerSumOrderByAggregateInput = {
     flatFeePerOrderKwd?: SortOrder
     perKmFeeKwd?: SortOrder
+    subscriptionFeeKwd?: SortOrder
     minOnlineHoursPerDay?: SortOrder
   }
 
@@ -208472,6 +208575,7 @@ export namespace Prisma {
     feePerOrderKwd?: SortOrder
     perKmFeeKwd?: SortOrder
     totalKm?: SortOrder
+    commercialModel?: SortOrder
     totalKwd?: SortOrder
     status?: SortOrder
     payoutTxId?: SortOrder
@@ -208506,6 +208610,7 @@ export namespace Prisma {
     feePerOrderKwd?: SortOrder
     perKmFeeKwd?: SortOrder
     totalKm?: SortOrder
+    commercialModel?: SortOrder
     totalKwd?: SortOrder
     status?: SortOrder
     payoutTxId?: SortOrder
@@ -208530,6 +208635,7 @@ export namespace Prisma {
     feePerOrderKwd?: SortOrder
     perKmFeeKwd?: SortOrder
     totalKm?: SortOrder
+    commercialModel?: SortOrder
     totalKwd?: SortOrder
     status?: SortOrder
     payoutTxId?: SortOrder
@@ -232885,6 +232991,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -232917,6 +233025,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -232959,6 +233069,7 @@ export namespace Prisma {
     feePerOrderKwd: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
     totalKm?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
@@ -232985,6 +233096,7 @@ export namespace Prisma {
     feePerOrderKwd: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
     totalKm?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
@@ -237142,6 +237254,8 @@ export namespace Prisma {
     contactEmail?: StringNullableFilter<"FleetPartner"> | string | null
     flatFeePerOrderKwd?: DecimalFilter<"FleetPartner"> | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: DecimalNullableFilter<"FleetPartner"> | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFilter<"FleetPartner"> | string
+    subscriptionFeeKwd?: DecimalNullableFilter<"FleetPartner"> | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: FloatNullableFilter<"FleetPartner"> | number | null
     minDriversOnline?: JsonNullableFilter<"FleetPartner">
     disciplineStatus?: StringFilter<"FleetPartner"> | string
@@ -237183,6 +237297,7 @@ export namespace Prisma {
     feePerOrderKwd?: DecimalFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: DecimalNullableFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string | null
     totalKm?: DecimalNullableFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFilter<"FleetPayoutStatement"> | string
     totalKwd?: DecimalFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string
     status?: StringFilter<"FleetPayoutStatement"> | string
     payoutTxId?: StringNullableFilter<"FleetPayoutStatement"> | string | null
@@ -239441,6 +239556,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -239474,6 +239591,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -240338,6 +240457,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -240371,6 +240492,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -242428,6 +242551,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -242461,6 +242586,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -243527,6 +243654,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -243560,6 +243689,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -246387,6 +246518,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -246420,6 +246553,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -324728,6 +324863,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -324761,6 +324898,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -325302,6 +325441,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -325335,6 +325476,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -331952,6 +332095,7 @@ export namespace Prisma {
     feePerOrderKwd: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
     totalKm?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
@@ -331978,6 +332122,7 @@ export namespace Prisma {
     feePerOrderKwd: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
     totalKm?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
@@ -333159,6 +333304,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -333192,6 +333339,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -333581,6 +333730,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -333614,6 +333765,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -334499,6 +334652,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -334532,6 +334687,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -334568,6 +334725,7 @@ export namespace Prisma {
     feePerOrderKwd: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
     totalKm?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
@@ -334595,6 +334753,7 @@ export namespace Prisma {
     feePerOrderKwd: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
     totalKm?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
@@ -335022,6 +335181,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -335055,6 +335216,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -335097,6 +335260,7 @@ export namespace Prisma {
     feePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     totalKm?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -335124,6 +335288,7 @@ export namespace Prisma {
     feePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     totalKm?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -335535,6 +335700,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -335568,6 +335735,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -336527,6 +336696,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -336560,6 +336731,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -337527,6 +337700,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -337560,6 +337735,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -338329,6 +338506,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -338362,6 +338541,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -339127,6 +339308,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -339160,6 +339343,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -339929,6 +340114,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -339962,6 +340149,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -343324,6 +343513,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -343357,6 +343548,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -343798,6 +343991,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -343831,6 +344026,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -344127,6 +344324,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -344160,6 +344359,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -344196,6 +344397,7 @@ export namespace Prisma {
     feePerOrderKwd: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
     totalKm?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
@@ -344223,6 +344425,7 @@ export namespace Prisma {
     feePerOrderKwd: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
     totalKm?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
@@ -344533,6 +344736,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -344566,6 +344771,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -344608,6 +344815,7 @@ export namespace Prisma {
     feePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     totalKm?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -344635,6 +344843,7 @@ export namespace Prisma {
     feePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     totalKm?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -345684,6 +345893,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -345717,6 +345928,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -346142,6 +346355,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -346175,6 +346390,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -347260,6 +347477,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -347293,6 +347512,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -347611,6 +347832,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -347644,6 +347867,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -353952,6 +354177,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -353973,6 +354200,7 @@ export namespace Prisma {
     feePerOrderKwd: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
     totalKm?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
@@ -358933,6 +359161,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -358965,6 +359195,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -358997,6 +359229,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -359017,6 +359251,7 @@ export namespace Prisma {
     feePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     totalKm?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -359043,6 +359278,7 @@ export namespace Prisma {
     feePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     totalKm?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -359068,6 +359304,7 @@ export namespace Prisma {
     feePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     totalKm?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -360532,6 +360769,8 @@ export namespace Prisma {
     contactEmail?: string | null
     flatFeePerOrderKwd?: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
+    subscriptionFeeKwd?: Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: string
@@ -360588,6 +360827,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -360621,6 +360862,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -360653,6 +360896,8 @@ export namespace Prisma {
     contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
     flatFeePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
+    subscriptionFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     minOnlineHoursPerDay?: NullableFloatFieldUpdateOperationsInput | number | null
     minDriversOnline?: NullableJsonNullValueInput | InputJsonValue
     disciplineStatus?: StringFieldUpdateOperationsInput | string
@@ -371994,6 +372239,7 @@ export namespace Prisma {
     feePerOrderKwd: Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: Decimal | DecimalJsLike | number | string | null
     totalKm?: Decimal | DecimalJsLike | number | string | null
+    commercialModel?: string
     totalKwd: Decimal | DecimalJsLike | number | string
     status?: string
     payoutTxId?: string | null
@@ -372566,6 +372812,7 @@ export namespace Prisma {
     feePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     totalKm?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -372592,6 +372839,7 @@ export namespace Prisma {
     feePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     totalKm?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -372617,6 +372865,7 @@ export namespace Prisma {
     feePerOrderKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     perKmFeeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     totalKm?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    commercialModel?: StringFieldUpdateOperationsInput | string
     totalKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     status?: StringFieldUpdateOperationsInput | string
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null

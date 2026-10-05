@@ -86,6 +86,14 @@ export default function CashOnHandTab() {
             {formatKwd(query.data.totalKwd, locale)}
           </p>
         </div>
+        {query.data.walletTotalKwd != null && (
+          <div className="ps-4 ms-2 border-s border-sand-200" data-testid="cash-wallet-total">
+            <p className="text-xs text-sand-600">{t("financeDesk.cashWalletTotal")}</p>
+            <p className="font-display text-2xl text-sand-900 tabular-nums" dir="ltr">
+              {formatKwd(query.data.walletTotalKwd, locale)}
+            </p>
+          </div>
+        )}
         <p className="ms-auto text-xs text-sand-500">
           {t("financeDesk.cashAsOf").replace("{time}", formatDateTime(query.data.asOf, locale))}
         </p>

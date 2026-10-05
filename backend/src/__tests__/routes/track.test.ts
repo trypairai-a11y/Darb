@@ -127,6 +127,29 @@ describe("GET /api/track/:token", () => {
     // Driver phone is withdrawn after delivery.
     expect(res.body.driver).toBeNull();
   });
+  // Client note (2026-10-05): the courier turns back to the shop before the
+  // failure is recorded. The customer is told the attempt failed, not shown a
+  // courier "on the way" while he drives away from them.
+  test("an order on its way back to the shop reads as a failed attempt, with no courier or ETA", async () => {
+    prisma.deliveryOrder.findUnique.mockResolvedValue({
+      ...BASE_ORDER,
+      status: "PICKED_UP",
+      metadata: { returnStartedAt: "2026-07-20T10:40:00Z" },
+    });
+    const res = await request(makeApp()).get(`/api/track/${TOKEN}`);
+    expect(res.body.status).toBe("FAILED");
+    expect(res.body.driver).toBeNull();
+    expect(res.body.driverPosition).toBeNull();
+    expect(res.body.etaMin).toBeNull();
+    expect(res.body.canCancel).toBe(false);
+  });
+
+  test("ARRIVED (courier at the shop) still shows the courier", async () => {
+    prisma.deliveryOrder.findUnique.mockResolvedValue({ ...BASE_ORDER, status: "ARRIVED" });
+    const res = await request(makeApp()).get(`/api/track/${TOKEN}`);
+    expect(res.body.status).toBe("ARRIVED");
+    expect(res.body.driver).toMatchObject({ firstName: "Muhammad" });
+  });
 });
 
 describe("POST /api/track/:token/cancel", () => {

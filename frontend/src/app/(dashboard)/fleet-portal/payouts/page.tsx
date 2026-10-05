@@ -173,6 +173,10 @@ export default function FleetPayoutsPage() {
     // kilometre rate. Printing an empty column on a flat month would make the
     // stamped document ask a question it has no answer to.
     const perKm = row.perKmFeeKwd != null;
+    // Client note, 2026-08-16: the stamped document for a SUBSCRIPTION month
+    // must show the monthly fee withheld and the net, or the company signs a
+    // total it will not be paid.
+    const subscription = row.commercialModel === "SUBSCRIPTION";
     const kmCell = (km: string | null) =>
       perKm ? `<td class="num">${esc(km == null ? "n/a" : km)}</td>` : "";
     const body = rows
@@ -209,10 +213,12 @@ export default function FleetPayoutsPage() {
 <p class="sub">${esc(t("fleetPortal.payoutsTitle"))} &middot; Darb</p>
 <div class="totals">
   <div><span>${esc(t("fleetPortal.orders"))}</span><b>${row.deliveredOrders}</b></div>
-  <div><span>${esc(t("fleetPortal.rateBaseLabel"))}</span><b>${esc(formatKwd(row.feePerOrderKwd, locale))}</b></div>
+  ${subscription ? "" : `<div><span>${esc(t("fleetPortal.rateBaseLabel"))}</span><b>${esc(formatKwd(row.feePerOrderKwd, locale))}</b></div>`}
   ${perKm ? `<div><span>${esc(t("fleetPortal.ratePerKmLabel"))}</span><b>${esc(formatKwd(row.perKmFeeKwd as string, locale))}</b></div>
   <div><span>${esc(t("fleetPortal.totalDistance"))}</span><b>${esc(row.totalKm ?? "0")} km</b></div>` : ""}
   <div><span>${esc(t("fleetPortal.total"))}</span><b>${esc(formatKwd(row.totalKwd, locale))}</b></div>
+  ${subscription ? `<div><span>${esc(t("fleetPortal.subscriptionDeducted"))}</span><b>- ${esc(formatKwd(row.deductionsKwd ?? "0", locale))}</b></div>
+  <div><span>${esc(t("fleetPortal.netPayable"))}</span><b>${esc(formatKwd(row.netPayableKwd ?? row.totalKwd, locale))}</b></div>` : ""}
 </div>
 <table>
   <thead><tr>
@@ -319,7 +325,12 @@ export default function FleetPayoutsPage() {
             // kilometre half sits beside it wherever a month carries one.
             key: "feePerOrderKwd",
             label: t("fleetPortal.feePerOrder"),
-            render: (value: string, row: FleetStatementRow) => (
+            render: (value: string, row: FleetStatementRow) =>
+              // Client note, 2026-08-16: no per-order rate on a subscription
+              // month; the 0.000 snapshot would read as "paid nothing".
+              row.commercialModel === "SUBSCRIPTION" ? (
+                <span className="text-sand-500">n/a</span>
+              ) : (
               <span dir="ltr" className="tabular-nums">
                 {formatKwd(value, locale)}
                 {row.perKmFeeKwd != null && (
@@ -394,6 +405,29 @@ export default function FleetPayoutsPage() {
               {/* The working, not just the answer. With a kilometre half the
                   total stops being a number anyone can check in their head,
                   so both terms are printed. */}
+              {/* Client note, 2026-08-16: a subscription company is paid the
+                  shop fee per order, so "orders x base" would be a formula it
+                  is not paid on. Read-only: the model is Darb's to set. */}
+              {earnings.commercialModel === "SUBSCRIPTION" ? (
+                <>
+                  <p className="text-xs text-sand-600 mt-0.5" dir="auto">
+                    {t("fleetPortal.subscriptionOrdersLine").replace(
+                      "{n}",
+                      formatNumber(earnings.deliveredOrders, locale),
+                    )}{" "}
+                    ={" "}
+                    <span className="font-medium text-sand-900" dir="ltr">
+                      {formatKwd(earnings.totalKwd, locale)}
+                    </span>
+                  </p>
+                  <p className="text-xs text-sand-600 mt-0.5" dir="auto" data-testid="fleet-subscription-note">
+                    {t("fleetPortal.subscriptionModelNote").replace(
+                      "{fee}",
+                      formatKwd(earnings.subscriptionFeeKwd ?? "0", locale),
+                    )}
+                  </p>
+                </>
+              ) : (
               <p className="text-xs text-sand-600 mt-0.5" dir="ltr">
                 {formatNumber(earnings.deliveredOrders, locale)} x{" "}
                 {formatKwd(earnings.feePerOrderKwd, locale)}
@@ -409,6 +443,7 @@ export default function FleetPayoutsPage() {
                   {formatKwd(earnings.totalKwd, locale)}
                 </span>
               </p>
+              )}
               {/* A base-only line is a difference the company would otherwise
                   find by hand, so the count says so on the screen. */}
               {earnings.ordersMissingDistance > 0 && (
@@ -497,6 +532,32 @@ export default function FleetPayoutsPage() {
             {/* The rate SNAPSHOTTED on this statement, so a month cut on a flat
                 deal keeps reading as three boxes even after the company moves
                 onto a kilometre rate. */}
+            {/* Client note, 2026-08-16: a SUBSCRIPTION month has no base or
+                kilometre rate. Its working is the shop fees, the monthly fee
+                withheld as a deduction, and what is left to pay. */}
+            {openRow.commercialModel === "SUBSCRIPTION" ? (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" data-testid="fleet-subscription-statement">
+                {[
+                  { label: t("fleetPortal.orders"), value: formatNumber(openRow.deliveredOrders, locale) },
+                  { label: t("fleetPortal.total"), value: formatKwd(openRow.totalKwd, locale) },
+                  {
+                    label: t("fleetPortal.subscriptionDeducted"),
+                    value: `- ${formatKwd(openRow.deductionsKwd ?? "0", locale)}`,
+                  },
+                  {
+                    label: t("fleetPortal.netPayable"),
+                    value: formatKwd(openRow.netPayableKwd ?? openRow.totalKwd, locale),
+                  },
+                ].map((box) => (
+                  <div key={box.label} className="rounded-xl border border-sand-200 bg-white px-4 py-3">
+                    <p className="text-xs text-sand-500">{box.label}</p>
+                    <p className="text-lg font-display text-sand-900 tabular-nums" dir="ltr">
+                      {box.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
             <div
               className={
                 openRow.perKmFeeKwd == null
@@ -529,6 +590,7 @@ export default function FleetPayoutsPage() {
                 </div>
               ))}
             </div>
+            )}
 
             <div className="flex items-center gap-2 flex-wrap">
               <StatusBadge status={openRow.status} />

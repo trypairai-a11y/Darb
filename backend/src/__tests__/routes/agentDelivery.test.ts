@@ -33,6 +33,9 @@ jest.mock("../../services/wallet/walletService", () => ({
 jest.mock("../../services/orderService", () => ({
   completeDelivery: jest.fn(),
   failDelivery: jest.fn(),
+  returnToMerchant: jest.fn(),
+  startReturnToMerchant: jest.fn(),
+  failAndReturnToMerchant: jest.fn(),
 }));
 jest.mock("../../services/dispatch/dispatchEngine", () => {
   const actual = jest.requireActual("../../services/dispatch/dispatchEngine");
@@ -59,7 +62,13 @@ const {
   getDriverWalletSummary,
   isDriverOverCeiling,
 } = require("../../services/wallet/walletService");
-const { completeDelivery, failDelivery } = require("../../services/orderService");
+const {
+  completeDelivery,
+  failDelivery,
+  returnToMerchant,
+  startReturnToMerchant,
+  failAndReturnToMerchant,
+} = require("../../services/orderService");
 const {
   acceptOffer,
   declineOffer,
@@ -763,6 +772,86 @@ describe("POST /api/agent/orders/:id/failed", () => {
   test("missing reason → 400", async () => {
     const res = await auth(request(app).post("/api/agent/orders/ord-1/failed")).send({});
     expect(res.status).toBe(400);
+  });
+});
+
+// ─── Return first, then report (client note, 2026-10-05) ────────────────────
+
+describe("the return leg comes before the failure report", () => {
+  test("/state keeps an ARRIVED order and hands it back as ARRIVED_AT_PICKUP", async () => {
+    prisma.deliveryOrder.findFirst.mockResolvedValue({
+      ...ORDER_ROW,
+      status: "ARRIVED",
+      metadata: { driverPhase: "ARRIVED_AT_PICKUP" },
+    });
+
+    const res = await auth(request(app).get("/api/agent/state"));
+
+    const where = prisma.deliveryOrder.findFirst.mock.calls[0][0].where;
+    expect(where.status.in).toEqual(expect.arrayContaining(["ARRIVED", "FAILED"]));
+    expect(res.body.activeOrder).toMatchObject({ id: "ord-1", status: "ARRIVED_AT_PICKUP" });
+  });
+
+  test("/state reports an order on its way back as RETURNING, not as the trip", async () => {
+    prisma.deliveryOrder.findFirst.mockResolvedValue({
+      ...ORDER_ROW,
+      status: "PICKED_UP",
+      metadata: { driverPhase: "ARRIVED_AT_DROPOFF", returnStartedAt: "2026-10-05T10:00:00.000Z" },
+    });
+
+    const res = await auth(request(app).get("/api/agent/state"));
+
+    expect(res.body.activeOrder).toMatchObject({ status: "RETURNING", failureReported: false });
+  });
+
+  test("POST /return-started turns the order around and returns the shop", async () => {
+    prisma.deliveryOrder.findFirst.mockResolvedValue({ ...ORDER_ROW, status: "PICKED_UP" });
+    (startReturnToMerchant as jest.Mock).mockResolvedValue({ id: "ord-1", status: "PICKED_UP" });
+
+    const res = await auth(request(app).post("/api/agent/orders/ord-1/return-started")).send({});
+
+    expect(res.status).toBe(200);
+    expect(startReturnToMerchant).toHaveBeenCalledWith(
+      expect.objectContaining({ orderId: "ord-1", actor: expect.objectContaining({ id: "drv-1" }) }),
+    );
+    expect(failDelivery).not.toHaveBeenCalled();
+    expect(res.body.returnTo).toMatchObject({ branchName: "BRGB Salmiya", phone: "+96522223333" });
+  });
+
+  test("POST /returned at the shop reports the reason and closes the order", async () => {
+    prisma.deliveryOrder.findFirst.mockResolvedValue({ ...ORDER_ROW, status: "PICKED_UP" });
+    (failAndReturnToMerchant as jest.Mock).mockResolvedValue({ id: "ord-1", status: "RETURNED" });
+
+    const res = await auth(request(app).post("/api/agent/orders/ord-1/returned")).send({
+      reason: "OTHER",
+      note: "gate locked",
+    });
+
+    expect(res.status).toBe(200);
+    expect(failAndReturnToMerchant).toHaveBeenCalledWith(
+      expect.objectContaining({ orderId: "ord-1", reason: "OTHER: gate locked" }),
+    );
+    expect(res.body.order.status).toBe("RETURNED");
+  });
+
+  test("POST /returned on an in-flight order without a reason → 400, nothing written", async () => {
+    prisma.deliveryOrder.findFirst.mockResolvedValue({ ...ORDER_ROW, status: "PICKED_UP" });
+
+    const res = await auth(request(app).post("/api/agent/orders/ord-1/returned")).send({});
+
+    expect(res.status).toBe(400);
+    expect(failAndReturnToMerchant).not.toHaveBeenCalled();
+  });
+
+  test("POST /returned on an order an older build already FAILED needs no reason", async () => {
+    prisma.deliveryOrder.findFirst.mockResolvedValue({ ...ORDER_ROW, status: "FAILED" });
+    (returnToMerchant as jest.Mock).mockResolvedValue({ id: "ord-1", status: "RETURNED" });
+
+    const res = await auth(request(app).post("/api/agent/orders/ord-1/returned")).send({});
+
+    expect(res.status).toBe(200);
+    expect(returnToMerchant).toHaveBeenCalled();
+    expect(failAndReturnToMerchant).not.toHaveBeenCalled();
   });
 });
 

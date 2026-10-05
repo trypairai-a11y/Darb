@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Alert, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Redirect, useRouter } from "expo-router";
 import { Check, Phone, Store } from "lucide-react-native";
-import { postOrderFailed, postOrderReturned, type ReturnTo } from "../../src/api/client";
+import { postOrderReturned, postReturnStarted, type ReturnTo } from "../../src/api/client";
 import { Button, NavBar, Screen } from "../../src/components/hig";
 import { t as tr } from "../../src/i18n/strings";
 import { hydrateNow } from "../../src/services/offerChannel";
@@ -23,20 +23,26 @@ export default function DeliveryFailedScreen() {
   const [reason, setReason] = useState<FailReason | null>(null);
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  // Client request 2026-08-31: a failed delivery goes back to the shop, so
-  // reporting it opens the return leg. Revision 21c (client note,
-  // 2026-09-21): the return is not optional. The order stays the driver's
-  // active order, at stage RETURNING, until they confirm the hand-back, so
-  // closing the app or pressing Home lands them straight back here, and
-  // the server offers them nothing new in between.
+  // Client request 2026-08-31: a failed delivery goes back to the shop.
+  // Revision 21c (client note, 2026-09-21): the return is not optional. The
+  // order stays the driver's active order, at stage RETURNING, until they
+  // confirm the hand-back, so closing the app or pressing Home lands them
+  // straight back here, and the server offers them nothing new in between.
+  //
+  // Client note (2026-10-05), "the driver must return the order to the
+  // vendor, after that he can report that the delivery failed": the order
+  // used to ask for the reason first. Now the driver turns back first and
+  // reports what happened at the shop, as part of the hand-back.
   const [returnTo, setReturnTo] = useState<ReturnTo | null>(null);
 
-  const submit = useCallback(async () => {
-    if (!order || !reason || submitting) return;
-    if (reason === "OTHER" && !note.trim()) return;
+  // An order an older build already reported has its reason on record.
+  const needsReason = !order?.failureReported && (order?.status ?? "").toUpperCase() !== "FAILED";
+
+  const startReturn = useCallback(async () => {
+    if (!order || submitting) return;
     setSubmitting(true);
     try {
-      const res = await postOrderFailed(order.id, reason, note.trim() || undefined);
+      const res = await postReturnStarted(order.id);
       setReturnTo(res.returnTo ?? null);
       advanceOrder("RETURNING");
       void hydrateNow();
@@ -45,13 +51,25 @@ export default function DeliveryFailedScreen() {
     } finally {
       setSubmitting(false);
     }
-  }, [order, reason, note, submitting, advanceOrder]);
+  }, [order, submitting, advanceOrder]);
+
+  const confirmStart = useCallback(() => {
+    Alert.alert(tr("failed.start_confirm_title"), tr("failed.start_confirm_body"), [
+      { text: tr("common.cancel"), style: "cancel" },
+      { text: tr("failed.start_return"), style: "destructive", onPress: () => void startReturn() },
+    ]);
+  }, [startReturn]);
 
   const confirmReturned = useCallback(async () => {
     if (!order || submitting) return;
+    if (needsReason && (!reason || (reason === "OTHER" && !note.trim()))) return;
     setSubmitting(true);
     try {
-      await postOrderReturned(order.id);
+      if (needsReason && reason) {
+        await postOrderReturned(order.id, reason, note.trim() || undefined);
+      } else {
+        await postOrderReturned(order.id);
+      }
       completeOrder();
       void hydrateNow();
       router.replace("/(tabs)/home");
@@ -60,11 +78,48 @@ export default function DeliveryFailedScreen() {
     } finally {
       setSubmitting(false);
     }
-  }, [order, submitting, router, completeOrder]);
+  }, [order, submitting, needsReason, reason, note, router, completeOrder]);
+
+  const reasonPicker = (
+    <>
+      <View style={{ marginTop: space.lg, gap: space.sm }}>
+        {REASONS.map((r) => {
+          const active = reason === r;
+          return (
+            <TouchableOpacity
+              key={r}
+              style={[styles.reason, active && { borderColor: c.red, backgroundColor: c.redFill }]}
+              activeOpacity={0.75}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              onPress={() => setReason(r)}
+            >
+              <Text style={[t.body, active && { color: c.red, fontFamily: undefined, fontWeight: "700" }]}>
+                {tr(`failed.reason.${r}`)}
+              </Text>
+              {active ? <Check size={18} color={c.red} /> : null}
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      {reason === "OTHER" ? (
+        <TextInput
+          style={styles.note}
+          placeholder={tr("failed.note_placeholder")}
+          placeholderTextColor={c.placeholder}
+          value={note}
+          onChangeText={setNote}
+          multiline
+        />
+      ) : null}
+    </>
+  );
 
   // ─── Return leg ───
-  // Reached from the report above, or on reopen when the server still says
-  // FAILED. The pickup on the order itself is the fallback for the latter.
+  // Reached from "Take it back" below, or on reopen when the server says the
+  // order is on its way back (RETURNING, or FAILED from an older build). The
+  // pickup on the order itself is the fallback for the latter.
   if (order && order.stage === "RETURNING") {
     const to: ReturnTo | null =
       returnTo ??
@@ -80,7 +135,7 @@ export default function DeliveryFailedScreen() {
     return (
       <Screen>
         <NavBar title={tr("failed.return_title")} />
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           <View style={styles.returnCard}>
             <Store size={28} color={c.tint} />
             <Text style={[t.headline, { marginTop: space.sm }]}>
@@ -103,12 +158,21 @@ export default function DeliveryFailedScreen() {
             ) : null}
           </View>
           <Text style={[t.subheadline, { color: c.secondaryLabel, marginTop: space.lg, textAlign: "center" }]}>
-            {tr("failed.return_body")}
+            {tr(needsReason ? "failed.return_body_report" : "failed.return_body")}
           </Text>
+          {needsReason ? (
+            <>
+              <Text style={[t.headline, { marginTop: space.xl }]}>{tr("failed.report_title")}</Text>
+              {reasonPicker}
+            </>
+          ) : null}
           <Button
-            title={tr("failed.return_confirm")}
+            title={tr(needsReason ? "failed.return_and_report" : "failed.return_confirm")}
             onPress={() => void confirmReturned()}
-            disabled={submitting}
+            disabled={
+              submitting ||
+              (needsReason && (!reason || (reason === "OTHER" && !note.trim())))
+            }
             style={{ marginTop: space.xl }}
           />
           <Text style={[t.footnote, { color: c.secondaryLabel, marginTop: space.md, textAlign: "center" }]}>
@@ -126,46 +190,23 @@ export default function DeliveryFailedScreen() {
   return (
     <Screen>
       <NavBar title={tr("failed.title")} />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        <Text style={[t.subheadline, { color: c.secondaryLabel }]}>{tr("failed.subtitle")}</Text>
-
-        <View style={{ marginTop: space.lg, gap: space.sm }}>
-          {REASONS.map((r) => {
-            const active = reason === r;
-            return (
-              <TouchableOpacity
-                key={r}
-                style={[styles.reason, active && { borderColor: c.red, backgroundColor: c.redFill }]}
-                activeOpacity={0.75}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-                onPress={() => setReason(r)}
-              >
-                <Text style={[t.body, active && { color: c.red, fontFamily: undefined, fontWeight: "700" }]}>
-                  {tr(`failed.reason.${r}`)}
-                </Text>
-                {active ? <Check size={18} color={c.red} /> : null}
-              </TouchableOpacity>
-            );
-          })}
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Step one is the return. What happened is asked at the shop. */}
+        <View style={styles.returnCard}>
+          <Store size={28} color={c.red} />
+          <Text style={[t.headline, { marginTop: space.sm, textAlign: "center" }]}>
+            {tr("failed.start_title")}
+          </Text>
+          <Text style={[t.subheadline, { color: c.secondaryLabel, marginTop: 4, textAlign: "center" }]}>
+            {tr("failed.start_body")}
+          </Text>
         </View>
 
-        {reason === "OTHER" ? (
-          <TextInput
-            style={styles.note}
-            placeholder={tr("failed.note_placeholder")}
-            placeholderTextColor={c.placeholder}
-            value={note}
-            onChangeText={setNote}
-            multiline
-          />
-        ) : null}
-
         <Button
-          title={tr("failed.submit")}
+          title={tr("failed.start_return")}
           variant="destructive"
-          onPress={() => void submit()}
-          disabled={!reason || submitting || (reason === "OTHER" && !note.trim())}
+          onPress={confirmStart}
+          disabled={submitting}
           style={{ marginTop: space.xl }}
         />
       </ScrollView>

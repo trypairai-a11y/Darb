@@ -14,6 +14,7 @@
  * resurrects a session the presence sweeper (or the driver) turned OFFLINE.
  */
 import { Prisma } from "../../generated/prisma";
+import { DRIVER_ACTIVE_STATUSES } from "../orderStateMachine";
 
 type Tx = Prisma.TransactionClient;
 
@@ -67,9 +68,11 @@ export async function releaseDriverToOnline(
   driverId: string
 ): Promise<void> {
   // FAILED is active too (revision 21c): the driver is carrying that order
-  // back to the shop, and is free only once it reads RETURNED.
+  // back to the shop, and is free only once it reads RETURNED. ARRIVED joined
+  // with the shared list: a batched driver standing at the counter for one
+  // order was freed the moment another order of theirs ended.
   const stillActive = await tx.deliveryOrder.count({
-    where: { tenantId, driverId, status: { in: ["ASSIGNED", "PICKED_UP", "FAILED"] } },
+    where: { tenantId, driverId, status: { in: [...DRIVER_ACTIVE_STATUSES] } },
   });
   if (stillActive > 0) return;
   await tx.courierOnlineSession.updateMany({

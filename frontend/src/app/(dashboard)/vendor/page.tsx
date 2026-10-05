@@ -28,7 +28,8 @@ import { downloadBlob } from "@/utils/downloadBlob";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import DataTable from "@/components/shared/DataTable";
-import OrderStatusBadge from "@/components/darb/OrderStatusBadge";
+import OrderStatusBadge, { ReturningPill } from "@/components/darb/OrderStatusBadge";
+import { isReturningToStore } from "@/lib/orderReturn";
 import SlaCountdown from "@/components/darb/SlaCountdown";
 import { useVendorBranch } from "@/contexts/VendorBranchContext";
 import BranchFilter from "@/components/vendor/BranchFilter";
@@ -167,7 +168,10 @@ function OrderCard({
       )}
       {active && (
         <div className="mt-2 flex items-center justify-between gap-2">
-          <OrderStatusBadge status={order.status} />
+          <span className="inline-flex items-center gap-1.5 flex-wrap">
+            <OrderStatusBadge status={order.status} />
+            {isReturningToStore(order) && <ReturningPill />}
+          </span>
           {order.paymentMethod === "PREPAID" && (
             <span className="text-[11px] text-sand-500">{t("dispatch.prepaid")}</span>
           )}
@@ -526,6 +530,9 @@ export default function VendorBoardPage() {
           <span className="inline-flex flex-col gap-0.5" data-testid="vendor-order-status-cell">
             <OrderStatusBadge status={v} />
             {v === "ARRIVED" && row.arrivedAt && <WaitingSince since={row.arrivedAt} />}
+            {/* Client note (2026-10-05): the courier could not deliver and
+                is bringing the order back to this shop. */}
+            {isReturningToStore(row) && <ReturningPill className="w-fit" />}
           </span>
         ),
       },

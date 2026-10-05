@@ -9,7 +9,8 @@ import { Phone, PackageCheck, RefreshCw, UserPlus2, XCircle } from "lucide-react
 import SlidePanel from "@/components/shared/SlidePanel";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import { useToast } from "@/components/shared/Toast";
-import OrderStatusBadge from "@/components/darb/OrderStatusBadge";
+import OrderStatusBadge, { ReturningPill } from "@/components/darb/OrderStatusBadge";
+import { isReturningToStore } from "@/lib/orderReturn";
 import { OrderOutcomeBanner, outcomeReason } from "@/components/darb/OrderOutcome";
 import OfferTimeline from "@/components/darb/OfferTimeline";
 import TrackingLink from "@/components/darb/TrackingLink";
@@ -21,7 +22,10 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd, formatTime } from "@/i18n/format";
 import { cn } from "@/lib/cn";
 
-const TERMINAL = ["DELIVERED", "CANCELLED", "REJECTED"];
+// FAILED and RETURNED close reassign, redispatch and cancel too: the state
+// machine only lets FAILED move to RETURNED, so on those the three buttons
+// could only answer 409 (client note, 2026-10-05).
+const TERMINAL = ["DELIVERED", "CANCELLED", "REJECTED", "FAILED", "RETURNED"];
 
 type PendingAction =
   | { kind: "assign"; candidate: DispatchCandidate }
@@ -139,7 +143,10 @@ export default function OrderOpsPanel({
     }
   }
 
-  const canAct = canEdit && order && !TERMINAL.includes(order.status);
+  // A courier taking the order back to the shop (client note, 2026-10-05)
+  // leaves one next step, the hand-back.
+  const returning = isReturningToStore(order);
+  const canAct = canEdit && order && !returning && !TERMINAL.includes(order.status);
   /**
    * Revision 17 (#7) — the return-to-merchant action.
    *
@@ -151,7 +158,7 @@ export default function OrderOpsPanel({
    * fourth button in the row above, because it applies to exactly one status
    * while those three apply to every live one.
    */
-  const canReturn = canEdit && order?.status === "FAILED";
+  const canReturn = canEdit && (order?.status === "FAILED" || returning);
 
   return (
     <>
@@ -164,7 +171,10 @@ export default function OrderOpsPanel({
         {order && (
           <div className="space-y-6">
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <OrderStatusBadge status={order.status} size="md" />
+              <span className="inline-flex items-center gap-2 flex-wrap">
+                <OrderStatusBadge status={order.status} size="md" />
+                {returning && <ReturningPill />}
+              </span>
               {order.slaDeadline && !TERMINAL.includes(order.status) && (
                 <div className="text-sm">
                   {t("dispatch.sla")}: <SlaCountdown deadline={order.slaDeadline} />
