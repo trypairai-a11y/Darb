@@ -251,7 +251,7 @@ describe("POST /api/agent/shift-requests", () => {
   });
 
   test("a window already at its cap is refused", async () => {
-    prisma.shiftCapacity.findFirst.mockResolvedValue({ maxDrivers: 2 });
+    prisma.shiftCapacity.findMany.mockResolvedValue([{ startTime: "16:00", maxDrivers: 2, durationMinutes: 180 }]);
     prisma.shiftRequest.count.mockResolvedValue(2);
 
     const res = await auth(
@@ -266,7 +266,7 @@ describe("POST /api/agent/shift-requests", () => {
   test("a window with no capacity row is not capped", async () => {
     // The table ships empty. If a missing row read as zero, this change would
     // have closed every window in every zone the moment it deployed.
-    prisma.shiftCapacity.findFirst.mockResolvedValue(null);
+    prisma.shiftCapacity.findMany.mockResolvedValue([]);
     prisma.shiftRequest.count.mockResolvedValue(99);
 
     const res = await auth(
@@ -293,6 +293,91 @@ describe("POST /api/agent/shift-requests", () => {
 
     expect(res.status).toBe(404);
     expect(prisma.shiftRequest.create).not.toHaveBeenCalled();
+  });
+});
+
+describe("POST /api/agent/shift-requests, revision 24 slots", () => {
+  // "Shifts must be either 2, 3, or 4-hour slots, and the driver duty is 12
+  // hours, so the driver must book more than one shift, not 12 hours
+  // straight."
+  const PLANNED = [
+    { startTime: "07:00", maxDrivers: 5, durationMinutes: 240 },
+    { startTime: "11:00", maxDrivers: 5, durationMinutes: 240 },
+    { startTime: "12:00", maxDrivers: 5, durationMinutes: 120 },
+    { startTime: "15:00", maxDrivers: 5, durationMinutes: 240 },
+    { startTime: "19:00", maxDrivers: 5, durationMinutes: 180 },
+  ];
+  /** The driver's own bookings, as the overlap / 12-hour guard reads them. */
+  function holding(day: string, slots: Array<[string, string]>) {
+    const [y, m, d] = day.split("-").map(Number);
+    const date = new Date(Date.UTC(y!, m! - 1, d!) - 3 * 3_600_000);
+    prisma.shiftRequest.findMany.mockImplementation(async ({ where }: any) =>
+      where?.driverId
+        ? slots.map(([startTime, endTime], i) => ({ id: `mine-${i}`, date, startTime, endTime }))
+        : [],
+    );
+  }
+
+  beforeEach(() => {
+    prisma.shiftCapacity.findMany.mockResolvedValue(PLANNED);
+  });
+
+  test("a 4-hour slot books as 4 hours, the length coming from the plan", async () => {
+    const res = await auth(
+      request(app).post("/api/agent/shift-requests").send({ date: soon(), startTime: "07:00", durationMinutes: 120 }),
+    );
+    expect(res.status).toBe(201);
+    expect(prisma.shiftRequest.create.mock.calls[0][0].data.endTime).toBe("11:00");
+    expect(prisma.shift.create.mock.calls[0][0].data.plannedHoursMinutes).toBe(240);
+  });
+
+  test("a second slot the same day is fine when it does not overlap", async () => {
+    const day = soon();
+    holding(day, [["07:00", "11:00"]]);
+    const res = await auth(request(app).post("/api/agent/shift-requests").send({ date: day, startTime: "11:00" }));
+    expect(res.status).toBe(201);
+  });
+
+  test("an overlapping slot is refused", async () => {
+    const day = soon();
+    holding(day, [["11:00", "15:00"]]);
+    const res = await auth(request(app).post("/api/agent/shift-requests").send({ date: day, startTime: "12:00" }));
+    expect(res.status).toBe(409);
+    expect(res.body.code).toBe("SLOT_OVERLAP");
+    expect(prisma.shift.create).not.toHaveBeenCalled();
+  });
+
+  test("the day is capped at 12 hours", async () => {
+    const day = soon();
+    holding(day, [["07:00", "11:00"], ["11:00", "15:00"], ["15:00", "19:00"]]);
+    const res = await auth(request(app).post("/api/agent/shift-requests").send({ date: day, startTime: "19:00" }));
+    expect(res.status).toBe(409);
+    expect(res.body.code).toBe("DAILY_LIMIT");
+    expect(res.body.bookedMinutes).toBe(720);
+    expect(prisma.shift.create).not.toHaveBeenCalled();
+  });
+
+  test("a start the area does not offer that day is refused", async () => {
+    const res = await auth(request(app).post("/api/agent/shift-requests").send({ date: soon(), startTime: "09:00" }));
+    expect(res.status).toBe(409);
+    expect(res.body.code).toBe("NO_SUCH_SLOT");
+  });
+
+  test("a slot dropped earlier can be booked again, reusing its row", async () => {
+    // (driver, day, start) is unique, so inserting beside the cancelled row
+    // would fail. The first findFirst is the live-clash check.
+    prisma.shiftRequest.findFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: "sr-old" });
+    const res = await auth(request(app).post("/api/agent/shift-requests").send({ date: soon(), startTime: "15:00" }));
+    expect(res.status).toBe(201);
+    expect(prisma.shiftRequest.create).not.toHaveBeenCalled();
+    expect(prisma.shiftRequest.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "sr-old" },
+        data: expect.objectContaining({ status: "APPROVED", endTime: "19:00", shiftId: "sh-1" }),
+      }),
+    );
   });
 });
 
@@ -371,6 +456,43 @@ describe("GET /api/agent/shift-slots", () => {
     // Offering Book on something already booked is how a driver ends up with
     // two rows for one afternoon and a 409 they cannot act on.
     expect(at13.mine).toBe(true);
+  });
+});
+
+describe("GET /api/agent/shift-slots, revision 24 slots", () => {
+  test("lists the plan's slots with their lengths, the day's hours against 12, and what clashes", async () => {
+    const day = soon();
+    const [y, m, d] = day.split("-").map(Number);
+    const date = new Date(Date.UTC(y!, m! - 1, d!) - 3 * 3_600_000);
+    prisma.shiftCapacity.findMany.mockResolvedValue([
+      { startTime: "07:00", maxDrivers: 3, durationMinutes: 240 },
+      { startTime: "09:00", maxDrivers: 3, durationMinutes: 120 },
+      { startTime: "11:00", maxDrivers: 3, durationMinutes: 240 },
+      { startTime: "15:00", maxDrivers: 3, durationMinutes: 240 },
+      { startTime: "19:00", maxDrivers: 3, durationMinutes: 240 },
+    ]);
+    prisma.shiftRequest.findMany.mockImplementation(async ({ where }: any) =>
+      where?.driverId
+        ? [
+            { id: "r1", date, startTime: "07:00", endTime: "11:00" },
+            { id: "r2", date, startTime: "11:00", endTime: "15:00" },
+          ]
+        : [
+            { id: "r1", startTime: "07:00", driverId: "drv-1" },
+            { id: "r2", startTime: "11:00", driverId: "drv-1" },
+            { id: "rx", startTime: "15:00", driverId: "drv-2" },
+          ],
+    );
+
+    const res = await auth(request(app).get(`/api/agent/shift-slots?date=${day}`));
+    expect(res.status).toBe(200);
+    expect(res.body.duty).toEqual({ bookedMinutes: 480, targetMinutes: 720, maxMinutes: 720 });
+    const at = (s: string) => res.body.windows.find((w: any) => w.start === s);
+    expect(at("07:00")).toMatchObject({ durationMinutes: 240, end: "11:00", mine: true, requestId: "r1" });
+    expect(at("09:00")).toMatchObject({ clash: true, mine: false });
+    expect(at("15:00")).toMatchObject({ clash: false, overLimit: false, remaining: 2 });
+    // 8h booked + a 4h slot is exactly 12, which is allowed.
+    expect(at("19:00").overLimit).toBe(false);
   });
 });
 

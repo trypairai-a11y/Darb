@@ -1578,7 +1578,8 @@ exports.Prisma.ShiftCapacityScalarFieldEnum = {
   dayOfWeek: 'dayOfWeek',
   maxDrivers: 'maxDrivers',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  durationMinutes: 'durationMinutes'
 };
 
 exports.Prisma.ZoneSurchargeScalarFieldEnum = {
@@ -2223,7 +2224,8 @@ exports.Prisma.ShiftPlanEntryScalarFieldEnum = {
   proposedDrivers: 'proposedDrivers',
   approvedDrivers: 'approvedDrivers',
   suggestedDriverIds: 'suggestedDriverIds',
-  demandOrders: 'demandOrders'
+  demandOrders: 'demandOrders',
+  durationMinutes: 'durationMinutes'
 };
 
 exports.Prisma.VendorBranchAllocationScalarFieldEnum = {

@@ -1794,6 +1794,8 @@ export interface ShiftPlanEntry {
   approvedDrivers: number;
   suggestedDriverIds: string[];
   demandOrders: number;
+  /** Revision 24 (#3): 120, 180 or 240. Absent on rows from an older server. */
+  durationMinutes?: number;
 }
 
 export interface ShiftPlanPayload {
@@ -1815,9 +1817,10 @@ export interface ShiftPlanPayload {
   availability?: { total: number; unassigned: number; byZone: Record<string, number> };
   windows?: string[];
   hours?: number;
-  /** Client note 2026-10-05: drivers work one 12-hour duty a day. */
+  /** A driver's day is 12 hours, built from several slots (revision 24 #3). */
   dutyHours?: number;
-  duties?: Array<{ key: "DAY" | "NIGHT"; starts: string[]; nextDay: string[] }>;
+  /** Revision 24 (#3): the lengths a slot may be, in minutes. */
+  slotDurations?: number[];
 }
 
 // ── Onboarding ───────────────────────────────────────────────────────────

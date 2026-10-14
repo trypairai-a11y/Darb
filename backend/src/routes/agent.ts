@@ -9,6 +9,16 @@ import { publishEvent } from "../services/eventBus";
 import { logger } from "../config/logger";
 import { isR2Configured, presignPutUrl } from "../services/r2Service";
 import {
+  DEFAULT_SLOT_MINUTES,
+  DUTY_TARGET_MINUTES,
+  LEGACY_WINDOW_STARTS,
+  intervalsOverlap,
+  minutesBetween,
+  minutesOfDay,
+  slotsForDay,
+  timeOfMinutes,
+} from "../services/shiftSlots";
+import {
   agentLocationRateLimit,
   agentUploadRateLimit,
 } from "../middleware/agentRateLimit";
@@ -559,62 +569,42 @@ router.get("/shifts", async (req: Request, res: Response) => {
 
 // ─── Shift requests ─────────────────────────────────────────────────────────
 /**
- * Booking a three-hour window (client request, 2026-08-03: "same as Talabat
- * app design").
+ * Booking a slot (client request, 2026-08-03: "same as Talabat app design").
  *
- * The driver taps a slot and it appears on their own screen immediately as
- * Awaiting Darb. It is not a Shift yet: Darb decides who works where, and a
- * Shift is the row attendance and pay are computed from. Before this the ask
- * wrote a ticket and nothing else, so the driver's schedule kept reading "No
- * shifts booked yet" no matter how many times they asked, and no surface could
- * turn the ticket into a shift.
+ * Revision 24 (#3), client note: "Shifts must be either 2, 3, or 4-hour
+ * slots, and the driver duty is 12 hours, so the driver must book more than
+ * one shift, not 12 hours straight." What a slot is lives in
+ * services/shiftSlots.ts. The rules a booking now holds to, all inside the
+ * one serializable transaction that already counted the cap:
+ *
+ *  - the slot has to be one the driver's area offers that weekday, and its
+ *    length is the slot's, never the client's;
+ *  - a driver may hold several slots a day, but two of them may not overlap
+ *    (checked against the day before and after too, for slots that cross
+ *    midnight);
+ *  - the day's total may not pass the 12-hour duty.
+ *
+ * Twelve hours is a ceiling and a target, not a floor: a driver can book a
+ * partial day, and the app and the ops screen both show hours booked against
+ * the 12. Refusing a 10-hour day would only make drivers book hours they will
+ * not work.
  */
-export const SHIFT_HOURS = 3;
+/** Kept for older callers and the legacy grid: the pre-revision-24 window length. */
+export const SHIFT_HOURS = DEFAULT_SLOT_MINUTES / 60;
 /**
- * The windows a day is cut into. The driver app had this list hardcoded and so
- * did nothing else, which was fine while the app was the only thing that knew
- * about windows. It is not any more: the capacity grid at Darb sets a number
- * per window, so the list has to come from one place or the two screens end up
- * disagreeing about which windows exist.
- *
- * Client request, revision 16 (#2): the list used to start at 10:00 and stop at
- * 01:00, leaving 01:00 to 10:00 with no window at all. That is not a closed
- * period, it is an absence: a zone could not be staffed overnight because there
- * was nothing to put a number against. Eight windows of SHIFT_HOURS each now
- * tile the full 24 hours. A window nobody should work is closed by setting its
- * capacity to 0, which is a real answer the grid already understands.
+ * The eight three-hour windows the day was cut into before revision 24
+ * (revision 16 #2 made them tile the full 24 hours). They are still what a
+ * zone offers on a weekday no plan has laid slots out for, so an empty or
+ * pre-revision-24 capacity table keeps behaving exactly as it did.
  */
-export const SHIFT_WINDOW_STARTS = [
-  "01:00",
-  "04:00",
-  "07:00",
-  "10:00",
-  "13:00",
-  "16:00",
-  "19:00",
-  "22:00",
-] as const;
+export const SHIFT_WINDOW_STARTS = LEGACY_WINDOW_STARTS;
 /**
  * How far ahead a driver may book. Beyond this ops cannot plan against it.
  * Client request, revision 16 (#5): one week, down from two.
  */
 const SHIFT_REQUEST_HORIZON_DAYS = 7;
 
-/** "16:00" → 960. null when it is not a time. */
-function minutesOfDay(value: string): number | null {
-  const m = /^(\d{1,2}):(\d{2})$/.exec(value.trim());
-  if (!m) return null;
-  const h = Number(m[1]);
-  const min = Number(m[2]);
-  if (h > 23 || min > 59) return null;
-  return h * 60 + min;
-}
-
-/** 960 → "16:00", wrapping past midnight so a 22:00 start ends 01:00. */
-function timeOfMinutes(total: number): string {
-  const t = ((total % 1440) + 1440) % 1440;
-  return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
-}
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Midnight Kuwait for a "YYYY-MM-DD", as the UTC instant to store. */
 function kuwaitMidnight(day: string): Date | null {
@@ -631,8 +621,29 @@ function instantOnDay(day: Date, time: string): Date {
   return new Date(day.getTime() + (Number(m[1]) * 60 + Number(m[2])) * 60 * 1000);
 }
 
-/** Thrown inside the booking transaction so a full window rolls it back. */
+/**
+ * [start, end) of a booking as epoch ms. A 22:00 start that ends 01:00 rolls
+ * into the next day rather than reading as before its own start.
+ */
+function bookingInterval(day: Date, start: string, end: string): [number, number] {
+  const a = instantOnDay(day, start).getTime();
+  let b = instantOnDay(day, end).getTime();
+  if (b <= a) b += DAY_MS;
+  return [a, b];
+}
+
+/** Thrown inside the booking transaction so a full slot rolls it back. */
 class WindowFullError extends Error {}
+/** The driver already holds a slot that overlaps this one. */
+class SlotOverlapError extends Error {}
+/** This slot would take the driver's day past the 12-hour duty. */
+class DailyLimitError extends Error {
+  constructor(public bookedMinutes: number) {
+    super("daily limit");
+  }
+}
+/** The slot is not one the driver's area offers that day. */
+class NoSuchSlotError extends Error {}
 
 /**
  * 0 = Sunday .. 6 = Saturday for a date produced by kuwaitMidnight.
@@ -661,11 +672,51 @@ function shiftRequestPayload(r: {
     date: r.date,
     startTime: r.startTime,
     endTime: r.endTime,
+    // Revision 24 (#3): slots are 2, 3 or 4 hours now, so the length is said
+    // rather than left for the app to assume.
+    durationMinutes: minutesBetween(r.startTime, r.endTime),
     area: r.zoneName,
     status: r.status,
     declineReason: r.declineReason,
     createdAt: r.createdAt,
   };
+}
+
+/**
+ * The driver's live bookings from the day before to the day after `day`, as
+ * intervals. The neighbours are read because a slot that crosses midnight
+ * can overlap one on the next calendar day.
+ */
+async function driverBookingsAround(
+  db: Pick<typeof prisma, "shiftRequest">,
+  driverId: string,
+  day: Date,
+) {
+  const rows = await db.shiftRequest.findMany({
+    where: {
+      driverId,
+      date: { gte: new Date(day.getTime() - DAY_MS), lte: new Date(day.getTime() + DAY_MS) },
+      status: { in: ["PENDING", "APPROVED"] },
+    },
+    select: { id: true, date: true, startTime: true, endTime: true },
+  });
+  const out: Array<{ id: string; sameDay: boolean; start: string; minutes: number; from: number; to: number }> = [];
+  for (const r of rows ?? []) {
+    // A row without its times cannot be placed, and counting it as zero is
+    // safer than guessing at it.
+    if (!r?.date || !r.startTime || !r.endTime) continue;
+    const date = new Date(r.date);
+    const [from, to] = bookingInterval(date, r.startTime, r.endTime);
+    out.push({
+      id: r.id,
+      sameDay: date.getTime() === day.getTime(),
+      start: r.startTime,
+      minutes: minutesBetween(r.startTime, r.endTime),
+      from,
+      to,
+    });
+  }
+  return out;
 }
 
 router.get("/shift-requests", async (req: Request, res: Response) => {
@@ -681,7 +732,7 @@ router.get("/shift-requests", async (req: Request, res: Response) => {
     const requests = await prisma.shiftRequest.findMany({
       where: { driverId: driver.id, date: { gte: since } },
       orderBy: [{ date: "asc" }, { startTime: "asc" }],
-      take: 60,
+      take: 120,
     });
     res.json({ data: requests.map(shiftRequestPayload) });
   } catch (err: any) {
@@ -690,17 +741,18 @@ router.get("/shift-requests", async (req: Request, res: Response) => {
 });
 
 /**
- * The windows a driver may still book on one day, in the zone Darb put them in.
+ * The slots a driver may still book on one day, in the zone Darb put them in.
  *
  * Client request, 2026-08-06: "the driver must be assigned by hq a zone, after
  * that he can book the timing that suits him", and "remove the areas from the
- * driver, he will see the available times only". The zone picker the app used
- * to draw let a driver book Salmiya on Monday and Jahra on Tuesday, which is
- * the opposite of how the roster is planned.
+ * driver, he will see the available times only". So the zone is not a choice,
+ * it is an answer this endpoint gives, and a driver with no assignment gets an
+ * empty list with the reason rather than a screen of buttons that would 409.
  *
- * So the zone is not a choice any more, it is an answer this endpoint gives,
- * and a driver with no assignment gets an empty window list with the reason
- * rather than a screen of buttons that would 409 on the tap.
+ * Revision 24 (#3): each slot carries its length, whether it clashes with a
+ * slot the driver already holds, whether it would take them past 12 hours,
+ * and (when it is theirs) the booking id so the app can cancel it in place.
+ * `duty` is the day's hours booked against the 12-hour target.
  */
 router.get("/shift-slots", async (req: Request, res: Response) => {
   try {
@@ -718,11 +770,16 @@ router.get("/shift-slots", async (req: Request, res: Response) => {
         })
       : null;
     if (!zone) {
-      res.json({ zone: null, hours: SHIFT_HOURS, windows: [] });
+      res.json({
+        zone: null,
+        hours: SHIFT_HOURS,
+        windows: [],
+        duty: { bookedMinutes: 0, targetMinutes: DUTY_TARGET_MINUTES, maxMinutes: DUTY_TARGET_MINUTES },
+      });
       return;
     }
 
-    const [caps, held] = await Promise.all([
+    const [caps, held, mine] = await Promise.all([
       // Scoped to this date's weekday: the cap for a Friday is its own row now,
       // so reading the whole zone would pick up six other days' numbers.
       prisma.shiftCapacity.findMany({
@@ -731,11 +788,11 @@ router.get("/shift-slots", async (req: Request, res: Response) => {
           zoneId: zone.id,
           dayOfWeek: kuwaitDayOfWeek(day),
         },
-        select: { startTime: true, maxDrivers: true },
+        select: { startTime: true, maxDrivers: true, durationMinutes: true },
       }),
       // Approving a request does not delete it, so PENDING plus APPROVED is
       // both the asks and the confirmed shifts, counted once. A Shift ops
-      // created by hand without a request is not counted: it has no window on
+      // created by hand without a request is not counted: it has no slot on
       // this list to be counted against.
       prisma.shiftRequest.findMany({
         where: {
@@ -744,31 +801,37 @@ router.get("/shift-slots", async (req: Request, res: Response) => {
           date: day,
           status: { in: ["PENDING", "APPROVED"] },
         },
-        select: { startTime: true, driverId: true },
+        select: { id: true, startTime: true, driverId: true },
       }),
+      driverBookingsAround(prisma, driver.id, day),
     ]);
 
-    const capByStart = new Map(caps.map((c) => [c.startTime, c.maxDrivers]));
     const now = Date.now();
+    const bookedMinutes = mine.filter((b) => b.sameDay).reduce((sum, b) => sum + b.minutes, 0);
 
-    const windows = SHIFT_WINDOW_STARTS.map((start) => {
-      const startMin = minutesOfDay(start) ?? 0;
-      const rows = held.filter((h) => h.startTime === start);
+    const windows = slotsForDay(caps).map((slot) => {
+      const rows = held.filter((h) => h.startTime === slot.start);
       const booked = rows.length;
-      // A row with no capacity set means Darb has not capped that window, not
-      // that it is closed. Capping on day one would have shut every window in
-      // every zone the moment this shipped.
-      const capacity = capByStart.has(start) ? capByStart.get(start)! : null;
-      const mine = rows.some((h) => h.driverId === driver.id);
+      // A legacy window with no row means Darb has not capped it, not that it
+      // is closed. Capping on day one would have shut every window in every
+      // zone the moment revision 15 shipped.
+      const capacity = slot.capacity;
+      const ownRow = rows.find((h) => h.driverId === driver.id);
+      const [from, to] = bookingInterval(day, slot.start, slot.end);
+      const clash = !ownRow && mine.some((b) => intervalsOverlap(from, to, b.from, b.to));
       return {
-        start,
-        end: timeOfMinutes(startMin + SHIFT_HOURS * 60),
+        start: slot.start,
+        end: slot.end,
+        durationMinutes: slot.durationMinutes,
         capacity,
         booked,
         remaining: capacity === null ? null : Math.max(0, capacity - booked),
         full: capacity !== null && booked >= capacity,
-        mine,
-        past: day.getTime() + startMin * 60 * 1000 <= now,
+        mine: !!ownRow,
+        requestId: ownRow?.id ?? null,
+        past: from <= now,
+        clash,
+        overLimit: !ownRow && bookedMinutes + slot.durationMinutes > DUTY_TARGET_MINUTES,
       };
     });
 
@@ -776,6 +839,7 @@ router.get("/shift-slots", async (req: Request, res: Response) => {
       zone: { id: zone.id, name: zone.name, nameAr: zone.nameAr },
       hours: SHIFT_HOURS,
       windows,
+      duty: { bookedMinutes, targetMinutes: DUTY_TARGET_MINUTES, maxMinutes: DUTY_TARGET_MINUTES },
     });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
@@ -824,13 +888,9 @@ router.post("/shift-requests", async (req: Request, res: Response) => {
       return;
     }
 
-    // Derived, never taken from the client. Every shift is three hours, and a
-    // request that disagrees with the rule can only be caught by a human
-    // reading it.
-    const endStr = timeOfMinutes(startMin + SHIFT_HOURS * 60);
     const startStr = timeOfMinutes(startMin);
 
-    // The window is already the driver's, in either form. Answering 409 here
+    // The slot is already the driver's, in either form. Answering 409 here
     // rather than opening a second row is what keeps ops from arbitrating
     // between two identical asks.
     const clash = await prisma.shiftRequest.findFirst({
@@ -850,39 +910,42 @@ router.post("/shift-requests", async (req: Request, res: Response) => {
       return;
     }
 
-    // Client request, revision 16 (#4): booking a window confirms it. Darb no
+    // Client request, revision 16 (#4): booking a slot confirms it. Darb no
     // longer approves each one, so the driver's screen says Confirmed on the
     // tap and the Shift that attendance and pay are computed from is written
     // here rather than by a supervisor later.
     //
     // That removes the only human who was ever going to notice a one-over, so
-    // the cap has to hold on its own now. It could not before: the unique index
-    // is per driver, so two drivers taking the last place at the same instant
-    // both counted and both passed. The count and the write share one
-    // serializable transaction, and Postgres refuses to commit the second one
-    // (P2034), which is answered as a full window rather than an error.
-    const startedAt = instantOnDay(day, startStr);
-    let endedAt = instantOnDay(day, endStr);
-    // A 22:00 start ends 01:00 the next day, which reads as before the start
-    // unless the day rolls over with it.
-    if (endedAt <= startedAt) endedAt = new Date(endedAt.getTime() + 24 * 60 * 60 * 1000);
-
+    // the cap has to hold on its own. The count and the write share one
+    // serializable transaction, and Postgres refuses to commit the second of
+    // two racing bookings (P2034), which is answered as a full slot rather
+    // than an error. Revision 24 (#3) put the overlap and 12-hour checks in
+    // the same transaction, so a double tap on two slots cannot slip past
+    // either.
     let request;
+    let slotMinutes = DEFAULT_SLOT_MINUTES;
+    let endStr = timeOfMinutes(startMin + DEFAULT_SLOT_MINUTES);
     try {
       request = await prisma.$transaction(
         async (tx) => {
-          // No row means no cap: this shipped with an empty table and capping
-          // by default would have closed every window everywhere.
-          const cap = await tx.shiftCapacity.findFirst({
+          const caps = await tx.shiftCapacity.findMany({
             where: {
               tenantId: driver.tenantId,
               zoneId: zone.id,
               dayOfWeek: kuwaitDayOfWeek(day),
-              startTime: startStr,
             },
-            select: { maxDrivers: true },
+            select: { startTime: true, maxDrivers: true, durationMinutes: true },
           });
-          if (cap) {
+          // Derived from the slot, never taken from the client: a request that
+          // disagrees with the plan can only be caught by a human reading it.
+          const slot = slotsForDay(caps ?? []).find((s) => s.start === startStr);
+          if (!slot) throw new NoSuchSlotError();
+          slotMinutes = slot.durationMinutes;
+          endStr = slot.end;
+
+          // No row means no cap: this shipped with an empty table and capping
+          // by default would have closed every window everywhere.
+          if (slot.capacity !== null) {
             const held = await tx.shiftRequest.count({
               where: {
                 tenantId: driver.tenantId,
@@ -892,22 +955,17 @@ router.post("/shift-requests", async (req: Request, res: Response) => {
                 status: { in: ["PENDING", "APPROVED"] },
               },
             });
-            if (held >= cap.maxDrivers) throw new WindowFullError();
+            if (held >= slot.capacity) throw new WindowFullError();
           }
 
-          const created = await tx.shiftRequest.create({
-            data: {
-              tenantId: driver.tenantId,
-              driverId: driver.id,
-              date: day,
-              startTime: startStr,
-              endTime: endStr,
-              zoneId: zone.id,
-              zoneName: zone.name,
-              status: "APPROVED",
-              decidedAt: new Date(),
-            },
-          });
+          const [from, to] = bookingInterval(day, startStr, endStr);
+          const mine = await driverBookingsAround(tx, driver.id, day);
+          if (mine.some((b) => intervalsOverlap(from, to, b.from, b.to))) throw new SlotOverlapError();
+          const bookedMinutes = mine.filter((b) => b.sameDay).reduce((sum, b) => sum + b.minutes, 0);
+          if (bookedMinutes + slotMinutes > DUTY_TARGET_MINUTES) throw new DailyLimitError(bookedMinutes);
+
+          const startedAt = new Date(from);
+          const endedAt = new Date(to);
           const shift = await tx.shift.create({
             data: {
               tenantId: driver.tenantId,
@@ -919,12 +977,50 @@ router.post("/shift-requests", async (req: Request, res: Response) => {
               scheduledStart: startedAt,
               scheduledEnd: endedAt,
               status: "BOOKED",
-              plannedHoursMinutes: Math.round((endedAt.getTime() - startedAt.getTime()) / 60000),
+              plannedHoursMinutes: Math.round((to - from) / 60000),
             },
           });
-          return tx.shiftRequest.update({
-            where: { id: created.id },
-            data: { shiftId: shift.id },
+
+          // A slot the driver dropped earlier and now wants back reuses its
+          // row: (driver, day, start) is unique, so a fresh insert would fail
+          // on the cancelled one still sitting there.
+          const previous = await tx.shiftRequest.findFirst({
+            where: {
+              driverId: driver.id,
+              date: day,
+              startTime: startStr,
+              status: { in: ["CANCELLED", "DECLINED"] },
+            },
+            select: { id: true },
+          });
+          if (previous) {
+            return tx.shiftRequest.update({
+              where: { id: previous.id },
+              data: {
+                endTime: endStr,
+                zoneId: zone.id,
+                zoneName: zone.name,
+                status: "APPROVED",
+                decidedAt: new Date(),
+                decidedById: null,
+                declineReason: null,
+                shiftId: shift.id,
+              },
+            });
+          }
+          return tx.shiftRequest.create({
+            data: {
+              tenantId: driver.tenantId,
+              driverId: driver.id,
+              date: day,
+              startTime: startStr,
+              endTime: endStr,
+              zoneId: zone.id,
+              zoneName: zone.name,
+              status: "APPROVED",
+              decidedAt: new Date(),
+              shiftId: shift.id,
+            },
           });
         },
         { isolationLevel: "Serializable" },
@@ -932,8 +1028,32 @@ router.post("/shift-requests", async (req: Request, res: Response) => {
     } catch (e: any) {
       if (e instanceof WindowFullError || e?.code === "P2034") {
         res.status(409).json({
-          error: "That window is full. Pick another time.",
+          error: "That slot is full. Pick another time.",
           code: "WINDOW_FULL",
+        });
+        return;
+      }
+      if (e instanceof NoSuchSlotError) {
+        res.status(409).json({
+          error: "That time is not open in your area. Pull to refresh the list.",
+          code: "NO_SUCH_SLOT",
+        });
+        return;
+      }
+      if (e instanceof SlotOverlapError) {
+        res.status(409).json({
+          error: "That slot overlaps a shift you already have.",
+          code: "SLOT_OVERLAP",
+        });
+        return;
+      }
+      if (e instanceof DailyLimitError) {
+        const left = Math.max(0, DUTY_TARGET_MINUTES - e.bookedMinutes);
+        res.status(409).json({
+          error: `A day is at most 12 hours. You have ${Math.floor(left / 60)}h${left % 60 ? ` ${left % 60}m` : ""} left on this day.`,
+          code: "DAILY_LIMIT",
+          bookedMinutes: e.bookedMinutes,
+          maxMinutes: DUTY_TARGET_MINUTES,
         });
         return;
       }
@@ -958,7 +1078,7 @@ router.post("/shift-requests", async (req: Request, res: Response) => {
             `Date: ${dayLabel}`,
             `From: ${startStr}`,
             `To: ${endStr}`,
-            `Duration: ${SHIFT_HOURS} hours`,
+            `Duration: ${slotMinutes / 60} hours`,
             `Zone: ${zone.name}`,
           ].join("\n"),
           submitterType: "DRIVER",
@@ -996,7 +1116,8 @@ router.post("/shift-requests/:id/cancel", async (req: Request, res: Response) =>
     // only accepted PENDING would have quietly taken away the driver's ability
     // to drop a shift they can no longer work. Status-guarded and
     // driver-guarded in one claim: count 0 means it is not theirs or it is
-    // already cancelled, and both answer the same way.
+    // already cancelled, and both answer the same way. Revision 24 (#3): this
+    // is per slot, so dropping one slot of a stacked day leaves the others.
     const existing = await prisma.shiftRequest.findFirst({
       where: { id: req.params.id, driverId: identity.driver.id },
       select: { shiftId: true },
@@ -1897,7 +2018,13 @@ router.post("/selfie", upload.single("selfie"), async (req: Request, res: Respon
       const tomorrow = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
 
       // Locate a scheduled shift for today, else create one on the fly.
-      let shift = await prisma.shift.findFirst({
+      //
+      // Revision 24 (#3): a day is several 2, 3 or 4-hour slots now, so
+      // "today's first booked shift" is the wrong one as soon as a driver
+      // skips their morning slot and turns up for the afternoon: lateness
+      // would be measured from 07:00. A shift already under way wins; else
+      // the slot running now or the next one to start; else the last one.
+      const todays = await prisma.shift.findMany({
         where: {
           tenantId,
           driverId: driver.id,
@@ -1906,6 +2033,11 @@ router.post("/selfie", upload.single("selfie"), async (req: Request, res: Respon
         },
         orderBy: { scheduledStart: "asc" },
       });
+      let shift =
+        todays.find((s) => s.status === "IN_PROGRESS") ??
+        todays.find((s) => new Date(s.scheduledEnd).getTime() > now.getTime()) ??
+        todays[todays.length - 1] ??
+        null;
 
       if (!shift) {
         shift = await prisma.shift.create({
@@ -1961,13 +2093,22 @@ router.post("/selfie", upload.single("selfie"), async (req: Request, res: Respon
           darbClockIn: now,
         },
         update: {
-          shiftId: shift.id,
-          darbClockIn: now,
+          // Revision 24 (#3): one attendance row a day, several slots. The
+          // day keeps the first slot it was opened for and the first clock-in,
+          // and a later slot can make the day LATE but never wash a morning's
+          // lateness back to PRESENT. Late minutes add up across slots.
+          shiftId: existing?.shiftId ?? shift.id,
+          darbClockIn: existing?.darbClockIn ?? now,
           varianceMinutes: variance,
           // Late status is driven by platform when available; fall back to Darb time otherwise
           ...(existing?.platformClockIn
             ? {}
-            : { status: isLate ? "LATE" : "PRESENT", lateMinutes: isLate ? lateMinutes : 0 }),
+            : existing?.darbClockIn
+              ? {
+                  status: isLate || existing.status === "LATE" ? "LATE" : existing.status,
+                  lateMinutes: (existing.lateMinutes ?? 0) + (isLate ? lateMinutes : 0),
+                }
+              : { status: isLate ? "LATE" : "PRESENT", lateMinutes: isLate ? lateMinutes : 0 }),
         },
       });
 
@@ -1991,17 +2132,60 @@ router.post("/selfie", upload.single("selfie"), async (req: Request, res: Respon
       if (!shift) { res.status(404).json({ error: "Shift not found" }); return; }
 
       const actualStart = shift.actualStart ?? shift.scheduledStart;
-      const actualMinutes = Math.max(0, Math.floor((now.getTime() - new Date(actualStart).getTime()) / 60000));
+
+      // Revision 24 (#3): a 12-hour duty is several slots stacked end to end
+      // (4+4+4, 3+3+2+4), and a driver clocks in once and out once for it.
+      // The slots that follow on back to back from the one clocked into, and
+      // had started by the time the driver clocked out, were worked too: they
+      // are completed here with their own share of the time, or attendance
+      // would read the second and third slots as never turned up for.
+      const chain: Array<{ id: string; scheduledStart: Date; scheduledEnd: Date }> = [];
+      if (shift.status === "IN_PROGRESS") {
+        const followers = await prisma.shift.findMany({
+          where: {
+            tenantId,
+            driverId: driver.id,
+            status: "BOOKED",
+            scheduledStart: { gte: shift.scheduledStart, lt: now },
+          },
+          orderBy: { scheduledStart: "asc" },
+          select: { id: true, scheduledStart: true, scheduledEnd: true },
+        });
+        let edge = new Date(shift.scheduledEnd).getTime();
+        for (const f of followers ?? []) {
+          if (new Date(f.scheduledStart).getTime() !== edge) continue;
+          chain.push(f);
+          edge = new Date(f.scheduledEnd).getTime();
+        }
+      }
+      const firstEnd = chain.length
+        ? new Date(Math.min(now.getTime(), new Date(shift.scheduledEnd).getTime()))
+        : now;
+      const actualMinutes = Math.max(0, Math.floor((firstEnd.getTime() - new Date(actualStart).getTime()) / 60000));
 
       await prisma.shift.update({
         where: { id: shift.id },
         data: {
-          actualEnd: now,
+          actualEnd: firstEnd,
           status: "COMPLETED",
           clockOutMethod: "selfie",
           actualHoursMinutes: actualMinutes,
         },
       });
+      for (const [i, f] of chain.entries()) {
+        const end = i === chain.length - 1 ? now : new Date(Math.min(now.getTime(), new Date(f.scheduledEnd).getTime()));
+        await prisma.shift.updateMany({
+          where: { id: f.id, tenantId, status: "BOOKED" },
+          data: {
+            actualStart: f.scheduledStart,
+            actualEnd: end,
+            status: "COMPLETED",
+            clockInMethod: "continued",
+            clockOutMethod: "selfie",
+            actualHoursMinutes: Math.max(0, Math.floor((end.getTime() - new Date(f.scheduledStart).getTime()) / 60000)),
+          },
+        });
+      }
 
       // Mirror Darb clock-out to AttendanceRecord
       const dayStart = new Date(shift.date.getFullYear(), shift.date.getMonth(), shift.date.getDate());

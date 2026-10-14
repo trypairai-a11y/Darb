@@ -5,24 +5,32 @@
 // read the past data and arrange the driver shifts accordingly and the ops team
 // should be able to modify and approve the plan".
 //
-// A grid of areas by windows, one day at a time. Each cell shows the number the
-// machine proposed and takes the number the planner wants, and the two are kept
+// One day at a time, one card per area. Each slot shows the number the machine
+// proposed and takes the number the planner wants, and the two are kept
 // visibly apart: overwriting the proposal in place would lose the only thing
 // that lets somebody argue with it.
+//
+// Revision 24 (#3): "Shifts must be either 2, 3, or 4-hour slots ... the
+// system should optimize the shifts to handle the peak hours, so more drivers
+// would be online at these times." The two fixed 12-hour duties are gone. An
+// area's day is a set of 2, 3 and 4-hour slots, drawn against the hourly
+// demand curve so the planner can see the peaks are staffed, and slots can be
+// resized, added and removed before approval.
 //
 // Nothing here writes the capacity the driver app books against until Approve,
 // and the button says so. That is the whole reason the client asked for an
 // approval step.
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarRange, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { CalendarRange, ChevronLeft, ChevronRight, Plus, Sparkles, X } from "lucide-react";
 import Link from "next/link";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
 import { shiftPlanningApi } from "@/lib/darbApi";
-import type { ShiftPlanEntry, ShiftPlanPayload } from "@/types/darb";
+import type { ShiftPlanEntryEdit } from "@/lib/darbApi";
+import type { ShiftPlanEntry } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDate, formatNumber } from "@/i18n/format";
 import { useRole } from "@/hooks/useRole";
@@ -31,18 +39,98 @@ import { cn } from "@/lib/cn";
 /** Index IS the stored day number, 0 = Sunday, matching getDay(). */
 const WEEKDAY_KEYS = ["daySun", "dayMon", "dayTue", "dayWed", "dayThu", "dayFri", "daySat"] as const;
 
+/** The lengths a slot may be, when the server does not say (revision 24 #3). */
+const FALLBACK_SLOT_MINUTES = [120, 180, 240];
+const DUTY_HOURS = 12;
+const HOURS = Array.from({ length: 24 }, (_, h) => h);
+
+function hh(h: number): string {
+  return `${String(((h % 24) + 24) % 24).padStart(2, "0")}:00`;
+}
+
+/** A slot as the screen holds it: the stored entry with any unsaved edit on top. */
+interface SlotView {
+  key: string;
+  start: string;
+  startHour: number;
+  durationMinutes: number;
+  proposed: number;
+  value: number;
+  demandOrders: number;
+  suggestedDriverIds: string[];
+  added: boolean;
+  changed: boolean;
+}
+
+/** An unsaved change to one slot, keyed zone|day|start. */
+interface SlotEdit {
+  approvedDrivers?: number;
+  durationMinutes?: number;
+  remove?: boolean;
+  added?: boolean;
+}
+
+/** Drivers on per hour for a set of slots (anything past 24:00 is ignored). */
+function coverOf(slots: SlotView[]): number[] {
+  const out = HOURS.map(() => 0);
+  for (const s of slots) {
+    for (let j = s.startHour; j < s.startHour + s.durationMinutes / 60 && j < 24; j++) out[j] += s.value;
+  }
+  return out;
+}
+
 /**
- * Client note of 2026-10-05: "the drivers are working 12 hours per day ... we
- * are trying to put enough drivers 24/7, it is managing the timing of duty".
- * The grid reads as a day's two duties, not eight unrelated windows: the day
- * duty, then the night duty that starts that evening and runs into the next
- * morning's 01:00 and 04:00 windows. Mirrors the server's DUTIES, which wins
- * when it is in the payload.
+ * The hourly picture for one area's day: orders (as the drivers they call
+ * for) against the drivers the slots put on. Bars are the need, the line is
+ * the planned cover; an hour where the line sits under its bar is drawn in
+ * amber, because that is the hour the plan will run short.
  */
-const FALLBACK_DUTIES: NonNullable<ShiftPlanPayload["duties"]> = [
-  { key: "DAY", starts: ["07:00", "10:00", "13:00", "16:00"], nextDay: [] },
-  { key: "NIGHT", starts: ["19:00", "22:00"], nextDay: ["01:00", "04:00"] },
-];
+function DemandCurve({
+  need,
+  cover,
+  label,
+}: {
+  need: number[] | null;
+  cover: number[];
+  label: (h: number) => string;
+}) {
+  const max = Math.max(1, ...cover, ...(need ?? []));
+  const W = 24 * 10;
+  const H = 64;
+  const y = (v: number) => H - (v / max) * (H - 4);
+  const line = cover
+    .map((v, h) => `${h === 0 ? "M" : "L"}${h * 10},${y(v)} L${h * 10 + 10},${y(v)}`)
+    .join(" ");
+  return (
+    <div className="mt-2" dir="ltr">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-16" preserveAspectRatio="none" role="img">
+        {HOURS.map((h) => {
+          const n = need?.[h] ?? 0;
+          const short = need ? cover[h]! < n : false;
+          return (
+            <rect
+              key={h}
+              x={h * 10 + 1}
+              y={y(n)}
+              width={8}
+              height={H - y(n)}
+              className={short ? "fill-amber-300" : "fill-sand-200"}
+            >
+              <title>{label(h)}</title>
+            </rect>
+          );
+        })}
+        <path d={line} className="stroke-primary" fill="none" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
+      </svg>
+      <div className="flex justify-between text-[10px] text-sand-400 tabular-nums">
+        {[0, 3, 6, 9, 12, 15, 18, 21].map((h) => (
+          <span key={h}>{hh(h)}</span>
+        ))}
+        <span>24:00</span>
+      </div>
+    </div>
+  );
+}
 
 /** Sunday 00:00 of the week containing `d`, as YYYY-MM-DD. */
 function weekStartIso(d: Date): string {
@@ -71,8 +159,10 @@ export default function ShiftPlanTab() {
   // Planning is done for the week ahead, so that is what opens.
   const [weekStart, setWeekStart] = useState(() => shiftWeek(weekStartIso(new Date()), 1));
   const [day, setDay] = useState<number>(0);
-  /** Cell overrides the planner has typed but not saved, keyed zone|day|start. */
-  const [edits, setEdits] = useState<Record<string, number>>({});
+  /** Slot changes the planner has made but not saved, keyed zone|day|start. */
+  const [edits, setEdits] = useState<Record<string, SlotEdit>>({});
+  /** The add-a-slot controls, per area. */
+  const [adding, setAdding] = useState<Record<string, { start: number; minutes: number }>>({});
 
   const planQuery = useQuery({
     queryKey: ["darb", "shift-plan", weekStart],
@@ -86,20 +176,8 @@ export default function ShiftPlanTab() {
   const payload = planQuery.data;
   const plan = payload?.plan ?? null;
   const zones = useMemo(() => payload?.zones ?? [], [payload]);
-  const duties = payload?.duties ?? FALLBACK_DUTIES;
-  // The selected day's columns, grouped by duty. A night column past
-  // midnight belongs to the following day's stored cells.
-  const dutyColumns = useMemo(
-    () =>
-      duties.map((d) => ({
-        key: d.key,
-        cols: [
-          ...d.starts.map((start) => ({ day, start })),
-          ...d.nextDay.map((start) => ({ day: (day + 1) % 7, start })),
-        ],
-      })),
-    [duties, day],
-  );
+  const slotDurations = payload?.slotDurations ?? FALLBACK_SLOT_MINUTES;
+  const dutyHours = payload?.dutyHours ?? DUTY_HOURS;
   const drivers = payload?.drivers ?? [];
   // Revision 21 (#2): "put the total number of drivers available". Total in
   // the header, per area in the row, and a cell that asks for more than the
@@ -123,27 +201,102 @@ export default function ShiftPlanTab() {
   );
 
   /**
-   * People an area needs on the selected day: each duty's busiest window,
-   * summed over the two duties, because one driver works one 12-hour duty.
-   * This is the number to hold against the drivers an area has.
+   * The selected day's slots per area: what is stored, with unsaved edits on
+   * top, removed slots dropped and added ones included, ordered by start.
+   */
+  const slotsByZone = useMemo(() => {
+    const out: Record<string, SlotView[]> = {};
+    for (const zone of zones) out[zone.id] = [];
+    const seen = new Set<string>();
+    for (const e of plan?.entries ?? []) {
+      if (e.dayOfWeek !== day || !out[e.zoneId]) continue;
+      const key = `${e.zoneId}|${e.dayOfWeek}|${e.startTime}`;
+      seen.add(key);
+      const edit = edits[key];
+      if (edit?.remove) continue;
+      const durationMinutes = edit?.durationMinutes ?? e.durationMinutes ?? 180;
+      const value = edit?.approvedDrivers ?? e.approvedDrivers;
+      out[e.zoneId]!.push({
+        key,
+        start: e.startTime,
+        startHour: Number(e.startTime.slice(0, 2)),
+        durationMinutes,
+        proposed: e.proposedDrivers,
+        value,
+        demandOrders: e.demandOrders,
+        suggestedDriverIds: e.suggestedDriverIds,
+        added: false,
+        changed: value !== e.proposedDrivers || durationMinutes !== (e.durationMinutes ?? 180),
+      });
+    }
+    for (const [key, edit] of Object.entries(edits)) {
+      if (seen.has(key) || edit.remove || !edit.added) continue;
+      const [zoneId, d, start] = key.split("|");
+      if (Number(d) !== day || !out[zoneId!]) continue;
+      out[zoneId!]!.push({
+        key,
+        start: start!,
+        startHour: Number(start!.slice(0, 2)),
+        durationMinutes: edit.durationMinutes ?? 180,
+        proposed: 0,
+        value: edit.approvedDrivers ?? 0,
+        demandOrders: 0,
+        suggestedDriverIds: [],
+        added: true,
+        changed: true,
+      });
+    }
+    for (const list of Object.values(out)) list.sort((x, y) => x.startHour - y.startHour);
+    return out;
+  }, [zones, plan, edits, day]);
+
+  /**
+   * People an area needs on the selected day: the driver-hours its slots
+   * add up to, over the 12-hour duty one driver works. This is the number to
+   * hold against the drivers an area has.
    */
   const neededByZone = useMemo(() => {
-    const out: Record<string, number> = {};
+    const out: Record<string, { people: number; driverHours: number }> = {};
     for (const zone of zones) {
-      out[zone.id] = dutyColumns.reduce((sum, duty) => {
-        const peak = Math.max(
-          0,
-          ...duty.cols.map(({ day: d, start }) => {
-            const key = `${zone.id}|${d}|${start}`;
-            return edits[key] ?? byCell.get(key)?.approvedDrivers ?? 0;
-          }),
-        );
-        return sum + peak;
-      }, 0);
+      const driverHours = (slotsByZone[zone.id] ?? []).reduce(
+        (sum, s) => sum + (s.value * s.durationMinutes) / 60,
+        0,
+      );
+      out[zone.id] = { driverHours, people: Math.ceil(driverHours / dutyHours) };
     }
     return out;
-  }, [zones, dutyColumns, edits, byCell]);
-  const neededOnDay = Object.values(neededByZone).reduce((a, b) => a + b, 0);
+  }, [zones, slotsByZone, dutyHours]);
+  const neededOnDay = Object.values(neededByZone).reduce((a, b) => a + b.people, 0);
+
+  function editSlot(key: string, patch: SlotEdit) {
+    setEdits((prev) => ({ ...prev, [key]: { ...prev[key], ...patch } }));
+  }
+  function removeSlot(slot: SlotView) {
+    setEdits((prev) => {
+      const next = { ...prev };
+      // A slot added and removed before saving was never on the server.
+      if (slot.added) delete next[slot.key];
+      else next[slot.key] = { remove: true };
+      return next;
+    });
+  }
+  function addSlot(zoneId: string) {
+    const pick = adding[zoneId] ?? { start: 12, minutes: slotDurations[0] ?? 120 };
+    const key = `${zoneId}|${day}|${hh(pick.start)}`;
+    if ((slotsByZone[zoneId] ?? []).some((s) => s.key === key)) {
+      toast.error(t("shiftSlots.slotExists"));
+      return;
+    }
+    const stored = byCell.get(key);
+    // A slot removed in this session and added back is an edit of the stored
+    // row, not a new one.
+    setEdits((prev) => ({
+      ...prev,
+      [key]: stored
+        ? { approvedDrivers: 1, durationMinutes: pick.minutes }
+        : { added: true, approvedDrivers: 1, durationMinutes: pick.minutes },
+    }));
+  }
 
   function refresh() {
     void queryClient.invalidateQueries({ queryKey: ["darb", "shift-plan"] });
@@ -179,9 +332,15 @@ export default function ShiftPlanTab() {
     mutationFn: () =>
       shiftPlanningApi.savePlanEntries(
         plan!.id,
-        Object.entries(edits).map(([key, approvedDrivers]) => {
+        Object.entries(edits).map(([key, edit]): ShiftPlanEntryEdit => {
           const [zoneId, dayOfWeek, startTime] = key.split("|");
-          return { zoneId: zoneId!, dayOfWeek: Number(dayOfWeek), startTime: startTime!, approvedDrivers };
+          const base = { zoneId: zoneId!, dayOfWeek: Number(dayOfWeek), startTime: startTime! };
+          if (edit.remove) return { ...base, remove: true };
+          return {
+            ...base,
+            ...(edit.approvedDrivers !== undefined ? { approvedDrivers: edit.approvedDrivers } : {}),
+            ...(edit.durationMinutes !== undefined ? { durationMinutes: edit.durationMinutes } : {}),
+          };
         }),
       ),
     onSuccess: () => {
@@ -310,7 +469,7 @@ export default function ShiftPlanTab() {
                   )}
                 </span>
                 <span className="text-sm text-sand-700 tabular-nums" data-testid="shift-plan-needed-on-day">
-                  {t("shiftPlan.neededOnDay")
+                  {t("shiftSlots.neededOnDay")
                     .replace("{n}", formatNumber(neededOnDay, locale))
                     .replace("{day}", t(`shiftsPage.${WEEKDAY_KEYS[day]}`))}
                 </span>
@@ -339,7 +498,7 @@ export default function ShiftPlanTab() {
               </div>
               <p className="text-xs text-sand-500 mt-1">
                 <span className="font-medium">{t("shiftPlan.basis")}: </span>
-                {String(basis.method ?? "n/a")}
+                {basis.needByHour ? t("shiftSlots.planMethod") : String(basis.method ?? "n/a")}
                 {basis.ordersSampled !== undefined
                   ? ` (${formatNumber(Number(basis.ordersSampled), locale)} orders, ${String(basis.lookbackWeeks ?? "n/a")} weeks)`
                   : ""}
@@ -437,97 +596,126 @@ export default function ShiftPlanTab() {
             ))}
           </div>
 
-          {/* ── The grid ────────────────────────────────────────────────── */}
-          <div className="bg-card border border-sand-200 rounded-2xl shadow-soft overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-sand-50 text-sand-600">
-                  <tr data-testid="shift-plan-duty-headers">
-                    <th rowSpan={2} className="text-start font-medium px-4 py-3 sticky start-0 bg-sand-50">
-                      {t("shiftPlan.zone")}
-                    </th>
-                    {dutyColumns.map((duty) => (
-                      <th
-                        key={duty.key}
-                        colSpan={duty.cols.length}
-                        className={cn(
-                          "text-center font-medium px-3 pt-3 pb-1 whitespace-nowrap text-sand-900",
-                          duty.key === "NIGHT" && "border-s border-sand-200",
-                        )}
-                      >
-                        {t(duty.key === "DAY" ? "shiftPlan.dayDuty" : "shiftPlan.nightDuty")}
-                      </th>
-                    ))}
-                  </tr>
-                  <tr>
-                    {dutyColumns.flatMap((duty) =>
-                      duty.cols.map((c, i) => (
-                        <th
-                          key={`${duty.key}-${c.start}`}
-                          className={cn(
-                            "text-center font-medium px-3 pb-3 whitespace-nowrap",
-                            duty.key === "NIGHT" && i === 0 && "border-s border-sand-200",
-                          )}
-                        >
-                          {c.start}
-                        </th>
-                      )),
+          {/* ── One card per area: the curve, then its slots ─────────────── */}
+          <div className="space-y-3">
+            {zones.map((zone) => {
+              const slots = slotsByZone[zone.id] ?? [];
+              const needCurve =
+                (basis.needByHour as Record<string, number[][]> | undefined)?.[zone.id]?.[day] ?? null;
+              const demandCurve =
+                (basis.demandByHour as Record<string, number[][]> | undefined)?.[zone.id]?.[day] ?? null;
+              const cover = coverOf(slots);
+              const shortHours = needCurve ? HOURS.filter((h) => cover[h]! < (needCurve[h] ?? 0)) : [];
+              const needed = neededByZone[zone.id] ?? { people: 0, driverHours: 0 };
+              const has = availability.byZone[zone.id] ?? 0;
+              const short = needed.people - has;
+              const pick = adding[zone.id] ?? { start: 12, minutes: slotDurations[0] ?? 120 };
+              return (
+                <section
+                  key={zone.id}
+                  className="bg-card border border-sand-200 rounded-2xl shadow-soft p-4"
+                  data-testid="shift-plan-zone"
+                >
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <div>
+                      <h3 className="font-medium text-sand-900">{zone.name}</h3>
+                      <p className="text-[11px] text-sand-500 tabular-nums">
+                        {t("shiftPlan.zoneDrivers").replace("{n}", formatNumber(has, locale))}
+                        {" · "}
+                        {t("shiftSlots.driverHours").replace("{n}", formatNumber(Math.round(needed.driverHours), locale))}
+                      </p>
+                    </div>
+                    <p
+                      className={cn(
+                        "text-xs tabular-nums",
+                        short > 0 ? "text-amber-700 font-medium" : "text-sand-600",
+                      )}
+                      data-testid="shift-plan-zone-needed"
+                    >
+                      {t("shiftSlots.zoneNeeded").replace("{n}", formatNumber(needed.people, locale))}
+                      {short > 0 && ` · ${t("shiftSlots.zoneShort").replace("{n}", formatNumber(short, locale))}`}
+                    </p>
+                  </div>
+
+                  {/* The demand curve against the planned cover. */}
+                  <div className="mt-3">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-sand-600">
+                      <span className="font-medium text-sand-800">{t("shiftSlots.curveTitle")}</span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-sm bg-sand-200" aria-hidden="true" />
+                        {t("shiftSlots.legendNeed")}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className="h-0.5 w-4 bg-primary" aria-hidden="true" />
+                        {t("shiftSlots.legendCover")}
+                      </span>
+                    </div>
+                    <DemandCurve
+                      need={needCurve}
+                      cover={cover}
+                      label={(h) =>
+                        t("shiftSlots.curveHour")
+                          .replace("{hour}", hh(h))
+                          .replace("{orders}", formatNumber(demandCurve?.[h] ?? 0, locale))
+                          .replace("{need}", formatNumber(needCurve?.[h] ?? 0, locale))
+                          .replace("{cover}", formatNumber(cover[h] ?? 0, locale))
+                      }
+                    />
+                    {!needCurve && <p className="text-[11px] text-sand-500 mt-1">{t("shiftSlots.noCurve")}</p>}
+                    {shortHours.length > 0 && (
+                      <p className="text-[11px] text-amber-700 mt-1 tabular-nums">
+                        {t("shiftSlots.underCovered").replace("{hours}", shortHours.map(hh).join(", "))}
+                      </p>
                     )}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-sand-100">
-                  {zones.map((zone) => (
-                    <tr key={zone.id} className="hover:bg-sand-50/60">
-                      <td className="px-4 py-2 sticky start-0 bg-card">
-                        <p className="font-medium text-sand-900">{zone.name}</p>
-                        <p className="text-[11px] text-sand-500 tabular-nums">
-                          {t("shiftPlan.zoneDrivers").replace(
-                            "{n}",
-                            formatNumber(availability.byZone[zone.id] ?? 0, locale),
+                  </div>
+
+                  {/* The slots themselves. */}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {slots.length === 0 && <p className="text-sm text-sand-500">{t("shiftSlots.noSlots")}</p>}
+                    {slots.map((slot) => {
+                      const over = slot.value > has;
+                      const suggested = slot.suggestedDriverIds
+                        .map((id) => driverName.get(id))
+                        .filter(Boolean)
+                        .join(", ");
+                      const end = slot.startHour + slot.durationMinutes / 60;
+                      return (
+                        <div
+                          key={slot.key}
+                          className={cn(
+                            "rounded-xl border px-3 py-2 min-w-[150px]",
+                            slot.changed ? "border-primary/50" : "border-sand-200",
                           )}
-                        </p>
-                        {(() => {
-                          const needed = neededByZone[zone.id] ?? 0;
-                          const short = needed - (availability.byZone[zone.id] ?? 0);
-                          return (
-                            <p
-                              className={cn(
-                                "text-[11px] tabular-nums",
-                                short > 0 ? "text-amber-700 font-medium" : "text-sand-500",
-                              )}
-                              data-testid="shift-plan-zone-needed"
-                            >
-                              {t("shiftPlan.zoneNeeded").replace("{n}", formatNumber(needed, locale))}
-                              {short > 0 &&
-                                ` · ${t("shiftPlan.zoneShort").replace("{n}", formatNumber(short, locale))}`}
-                            </p>
-                          );
-                        })()}
-                      </td>
-                      {dutyColumns.flatMap((duty) => duty.cols.map((c, i) => ({ ...c, divider: duty.key === "NIGHT" && i === 0 }))).map(({ day: cellDay, start: w, divider }) => {
-                        const key = `${zone.id}|${cellDay}|${w}`;
-                        const entry = byCell.get(key);
-                        if (!entry) return <td key={key} className="px-3 py-2 text-center text-sand-400">n/a</td>;
-                        const value = edits[key] ?? entry.approvedDrivers;
-                        const changed = value !== entry.proposedDrivers;
-                        const over = value > (availability.byZone[zone.id] ?? 0);
-                        const suggested = entry.suggestedDriverIds
-                          .map((id) => driverName.get(id))
-                          .filter(Boolean)
-                          .join(", ");
-                        return (
-                          <td key={key} className={cn("px-3 py-2 text-center", divider && "border-s border-sand-200")}>
+                          data-testid="shift-plan-slot"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-sm font-medium text-sand-900 tabular-nums" dir="ltr">
+                              {slot.start}-{hh(end)}
+                            </span>
+                            {editable && (
+                              <button
+                                type="button"
+                                onClick={() => removeSlot(slot)}
+                                title={t("shiftSlots.remove")}
+                                aria-label={t("shiftSlots.remove")}
+                                className="h-6 w-6 grid place-items-center rounded-pill text-sand-500 hover:bg-sand-100"
+                              >
+                                <X size={13} aria-hidden="true" />
+                              </button>
+                            )}
+                          </div>
+                          <div className="mt-1.5 flex items-center gap-2">
                             <input
                               type="number"
                               min={0}
                               max={20}
                               disabled={!editable}
-                              value={value}
+                              value={slot.value}
+                              aria-label={`${zone.name} ${slot.start}`}
                               onChange={(e) =>
-                                setEdits((prev) => ({
-                                  ...prev,
-                                  [key]: Math.max(0, Math.min(20, Number(e.target.value) || 0)),
-                                }))
+                                editSlot(slot.key, {
+                                  approvedDrivers: Math.max(0, Math.min(20, Number(e.target.value) || 0)),
+                                })
                               }
                               title={
                                 over
@@ -537,24 +725,84 @@ export default function ShiftPlanTab() {
                                     : t("shiftPlan.noSuggestions")
                               }
                               className={cn(
-                                "w-14 h-9 text-center rounded-pill border bg-card tabular-nums",
-                                changed ? "border-primary text-primary font-medium" : "border-sand-200",
+                                "w-14 h-8 text-center rounded-pill border bg-card tabular-nums",
+                                slot.value !== slot.proposed ? "border-primary text-primary font-medium" : "border-sand-200",
                                 over && "border-amber-400 bg-amber-50 text-amber-800",
                                 !editable && "opacity-60",
                               )}
                             />
-                            <p className="text-[10px] text-sand-400 mt-0.5 tabular-nums whitespace-nowrap">
-                              {t("shiftPlan.proposed")} {entry.proposedDrivers} ·{" "}
-                              {t("shiftPlan.ordersCount").replace("{n}", String(entry.demandOrders))}
-                            </p>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                            <select
+                              value={slot.durationMinutes}
+                              disabled={!editable}
+                              aria-label={t("shiftSlots.length")}
+                              onChange={(e) => editSlot(slot.key, { durationMinutes: Number(e.target.value) })}
+                              className="h-8 px-2 rounded-pill border border-sand-200 bg-card text-xs disabled:opacity-60"
+                            >
+                              {slotDurations.map((m) => (
+                                <option key={m} value={m}>
+                                  {t("shiftSlots.hours").replace("{n}", String(m / 60))}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <p className="text-[10px] text-sand-400 mt-1 tabular-nums whitespace-nowrap">
+                            {slot.added
+                              ? t("shiftSlots.added")
+                              : `${t("shiftSlots.proposedN").replace("{n}", String(slot.proposed))} · ${t("shiftPlan.ordersCount").replace("{n}", String(slot.demandOrders))}`}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {editable && (
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-sand-600">
+                      <label className="inline-flex items-center gap-1.5">
+                        {t("shiftSlots.startsAt")}
+                        <select
+                          value={pick.start}
+                          onChange={(e) =>
+                            setAdding((prev) => ({ ...prev, [zone.id]: { ...pick, start: Number(e.target.value) } }))
+                          }
+                          className="h-8 px-2 rounded-pill border border-sand-200 bg-card text-xs tabular-nums"
+                        >
+                          {HOURS.map((h) => (
+                            <option key={h} value={h}>
+                              {hh(h)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="inline-flex items-center gap-1.5">
+                        {t("shiftSlots.length")}
+                        <select
+                          value={pick.minutes}
+                          onChange={(e) =>
+                            setAdding((prev) => ({ ...prev, [zone.id]: { ...pick, minutes: Number(e.target.value) } }))
+                          }
+                          className="h-8 px-2 rounded-pill border border-sand-200 bg-card text-xs"
+                        >
+                          {slotDurations.map((m) => (
+                            <option key={m} value={m}>
+                              {t("shiftSlots.hours").replace("{n}", String(m / 60))}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => addSlot(zone.id)}
+                        data-testid="shift-plan-add-slot"
+                        className="h-8 px-3 inline-flex items-center gap-1.5 rounded-pill border border-sand-200 text-sand-700 hover:bg-sand-50"
+                      >
+                        <Plus size={13} aria-hidden="true" />
+                        {t("shiftSlots.addSlot")}
+                      </button>
+                    </div>
+                  )}
+                </section>
+              );
+            })}
           </div>
         </>
       )}

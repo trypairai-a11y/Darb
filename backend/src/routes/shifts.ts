@@ -483,7 +483,9 @@ router.post("/", rbac(...MUTATORS), validateBody(createShiftSchema.passthrough()
       const dayEnd = new Date(dayStart);
       dayEnd.setDate(dayEnd.getDate() + 1);
 
-      const existing = await prisma.shift.findFirst({
+      // Revision 24 (#3): a driver holds several slots a day now, so every
+      // shift on the date is checked, not just the first one found.
+      const sameDay = await prisma.shift.findMany({
         where: {
           tenantId,
           driverId,
@@ -492,18 +494,21 @@ router.post("/", rbac(...MUTATORS), validateBody(createShiftSchema.passthrough()
         },
       });
 
-      if (existing) {
+      if (sameDay.length > 0) {
         // If specific times given, check actual time overlap; otherwise block same-day
         let hasOverlap = true;
-        if (scheduledStart && scheduledEnd && existing.scheduledStart && existing.scheduledEnd) {
+        if (scheduledStart && scheduledEnd) {
           const newStart = new Date(scheduledStart).getTime();
           const newEnd = new Date(scheduledEnd).getTime();
-          const exStart = existing.scheduledStart.getTime();
-          const exEnd = existing.scheduledEnd.getTime();
-          hasOverlap = newStart < exEnd && newEnd > exStart;
+          hasOverlap = sameDay.some(
+            (existing) =>
+              !existing.scheduledStart ||
+              !existing.scheduledEnd ||
+              (newStart < existing.scheduledEnd.getTime() && newEnd > existing.scheduledStart.getTime()),
+          );
         }
         if (hasOverlap) {
-          res.status(409).json({ error: "Driver already has a shift booked on this date. Cancel the existing shift first." });
+          res.status(409).json({ error: "Driver already has a shift at that time on this date. Cancel the existing shift first." });
           return;
         }
       }

@@ -3138,25 +3138,29 @@ model DeliveryZone {
 // how this shipped without a backfill: nothing changes until somebody sets a
 // number.
 model ShiftCapacity {
-  id         String   @id @default(uuid())
-  tenantId   String
-  zoneId     String
+  id              String   @id @default(uuid())
+  tenantId        String
+  zoneId          String
   /// "10:00" / "19:00". One of the windows the driver app offers, kept as text
   /// for the same reason ShiftRequest.startTime is: it is the window that was
   /// chosen, not an instant.
-  startTime  String
+  startTime       String
   /// 0 = Sunday … 6 = Saturday, matching JS getDay().
   ///
   /// Client request, revision 16 (#2): a Friday does not need the staffing a
   /// Tuesday needs, and one shared grid could only ever say the same number for
   /// both. The cap lookup was already day-agnostic while the count was per
   /// date, so the one number was silently re-applied to all seven days.
-  dayOfWeek  Int
+  dayOfWeek       Int
   /// 0 means the window is closed in that zone, which is a real answer and not
   /// the same as no row at all.
-  maxDrivers Int      @default(0)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  maxDrivers      Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  /// Revision 24 (#3): "shifts must be either 2, 3, or 4-hour slots". How long
+  /// the slot starting at startTime runs: 120, 180 or 240. Defaults to 180 so
+  /// every row written before this is still the three-hour window it was.
+  durationMinutes Int      @default(180)
 
   tenant Tenant       @relation(fields: [tenantId], references: [id])
   zone   DeliveryZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
@@ -4692,6 +4696,9 @@ model ShiftPlanEntry {
   /// The demand the proposal was computed from, kept so the grid can show its
   /// own working rather than a bare number nobody can argue with.
   demandOrders       Int      @default(0)
+  /// Revision 24 (#3): the slot's length, 120, 180 or 240 minutes. 180 for
+  /// every entry written before slots came in, which were three-hour windows.
+  durationMinutes    Int      @default(180)
 
   tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   plan   ShiftPlan @relation(fields: [planId], references: [id], onDelete: Cascade)

@@ -457,7 +457,8 @@ export async function fetchDemand(): Promise<{
 }
 
 /**
- * A shift is three hours in one named zone, and booking one is a tap.
+ * A shift is a 2, 3 or 4-hour slot in one named zone (revision 24 #3: the
+ * driver stacks several into a 12-hour day), and booking one is a tap.
  *
  * Client request, 2026-08-03: "I need same as Talabat app design". The driver
  * picks a day and a window rather than typing a date and a start time, and the
@@ -484,6 +485,8 @@ export interface ShiftRequestRecord {
   date: string;
   startTime: string;
   endTime: string;
+  /** Revision 24 (#3): slots are 2, 3 or 4 hours. */
+  durationMinutes?: number;
   area: string | null;
   status: ShiftRequestStatus;
   declineReason: string | null;
@@ -514,19 +517,40 @@ export interface ShiftSlot {
   /** This driver already holds it, asked-for or confirmed. */
   mine: boolean;
   past: boolean;
+  /** Revision 24 (#3): 120, 180 or 240. Absent from an older server (3h). */
+  durationMinutes?: number;
+  /** The booking behind a slot that is `mine`, so it can be cancelled in place. */
+  requestId?: string | null;
+  /** Overlaps a slot this driver already holds. */
+  clash?: boolean;
+  /** Booking it would take the day past 12 hours. */
+  overLimit?: boolean;
+}
+
+/** Revision 24 (#3): the day's hours booked against the 12-hour duty. */
+export interface ShiftDuty {
+  bookedMinutes: number;
+  targetMinutes: number;
+  maxMinutes: number;
 }
 
 export interface ShiftSlotsResponse {
   zone: { id: string; name: string; nameAr: string | null } | null;
   hours: number;
   windows: ShiftSlot[];
+  duty: ShiftDuty | null;
 }
 
 export async function fetchShiftSlots(date: string): Promise<ShiftSlotsResponse> {
   const res = await agentFetch<ShiftSlotsResponse>(
     `/api/agent/shift-slots?date=${encodeURIComponent(date)}`,
   );
-  return { zone: res.zone ?? null, hours: res.hours ?? SHIFT_HOURS, windows: res.windows ?? [] };
+  return {
+    zone: res.zone ?? null,
+    hours: res.hours ?? SHIFT_HOURS,
+    windows: res.windows ?? [],
+    duty: res.duty ?? null,
+  };
 }
 
 export async function requestShift(payload: {

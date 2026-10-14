@@ -22,6 +22,13 @@
  * has no pool of published slots to claim from: every Shift row belongs to a
  * driver already. What changed is that the ask is visible from the moment it is
  * made.
+ *
+ * Revision 24 (#3): "Shifts must be either 2, 3, or 4-hour slots, and the
+ * driver duty is 12 hours, so the driver must book more than one shift." The
+ * day's slots come with their lengths, the driver books several, a bar shows
+ * the hours booked against 12, and each booked slot can be cancelled where it
+ * sits. Slots that overlap one already held, or that would pass 12 hours,
+ * say so instead of offering a Book button the server would refuse.
  */
 
 import { useCallback, useMemo, useState } from "react";
@@ -34,6 +41,7 @@ import {
   fetchMyShifts,
   fetchShiftSlots,
   requestShift,
+  type ShiftDuty,
   type ShiftRecord,
   type ShiftRequestRecord,
   type ShiftSlot,
@@ -56,6 +64,12 @@ function isoDay(d: Date): string {
 /** "2026-08-03" from a date the API may send as a full ISO timestamp. */
 function isoDayOf(value: string): string {
   return String(value ?? "").slice(0, 10);
+}
+
+/** 450 → "7.5", 720 → "12". */
+function formatHours(minutes: number): string {
+  const h = Math.max(0, minutes) / 60;
+  return Number.isInteger(h) ? String(h) : h.toFixed(1);
 }
 
 function timeLabel(value: string | null): string {
@@ -108,6 +122,7 @@ export default function ShiftsScreen() {
   // could only draw half of itself.
   const [zone, setZone] = useState<{ id: string; name: string } | null>(null);
   const [slots, setSlots] = useState<ShiftSlot[]>([]);
+  const [duty, setDuty] = useState<ShiftDuty | null>(null);
   const [slotsStatus, setSlotsStatus] = useState<"loading" | "error" | "ready">("loading");
 
   const today = useMemo(() => new Date(), []);
@@ -154,6 +169,7 @@ export default function ShiftsScreen() {
       const res = await fetchShiftSlots(iso);
       setZone(res.zone ? { id: res.zone.id, name: res.zone.name } : null);
       setSlots(res.windows);
+      setDuty(res.duty);
       setSlotsStatus("ready");
     } catch {
       setSlotsStatus("error");
@@ -232,11 +248,13 @@ export default function ShiftsScreen() {
   const withdraw = useCallback(async (id: string) => {
     setBusyCancel(id);
     setError(null);
+    setSent(false);
     try {
       await cancelShiftRequest(id);
       // Dropping now cancels the Shift behind the booking too, so refreshing
-      // only the requests would leave the confirmed row still on screen.
-      const [s, r] = await Promise.all([fetchMyShifts(), fetchMyShiftRequests()]);
+      // only the requests would leave the confirmed row still on screen. The
+      // slots are re-read with it: the place and the hours just came back.
+      const [s, r] = await Promise.all([fetchMyShifts(), fetchMyShiftRequests(), loadSlots(day)]);
       setShifts(s);
       setRequests(r);
     } catch (e: any) {
@@ -244,7 +262,7 @@ export default function ShiftsScreen() {
     } finally {
       setBusyCancel(null);
     }
-  }, []);
+  }, [day, loadSlots]);
 
   /**
    * My shifts: the confirmed schedule and the outstanding asks in one list.
@@ -359,6 +377,35 @@ export default function ShiftsScreen() {
             </View>
           ) : null}
 
+          {/* Hours booked on this day against the 12-hour duty. A partial day
+              is allowed; the bar is how the driver sees what is left. */}
+          {zone && duty ? (
+            <View style={styles.dutyBox} testID="shift-duty">
+              <Text style={[t.footnote, { color: c.label }]}>
+                {tr("shifts.duty_progress", {
+                  booked: formatHours(duty.bookedMinutes),
+                  target: formatHours(duty.targetMinutes),
+                })}
+              </Text>
+              <View style={styles.dutyTrack}>
+                <View
+                  style={[
+                    styles.dutyFill,
+                    {
+                      width: `${Math.min(100, Math.round((duty.bookedMinutes / Math.max(1, duty.targetMinutes)) * 100))}%`,
+                      backgroundColor: duty.bookedMinutes >= duty.targetMinutes ? c.green : c.orange,
+                    },
+                  ]}
+                />
+              </View>
+              <Text style={[t.caption2, { color: c.secondaryLabel }]}>
+                {duty.bookedMinutes >= duty.targetMinutes
+                  ? tr("shifts.duty_full")
+                  : tr("shifts.duty_left", { hours: formatHours(duty.targetMinutes - duty.bookedMinutes) })}
+              </Text>
+            </View>
+          ) : null}
+
           <Text style={[t.footnote, { color: c.secondaryLabel, marginTop: space.md }]}>
             {tr("shifts.windows")}
           </Text>
@@ -379,11 +426,21 @@ export default function ShiftsScreen() {
                 // The server counts what is held, but a booking made two
                 // seconds ago is on this screen before the count catches up.
                 const taken = slot.mine || takenOnDay.has(slot.start);
+                const minutes = slot.durationMinutes ?? 180;
+                const blockedNote = slot.clash
+                  ? tr("shifts.clash")
+                  : slot.overLimit
+                    ? tr("shifts.over_limit")
+                    : null;
                 return (
                   <View key={slot.start} style={styles.slotRow}>
                     <View style={{ flex: 1 }}>
-                      <Text style={[t.subheadline, { color: slot.full && !taken ? c.gray : c.label }]}>
+                      <Text style={[t.subheadline, { color: (slot.full || blockedNote) && !taken ? c.gray : c.label }]}>
                         {slot.start} - {slot.end}
+                        <Text style={[t.caption1, { color: c.secondaryLabel }]}>
+                          {"  "}
+                          {tr("shifts.hours", { n: minutes / 60 })}
+                        </Text>
                       </Text>
                       <Text style={[t.caption2, { color: c.secondaryLabel }]}>
                         {slot.remaining === null
@@ -394,13 +451,37 @@ export default function ShiftsScreen() {
                       </Text>
                     </View>
                     {taken ? (
-                      <View style={styles.takenPill}>
-                        <Check size={12} color={c.green} />
-                        <Text style={[t.caption2, { color: c.green }]}>{tr("shifts.taken")}</Text>
-                      </View>
+                      slot.requestId ? (
+                        // Revision 24 (#3): cancel per slot, right where it is
+                        // booked, so dropping one slot of a stacked day does
+                        // not mean scrolling to find it.
+                        <TouchableOpacity
+                          onPress={() => void withdraw(slot.requestId!)}
+                          disabled={busyCancel === slot.requestId}
+                          activeOpacity={0.7}
+                          style={styles.withdrawWrap}
+                        >
+                          <View style={styles.takenPill}>
+                            <Check size={12} color={c.green} />
+                            <Text style={[t.caption2, { color: c.green }]}>{tr("shifts.taken")}</Text>
+                          </View>
+                          <Text style={[t.caption2, { color: c.red }]}>
+                            {busyCancel === slot.requestId ? tr("shifts.cancelling") : tr("shifts.cancel")}
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <View style={styles.takenPill}>
+                          <Check size={12} color={c.green} />
+                          <Text style={[t.caption2, { color: c.green }]}>{tr("shifts.taken")}</Text>
+                        </View>
+                      )
                     ) : slot.full ? (
                       <View style={styles.takenPill}>
                         <Text style={[t.caption2, { color: c.secondaryLabel }]}>{tr("shifts.full")}</Text>
+                      </View>
+                    ) : blockedNote ? (
+                      <View style={styles.takenPill}>
+                        <Text style={[t.caption2, { color: c.secondaryLabel }]}>{blockedNote}</Text>
                       </View>
                     ) : (
                       <Button
@@ -421,7 +502,7 @@ export default function ShiftsScreen() {
           ) : null}
           {sent ? (
             <Text style={[t.footnote, { color: c.green, marginTop: space.sm }]}>
-              {tr("shifts.request_sent")}
+              {tr("shifts.booked_ok")}
             </Text>
           ) : null}
         </Card>
@@ -514,4 +595,14 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     borderRadius: radius.capsule, backgroundColor: c.groupedBackground, ...continuous,
   },
   withdrawWrap: { alignItems: "flex-end", gap: 2 },
+  dutyBox: {
+    marginTop: space.md,
+    gap: 6,
+    padding: space.md,
+    borderRadius: radius.field,
+    backgroundColor: c.groupedBackground,
+    ...continuous,
+  },
+  dutyTrack: { height: 6, borderRadius: 3, backgroundColor: c.gray4, overflow: "hidden" },
+  dutyFill: { height: 6, borderRadius: 3 },
 });
