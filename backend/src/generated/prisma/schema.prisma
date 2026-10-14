@@ -4724,3 +4724,48 @@ model VendorBranchAllocation {
   @@index([tenantId, vendorId, createdAt])
   @@index([tenantId, branchId, createdAt])
 }
+
+/// Revision 24 (#7) — Finance › Money › Settle accounts.
+///
+/// One row is ONE transfer finance actually made (or received) against a
+/// monthly statement: a vendor's `VendorStatement` or a delivery company's
+/// `FleetPayoutStatement`. Append-only, like the ledger beside it: a second
+/// part-payment is a second row, never an edit, so "how much, when, which
+/// reference" survives for every transfer. `status` is the account's state
+/// AFTER this row (SETTLED once the transfers cover the amount due, else
+/// PARTIALLY_SETTLED) and `remainingKwd` what was still open after it.
+///
+/// No Prisma relations on purpose: it points at two different statement
+/// tables by `partyType`, and keeping it relation-free keeps this purely
+/// additive (no back-relation edits on Tenant, Vendor or FleetPartner).
+model AccountSettlement {
+  id            String   @id @default(uuid())
+  tenantId      String
+  /// VENDOR | FLEET
+  partyType     String
+  /// Vendor.id or FleetPartner.id
+  partyId       String
+  /// VendorStatement.id or FleetPayoutStatement.id
+  statementId   String
+  periodStart   DateTime
+  periodEnd     DateTime
+  /// DARB_PAYS (Darb owes the party) | PARTY_PAYS (the shop owes Darb)
+  flow          String
+  /// Snapshot of the statement's amount due when this transfer was recorded.
+  amountDueKwd  Decimal  @db.Decimal(10, 3)
+  /// This transfer. Always > 0.
+  amountKwd     Decimal  @db.Decimal(10, 3)
+  remainingKwd  Decimal  @db.Decimal(10, 3)
+  /// SETTLED | PARTIALLY_SETTLED
+  status        String
+  transferredAt DateTime
+  reference     String?
+  note          String?
+  /// The payout posting this transfer completed, when it was the last one.
+  payoutTxId    String?
+  createdById   String
+  createdAt     DateTime @default(now())
+
+  @@index([tenantId, partyType, statementId])
+  @@index([tenantId, createdAt])
+}

@@ -25,7 +25,8 @@ import { useToast } from "@/components/shared/Toast";
 import FleetTabPicker from "@/components/fleet/FleetTabPicker";
 import { fleetApi } from "@/lib/darbApi";
 import {
-  FLEET_ROLE_ORDER,
+  FLEET_ROLE_CHOICES,
+  fleetRoleLabelKey,
   FLEET_TAB_ORDER,
   fleetRoleDefaultTabs,
   normalizeFleetRole,
@@ -201,7 +202,7 @@ export default function FleetTeamPage() {
           {
             key: "fleetRole",
             label: t("vendorTeam.role"),
-            render: (value: string) => <span>{t(`portalRoles.${normalizeFleetRole(value)}`)}</span>,
+            render: (value: string) => <span>{t(fleetRoleLabelKey(value))}</span>,
           },
           {
             // The vendor portal's branch column, in fleet terms.
@@ -384,9 +385,9 @@ export default function FleetTeamPage() {
               }
               className={inputClass}
             >
-              {FLEET_ROLE_ORDER.map((r) => (
+              {FLEET_ROLE_CHOICES.map((r) => (
                 <option key={r} value={r}>
-                  {t(`portalRoles.${r}`)}
+                  {t(fleetRoleLabelKey(r))}
                 </option>
               ))}
             </select>
@@ -431,7 +432,7 @@ export default function FleetTeamPage() {
               <p dir="auto" className="font-medium text-sand-900">{editing.name}</p>
               <p dir="ltr" className="text-xs text-sand-600">{editing.email}</p>
               <p className="text-xs text-sand-600">
-                {t("vendorTeam.role")}: {t(`portalRoles.${normalizeFleetRole(editing.fleetRole)}`)}
+                {t("vendorTeam.role")}: {t(fleetRoleLabelKey(editing.fleetRole))}
               </p>
             </div>
 

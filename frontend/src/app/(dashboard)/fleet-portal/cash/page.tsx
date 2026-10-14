@@ -24,6 +24,7 @@ import StatCard from "@/components/shared/StatCard";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/Toast";
 import ConfirmModal from "@/components/shared/ConfirmModal";
+import DriverCashLedgerPanel from "@/components/finance/DriverCashLedgerPanel";
 import { fleetApi } from "@/lib/darbApi";
 import type { FleetCashDriver, FleetDeposit } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -50,6 +51,9 @@ export default function FleetCashPage() {
    * harmless one has to stop and ask.
    */
   const [confirming, setConfirming] = useState(false);
+  // Revision 24 (#17): pressing a driver opens their cash ledger. The server
+  // only answers for this company's own drivers.
+  const [ledgerFor, setLedgerFor] = useState<FleetCashDriver | null>(null);
 
   const cashQuery = useQuery({
     queryKey: ["darb", "fleet", "cash"],
@@ -440,7 +444,17 @@ export default function FleetCashPage() {
                     const over = typed !== "" && Number(typed) > Number(d.cashOnHandKwd);
                     return (
                       <tr key={d.driverId} className="border-b border-sand-200 last:border-0">
-                        <td dir="auto" className="px-5 py-3 text-sm">{d.name}</td>
+                        <td dir="auto" className="px-5 py-3 text-sm">
+                          <button
+                            type="button"
+                            onClick={() => setLedgerFor(d)}
+                            data-testid="fleet-cash-driver-ledger"
+                            title={t("cashLedger.viewLedger")}
+                            className="text-start text-primary hover:underline font-medium"
+                          >
+                            {d.name}
+                          </button>
+                        </td>
                         <td dir="ltr" className="px-5 py-3 text-sm font-mono text-sand-600">
                           {d.driverCode ?? "n/a"}
                         </td>
@@ -591,6 +605,13 @@ export default function FleetCashPage() {
           />
         </section>
       )}
+
+      <DriverCashLedgerPanel
+        driver={ledgerFor}
+        scope="fleet"
+        fetchPage={(driverId, params) => fleetApi.driverCashLedger(driverId, params)}
+        onClose={() => setLedgerFor(null)}
+      />
     </div>
   );
 }

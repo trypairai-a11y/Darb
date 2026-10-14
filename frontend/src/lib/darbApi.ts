@@ -37,6 +37,9 @@ import type {
   ComplianceDocument,
   DisputesPayload,
   CashOnHandPayload,
+  DriverCashLedgerPayload,
+  SettleAccountsPayload,
+  RecordSettlementBody,
   DocScope,
   DriverStateAction,
   DriverTrackingRow,
@@ -974,6 +977,9 @@ export const fleetApi = {
   // money has been Darb's since that confirmation.
   cash: () => get<FleetCashPayload>("/api/fleet/cash"),
   cashSettlements: () => get<FleetCashSettlement[]>("/api/fleet/cash/settlements"),
+  // Revision 24 (#17) — one of this company's drivers, every cash posting.
+  driverCashLedger: (driverId: string, params?: { page?: number; limit?: number }) =>
+    get<DriverCashLedgerPayload>(`/api/fleet/cash/drivers/${driverId}/ledger`, params as Params),
   /**
    * Revision 14b — no method: a deposit is paid by link and nothing else. The
    * response carries the link to open.
@@ -1233,6 +1239,17 @@ export const financeDeskApi = {
   // Revision 21c — cash still with each delivery company, by driver.
   cashOnHand: () => get<CashOnHandPayload>("/api/wallets/cash-on-hand"),
   cashOnHandXlsxUrl: "/api/wallets/cash-on-hand?format=xlsx",
+  // Revision 24 (#17) — every posting behind one driver's cash on hand.
+  driverCashLedger: (driverId: string, params?: { page?: number; limit?: number }) =>
+    get<DriverCashLedgerPayload>(`/api/wallets/drivers/${driverId}/cash-ledger`, params as Params),
+  // Revision 24 (#7) — Settle accounts.
+  settlements: (params?: { partyType?: string; state?: string; month?: string }) =>
+    get<SettleAccountsPayload>("/api/wallets/settlements", params as Params),
+  recordSettlement: (body: RecordSettlementBody) =>
+    post<{ id: string; status: string; amountKwd: string; remainingKwd: string; payoutTxId: string | null }>(
+      "/api/wallets/settlements",
+      body,
+    ),
 };
 
 // ── /api/foodics ─────────────────────────────────────────────────────────

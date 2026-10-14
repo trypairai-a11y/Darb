@@ -571,9 +571,21 @@ export async function postFleetPayout(args: {
   statementId: string;
   actorId: string;
 }): Promise<PostResult | null> {
-  const { tenantId, statementId, actorId } = args;
+  return prisma.$transaction((tx) => postFleetPayoutTx(tx, args));
+}
 
-  return prisma.$transaction(async (tx) => {
+/**
+ * The same payout inside a caller's transaction, bound by the same CONFIRMED
+ * gate. Revision 24 (#7): the Settle accounts tab completes a statement with
+ * this, so a month is posted once as `fleet-payout:{statementId}` whichever
+ * screen finished it.
+ */
+export async function postFleetPayoutTx(
+  tx: Prisma.TransactionClient,
+  args: { tenantId: string; statementId: string; actorId: string },
+): Promise<PostResult | null> {
+  const { tenantId, statementId, actorId } = args;
+  {
     const statement = await tx.fleetPayoutStatement.findFirst({
       where: { id: statementId, tenantId },
     });
@@ -637,5 +649,5 @@ export async function postFleetPayout(args: {
       data: { status: "PAID", payoutTxId: posted.transactionId },
     });
     return posted;
-  });
+  }
 }

@@ -34,6 +34,12 @@ import {
 // Revision 20 — the Finance tab's Payments and Disputes subtabs.
 import { cancelTopUp, confirmTopUp } from "../services/wallet/topUpService";
 import { driverCashBalances } from "../services/wallet/fleetCashService";
+import { getDriverCashLedger } from "../services/wallet/driverCashLedgerService";
+import {
+  listSettleAccounts,
+  recordSettlement,
+  SettlementError,
+} from "../services/wallet/accountSettlementService";
 
 const FINANCE_READ = ["ADMIN", "OPS_MANAGER", "ACCOUNTANT"];
 // Revision 4 (#3): CASH_COLLECTOR is the cash desk login. Without it here the
@@ -677,6 +683,33 @@ router.get("/cash-on-hand", rbac(...FINANCE_READ), async (req: Request, res: Res
 
 /**
  * @swagger
+ * /api/wallets/drivers/{driverId}/cash-ledger:
+ *   get:
+ *     tags: [Wallets]
+ *     summary: Revision 24 (#17) — every posting behind one driver's cash on hand
+ */
+router.get(
+  "/drivers/:driverId/cash-ledger",
+  rbac(...FINANCE_READ),
+  async (req: Request, res: Response) => {
+    try {
+      const { page, limit } = getPagination(req);
+      const ledger = await getDriverCashLedger({
+        tenantId: req.user!.tenantId,
+        driverId: req.params.driverId,
+        page,
+        limit,
+      });
+      if (!ledger) { res.status(404).json({ error: "Driver not found" }); return; }
+      res.json(ledger);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+/**
+ * @swagger
  * /api/wallets/fleet-deposits/{id}/confirm:
  *   post:
  *     tags: [Wallets]
@@ -1279,6 +1312,83 @@ router.post(
       });
       res.json({ ok: true, transactionId: posted?.transactionId ?? null, replay: posted === null });
     } catch (err: any) {
+      if (err instanceof WalletError) { res.status(400).json({ error: err.message }); return; }
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+// ─── Settle accounts (revision 24 #7) ──────────────────────────────────────
+//
+// What each shop and delivery company is owed (or owes) per monthly statement,
+// and the transfers finance recorded against it. See
+// services/wallet/accountSettlementService for why a part-payment posts
+// nothing and the final transfer completes the statement's one payout.
+
+const settlementSchema = z.object({
+  partyType: z.enum(["VENDOR", "FLEET"]),
+  statementId: z.string().min(1),
+  action: z.enum(["SETTLED", "PARTIALLY_SETTLED"]),
+  amountKwd: z.union([z.string(), z.number()]).optional(),
+  transferredAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "transferredAt must be YYYY-MM-DD"),
+  reference: z.string().trim().max(120).optional().nullable(),
+  note: z.string().trim().max(500).optional().nullable(),
+});
+
+/**
+ * @swagger
+ * /api/wallets/settlements:
+ *   get:
+ *     tags: [Wallets]
+ *     summary: Revision 24 (#7) — accounts to settle with shops and delivery companies
+ */
+router.get("/settlements", rbac(...FINANCE_READ), async (req: Request, res: Response) => {
+  try {
+    const partyType = req.query.partyType === "VENDOR" || req.query.partyType === "FLEET"
+      ? req.query.partyType
+      : undefined;
+    const state = req.query.state === "settled" || req.query.state === "all" ? req.query.state : "open";
+    const month = typeof req.query.month === "string" && req.query.month ? req.query.month : undefined;
+    res.json(await listSettleAccounts({ tenantId: req.user!.tenantId, partyType, state, month }));
+  } catch (err: any) {
+    if (err instanceof SettlementError) { res.status(err.status).json({ error: err.message, code: err.code }); return; }
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/wallets/settlements:
+ *   post:
+ *     tags: [Wallets]
+ *     summary: Record a transfer as Settled or Partially settled
+ */
+router.post(
+  "/settlements",
+  rbac("ADMIN", "ACCOUNTANT"),
+  validateBody(settlementSchema),
+  async (req: Request, res: Response) => {
+    try {
+      const body = req.body as z.infer<typeof settlementSchema>;
+      const transferredAt = parseLocalDate(body.transferredAt);
+      if (Number.isNaN(transferredAt.getTime())) {
+        res.status(400).json({ error: "transferredAt must be YYYY-MM-DD" });
+        return;
+      }
+      const result = await recordSettlement({
+        tenantId: req.user!.tenantId,
+        actorId: req.user!.userId,
+        partyType: body.partyType,
+        statementId: body.statementId,
+        action: body.action,
+        amountKwd: body.amountKwd == null ? undefined : String(body.amountKwd),
+        transferredAt,
+        reference: body.reference ?? null,
+        note: body.note ?? null,
+      });
+      res.status(201).json(result);
+    } catch (err: any) {
+      if (err instanceof SettlementError) { res.status(err.status).json({ error: err.message, code: err.code }); return; }
       if (err instanceof WalletError) { res.status(400).json({ error: err.message }); return; }
       res.status(500).json({ error: err.message });
     }

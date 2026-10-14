@@ -24,7 +24,7 @@ import type {
   WalletEntry,
 } from "@/types/darb";
 import { useRole } from "@/hooks/useRole";
-import { normalizeVendorRole, VENDOR_ROLE_ORDER } from "@/lib/vendorTabs";
+import { VENDOR_ROLE_CHOICES, vendorRoleLabelKey } from "@/lib/vendorTabs";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd, formatDateTime } from "@/i18n/format";
 import { cn } from "@/lib/cn";
@@ -1287,7 +1287,7 @@ function UsersTab({ vendorId }: { vendorId: string }) {
   const [issuedInvite, setIssuedInvite] = useState<string | null>(null);
 
   const roleLabel = (role: string | null | undefined) =>
-    t(`portalRoles.${normalizeVendorRole(role)}`);
+    t(vendorRoleLabelKey(role));
 
   async function handleCreate() {
     if (!form.name.trim() || !form.email.trim()) return;
@@ -1467,9 +1467,9 @@ function UsersTab({ vendorId }: { vendorId: string }) {
                 }
                 className="w-full px-3 h-10 rounded-xl bg-white border border-sand-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
-                {VENDOR_ROLE_ORDER.map((r) => (
+                {VENDOR_ROLE_CHOICES.map((r) => (
                   <option key={r} value={r}>
-                    {t(`portalRoles.${r}`)}
+                    {t(vendorRoleLabelKey(r))}
                   </option>
                 ))}
               </select>

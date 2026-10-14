@@ -52,6 +52,8 @@ import {
   settleDriverCash,
 } from "../services/wallet/fleetCashService";
 import { toKwdString } from "../services/wallet/walletService";
+import { getDriverCashLedger } from "../services/wallet/driverCashLedgerService";
+import { getPagination } from "../utils/pagination";
 import {
   ACCEPTED_FLEET_ROLE_INPUTS,
   FLEET_TABS,
@@ -944,6 +946,34 @@ router.get("/cash/settlements", requireFleetTab("CASH"), async (req: Request, re
         driverCode: r.driver.driverCode,
       })),
     );
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/fleet/cash/drivers/{driverId}/ledger:
+ *   get:
+ *     tags: [Fleet Portal]
+ *     summary: Revision 24 (#17) — one of this company's drivers, every cash posting
+ */
+router.get("/cash/drivers/:driverId/ledger", requireFleetTab("CASH"), async (req: Request, res: Response) => {
+  try {
+    const ctx = await fleetContext(req);
+    if (!ctx) { res.status(403).json({ error: "No fleet partner on this account" }); return; }
+    const { page, limit } = getPagination(req);
+    // Fleet containment: the company is part of the lookup, so another
+    // company's driver answers exactly like a driver that does not exist.
+    const ledger = await getDriverCashLedger({
+      tenantId: ctx.tenantId,
+      driverId: req.params.driverId,
+      fleetPartnerId: ctx.fleetPartnerId,
+      page,
+      limit,
+    });
+    if (!ledger) { res.status(404).json({ error: "Driver not found" }); return; }
+    res.json(ledger);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

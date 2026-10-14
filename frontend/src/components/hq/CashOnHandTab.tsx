@@ -8,13 +8,14 @@
 // company about itself, so Darb and the company are arguing over one number.
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, ChevronUp, Download, Wallet } from "lucide-react";
+import { ChevronDown, ChevronUp, Download, ScrollText, Wallet } from "lucide-react";
 import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
+import DriverCashLedgerPanel from "@/components/finance/DriverCashLedgerPanel";
 import { financeDeskApi } from "@/lib/darbApi";
 import { downloadBlob } from "@/utils/downloadBlob";
-import type { CashOnHandCompany } from "@/types/darb";
+import type { CashOnHandCompany, CashOnHandDriver } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDateTime, formatKwd, formatNumber } from "@/i18n/format";
 import { cn } from "@/lib/cn";
@@ -24,6 +25,8 @@ export default function CashOnHandTab() {
   const toast = useToast();
   const [open, setOpen] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
+  // Revision 24 (#17): pressing a driver opens their cash ledger.
+  const [ledgerFor, setLedgerFor] = useState<CashOnHandDriver | null>(null);
 
   const query = useQuery({
     queryKey: ["darb", "finance", "cash-on-hand"],
@@ -125,6 +128,7 @@ export default function CashOnHandTab() {
                     company={c}
                     open={isOpen}
                     onToggle={() => setOpen(isOpen ? null : key)}
+                    onOpenDriver={setLedgerFor}
                   />
                 );
               })}
@@ -132,6 +136,13 @@ export default function CashOnHandTab() {
           </table>
         </div>
       )}
+
+      <DriverCashLedgerPanel
+        driver={ledgerFor}
+        scope="staff"
+        fetchPage={(driverId, params) => financeDeskApi.driverCashLedger(driverId, params)}
+        onClose={() => setLedgerFor(null)}
+      />
     </div>
   );
 }
@@ -140,10 +151,12 @@ function CompanyRows({
   company,
   open,
   onToggle,
+  onOpenDriver,
 }: {
   company: CashOnHandCompany;
   open: boolean;
   onToggle: () => void;
+  onOpenDriver: (driver: CashOnHandDriver) => void;
 }) {
   const { t, locale } = useI18n();
   return (
@@ -184,11 +197,17 @@ function CompanyRows({
                     <th className="text-start font-medium px-3 py-2">{t("financeDesk.cashDriver")}</th>
                     <th className="text-start font-medium px-3 py-2">{t("table.status")}</th>
                     <th className="text-end font-medium px-3 py-2">{t("financeDesk.cashAmount")}</th>
+                    <th className="px-3 py-2"><span className="sr-only">{t("cashLedger.viewLedger")}</span></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-sand-100">
                   {company.drivers.map((d) => (
-                    <tr key={d.driverId} data-testid="cash-driver-row">
+                    <tr
+                      key={d.driverId}
+                      data-testid="cash-driver-row"
+                      className="cursor-pointer hover:bg-sand-100/70 transition-colors"
+                      onClick={() => onOpenDriver(d)}
+                    >
                       <td className="px-3 py-2">
                         <span className="text-sand-900" dir="auto">{d.name}</span>
                         <span className="text-sand-500 ms-2 font-mono" dir="ltr">
@@ -201,6 +220,17 @@ function CompanyRows({
                       <td className="px-3 py-2 text-sand-700">{d.status}</td>
                       <td className="px-3 py-2 text-end tabular-nums text-sand-900" dir="ltr">
                         {formatKwd(d.cashOnHandKwd, locale)}
+                      </td>
+                      <td className="px-3 py-2 text-end">
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); onOpenDriver(d); }}
+                          data-testid="cash-driver-ledger"
+                          className="inline-flex items-center gap-1 h-7 px-2.5 rounded-pill text-primary hover:bg-primary/10 font-medium"
+                        >
+                          <ScrollText size={12} aria-hidden="true" />
+                          {t("cashLedger.viewLedger")}
+                        </button>
                       </td>
                     </tr>
                   ))}

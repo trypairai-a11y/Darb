@@ -31,6 +31,30 @@ export const VENDOR_ROLE_ORDER: VendorPortalRole[] = [
   "VIEWER",
 ];
 
+/**
+ * Revision 24 (#2) — "this column should be unique according to the portal".
+ * The six-type matrix made a shop's role list read exactly like HQ's (Ops
+ * manager, Account manager...), so the roles a shop is OFFERED are its own
+ * three again: Owner, Finance, Order tracking. They are stored as the matrix
+ * values they always normalised to (OWNER→ADMIN, FINANCE→ACCOUNTANT,
+ * ORDER_TRACKING→SUPERVISOR), so nothing is migrated and the server's tab
+ * defaults and role gates are untouched. A login still holding one of the
+ * other three keeps it and shows it, it just is no longer offered.
+ */
+export const VENDOR_ROLE_CHOICES: VendorPortalRole[] = ["ADMIN", "ACCOUNTANT", "SUPERVISOR"];
+
+/** The i18n key for a shop login's role, in the shop's own words. */
+export function vendorRoleLabelKey(role: string | null | undefined): string {
+  const r = normalizeVendorRole(role);
+  return (VENDOR_ROLE_CHOICES as string[]).includes(r) ? `portalRoleNames.vendor${r}` : `portalRoles.${r}`;
+}
+
+/** The options for a shop login's role picker: the shop's three, plus whatever it holds now. */
+export function vendorRoleOptions(current?: string | null): VendorPortalRole[] {
+  const r = current == null ? null : normalizeVendorRole(current);
+  return r && !VENDOR_ROLE_CHOICES.includes(r) ? [...VENDOR_ROLE_CHOICES, r] : VENDOR_ROLE_CHOICES;
+}
+
 /** Legacy stored values normalise into the matrix; mirrors the server. */
 export function normalizeVendorRole(role: string | null | undefined): VendorPortalRole {
   if (role && (VENDOR_ROLE_ORDER as string[]).includes(role)) return role as VendorPortalRole;

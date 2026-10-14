@@ -11,8 +11,8 @@ import { useI18n } from "@/i18n/I18nProvider";
 import TabPicker from "@/components/vendor/TabPicker";
 import FleetTabPicker from "@/components/fleet/FleetTabPicker";
 import type { FleetPortalRole, FleetTab, VendorPortalRole, VendorTab } from "@/types/darb";
-import { VENDOR_ROLE_ORDER } from "@/lib/vendorTabs";
-import { FLEET_ROLE_ORDER } from "@/lib/fleetTabs";
+import { vendorRoleLabelKey, vendorRoleOptions } from "@/lib/vendorTabs";
+import { fleetRoleLabelKey, fleetRoleOptions } from "@/lib/fleetTabs";
 
 // Revision 4 (#11) — ACCOUNT_MANAGER joins the roles a notification rule can
 // name. The rules API was already keyed on an arbitrary role string, so the
@@ -230,8 +230,14 @@ function UsersTab() {
                       className="appearance-none px-2 py-0.5 rounded-md text-xs font-medium border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20"
                       style={{ backgroundColor: "transparent" }}
                     >
-                      {(u.portal === "FLEET" ? FLEET_ROLE_ORDER : VENDOR_ROLE_ORDER).map((r) => (
-                        <option key={r} value={r}>{t(`portalRoles.${r}`)}</option>
+                      {/* Revision 24 (#2): each portal offers its own roles
+                          (a shop: Owner, Finance, Order tracking; a delivery
+                          company: Owner, Operations, Finance), never the HQ
+                          list. A login holding an older role keeps it shown. */}
+                      {(u.portal === "FLEET" ? fleetRoleOptions(u.portalRole) : vendorRoleOptions(u.portalRole)).map((r) => (
+                        <option key={r} value={r}>
+                          {t(u.portal === "FLEET" ? fleetRoleLabelKey(r) : vendorRoleLabelKey(r))}
+                        </option>
                       ))}
                     </select>
                   ) : (
@@ -589,7 +595,11 @@ function PermissionsModal({
                   role every portal login carries (FLEET / VENDOR). */}
               {user.name} ·{" "}
               {data?.portal
-                ? `${data.portal === "FLEET" ? "Delivery company" : "Vendor"} · ${t(`portalRoles.${data.portalRole ?? "ADMIN"}`)}`
+                ? `${data.portal === "FLEET" ? "Delivery company" : "Vendor"} · ${t(
+                    data.portal === "FLEET"
+                      ? fleetRoleLabelKey(data.portalRole ?? "ADMIN")
+                      : vendorRoleLabelKey(data.portalRole ?? "ADMIN"),
+                  )}`
                 : user.role.replace("_", " ")}
             </p>
           </div>

@@ -2233,6 +2233,27 @@ exports.Prisma.VendorBranchAllocationScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.AccountSettlementScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  partyType: 'partyType',
+  partyId: 'partyId',
+  statementId: 'statementId',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd',
+  flow: 'flow',
+  amountDueKwd: 'amountDueKwd',
+  amountKwd: 'amountKwd',
+  remainingKwd: 'remainingKwd',
+  status: 'status',
+  transferredAt: 'transferredAt',
+  reference: 'reference',
+  note: 'note',
+  payoutTxId: 'payoutTxId',
+  createdById: 'createdById',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -3545,6 +3566,20 @@ exports.Prisma.VendorBranchAllocationOrderByRelevanceFieldEnum = {
   note: 'note',
   createdById: 'createdById'
 };
+
+exports.Prisma.AccountSettlementOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  partyType: 'partyType',
+  partyId: 'partyId',
+  statementId: 'statementId',
+  flow: 'flow',
+  status: 'status',
+  reference: 'reference',
+  note: 'note',
+  payoutTxId: 'payoutTxId',
+  createdById: 'createdById'
+};
 exports.SubscriptionPlan = exports.$Enums.SubscriptionPlan = {
   FREE: 'FREE',
   PRO: 'PRO',
@@ -4246,7 +4281,8 @@ exports.Prisma.ModelName = {
   OnboardingRequest: 'OnboardingRequest',
   ShiftPlan: 'ShiftPlan',
   ShiftPlanEntry: 'ShiftPlanEntry',
-  VendorBranchAllocation: 'VendorBranchAllocation'
+  VendorBranchAllocation: 'VendorBranchAllocation',
+  AccountSettlement: 'AccountSettlement'
 };
 
 /**

@@ -778,6 +778,23 @@ export type ShiftPlanEntry = $Result.DefaultSelection<Prisma.$ShiftPlanEntryPayl
  * and when survives being changed.
  */
 export type VendorBranchAllocation = $Result.DefaultSelection<Prisma.$VendorBranchAllocationPayload>
+/**
+ * Model AccountSettlement
+ * Revision 24 (#7) — Finance › Money › Settle accounts.
+ * 
+ * One row is ONE transfer finance actually made (or received) against a
+ * monthly statement: a vendor's `VendorStatement` or a delivery company's
+ * `FleetPayoutStatement`. Append-only, like the ledger beside it: a second
+ * part-payment is a second row, never an edit, so "how much, when, which
+ * reference" survives for every transfer. `status` is the account's state
+ * AFTER this row (SETTLED once the transfers cover the amount due, else
+ * PARTIALLY_SETTLED) and `remainingKwd` what was still open after it.
+ * 
+ * No Prisma relations on purpose: it points at two different statement
+ * tables by `partyType`, and keeping it relation-free keeps this purely
+ * additive (no back-relation edits on Tenant, Vendor or FleetPartner).
+ */
+export type AccountSettlement = $Result.DefaultSelection<Prisma.$AccountSettlementPayload>
 
 /**
  * Enums
@@ -3295,6 +3312,16 @@ export class PrismaClient<
     * ```
     */
   get vendorBranchAllocation(): Prisma.VendorBranchAllocationDelegate<ExtArgs>;
+
+  /**
+   * `prisma.accountSettlement`: Exposes CRUD operations for the **AccountSettlement** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AccountSettlements
+    * const accountSettlements = await prisma.accountSettlement.findMany()
+    * ```
+    */
+  get accountSettlement(): Prisma.AccountSettlementDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -3865,7 +3892,8 @@ export namespace Prisma {
     OnboardingRequest: 'OnboardingRequest',
     ShiftPlan: 'ShiftPlan',
     ShiftPlanEntry: 'ShiftPlanEntry',
-    VendorBranchAllocation: 'VendorBranchAllocation'
+    VendorBranchAllocation: 'VendorBranchAllocation',
+    AccountSettlement: 'AccountSettlement'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -3881,7 +3909,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "tenant" | "company" | "ownerGroup" | "user" | "driver" | "driverRestriction" | "driverInventory" | "recruitmentPipeline" | "vehicle" | "vehicleDriverAssignment" | "shift" | "shiftRequest" | "attendanceRecord" | "orderLog" | "cashRecord" | "cashTransaction" | "pendingDuesLedger" | "vehicleInspection" | "maintenanceRecord" | "device" | "sim" | "capturedOrder" | "locationLog" | "appUsageLog" | "deviceCommand" | "aiScore" | "alert" | "aiDigest" | "auditLog" | "ticket" | "leaveRequest" | "talabatSession" | "talabatViolationEvent" | "talabatDelivery" | "keetaDailyMetrics" | "ingestRun" | "deliverooDailyMetrics" | "talabatDailyMetrics" | "platformSettings" | "platformInventory" | "americanaDailyOrders" | "americanaChain" | "americanaStore" | "americanaContract" | "americanaChainRate" | "driverBatchHistory" | "americanaStoreAssignment" | "americanaDailyIngestion" | "kpiDefinition" | "kpiRecord" | "notification" | "notificationDelivery" | "notificationRule" | "courierOnlineSession" | "violation" | "penalty" | "appeal" | "orderEvent" | "aiInsight" | "demandHeatmap" | "deliveryArea" | "courierAttendanceSlot" | "keetaAvailableShiftSlot" | "shiftComplianceConfig" | "partner" | "partnerBankAccount" | "incentiveTargetRound" | "incentiveGoal" | "incentiveTier" | "courierIncentivePayout" | "billing" | "taxInvoice" | "paymentWithdrawal" | "agentRunLog" | "agentToolCall" | "pendingAgentAction" | "agentAction" | "agentMemory" | "pinnedView" | "performanceSnapshot" | "metricEvent" | "chatThread" | "chatMessage" | "scheduledBriefing" | "vendor" | "vendorBranch" | "deliveryZone" | "shiftCapacity" | "zoneSurcharge" | "deliveryPlan" | "deliveryPlanZoneRate" | "deliveryPlanKmTier" | "distanceCache" | "fulfillmentSettings" | "deliveryOrder" | "dispatchOffer" | "walletAccount" | "walletTransaction" | "walletEntry" | "remittance" | "walletReconciliationRun" | "incident" | "foodicsConnection" | "webhookEvent" | "apiKey" | "orderRating" | "vendorStatement" | "refund" | "fleetPartner" | "fleetPayoutStatement" | "deliveryPhoto" | "fleetPayoutInvoice" | "fleetDocument" | "fleetChangeRequest" | "fleetIssue" | "userInvite" | "userSurfacePermission" | "accountManagerVendor" | "accountManagerFleet" | "fleetDeduction" | "vendorIntegration" | "supportTicket" | "supportTicketMessage" | "vendorTopUp" | "fleetCashDeposit" | "driverTrainingSession" | "onboardingRequest" | "shiftPlan" | "shiftPlanEntry" | "vendorBranchAllocation"
+      modelProps: "tenant" | "company" | "ownerGroup" | "user" | "driver" | "driverRestriction" | "driverInventory" | "recruitmentPipeline" | "vehicle" | "vehicleDriverAssignment" | "shift" | "shiftRequest" | "attendanceRecord" | "orderLog" | "cashRecord" | "cashTransaction" | "pendingDuesLedger" | "vehicleInspection" | "maintenanceRecord" | "device" | "sim" | "capturedOrder" | "locationLog" | "appUsageLog" | "deviceCommand" | "aiScore" | "alert" | "aiDigest" | "auditLog" | "ticket" | "leaveRequest" | "talabatSession" | "talabatViolationEvent" | "talabatDelivery" | "keetaDailyMetrics" | "ingestRun" | "deliverooDailyMetrics" | "talabatDailyMetrics" | "platformSettings" | "platformInventory" | "americanaDailyOrders" | "americanaChain" | "americanaStore" | "americanaContract" | "americanaChainRate" | "driverBatchHistory" | "americanaStoreAssignment" | "americanaDailyIngestion" | "kpiDefinition" | "kpiRecord" | "notification" | "notificationDelivery" | "notificationRule" | "courierOnlineSession" | "violation" | "penalty" | "appeal" | "orderEvent" | "aiInsight" | "demandHeatmap" | "deliveryArea" | "courierAttendanceSlot" | "keetaAvailableShiftSlot" | "shiftComplianceConfig" | "partner" | "partnerBankAccount" | "incentiveTargetRound" | "incentiveGoal" | "incentiveTier" | "courierIncentivePayout" | "billing" | "taxInvoice" | "paymentWithdrawal" | "agentRunLog" | "agentToolCall" | "pendingAgentAction" | "agentAction" | "agentMemory" | "pinnedView" | "performanceSnapshot" | "metricEvent" | "chatThread" | "chatMessage" | "scheduledBriefing" | "vendor" | "vendorBranch" | "deliveryZone" | "shiftCapacity" | "zoneSurcharge" | "deliveryPlan" | "deliveryPlanZoneRate" | "deliveryPlanKmTier" | "distanceCache" | "fulfillmentSettings" | "deliveryOrder" | "dispatchOffer" | "walletAccount" | "walletTransaction" | "walletEntry" | "remittance" | "walletReconciliationRun" | "incident" | "foodicsConnection" | "webhookEvent" | "apiKey" | "orderRating" | "vendorStatement" | "refund" | "fleetPartner" | "fleetPayoutStatement" | "deliveryPhoto" | "fleetPayoutInvoice" | "fleetDocument" | "fleetChangeRequest" | "fleetIssue" | "userInvite" | "userSurfacePermission" | "accountManagerVendor" | "accountManagerFleet" | "fleetDeduction" | "vendorIntegration" | "supportTicket" | "supportTicketMessage" | "vendorTopUp" | "fleetCashDeposit" | "driverTrainingSession" | "onboardingRequest" | "shiftPlan" | "shiftPlanEntry" | "vendorBranchAllocation" | "accountSettlement"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -12982,6 +13010,76 @@ export namespace Prisma {
           count: {
             args: Prisma.VendorBranchAllocationCountArgs<ExtArgs>
             result: $Utils.Optional<VendorBranchAllocationCountAggregateOutputType> | number
+          }
+        }
+      }
+      AccountSettlement: {
+        payload: Prisma.$AccountSettlementPayload<ExtArgs>
+        fields: Prisma.AccountSettlementFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AccountSettlementFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountSettlementPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AccountSettlementFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountSettlementPayload>
+          }
+          findFirst: {
+            args: Prisma.AccountSettlementFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountSettlementPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AccountSettlementFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountSettlementPayload>
+          }
+          findMany: {
+            args: Prisma.AccountSettlementFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountSettlementPayload>[]
+          }
+          create: {
+            args: Prisma.AccountSettlementCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountSettlementPayload>
+          }
+          createMany: {
+            args: Prisma.AccountSettlementCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AccountSettlementCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountSettlementPayload>[]
+          }
+          delete: {
+            args: Prisma.AccountSettlementDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountSettlementPayload>
+          }
+          update: {
+            args: Prisma.AccountSettlementUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountSettlementPayload>
+          }
+          deleteMany: {
+            args: Prisma.AccountSettlementDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AccountSettlementUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.AccountSettlementUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AccountSettlementPayload>
+          }
+          aggregate: {
+            args: Prisma.AccountSettlementAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAccountSettlement>
+          }
+          groupBy: {
+            args: Prisma.AccountSettlementGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AccountSettlementGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AccountSettlementCountArgs<ExtArgs>
+            result: $Utils.Optional<AccountSettlementCountAggregateOutputType> | number
           }
         }
       }
@@ -163325,6 +163423,1106 @@ export namespace Prisma {
 
 
   /**
+   * Model AccountSettlement
+   */
+
+  export type AggregateAccountSettlement = {
+    _count: AccountSettlementCountAggregateOutputType | null
+    _avg: AccountSettlementAvgAggregateOutputType | null
+    _sum: AccountSettlementSumAggregateOutputType | null
+    _min: AccountSettlementMinAggregateOutputType | null
+    _max: AccountSettlementMaxAggregateOutputType | null
+  }
+
+  export type AccountSettlementAvgAggregateOutputType = {
+    amountDueKwd: Decimal | null
+    amountKwd: Decimal | null
+    remainingKwd: Decimal | null
+  }
+
+  export type AccountSettlementSumAggregateOutputType = {
+    amountDueKwd: Decimal | null
+    amountKwd: Decimal | null
+    remainingKwd: Decimal | null
+  }
+
+  export type AccountSettlementMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    partyType: string | null
+    partyId: string | null
+    statementId: string | null
+    periodStart: Date | null
+    periodEnd: Date | null
+    flow: string | null
+    amountDueKwd: Decimal | null
+    amountKwd: Decimal | null
+    remainingKwd: Decimal | null
+    status: string | null
+    transferredAt: Date | null
+    reference: string | null
+    note: string | null
+    payoutTxId: string | null
+    createdById: string | null
+    createdAt: Date | null
+  }
+
+  export type AccountSettlementMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    partyType: string | null
+    partyId: string | null
+    statementId: string | null
+    periodStart: Date | null
+    periodEnd: Date | null
+    flow: string | null
+    amountDueKwd: Decimal | null
+    amountKwd: Decimal | null
+    remainingKwd: Decimal | null
+    status: string | null
+    transferredAt: Date | null
+    reference: string | null
+    note: string | null
+    payoutTxId: string | null
+    createdById: string | null
+    createdAt: Date | null
+  }
+
+  export type AccountSettlementCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    partyType: number
+    partyId: number
+    statementId: number
+    periodStart: number
+    periodEnd: number
+    flow: number
+    amountDueKwd: number
+    amountKwd: number
+    remainingKwd: number
+    status: number
+    transferredAt: number
+    reference: number
+    note: number
+    payoutTxId: number
+    createdById: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type AccountSettlementAvgAggregateInputType = {
+    amountDueKwd?: true
+    amountKwd?: true
+    remainingKwd?: true
+  }
+
+  export type AccountSettlementSumAggregateInputType = {
+    amountDueKwd?: true
+    amountKwd?: true
+    remainingKwd?: true
+  }
+
+  export type AccountSettlementMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    partyType?: true
+    partyId?: true
+    statementId?: true
+    periodStart?: true
+    periodEnd?: true
+    flow?: true
+    amountDueKwd?: true
+    amountKwd?: true
+    remainingKwd?: true
+    status?: true
+    transferredAt?: true
+    reference?: true
+    note?: true
+    payoutTxId?: true
+    createdById?: true
+    createdAt?: true
+  }
+
+  export type AccountSettlementMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    partyType?: true
+    partyId?: true
+    statementId?: true
+    periodStart?: true
+    periodEnd?: true
+    flow?: true
+    amountDueKwd?: true
+    amountKwd?: true
+    remainingKwd?: true
+    status?: true
+    transferredAt?: true
+    reference?: true
+    note?: true
+    payoutTxId?: true
+    createdById?: true
+    createdAt?: true
+  }
+
+  export type AccountSettlementCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    partyType?: true
+    partyId?: true
+    statementId?: true
+    periodStart?: true
+    periodEnd?: true
+    flow?: true
+    amountDueKwd?: true
+    amountKwd?: true
+    remainingKwd?: true
+    status?: true
+    transferredAt?: true
+    reference?: true
+    note?: true
+    payoutTxId?: true
+    createdById?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type AccountSettlementAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AccountSettlement to aggregate.
+     */
+    where?: AccountSettlementWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AccountSettlements to fetch.
+     */
+    orderBy?: AccountSettlementOrderByWithRelationInput | AccountSettlementOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AccountSettlementWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AccountSettlements from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AccountSettlements.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AccountSettlements
+    **/
+    _count?: true | AccountSettlementCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: AccountSettlementAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AccountSettlementSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AccountSettlementMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AccountSettlementMaxAggregateInputType
+  }
+
+  export type GetAccountSettlementAggregateType<T extends AccountSettlementAggregateArgs> = {
+        [P in keyof T & keyof AggregateAccountSettlement]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAccountSettlement[P]>
+      : GetScalarType<T[P], AggregateAccountSettlement[P]>
+  }
+
+
+
+
+  export type AccountSettlementGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AccountSettlementWhereInput
+    orderBy?: AccountSettlementOrderByWithAggregationInput | AccountSettlementOrderByWithAggregationInput[]
+    by: AccountSettlementScalarFieldEnum[] | AccountSettlementScalarFieldEnum
+    having?: AccountSettlementScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AccountSettlementCountAggregateInputType | true
+    _avg?: AccountSettlementAvgAggregateInputType
+    _sum?: AccountSettlementSumAggregateInputType
+    _min?: AccountSettlementMinAggregateInputType
+    _max?: AccountSettlementMaxAggregateInputType
+  }
+
+  export type AccountSettlementGroupByOutputType = {
+    id: string
+    tenantId: string
+    partyType: string
+    partyId: string
+    statementId: string
+    periodStart: Date
+    periodEnd: Date
+    flow: string
+    amountDueKwd: Decimal
+    amountKwd: Decimal
+    remainingKwd: Decimal
+    status: string
+    transferredAt: Date
+    reference: string | null
+    note: string | null
+    payoutTxId: string | null
+    createdById: string
+    createdAt: Date
+    _count: AccountSettlementCountAggregateOutputType | null
+    _avg: AccountSettlementAvgAggregateOutputType | null
+    _sum: AccountSettlementSumAggregateOutputType | null
+    _min: AccountSettlementMinAggregateOutputType | null
+    _max: AccountSettlementMaxAggregateOutputType | null
+  }
+
+  type GetAccountSettlementGroupByPayload<T extends AccountSettlementGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AccountSettlementGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AccountSettlementGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AccountSettlementGroupByOutputType[P]>
+            : GetScalarType<T[P], AccountSettlementGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AccountSettlementSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    partyType?: boolean
+    partyId?: boolean
+    statementId?: boolean
+    periodStart?: boolean
+    periodEnd?: boolean
+    flow?: boolean
+    amountDueKwd?: boolean
+    amountKwd?: boolean
+    remainingKwd?: boolean
+    status?: boolean
+    transferredAt?: boolean
+    reference?: boolean
+    note?: boolean
+    payoutTxId?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["accountSettlement"]>
+
+  export type AccountSettlementSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    partyType?: boolean
+    partyId?: boolean
+    statementId?: boolean
+    periodStart?: boolean
+    periodEnd?: boolean
+    flow?: boolean
+    amountDueKwd?: boolean
+    amountKwd?: boolean
+    remainingKwd?: boolean
+    status?: boolean
+    transferredAt?: boolean
+    reference?: boolean
+    note?: boolean
+    payoutTxId?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["accountSettlement"]>
+
+  export type AccountSettlementSelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    partyType?: boolean
+    partyId?: boolean
+    statementId?: boolean
+    periodStart?: boolean
+    periodEnd?: boolean
+    flow?: boolean
+    amountDueKwd?: boolean
+    amountKwd?: boolean
+    remainingKwd?: boolean
+    status?: boolean
+    transferredAt?: boolean
+    reference?: boolean
+    note?: boolean
+    payoutTxId?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+  }
+
+
+  export type $AccountSettlementPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AccountSettlement"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      /**
+       * VENDOR | FLEET
+       */
+      partyType: string
+      /**
+       * Vendor.id or FleetPartner.id
+       */
+      partyId: string
+      /**
+       * VendorStatement.id or FleetPayoutStatement.id
+       */
+      statementId: string
+      periodStart: Date
+      periodEnd: Date
+      /**
+       * DARB_PAYS (Darb owes the party) | PARTY_PAYS (the shop owes Darb)
+       */
+      flow: string
+      /**
+       * Snapshot of the statement's amount due when this transfer was recorded.
+       */
+      amountDueKwd: Prisma.Decimal
+      /**
+       * This transfer. Always > 0.
+       */
+      amountKwd: Prisma.Decimal
+      remainingKwd: Prisma.Decimal
+      /**
+       * SETTLED | PARTIALLY_SETTLED
+       */
+      status: string
+      transferredAt: Date
+      reference: string | null
+      note: string | null
+      /**
+       * The payout posting this transfer completed, when it was the last one.
+       */
+      payoutTxId: string | null
+      createdById: string
+      createdAt: Date
+    }, ExtArgs["result"]["accountSettlement"]>
+    composites: {}
+  }
+
+  type AccountSettlementGetPayload<S extends boolean | null | undefined | AccountSettlementDefaultArgs> = $Result.GetResult<Prisma.$AccountSettlementPayload, S>
+
+  type AccountSettlementCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<AccountSettlementFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: AccountSettlementCountAggregateInputType | true
+    }
+
+  export interface AccountSettlementDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AccountSettlement'], meta: { name: 'AccountSettlement' } }
+    /**
+     * Find zero or one AccountSettlement that matches the filter.
+     * @param {AccountSettlementFindUniqueArgs} args - Arguments to find a AccountSettlement
+     * @example
+     * // Get one AccountSettlement
+     * const accountSettlement = await prisma.accountSettlement.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AccountSettlementFindUniqueArgs>(args: SelectSubset<T, AccountSettlementFindUniqueArgs<ExtArgs>>): Prisma__AccountSettlementClient<$Result.GetResult<Prisma.$AccountSettlementPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one AccountSettlement that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {AccountSettlementFindUniqueOrThrowArgs} args - Arguments to find a AccountSettlement
+     * @example
+     * // Get one AccountSettlement
+     * const accountSettlement = await prisma.accountSettlement.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AccountSettlementFindUniqueOrThrowArgs>(args: SelectSubset<T, AccountSettlementFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AccountSettlementClient<$Result.GetResult<Prisma.$AccountSettlementPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first AccountSettlement that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountSettlementFindFirstArgs} args - Arguments to find a AccountSettlement
+     * @example
+     * // Get one AccountSettlement
+     * const accountSettlement = await prisma.accountSettlement.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AccountSettlementFindFirstArgs>(args?: SelectSubset<T, AccountSettlementFindFirstArgs<ExtArgs>>): Prisma__AccountSettlementClient<$Result.GetResult<Prisma.$AccountSettlementPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first AccountSettlement that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountSettlementFindFirstOrThrowArgs} args - Arguments to find a AccountSettlement
+     * @example
+     * // Get one AccountSettlement
+     * const accountSettlement = await prisma.accountSettlement.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AccountSettlementFindFirstOrThrowArgs>(args?: SelectSubset<T, AccountSettlementFindFirstOrThrowArgs<ExtArgs>>): Prisma__AccountSettlementClient<$Result.GetResult<Prisma.$AccountSettlementPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more AccountSettlements that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountSettlementFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AccountSettlements
+     * const accountSettlements = await prisma.accountSettlement.findMany()
+     * 
+     * // Get first 10 AccountSettlements
+     * const accountSettlements = await prisma.accountSettlement.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const accountSettlementWithIdOnly = await prisma.accountSettlement.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AccountSettlementFindManyArgs>(args?: SelectSubset<T, AccountSettlementFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountSettlementPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a AccountSettlement.
+     * @param {AccountSettlementCreateArgs} args - Arguments to create a AccountSettlement.
+     * @example
+     * // Create one AccountSettlement
+     * const AccountSettlement = await prisma.accountSettlement.create({
+     *   data: {
+     *     // ... data to create a AccountSettlement
+     *   }
+     * })
+     * 
+     */
+    create<T extends AccountSettlementCreateArgs>(args: SelectSubset<T, AccountSettlementCreateArgs<ExtArgs>>): Prisma__AccountSettlementClient<$Result.GetResult<Prisma.$AccountSettlementPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many AccountSettlements.
+     * @param {AccountSettlementCreateManyArgs} args - Arguments to create many AccountSettlements.
+     * @example
+     * // Create many AccountSettlements
+     * const accountSettlement = await prisma.accountSettlement.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AccountSettlementCreateManyArgs>(args?: SelectSubset<T, AccountSettlementCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AccountSettlements and returns the data saved in the database.
+     * @param {AccountSettlementCreateManyAndReturnArgs} args - Arguments to create many AccountSettlements.
+     * @example
+     * // Create many AccountSettlements
+     * const accountSettlement = await prisma.accountSettlement.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AccountSettlements and only return the `id`
+     * const accountSettlementWithIdOnly = await prisma.accountSettlement.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AccountSettlementCreateManyAndReturnArgs>(args?: SelectSubset<T, AccountSettlementCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountSettlementPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a AccountSettlement.
+     * @param {AccountSettlementDeleteArgs} args - Arguments to delete one AccountSettlement.
+     * @example
+     * // Delete one AccountSettlement
+     * const AccountSettlement = await prisma.accountSettlement.delete({
+     *   where: {
+     *     // ... filter to delete one AccountSettlement
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AccountSettlementDeleteArgs>(args: SelectSubset<T, AccountSettlementDeleteArgs<ExtArgs>>): Prisma__AccountSettlementClient<$Result.GetResult<Prisma.$AccountSettlementPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one AccountSettlement.
+     * @param {AccountSettlementUpdateArgs} args - Arguments to update one AccountSettlement.
+     * @example
+     * // Update one AccountSettlement
+     * const accountSettlement = await prisma.accountSettlement.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AccountSettlementUpdateArgs>(args: SelectSubset<T, AccountSettlementUpdateArgs<ExtArgs>>): Prisma__AccountSettlementClient<$Result.GetResult<Prisma.$AccountSettlementPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more AccountSettlements.
+     * @param {AccountSettlementDeleteManyArgs} args - Arguments to filter AccountSettlements to delete.
+     * @example
+     * // Delete a few AccountSettlements
+     * const { count } = await prisma.accountSettlement.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AccountSettlementDeleteManyArgs>(args?: SelectSubset<T, AccountSettlementDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AccountSettlements.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountSettlementUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AccountSettlements
+     * const accountSettlement = await prisma.accountSettlement.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AccountSettlementUpdateManyArgs>(args: SelectSubset<T, AccountSettlementUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one AccountSettlement.
+     * @param {AccountSettlementUpsertArgs} args - Arguments to update or create a AccountSettlement.
+     * @example
+     * // Update or create a AccountSettlement
+     * const accountSettlement = await prisma.accountSettlement.upsert({
+     *   create: {
+     *     // ... data to create a AccountSettlement
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AccountSettlement we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AccountSettlementUpsertArgs>(args: SelectSubset<T, AccountSettlementUpsertArgs<ExtArgs>>): Prisma__AccountSettlementClient<$Result.GetResult<Prisma.$AccountSettlementPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of AccountSettlements.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountSettlementCountArgs} args - Arguments to filter AccountSettlements to count.
+     * @example
+     * // Count the number of AccountSettlements
+     * const count = await prisma.accountSettlement.count({
+     *   where: {
+     *     // ... the filter for the AccountSettlements we want to count
+     *   }
+     * })
+    **/
+    count<T extends AccountSettlementCountArgs>(
+      args?: Subset<T, AccountSettlementCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AccountSettlementCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AccountSettlement.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountSettlementAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AccountSettlementAggregateArgs>(args: Subset<T, AccountSettlementAggregateArgs>): Prisma.PrismaPromise<GetAccountSettlementAggregateType<T>>
+
+    /**
+     * Group by AccountSettlement.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountSettlementGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AccountSettlementGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AccountSettlementGroupByArgs['orderBy'] }
+        : { orderBy?: AccountSettlementGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AccountSettlementGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAccountSettlementGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AccountSettlement model
+   */
+  readonly fields: AccountSettlementFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AccountSettlement.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AccountSettlementClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AccountSettlement model
+   */ 
+  interface AccountSettlementFieldRefs {
+    readonly id: FieldRef<"AccountSettlement", 'String'>
+    readonly tenantId: FieldRef<"AccountSettlement", 'String'>
+    readonly partyType: FieldRef<"AccountSettlement", 'String'>
+    readonly partyId: FieldRef<"AccountSettlement", 'String'>
+    readonly statementId: FieldRef<"AccountSettlement", 'String'>
+    readonly periodStart: FieldRef<"AccountSettlement", 'DateTime'>
+    readonly periodEnd: FieldRef<"AccountSettlement", 'DateTime'>
+    readonly flow: FieldRef<"AccountSettlement", 'String'>
+    readonly amountDueKwd: FieldRef<"AccountSettlement", 'Decimal'>
+    readonly amountKwd: FieldRef<"AccountSettlement", 'Decimal'>
+    readonly remainingKwd: FieldRef<"AccountSettlement", 'Decimal'>
+    readonly status: FieldRef<"AccountSettlement", 'String'>
+    readonly transferredAt: FieldRef<"AccountSettlement", 'DateTime'>
+    readonly reference: FieldRef<"AccountSettlement", 'String'>
+    readonly note: FieldRef<"AccountSettlement", 'String'>
+    readonly payoutTxId: FieldRef<"AccountSettlement", 'String'>
+    readonly createdById: FieldRef<"AccountSettlement", 'String'>
+    readonly createdAt: FieldRef<"AccountSettlement", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AccountSettlement findUnique
+   */
+  export type AccountSettlementFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountSettlement
+     */
+    select?: AccountSettlementSelect<ExtArgs> | null
+    /**
+     * Filter, which AccountSettlement to fetch.
+     */
+    where: AccountSettlementWhereUniqueInput
+  }
+
+  /**
+   * AccountSettlement findUniqueOrThrow
+   */
+  export type AccountSettlementFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountSettlement
+     */
+    select?: AccountSettlementSelect<ExtArgs> | null
+    /**
+     * Filter, which AccountSettlement to fetch.
+     */
+    where: AccountSettlementWhereUniqueInput
+  }
+
+  /**
+   * AccountSettlement findFirst
+   */
+  export type AccountSettlementFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountSettlement
+     */
+    select?: AccountSettlementSelect<ExtArgs> | null
+    /**
+     * Filter, which AccountSettlement to fetch.
+     */
+    where?: AccountSettlementWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AccountSettlements to fetch.
+     */
+    orderBy?: AccountSettlementOrderByWithRelationInput | AccountSettlementOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AccountSettlements.
+     */
+    cursor?: AccountSettlementWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AccountSettlements from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AccountSettlements.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AccountSettlements.
+     */
+    distinct?: AccountSettlementScalarFieldEnum | AccountSettlementScalarFieldEnum[]
+  }
+
+  /**
+   * AccountSettlement findFirstOrThrow
+   */
+  export type AccountSettlementFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountSettlement
+     */
+    select?: AccountSettlementSelect<ExtArgs> | null
+    /**
+     * Filter, which AccountSettlement to fetch.
+     */
+    where?: AccountSettlementWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AccountSettlements to fetch.
+     */
+    orderBy?: AccountSettlementOrderByWithRelationInput | AccountSettlementOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AccountSettlements.
+     */
+    cursor?: AccountSettlementWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AccountSettlements from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AccountSettlements.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AccountSettlements.
+     */
+    distinct?: AccountSettlementScalarFieldEnum | AccountSettlementScalarFieldEnum[]
+  }
+
+  /**
+   * AccountSettlement findMany
+   */
+  export type AccountSettlementFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountSettlement
+     */
+    select?: AccountSettlementSelect<ExtArgs> | null
+    /**
+     * Filter, which AccountSettlements to fetch.
+     */
+    where?: AccountSettlementWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AccountSettlements to fetch.
+     */
+    orderBy?: AccountSettlementOrderByWithRelationInput | AccountSettlementOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AccountSettlements.
+     */
+    cursor?: AccountSettlementWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AccountSettlements from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AccountSettlements.
+     */
+    skip?: number
+    distinct?: AccountSettlementScalarFieldEnum | AccountSettlementScalarFieldEnum[]
+  }
+
+  /**
+   * AccountSettlement create
+   */
+  export type AccountSettlementCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountSettlement
+     */
+    select?: AccountSettlementSelect<ExtArgs> | null
+    /**
+     * The data needed to create a AccountSettlement.
+     */
+    data: XOR<AccountSettlementCreateInput, AccountSettlementUncheckedCreateInput>
+  }
+
+  /**
+   * AccountSettlement createMany
+   */
+  export type AccountSettlementCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AccountSettlements.
+     */
+    data: AccountSettlementCreateManyInput | AccountSettlementCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AccountSettlement createManyAndReturn
+   */
+  export type AccountSettlementCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountSettlement
+     */
+    select?: AccountSettlementSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many AccountSettlements.
+     */
+    data: AccountSettlementCreateManyInput | AccountSettlementCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AccountSettlement update
+   */
+  export type AccountSettlementUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountSettlement
+     */
+    select?: AccountSettlementSelect<ExtArgs> | null
+    /**
+     * The data needed to update a AccountSettlement.
+     */
+    data: XOR<AccountSettlementUpdateInput, AccountSettlementUncheckedUpdateInput>
+    /**
+     * Choose, which AccountSettlement to update.
+     */
+    where: AccountSettlementWhereUniqueInput
+  }
+
+  /**
+   * AccountSettlement updateMany
+   */
+  export type AccountSettlementUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AccountSettlements.
+     */
+    data: XOR<AccountSettlementUpdateManyMutationInput, AccountSettlementUncheckedUpdateManyInput>
+    /**
+     * Filter which AccountSettlements to update
+     */
+    where?: AccountSettlementWhereInput
+  }
+
+  /**
+   * AccountSettlement upsert
+   */
+  export type AccountSettlementUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountSettlement
+     */
+    select?: AccountSettlementSelect<ExtArgs> | null
+    /**
+     * The filter to search for the AccountSettlement to update in case it exists.
+     */
+    where: AccountSettlementWhereUniqueInput
+    /**
+     * In case the AccountSettlement found by the `where` argument doesn't exist, create a new AccountSettlement with this data.
+     */
+    create: XOR<AccountSettlementCreateInput, AccountSettlementUncheckedCreateInput>
+    /**
+     * In case the AccountSettlement was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AccountSettlementUpdateInput, AccountSettlementUncheckedUpdateInput>
+  }
+
+  /**
+   * AccountSettlement delete
+   */
+  export type AccountSettlementDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountSettlement
+     */
+    select?: AccountSettlementSelect<ExtArgs> | null
+    /**
+     * Filter which AccountSettlement to delete.
+     */
+    where: AccountSettlementWhereUniqueInput
+  }
+
+  /**
+   * AccountSettlement deleteMany
+   */
+  export type AccountSettlementDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AccountSettlements to delete
+     */
+    where?: AccountSettlementWhereInput
+  }
+
+  /**
+   * AccountSettlement without action
+   */
+  export type AccountSettlementDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AccountSettlement
+     */
+    select?: AccountSettlementSelect<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -165839,6 +167037,30 @@ export namespace Prisma {
   export type VendorBranchAllocationScalarFieldEnum = (typeof VendorBranchAllocationScalarFieldEnum)[keyof typeof VendorBranchAllocationScalarFieldEnum]
 
 
+  export const AccountSettlementScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    partyType: 'partyType',
+    partyId: 'partyId',
+    statementId: 'statementId',
+    periodStart: 'periodStart',
+    periodEnd: 'periodEnd',
+    flow: 'flow',
+    amountDueKwd: 'amountDueKwd',
+    amountKwd: 'amountKwd',
+    remainingKwd: 'remainingKwd',
+    status: 'status',
+    transferredAt: 'transferredAt',
+    reference: 'reference',
+    note: 'note',
+    payoutTxId: 'payoutTxId',
+    createdById: 'createdById',
+    createdAt: 'createdAt'
+  };
+
+  export type AccountSettlementScalarFieldEnum = (typeof AccountSettlementScalarFieldEnum)[keyof typeof AccountSettlementScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -167558,6 +168780,23 @@ export namespace Prisma {
   };
 
   export type VendorBranchAllocationOrderByRelevanceFieldEnum = (typeof VendorBranchAllocationOrderByRelevanceFieldEnum)[keyof typeof VendorBranchAllocationOrderByRelevanceFieldEnum]
+
+
+  export const AccountSettlementOrderByRelevanceFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    partyType: 'partyType',
+    partyId: 'partyId',
+    statementId: 'statementId',
+    flow: 'flow',
+    status: 'status',
+    reference: 'reference',
+    note: 'note',
+    payoutTxId: 'payoutTxId',
+    createdById: 'createdById'
+  };
+
+  export type AccountSettlementOrderByRelevanceFieldEnum = (typeof AccountSettlementOrderByRelevanceFieldEnum)[keyof typeof AccountSettlementOrderByRelevanceFieldEnum]
 
 
   /**
@@ -182936,6 +184175,126 @@ export namespace Prisma {
     note?: StringNullableWithAggregatesFilter<"VendorBranchAllocation"> | string | null
     createdById?: StringNullableWithAggregatesFilter<"VendorBranchAllocation"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"VendorBranchAllocation"> | Date | string
+  }
+
+  export type AccountSettlementWhereInput = {
+    AND?: AccountSettlementWhereInput | AccountSettlementWhereInput[]
+    OR?: AccountSettlementWhereInput[]
+    NOT?: AccountSettlementWhereInput | AccountSettlementWhereInput[]
+    id?: StringFilter<"AccountSettlement"> | string
+    tenantId?: StringFilter<"AccountSettlement"> | string
+    partyType?: StringFilter<"AccountSettlement"> | string
+    partyId?: StringFilter<"AccountSettlement"> | string
+    statementId?: StringFilter<"AccountSettlement"> | string
+    periodStart?: DateTimeFilter<"AccountSettlement"> | Date | string
+    periodEnd?: DateTimeFilter<"AccountSettlement"> | Date | string
+    flow?: StringFilter<"AccountSettlement"> | string
+    amountDueKwd?: DecimalFilter<"AccountSettlement"> | Decimal | DecimalJsLike | number | string
+    amountKwd?: DecimalFilter<"AccountSettlement"> | Decimal | DecimalJsLike | number | string
+    remainingKwd?: DecimalFilter<"AccountSettlement"> | Decimal | DecimalJsLike | number | string
+    status?: StringFilter<"AccountSettlement"> | string
+    transferredAt?: DateTimeFilter<"AccountSettlement"> | Date | string
+    reference?: StringNullableFilter<"AccountSettlement"> | string | null
+    note?: StringNullableFilter<"AccountSettlement"> | string | null
+    payoutTxId?: StringNullableFilter<"AccountSettlement"> | string | null
+    createdById?: StringFilter<"AccountSettlement"> | string
+    createdAt?: DateTimeFilter<"AccountSettlement"> | Date | string
+  }
+
+  export type AccountSettlementOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    partyType?: SortOrder
+    partyId?: SortOrder
+    statementId?: SortOrder
+    periodStart?: SortOrder
+    periodEnd?: SortOrder
+    flow?: SortOrder
+    amountDueKwd?: SortOrder
+    amountKwd?: SortOrder
+    remainingKwd?: SortOrder
+    status?: SortOrder
+    transferredAt?: SortOrder
+    reference?: SortOrderInput | SortOrder
+    note?: SortOrderInput | SortOrder
+    payoutTxId?: SortOrderInput | SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+    _relevance?: AccountSettlementOrderByRelevanceInput
+  }
+
+  export type AccountSettlementWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AccountSettlementWhereInput | AccountSettlementWhereInput[]
+    OR?: AccountSettlementWhereInput[]
+    NOT?: AccountSettlementWhereInput | AccountSettlementWhereInput[]
+    tenantId?: StringFilter<"AccountSettlement"> | string
+    partyType?: StringFilter<"AccountSettlement"> | string
+    partyId?: StringFilter<"AccountSettlement"> | string
+    statementId?: StringFilter<"AccountSettlement"> | string
+    periodStart?: DateTimeFilter<"AccountSettlement"> | Date | string
+    periodEnd?: DateTimeFilter<"AccountSettlement"> | Date | string
+    flow?: StringFilter<"AccountSettlement"> | string
+    amountDueKwd?: DecimalFilter<"AccountSettlement"> | Decimal | DecimalJsLike | number | string
+    amountKwd?: DecimalFilter<"AccountSettlement"> | Decimal | DecimalJsLike | number | string
+    remainingKwd?: DecimalFilter<"AccountSettlement"> | Decimal | DecimalJsLike | number | string
+    status?: StringFilter<"AccountSettlement"> | string
+    transferredAt?: DateTimeFilter<"AccountSettlement"> | Date | string
+    reference?: StringNullableFilter<"AccountSettlement"> | string | null
+    note?: StringNullableFilter<"AccountSettlement"> | string | null
+    payoutTxId?: StringNullableFilter<"AccountSettlement"> | string | null
+    createdById?: StringFilter<"AccountSettlement"> | string
+    createdAt?: DateTimeFilter<"AccountSettlement"> | Date | string
+  }, "id">
+
+  export type AccountSettlementOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    partyType?: SortOrder
+    partyId?: SortOrder
+    statementId?: SortOrder
+    periodStart?: SortOrder
+    periodEnd?: SortOrder
+    flow?: SortOrder
+    amountDueKwd?: SortOrder
+    amountKwd?: SortOrder
+    remainingKwd?: SortOrder
+    status?: SortOrder
+    transferredAt?: SortOrder
+    reference?: SortOrderInput | SortOrder
+    note?: SortOrderInput | SortOrder
+    payoutTxId?: SortOrderInput | SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+    _count?: AccountSettlementCountOrderByAggregateInput
+    _avg?: AccountSettlementAvgOrderByAggregateInput
+    _max?: AccountSettlementMaxOrderByAggregateInput
+    _min?: AccountSettlementMinOrderByAggregateInput
+    _sum?: AccountSettlementSumOrderByAggregateInput
+  }
+
+  export type AccountSettlementScalarWhereWithAggregatesInput = {
+    AND?: AccountSettlementScalarWhereWithAggregatesInput | AccountSettlementScalarWhereWithAggregatesInput[]
+    OR?: AccountSettlementScalarWhereWithAggregatesInput[]
+    NOT?: AccountSettlementScalarWhereWithAggregatesInput | AccountSettlementScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AccountSettlement"> | string
+    tenantId?: StringWithAggregatesFilter<"AccountSettlement"> | string
+    partyType?: StringWithAggregatesFilter<"AccountSettlement"> | string
+    partyId?: StringWithAggregatesFilter<"AccountSettlement"> | string
+    statementId?: StringWithAggregatesFilter<"AccountSettlement"> | string
+    periodStart?: DateTimeWithAggregatesFilter<"AccountSettlement"> | Date | string
+    periodEnd?: DateTimeWithAggregatesFilter<"AccountSettlement"> | Date | string
+    flow?: StringWithAggregatesFilter<"AccountSettlement"> | string
+    amountDueKwd?: DecimalWithAggregatesFilter<"AccountSettlement"> | Decimal | DecimalJsLike | number | string
+    amountKwd?: DecimalWithAggregatesFilter<"AccountSettlement"> | Decimal | DecimalJsLike | number | string
+    remainingKwd?: DecimalWithAggregatesFilter<"AccountSettlement"> | Decimal | DecimalJsLike | number | string
+    status?: StringWithAggregatesFilter<"AccountSettlement"> | string
+    transferredAt?: DateTimeWithAggregatesFilter<"AccountSettlement"> | Date | string
+    reference?: StringNullableWithAggregatesFilter<"AccountSettlement"> | string | null
+    note?: StringNullableWithAggregatesFilter<"AccountSettlement"> | string | null
+    payoutTxId?: StringNullableWithAggregatesFilter<"AccountSettlement"> | string | null
+    createdById?: StringWithAggregatesFilter<"AccountSettlement"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"AccountSettlement"> | Date | string
   }
 
   export type TenantCreateInput = {
@@ -198605,6 +199964,153 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AccountSettlementCreateInput = {
+    id?: string
+    tenantId: string
+    partyType: string
+    partyId: string
+    statementId: string
+    periodStart: Date | string
+    periodEnd: Date | string
+    flow: string
+    amountDueKwd: Decimal | DecimalJsLike | number | string
+    amountKwd: Decimal | DecimalJsLike | number | string
+    remainingKwd: Decimal | DecimalJsLike | number | string
+    status: string
+    transferredAt: Date | string
+    reference?: string | null
+    note?: string | null
+    payoutTxId?: string | null
+    createdById: string
+    createdAt?: Date | string
+  }
+
+  export type AccountSettlementUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    partyType: string
+    partyId: string
+    statementId: string
+    periodStart: Date | string
+    periodEnd: Date | string
+    flow: string
+    amountDueKwd: Decimal | DecimalJsLike | number | string
+    amountKwd: Decimal | DecimalJsLike | number | string
+    remainingKwd: Decimal | DecimalJsLike | number | string
+    status: string
+    transferredAt: Date | string
+    reference?: string | null
+    note?: string | null
+    payoutTxId?: string | null
+    createdById: string
+    createdAt?: Date | string
+  }
+
+  export type AccountSettlementUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    partyType?: StringFieldUpdateOperationsInput | string
+    partyId?: StringFieldUpdateOperationsInput | string
+    statementId?: StringFieldUpdateOperationsInput | string
+    periodStart?: DateTimeFieldUpdateOperationsInput | Date | string
+    periodEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    flow?: StringFieldUpdateOperationsInput | string
+    amountDueKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    remainingKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: StringFieldUpdateOperationsInput | string
+    transferredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AccountSettlementUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    partyType?: StringFieldUpdateOperationsInput | string
+    partyId?: StringFieldUpdateOperationsInput | string
+    statementId?: StringFieldUpdateOperationsInput | string
+    periodStart?: DateTimeFieldUpdateOperationsInput | Date | string
+    periodEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    flow?: StringFieldUpdateOperationsInput | string
+    amountDueKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    remainingKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: StringFieldUpdateOperationsInput | string
+    transferredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AccountSettlementCreateManyInput = {
+    id?: string
+    tenantId: string
+    partyType: string
+    partyId: string
+    statementId: string
+    periodStart: Date | string
+    periodEnd: Date | string
+    flow: string
+    amountDueKwd: Decimal | DecimalJsLike | number | string
+    amountKwd: Decimal | DecimalJsLike | number | string
+    remainingKwd: Decimal | DecimalJsLike | number | string
+    status: string
+    transferredAt: Date | string
+    reference?: string | null
+    note?: string | null
+    payoutTxId?: string | null
+    createdById: string
+    createdAt?: Date | string
+  }
+
+  export type AccountSettlementUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    partyType?: StringFieldUpdateOperationsInput | string
+    partyId?: StringFieldUpdateOperationsInput | string
+    statementId?: StringFieldUpdateOperationsInput | string
+    periodStart?: DateTimeFieldUpdateOperationsInput | Date | string
+    periodEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    flow?: StringFieldUpdateOperationsInput | string
+    amountDueKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    remainingKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: StringFieldUpdateOperationsInput | string
+    transferredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AccountSettlementUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    partyType?: StringFieldUpdateOperationsInput | string
+    partyId?: StringFieldUpdateOperationsInput | string
+    statementId?: StringFieldUpdateOperationsInput | string
+    periodStart?: DateTimeFieldUpdateOperationsInput | Date | string
+    periodEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    flow?: StringFieldUpdateOperationsInput | string
+    amountDueKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    amountKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    remainingKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: StringFieldUpdateOperationsInput | string
+    transferredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -210141,6 +211647,87 @@ export namespace Prisma {
 
   export type VendorBranchAllocationSumOrderByAggregateInput = {
     amountKwd?: SortOrder
+  }
+
+  export type AccountSettlementOrderByRelevanceInput = {
+    fields: AccountSettlementOrderByRelevanceFieldEnum | AccountSettlementOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type AccountSettlementCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    partyType?: SortOrder
+    partyId?: SortOrder
+    statementId?: SortOrder
+    periodStart?: SortOrder
+    periodEnd?: SortOrder
+    flow?: SortOrder
+    amountDueKwd?: SortOrder
+    amountKwd?: SortOrder
+    remainingKwd?: SortOrder
+    status?: SortOrder
+    transferredAt?: SortOrder
+    reference?: SortOrder
+    note?: SortOrder
+    payoutTxId?: SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AccountSettlementAvgOrderByAggregateInput = {
+    amountDueKwd?: SortOrder
+    amountKwd?: SortOrder
+    remainingKwd?: SortOrder
+  }
+
+  export type AccountSettlementMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    partyType?: SortOrder
+    partyId?: SortOrder
+    statementId?: SortOrder
+    periodStart?: SortOrder
+    periodEnd?: SortOrder
+    flow?: SortOrder
+    amountDueKwd?: SortOrder
+    amountKwd?: SortOrder
+    remainingKwd?: SortOrder
+    status?: SortOrder
+    transferredAt?: SortOrder
+    reference?: SortOrder
+    note?: SortOrder
+    payoutTxId?: SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AccountSettlementMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    partyType?: SortOrder
+    partyId?: SortOrder
+    statementId?: SortOrder
+    periodStart?: SortOrder
+    periodEnd?: SortOrder
+    flow?: SortOrder
+    amountDueKwd?: SortOrder
+    amountKwd?: SortOrder
+    remainingKwd?: SortOrder
+    status?: SortOrder
+    transferredAt?: SortOrder
+    reference?: SortOrder
+    note?: SortOrder
+    payoutTxId?: SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AccountSettlementSumOrderByAggregateInput = {
+    amountDueKwd?: SortOrder
+    amountKwd?: SortOrder
+    remainingKwd?: SortOrder
   }
 
   export type CompanyCreateNestedManyWithoutTenantInput = {
@@ -374337,6 +375924,10 @@ export namespace Prisma {
      * @deprecated Use VendorBranchAllocationDefaultArgs instead
      */
     export type VendorBranchAllocationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = VendorBranchAllocationDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use AccountSettlementDefaultArgs instead
+     */
+    export type AccountSettlementArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = AccountSettlementDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

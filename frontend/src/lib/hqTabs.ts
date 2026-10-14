@@ -72,6 +72,8 @@ export const FINANCE_TABS: HqTab[] = [
   { key: "disputes", i18n: "financeDesk.tabDisputes", href: "/finance?tab=disputes" },
   // Revision 21c — cash still with each delivery company, by driver.
   { key: "cash-on-hand", i18n: "financeDesk.tabCashOnHand", href: "/finance?tab=cash-on-hand" },
+  // Revision 24 (#7) — mark a transferred amount Settled or Partially settled.
+  { key: "settlements", i18n: "settleAccounts.tab", href: "/finance?tab=settlements" },
 ];
 
 /**

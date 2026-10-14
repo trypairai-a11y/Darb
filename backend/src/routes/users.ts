@@ -238,6 +238,40 @@ function portalOfUser(u: { role: string; vendorId: string | null; fleetPartnerId
   return null;
 }
 
+/** Staff roles the Admin › Users list may give an HQ login (revision 24 #2). */
+const HQ_ASSIGNABLE_ROLES: readonly string[] = [
+  "ADMIN", "OPS_MANAGER", "SUPERVISOR", "ACCOUNTANT", "ACCOUNT_MANAGER", "VIEWER", "CASH_COLLECTOR",
+];
+
+/**
+ * Other ACTIVE owner logins on the same shop or delivery company. Owner is the
+ * ADMIN portal role (OWNER in the old trio); a NULL fleetRole reads as owner,
+ * which is why this normalises in code rather than filtering in SQL.
+ */
+async function countOtherActiveOwners(
+  tenantId: string,
+  target: { id: string; vendorId: string | null; fleetPartnerId: string | null },
+  portal: PortalKind | null,
+): Promise<number> {
+  if (portal === "VENDOR" && target.vendorId) {
+    const rows = await prisma.user.findMany({
+      where: { tenantId, vendorId: target.vendorId, isActive: true, id: { not: target.id } },
+      select: { vendorRole: true },
+    });
+    return rows.filter((r) => normaliseVendorRole(r.vendorRole) === "ADMIN").length;
+  }
+  if (portal === "FLEET" && target.fleetPartnerId) {
+    const rows = await prisma.user.findMany({
+      where: { tenantId, fleetPartnerId: target.fleetPartnerId, isActive: true, id: { not: target.id } },
+      select: { fleetRole: true },
+    });
+    return rows.filter((r) => normaliseFleetRole(r.fleetRole) === "ADMIN").length;
+  }
+  // An owner-group login with no single company has no roster to count, so
+  // the guard stands aside rather than refusing every change to it.
+  return 1;
+}
+
 // ─── Per-surface permissions (revision 4 #12) ───────────────────────────────
 //
 // GET returns the effective map plus the role's defaults, so the page can show
@@ -424,7 +458,56 @@ router.put("/:id", rbac("ADMIN"), async (req: Request, res: Response) => {
     const updateData: any = {};
     if (name) updateData.name = name;
     if (phone !== undefined) updateData.phone = phone;
-    if (role) updateData.role = role;
+
+    // Revision 24 (#2): "the Role column should be unique according to the
+    // portal". The staff role and the portal role are two different fields,
+    // and which one this endpoint may write is decided by the portal the
+    // login belongs to, never by which field the caller happened to send.
+    if (role || typeof portalRole === "string") {
+      const target = await prisma.user.findFirst({
+        where: { id: req.params.id, tenantId: req.user!.tenantId },
+        select: PORTAL_USER_SELECT,
+      });
+      if (!target) { res.status(404).json({ error: "User not found" }); return; }
+      const portal = portalOfUser(target);
+      if (role) {
+        // Writing an HQ role onto a shop or company login would lift it out
+        // of its portal's containment (VENDOR/FLEET is what fences it), and
+        // VENDOR/FLEET on an HQ login would fence a member of staff into a
+        // portal with no shop or company behind it.
+        if (portal) {
+          res.status(400).json({
+            error: "This login belongs to a portal. Change its portal role instead.",
+            code: "PORTAL_LOGIN",
+          });
+          return;
+        }
+        if (!HQ_ASSIGNABLE_ROLES.includes(role)) {
+          res.status(400).json({ error: "Unknown role", code: "NOT_AN_HQ_ROLE" }); return;
+        }
+        updateData.role = role;
+      }
+      if (typeof portalRole === "string") {
+        const owners = await countOtherActiveOwners(req.user!.tenantId, target, portal);
+        const wasOwner =
+          portal === "FLEET" ? normaliseFleetRole(target.fleetRole) === "ADMIN"
+          : portal === "VENDOR" ? normaliseVendorRole(target.vendorRole) === "ADMIN"
+          : false;
+        const staysOwner =
+          portal === "FLEET" ? normaliseFleetRole(portalRole) === "ADMIN"
+          : normaliseVendorRole(portalRole) === "ADMIN";
+        // Minting logins stays OWNER-only in both portals, so moving the
+        // last active owner off the role leaves nobody able to add a user
+        // or hand the role back from inside the portal.
+        if (portal && wasOwner && !staysOwner && owners === 0) {
+          res.status(409).json({
+            error: "This is the only active owner login. Make someone else the owner first.",
+            code: "LAST_OWNER",
+          });
+          return;
+        }
+      }
+    }
 
     // A portal login's role is edited here too, so the Admin list and the
     // shop's or company's own Users tab never disagree about what it is.

@@ -22,8 +22,9 @@ import { vendorApi } from "@/lib/darbApi";
 import {
   normalizeVendorRole,
   roleDefaultTabs,
-  VENDOR_ROLE_ORDER,
+  VENDOR_ROLE_CHOICES,
   VENDOR_TAB_ORDER,
+  vendorRoleLabelKey,
 } from "@/lib/vendorTabs";
 import type { VendorPortalRole, VendorTab, VendorUser } from "@/types/darb";
 import { useAuth } from "@/contexts/AuthContext";
@@ -195,7 +196,7 @@ export default function VendorTeamPage() {
             key: "vendorRole",
             label: t("vendorTeam.role"),
             render: (value: string | null) => (
-              <span>{t(`portalRoles.${normalizeVendorRole(value)}`)}</span>
+              <span>{t(vendorRoleLabelKey(value))}</span>
             ),
           },
           {
@@ -355,9 +356,9 @@ export default function VendorTeamPage() {
               onChange={(e) => setForm({ ...form, vendorRole: e.target.value as VendorPortalRole })}
               className={inputClass}
             >
-              {VENDOR_ROLE_ORDER.map((r) => (
+              {VENDOR_ROLE_CHOICES.map((r) => (
                 <option key={r} value={r}>
-                  {t(`portalRoles.${r}`)}
+                  {t(vendorRoleLabelKey(r))}
                 </option>
               ))}
             </select>
@@ -416,7 +417,7 @@ export default function VendorTeamPage() {
               <p dir="ltr" className="text-xs text-sand-600">{editing.email}</p>
               <p className="text-xs text-sand-600">
                 {t("vendorTeam.role")}:{" "}
-                {t(`portalRoles.${normalizeVendorRole(editing.vendorRole)}`)}
+                {t(vendorRoleLabelKey(editing.vendorRole))}
               </p>
             </div>
 

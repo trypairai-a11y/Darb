@@ -188,9 +188,21 @@ export async function postVendorPayout(args: {
   statementId: string;
   actorId: string;
 }): Promise<PostResult | null> {
-  const { tenantId, statementId, actorId } = args;
+  return prisma.$transaction((tx) => postVendorPayoutTx(tx, args));
+}
 
-  return prisma.$transaction(async (tx) => {
+/**
+ * The same payout inside a caller's transaction. Revision 24 (#7): the Settle
+ * accounts tab completes a statement with this when the recorded transfers
+ * cover it, so the ledger carries exactly one `vendor-payout:{statementId}`
+ * posting whichever screen finished the month.
+ */
+export async function postVendorPayoutTx(
+  tx: Prisma.TransactionClient,
+  args: { tenantId: string; statementId: string; actorId: string },
+): Promise<PostResult | null> {
+  const { tenantId, statementId, actorId } = args;
+  {
     const statement = await tx.vendorStatement.findFirst({
       where: { id: statementId, tenantId },
     });
@@ -235,7 +247,7 @@ export async function postVendorPayout(args: {
       data: { status: "PAID", payoutTxId: posted.transactionId },
     });
     return posted;
-  });
+  }
 }
 
 /** Ensure the vendor ownerKey helper stays in one place for statements UI. */

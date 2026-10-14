@@ -33,6 +33,26 @@ export const FLEET_ROLE_ORDER: FleetPortalRole[] = [
   "VIEWER",
 ];
 
+/**
+ * Revision 24 (#2) — the delivery company's own three roles: Owner,
+ * Operations, Finance. Stored as the matrix values they always normalised to
+ * (OWNER→ADMIN, OPERATIONS→OPS_MANAGER, FINANCE→ACCOUNTANT); see
+ * VENDOR_ROLE_CHOICES for why nothing is migrated.
+ */
+export const FLEET_ROLE_CHOICES: FleetPortalRole[] = ["ADMIN", "OPS_MANAGER", "ACCOUNTANT"];
+
+/** The i18n key for a delivery company login's role, in the company's own words. */
+export function fleetRoleLabelKey(role: string | null | undefined): string {
+  const r = normalizeFleetRole(role);
+  return (FLEET_ROLE_CHOICES as string[]).includes(r) ? `portalRoleNames.fleet${r}` : `portalRoles.${r}`;
+}
+
+/** The options for a company login's role picker: the company's three, plus whatever it holds now. */
+export function fleetRoleOptions(current?: string | null): FleetPortalRole[] {
+  const r = current == null ? null : normalizeFleetRole(current);
+  return r && !FLEET_ROLE_CHOICES.includes(r) ? [...FLEET_ROLE_CHOICES, r] : FLEET_ROLE_CHOICES;
+}
+
 /** Legacy stored values normalise into the matrix; mirrors the server. */
 export function normalizeFleetRole(role: string | null | undefined): FleetPortalRole {
   if (role && (FLEET_ROLE_ORDER as string[]).includes(role)) return role as FleetPortalRole;

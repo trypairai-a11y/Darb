@@ -1940,3 +1940,94 @@ export interface CashOnHandPayload {
   asOf: string;
   companies: CashOnHandCompany[];
 }
+
+// ── Revision 24 (#17): one driver's cash ledger ───────────────────────────
+// GET /api/wallets/drivers/:id/cash-ledger and /api/fleet/cash/drivers/:id/ledger.
+
+export interface DriverCashLedgerEntry {
+  id: string;
+  createdAt: string;
+  /** WalletTxType: COD_SETTLEMENT, REMITTANCE, TIP, ADJUSTMENT, REFUND... */
+  type: string;
+  /** IN raised the cash the driver holds, OUT lowered it. */
+  direction: "IN" | "OUT";
+  amountKwd: Kwd;
+  runningBalanceKwd: Kwd;
+  orderId: string | null;
+  orderNumber: string | null;
+  remittanceId: string | null;
+  remittanceMethod: string | null;
+  settledByCompany: boolean;
+  memo: string | null;
+}
+
+export interface DriverCashLedgerPayload {
+  driver: {
+    id: string;
+    name: string;
+    driverCode: string | null;
+    phone: string | null;
+    fleetPartnerId: string | null;
+    fleetPartnerName: string | null;
+  };
+  balanceKwd: Kwd;
+  data: DriverCashLedgerEntry[];
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+}
+
+// ── Revision 24 (#7): Finance › Money › Settle accounts ───────────────────
+// GET/POST /api/wallets/settlements.
+
+export type SettlementPartyType = "VENDOR" | "FLEET";
+export type SettleState = "OPEN" | "PARTIALLY_SETTLED" | "SETTLED";
+
+export interface SettlementTransfer {
+  id: string;
+  amountKwd: Kwd;
+  remainingKwd: Kwd;
+  status: "SETTLED" | "PARTIALLY_SETTLED";
+  transferredAt: string;
+  reference: string | null;
+  note: string | null;
+  payoutTxId: string | null;
+  createdById: string;
+  createdByName: string | null;
+  createdAt: string;
+}
+
+export interface SettleAccountRow {
+  partyType: SettlementPartyType;
+  partyId: string;
+  partyName: string;
+  statementId: string;
+  periodStart: string;
+  periodEnd: string;
+  /** DARB_PAYS: Darb owes the party. PARTY_PAYS: the shop owes Darb. */
+  flow: "DARB_PAYS" | "PARTY_PAYS";
+  amountDueKwd: Kwd;
+  settledKwd: Kwd;
+  remainingKwd: Kwd;
+  state: SettleState;
+  statementStatus: string;
+  paidOutsideSettlement: boolean;
+  canSettle: boolean;
+  blockedReason: "NOT_CONFIRMED" | "DISPUTED" | "SETTLED" | null;
+  lastTransferAt: string | null;
+  transfers: SettlementTransfer[];
+}
+
+export interface SettleAccountsPayload {
+  data: SettleAccountRow[];
+  totals: { owedByDarbKwd: Kwd; owedToDarbKwd: Kwd; open: number; partial: number };
+}
+
+export interface RecordSettlementBody {
+  partyType: SettlementPartyType;
+  statementId: string;
+  action: "SETTLED" | "PARTIALLY_SETTLED";
+  amountKwd?: string;
+  /** YYYY-MM-DD */
+  transferredAt: string;
+  reference?: string;
+  note?: string;
+}
