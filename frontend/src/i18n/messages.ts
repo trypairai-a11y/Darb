@@ -1381,6 +1381,7 @@ export interface Messages {
     zoneActivated: string;
   };
   hq: { ops: string; compliance: string; finance: string; admin: string; opsTitle: string; opsSubtitle: string; tabLive: string; tabOrders: string; tabEquipment: string; tabZones: string; tabDriverTracking: string; tabShiftPlanning: string; tabDriverTraining: string; tabOnboarding: string; tabRequests: string; openRequests: string; openFull: string };
+  rev24Ops: { selectAll: string; selectDriver: string; selectedCount: string; clearSelection: string; bulkConfirmTitle: string; bulkConfirmMessage: string; bulkFreezeTitle: string; bulkTrainTitle: string; bulkResultTitle: string; bulkResultSummary: string; bulkAllDone: string; bulkDone: string; bulkNotApplied: string; pendingClearance: string; routeTitle: string; routePickup: string; routeDropoff: string; routeToPickup: string; routeToDropoff: string; routeNoPath: string; routeNoPins: string };
   driverTracking: { title: string; subtitle: string; windowDays: string; driver: string; company: string; area: string; state: string; delivered: string; failed: string; onTime: string; acceptance: string; rating: string; documents: string; lastSeen: string; actions: string; activate: string; deactivate: string; suspend: string; freeze: string; unfreeze: string; sendToTraining: string; frozen: string; inTraining: string; freezeReason: string; freezeReasonHint: string; trainingPeriod: string; days: string; oneDay: string; trainingReason: string; sent: string; stateSaved: string; empty: string; searchPlaceholder: string; allCompanies: string; allAreas: string; allStates: string; inTrainingBlocked: string; passTraining: string; failTraining: string; finishTrainingTitle: string; passTrainingConfirm: string; failTrainingConfirm: string; trainingFinished: string; violations: string; violationsHint: string; rejections: string; rejectionsHint: string; openIssues: string; filterBy: string; filterAny: string; filterNone: string; filterAtLeast: string; filterBelow: string; filterBetween: string; filterNotRated: string; docsComplete: string; docsMissing: string; clearFilters: string; sortHint: string; matching: string; stateActive: string; stateInactive: string; stateSuspended: string; stateTerminated: string };
   shiftPlan: { title: string; subtitle: string; weekOf: string; generate: string; regenerate: string; approve: string; discard: string; statusDraft: string; statusApproved: string; statusDiscarded: string; noPlan: string; noPlanHint: string; basis: string; proposed: string; approved: string; demand: string; zone: string; window: string; save: string; saved: string; approvedToast: string; approveWarning: string; approvedBy: string; suggestedDrivers: string; noSuggestions: string; readOnly: string; weekAlreadyApproved: string; prevWeek: string; nextWeek: string; totalDrivers: string; driversAvailable: string; driversUnassigned: string; zoneDrivers: string; overCapacity: string; ordersCount: string; amendWarning: string; amended: string; rebuildTitle: string; rebuildConfirm: string; rebuildAction: string; rebuilt: string; dayDuty: string; nightDuty: string; neededOnDay: string; zoneNeeded: string; zoneShort: string; driverAreas: string };
   driverTraining: { title: string; subtitle: string; newSession: string; statusScheduled: string; statusInProgress: string; statusPassed: string; statusFailed: string; statusCancelled: string; period: string; changePeriod: string; ends: string; issueOrder: string; pickupPoint: string; dropoffAddress: string; customerName: string; minutes: string; orders: string; noOrders: string; assigned: string; deliveredCount: string; failedCount: string; inFlight: string; onTimeRate: string; avgMinutes: string; podRate: string; pass: string; fail: string; cancel: string; outcomeNote: string; passHint: string; failHint: string; empty: string; started: string; orderIssued: string; periodSaved: string; completed: string; practiceBadge: string; moneyNote: string; start: string; selectDriver: string; noEligibleDrivers: string; autoIssue: string; autoIssueHint: string; autoIssueSaved: string; autoIssueOn: string; autoIssueOff: string; orderDetails: string; collectFrom: string; deliverTo: string; customer: string; pin: string; pinHint: string; given: string; arrived: string; pickedUp: string; delivered: string; due: string; minutesTaken: string; proofPhoto: string; failureReason: string; openOrder: string; hideDetails: string; failedNext: string; failedNextHint: string; retrain: string; retrainReason: string; retrained: string; terminate: string; terminateTitle: string; terminateConfirm: string; terminated: string };
@@ -4030,6 +4031,29 @@ export const en: Messages = {
     tabRequests: "Support and approvals",
     openRequests: "Requests and approvals",
     openFull: "Open the full screen",
+  },
+  rev24Ops: {
+    selectAll: "Select all drivers",
+    selectDriver: "Select {name}",
+    selectedCount: "{n} selected",
+    clearSelection: "Clear selection",
+    bulkConfirmTitle: "{action}: {n} drivers",
+    bulkConfirmMessage: "This applies to every selected driver. Any driver it cannot apply to is listed afterwards with the reason.",
+    bulkFreezeTitle: "Freeze {n} drivers",
+    bulkTrainTitle: "Send {n} drivers to training",
+    bulkResultTitle: "Bulk action results",
+    bulkResultSummary: "{ok} done, {failed} not applied",
+    bulkAllDone: "Applied to all {n} drivers",
+    bulkDone: "Done",
+    bulkNotApplied: "Not applied",
+    pendingClearance: "Pending clearance",
+    routeTitle: "Route",
+    routePickup: "Pickup (shop)",
+    routeDropoff: "Dropoff (customer)",
+    routeToPickup: "Driver to shop",
+    routeToDropoff: "Driver to customer",
+    routeNoPath: "No driver path recorded for this order.",
+    routeNoPins: "No locations on file for this order.",
   },
   driverTracking: {
     title: "Driver tracking",
@@ -7166,6 +7190,29 @@ export const ar: Messages = {
     tabRequests: "الدعم والموافقات",
     openRequests: "الطلبات والموافقات",
     openFull: "فتح الشاشة كاملة",
+  },
+  rev24Ops: {
+    selectAll: "تحديد كل المندوبين",
+    selectDriver: "تحديد {name}",
+    selectedCount: "{n} محدد",
+    clearSelection: "إلغاء التحديد",
+    bulkConfirmTitle: "{action}: {n} مندوب",
+    bulkConfirmMessage: "سيتم تطبيق الإجراء على كل المندوبين المحددين. أي مندوب ما ينطبق عليه بيظهر بعدين مع السبب.",
+    bulkFreezeTitle: "تجميد {n} مندوب",
+    bulkTrainTitle: "إرسال {n} مندوب للتدريب",
+    bulkResultTitle: "نتيجة الإجراء الجماعي",
+    bulkResultSummary: "تم على {ok}، وما انطبق على {failed}",
+    bulkAllDone: "تم التطبيق على كل المندوبين ({n})",
+    bulkDone: "تم",
+    bulkNotApplied: "ما انطبق",
+    pendingClearance: "بانتظار تسليم العهدة",
+    routeTitle: "المسار",
+    routePickup: "الاستلام (المتجر)",
+    routeDropoff: "التوصيل (العميل)",
+    routeToPickup: "المندوب إلى المتجر",
+    routeToDropoff: "المندوب إلى العميل",
+    routeNoPath: "ما في مسار مسجل للمندوب لهذا الطلب.",
+    routeNoPins: "ما في مواقع مسجلة لهذا الطلب.",
   },
   driverTracking: {
     title: "متابعة المندوبين",

@@ -21,6 +21,8 @@ export interface DriverFileProfile {
   status: string;
   platform: string;
   platformDriverId: string | null;
+  /** Revision 24 #14: Darb's own driver id ("DRB-0001"). */
+  driverCode?: string | null;
   phone: string;
   vehicleType: string;
   company: DriverFileCompany | null;
@@ -30,6 +32,12 @@ export interface DriverFileProfile {
   hireDate: string | null;
   monthlySalary: number | null;
   performanceTier: string | null;
+  /** Revision 24 #16 — two-step termination. */
+  terminatedAt?: string | null;
+  terminationClearedAt?: string | null;
+  terminationClearedBy?: { id: string; name: string } | null;
+  terminationClearanceNote?: string | null;
+  terminationPending?: boolean;
 }
 
 export interface DriverFileLiveDevice {

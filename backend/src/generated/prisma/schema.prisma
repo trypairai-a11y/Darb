@@ -846,6 +846,15 @@ model Driver {
   trainingSessions          DriverTrainingSession[]
   // Client request 2026-08-01 — the driver app's notification feed.
   notifications             Notification[]
+  /// Revision 24 #16 — termination is two steps. TERMINATE stamps
+  /// `terminatedAt` and the driver reads "Terminated (pending clearance)"
+  /// until somebody ticks the equipment clearance on the profile, which marks
+  /// every issued item returned and stamps the pair below. Only then is the
+  /// driver finally terminated. Plain id, no relation, same as the audit log.
+  terminatedAt              DateTime?
+  terminationClearedAt      DateTime?
+  terminationClearedById    String?
+  terminationClearanceNote  String?
 
   @@unique([tenantId, driverCode])
   @@index([tenantId])

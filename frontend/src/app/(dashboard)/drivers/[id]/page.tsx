@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { useParams, useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  ArrowLeft,
   CalendarClock,
   CheckCircle2,
   FileCheck2,
@@ -13,7 +14,10 @@ import {
   Wallet,
 } from "lucide-react";
 import { useApiQuery } from "@/hooks/useApi";
-import { driverTrainingApi } from "@/lib/darbApi";
+import { driverTrackingApi, driverTrainingApi } from "@/lib/darbApi";
+import { itemDisplayName } from "@/lib/equipmentItems";
+import { useRole } from "@/hooks/useRole";
+import { useToast } from "@/components/shared/Toast";
 import type { TrainingSession } from "@/types/darb";
 import type { DriverFileData } from "@/types/driver-file";
 import ScoreTrendChart from "@/components/driver-file/ScoreTrendChart";
@@ -192,6 +196,163 @@ function ScoreBars({ data }: { data: DriverFileData }) {
   );
 }
 
+type InventoryItem = DriverFileData["assets"]["inventory"][number];
+
+/** Still with the driver: issued and not handed back. */
+function isOutstanding(item: InventoryItem) {
+  return item.issued && !item.returnedDate && item.quantity > 0;
+}
+
+/**
+ * Revision 24 #15 — "the issued equipment must show in the driver profile".
+ * The same DriverInventory rows /assets writes when kit is issued, so the two
+ * screens cannot disagree. Outstanding items first, returned ones after.
+ */
+function EquipmentPanel({ items }: { items: InventoryItem[] }) {
+  const sorted = [...items].sort((a, b) => Number(isOutstanding(b)) - Number(isOutstanding(a)));
+  return (
+    <Panel title="Issued equipment">
+      {sorted.length === 0 ? (
+        <p className="text-sm text-sand-700">No equipment has been issued to this driver.</p>
+      ) : (
+        <ul className="divide-y divide-sand-100" data-testid="driver-issued-equipment">
+          {sorted.map((item) => {
+            const out = isOutstanding(item);
+            return (
+              <li key={item.id} className="flex items-start justify-between gap-3 py-2.5">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground">
+                    {itemDisplayName(item.itemType)} <span className="text-sand-600">× {item.quantity}</span>
+                  </p>
+                  <p className="mt-0.5 text-xs text-sand-700">
+                    {item.returnedDate
+                      ? `Returned ${formatDate(item.returnedDate)}`
+                      : item.issuedDate
+                        ? `Issued ${formatDate(item.issuedDate)}`
+                        : "Issue date not recorded"}
+                  </p>
+                </div>
+                <Pill tone={out ? statusTone("VALID") : statusTone("CLOSED")}>{out ? "With driver" : "Returned"}</Pill>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </Panel>
+  );
+}
+
+/**
+ * Revision 24 #16 — "for terminated drivers, there should be a clearance
+ * checkbox confirming we received the equipment from them, after which they
+ * get finally terminated". Ticking the box and confirming marks every item
+ * still out as returned (and back in stock on /assets) and stamps the driver
+ * as finally terminated. Server side: POST /api/drivers/:id/termination-clearance.
+ */
+function TerminationClearancePanel({ data, onCleared }: { data: DriverFileData; onCleared: () => void }) {
+  const p = data.profile;
+  const toast = useToast();
+  const { hasRole } = useRole();
+  const canClear = hasRole("SUPERVISOR");
+  const [confirmed, setConfirmed] = useState(false);
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const outstanding = data.assets.inventory.filter(isOutstanding);
+
+  if (!p.terminationPending) {
+    return (
+      <Panel title="Equipment clearance">
+        <p className="text-sm text-foreground" data-testid="termination-cleared">
+          Equipment received back and cleared
+          {p.terminationClearedAt ? ` on ${formatDate(p.terminationClearedAt)}` : ""}
+          {p.terminationClearedBy ? ` by ${p.terminationClearedBy.name}` : ""}. This driver is finally terminated.
+        </p>
+        {p.terminationClearanceNote ? (
+          <p className="mt-2 text-sm text-sand-700">Note: {p.terminationClearanceNote}</p>
+        ) : null}
+      </Panel>
+    );
+  }
+
+  async function clear() {
+    setBusy(true);
+    try {
+      await driverTrackingApi.clearTermination(p.id, note.trim() || undefined);
+      toast.success("Equipment cleared. The driver is finally terminated.");
+      onCleared();
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
+      toast.error(message ?? "Could not record the clearance");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="rounded-lg border border-red-200 bg-red-50/40" data-testid="termination-clearance">
+      <div className="border-b border-red-100 px-5 py-4">
+        <h2 className="text-base font-semibold text-foreground">Equipment clearance</h2>
+        <p className="mt-1 text-sm text-sand-700">
+          This driver was terminated{p.terminatedAt ? ` on ${formatDate(p.terminatedAt)}` : ""}. Termination is final
+          once the equipment issued to them has been received back.
+        </p>
+      </div>
+      <div className="space-y-4 p-5">
+        {outstanding.length === 0 ? (
+          <p className="text-sm text-sand-700">No equipment is recorded as still with this driver.</p>
+        ) : (
+          <div>
+            <p className="mb-2 text-xs text-sand-700">Still with the driver</p>
+            <ul className="space-y-1">
+              {outstanding.map((item) => (
+                <li key={item.id} className="text-sm text-foreground">
+                  {itemDisplayName(item.itemType)} × {item.quantity}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {canClear ? (
+          <>
+            <label className="flex items-start gap-2 text-sm text-foreground">
+              <input
+                type="checkbox"
+                data-testid="termination-clearance-checkbox"
+                checked={confirmed}
+                onChange={(e) => setConfirmed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-sand-300 accent-primary"
+              />
+              <span>
+                {outstanding.length
+                  ? "I confirm all the equipment listed above has been received back from this driver."
+                  : "I confirm nothing is owed back by this driver."}
+              </span>
+            </label>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={2}
+              placeholder="Note (optional), for example a missing or damaged item"
+              className="w-full rounded-lg border border-sand-200 bg-white p-3 text-sm"
+            />
+            <button
+              type="button"
+              data-testid="termination-clearance-confirm"
+              disabled={!confirmed || busy}
+              onClick={() => void clear()}
+              className="h-10 rounded-full bg-primary px-5 text-sm font-medium text-white disabled:opacity-40"
+            >
+              {busy ? "Saving" : "Confirm clearance and finalise termination"}
+            </button>
+          </>
+        ) : (
+          <p className="text-sm text-sand-700">A supervisor or above records the clearance.</p>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function DriverFileSkeleton() {
   return (
     <div className="w-full max-w-none p-6 lg:p-8">
@@ -222,6 +383,15 @@ function ErrorState({ title, message }: { title: string; message?: string }) {
 export default function DriverFilePage() {
   const params = useParams<{ id: string }>();
   const id = params?.id;
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  // Revision 24 #15: "there is no back button on this page". Back to wherever
+  // the user came from; a profile opened from a pasted link goes to Driver
+  // tracking, which is where profiles are opened from.
+  const goBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) router.back();
+    else router.push("/ops?tab=driver-tracking");
+  };
   const searchParams = useSearchParams();
   const askedTab = searchParams?.get("tab");
   const [tab, setTab] = useState<DriverFileTab>(
@@ -262,8 +432,20 @@ export default function DriverFilePage() {
     .slice(0, 2)
     .toUpperCase();
 
+  const statusLabel =
+    p.status === "TERMINATED" ? (p.terminationPending ? "Terminated (pending clearance)" : "Terminated") : formatEnum(p.status);
+
   return (
     <div className="w-full max-w-none space-y-5 p-6 lg:p-8">
+      <button
+        type="button"
+        onClick={goBack}
+        data-testid="driver-file-back"
+        className="inline-flex items-center gap-1.5 text-sm text-sand-700 hover:text-foreground"
+      >
+        <ArrowLeft size={15} aria-hidden="true" className="rtl:rotate-180" />
+        Back
+      </button>
       <header className="rounded-lg border border-sand-200 bg-white p-5">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
@@ -273,11 +455,12 @@ export default function DriverFilePage() {
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-3xl font-semibold tracking-normal text-foreground">{p.name}</h1>
-                <Pill tone={statusTone(p.status)}>{formatEnum(p.status)}</Pill>
+                <Pill tone={p.status === "TERMINATED" ? statusTone("REJECTED") : statusTone(p.status)}>{statusLabel}</Pill>
                 <Pill>{formatEnum(p.performanceTier)}</Pill>
               </div>
+              {/* Revision 24 #14: the legacy aggregator tag ("Talabat") is
+                  gone. Darb is the only platform; the field is inherited. */}
               <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-sand-700">
-                <span>{formatEnum(p.platform)}</span>
                 <span>{formatEnum(p.vehicleType)}</span>
                 <span>{p.zone ?? fallback}</span>
                 <span>{p.company?.name ?? fallback}</span>
@@ -328,13 +511,20 @@ export default function DriverFilePage() {
         </div>
       </nav>
 
+      {p.status === "TERMINATED" && (
+        <TerminationClearancePanel
+          data={data}
+          onCleared={() => void queryClient.invalidateQueries({ queryKey: ["driver-file", id ?? ""] })}
+        />
+      )}
+
       {tab === "Overview" && (
         <div className="grid gap-5 xl:grid-cols-[1fr_420px]">
           <div className="space-y-5">
             <Panel title="Profile">
               <KeyValueGrid
                 rows={[
-                  ["Platform ID", p.platformDriverId ?? fallback],
+                  ["Driver ID", p.driverCode ?? fallback],
                   ["Company", p.company?.name ?? fallback],
                   ["Supervisor", p.supervisor?.name ?? fallback],
                   ["Zone", p.zone ?? fallback],
@@ -370,6 +560,7 @@ export default function DriverFilePage() {
             <Panel title="Score">
               <ScoreBars data={data} />
             </Panel>
+            <EquipmentPanel items={data.assets.inventory} />
           </div>
         </div>
       )}
@@ -578,21 +769,6 @@ export default function DriverFilePage() {
               ) : (
                 <p className="text-sm text-sand-700">No decision activity for this driver.</p>
               )}
-            </div>
-          </Panel>
-          <Panel title="Inventory">
-            <div className="grid gap-3 md:grid-cols-2">
-              {data.assets.inventory.map((item) => (
-                <div key={item.id} className="rounded-lg border border-sand-200 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-medium">{formatEnum(item.itemType)}</p>
-                      <p className="mt-1 text-sm text-sand-700">Quantity {item.quantity}</p>
-                    </div>
-                    <Pill tone={item.issued ? statusTone("VALID") : statusTone("PENDING")}>{item.issued ? "Issued" : "Pending"}</Pill>
-                  </div>
-                </div>
-              ))}
             </div>
           </Panel>
           <Panel title="Vehicle care">

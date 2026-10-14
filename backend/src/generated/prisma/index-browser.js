@@ -242,7 +242,11 @@ exports.Prisma.DriverScalarFieldEnum = {
   passportExpiry: 'passportExpiry',
   passportStatus: 'passportStatus',
   driverSelfieExpiry: 'driverSelfieExpiry',
-  driverSelfieStatus: 'driverSelfieStatus'
+  driverSelfieStatus: 'driverSelfieStatus',
+  terminatedAt: 'terminatedAt',
+  terminationClearedAt: 'terminationClearedAt',
+  terminationClearedById: 'terminationClearedById',
+  terminationClearanceNote: 'terminationClearanceNote'
 };
 
 exports.Prisma.DriverRestrictionScalarFieldEnum = {
@@ -2352,7 +2356,9 @@ exports.Prisma.DriverOrderByRelevanceFieldEnum = {
   civilIdStatus: 'civilIdStatus',
   policeClearanceStatus: 'policeClearanceStatus',
   passportStatus: 'passportStatus',
-  driverSelfieStatus: 'driverSelfieStatus'
+  driverSelfieStatus: 'driverSelfieStatus',
+  terminationClearedById: 'terminationClearedById',
+  terminationClearanceNote: 'terminationClearanceNote'
 };
 
 exports.Prisma.DriverRestrictionOrderByRelevanceFieldEnum = {

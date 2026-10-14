@@ -42,6 +42,10 @@ import type {
   RecordSettlementBody,
   DocScope,
   DriverStateAction,
+  BulkDriverAction,
+  BulkDriverResponse,
+  OrderRoute,
+  TerminationClearanceResponse,
   DriverTrackingRow,
   ForecastSeries,
   FreezeTarget,
@@ -312,6 +316,8 @@ export const deliveryOrdersApi = {
   getById: (id: string) => get<DeliveryOrder>(`/api/delivery-orders/${id}`),
   timeline: (id: string) =>
     get<DeliveryOrderEvent[] | { data: DeliveryOrderEvent[] }>(`/api/delivery-orders/${id}/timeline`),
+  /** Revision 24 #13: pickup + dropoff pins and the driver's GPS path. */
+  route: (id: string) => get<OrderRoute>(`/api/delivery-orders/${id}/route`),
   /** Candidate drivers for manual (re)assignment — consumed by the reassign flow. */
   candidates: (id: string) =>
     get<DispatchCandidate[] | { data: DispatchCandidate[] }>(`/api/delivery-orders/${id}/candidates`),
@@ -640,6 +646,12 @@ export const driverTrackingApi = {
     get<{ rows: DriverTrackingRow[]; windowDays: number }>("/api/drivers/tracking", params),
   setState: (driverId: string, action: DriverStateAction, reason?: string) =>
     post<unknown>(`/api/drivers/${driverId}/state`, { action, reason }),
+  /** Revision 24 #6: one verb, many drivers; a row per driver comes back. */
+  bulkSetState: (body: { driverIds: string[]; action: BulkDriverAction; reason?: string; periodDays?: number }) =>
+    post<BulkDriverResponse>("/api/drivers/state/bulk", body),
+  /** Revision 24 #16: tick the equipment clearance on a terminated driver. */
+  clearTermination: (driverId: string, note?: string) =>
+    post<TerminationClearanceResponse>(`/api/drivers/${driverId}/termination-clearance`, note ? { note } : {}),
 };
 
 // ── /api/vendor (vendor-portal scope — vendorId comes from the JWT) ──────
