@@ -180,14 +180,17 @@ describe("selectCandidates", () => {
     expect(candidates.map((c: any) => c.driverId)).toEqual(["drv-car"]);
   });
 
-  test("busy exclusion: driver with an ASSIGNED/PICKED_UP order is skipped", async () => {
+  // Revision 24 (#5): a busy driver is no longer skipped, he ranks after
+  // every free one however near he is.
+  test("busy driver: ranked after the free one even though he is nearer", async () => {
     prime({
       sessions: [mkSession("drv-busy", 0.009), mkSession("drv-free", 0.018)],
       busy: [{ driverId: "drv-busy" }],
     });
 
     const candidates = await selectCandidates(TENANT, ORDER_ID);
-    expect(candidates.map((c: any) => c.driverId)).toEqual(["drv-free"]);
+    expect(candidates.map((c: any) => c.driverId)).toEqual(["drv-free", "drv-busy"]);
+    expect(candidates.map((c: any) => c.tier)).toEqual(["FREE", "BUSY"]);
   });
 
   test("open-offer exclusion: driver with an OFFERED offer on ANY order is skipped", async () => {
@@ -1076,5 +1079,139 @@ describe("releaseDriverToOnline (batching guard)", () => {
         data: { availability: "ONLINE" },
       }),
     );
+  });
+});
+
+// ─── Revision 24 (#5): offer to working drivers before giving up ────────────
+
+describe("revision 24 #5: the busy tier", () => {
+  const leg = (driverId: string, status = "ASSIGNED") => ({
+    driverId,
+    status,
+    dropoffLat: D("29.40"),
+    dropoffLng: D("47.99"),
+  });
+
+  test("the pool reads BUSY sessions as well as ONLINE ones", async () => {
+    prime({ sessions: [mkSession("drv-1", 0.009)] });
+    await selectCandidates(TENANT, ORDER_ID);
+    const where = prisma.courierOnlineSession.findMany.mock.calls[0][0].where;
+    expect(where.availability).toEqual({ in: ["ONLINE", "BUSY"] });
+  });
+
+  test("with nobody free, working drivers are offered: fewest live orders first, then nearest", async () => {
+    prime({
+      sessions: [
+        mkSession("drv-two-near", 0.005),
+        mkSession("drv-one-far", 0.03),
+        mkSession("drv-one-near", 0.01),
+      ],
+      busy: [leg("drv-two-near"), leg("drv-two-near"), leg("drv-one-far"), leg("drv-one-near")],
+    });
+
+    const candidates = await selectCandidates(TENANT, ORDER_ID);
+    expect(candidates.map((c: any) => c.driverId)).toEqual([
+      "drv-one-near",
+      "drv-one-far",
+      "drv-two-near",
+    ]);
+    expect(candidates.every((c: any) => c.tier === "BUSY")).toBe(true);
+    expect(candidates.map((c: any) => c.activeOrders)).toEqual([1, 1, 2]);
+  });
+
+  test("a driver at the cap (default 3) is never offered another", async () => {
+    prime({
+      sessions: [mkSession("drv-full", 0.005), mkSession("drv-two", 0.02)],
+      busy: [leg("drv-full"), leg("drv-full"), leg("drv-full"), leg("drv-two"), leg("drv-two")],
+    });
+
+    const candidates = await selectCandidates(TENANT, ORDER_ID);
+    expect(candidates.map((c: any) => c.driverId)).toEqual(["drv-two"]);
+  });
+
+  test("the cap is a tenant setting: 1 turns the busy tier off", async () => {
+    prime({
+      sessions: [mkSession("drv-busy", 0.005)],
+      busy: [leg("drv-busy")],
+    });
+    prisma.fulfillmentSettings.findUnique.mockResolvedValue({ maxActiveOrdersPerDriver: 1 });
+
+    expect(await selectCandidates(TENANT, ORDER_ID)).toEqual([]);
+  });
+
+  test("a driver taking a failed order back to the shop is not offered anything", async () => {
+    prime({
+      sessions: [mkSession("drv-returning", 0.005)],
+      busy: [leg("drv-returning", "FAILED")],
+    });
+
+    expect(await selectCandidates(TENANT, ORDER_ID)).toEqual([]);
+  });
+
+  test("the busy tier still respects the search radius", async () => {
+    prime({
+      sessions: [mkSession("drv-busy-far", 0.09)], // ~10 km, outside 8 km
+      busy: [leg("drv-busy-far")],
+    });
+
+    expect(await selectCandidates(TENANT, ORDER_ID)).toEqual([]);
+  });
+
+  test("an offer goes to the busy driver instead of the order reaching NO_DRIVER", async () => {
+    prime({
+      sessions: [mkSession("drv-busy", 0.009)],
+      busy: [leg("drv-busy")],
+    });
+
+    await startDispatch(TENANT, ORDER_ID);
+
+    expect(prisma.dispatchOffer.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ driverId: "drv-busy", status: "OFFERED" }),
+      }),
+    );
+    // No NO_DRIVER transition was attempted.
+    const toNoDriver = prisma.deliveryOrder.updateMany.mock.calls.find(
+      (call: any[]) => call[0]?.data?.status === "NO_DRIVER",
+    );
+    expect(toNoDriver).toBeUndefined();
+  });
+
+  test("round exhaustion parks the order at NO_DRIVER with a retry clock, never CANCELLED", async () => {
+    prime({ order: { offerRound: 8 }, sessions: [mkSession("drv-1", 0.009)] });
+
+    await startDispatch(TENANT, ORDER_ID);
+
+    const statuses = prisma.deliveryOrder.updateMany.mock.calls.map((c: any[]) => c[0]?.data?.status);
+    expect(statuses).toContain("NO_DRIVER");
+    expect(statuses).not.toContain("CANCELLED");
+    const stamped = prisma.deliveryOrder.updateMany.mock.calls.find(
+      (c: any[]) => c[0]?.data?.nextRedispatchAt instanceof Date,
+    );
+    expect(stamped).toBeDefined();
+  });
+
+  test("batching a sibling onto a busy driver is skipped when it would pass the cap", async () => {
+    prime({
+      sessions: [mkSession("drv-two", 0.009)],
+      busy: [leg("drv-two"), leg("drv-two")],
+    });
+
+    await startDispatch(TENANT, ORDER_ID);
+
+    // One offer (the primary), and no sibling search at all: two live orders
+    // plus a batch of two would make four against a cap of three.
+    expect(prisma.dispatchOffer.create).toHaveBeenCalledTimes(1);
+    const siblingSearches = () =>
+      prisma.deliveryOrder.findMany.mock.calls.filter(
+        (c: any[]) => c[0]?.where?.status === "DISPATCHING" && c[0]?.where?.id?.not === ORDER_ID,
+      );
+    expect(siblingSearches()).toHaveLength(0);
+
+    // Control: a free driver does get the sibling search.
+    jest.clearAllMocks();
+    prime({ sessions: [mkSession("drv-free", 0.009)] });
+    await startDispatch(TENANT, ORDER_ID);
+    expect(siblingSearches()).toHaveLength(1);
   });
 });

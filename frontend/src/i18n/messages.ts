@@ -1638,6 +1638,7 @@ export interface Messages {
     quoteUnserviceable: string;
     placeOrder: string;
     orderPlaced: string;
+    dropoffOutOfArea: string;
     orderDetail: string;
     notFound: string;
     backToBoard: string;
@@ -1750,6 +1751,11 @@ export interface Messages {
     cancelConfirmTitle: string;
     cancelConfirmMessage: string;
     cancelReason: string;
+    closeFromReview: string;
+    closeReviewTitle: string;
+    closeReviewMessage: string;
+    closeReviewReason: string;
+    candidateCarrying: string;
     outcomeReason: string;
     reasonMissing: string;
     reasonMissingHint: string;
@@ -4857,6 +4863,7 @@ export const en: Messages = {
     quoteUnserviceable: "This dropoff is outside the serviceable area.",
     placeOrder: "Place order",
     orderPlaced: "Order placed — dispatching a driver",
+    dropoffOutOfArea: "This address is outside the delivery area, so the order was not placed. Check the pin on the map.",
     orderDetail: "Order detail",
     notFound: "Order not found.",
     backToBoard: "Back to board",
@@ -4967,6 +4974,11 @@ export const en: Messages = {
     cancelConfirmTitle: "Cancel this order?",
     cancelConfirmMessage: "The customer and vendor flows stop here. This cannot be undone.",
     cancelReason: "Cancellation reason",
+    closeFromReview: "Close order",
+    closeReviewTitle: "Close this order?",
+    closeReviewMessage: "It leaves Needs review and is recorded as cancelled with this reason. The customer is not messaged and no money moves.",
+    closeReviewReason: "Dropoff outside the delivery area",
+    candidateCarrying: "Carrying {count}",
     outcomeReason: "Reason",
     reasonMissing: "No reason recorded",
     reasonMissingHint: "No reason was recorded. Add one so the merchant can be told what happened.",
@@ -8049,6 +8061,7 @@ export const ar: Messages = {
     quoteUnserviceable: "نقطة التسليم خارج نطاق الخدمة.",
     placeOrder: "إرسال الطلب",
     orderPlaced: "تم إرسال الطلب — جارٍ إسناد سائق",
+    dropoffOutOfArea: "هذا العنوان خارج منطقة التوصيل، فما انرسل الطلب. تأكد من الموقع على الخريطة.",
     orderDetail: "تفاصيل الطلب",
     notFound: "الطلب غير موجود.",
     backToBoard: "العودة إلى اللوحة",
@@ -8159,6 +8172,11 @@ export const ar: Messages = {
     cancelConfirmTitle: "إلغاء هذا الطلب؟",
     cancelConfirmMessage: "تتوقف رحلة العميل والمطعم هنا. لا يمكن التراجع عن هذا الإجراء.",
     cancelReason: "سبب الإلغاء",
+    closeFromReview: "إغلاق الطلب",
+    closeReviewTitle: "إغلاق هذا الطلب؟",
+    closeReviewMessage: "يطلع من قائمة تحتاج مراجعة ويتسجل ملغي بهذا السبب. ما يوصل العميل أي رسالة وما تتحرك أي مبالغ.",
+    closeReviewReason: "موقع التسليم خارج منطقة التوصيل",
+    candidateCarrying: "معه {count}",
     outcomeReason: "السبب",
     reasonMissing: "لم يُسجَّل سبب",
     reasonMissingHint: "لم يُسجَّل أي سبب. سجّل سبباً حتى يمكن إبلاغ المطعم بما حدث.",

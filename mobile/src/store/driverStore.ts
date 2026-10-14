@@ -127,7 +127,15 @@ export interface DriverStoreState {
   lockout: Lockout;
   clockSkewMs: number;
   activeOffer: AgentOfferSummary | null;
+  /** The order the driver is working on now (the delivery screens read this). */
   activeOrder: ActiveOrder | null;
+  /**
+   * Revision 24 (#5): the driver's OTHER live orders. Dispatch may offer a
+   * working driver a second order once nobody free is left, and a batch was
+   * always two; the app works one at a time and lists the rest on Home and the
+   * delivery screen, where the driver can switch to one.
+   */
+  otherOrders: ActiveOrder[];
   wallet: AgentWalletSummary | null;
   pendingEventCount: number;
   supervisorPhone: string | null;
@@ -145,7 +153,14 @@ export interface DriverStoreState {
   offerResolved: (offerId: string) => void;
   adoptOrder: (order: AgentActiveOrder, serverTime?: string) => void;
   advanceOrder: (stage: OrderStage) => void;
-  completeOrder: () => void;
+  /**
+   * The order with this id is finished (delivered or handed back). The next
+   * live order, if any, becomes the active one. Without an id, the active
+   * order is the one finished.
+   */
+  completeOrder: (orderId?: string) => void;
+  /** Switch which live order the delivery screens show. */
+  focusOrder: (orderId: string) => void;
   setWallet: (wallet: AgentWalletSummary | null | undefined) => void;
   setPendingEventCount: (n: number) => void;
   reset: () => void;
@@ -162,6 +177,7 @@ const initialState = {
   clockSkewMs: 0,
   activeOffer: null,
   activeOrder: null,
+  otherOrders: [] as ActiveOrder[],
   wallet: null,
   pendingEventCount: 0,
   supervisorPhone: null,
@@ -186,20 +202,37 @@ export const useDriverStore = create<DriverStoreState>()(
         const availability =
           s.availabilitySync === "pending" ? s.availability : (server.availability ?? s.availability);
 
+        // Every live order the server knows (revision 24 #5). An older backend
+        // sends only `activeOrder`, which reads as a list of one.
+        const serverList: AgentActiveOrder[] =
+          Array.isArray(server.activeOrders) && server.activeOrders.length > 0
+            ? server.activeOrders
+            : server.activeOrder
+              ? [server.activeOrder]
+              : [];
+
+        // Which one is on screen: the one the driver is already working on if
+        // it is still live, else the one the server says to work on next.
+        const focus =
+          (s.activeOrder ? serverList.find((o) => o.id === s.activeOrder!.id) : undefined) ??
+          server.activeOrder ??
+          serverList[0] ??
+          null;
+
         // Active order reconcile: adopt server, but never regress an
         // optimistically-advanced stage (its outbox event may not have landed).
         let activeOrder: ActiveOrder | null = null;
-        if (server.activeOrder) {
-          const incomingStage = serverStage(server.activeOrder);
-          if (s.activeOrder && s.activeOrder.id === server.activeOrder.id) {
+        if (focus) {
+          const incomingStage = serverStage(focus);
+          if (s.activeOrder && s.activeOrder.id === focus.id) {
             const keepLocal = stageIndex(s.activeOrder.stage) > stageIndex(incomingStage);
             activeOrder = {
               ...s.activeOrder,
-              ...server.activeOrder,
+              ...focus,
               stage: keepLocal ? s.activeOrder.stage : incomingStage,
             };
           } else {
-            activeOrder = { ...server.activeOrder, stage: incomingStage };
+            activeOrder = { ...focus, stage: incomingStage };
           }
         } else if (s.activeOrder && s.pendingEventCount > 0) {
           // Unsynced local events still reference this order — keep it until
@@ -207,12 +240,24 @@ export const useDriverStore = create<DriverStoreState>()(
           activeOrder = s.activeOrder;
         }
 
-        // Offer: an active order always supersedes an offer, and offers we
-        // already resolved locally (reject/expire in flight) never come back.
-        // Preserve object identity when the same offer id repeats so countdown
-        // renders stay smooth.
+        const otherOrders: ActiveOrder[] = serverList
+          .filter((o) => o.id !== activeOrder?.id)
+          .map((o) => {
+            const local = s.otherOrders.find((x) => x.id === o.id);
+            const incoming = serverStage(o);
+            const stage =
+              local && stageIndex(local.stage) > stageIndex(incoming) ? local.stage : incoming;
+            return { ...o, stage };
+          });
+
+        // Offer: offers we already resolved locally (reject/expire in flight)
+        // never come back. Preserve object identity when the same offer id
+        // repeats so countdown renders stay smooth. Revision 24 (#5): an offer
+        // may now arrive while an order is in hand. The server only sends one
+        // to a busy driver on purpose (nobody free was left), so the app shows
+        // it rather than second-guessing it.
         let activeOffer: AgentOfferSummary | null = null;
-        if (!activeOrder && server.activeOffer && !s.resolvedOfferIds.includes(server.activeOffer.id)) {
+        if (server.activeOffer && !s.resolvedOfferIds.includes(server.activeOffer.id)) {
           activeOffer =
             s.activeOffer && s.activeOffer.id === server.activeOffer.id
               ? s.activeOffer
@@ -230,6 +275,7 @@ export const useDriverStore = create<DriverStoreState>()(
           lockout: normalizeLockout(server.lockout, wallet),
           activeOffer,
           activeOrder,
+          otherOrders,
           wallet,
           supervisorPhone: server.supervisorPhone ?? s.supervisorPhone,
           persistedActiveOrderId: activeOrder?.id ?? null,
@@ -283,7 +329,7 @@ export const useDriverStore = create<DriverStoreState>()(
 
       offerReceived: (offer) => {
         const s = get();
-        if (s.activeOrder) return; // busy — offer is stale
+        // A busy driver may be offered a second order (revision 24 #5).
         if (s.resolvedOfferIds.includes(offer.id)) return; // already handled
         if (s.activeOffer && s.activeOffer.id === offer.id) return; // idempotent
         set({ activeOffer: offer });
@@ -300,12 +346,26 @@ export const useDriverStore = create<DriverStoreState>()(
       },
 
       adoptOrder: (order, serverTime) => {
+        const s = get();
+        const adopted: ActiveOrder = { ...order, stage: serverStage(order) };
+        const skew = serverTime ? { clockSkewMs: computeClockSkewMs(serverTime) } : {};
+        // Accepted while already carrying one (revision 24 #5): the order in
+        // hand stays on screen and the new one joins the list behind it.
+        if (s.activeOrder && s.activeOrder.id !== order.id) {
+          set({
+            activeOffer: null,
+            otherOrders: [...s.otherOrders.filter((o) => o.id !== order.id), adopted],
+            availability: "BUSY",
+            ...skew,
+          });
+          return;
+        }
         set({
           activeOffer: null,
-          activeOrder: { ...order, stage: serverStage(order) },
+          activeOrder: adopted,
           availability: "BUSY",
           persistedActiveOrderId: order.id,
-          ...(serverTime ? { clockSkewMs: computeClockSkewMs(serverTime) } : {}),
+          ...skew,
         });
       },
 
@@ -316,12 +376,44 @@ export const useDriverStore = create<DriverStoreState>()(
         set({ activeOrder: { ...s.activeOrder, stage } });
       },
 
-      completeOrder: () => {
+      completeOrder: (orderId) => {
+        const s = get();
+        const id = orderId ?? s.activeOrder?.id;
+        // Finished one of the others (an outbox replay landing late): just
+        // drop it from the list.
+        if (id && s.activeOrder && s.activeOrder.id !== id) {
+          set({ otherOrders: s.otherOrders.filter((o) => o.id !== id) });
+          return;
+        }
+        const [next, ...rest] = s.otherOrders.filter((o) => o.id !== id);
+        if (next) {
+          // More work in hand: straight on to the next order, still BUSY.
+          set({
+            activeOrder: next,
+            otherOrders: rest,
+            availability: "BUSY",
+            persistedActiveOrderId: next.id,
+          });
+          return;
+        }
         set({
           activeOrder: null,
+          otherOrders: [],
           activeOffer: null,
           availability: "ONLINE",
           persistedActiveOrderId: null,
+        });
+      },
+
+      focusOrder: (orderId) => {
+        const s = get();
+        if (!s.activeOrder || s.activeOrder.id === orderId) return;
+        const target = s.otherOrders.find((o) => o.id === orderId);
+        if (!target) return;
+        set({
+          activeOrder: target,
+          otherOrders: [s.activeOrder, ...s.otherOrders.filter((o) => o.id !== orderId)],
+          persistedActiveOrderId: target.id,
         });
       },
 

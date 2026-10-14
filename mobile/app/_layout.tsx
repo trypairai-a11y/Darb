@@ -81,10 +81,13 @@ function DeliveryLoopController() {
       .catch(() => {});
   }, []);
 
-  // Offer → present the locked modal.
+  // Offer → present the locked modal. Revision 24 (#5): also while an order
+  // is in hand, since dispatch now offers busy drivers a second one when
+  // nobody free is left. After accept or reject the modal closes back onto
+  // the delivery in progress.
   useEffect(() => {
     const path = pathnameRef.current;
-    if (activeOffer && !activeOrder && path !== "/offer") {
+    if (activeOffer && path !== "/offer") {
       router.push("/offer");
     }
   }, [activeOffer?.id]);

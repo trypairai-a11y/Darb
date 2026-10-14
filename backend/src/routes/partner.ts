@@ -7,6 +7,12 @@
  * returns 201 with status REJECTED + rejectionReason — the merchant system
  * inspects the status. Idempotency: externalRef is unique per vendor; a
  * replay returns the existing order with 200.
+ *
+ * The one exception (revision 24 #4): a drop outside the delivery area is
+ * refused with 422 { code: "DROPOFF_OUT_OF_AREA", status: "REJECTED",
+ * rejectionReason: "OUT_OF_ZONE_DROPOFF" } and NOTHING is saved, so it never
+ * reaches dispatch or the Needs review queue. A corrected pin can be resent
+ * with the same externalRef.
  */
 import { Router, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
@@ -16,6 +22,7 @@ import { logger } from "../config/logger";
 import { partnerAuth } from "../middleware/partnerAuth";
 import { validateBody } from "../utils/validate";
 import { createDeliveryOrder } from "../services/orderService";
+import { DropoffOutOfAreaError, outOfAreaResponseBody } from "../services/orderIntakeErrors";
 import { DeliveryOrder } from "../generated/prisma";
 
 const router = Router();
@@ -124,9 +131,14 @@ router.post(
         scheduledAt: body.scheduledAt,
         metadata: body.metadata,
         actor: { type: "VENDOR", id: vendorId, name: "partner-api" },
+        refuseOutOfArea: true,
       });
       res.status(201).json(partnerView(order));
     } catch (err) {
+      if (err instanceof DropoffOutOfAreaError) {
+        res.status(422).json(outOfAreaResponseBody());
+        return;
+      }
       // externalRef unique race: another replica created it between the
       // pre-check and the insert — fetch and return it.
       const raced = await prisma.deliveryOrder.findFirst({

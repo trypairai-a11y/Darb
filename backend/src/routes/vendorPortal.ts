@@ -23,6 +23,11 @@ import {
 } from "../services/orderService";
 import { OrderStateConflictError } from "../services/orderStateMachine";
 import { quoteDelivery } from "../services/pricingService";
+import {
+  DropoffOutOfAreaError,
+  OUT_OF_AREA_MESSAGE,
+  outOfAreaResponseBody,
+} from "../services/orderIntakeErrors";
 import { RefundError, requestRefund } from "../services/wallet/refundService";
 import { getVendorBranchBalances } from "../services/wallet/vendorBranchBalanceService";
 // Vendor-portal note #3 (2026-09-15) — one wallet, or one per branch.
@@ -883,6 +888,7 @@ router.post(
             dropoff: { zoneId: p.zoneId },
             scheduledAt: p.scheduledAt,
             actor: { type: "VENDOR", id: req.user!.userId, name: req.user!.email },
+            refuseOutOfArea: true,
           });
           results.push({
             row: p.row,
@@ -896,6 +902,12 @@ router.post(
             error: order.status === "REJECTED" ? (order.rejectionReason ?? undefined) : undefined,
           });
         } catch (err: any) {
+          // Revision 24 (#4): an out-of-area drop is refused and saves no row,
+          // so the sheet reports it the way it reports any other unusable row.
+          if (err instanceof DropoffOutOfAreaError) {
+            results.push({ row: p.row, ok: false, error: OUT_OF_AREA_MESSAGE });
+            continue;
+          }
           results.push({ row: p.row, ok: false, error: err?.message ?? "Could not be created" });
         }
       }
@@ -1022,6 +1034,8 @@ router.get("/orders/:id", requireVendorTab("ORDERS"), async (req: Request, res: 
  *       vendorId always comes from the JWT. The branch must belong to this
  *       vendor. Returns the persisted row whatever its status — a quote
  *       rejection (or paused vendor) yields a REJECTED row, not an error.
+ *       A drop outside the delivery area is the exception (revision 24 #4):
+ *       422 DROPOFF_OUT_OF_AREA and nothing is saved.
  */
 router.post(
   "/orders",
@@ -1047,9 +1061,14 @@ router.post(
         metadata: body.metadata,
         requiresCarOnly: body.requiresCarOnly === true,
         actor: { type: "VENDOR", id: req.user!.userId, name: req.user!.email },
+        refuseOutOfArea: true,
       });
       res.status(201).json(order);
     } catch (err: any) {
+      if (err instanceof DropoffOutOfAreaError) {
+        res.status(422).json(outOfAreaResponseBody());
+        return;
+      }
       if (/not found/i.test(err?.message ?? "")) {
         res.status(404).json({ error: err.message });
         return;

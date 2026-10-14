@@ -68,6 +68,8 @@ export default function HomeScreen() {
   const availability = useDriverStore((s) => s.availability);
   const lockout = useDriverStore((s) => s.lockout);
   const activeOrder = useDriverStore((s) => s.activeOrder);
+  const otherOrders = useDriverStore((s) => s.otherOrders);
+  const focusOrder = useDriverStore((s) => s.focusOrder);
   const supervisorPhone = useDriverStore((s) => s.supervisorPhone);
 
   const [refreshing, setRefreshing] = useState(false);
@@ -235,6 +237,35 @@ export default function HomeScreen() {
           </TouchableOpacity>
         ) : null}
 
+        {/* Revision 24 (#5): the driver's other live orders. Tapping one makes
+            it the order on the delivery screen. */}
+        {activeOrder && otherOrders.length > 0
+          ? otherOrders.map((o) => (
+              <TouchableOpacity
+                key={o.id}
+                style={styles.otherOrder}
+                activeOpacity={0.85}
+                onPress={() => {
+                  focusOrder(o.id);
+                  router.replace("/delivery");
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={[t.footnote, { color: c.secondaryLabel }]}>{tr("home.also_carrying")}</Text>
+                  <Text style={[t.headline, { marginTop: 1 }]} numberOfLines={1}>
+                    {o.pickup?.name || o.orderNumber || o.id}
+                  </Text>
+                  {o.orderNumber ? (
+                    <Text style={[t.footnote, { color: c.secondaryLabel }]} numberOfLines={1}>
+                      {o.orderNumber}
+                    </Text>
+                  ) : null}
+                </View>
+                <ChevronRight size={20} color={c.secondaryLabel} />
+              </TouchableOpacity>
+            ))
+          : null}
+
         {/*
           ─── Demand heat map ───
 
@@ -308,6 +339,11 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   resume: {
     marginTop: space.md, backgroundColor: c.tint, borderRadius: radius.card, padding: space.base,
     flexDirection: "row", alignItems: "center", gap: space.md, ...continuous, ...shadow.glow,
+  },
+  otherOrder: {
+    marginTop: space.sm, backgroundColor: c.groupedSecondary, borderRadius: radius.card, padding: space.base,
+    flexDirection: "row", alignItems: "center", gap: space.md,
+    borderWidth: 1, borderColor: c.hairline, ...continuous,
   },
   permRow: {
     flexDirection: "row", alignItems: "center", gap: space.md, marginTop: space.lg,

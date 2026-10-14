@@ -212,6 +212,35 @@ describe("runDemoCouriers", () => {
     expect(result.pickedUp).toBe(1);
   });
 
+  // Revision 24 (#18): ARRIVED was never collected, so demo orders sat
+  // "Arrived at shop" for 76 days.
+  test("an order standing at the counter (ARRIVED) is collected too, from ARRIVED", async () => {
+    enable();
+    prisma.dispatchOffer.findMany.mockResolvedValue([]);
+    prisma.deliveryOrder.findMany
+      .mockResolvedValueOnce([
+        {
+          id: "o-9",
+          orderNumber: "DRB-9",
+          vendorId: "v-1",
+          driverId: "drv-1",
+          status: "ARRIVED",
+          assignedAt: secondsAgo(600),
+        },
+      ])
+      .mockResolvedValueOnce([]);
+
+    const result = await runDemoCouriers(NOW);
+
+    const where = prisma.deliveryOrder.findMany.mock.calls[0][0].where;
+    expect(where.status).toEqual({ in: ["ASSIGNED", "ARRIVED"] });
+    expect(transitionOrder).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ orderId: "o-9", from: "ARRIVED", to: "PICKED_UP" }),
+    );
+    expect(result.pickedUp).toBe(1);
+  });
+
   test("a delivered COD order hands over the cash it was carrying", async () => {
     enable();
     prisma.dispatchOffer.findMany.mockResolvedValue([]);

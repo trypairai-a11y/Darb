@@ -108,6 +108,8 @@ export interface FulfillmentSettings {
   maxOfferRounds: number;
   searchRadiusKm: number;
   gpsStaleAfterSec: number;
+  /** Revision 24 (#5): live orders one driver may hold (busy-tier cap). */
+  maxActiveOrdersPerDriver?: number;
 }
 
 export interface ZoneQuote {
@@ -409,6 +411,9 @@ export interface DispatchCandidate {
   availability?: DriverAvailability;
   vehicleType?: string | null;
   cashOnHandKwd?: Kwd;
+  /** Revision 24 (#5): live orders the driver already carries, and which pool he came from. */
+  activeOrders?: number;
+  tier?: "FREE" | "FINISHING" | "BUSY";
 }
 
 // ── Wallets ──────────────────────────────────────────────────────────────

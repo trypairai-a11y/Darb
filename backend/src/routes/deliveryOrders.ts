@@ -38,6 +38,7 @@ import { enqueueDispatchStart } from "../queues/dispatchQueue";
 import { selectCandidates } from "../services/dispatch/dispatchEngine";
 import { DeliveryOrderStatus } from "../generated/prisma";
 import { randomInt } from "crypto";
+import { DropoffOutOfAreaError, outOfAreaResponseBody } from "../services/orderIntakeErrors";
 import { isR2Configured, presignGetUrl } from "../services/r2Service";
 import { orderRoute } from "../services/orderRouteService";
 
@@ -50,9 +51,13 @@ const DELIVERY_ORDER_STATUSES = [
   "PICKED_UP", "DELIVERED", "FAILED", "CANCELLED", "RETURNED",
 ] as const;
 
-/** Supervisor cancel: any pre-DELIVERED state (§A2). */
+/**
+ * Supervisor cancel: any pre-DELIVERED state (§A2). REJECTED joined in
+ * revision 24 (#4): it is how an order refused at intake leaves Needs review
+ * when nobody is going to fix it.
+ */
 const SUPERVISOR_CANCELLABLE: DeliveryOrderStatus[] = [
-  "CREATED", "DISPATCHING", "NO_DRIVER", "ASSIGNED", "ARRIVED", "PICKED_UP",
+  "CREATED", "REJECTED", "DISPATCHING", "NO_DRIVER", "ASSIGNED", "ARRIVED", "PICKED_UP",
 ];
 
 /** Rejection reasons a dropoff fix can cure (§A8 PATCH /:id/dropoff). */
@@ -129,6 +134,10 @@ function staffActor(req: Request): OrderActor {
 }
 
 function handleOrderError(res: Response, err: unknown): void {
+  if (err instanceof DropoffOutOfAreaError) {
+    res.status(422).json(outOfAreaResponseBody());
+    return;
+  }
   if (err instanceof OrderStateConflictError) {
     res.status(409).json({ error: err.message });
     return;
@@ -284,6 +293,9 @@ router.post(
         scheduledAt: body.scheduledAt,
         metadata: body.metadata,
         actor: staffActor(req),
+        // Revision 24 (#4): out of the delivery area is refused with 422 and
+        // never saved; handleOrderError maps it.
+        refuseOutOfArea: true,
       });
       // The row is returned whatever its status — REJECTED included; the
       // client inspects status/rejectionReason.

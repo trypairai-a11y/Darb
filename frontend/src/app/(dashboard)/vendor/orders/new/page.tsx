@@ -138,9 +138,13 @@ export default function VendorNewOrderPage() {
       await queryClient.invalidateQueries({ queryKey: ["darb", "vendor", "orders"] });
       router.push("/vendor");
     } catch (err) {
+      const data = (err as { response?: { data?: { error?: string; code?: string } } })?.response?.data;
+      // Revision 24 (#4): an out-of-area drop is refused at the door, and
+      // says so in the merchant's own language.
       const msg =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
-        t("toast.failedSave");
+        data?.code === "DROPOFF_OUT_OF_AREA"
+          ? t("vendorPortal.dropoffOutOfArea")
+          : data?.error ?? t("toast.failedSave");
       toast.error(msg);
       setSubmitting(false);
     }

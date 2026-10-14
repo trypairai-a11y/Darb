@@ -125,7 +125,9 @@ const EN: Record<string, string> = {
   "home.waiting_sub": "Stay near your zone. New offers ring loudly.",
   "home.offline_hint": "Go online to start receiving delivery offers.",
   "home.offline_in_settings": "You are offline. Go online from Settings to receive offers.",
-  "home.busy_hint": "Finish your current delivery to receive new offers.",
+  // Revision 24 (#5): a busy driver can be offered another order once nobody
+  // free is left, so "finish first" is no longer true.
+  "home.busy_hint": "On a delivery. You may still be offered another order if nobody else is free.",
   "home.today": "Today",
   // The scope belongs in the label. A bare "Collected" beside "Cash on hand"
   // reads as two names for one number, which is exactly what a driver asked.
@@ -134,6 +136,7 @@ const EN: Record<string, string> = {
   "home.cash_on_hand": "Cash on hand",
   "home.cash_on_hand_hint": "Collected but not handed in yet, across all days",
   "home.resume_delivery": "Resume delivery",
+  "home.also_carrying": "Also carrying",
   "home.lockout_title": "Offers paused — cash over ceiling",
   "home.lockout_body": "Deposit your cash at the hub to resume receiving offers.",
   "home.permission_warning": "Location permission needed",
@@ -186,6 +189,8 @@ const EN: Record<string, string> = {
   "delivery.failed_link": "Delivery failed",
   "delivery.no_order": "No active delivery",
   "delivery.no_order_sub": "Go online from Home to receive offers.",
+  "delivery.other_orders": "Your other orders ({count})",
+  "delivery.switch_to": "Open",
 
   // ─── POD ───
   "pod.title": "Complete delivery",

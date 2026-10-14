@@ -76,6 +76,8 @@ export default function DeliveryScreen() {
   const styles = useMemo(() => makeStyles(c), [c]);
 
   const order = useDriverStore((s) => s.activeOrder);
+  const otherOrders = useDriverStore((s) => s.otherOrders);
+  const focusOrder = useDriverStore((s) => s.focusOrder);
   const advanceOrder = useDriverStore((s) => s.advanceOrder);
   const pendingEventCount = useDriverStore((s) => s.pendingEventCount);
   const [advancing, setAdvancing] = useState(false);
@@ -157,6 +159,37 @@ export default function DeliveryScreen() {
         </View>
 
         {order.slaDeadline ? <SlaBanner deadline={order.slaDeadline} /> : null}
+
+        {/* Revision 24 (#5): a driver can hold more than one order now. The
+            screen works one at a time; the rest are a tap away. */}
+        {otherOrders.length > 0 ? (
+          <View style={styles.otherOrders}>
+            <Text style={[t.footnote, { color: c.secondaryLabel }]}>
+              {tr("delivery.other_orders", { count: otherOrders.length })}
+            </Text>
+            {otherOrders.map((o) => (
+              <TouchableOpacity
+                key={o.id}
+                style={styles.otherRow}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                onPress={() => focusOrder(o.id)}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={t.subheadline} numberOfLines={1}>
+                    {o.pickup?.name || o.orderNumber || `#${o.id.slice(-6)}`}
+                  </Text>
+                  <Text style={[t.caption1, { color: c.secondaryLabel }]} numberOfLines={1}>
+                    {[o.orderNumber, o.stage === "RETURNING" ? tr("failed.return_title") : tr(`delivery.stage.${o.stage}`)]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </Text>
+                </View>
+                <Text style={[t.subheadline, { color: c.tint }]}>{tr("delivery.switch_to")}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        ) : null}
 
         {/* ─── Stepper ─── */}
         <View style={styles.stepper}>
@@ -335,6 +368,11 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     borderWidth: 1, borderColor: c.hairline, ...continuous,
   },
   failedLink: { alignSelf: "center", marginTop: space.lg, padding: space.sm },
+  otherOrders: {
+    marginTop: space.md, backgroundColor: c.groupedSecondary, borderRadius: radius.card, padding: space.base,
+    borderWidth: 1, borderColor: c.hairline, gap: space.sm, ...continuous,
+  },
+  otherRow: { flexDirection: "row", alignItems: "center", gap: space.md, paddingVertical: 4 },
   sos: {
     position: "absolute", right: space.lg, bottom: space.xxl, width: 60, height: 60, borderRadius: 30,
     backgroundColor: c.red, alignItems: "center", justifyContent: "center", ...shadow.floating,

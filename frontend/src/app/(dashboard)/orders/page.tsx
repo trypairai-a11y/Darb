@@ -312,6 +312,8 @@ export default function DeliveryOrdersPage() {
   // FAILED is the only status RETURNED may be reached from (orderStateMachine).
   // A returning order gets there through FAILED on the server in one step.
   const canReturn = canEdit && (order?.status === "FAILED" || returning);
+  // Revision 24 (#4): a refused order nobody will fix can leave Needs review.
+  const canCloseReview = canEdit && order?.status === "REJECTED";
 
   return (
     <div className="space-y-6">
@@ -513,6 +515,23 @@ export default function DeliveryOrdersPage() {
               </section>
             )}
 
+            {canCloseReview && (
+              <section className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCancelReason(t("dispatch.closeReviewReason"));
+                    setPending({ kind: "cancel" });
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3.5 h-9 text-xs font-medium rounded-pill bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                  data-testid="orders-close-review-button"
+                >
+                  <XCircle size={13} aria-hidden="true" />
+                  {t("dispatch.closeFromReview")}
+                </button>
+              </section>
+            )}
+
             {/* Candidates for reassign */}
             {reassigning && (
               <section>
@@ -542,11 +561,18 @@ export default function DeliveryOrdersPage() {
                               </span>
                             )}
                           </span>
-                          {c.distanceKm != null && (
-                            <span dir="ltr" className="text-xs text-sand-600 tabular-nums whitespace-nowrap">
-                              {Number(c.distanceKm).toFixed(1)} km
-                            </span>
-                          )}
+                          <span className="flex items-center gap-2 shrink-0">
+                            {(c.activeOrders ?? 0) > 0 && (
+                              <span className="px-2 h-5 inline-flex items-center rounded-pill bg-amber-50 text-amber-700 text-[11px] font-medium whitespace-nowrap">
+                                {t("dispatch.candidateCarrying").replace("{count}", String(c.activeOrders))}
+                              </span>
+                            )}
+                            {c.distanceKm != null && (
+                              <span dir="ltr" className="text-xs text-sand-600 tabular-nums whitespace-nowrap">
+                                {Number(c.distanceKm).toFixed(1)} km
+                              </span>
+                            )}
+                          </span>
                         </button>
                       </li>
                     ))}
@@ -646,8 +672,12 @@ export default function DeliveryOrdersPage() {
             aria-hidden="true"
           />
           <div className="relative bg-card rounded-2xl border border-sand-200 shadow-float w-full max-w-md p-6">
-            <h2 className="font-display text-xl text-sand-900">{t("dispatch.cancelConfirmTitle")}</h2>
-            <p className="mt-1.5 text-sm text-sand-700">{t("dispatch.cancelConfirmMessage")}</p>
+            <h2 className="font-display text-xl text-sand-900">
+              {order?.status === "REJECTED" ? t("dispatch.closeReviewTitle") : t("dispatch.cancelConfirmTitle")}
+            </h2>
+            <p className="mt-1.5 text-sm text-sand-700">
+              {order?.status === "REJECTED" ? t("dispatch.closeReviewMessage") : t("dispatch.cancelConfirmMessage")}
+            </p>
             <label className="block text-xs font-medium text-sand-700 mt-4 mb-1.5 uppercase tracking-wide">
               {t("dispatch.cancelReason")}
             </label>
@@ -672,7 +702,11 @@ export default function DeliveryOrdersPage() {
                 disabled={actionBusy}
                 className="px-5 h-10 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-pill transition-colors disabled:opacity-50"
               >
-                {actionBusy ? t("common.processing") : t("dispatch.cancelOrder")}
+                {actionBusy
+                  ? t("common.processing")
+                  : order?.status === "REJECTED"
+                    ? t("dispatch.closeFromReview")
+                    : t("dispatch.cancelOrder")}
               </button>
             </div>
           </div>

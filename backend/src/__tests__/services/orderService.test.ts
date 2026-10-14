@@ -415,6 +415,34 @@ describe("createDeliveryOrder", () => {
     expect(order.rejectionReason).toBe("OUT_OF_ZONE_DROPOFF");
   });
 
+  // Revision 24 (#4): an intake that can answer the merchant refuses an
+  // out-of-area drop outright, and saves nothing for Needs review.
+  test("refuseOutOfArea: an out-of-area drop throws DropoffOutOfAreaError and persists nothing", async () => {
+    const { DropoffOutOfAreaError } = require("../../services/orderIntakeErrors");
+    prisma.vendor.findFirst.mockResolvedValue(VENDOR);
+    prisma.vendorBranch.findFirst.mockResolvedValue({ id: "b-1" });
+    quoteDelivery.mockResolvedValue({ ok: false, reason: "OUT_OF_ZONE_DROPOFF" });
+
+    await expect(
+      createDeliveryOrder({ ...CREATE_INPUT, refuseOutOfArea: true }),
+    ).rejects.toBeInstanceOf(DropoffOutOfAreaError);
+    expect(prisma.deliveryOrder.create).not.toHaveBeenCalled();
+    expect(prisma.notification.createMany).not.toHaveBeenCalled();
+    expect(enqueueDispatchStart).not.toHaveBeenCalled();
+  });
+
+  test("refuseOutOfArea leaves every other rejection reason as a persisted REJECTED row", async () => {
+    prisma.vendor.findFirst.mockResolvedValue(VENDOR);
+    prisma.vendorBranch.findFirst.mockResolvedValue({ id: "b-1" });
+    quoteDelivery.mockResolvedValue({ ok: false, reason: "NO_COORDINATES" });
+    prisma.deliveryOrder.create.mockImplementation(async ({ data }: any) => ({ id: "ord-r", ...data }));
+    prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+
+    const order = await createDeliveryOrder({ ...CREATE_INPUT, refuseOutOfArea: true });
+    expect(order.status).toBe("REJECTED");
+    expect(order.rejectionReason).toBe("NO_COORDINATES");
+  });
+
   test("unknown vendor throws (caller error, nothing persisted)", async () => {
     prisma.vendor.findFirst.mockResolvedValue(null);
     await expect(createDeliveryOrder(CREATE_INPUT)).rejects.toThrow(/Vendor .* not found/);
@@ -633,6 +661,51 @@ describe("cancelOrder", () => {
     });
     expect(enqueueFoodicsWriteback).toHaveBeenCalledWith("ord-1", "CANCELLED");
     expect(order.status).toBe("CANCELLED");
+  });
+});
+
+describe("cancelOrder: closing a REJECTED order out of Needs review (revision 24 #4)", () => {
+  const REJECTED_ORDER = {
+    id: "ord-r",
+    tenantId: TENANT,
+    orderNumber: "DRB-ROYL-000042",
+    vendorId: "v-1",
+    driverId: null,
+    status: "REJECTED",
+    rejectionReason: "OUT_OF_ZONE_DROPOFF",
+  };
+
+  test("REJECTED → CANCELLED through the FSM, and the customer is not messaged", async () => {
+    const messaging = require("../../services/customerMessagingService");
+    const milestone = jest.spyOn(messaging, "fireCustomerMilestone").mockImplementation(() => undefined);
+    prisma.deliveryOrder.findFirst
+      .mockResolvedValueOnce(REJECTED_ORDER)
+      .mockResolvedValue({ ...REJECTED_ORDER, status: "CANCELLED" });
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 1 });
+    prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+    prisma.dispatchOffer.findMany.mockResolvedValue([]);
+
+    const order = await cancelOrder({
+      tenantId: TENANT,
+      orderId: "ord-r",
+      reason: "Dropoff outside the delivery area",
+      actor: ACTOR,
+      allowFrom: ["REJECTED"],
+    });
+
+    const transition = prisma.deliveryOrder.updateMany.mock.calls[0][0];
+    expect(transition.where).toEqual({ id: "ord-r", tenantId: TENANT, status: "REJECTED" });
+    expect(transition.data).toMatchObject({ status: "CANCELLED" });
+    expect(order.status).toBe("CANCELLED");
+    expect(milestone).not.toHaveBeenCalled();
+
+    // Control: the same spy does see an ordinary cancel's message.
+    prisma.deliveryOrder.findFirst
+      .mockResolvedValueOnce({ ...REJECTED_ORDER, status: "DISPATCHING" })
+      .mockResolvedValue({ ...REJECTED_ORDER, status: "CANCELLED" });
+    await cancelOrder({ tenantId: TENANT, orderId: "ord-r", reason: "shop closed", actor: ACTOR });
+    expect(milestone).toHaveBeenCalledWith("ord-r", TENANT, "CANCELLED");
+    milestone.mockRestore();
   });
 });
 

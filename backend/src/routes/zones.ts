@@ -97,6 +97,9 @@ const settingsSchema = z.object({
   batchingEnabled: z.boolean().optional(),
   batchMaxDropKm: z.number().positive().max(20).optional(),
   batchMaxOrders: z.number().int().min(2).max(5).optional(),
+  // Revision 24 (#5): live orders one driver may hold once busy drivers are
+  // offered work. 1 = free drivers only.
+  maxActiveOrdersPerDriver: z.number().int().min(1).max(6).optional(),
 });
 
 // ─── Polygon normalization ──────────────────────────────────────────────────
@@ -426,6 +429,9 @@ router.put(
       if (body.batchingEnabled !== undefined) data.batchingEnabled = body.batchingEnabled;
       if (body.batchMaxDropKm !== undefined) data.batchMaxDropKm = body.batchMaxDropKm;
       if (body.batchMaxOrders !== undefined) data.batchMaxOrders = body.batchMaxOrders;
+      if (body.maxActiveOrdersPerDriver !== undefined) {
+        data.maxActiveOrdersPerDriver = body.maxActiveOrdersPerDriver;
+      }
 
       const settings = await prisma.fulfillmentSettings.upsert({
         where: { tenantId },

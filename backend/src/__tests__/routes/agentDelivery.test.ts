@@ -160,6 +160,7 @@ beforeEach(() => {
   prisma.courierOnlineSession.findFirst.mockResolvedValue(null);
   prisma.dispatchOffer.findFirst.mockResolvedValue(null);
   prisma.deliveryOrder.findFirst.mockResolvedValue(null);
+  prisma.deliveryOrder.findMany.mockResolvedValue([]);
   prisma.orderEvent.findFirst.mockResolvedValue(null);
   prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
 });
@@ -209,10 +210,12 @@ describe("GET /api/agent/state", () => {
   });
 
   test("activeOrder carries the granular driverPhase status + podRequired", async () => {
-    prisma.deliveryOrder.findFirst.mockResolvedValue({
-      ...ORDER_ROW,
-      metadata: { driverPhase: "ARRIVED_AT_PICKUP" },
-    });
+    prisma.deliveryOrder.findMany.mockResolvedValue([
+      {
+        ...ORDER_ROW,
+        metadata: { driverPhase: "ARRIVED_AT_PICKUP" },
+      },
+    ]);
 
     const res = await auth(request(app).get("/api/agent/state"));
 
@@ -240,6 +243,43 @@ describe("GET /api/agent/state", () => {
     prisma.device.findUnique.mockResolvedValue(null);
     const res = await auth(request(app).get("/api/agent/state"));
     expect(res.status).toBe(404);
+  });
+
+  // Revision 24 (#5): a busy driver can be offered a second order.
+  test("a driver carrying two orders gets both, the one in hand first", async () => {
+    prisma.deliveryOrder.findMany.mockResolvedValue([
+      { ...ORDER_ROW, id: "ord-new", orderNumber: "DRB-BRGB-0002", status: "ASSIGNED", assignedAt: new Date("2026-10-14T10:05:00Z") },
+      { ...ORDER_ROW, id: "ord-old", orderNumber: "DRB-BRGB-0001", status: "PICKED_UP", assignedAt: new Date("2026-10-14T10:00:00Z") },
+    ]);
+
+    const res = await auth(request(app).get("/api/agent/state"));
+
+    expect(res.status).toBe(200);
+    expect(res.body.activeOrder).toMatchObject({ id: "ord-old", orderNumber: "DRB-BRGB-0001" });
+    expect(res.body.activeOrders.map((o: { id: string }) => o.id)).toEqual(["ord-old", "ord-new"]);
+  });
+
+  test("an offer can sit beside an active order, and carries the fields the app reads", async () => {
+    prisma.deliveryOrder.findMany.mockResolvedValue([{ ...ORDER_ROW, status: "PICKED_UP" }]);
+    prisma.dispatchOffer.findFirst.mockResolvedValue({
+      id: "off-2",
+      orderId: "ord-2",
+      distanceKm: 2,
+      expiresAt: new Date(Date.now() + 10_000),
+      order: { ...ORDER_ROW, id: "ord-2", status: "DISPATCHING", driverId: null },
+    });
+
+    const res = await auth(request(app).get("/api/agent/state"));
+
+    expect(res.body.activeOrder).toMatchObject({ id: "ord-1" });
+    expect(res.body.activeOffer).toMatchObject({
+      id: "off-2",
+      offerId: "off-2",
+      restaurantName: "BRGB Salmiya",
+      pickupArea: "Kuwait City",
+      dropoffZone: "Salmiya",
+      paymentMethod: "COD",
+    });
   });
 });
 
@@ -779,25 +819,29 @@ describe("POST /api/agent/orders/:id/failed", () => {
 
 describe("the return leg comes before the failure report", () => {
   test("/state keeps an ARRIVED order and hands it back as ARRIVED_AT_PICKUP", async () => {
-    prisma.deliveryOrder.findFirst.mockResolvedValue({
-      ...ORDER_ROW,
-      status: "ARRIVED",
-      metadata: { driverPhase: "ARRIVED_AT_PICKUP" },
-    });
+    prisma.deliveryOrder.findMany.mockResolvedValue([
+      {
+        ...ORDER_ROW,
+        status: "ARRIVED",
+        metadata: { driverPhase: "ARRIVED_AT_PICKUP" },
+      },
+    ]);
 
     const res = await auth(request(app).get("/api/agent/state"));
 
-    const where = prisma.deliveryOrder.findFirst.mock.calls[0][0].where;
+    const where = prisma.deliveryOrder.findMany.mock.calls[0][0].where;
     expect(where.status.in).toEqual(expect.arrayContaining(["ARRIVED", "FAILED"]));
     expect(res.body.activeOrder).toMatchObject({ id: "ord-1", status: "ARRIVED_AT_PICKUP" });
   });
 
   test("/state reports an order on its way back as RETURNING, not as the trip", async () => {
-    prisma.deliveryOrder.findFirst.mockResolvedValue({
-      ...ORDER_ROW,
-      status: "PICKED_UP",
-      metadata: { driverPhase: "ARRIVED_AT_DROPOFF", returnStartedAt: "2026-10-05T10:00:00.000Z" },
-    });
+    prisma.deliveryOrder.findMany.mockResolvedValue([
+      {
+        ...ORDER_ROW,
+        status: "PICKED_UP",
+        metadata: { driverPhase: "ARRIVED_AT_DROPOFF", returnStartedAt: "2026-10-05T10:00:00.000Z" },
+      },
+    ]);
 
     const res = await auth(request(app).get("/api/agent/state"));
 

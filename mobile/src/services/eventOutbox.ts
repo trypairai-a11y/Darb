@@ -247,7 +247,14 @@ async function deliverRow(row: EventRow): Promise<void> {
     });
     const store = useDriverStore.getState();
     if (res?.wallet) store.setWallet(res.wallet);
-    if (store.activeOrder && store.activeOrder.id === p.orderId) store.completeOrder();
+    // completeOrder ignores an id that is no longer live, and drops it from
+    // the list when it is one of the driver's other orders (revision 24 #5).
+    if (
+      (store.activeOrder && store.activeOrder.id === p.orderId) ||
+      store.otherOrders.some((o) => o.id === p.orderId)
+    ) {
+      store.completeOrder(p.orderId);
+    }
     return;
   }
 

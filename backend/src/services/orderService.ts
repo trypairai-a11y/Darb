@@ -35,6 +35,7 @@ import { forceDriverOffline, markDriverBusy, releaseDriverToOnline } from "./dis
 import { enqueueFoodicsWriteback } from "./foodics/writebackHook";
 import { fireCustomerMilestone } from "./customerMessagingService";
 import { sendDispatchDriverPush } from "./driverAppPushService";
+import { DropoffOutOfAreaError } from "./orderIntakeErrors";
 
 /**
  * v1 flat delivery promise: order placed → at the customer's door in 45
@@ -147,6 +148,15 @@ async function notifyOpsOrderRejected(
   }
 }
 
+// Revision 24 (#4): out-of-area refusal. Lives in its own dependency-free
+// module so routes can import the error class even where a suite mocks this
+// whole service.
+export {
+  DropoffOutOfAreaError,
+  OUT_OF_AREA_CODE,
+  OUT_OF_AREA_MESSAGE,
+  outOfAreaResponseBody,
+} from "./orderIntakeErrors";
 /** Domain error for lookups — routes map to HTTP 404. */
 export class OrderNotFoundError extends Error {
   constructor(orderId: string) {
@@ -175,6 +185,12 @@ export interface CreateOrderInput {
   scheduledAt?: Date;
   /** Client note 2026-07-29: a big order the shop wants sent by car. */
   requiresCarOnly?: boolean;
+  /**
+   * Revision 24 (#4): throw DropoffOutOfAreaError instead of saving a REJECTED
+   * row when the drop is outside the delivery area. Set by every intake that
+   * can answer the merchant synchronously; webhooks leave it off.
+   */
+  refuseOutOfArea?: boolean;
   metadata?: Record<string, unknown>;
   actor: OrderActor;
 }
@@ -451,6 +467,9 @@ export async function createDeliveryOrder(input: CreateOrderInput): Promise<Deli
     // Explicit narrowing — ts-jest compiles with strict:false, where the
     // `!quote.ok` discriminant doesn't narrow the union.
     const rejection = quote as Extract<typeof quote, { ok: false }>;
+    if (rejection.reason === "OUT_OF_ZONE_DROPOFF" && input.refuseOutOfArea) {
+      throw new DropoffOutOfAreaError();
+    }
     return persistRejected(rejection.reason);
   }
 
@@ -819,6 +838,12 @@ export async function cancelOrder(args: {
   reason: string;
   actor: OrderActor;
   allowFrom?: DeliveryOrderStatus[];
+  /**
+   * false skips the customer's WhatsApp. Housekeeping closes (an order refused
+   * weeks ago, an order stuck at a shop since July) must not message somebody
+   * about a delivery they stopped waiting for long ago.
+   */
+  notifyCustomer?: boolean;
 }): Promise<DeliveryOrder> {
   const { tenantId, orderId, reason, actor } = args;
   const allowFrom = args.allowFrom ?? VENDOR_CANCELLABLE;
@@ -850,7 +875,11 @@ export async function cancelOrder(args: {
   flushOrderEvents(tx);
   removeExpiryJobs(cancelledOffers);
   fireFoodicsWriteback(orderId, "CANCELLED");
-  fireCustomerMilestone(orderId, tenantId, "CANCELLED");
+  // A REJECTED order never told the customer it was coming, so closing it
+  // out of review tells them nothing either.
+  if (args.notifyCustomer !== false && order.status !== "REJECTED") {
+    fireCustomerMilestone(orderId, tenantId, "CANCELLED");
+  }
   return updated ?? { ...order, status: "CANCELLED", cancelReason: reason };
 }
 

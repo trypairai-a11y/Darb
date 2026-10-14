@@ -216,10 +216,34 @@ function currentPhaseRank(order: OrderRow): number {
   return Math.max(statusRank, phaseRank);
 }
 
+/**
+ * Revision 24 (#5): a driver may now hold more than one live order (a busy
+ * driver offered a second order, or a batch). The app works one at a time, so
+ * /state names the one to work on now as `activeOrder` and lists them all in
+ * `activeOrders`. The order to work on: a bag going back to the shop first
+ * (the driver is already driving it), then one in hand, then one he is
+ * standing at the counter for, then the oldest still to collect.
+ */
+const FOCUS_RANK: Record<string, number> = { FAILED: 0, PICKED_UP: 1, ARRIVED: 2, ASSIGNED: 3 };
+
+export function orderActiveOrders<T extends { status: string; metadata?: unknown; assignedAt?: Date | null }>(
+  rows: T[],
+): T[] {
+  const rank = (o: T) => (isReturningToMerchant(o) ? 0 : (FOCUS_RANK[o.status] ?? 9));
+  return [...rows].sort((a, b) => {
+    const r = rank(a) - rank(b);
+    if (r !== 0) return r;
+    const at = (a.assignedAt ? new Date(a.assignedAt).getTime() : 0) - (b.assignedAt ? new Date(b.assignedAt).getTime() : 0);
+    return at;
+  });
+}
+
 /** §A9 activeOrder shape (also the POST accept / POST pod order shape). */
 function shapeActiveOrder(order: OrderRow) {
   return {
     id: order.id,
+    // The app's Home card and the order switcher label orders by number.
+    orderNumber: order.orderNumber ?? null,
     // RETURNING (client note, 2026-10-05): the driver turned back to the
     // shop. The order keeps its in-flight status until they arrive, so this
     // is what tells a reopened app to resume the return leg, not the trip.
@@ -296,7 +320,7 @@ router.get("/state", async (req: Request, res: Response) => {
     const tenantId = driver.tenantId;
     const now = new Date();
 
-    const [session, wallet, offer, activeOrderRow, supervisorPhone] = await Promise.all([
+    const [session, wallet, offer, activeOrderRows, supervisorPhone] = await Promise.all([
       prisma.courierOnlineSession.findFirst({
         where: { tenantId, driverId: driver.id, isOnline: true },
         orderBy: { startTime: "desc" },
@@ -307,19 +331,34 @@ router.get("/state", async (req: Request, res: Response) => {
         orderBy: { offeredAt: "desc" },
         include: { order: { include: ORDER_INCLUDE } },
       }),
-      prisma.deliveryOrder.findFirst({
+      prisma.deliveryOrder.findMany({
         where: { tenantId, driverId: driver.id, status: { in: [...ACTIVE_ORDER_STATUSES] } },
-        orderBy: { assignedAt: "desc" },
+        orderBy: { assignedAt: "asc" },
         include: ORDER_INCLUDE,
+        take: 10,
       }),
       getSupervisorPhone(tenantId),
     ]);
+    const activeRows = orderActiveOrders(
+      ((activeOrderRows ?? []) as unknown as Array<OrderRow & { assignedAt?: Date | null }>),
+    );
+    const activeOrderRow = activeRows[0] ?? null;
 
     const offerOrder = (offer as { order?: OrderRow } | null)?.order ?? null;
     const activeOffer =
       offer && offerOrder
         ? {
             offerId: offer.id,
+            // Revision 24 (#5): the app has always read `id`, `restaurantName`,
+            // `pickupArea`, `dropoffZone` and `paymentMethod` off the offer
+            // (mobile/src/api/client.ts AgentOfferSummary) while this sent only
+            // the nested shape, so an offer rendered without a shop name and
+            // Accept posted to /offers/undefined. Both shapes now, additively.
+            id: offer.id,
+            restaurantName: offerOrder.branch?.name ?? null,
+            pickupArea: offerOrder.pickupZone?.name ?? null,
+            dropoffZone: offerOrder.dropoffZone?.name ?? offerOrder.dropoffZone?.code ?? null,
+            paymentMethod: offerOrder.paymentMethod,
             orderId: offer.orderId,
             pickup: {
               name: offerOrder.branch?.name ?? null,
@@ -354,9 +393,9 @@ router.get("/state", async (req: Request, res: Response) => {
       availability: (session?.availability as Availability | undefined) ?? "OFFLINE",
       lockout: wallet.blocked ? { reason: "CASH_CEILING" as const } : null,
       activeOffer,
-      activeOrder: activeOrderRow
-        ? shapeActiveOrder(activeOrderRow as unknown as OrderRow)
-        : null,
+      activeOrder: activeOrderRow ? shapeActiveOrder(activeOrderRow) : null,
+      // Every live order, the one above first (revision 24 #5).
+      activeOrders: activeRows.map((row) => shapeActiveOrder(row)),
       wallet: {
         cashOnHandKwd: Number(wallet.cashOnHandKwd),
         ceilingKwd: Number(wallet.ceilingKwd),
