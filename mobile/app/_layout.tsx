@@ -179,6 +179,7 @@ export default function RootLayout() {
           {/* settings moved into (tabs) on 2026-08-04; declaring it here too would
               register a second route for the same file and shadow the tab. */}
           <Stack.Screen name="points" />
+          <Stack.Screen name="private-shifts" />
         </Stack>
       </SafeAreaProvider>
     </WebPhoneFrame>

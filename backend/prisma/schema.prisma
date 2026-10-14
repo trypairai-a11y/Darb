@@ -847,6 +847,10 @@ model Driver {
   // Client request 2026-08-01 — the driver app's notification feed.
   notifications             Notification[]
 
+  /// Revision 24 (#8): Darb has cleared this driver to book private shifts.
+  /// Off by default; the driver app only offers private shifts when it is on.
+  privateShiftEligible Boolean @default(false)
+
   @@unique([tenantId, driverCode])
   @@index([tenantId])
   @@index([companyId])
@@ -3035,6 +3039,12 @@ model Vendor {
   supportTickets SupportTicket[]
   topUps         VendorTopUp[]
 
+  /// Revision 24 (#8): the vehicle types that suit this shop, ticked on the
+  /// vendor profile. Empty means not decided yet, and private shifts can only
+  /// be opened for a ticked type. Each ticked type carries its own plans in
+  /// VendorVehiclePlan (per order and per hour).
+  suitableVehicleTypes VehicleType[] @default([])
+
   @@unique([tenantId, code])
   @@index([tenantId, isActive])
 }
@@ -4723,4 +4733,158 @@ model VendorBranchAllocation {
 
   @@index([tenantId, vendorId, createdAt])
   @@index([tenantId, branchId, createdAt])
+}
+
+// ─── Revision 24 (#8 to #11): private shifts ────────────────────────────────
+//
+// A private shift is a driver booked to ONE shop (one branch) for a block of
+// hours. The shop pays by the hour and the delivery company is paid by the
+// hour, both from their per-hour plan for the vehicle type, and the billable
+// hours are the scheduled hours minus two kinds of deduction: the minutes an
+// order ran past its deadline, and the minutes the driver spent away from the
+// shop with no order in hand. Waiting at the shop is paid in full.
+//
+// Kept apart from Shift/ShiftCapacity on purpose: the regular roster is a
+// per-zone capacity grid the driver books windows against, and a private shift
+// is a named slot at a named shop. Ids to other models are plain columns, so
+// this block adds no relation fields to models other work is editing.
+
+enum PrivateShiftStatus {
+  PROPOSED
+  OPEN
+  BOOKED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PrivateShiftSource {
+  ADMIN
+  VENDOR
+}
+
+/// The two plans a shop has for one vehicle type (revision 24 #8): the per
+/// order plan is an existing DeliveryPlan (NULL = the shop's own plan), and the
+/// per hour rate is what a private shift on that vehicle costs the shop.
+model VendorVehiclePlan {
+  id             String      @id @default(uuid())
+  tenantId       String
+  vendorId       String
+  vehicleType    VehicleType
+  deliveryPlanId String?
+  perHourKwd     Decimal?    @db.Decimal(10, 3)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@unique([vendorId, vehicleType])
+  @@index([tenantId, vendorId])
+}
+
+/// What Darb pays a delivery company for one vehicle type (revision 24 #10):
+/// per order (NULL = the company-wide base fee on FleetPartner) and per hour
+/// (what a private shift on that vehicle pays the company).
+model FleetVehicleRate {
+  id             String      @id @default(uuid())
+  tenantId       String
+  fleetPartnerId String
+  vehicleType    VehicleType
+  perOrderKwd    Decimal?    @db.Decimal(10, 3)
+  perHourKwd     Decimal?    @db.Decimal(10, 3)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@unique([fleetPartnerId, vehicleType])
+  @@index([tenantId, fleetPartnerId])
+}
+
+/// One ask for private shifts: "N shifts at this branch on this day". The
+/// system proposes the timings from the branch's own order history, the
+/// person who asked adjusts them, and confirming opens them to drivers.
+model PrivateShiftPlan {
+  id              String             @id @default(uuid())
+  tenantId        String
+  vendorId        String
+  branchId        String
+  vehicleType     VehicleType
+  /// The calendar day, "YYYY-MM-DD", the same discipline ShiftRequest.date uses.
+  date            String
+  requestedShifts Int
+  shiftHours      Int
+  source          PrivateShiftSource
+  /// DRAFT | CONFIRMED | CANCELLED
+  status          String             @default("DRAFT")
+  /// What the proposal was built from: { lookbackWeeks, ordersSampled, hourly }.
+  basis           Json?
+  createdById     String?
+  confirmedAt     DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  shifts PrivateShift[]
+
+  @@index([tenantId, vendorId, date])
+  @@index([tenantId, date])
+}
+
+model PrivateShift {
+  id                   String             @id @default(uuid())
+  tenantId             String
+  planId               String?
+  vendorId             String
+  branchId             String
+  vehicleType          VehicleType
+  date                 String
+  startAt              DateTime
+  endAt                DateTime
+  status               PrivateShiftStatus @default(PROPOSED)
+  source               PrivateShiftSource
+  driverId             String?
+  /// The driver's company when booked, so the pay side survives a transfer.
+  fleetPartnerId       String?
+  bookedAt             DateTime?
+  startedAt            DateTime?
+  startLat             Decimal?           @db.Decimal(10, 7)
+  startLng             Decimal?           @db.Decimal(10, 7)
+  endedAt              DateTime?
+  cancelledAt          DateTime?
+  cancelReason         String?
+  // ── Settlement snapshot, written when the shift completes ──
+  scheduledMinutes     Int?
+  lateDeductionMinutes Int?
+  awayDeductionMinutes Int?
+  billableMinutes      Int?
+  vendorHourlyKwd      Decimal?           @db.Decimal(10, 3)
+  fleetHourlyKwd       Decimal?           @db.Decimal(10, 3)
+  vendorChargeKwd      Decimal?           @db.Decimal(10, 3)
+  fleetPayKwd          Decimal?           @db.Decimal(10, 3)
+  settledAt            DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  plan       PrivateShiftPlan?       @relation(fields: [planId], references: [id], onDelete: SetNull)
+  deductions PrivateShiftDeduction[]
+
+  @@index([tenantId, date])
+  @@index([tenantId, vendorId, startAt])
+  @@index([tenantId, driverId, status])
+  @@index([tenantId, status, startAt])
+}
+
+/// One deduction on a settled private shift. LATE_ORDER carries the order;
+/// AWAY carries the stretch of time the driver was away from the shop.
+model PrivateShiftDeduction {
+  id        String    @id @default(uuid())
+  tenantId  String
+  shiftId   String
+  /// LATE_ORDER | AWAY
+  kind      String
+  minutes   Int
+  orderId   String?
+  fromAt    DateTime?
+  toAt      DateTime?
+  createdAt DateTime  @default(now())
+
+  shift PrivateShift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, shiftId])
 }

@@ -14,6 +14,10 @@
  * a rejected submission leaving a half-driver in the dispatch candidate pool,
  * and it keeps `Driver.status` meaning exactly what it has always meant.
  */
+import {
+  parseFleetVehicleRates,
+  writeFleetVehicleRates,
+} from "../privateShifts/privateShiftService";
 import { Prisma } from "../../generated/prisma";
 import { prisma } from "../../config";
 import { createViolationNotifications } from "../notificationService";
@@ -227,6 +231,17 @@ export async function approveFleetRequest(params: {
     // CURRENT open period pays — it is not backdated, and a statement already
     // FINAL keeps the total it was cut on. That is the behaviour the delivery
     // company can see and dispute, rather than a silent retroactive edit.
+    // Revision 24 (#10): the per-vehicle rates (per order and per hour) ride
+    // the same request type, so they go through the same approval desk.
+    if (request.type === "RATE_CHANGE" && Array.isArray(payload.vehicleRates)) {
+      await writeFleetVehicleRates(
+        tx,
+        tenantId,
+        request.fleetPartnerId,
+        parseFleetVehicleRates(payload.vehicleRates),
+      );
+    }
+
     if (request.type === "RATE_CHANGE") {
       const raw = payload.flatFeePerOrderKwd;
       const rate = raw == null ? NaN : Number(raw);

@@ -114,9 +114,26 @@ async function resolvePlan(tenantId: string, branchId?: string) {
   if (!branchId) return null;
   const branch = await prisma.vendorBranch.findFirst({
     where: { id: branchId, tenantId },
-    select: { deliveryPlanId: true, vendor: { select: { deliveryPlanId: true } } },
+    select: {
+      deliveryPlanId: true,
+      vendor: { select: { id: true, deliveryPlanId: true, suitableVehicleTypes: true } },
+    },
   });
-  const planId = branch?.deliveryPlanId ?? branch?.vendor?.deliveryPlanId;
+  // Revision 24 (#8): "each vehicle has its own delivery plan". A shop that
+  // ticks exactly one vehicle type is priced on that type's per-order plan,
+  // after the branch's own plan and before the shop's. With two types ticked
+  // the vehicle is not known when the order is quoted, so the shop's plan
+  // stands, exactly as before.
+  let vehiclePlanId: string | null = null;
+  const types = branch?.vendor?.suitableVehicleTypes;
+  if (!branch?.deliveryPlanId && branch?.vendor?.id && Array.isArray(types) && types.length === 1) {
+    const row = await prisma.vendorVehiclePlan.findFirst({
+      where: { tenantId, vendorId: branch.vendor.id, vehicleType: types[0] },
+      select: { deliveryPlanId: true },
+    });
+    vehiclePlanId = row?.deliveryPlanId ?? null;
+  }
+  const planId = branch?.deliveryPlanId ?? vehiclePlanId ?? branch?.vendor?.deliveryPlanId;
   if (!planId) return null;
 
   const plan = await prisma.deliveryPlan.findFirst({

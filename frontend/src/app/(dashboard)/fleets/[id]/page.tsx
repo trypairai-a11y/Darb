@@ -3,6 +3,8 @@
 // same layout as the vendor profile — instead of the old SlidePanel, and the
 // company's drivers are a tab of their own. The sections themselves moved here
 // from /fleets (panel) unchanged; only the frame around them is new.
+import FleetVehicleRatesCard from "@/components/privateShifts/FleetVehicleRatesCard";
+import { vehicleRatesSummary } from "@/lib/vehicleRatesSummary";
 import Link from "next/link";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -671,7 +673,9 @@ function RequestsSection({ fleet }: { fleet: FleetRow }) {
                   ? `${payload.phone ?? ""} · ${payload.vehicleType ?? ""}`
                   : r.type === "DRIVER_STATUS"
                     ? `${payload.status ?? ""}${payload.reason ? ` · ${payload.reason}` : ""}`
-                    : r.type === "RATE_CHANGE"
+                    : r.type === "RATE_CHANGE" && vehicleRatesSummary(payload, t, locale)
+                      ? vehicleRatesSummary(payload, t, locale)
+                      : r.type === "RATE_CHANGE"
                       ? `${t("fleetPortal.feePerOrder")}: ${formatKwd(
                           payload.currentKwd ?? "0",
                           locale,
@@ -1276,6 +1280,8 @@ export default function FleetDetailPage() {
         <div className="space-y-6">
           <ProfilePricingSection key={`pp-${fleet.id}`} fleet={fleet} />
           <DeductionsSection key={`dd-${fleet.id}`} fleet={fleet} />
+          {/* Revision 24 (#10): per order and per hour, for each vehicle type. */}
+          <FleetVehicleRatesCard key={`vr-${fleet.id}`} mode="staff" fleetId={fleet.id} />
         </div>
       )}
       {tab === "drivers" && <DriversDocumentsSection fleet={fleet} />}

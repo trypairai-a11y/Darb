@@ -1,4 +1,5 @@
 import { createSupportNotifications } from "../services/notificationService";
+import { registerVendorPrivateShiftRoutes } from "./vendorPrivateShifts";
 import { Router, Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import ExcelJS from "exceljs";
@@ -2231,5 +2232,13 @@ router.patch("/team/:id", requireVendorRole("ADMIN"), requireVendorTab("TEAM"), 
 // stored for it and nothing needs migrating. /vendor/grow now redirects to the
 // order board, and GROW is gone from VENDOR_TABS, which means a stored
 // override that still lists it simply drops the value on read.
+
+// Revision 24 (#9): private shifts, on the ORDERS tab. Placing orders and
+// planning a driver for them are the same people's job.
+registerVendorPrivateShiftRoutes(router, {
+  ordersTab: requireVendorTab("ORDERS"),
+  canPlan: requireVendorRole("ADMIN", "OPS_MANAGER", "SUPERVISOR"),
+  scopedBranchId,
+});
 
 export default router;

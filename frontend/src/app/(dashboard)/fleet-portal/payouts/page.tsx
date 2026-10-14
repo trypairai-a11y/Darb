@@ -1,5 +1,7 @@
 "use client";
 import DocumentFileField from "@/components/fleet/DocumentFileField";
+import FleetVehicleRatesCard from "@/components/privateShifts/FleetVehicleRatesCard";
+import FleetPrivateShiftsCard from "@/components/privateShifts/FleetPrivateShiftsCard";
 import { uploadFleetDocument } from "@/lib/darbApi";
 // Darb 2.0 PRD build — /fleet-portal/payouts: monthly payout statements plus
 // the running current-month earnings (delivered orders x flat fee) with a
@@ -310,6 +312,9 @@ export default function FleetPayoutsPage() {
           above the statements because it is the figure every total below is
           built from. */}
       <FleetRateCard />
+      {/* Revision 24 (#10): plans by vehicle type, and private shifts worked. */}
+      <FleetVehicleRatesCard mode="portal" />
+      <FleetPrivateShiftsCard />
 
       <DataTable
         columns={[

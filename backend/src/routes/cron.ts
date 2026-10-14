@@ -22,6 +22,7 @@
 import { Router, Request, Response } from "express";
 import { logger } from "../config/logger";
 import { sweepDispatch } from "../services/dispatch/dispatchEngine";
+import { completeDuePrivateShifts } from "../services/privateShifts/privateShiftService";
 import { sweepStalePresence } from "../services/gpsMonitorService";
 import { sweepScheduledOrders } from "../services/orderService";
 // Revision 20 — the compliance desk's expiry sweep and the training desk's
@@ -137,6 +138,14 @@ router.get("/dispatch-sweep", async (req: Request, res: Response) => {
       trainingIssued = await sweepTrainingAutoIssue();
     } catch (err) {
       logger.warn({ err }, "cron: training auto-issue sweep failed");
+    }
+
+    // Revision 24 (#8): private shifts past their end time are completed and
+    // settled; ones nobody booked are closed.
+    try {
+      await completeDuePrivateShifts();
+    } catch (err) {
+      logger.warn({ err }, "cron: private shift sweep failed");
     }
 
     // Demo tenants only, behind DEMO_AUTO_COURIER. Runs AFTER the dispatch leg

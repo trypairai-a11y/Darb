@@ -778,6 +778,38 @@ export type ShiftPlanEntry = $Result.DefaultSelection<Prisma.$ShiftPlanEntryPayl
  * and when survives being changed.
  */
 export type VendorBranchAllocation = $Result.DefaultSelection<Prisma.$VendorBranchAllocationPayload>
+/**
+ * Model VendorVehiclePlan
+ * The two plans a shop has for one vehicle type (revision 24 #8): the per
+ * order plan is an existing DeliveryPlan (NULL = the shop's own plan), and the
+ * per hour rate is what a private shift on that vehicle costs the shop.
+ */
+export type VendorVehiclePlan = $Result.DefaultSelection<Prisma.$VendorVehiclePlanPayload>
+/**
+ * Model FleetVehicleRate
+ * What Darb pays a delivery company for one vehicle type (revision 24 #10):
+ * per order (NULL = the company-wide base fee on FleetPartner) and per hour
+ * (what a private shift on that vehicle pays the company).
+ */
+export type FleetVehicleRate = $Result.DefaultSelection<Prisma.$FleetVehicleRatePayload>
+/**
+ * Model PrivateShiftPlan
+ * One ask for private shifts: "N shifts at this branch on this day". The
+ * system proposes the timings from the branch's own order history, the
+ * person who asked adjusts them, and confirming opens them to drivers.
+ */
+export type PrivateShiftPlan = $Result.DefaultSelection<Prisma.$PrivateShiftPlanPayload>
+/**
+ * Model PrivateShift
+ * 
+ */
+export type PrivateShift = $Result.DefaultSelection<Prisma.$PrivateShiftPayload>
+/**
+ * Model PrivateShiftDeduction
+ * One deduction on a settled private shift. LATE_ORDER carries the order;
+ * AWAY carries the stretch of time the driver was away from the shop.
+ */
+export type PrivateShiftDeduction = $Result.DefaultSelection<Prisma.$PrivateShiftDeductionPayload>
 
 /**
  * Enums
@@ -1575,6 +1607,26 @@ export const ShiftPlanStatus: {
 
 export type ShiftPlanStatus = (typeof ShiftPlanStatus)[keyof typeof ShiftPlanStatus]
 
+
+export const PrivateShiftSource: {
+  ADMIN: 'ADMIN',
+  VENDOR: 'VENDOR'
+};
+
+export type PrivateShiftSource = (typeof PrivateShiftSource)[keyof typeof PrivateShiftSource]
+
+
+export const PrivateShiftStatus: {
+  PROPOSED: 'PROPOSED',
+  OPEN: 'OPEN',
+  BOOKED: 'BOOKED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+};
+
+export type PrivateShiftStatus = (typeof PrivateShiftStatus)[keyof typeof PrivateShiftStatus]
+
 }
 
 export type SubscriptionPlan = $Enums.SubscriptionPlan
@@ -1872,6 +1924,14 @@ export const OnboardingRequestStatus: typeof $Enums.OnboardingRequestStatus
 export type ShiftPlanStatus = $Enums.ShiftPlanStatus
 
 export const ShiftPlanStatus: typeof $Enums.ShiftPlanStatus
+
+export type PrivateShiftSource = $Enums.PrivateShiftSource
+
+export const PrivateShiftSource: typeof $Enums.PrivateShiftSource
+
+export type PrivateShiftStatus = $Enums.PrivateShiftStatus
+
+export const PrivateShiftStatus: typeof $Enums.PrivateShiftStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -3295,6 +3355,56 @@ export class PrismaClient<
     * ```
     */
   get vendorBranchAllocation(): Prisma.VendorBranchAllocationDelegate<ExtArgs>;
+
+  /**
+   * `prisma.vendorVehiclePlan`: Exposes CRUD operations for the **VendorVehiclePlan** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more VendorVehiclePlans
+    * const vendorVehiclePlans = await prisma.vendorVehiclePlan.findMany()
+    * ```
+    */
+  get vendorVehiclePlan(): Prisma.VendorVehiclePlanDelegate<ExtArgs>;
+
+  /**
+   * `prisma.fleetVehicleRate`: Exposes CRUD operations for the **FleetVehicleRate** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more FleetVehicleRates
+    * const fleetVehicleRates = await prisma.fleetVehicleRate.findMany()
+    * ```
+    */
+  get fleetVehicleRate(): Prisma.FleetVehicleRateDelegate<ExtArgs>;
+
+  /**
+   * `prisma.privateShiftPlan`: Exposes CRUD operations for the **PrivateShiftPlan** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PrivateShiftPlans
+    * const privateShiftPlans = await prisma.privateShiftPlan.findMany()
+    * ```
+    */
+  get privateShiftPlan(): Prisma.PrivateShiftPlanDelegate<ExtArgs>;
+
+  /**
+   * `prisma.privateShift`: Exposes CRUD operations for the **PrivateShift** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PrivateShifts
+    * const privateShifts = await prisma.privateShift.findMany()
+    * ```
+    */
+  get privateShift(): Prisma.PrivateShiftDelegate<ExtArgs>;
+
+  /**
+   * `prisma.privateShiftDeduction`: Exposes CRUD operations for the **PrivateShiftDeduction** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PrivateShiftDeductions
+    * const privateShiftDeductions = await prisma.privateShiftDeduction.findMany()
+    * ```
+    */
+  get privateShiftDeduction(): Prisma.PrivateShiftDeductionDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -3865,7 +3975,12 @@ export namespace Prisma {
     OnboardingRequest: 'OnboardingRequest',
     ShiftPlan: 'ShiftPlan',
     ShiftPlanEntry: 'ShiftPlanEntry',
-    VendorBranchAllocation: 'VendorBranchAllocation'
+    VendorBranchAllocation: 'VendorBranchAllocation',
+    VendorVehiclePlan: 'VendorVehiclePlan',
+    FleetVehicleRate: 'FleetVehicleRate',
+    PrivateShiftPlan: 'PrivateShiftPlan',
+    PrivateShift: 'PrivateShift',
+    PrivateShiftDeduction: 'PrivateShiftDeduction'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -3881,7 +3996,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "tenant" | "company" | "ownerGroup" | "user" | "driver" | "driverRestriction" | "driverInventory" | "recruitmentPipeline" | "vehicle" | "vehicleDriverAssignment" | "shift" | "shiftRequest" | "attendanceRecord" | "orderLog" | "cashRecord" | "cashTransaction" | "pendingDuesLedger" | "vehicleInspection" | "maintenanceRecord" | "device" | "sim" | "capturedOrder" | "locationLog" | "appUsageLog" | "deviceCommand" | "aiScore" | "alert" | "aiDigest" | "auditLog" | "ticket" | "leaveRequest" | "talabatSession" | "talabatViolationEvent" | "talabatDelivery" | "keetaDailyMetrics" | "ingestRun" | "deliverooDailyMetrics" | "talabatDailyMetrics" | "platformSettings" | "platformInventory" | "americanaDailyOrders" | "americanaChain" | "americanaStore" | "americanaContract" | "americanaChainRate" | "driverBatchHistory" | "americanaStoreAssignment" | "americanaDailyIngestion" | "kpiDefinition" | "kpiRecord" | "notification" | "notificationDelivery" | "notificationRule" | "courierOnlineSession" | "violation" | "penalty" | "appeal" | "orderEvent" | "aiInsight" | "demandHeatmap" | "deliveryArea" | "courierAttendanceSlot" | "keetaAvailableShiftSlot" | "shiftComplianceConfig" | "partner" | "partnerBankAccount" | "incentiveTargetRound" | "incentiveGoal" | "incentiveTier" | "courierIncentivePayout" | "billing" | "taxInvoice" | "paymentWithdrawal" | "agentRunLog" | "agentToolCall" | "pendingAgentAction" | "agentAction" | "agentMemory" | "pinnedView" | "performanceSnapshot" | "metricEvent" | "chatThread" | "chatMessage" | "scheduledBriefing" | "vendor" | "vendorBranch" | "deliveryZone" | "shiftCapacity" | "zoneSurcharge" | "deliveryPlan" | "deliveryPlanZoneRate" | "deliveryPlanKmTier" | "distanceCache" | "fulfillmentSettings" | "deliveryOrder" | "dispatchOffer" | "walletAccount" | "walletTransaction" | "walletEntry" | "remittance" | "walletReconciliationRun" | "incident" | "foodicsConnection" | "webhookEvent" | "apiKey" | "orderRating" | "vendorStatement" | "refund" | "fleetPartner" | "fleetPayoutStatement" | "deliveryPhoto" | "fleetPayoutInvoice" | "fleetDocument" | "fleetChangeRequest" | "fleetIssue" | "userInvite" | "userSurfacePermission" | "accountManagerVendor" | "accountManagerFleet" | "fleetDeduction" | "vendorIntegration" | "supportTicket" | "supportTicketMessage" | "vendorTopUp" | "fleetCashDeposit" | "driverTrainingSession" | "onboardingRequest" | "shiftPlan" | "shiftPlanEntry" | "vendorBranchAllocation"
+      modelProps: "tenant" | "company" | "ownerGroup" | "user" | "driver" | "driverRestriction" | "driverInventory" | "recruitmentPipeline" | "vehicle" | "vehicleDriverAssignment" | "shift" | "shiftRequest" | "attendanceRecord" | "orderLog" | "cashRecord" | "cashTransaction" | "pendingDuesLedger" | "vehicleInspection" | "maintenanceRecord" | "device" | "sim" | "capturedOrder" | "locationLog" | "appUsageLog" | "deviceCommand" | "aiScore" | "alert" | "aiDigest" | "auditLog" | "ticket" | "leaveRequest" | "talabatSession" | "talabatViolationEvent" | "talabatDelivery" | "keetaDailyMetrics" | "ingestRun" | "deliverooDailyMetrics" | "talabatDailyMetrics" | "platformSettings" | "platformInventory" | "americanaDailyOrders" | "americanaChain" | "americanaStore" | "americanaContract" | "americanaChainRate" | "driverBatchHistory" | "americanaStoreAssignment" | "americanaDailyIngestion" | "kpiDefinition" | "kpiRecord" | "notification" | "notificationDelivery" | "notificationRule" | "courierOnlineSession" | "violation" | "penalty" | "appeal" | "orderEvent" | "aiInsight" | "demandHeatmap" | "deliveryArea" | "courierAttendanceSlot" | "keetaAvailableShiftSlot" | "shiftComplianceConfig" | "partner" | "partnerBankAccount" | "incentiveTargetRound" | "incentiveGoal" | "incentiveTier" | "courierIncentivePayout" | "billing" | "taxInvoice" | "paymentWithdrawal" | "agentRunLog" | "agentToolCall" | "pendingAgentAction" | "agentAction" | "agentMemory" | "pinnedView" | "performanceSnapshot" | "metricEvent" | "chatThread" | "chatMessage" | "scheduledBriefing" | "vendor" | "vendorBranch" | "deliveryZone" | "shiftCapacity" | "zoneSurcharge" | "deliveryPlan" | "deliveryPlanZoneRate" | "deliveryPlanKmTier" | "distanceCache" | "fulfillmentSettings" | "deliveryOrder" | "dispatchOffer" | "walletAccount" | "walletTransaction" | "walletEntry" | "remittance" | "walletReconciliationRun" | "incident" | "foodicsConnection" | "webhookEvent" | "apiKey" | "orderRating" | "vendorStatement" | "refund" | "fleetPartner" | "fleetPayoutStatement" | "deliveryPhoto" | "fleetPayoutInvoice" | "fleetDocument" | "fleetChangeRequest" | "fleetIssue" | "userInvite" | "userSurfacePermission" | "accountManagerVendor" | "accountManagerFleet" | "fleetDeduction" | "vendorIntegration" | "supportTicket" | "supportTicketMessage" | "vendorTopUp" | "fleetCashDeposit" | "driverTrainingSession" | "onboardingRequest" | "shiftPlan" | "shiftPlanEntry" | "vendorBranchAllocation" | "vendorVehiclePlan" | "fleetVehicleRate" | "privateShiftPlan" | "privateShift" | "privateShiftDeduction"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -12985,6 +13100,356 @@ export namespace Prisma {
           }
         }
       }
+      VendorVehiclePlan: {
+        payload: Prisma.$VendorVehiclePlanPayload<ExtArgs>
+        fields: Prisma.VendorVehiclePlanFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.VendorVehiclePlanFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorVehiclePlanPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.VendorVehiclePlanFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorVehiclePlanPayload>
+          }
+          findFirst: {
+            args: Prisma.VendorVehiclePlanFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorVehiclePlanPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.VendorVehiclePlanFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorVehiclePlanPayload>
+          }
+          findMany: {
+            args: Prisma.VendorVehiclePlanFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorVehiclePlanPayload>[]
+          }
+          create: {
+            args: Prisma.VendorVehiclePlanCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorVehiclePlanPayload>
+          }
+          createMany: {
+            args: Prisma.VendorVehiclePlanCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.VendorVehiclePlanCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorVehiclePlanPayload>[]
+          }
+          delete: {
+            args: Prisma.VendorVehiclePlanDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorVehiclePlanPayload>
+          }
+          update: {
+            args: Prisma.VendorVehiclePlanUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorVehiclePlanPayload>
+          }
+          deleteMany: {
+            args: Prisma.VendorVehiclePlanDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.VendorVehiclePlanUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.VendorVehiclePlanUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorVehiclePlanPayload>
+          }
+          aggregate: {
+            args: Prisma.VendorVehiclePlanAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateVendorVehiclePlan>
+          }
+          groupBy: {
+            args: Prisma.VendorVehiclePlanGroupByArgs<ExtArgs>
+            result: $Utils.Optional<VendorVehiclePlanGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.VendorVehiclePlanCountArgs<ExtArgs>
+            result: $Utils.Optional<VendorVehiclePlanCountAggregateOutputType> | number
+          }
+        }
+      }
+      FleetVehicleRate: {
+        payload: Prisma.$FleetVehicleRatePayload<ExtArgs>
+        fields: Prisma.FleetVehicleRateFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.FleetVehicleRateFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetVehicleRatePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.FleetVehicleRateFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetVehicleRatePayload>
+          }
+          findFirst: {
+            args: Prisma.FleetVehicleRateFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetVehicleRatePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.FleetVehicleRateFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetVehicleRatePayload>
+          }
+          findMany: {
+            args: Prisma.FleetVehicleRateFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetVehicleRatePayload>[]
+          }
+          create: {
+            args: Prisma.FleetVehicleRateCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetVehicleRatePayload>
+          }
+          createMany: {
+            args: Prisma.FleetVehicleRateCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.FleetVehicleRateCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetVehicleRatePayload>[]
+          }
+          delete: {
+            args: Prisma.FleetVehicleRateDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetVehicleRatePayload>
+          }
+          update: {
+            args: Prisma.FleetVehicleRateUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetVehicleRatePayload>
+          }
+          deleteMany: {
+            args: Prisma.FleetVehicleRateDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.FleetVehicleRateUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.FleetVehicleRateUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FleetVehicleRatePayload>
+          }
+          aggregate: {
+            args: Prisma.FleetVehicleRateAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFleetVehicleRate>
+          }
+          groupBy: {
+            args: Prisma.FleetVehicleRateGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FleetVehicleRateGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.FleetVehicleRateCountArgs<ExtArgs>
+            result: $Utils.Optional<FleetVehicleRateCountAggregateOutputType> | number
+          }
+        }
+      }
+      PrivateShiftPlan: {
+        payload: Prisma.$PrivateShiftPlanPayload<ExtArgs>
+        fields: Prisma.PrivateShiftPlanFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PrivateShiftPlanFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPlanPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PrivateShiftPlanFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPlanPayload>
+          }
+          findFirst: {
+            args: Prisma.PrivateShiftPlanFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPlanPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PrivateShiftPlanFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPlanPayload>
+          }
+          findMany: {
+            args: Prisma.PrivateShiftPlanFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPlanPayload>[]
+          }
+          create: {
+            args: Prisma.PrivateShiftPlanCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPlanPayload>
+          }
+          createMany: {
+            args: Prisma.PrivateShiftPlanCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PrivateShiftPlanCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPlanPayload>[]
+          }
+          delete: {
+            args: Prisma.PrivateShiftPlanDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPlanPayload>
+          }
+          update: {
+            args: Prisma.PrivateShiftPlanUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPlanPayload>
+          }
+          deleteMany: {
+            args: Prisma.PrivateShiftPlanDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PrivateShiftPlanUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.PrivateShiftPlanUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPlanPayload>
+          }
+          aggregate: {
+            args: Prisma.PrivateShiftPlanAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePrivateShiftPlan>
+          }
+          groupBy: {
+            args: Prisma.PrivateShiftPlanGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PrivateShiftPlanGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PrivateShiftPlanCountArgs<ExtArgs>
+            result: $Utils.Optional<PrivateShiftPlanCountAggregateOutputType> | number
+          }
+        }
+      }
+      PrivateShift: {
+        payload: Prisma.$PrivateShiftPayload<ExtArgs>
+        fields: Prisma.PrivateShiftFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PrivateShiftFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PrivateShiftFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPayload>
+          }
+          findFirst: {
+            args: Prisma.PrivateShiftFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PrivateShiftFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPayload>
+          }
+          findMany: {
+            args: Prisma.PrivateShiftFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPayload>[]
+          }
+          create: {
+            args: Prisma.PrivateShiftCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPayload>
+          }
+          createMany: {
+            args: Prisma.PrivateShiftCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PrivateShiftCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPayload>[]
+          }
+          delete: {
+            args: Prisma.PrivateShiftDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPayload>
+          }
+          update: {
+            args: Prisma.PrivateShiftUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPayload>
+          }
+          deleteMany: {
+            args: Prisma.PrivateShiftDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PrivateShiftUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.PrivateShiftUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftPayload>
+          }
+          aggregate: {
+            args: Prisma.PrivateShiftAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePrivateShift>
+          }
+          groupBy: {
+            args: Prisma.PrivateShiftGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PrivateShiftGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PrivateShiftCountArgs<ExtArgs>
+            result: $Utils.Optional<PrivateShiftCountAggregateOutputType> | number
+          }
+        }
+      }
+      PrivateShiftDeduction: {
+        payload: Prisma.$PrivateShiftDeductionPayload<ExtArgs>
+        fields: Prisma.PrivateShiftDeductionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PrivateShiftDeductionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftDeductionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PrivateShiftDeductionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftDeductionPayload>
+          }
+          findFirst: {
+            args: Prisma.PrivateShiftDeductionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftDeductionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PrivateShiftDeductionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftDeductionPayload>
+          }
+          findMany: {
+            args: Prisma.PrivateShiftDeductionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftDeductionPayload>[]
+          }
+          create: {
+            args: Prisma.PrivateShiftDeductionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftDeductionPayload>
+          }
+          createMany: {
+            args: Prisma.PrivateShiftDeductionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PrivateShiftDeductionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftDeductionPayload>[]
+          }
+          delete: {
+            args: Prisma.PrivateShiftDeductionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftDeductionPayload>
+          }
+          update: {
+            args: Prisma.PrivateShiftDeductionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftDeductionPayload>
+          }
+          deleteMany: {
+            args: Prisma.PrivateShiftDeductionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PrivateShiftDeductionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.PrivateShiftDeductionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrivateShiftDeductionPayload>
+          }
+          aggregate: {
+            args: Prisma.PrivateShiftDeductionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePrivateShiftDeduction>
+          }
+          groupBy: {
+            args: Prisma.PrivateShiftDeductionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PrivateShiftDeductionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PrivateShiftDeductionCountArgs<ExtArgs>
+            result: $Utils.Optional<PrivateShiftDeductionCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -16469,6 +16934,68 @@ export namespace Prisma {
    */
   export type ShiftPlanCountOutputTypeCountEntriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ShiftPlanEntryWhereInput
+  }
+
+
+  /**
+   * Count Type PrivateShiftPlanCountOutputType
+   */
+
+  export type PrivateShiftPlanCountOutputType = {
+    shifts: number
+  }
+
+  export type PrivateShiftPlanCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    shifts?: boolean | PrivateShiftPlanCountOutputTypeCountShiftsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * PrivateShiftPlanCountOutputType without action
+   */
+  export type PrivateShiftPlanCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftPlanCountOutputType
+     */
+    select?: PrivateShiftPlanCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * PrivateShiftPlanCountOutputType without action
+   */
+  export type PrivateShiftPlanCountOutputTypeCountShiftsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PrivateShiftWhereInput
+  }
+
+
+  /**
+   * Count Type PrivateShiftCountOutputType
+   */
+
+  export type PrivateShiftCountOutputType = {
+    deductions: number
+  }
+
+  export type PrivateShiftCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    deductions?: boolean | PrivateShiftCountOutputTypeCountDeductionsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * PrivateShiftCountOutputType without action
+   */
+  export type PrivateShiftCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftCountOutputType
+     */
+    select?: PrivateShiftCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * PrivateShiftCountOutputType without action
+   */
+  export type PrivateShiftCountOutputTypeCountDeductionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PrivateShiftDeductionWhereInput
   }
 
 
@@ -24530,6 +25057,7 @@ export namespace Prisma {
     passportStatus: string | null
     driverSelfieExpiry: Date | null
     driverSelfieStatus: string | null
+    privateShiftEligible: boolean | null
   }
 
   export type DriverMaxAggregateOutputType = {
@@ -24587,6 +25115,7 @@ export namespace Prisma {
     passportStatus: string | null
     driverSelfieExpiry: Date | null
     driverSelfieStatus: string | null
+    privateShiftEligible: boolean | null
   }
 
   export type DriverCountAggregateOutputType = {
@@ -24644,6 +25173,7 @@ export namespace Prisma {
     passportStatus: number
     driverSelfieExpiry: number
     driverSelfieStatus: number
+    privateShiftEligible: number
     _all: number
   }
 
@@ -24713,6 +25243,7 @@ export namespace Prisma {
     passportStatus?: true
     driverSelfieExpiry?: true
     driverSelfieStatus?: true
+    privateShiftEligible?: true
   }
 
   export type DriverMaxAggregateInputType = {
@@ -24770,6 +25301,7 @@ export namespace Prisma {
     passportStatus?: true
     driverSelfieExpiry?: true
     driverSelfieStatus?: true
+    privateShiftEligible?: true
   }
 
   export type DriverCountAggregateInputType = {
@@ -24827,6 +25359,7 @@ export namespace Prisma {
     passportStatus?: true
     driverSelfieExpiry?: true
     driverSelfieStatus?: true
+    privateShiftEligible?: true
     _all?: true
   }
 
@@ -24971,6 +25504,7 @@ export namespace Prisma {
     passportStatus: string | null
     driverSelfieExpiry: Date | null
     driverSelfieStatus: string | null
+    privateShiftEligible: boolean
     _count: DriverCountAggregateOutputType | null
     _avg: DriverAvgAggregateOutputType | null
     _sum: DriverSumAggregateOutputType | null
@@ -25047,6 +25581,7 @@ export namespace Prisma {
     passportStatus?: boolean
     driverSelfieExpiry?: boolean
     driverSelfieStatus?: boolean
+    privateShiftEligible?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     company?: boolean | CompanyDefaultArgs<ExtArgs>
     supervisor?: boolean | Driver$supervisorArgs<ExtArgs>
@@ -25160,6 +25695,7 @@ export namespace Prisma {
     passportStatus?: boolean
     driverSelfieExpiry?: boolean
     driverSelfieStatus?: boolean
+    privateShiftEligible?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     company?: boolean | CompanyDefaultArgs<ExtArgs>
     supervisor?: boolean | Driver$supervisorArgs<ExtArgs>
@@ -25222,6 +25758,7 @@ export namespace Prisma {
     passportStatus?: boolean
     driverSelfieExpiry?: boolean
     driverSelfieStatus?: boolean
+    privateShiftEligible?: boolean
   }
 
   export type DriverInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -25422,6 +25959,11 @@ export namespace Prisma {
        */
       driverSelfieExpiry: Date | null
       driverSelfieStatus: string | null
+      /**
+       * Revision 24 (#8): Darb has cleared this driver to book private shifts.
+       * Off by default; the driver app only offers private shifts when it is on.
+       */
+      privateShiftEligible: boolean
     }, ExtArgs["result"]["driver"]>
     composites: {}
   }
@@ -25924,6 +26466,7 @@ export namespace Prisma {
     readonly passportStatus: FieldRef<"Driver", 'String'>
     readonly driverSelfieExpiry: FieldRef<"Driver", 'DateTime'>
     readonly driverSelfieStatus: FieldRef<"Driver", 'String'>
+    readonly privateShiftEligible: FieldRef<"Driver", 'Boolean'>
   }
     
 
@@ -112663,6 +113206,7 @@ export namespace Prisma {
     walletMode: number
     createdAt: number
     updatedAt: number
+    suitableVehicleTypes: number
     _all: number
   }
 
@@ -112739,6 +113283,7 @@ export namespace Prisma {
     walletMode?: true
     createdAt?: true
     updatedAt?: true
+    suitableVehicleTypes?: true
     _all?: true
   }
 
@@ -112848,6 +113393,7 @@ export namespace Prisma {
     walletMode: string
     createdAt: Date
     updatedAt: Date
+    suitableVehicleTypes: $Enums.VehicleType[]
     _count: VendorCountAggregateOutputType | null
     _avg: VendorAvgAggregateOutputType | null
     _sum: VendorSumAggregateOutputType | null
@@ -112889,6 +113435,7 @@ export namespace Prisma {
     walletMode?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    suitableVehicleTypes?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     branches?: boolean | Vendor$branchesArgs<ExtArgs>
     documents?: boolean | Vendor$documentsArgs<ExtArgs>
@@ -112927,6 +113474,7 @@ export namespace Prisma {
     walletMode?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    suitableVehicleTypes?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     deliveryPlan?: boolean | Vendor$deliveryPlanArgs<ExtArgs>
   }, ExtArgs["result"]["vendor"]>
@@ -112951,6 +113499,7 @@ export namespace Prisma {
     walletMode?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    suitableVehicleTypes?: boolean
   }
 
   export type VendorInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -113029,6 +113578,13 @@ export namespace Prisma {
       walletMode: string
       createdAt: Date
       updatedAt: Date
+      /**
+       * Revision 24 (#8): the vehicle types that suit this shop, ticked on the
+       * vendor profile. Empty means not decided yet, and private shifts can only
+       * be opened for a ticked type. Each ticked type carries its own plans in
+       * VendorVehiclePlan (per order and per hour).
+       */
+      suitableVehicleTypes: $Enums.VehicleType[]
     }, ExtArgs["result"]["vendor"]>
     composites: {}
   }
@@ -113456,6 +114012,7 @@ export namespace Prisma {
     readonly walletMode: FieldRef<"Vendor", 'String'>
     readonly createdAt: FieldRef<"Vendor", 'DateTime'>
     readonly updatedAt: FieldRef<"Vendor", 'DateTime'>
+    readonly suitableVehicleTypes: FieldRef<"Vendor", 'VehicleType[]'>
   }
     
 
@@ -163325,6 +163882,5394 @@ export namespace Prisma {
 
 
   /**
+   * Model VendorVehiclePlan
+   */
+
+  export type AggregateVendorVehiclePlan = {
+    _count: VendorVehiclePlanCountAggregateOutputType | null
+    _avg: VendorVehiclePlanAvgAggregateOutputType | null
+    _sum: VendorVehiclePlanSumAggregateOutputType | null
+    _min: VendorVehiclePlanMinAggregateOutputType | null
+    _max: VendorVehiclePlanMaxAggregateOutputType | null
+  }
+
+  export type VendorVehiclePlanAvgAggregateOutputType = {
+    perHourKwd: Decimal | null
+  }
+
+  export type VendorVehiclePlanSumAggregateOutputType = {
+    perHourKwd: Decimal | null
+  }
+
+  export type VendorVehiclePlanMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    vendorId: string | null
+    vehicleType: $Enums.VehicleType | null
+    deliveryPlanId: string | null
+    perHourKwd: Decimal | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type VendorVehiclePlanMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    vendorId: string | null
+    vehicleType: $Enums.VehicleType | null
+    deliveryPlanId: string | null
+    perHourKwd: Decimal | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type VendorVehiclePlanCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    vendorId: number
+    vehicleType: number
+    deliveryPlanId: number
+    perHourKwd: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type VendorVehiclePlanAvgAggregateInputType = {
+    perHourKwd?: true
+  }
+
+  export type VendorVehiclePlanSumAggregateInputType = {
+    perHourKwd?: true
+  }
+
+  export type VendorVehiclePlanMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    vendorId?: true
+    vehicleType?: true
+    deliveryPlanId?: true
+    perHourKwd?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type VendorVehiclePlanMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    vendorId?: true
+    vehicleType?: true
+    deliveryPlanId?: true
+    perHourKwd?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type VendorVehiclePlanCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    vendorId?: true
+    vehicleType?: true
+    deliveryPlanId?: true
+    perHourKwd?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type VendorVehiclePlanAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which VendorVehiclePlan to aggregate.
+     */
+    where?: VendorVehiclePlanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VendorVehiclePlans to fetch.
+     */
+    orderBy?: VendorVehiclePlanOrderByWithRelationInput | VendorVehiclePlanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: VendorVehiclePlanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VendorVehiclePlans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VendorVehiclePlans.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned VendorVehiclePlans
+    **/
+    _count?: true | VendorVehiclePlanCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: VendorVehiclePlanAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: VendorVehiclePlanSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: VendorVehiclePlanMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: VendorVehiclePlanMaxAggregateInputType
+  }
+
+  export type GetVendorVehiclePlanAggregateType<T extends VendorVehiclePlanAggregateArgs> = {
+        [P in keyof T & keyof AggregateVendorVehiclePlan]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateVendorVehiclePlan[P]>
+      : GetScalarType<T[P], AggregateVendorVehiclePlan[P]>
+  }
+
+
+
+
+  export type VendorVehiclePlanGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VendorVehiclePlanWhereInput
+    orderBy?: VendorVehiclePlanOrderByWithAggregationInput | VendorVehiclePlanOrderByWithAggregationInput[]
+    by: VendorVehiclePlanScalarFieldEnum[] | VendorVehiclePlanScalarFieldEnum
+    having?: VendorVehiclePlanScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: VendorVehiclePlanCountAggregateInputType | true
+    _avg?: VendorVehiclePlanAvgAggregateInputType
+    _sum?: VendorVehiclePlanSumAggregateInputType
+    _min?: VendorVehiclePlanMinAggregateInputType
+    _max?: VendorVehiclePlanMaxAggregateInputType
+  }
+
+  export type VendorVehiclePlanGroupByOutputType = {
+    id: string
+    tenantId: string
+    vendorId: string
+    vehicleType: $Enums.VehicleType
+    deliveryPlanId: string | null
+    perHourKwd: Decimal | null
+    createdAt: Date
+    updatedAt: Date
+    _count: VendorVehiclePlanCountAggregateOutputType | null
+    _avg: VendorVehiclePlanAvgAggregateOutputType | null
+    _sum: VendorVehiclePlanSumAggregateOutputType | null
+    _min: VendorVehiclePlanMinAggregateOutputType | null
+    _max: VendorVehiclePlanMaxAggregateOutputType | null
+  }
+
+  type GetVendorVehiclePlanGroupByPayload<T extends VendorVehiclePlanGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<VendorVehiclePlanGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof VendorVehiclePlanGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], VendorVehiclePlanGroupByOutputType[P]>
+            : GetScalarType<T[P], VendorVehiclePlanGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type VendorVehiclePlanSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    vendorId?: boolean
+    vehicleType?: boolean
+    deliveryPlanId?: boolean
+    perHourKwd?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["vendorVehiclePlan"]>
+
+  export type VendorVehiclePlanSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    vendorId?: boolean
+    vehicleType?: boolean
+    deliveryPlanId?: boolean
+    perHourKwd?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["vendorVehiclePlan"]>
+
+  export type VendorVehiclePlanSelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    vendorId?: boolean
+    vehicleType?: boolean
+    deliveryPlanId?: boolean
+    perHourKwd?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+
+  export type $VendorVehiclePlanPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "VendorVehiclePlan"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      vendorId: string
+      vehicleType: $Enums.VehicleType
+      deliveryPlanId: string | null
+      perHourKwd: Prisma.Decimal | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["vendorVehiclePlan"]>
+    composites: {}
+  }
+
+  type VendorVehiclePlanGetPayload<S extends boolean | null | undefined | VendorVehiclePlanDefaultArgs> = $Result.GetResult<Prisma.$VendorVehiclePlanPayload, S>
+
+  type VendorVehiclePlanCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<VendorVehiclePlanFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: VendorVehiclePlanCountAggregateInputType | true
+    }
+
+  export interface VendorVehiclePlanDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['VendorVehiclePlan'], meta: { name: 'VendorVehiclePlan' } }
+    /**
+     * Find zero or one VendorVehiclePlan that matches the filter.
+     * @param {VendorVehiclePlanFindUniqueArgs} args - Arguments to find a VendorVehiclePlan
+     * @example
+     * // Get one VendorVehiclePlan
+     * const vendorVehiclePlan = await prisma.vendorVehiclePlan.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends VendorVehiclePlanFindUniqueArgs>(args: SelectSubset<T, VendorVehiclePlanFindUniqueArgs<ExtArgs>>): Prisma__VendorVehiclePlanClient<$Result.GetResult<Prisma.$VendorVehiclePlanPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one VendorVehiclePlan that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {VendorVehiclePlanFindUniqueOrThrowArgs} args - Arguments to find a VendorVehiclePlan
+     * @example
+     * // Get one VendorVehiclePlan
+     * const vendorVehiclePlan = await prisma.vendorVehiclePlan.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends VendorVehiclePlanFindUniqueOrThrowArgs>(args: SelectSubset<T, VendorVehiclePlanFindUniqueOrThrowArgs<ExtArgs>>): Prisma__VendorVehiclePlanClient<$Result.GetResult<Prisma.$VendorVehiclePlanPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first VendorVehiclePlan that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorVehiclePlanFindFirstArgs} args - Arguments to find a VendorVehiclePlan
+     * @example
+     * // Get one VendorVehiclePlan
+     * const vendorVehiclePlan = await prisma.vendorVehiclePlan.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends VendorVehiclePlanFindFirstArgs>(args?: SelectSubset<T, VendorVehiclePlanFindFirstArgs<ExtArgs>>): Prisma__VendorVehiclePlanClient<$Result.GetResult<Prisma.$VendorVehiclePlanPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first VendorVehiclePlan that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorVehiclePlanFindFirstOrThrowArgs} args - Arguments to find a VendorVehiclePlan
+     * @example
+     * // Get one VendorVehiclePlan
+     * const vendorVehiclePlan = await prisma.vendorVehiclePlan.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends VendorVehiclePlanFindFirstOrThrowArgs>(args?: SelectSubset<T, VendorVehiclePlanFindFirstOrThrowArgs<ExtArgs>>): Prisma__VendorVehiclePlanClient<$Result.GetResult<Prisma.$VendorVehiclePlanPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more VendorVehiclePlans that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorVehiclePlanFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all VendorVehiclePlans
+     * const vendorVehiclePlans = await prisma.vendorVehiclePlan.findMany()
+     * 
+     * // Get first 10 VendorVehiclePlans
+     * const vendorVehiclePlans = await prisma.vendorVehiclePlan.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const vendorVehiclePlanWithIdOnly = await prisma.vendorVehiclePlan.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends VendorVehiclePlanFindManyArgs>(args?: SelectSubset<T, VendorVehiclePlanFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorVehiclePlanPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a VendorVehiclePlan.
+     * @param {VendorVehiclePlanCreateArgs} args - Arguments to create a VendorVehiclePlan.
+     * @example
+     * // Create one VendorVehiclePlan
+     * const VendorVehiclePlan = await prisma.vendorVehiclePlan.create({
+     *   data: {
+     *     // ... data to create a VendorVehiclePlan
+     *   }
+     * })
+     * 
+     */
+    create<T extends VendorVehiclePlanCreateArgs>(args: SelectSubset<T, VendorVehiclePlanCreateArgs<ExtArgs>>): Prisma__VendorVehiclePlanClient<$Result.GetResult<Prisma.$VendorVehiclePlanPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many VendorVehiclePlans.
+     * @param {VendorVehiclePlanCreateManyArgs} args - Arguments to create many VendorVehiclePlans.
+     * @example
+     * // Create many VendorVehiclePlans
+     * const vendorVehiclePlan = await prisma.vendorVehiclePlan.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends VendorVehiclePlanCreateManyArgs>(args?: SelectSubset<T, VendorVehiclePlanCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many VendorVehiclePlans and returns the data saved in the database.
+     * @param {VendorVehiclePlanCreateManyAndReturnArgs} args - Arguments to create many VendorVehiclePlans.
+     * @example
+     * // Create many VendorVehiclePlans
+     * const vendorVehiclePlan = await prisma.vendorVehiclePlan.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many VendorVehiclePlans and only return the `id`
+     * const vendorVehiclePlanWithIdOnly = await prisma.vendorVehiclePlan.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends VendorVehiclePlanCreateManyAndReturnArgs>(args?: SelectSubset<T, VendorVehiclePlanCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorVehiclePlanPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a VendorVehiclePlan.
+     * @param {VendorVehiclePlanDeleteArgs} args - Arguments to delete one VendorVehiclePlan.
+     * @example
+     * // Delete one VendorVehiclePlan
+     * const VendorVehiclePlan = await prisma.vendorVehiclePlan.delete({
+     *   where: {
+     *     // ... filter to delete one VendorVehiclePlan
+     *   }
+     * })
+     * 
+     */
+    delete<T extends VendorVehiclePlanDeleteArgs>(args: SelectSubset<T, VendorVehiclePlanDeleteArgs<ExtArgs>>): Prisma__VendorVehiclePlanClient<$Result.GetResult<Prisma.$VendorVehiclePlanPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one VendorVehiclePlan.
+     * @param {VendorVehiclePlanUpdateArgs} args - Arguments to update one VendorVehiclePlan.
+     * @example
+     * // Update one VendorVehiclePlan
+     * const vendorVehiclePlan = await prisma.vendorVehiclePlan.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends VendorVehiclePlanUpdateArgs>(args: SelectSubset<T, VendorVehiclePlanUpdateArgs<ExtArgs>>): Prisma__VendorVehiclePlanClient<$Result.GetResult<Prisma.$VendorVehiclePlanPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more VendorVehiclePlans.
+     * @param {VendorVehiclePlanDeleteManyArgs} args - Arguments to filter VendorVehiclePlans to delete.
+     * @example
+     * // Delete a few VendorVehiclePlans
+     * const { count } = await prisma.vendorVehiclePlan.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends VendorVehiclePlanDeleteManyArgs>(args?: SelectSubset<T, VendorVehiclePlanDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more VendorVehiclePlans.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorVehiclePlanUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many VendorVehiclePlans
+     * const vendorVehiclePlan = await prisma.vendorVehiclePlan.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends VendorVehiclePlanUpdateManyArgs>(args: SelectSubset<T, VendorVehiclePlanUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one VendorVehiclePlan.
+     * @param {VendorVehiclePlanUpsertArgs} args - Arguments to update or create a VendorVehiclePlan.
+     * @example
+     * // Update or create a VendorVehiclePlan
+     * const vendorVehiclePlan = await prisma.vendorVehiclePlan.upsert({
+     *   create: {
+     *     // ... data to create a VendorVehiclePlan
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the VendorVehiclePlan we want to update
+     *   }
+     * })
+     */
+    upsert<T extends VendorVehiclePlanUpsertArgs>(args: SelectSubset<T, VendorVehiclePlanUpsertArgs<ExtArgs>>): Prisma__VendorVehiclePlanClient<$Result.GetResult<Prisma.$VendorVehiclePlanPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of VendorVehiclePlans.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorVehiclePlanCountArgs} args - Arguments to filter VendorVehiclePlans to count.
+     * @example
+     * // Count the number of VendorVehiclePlans
+     * const count = await prisma.vendorVehiclePlan.count({
+     *   where: {
+     *     // ... the filter for the VendorVehiclePlans we want to count
+     *   }
+     * })
+    **/
+    count<T extends VendorVehiclePlanCountArgs>(
+      args?: Subset<T, VendorVehiclePlanCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], VendorVehiclePlanCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a VendorVehiclePlan.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorVehiclePlanAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends VendorVehiclePlanAggregateArgs>(args: Subset<T, VendorVehiclePlanAggregateArgs>): Prisma.PrismaPromise<GetVendorVehiclePlanAggregateType<T>>
+
+    /**
+     * Group by VendorVehiclePlan.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorVehiclePlanGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends VendorVehiclePlanGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: VendorVehiclePlanGroupByArgs['orderBy'] }
+        : { orderBy?: VendorVehiclePlanGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, VendorVehiclePlanGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetVendorVehiclePlanGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the VendorVehiclePlan model
+   */
+  readonly fields: VendorVehiclePlanFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for VendorVehiclePlan.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__VendorVehiclePlanClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the VendorVehiclePlan model
+   */ 
+  interface VendorVehiclePlanFieldRefs {
+    readonly id: FieldRef<"VendorVehiclePlan", 'String'>
+    readonly tenantId: FieldRef<"VendorVehiclePlan", 'String'>
+    readonly vendorId: FieldRef<"VendorVehiclePlan", 'String'>
+    readonly vehicleType: FieldRef<"VendorVehiclePlan", 'VehicleType'>
+    readonly deliveryPlanId: FieldRef<"VendorVehiclePlan", 'String'>
+    readonly perHourKwd: FieldRef<"VendorVehiclePlan", 'Decimal'>
+    readonly createdAt: FieldRef<"VendorVehiclePlan", 'DateTime'>
+    readonly updatedAt: FieldRef<"VendorVehiclePlan", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * VendorVehiclePlan findUnique
+   */
+  export type VendorVehiclePlanFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorVehiclePlan
+     */
+    select?: VendorVehiclePlanSelect<ExtArgs> | null
+    /**
+     * Filter, which VendorVehiclePlan to fetch.
+     */
+    where: VendorVehiclePlanWhereUniqueInput
+  }
+
+  /**
+   * VendorVehiclePlan findUniqueOrThrow
+   */
+  export type VendorVehiclePlanFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorVehiclePlan
+     */
+    select?: VendorVehiclePlanSelect<ExtArgs> | null
+    /**
+     * Filter, which VendorVehiclePlan to fetch.
+     */
+    where: VendorVehiclePlanWhereUniqueInput
+  }
+
+  /**
+   * VendorVehiclePlan findFirst
+   */
+  export type VendorVehiclePlanFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorVehiclePlan
+     */
+    select?: VendorVehiclePlanSelect<ExtArgs> | null
+    /**
+     * Filter, which VendorVehiclePlan to fetch.
+     */
+    where?: VendorVehiclePlanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VendorVehiclePlans to fetch.
+     */
+    orderBy?: VendorVehiclePlanOrderByWithRelationInput | VendorVehiclePlanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for VendorVehiclePlans.
+     */
+    cursor?: VendorVehiclePlanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VendorVehiclePlans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VendorVehiclePlans.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VendorVehiclePlans.
+     */
+    distinct?: VendorVehiclePlanScalarFieldEnum | VendorVehiclePlanScalarFieldEnum[]
+  }
+
+  /**
+   * VendorVehiclePlan findFirstOrThrow
+   */
+  export type VendorVehiclePlanFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorVehiclePlan
+     */
+    select?: VendorVehiclePlanSelect<ExtArgs> | null
+    /**
+     * Filter, which VendorVehiclePlan to fetch.
+     */
+    where?: VendorVehiclePlanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VendorVehiclePlans to fetch.
+     */
+    orderBy?: VendorVehiclePlanOrderByWithRelationInput | VendorVehiclePlanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for VendorVehiclePlans.
+     */
+    cursor?: VendorVehiclePlanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VendorVehiclePlans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VendorVehiclePlans.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VendorVehiclePlans.
+     */
+    distinct?: VendorVehiclePlanScalarFieldEnum | VendorVehiclePlanScalarFieldEnum[]
+  }
+
+  /**
+   * VendorVehiclePlan findMany
+   */
+  export type VendorVehiclePlanFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorVehiclePlan
+     */
+    select?: VendorVehiclePlanSelect<ExtArgs> | null
+    /**
+     * Filter, which VendorVehiclePlans to fetch.
+     */
+    where?: VendorVehiclePlanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VendorVehiclePlans to fetch.
+     */
+    orderBy?: VendorVehiclePlanOrderByWithRelationInput | VendorVehiclePlanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing VendorVehiclePlans.
+     */
+    cursor?: VendorVehiclePlanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VendorVehiclePlans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VendorVehiclePlans.
+     */
+    skip?: number
+    distinct?: VendorVehiclePlanScalarFieldEnum | VendorVehiclePlanScalarFieldEnum[]
+  }
+
+  /**
+   * VendorVehiclePlan create
+   */
+  export type VendorVehiclePlanCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorVehiclePlan
+     */
+    select?: VendorVehiclePlanSelect<ExtArgs> | null
+    /**
+     * The data needed to create a VendorVehiclePlan.
+     */
+    data: XOR<VendorVehiclePlanCreateInput, VendorVehiclePlanUncheckedCreateInput>
+  }
+
+  /**
+   * VendorVehiclePlan createMany
+   */
+  export type VendorVehiclePlanCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many VendorVehiclePlans.
+     */
+    data: VendorVehiclePlanCreateManyInput | VendorVehiclePlanCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * VendorVehiclePlan createManyAndReturn
+   */
+  export type VendorVehiclePlanCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorVehiclePlan
+     */
+    select?: VendorVehiclePlanSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many VendorVehiclePlans.
+     */
+    data: VendorVehiclePlanCreateManyInput | VendorVehiclePlanCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * VendorVehiclePlan update
+   */
+  export type VendorVehiclePlanUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorVehiclePlan
+     */
+    select?: VendorVehiclePlanSelect<ExtArgs> | null
+    /**
+     * The data needed to update a VendorVehiclePlan.
+     */
+    data: XOR<VendorVehiclePlanUpdateInput, VendorVehiclePlanUncheckedUpdateInput>
+    /**
+     * Choose, which VendorVehiclePlan to update.
+     */
+    where: VendorVehiclePlanWhereUniqueInput
+  }
+
+  /**
+   * VendorVehiclePlan updateMany
+   */
+  export type VendorVehiclePlanUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update VendorVehiclePlans.
+     */
+    data: XOR<VendorVehiclePlanUpdateManyMutationInput, VendorVehiclePlanUncheckedUpdateManyInput>
+    /**
+     * Filter which VendorVehiclePlans to update
+     */
+    where?: VendorVehiclePlanWhereInput
+  }
+
+  /**
+   * VendorVehiclePlan upsert
+   */
+  export type VendorVehiclePlanUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorVehiclePlan
+     */
+    select?: VendorVehiclePlanSelect<ExtArgs> | null
+    /**
+     * The filter to search for the VendorVehiclePlan to update in case it exists.
+     */
+    where: VendorVehiclePlanWhereUniqueInput
+    /**
+     * In case the VendorVehiclePlan found by the `where` argument doesn't exist, create a new VendorVehiclePlan with this data.
+     */
+    create: XOR<VendorVehiclePlanCreateInput, VendorVehiclePlanUncheckedCreateInput>
+    /**
+     * In case the VendorVehiclePlan was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<VendorVehiclePlanUpdateInput, VendorVehiclePlanUncheckedUpdateInput>
+  }
+
+  /**
+   * VendorVehiclePlan delete
+   */
+  export type VendorVehiclePlanDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorVehiclePlan
+     */
+    select?: VendorVehiclePlanSelect<ExtArgs> | null
+    /**
+     * Filter which VendorVehiclePlan to delete.
+     */
+    where: VendorVehiclePlanWhereUniqueInput
+  }
+
+  /**
+   * VendorVehiclePlan deleteMany
+   */
+  export type VendorVehiclePlanDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which VendorVehiclePlans to delete
+     */
+    where?: VendorVehiclePlanWhereInput
+  }
+
+  /**
+   * VendorVehiclePlan without action
+   */
+  export type VendorVehiclePlanDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorVehiclePlan
+     */
+    select?: VendorVehiclePlanSelect<ExtArgs> | null
+  }
+
+
+  /**
+   * Model FleetVehicleRate
+   */
+
+  export type AggregateFleetVehicleRate = {
+    _count: FleetVehicleRateCountAggregateOutputType | null
+    _avg: FleetVehicleRateAvgAggregateOutputType | null
+    _sum: FleetVehicleRateSumAggregateOutputType | null
+    _min: FleetVehicleRateMinAggregateOutputType | null
+    _max: FleetVehicleRateMaxAggregateOutputType | null
+  }
+
+  export type FleetVehicleRateAvgAggregateOutputType = {
+    perOrderKwd: Decimal | null
+    perHourKwd: Decimal | null
+  }
+
+  export type FleetVehicleRateSumAggregateOutputType = {
+    perOrderKwd: Decimal | null
+    perHourKwd: Decimal | null
+  }
+
+  export type FleetVehicleRateMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    fleetPartnerId: string | null
+    vehicleType: $Enums.VehicleType | null
+    perOrderKwd: Decimal | null
+    perHourKwd: Decimal | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type FleetVehicleRateMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    fleetPartnerId: string | null
+    vehicleType: $Enums.VehicleType | null
+    perOrderKwd: Decimal | null
+    perHourKwd: Decimal | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type FleetVehicleRateCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    fleetPartnerId: number
+    vehicleType: number
+    perOrderKwd: number
+    perHourKwd: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type FleetVehicleRateAvgAggregateInputType = {
+    perOrderKwd?: true
+    perHourKwd?: true
+  }
+
+  export type FleetVehicleRateSumAggregateInputType = {
+    perOrderKwd?: true
+    perHourKwd?: true
+  }
+
+  export type FleetVehicleRateMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    fleetPartnerId?: true
+    vehicleType?: true
+    perOrderKwd?: true
+    perHourKwd?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type FleetVehicleRateMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    fleetPartnerId?: true
+    vehicleType?: true
+    perOrderKwd?: true
+    perHourKwd?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type FleetVehicleRateCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    fleetPartnerId?: true
+    vehicleType?: true
+    perOrderKwd?: true
+    perHourKwd?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type FleetVehicleRateAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FleetVehicleRate to aggregate.
+     */
+    where?: FleetVehicleRateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FleetVehicleRates to fetch.
+     */
+    orderBy?: FleetVehicleRateOrderByWithRelationInput | FleetVehicleRateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: FleetVehicleRateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FleetVehicleRates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FleetVehicleRates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned FleetVehicleRates
+    **/
+    _count?: true | FleetVehicleRateCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: FleetVehicleRateAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: FleetVehicleRateSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: FleetVehicleRateMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: FleetVehicleRateMaxAggregateInputType
+  }
+
+  export type GetFleetVehicleRateAggregateType<T extends FleetVehicleRateAggregateArgs> = {
+        [P in keyof T & keyof AggregateFleetVehicleRate]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateFleetVehicleRate[P]>
+      : GetScalarType<T[P], AggregateFleetVehicleRate[P]>
+  }
+
+
+
+
+  export type FleetVehicleRateGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FleetVehicleRateWhereInput
+    orderBy?: FleetVehicleRateOrderByWithAggregationInput | FleetVehicleRateOrderByWithAggregationInput[]
+    by: FleetVehicleRateScalarFieldEnum[] | FleetVehicleRateScalarFieldEnum
+    having?: FleetVehicleRateScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: FleetVehicleRateCountAggregateInputType | true
+    _avg?: FleetVehicleRateAvgAggregateInputType
+    _sum?: FleetVehicleRateSumAggregateInputType
+    _min?: FleetVehicleRateMinAggregateInputType
+    _max?: FleetVehicleRateMaxAggregateInputType
+  }
+
+  export type FleetVehicleRateGroupByOutputType = {
+    id: string
+    tenantId: string
+    fleetPartnerId: string
+    vehicleType: $Enums.VehicleType
+    perOrderKwd: Decimal | null
+    perHourKwd: Decimal | null
+    createdAt: Date
+    updatedAt: Date
+    _count: FleetVehicleRateCountAggregateOutputType | null
+    _avg: FleetVehicleRateAvgAggregateOutputType | null
+    _sum: FleetVehicleRateSumAggregateOutputType | null
+    _min: FleetVehicleRateMinAggregateOutputType | null
+    _max: FleetVehicleRateMaxAggregateOutputType | null
+  }
+
+  type GetFleetVehicleRateGroupByPayload<T extends FleetVehicleRateGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<FleetVehicleRateGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof FleetVehicleRateGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], FleetVehicleRateGroupByOutputType[P]>
+            : GetScalarType<T[P], FleetVehicleRateGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type FleetVehicleRateSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    fleetPartnerId?: boolean
+    vehicleType?: boolean
+    perOrderKwd?: boolean
+    perHourKwd?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["fleetVehicleRate"]>
+
+  export type FleetVehicleRateSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    fleetPartnerId?: boolean
+    vehicleType?: boolean
+    perOrderKwd?: boolean
+    perHourKwd?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["fleetVehicleRate"]>
+
+  export type FleetVehicleRateSelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    fleetPartnerId?: boolean
+    vehicleType?: boolean
+    perOrderKwd?: boolean
+    perHourKwd?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+
+  export type $FleetVehicleRatePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "FleetVehicleRate"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      fleetPartnerId: string
+      vehicleType: $Enums.VehicleType
+      perOrderKwd: Prisma.Decimal | null
+      perHourKwd: Prisma.Decimal | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["fleetVehicleRate"]>
+    composites: {}
+  }
+
+  type FleetVehicleRateGetPayload<S extends boolean | null | undefined | FleetVehicleRateDefaultArgs> = $Result.GetResult<Prisma.$FleetVehicleRatePayload, S>
+
+  type FleetVehicleRateCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<FleetVehicleRateFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: FleetVehicleRateCountAggregateInputType | true
+    }
+
+  export interface FleetVehicleRateDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['FleetVehicleRate'], meta: { name: 'FleetVehicleRate' } }
+    /**
+     * Find zero or one FleetVehicleRate that matches the filter.
+     * @param {FleetVehicleRateFindUniqueArgs} args - Arguments to find a FleetVehicleRate
+     * @example
+     * // Get one FleetVehicleRate
+     * const fleetVehicleRate = await prisma.fleetVehicleRate.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends FleetVehicleRateFindUniqueArgs>(args: SelectSubset<T, FleetVehicleRateFindUniqueArgs<ExtArgs>>): Prisma__FleetVehicleRateClient<$Result.GetResult<Prisma.$FleetVehicleRatePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one FleetVehicleRate that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {FleetVehicleRateFindUniqueOrThrowArgs} args - Arguments to find a FleetVehicleRate
+     * @example
+     * // Get one FleetVehicleRate
+     * const fleetVehicleRate = await prisma.fleetVehicleRate.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends FleetVehicleRateFindUniqueOrThrowArgs>(args: SelectSubset<T, FleetVehicleRateFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FleetVehicleRateClient<$Result.GetResult<Prisma.$FleetVehicleRatePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first FleetVehicleRate that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetVehicleRateFindFirstArgs} args - Arguments to find a FleetVehicleRate
+     * @example
+     * // Get one FleetVehicleRate
+     * const fleetVehicleRate = await prisma.fleetVehicleRate.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends FleetVehicleRateFindFirstArgs>(args?: SelectSubset<T, FleetVehicleRateFindFirstArgs<ExtArgs>>): Prisma__FleetVehicleRateClient<$Result.GetResult<Prisma.$FleetVehicleRatePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first FleetVehicleRate that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetVehicleRateFindFirstOrThrowArgs} args - Arguments to find a FleetVehicleRate
+     * @example
+     * // Get one FleetVehicleRate
+     * const fleetVehicleRate = await prisma.fleetVehicleRate.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends FleetVehicleRateFindFirstOrThrowArgs>(args?: SelectSubset<T, FleetVehicleRateFindFirstOrThrowArgs<ExtArgs>>): Prisma__FleetVehicleRateClient<$Result.GetResult<Prisma.$FleetVehicleRatePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more FleetVehicleRates that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetVehicleRateFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all FleetVehicleRates
+     * const fleetVehicleRates = await prisma.fleetVehicleRate.findMany()
+     * 
+     * // Get first 10 FleetVehicleRates
+     * const fleetVehicleRates = await prisma.fleetVehicleRate.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const fleetVehicleRateWithIdOnly = await prisma.fleetVehicleRate.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends FleetVehicleRateFindManyArgs>(args?: SelectSubset<T, FleetVehicleRateFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetVehicleRatePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a FleetVehicleRate.
+     * @param {FleetVehicleRateCreateArgs} args - Arguments to create a FleetVehicleRate.
+     * @example
+     * // Create one FleetVehicleRate
+     * const FleetVehicleRate = await prisma.fleetVehicleRate.create({
+     *   data: {
+     *     // ... data to create a FleetVehicleRate
+     *   }
+     * })
+     * 
+     */
+    create<T extends FleetVehicleRateCreateArgs>(args: SelectSubset<T, FleetVehicleRateCreateArgs<ExtArgs>>): Prisma__FleetVehicleRateClient<$Result.GetResult<Prisma.$FleetVehicleRatePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many FleetVehicleRates.
+     * @param {FleetVehicleRateCreateManyArgs} args - Arguments to create many FleetVehicleRates.
+     * @example
+     * // Create many FleetVehicleRates
+     * const fleetVehicleRate = await prisma.fleetVehicleRate.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends FleetVehicleRateCreateManyArgs>(args?: SelectSubset<T, FleetVehicleRateCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many FleetVehicleRates and returns the data saved in the database.
+     * @param {FleetVehicleRateCreateManyAndReturnArgs} args - Arguments to create many FleetVehicleRates.
+     * @example
+     * // Create many FleetVehicleRates
+     * const fleetVehicleRate = await prisma.fleetVehicleRate.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many FleetVehicleRates and only return the `id`
+     * const fleetVehicleRateWithIdOnly = await prisma.fleetVehicleRate.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends FleetVehicleRateCreateManyAndReturnArgs>(args?: SelectSubset<T, FleetVehicleRateCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FleetVehicleRatePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a FleetVehicleRate.
+     * @param {FleetVehicleRateDeleteArgs} args - Arguments to delete one FleetVehicleRate.
+     * @example
+     * // Delete one FleetVehicleRate
+     * const FleetVehicleRate = await prisma.fleetVehicleRate.delete({
+     *   where: {
+     *     // ... filter to delete one FleetVehicleRate
+     *   }
+     * })
+     * 
+     */
+    delete<T extends FleetVehicleRateDeleteArgs>(args: SelectSubset<T, FleetVehicleRateDeleteArgs<ExtArgs>>): Prisma__FleetVehicleRateClient<$Result.GetResult<Prisma.$FleetVehicleRatePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one FleetVehicleRate.
+     * @param {FleetVehicleRateUpdateArgs} args - Arguments to update one FleetVehicleRate.
+     * @example
+     * // Update one FleetVehicleRate
+     * const fleetVehicleRate = await prisma.fleetVehicleRate.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends FleetVehicleRateUpdateArgs>(args: SelectSubset<T, FleetVehicleRateUpdateArgs<ExtArgs>>): Prisma__FleetVehicleRateClient<$Result.GetResult<Prisma.$FleetVehicleRatePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more FleetVehicleRates.
+     * @param {FleetVehicleRateDeleteManyArgs} args - Arguments to filter FleetVehicleRates to delete.
+     * @example
+     * // Delete a few FleetVehicleRates
+     * const { count } = await prisma.fleetVehicleRate.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends FleetVehicleRateDeleteManyArgs>(args?: SelectSubset<T, FleetVehicleRateDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FleetVehicleRates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetVehicleRateUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many FleetVehicleRates
+     * const fleetVehicleRate = await prisma.fleetVehicleRate.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends FleetVehicleRateUpdateManyArgs>(args: SelectSubset<T, FleetVehicleRateUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one FleetVehicleRate.
+     * @param {FleetVehicleRateUpsertArgs} args - Arguments to update or create a FleetVehicleRate.
+     * @example
+     * // Update or create a FleetVehicleRate
+     * const fleetVehicleRate = await prisma.fleetVehicleRate.upsert({
+     *   create: {
+     *     // ... data to create a FleetVehicleRate
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the FleetVehicleRate we want to update
+     *   }
+     * })
+     */
+    upsert<T extends FleetVehicleRateUpsertArgs>(args: SelectSubset<T, FleetVehicleRateUpsertArgs<ExtArgs>>): Prisma__FleetVehicleRateClient<$Result.GetResult<Prisma.$FleetVehicleRatePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of FleetVehicleRates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetVehicleRateCountArgs} args - Arguments to filter FleetVehicleRates to count.
+     * @example
+     * // Count the number of FleetVehicleRates
+     * const count = await prisma.fleetVehicleRate.count({
+     *   where: {
+     *     // ... the filter for the FleetVehicleRates we want to count
+     *   }
+     * })
+    **/
+    count<T extends FleetVehicleRateCountArgs>(
+      args?: Subset<T, FleetVehicleRateCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], FleetVehicleRateCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a FleetVehicleRate.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetVehicleRateAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends FleetVehicleRateAggregateArgs>(args: Subset<T, FleetVehicleRateAggregateArgs>): Prisma.PrismaPromise<GetFleetVehicleRateAggregateType<T>>
+
+    /**
+     * Group by FleetVehicleRate.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FleetVehicleRateGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends FleetVehicleRateGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: FleetVehicleRateGroupByArgs['orderBy'] }
+        : { orderBy?: FleetVehicleRateGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, FleetVehicleRateGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFleetVehicleRateGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the FleetVehicleRate model
+   */
+  readonly fields: FleetVehicleRateFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for FleetVehicleRate.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__FleetVehicleRateClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the FleetVehicleRate model
+   */ 
+  interface FleetVehicleRateFieldRefs {
+    readonly id: FieldRef<"FleetVehicleRate", 'String'>
+    readonly tenantId: FieldRef<"FleetVehicleRate", 'String'>
+    readonly fleetPartnerId: FieldRef<"FleetVehicleRate", 'String'>
+    readonly vehicleType: FieldRef<"FleetVehicleRate", 'VehicleType'>
+    readonly perOrderKwd: FieldRef<"FleetVehicleRate", 'Decimal'>
+    readonly perHourKwd: FieldRef<"FleetVehicleRate", 'Decimal'>
+    readonly createdAt: FieldRef<"FleetVehicleRate", 'DateTime'>
+    readonly updatedAt: FieldRef<"FleetVehicleRate", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * FleetVehicleRate findUnique
+   */
+  export type FleetVehicleRateFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetVehicleRate
+     */
+    select?: FleetVehicleRateSelect<ExtArgs> | null
+    /**
+     * Filter, which FleetVehicleRate to fetch.
+     */
+    where: FleetVehicleRateWhereUniqueInput
+  }
+
+  /**
+   * FleetVehicleRate findUniqueOrThrow
+   */
+  export type FleetVehicleRateFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetVehicleRate
+     */
+    select?: FleetVehicleRateSelect<ExtArgs> | null
+    /**
+     * Filter, which FleetVehicleRate to fetch.
+     */
+    where: FleetVehicleRateWhereUniqueInput
+  }
+
+  /**
+   * FleetVehicleRate findFirst
+   */
+  export type FleetVehicleRateFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetVehicleRate
+     */
+    select?: FleetVehicleRateSelect<ExtArgs> | null
+    /**
+     * Filter, which FleetVehicleRate to fetch.
+     */
+    where?: FleetVehicleRateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FleetVehicleRates to fetch.
+     */
+    orderBy?: FleetVehicleRateOrderByWithRelationInput | FleetVehicleRateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FleetVehicleRates.
+     */
+    cursor?: FleetVehicleRateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FleetVehicleRates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FleetVehicleRates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FleetVehicleRates.
+     */
+    distinct?: FleetVehicleRateScalarFieldEnum | FleetVehicleRateScalarFieldEnum[]
+  }
+
+  /**
+   * FleetVehicleRate findFirstOrThrow
+   */
+  export type FleetVehicleRateFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetVehicleRate
+     */
+    select?: FleetVehicleRateSelect<ExtArgs> | null
+    /**
+     * Filter, which FleetVehicleRate to fetch.
+     */
+    where?: FleetVehicleRateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FleetVehicleRates to fetch.
+     */
+    orderBy?: FleetVehicleRateOrderByWithRelationInput | FleetVehicleRateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FleetVehicleRates.
+     */
+    cursor?: FleetVehicleRateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FleetVehicleRates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FleetVehicleRates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FleetVehicleRates.
+     */
+    distinct?: FleetVehicleRateScalarFieldEnum | FleetVehicleRateScalarFieldEnum[]
+  }
+
+  /**
+   * FleetVehicleRate findMany
+   */
+  export type FleetVehicleRateFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetVehicleRate
+     */
+    select?: FleetVehicleRateSelect<ExtArgs> | null
+    /**
+     * Filter, which FleetVehicleRates to fetch.
+     */
+    where?: FleetVehicleRateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FleetVehicleRates to fetch.
+     */
+    orderBy?: FleetVehicleRateOrderByWithRelationInput | FleetVehicleRateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing FleetVehicleRates.
+     */
+    cursor?: FleetVehicleRateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FleetVehicleRates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FleetVehicleRates.
+     */
+    skip?: number
+    distinct?: FleetVehicleRateScalarFieldEnum | FleetVehicleRateScalarFieldEnum[]
+  }
+
+  /**
+   * FleetVehicleRate create
+   */
+  export type FleetVehicleRateCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetVehicleRate
+     */
+    select?: FleetVehicleRateSelect<ExtArgs> | null
+    /**
+     * The data needed to create a FleetVehicleRate.
+     */
+    data: XOR<FleetVehicleRateCreateInput, FleetVehicleRateUncheckedCreateInput>
+  }
+
+  /**
+   * FleetVehicleRate createMany
+   */
+  export type FleetVehicleRateCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many FleetVehicleRates.
+     */
+    data: FleetVehicleRateCreateManyInput | FleetVehicleRateCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * FleetVehicleRate createManyAndReturn
+   */
+  export type FleetVehicleRateCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetVehicleRate
+     */
+    select?: FleetVehicleRateSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many FleetVehicleRates.
+     */
+    data: FleetVehicleRateCreateManyInput | FleetVehicleRateCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * FleetVehicleRate update
+   */
+  export type FleetVehicleRateUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetVehicleRate
+     */
+    select?: FleetVehicleRateSelect<ExtArgs> | null
+    /**
+     * The data needed to update a FleetVehicleRate.
+     */
+    data: XOR<FleetVehicleRateUpdateInput, FleetVehicleRateUncheckedUpdateInput>
+    /**
+     * Choose, which FleetVehicleRate to update.
+     */
+    where: FleetVehicleRateWhereUniqueInput
+  }
+
+  /**
+   * FleetVehicleRate updateMany
+   */
+  export type FleetVehicleRateUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update FleetVehicleRates.
+     */
+    data: XOR<FleetVehicleRateUpdateManyMutationInput, FleetVehicleRateUncheckedUpdateManyInput>
+    /**
+     * Filter which FleetVehicleRates to update
+     */
+    where?: FleetVehicleRateWhereInput
+  }
+
+  /**
+   * FleetVehicleRate upsert
+   */
+  export type FleetVehicleRateUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetVehicleRate
+     */
+    select?: FleetVehicleRateSelect<ExtArgs> | null
+    /**
+     * The filter to search for the FleetVehicleRate to update in case it exists.
+     */
+    where: FleetVehicleRateWhereUniqueInput
+    /**
+     * In case the FleetVehicleRate found by the `where` argument doesn't exist, create a new FleetVehicleRate with this data.
+     */
+    create: XOR<FleetVehicleRateCreateInput, FleetVehicleRateUncheckedCreateInput>
+    /**
+     * In case the FleetVehicleRate was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<FleetVehicleRateUpdateInput, FleetVehicleRateUncheckedUpdateInput>
+  }
+
+  /**
+   * FleetVehicleRate delete
+   */
+  export type FleetVehicleRateDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetVehicleRate
+     */
+    select?: FleetVehicleRateSelect<ExtArgs> | null
+    /**
+     * Filter which FleetVehicleRate to delete.
+     */
+    where: FleetVehicleRateWhereUniqueInput
+  }
+
+  /**
+   * FleetVehicleRate deleteMany
+   */
+  export type FleetVehicleRateDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FleetVehicleRates to delete
+     */
+    where?: FleetVehicleRateWhereInput
+  }
+
+  /**
+   * FleetVehicleRate without action
+   */
+  export type FleetVehicleRateDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FleetVehicleRate
+     */
+    select?: FleetVehicleRateSelect<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PrivateShiftPlan
+   */
+
+  export type AggregatePrivateShiftPlan = {
+    _count: PrivateShiftPlanCountAggregateOutputType | null
+    _avg: PrivateShiftPlanAvgAggregateOutputType | null
+    _sum: PrivateShiftPlanSumAggregateOutputType | null
+    _min: PrivateShiftPlanMinAggregateOutputType | null
+    _max: PrivateShiftPlanMaxAggregateOutputType | null
+  }
+
+  export type PrivateShiftPlanAvgAggregateOutputType = {
+    requestedShifts: number | null
+    shiftHours: number | null
+  }
+
+  export type PrivateShiftPlanSumAggregateOutputType = {
+    requestedShifts: number | null
+    shiftHours: number | null
+  }
+
+  export type PrivateShiftPlanMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    vendorId: string | null
+    branchId: string | null
+    vehicleType: $Enums.VehicleType | null
+    date: string | null
+    requestedShifts: number | null
+    shiftHours: number | null
+    source: $Enums.PrivateShiftSource | null
+    status: string | null
+    createdById: string | null
+    confirmedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PrivateShiftPlanMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    vendorId: string | null
+    branchId: string | null
+    vehicleType: $Enums.VehicleType | null
+    date: string | null
+    requestedShifts: number | null
+    shiftHours: number | null
+    source: $Enums.PrivateShiftSource | null
+    status: string | null
+    createdById: string | null
+    confirmedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PrivateShiftPlanCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    vendorId: number
+    branchId: number
+    vehicleType: number
+    date: number
+    requestedShifts: number
+    shiftHours: number
+    source: number
+    status: number
+    basis: number
+    createdById: number
+    confirmedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PrivateShiftPlanAvgAggregateInputType = {
+    requestedShifts?: true
+    shiftHours?: true
+  }
+
+  export type PrivateShiftPlanSumAggregateInputType = {
+    requestedShifts?: true
+    shiftHours?: true
+  }
+
+  export type PrivateShiftPlanMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    vendorId?: true
+    branchId?: true
+    vehicleType?: true
+    date?: true
+    requestedShifts?: true
+    shiftHours?: true
+    source?: true
+    status?: true
+    createdById?: true
+    confirmedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PrivateShiftPlanMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    vendorId?: true
+    branchId?: true
+    vehicleType?: true
+    date?: true
+    requestedShifts?: true
+    shiftHours?: true
+    source?: true
+    status?: true
+    createdById?: true
+    confirmedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PrivateShiftPlanCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    vendorId?: true
+    branchId?: true
+    vehicleType?: true
+    date?: true
+    requestedShifts?: true
+    shiftHours?: true
+    source?: true
+    status?: true
+    basis?: true
+    createdById?: true
+    confirmedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PrivateShiftPlanAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PrivateShiftPlan to aggregate.
+     */
+    where?: PrivateShiftPlanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PrivateShiftPlans to fetch.
+     */
+    orderBy?: PrivateShiftPlanOrderByWithRelationInput | PrivateShiftPlanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PrivateShiftPlanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PrivateShiftPlans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PrivateShiftPlans.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PrivateShiftPlans
+    **/
+    _count?: true | PrivateShiftPlanCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PrivateShiftPlanAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PrivateShiftPlanSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PrivateShiftPlanMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PrivateShiftPlanMaxAggregateInputType
+  }
+
+  export type GetPrivateShiftPlanAggregateType<T extends PrivateShiftPlanAggregateArgs> = {
+        [P in keyof T & keyof AggregatePrivateShiftPlan]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePrivateShiftPlan[P]>
+      : GetScalarType<T[P], AggregatePrivateShiftPlan[P]>
+  }
+
+
+
+
+  export type PrivateShiftPlanGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PrivateShiftPlanWhereInput
+    orderBy?: PrivateShiftPlanOrderByWithAggregationInput | PrivateShiftPlanOrderByWithAggregationInput[]
+    by: PrivateShiftPlanScalarFieldEnum[] | PrivateShiftPlanScalarFieldEnum
+    having?: PrivateShiftPlanScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PrivateShiftPlanCountAggregateInputType | true
+    _avg?: PrivateShiftPlanAvgAggregateInputType
+    _sum?: PrivateShiftPlanSumAggregateInputType
+    _min?: PrivateShiftPlanMinAggregateInputType
+    _max?: PrivateShiftPlanMaxAggregateInputType
+  }
+
+  export type PrivateShiftPlanGroupByOutputType = {
+    id: string
+    tenantId: string
+    vendorId: string
+    branchId: string
+    vehicleType: $Enums.VehicleType
+    date: string
+    requestedShifts: number
+    shiftHours: number
+    source: $Enums.PrivateShiftSource
+    status: string
+    basis: JsonValue | null
+    createdById: string | null
+    confirmedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: PrivateShiftPlanCountAggregateOutputType | null
+    _avg: PrivateShiftPlanAvgAggregateOutputType | null
+    _sum: PrivateShiftPlanSumAggregateOutputType | null
+    _min: PrivateShiftPlanMinAggregateOutputType | null
+    _max: PrivateShiftPlanMaxAggregateOutputType | null
+  }
+
+  type GetPrivateShiftPlanGroupByPayload<T extends PrivateShiftPlanGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PrivateShiftPlanGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PrivateShiftPlanGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PrivateShiftPlanGroupByOutputType[P]>
+            : GetScalarType<T[P], PrivateShiftPlanGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PrivateShiftPlanSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    vendorId?: boolean
+    branchId?: boolean
+    vehicleType?: boolean
+    date?: boolean
+    requestedShifts?: boolean
+    shiftHours?: boolean
+    source?: boolean
+    status?: boolean
+    basis?: boolean
+    createdById?: boolean
+    confirmedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    shifts?: boolean | PrivateShiftPlan$shiftsArgs<ExtArgs>
+    _count?: boolean | PrivateShiftPlanCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["privateShiftPlan"]>
+
+  export type PrivateShiftPlanSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    vendorId?: boolean
+    branchId?: boolean
+    vehicleType?: boolean
+    date?: boolean
+    requestedShifts?: boolean
+    shiftHours?: boolean
+    source?: boolean
+    status?: boolean
+    basis?: boolean
+    createdById?: boolean
+    confirmedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["privateShiftPlan"]>
+
+  export type PrivateShiftPlanSelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    vendorId?: boolean
+    branchId?: boolean
+    vehicleType?: boolean
+    date?: boolean
+    requestedShifts?: boolean
+    shiftHours?: boolean
+    source?: boolean
+    status?: boolean
+    basis?: boolean
+    createdById?: boolean
+    confirmedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type PrivateShiftPlanInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    shifts?: boolean | PrivateShiftPlan$shiftsArgs<ExtArgs>
+    _count?: boolean | PrivateShiftPlanCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type PrivateShiftPlanIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $PrivateShiftPlanPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PrivateShiftPlan"
+    objects: {
+      shifts: Prisma.$PrivateShiftPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      vendorId: string
+      branchId: string
+      vehicleType: $Enums.VehicleType
+      /**
+       * The calendar day, "YYYY-MM-DD", the same discipline ShiftRequest.date uses.
+       */
+      date: string
+      requestedShifts: number
+      shiftHours: number
+      source: $Enums.PrivateShiftSource
+      /**
+       * DRAFT | CONFIRMED | CANCELLED
+       */
+      status: string
+      /**
+       * What the proposal was built from: { lookbackWeeks, ordersSampled, hourly }.
+       */
+      basis: Prisma.JsonValue | null
+      createdById: string | null
+      confirmedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["privateShiftPlan"]>
+    composites: {}
+  }
+
+  type PrivateShiftPlanGetPayload<S extends boolean | null | undefined | PrivateShiftPlanDefaultArgs> = $Result.GetResult<Prisma.$PrivateShiftPlanPayload, S>
+
+  type PrivateShiftPlanCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<PrivateShiftPlanFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: PrivateShiftPlanCountAggregateInputType | true
+    }
+
+  export interface PrivateShiftPlanDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PrivateShiftPlan'], meta: { name: 'PrivateShiftPlan' } }
+    /**
+     * Find zero or one PrivateShiftPlan that matches the filter.
+     * @param {PrivateShiftPlanFindUniqueArgs} args - Arguments to find a PrivateShiftPlan
+     * @example
+     * // Get one PrivateShiftPlan
+     * const privateShiftPlan = await prisma.privateShiftPlan.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PrivateShiftPlanFindUniqueArgs>(args: SelectSubset<T, PrivateShiftPlanFindUniqueArgs<ExtArgs>>): Prisma__PrivateShiftPlanClient<$Result.GetResult<Prisma.$PrivateShiftPlanPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one PrivateShiftPlan that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {PrivateShiftPlanFindUniqueOrThrowArgs} args - Arguments to find a PrivateShiftPlan
+     * @example
+     * // Get one PrivateShiftPlan
+     * const privateShiftPlan = await prisma.privateShiftPlan.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PrivateShiftPlanFindUniqueOrThrowArgs>(args: SelectSubset<T, PrivateShiftPlanFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PrivateShiftPlanClient<$Result.GetResult<Prisma.$PrivateShiftPlanPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first PrivateShiftPlan that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftPlanFindFirstArgs} args - Arguments to find a PrivateShiftPlan
+     * @example
+     * // Get one PrivateShiftPlan
+     * const privateShiftPlan = await prisma.privateShiftPlan.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PrivateShiftPlanFindFirstArgs>(args?: SelectSubset<T, PrivateShiftPlanFindFirstArgs<ExtArgs>>): Prisma__PrivateShiftPlanClient<$Result.GetResult<Prisma.$PrivateShiftPlanPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first PrivateShiftPlan that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftPlanFindFirstOrThrowArgs} args - Arguments to find a PrivateShiftPlan
+     * @example
+     * // Get one PrivateShiftPlan
+     * const privateShiftPlan = await prisma.privateShiftPlan.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PrivateShiftPlanFindFirstOrThrowArgs>(args?: SelectSubset<T, PrivateShiftPlanFindFirstOrThrowArgs<ExtArgs>>): Prisma__PrivateShiftPlanClient<$Result.GetResult<Prisma.$PrivateShiftPlanPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more PrivateShiftPlans that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftPlanFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PrivateShiftPlans
+     * const privateShiftPlans = await prisma.privateShiftPlan.findMany()
+     * 
+     * // Get first 10 PrivateShiftPlans
+     * const privateShiftPlans = await prisma.privateShiftPlan.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const privateShiftPlanWithIdOnly = await prisma.privateShiftPlan.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PrivateShiftPlanFindManyArgs>(args?: SelectSubset<T, PrivateShiftPlanFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PrivateShiftPlanPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a PrivateShiftPlan.
+     * @param {PrivateShiftPlanCreateArgs} args - Arguments to create a PrivateShiftPlan.
+     * @example
+     * // Create one PrivateShiftPlan
+     * const PrivateShiftPlan = await prisma.privateShiftPlan.create({
+     *   data: {
+     *     // ... data to create a PrivateShiftPlan
+     *   }
+     * })
+     * 
+     */
+    create<T extends PrivateShiftPlanCreateArgs>(args: SelectSubset<T, PrivateShiftPlanCreateArgs<ExtArgs>>): Prisma__PrivateShiftPlanClient<$Result.GetResult<Prisma.$PrivateShiftPlanPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many PrivateShiftPlans.
+     * @param {PrivateShiftPlanCreateManyArgs} args - Arguments to create many PrivateShiftPlans.
+     * @example
+     * // Create many PrivateShiftPlans
+     * const privateShiftPlan = await prisma.privateShiftPlan.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PrivateShiftPlanCreateManyArgs>(args?: SelectSubset<T, PrivateShiftPlanCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PrivateShiftPlans and returns the data saved in the database.
+     * @param {PrivateShiftPlanCreateManyAndReturnArgs} args - Arguments to create many PrivateShiftPlans.
+     * @example
+     * // Create many PrivateShiftPlans
+     * const privateShiftPlan = await prisma.privateShiftPlan.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PrivateShiftPlans and only return the `id`
+     * const privateShiftPlanWithIdOnly = await prisma.privateShiftPlan.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PrivateShiftPlanCreateManyAndReturnArgs>(args?: SelectSubset<T, PrivateShiftPlanCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PrivateShiftPlanPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a PrivateShiftPlan.
+     * @param {PrivateShiftPlanDeleteArgs} args - Arguments to delete one PrivateShiftPlan.
+     * @example
+     * // Delete one PrivateShiftPlan
+     * const PrivateShiftPlan = await prisma.privateShiftPlan.delete({
+     *   where: {
+     *     // ... filter to delete one PrivateShiftPlan
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PrivateShiftPlanDeleteArgs>(args: SelectSubset<T, PrivateShiftPlanDeleteArgs<ExtArgs>>): Prisma__PrivateShiftPlanClient<$Result.GetResult<Prisma.$PrivateShiftPlanPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one PrivateShiftPlan.
+     * @param {PrivateShiftPlanUpdateArgs} args - Arguments to update one PrivateShiftPlan.
+     * @example
+     * // Update one PrivateShiftPlan
+     * const privateShiftPlan = await prisma.privateShiftPlan.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PrivateShiftPlanUpdateArgs>(args: SelectSubset<T, PrivateShiftPlanUpdateArgs<ExtArgs>>): Prisma__PrivateShiftPlanClient<$Result.GetResult<Prisma.$PrivateShiftPlanPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more PrivateShiftPlans.
+     * @param {PrivateShiftPlanDeleteManyArgs} args - Arguments to filter PrivateShiftPlans to delete.
+     * @example
+     * // Delete a few PrivateShiftPlans
+     * const { count } = await prisma.privateShiftPlan.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PrivateShiftPlanDeleteManyArgs>(args?: SelectSubset<T, PrivateShiftPlanDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PrivateShiftPlans.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftPlanUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PrivateShiftPlans
+     * const privateShiftPlan = await prisma.privateShiftPlan.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PrivateShiftPlanUpdateManyArgs>(args: SelectSubset<T, PrivateShiftPlanUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one PrivateShiftPlan.
+     * @param {PrivateShiftPlanUpsertArgs} args - Arguments to update or create a PrivateShiftPlan.
+     * @example
+     * // Update or create a PrivateShiftPlan
+     * const privateShiftPlan = await prisma.privateShiftPlan.upsert({
+     *   create: {
+     *     // ... data to create a PrivateShiftPlan
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PrivateShiftPlan we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PrivateShiftPlanUpsertArgs>(args: SelectSubset<T, PrivateShiftPlanUpsertArgs<ExtArgs>>): Prisma__PrivateShiftPlanClient<$Result.GetResult<Prisma.$PrivateShiftPlanPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of PrivateShiftPlans.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftPlanCountArgs} args - Arguments to filter PrivateShiftPlans to count.
+     * @example
+     * // Count the number of PrivateShiftPlans
+     * const count = await prisma.privateShiftPlan.count({
+     *   where: {
+     *     // ... the filter for the PrivateShiftPlans we want to count
+     *   }
+     * })
+    **/
+    count<T extends PrivateShiftPlanCountArgs>(
+      args?: Subset<T, PrivateShiftPlanCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PrivateShiftPlanCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PrivateShiftPlan.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftPlanAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PrivateShiftPlanAggregateArgs>(args: Subset<T, PrivateShiftPlanAggregateArgs>): Prisma.PrismaPromise<GetPrivateShiftPlanAggregateType<T>>
+
+    /**
+     * Group by PrivateShiftPlan.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftPlanGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PrivateShiftPlanGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PrivateShiftPlanGroupByArgs['orderBy'] }
+        : { orderBy?: PrivateShiftPlanGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PrivateShiftPlanGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPrivateShiftPlanGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PrivateShiftPlan model
+   */
+  readonly fields: PrivateShiftPlanFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PrivateShiftPlan.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PrivateShiftPlanClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    shifts<T extends PrivateShiftPlan$shiftsArgs<ExtArgs> = {}>(args?: Subset<T, PrivateShiftPlan$shiftsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PrivateShiftPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PrivateShiftPlan model
+   */ 
+  interface PrivateShiftPlanFieldRefs {
+    readonly id: FieldRef<"PrivateShiftPlan", 'String'>
+    readonly tenantId: FieldRef<"PrivateShiftPlan", 'String'>
+    readonly vendorId: FieldRef<"PrivateShiftPlan", 'String'>
+    readonly branchId: FieldRef<"PrivateShiftPlan", 'String'>
+    readonly vehicleType: FieldRef<"PrivateShiftPlan", 'VehicleType'>
+    readonly date: FieldRef<"PrivateShiftPlan", 'String'>
+    readonly requestedShifts: FieldRef<"PrivateShiftPlan", 'Int'>
+    readonly shiftHours: FieldRef<"PrivateShiftPlan", 'Int'>
+    readonly source: FieldRef<"PrivateShiftPlan", 'PrivateShiftSource'>
+    readonly status: FieldRef<"PrivateShiftPlan", 'String'>
+    readonly basis: FieldRef<"PrivateShiftPlan", 'Json'>
+    readonly createdById: FieldRef<"PrivateShiftPlan", 'String'>
+    readonly confirmedAt: FieldRef<"PrivateShiftPlan", 'DateTime'>
+    readonly createdAt: FieldRef<"PrivateShiftPlan", 'DateTime'>
+    readonly updatedAt: FieldRef<"PrivateShiftPlan", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PrivateShiftPlan findUnique
+   */
+  export type PrivateShiftPlanFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftPlan
+     */
+    select?: PrivateShiftPlanSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftPlanInclude<ExtArgs> | null
+    /**
+     * Filter, which PrivateShiftPlan to fetch.
+     */
+    where: PrivateShiftPlanWhereUniqueInput
+  }
+
+  /**
+   * PrivateShiftPlan findUniqueOrThrow
+   */
+  export type PrivateShiftPlanFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftPlan
+     */
+    select?: PrivateShiftPlanSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftPlanInclude<ExtArgs> | null
+    /**
+     * Filter, which PrivateShiftPlan to fetch.
+     */
+    where: PrivateShiftPlanWhereUniqueInput
+  }
+
+  /**
+   * PrivateShiftPlan findFirst
+   */
+  export type PrivateShiftPlanFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftPlan
+     */
+    select?: PrivateShiftPlanSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftPlanInclude<ExtArgs> | null
+    /**
+     * Filter, which PrivateShiftPlan to fetch.
+     */
+    where?: PrivateShiftPlanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PrivateShiftPlans to fetch.
+     */
+    orderBy?: PrivateShiftPlanOrderByWithRelationInput | PrivateShiftPlanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PrivateShiftPlans.
+     */
+    cursor?: PrivateShiftPlanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PrivateShiftPlans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PrivateShiftPlans.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PrivateShiftPlans.
+     */
+    distinct?: PrivateShiftPlanScalarFieldEnum | PrivateShiftPlanScalarFieldEnum[]
+  }
+
+  /**
+   * PrivateShiftPlan findFirstOrThrow
+   */
+  export type PrivateShiftPlanFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftPlan
+     */
+    select?: PrivateShiftPlanSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftPlanInclude<ExtArgs> | null
+    /**
+     * Filter, which PrivateShiftPlan to fetch.
+     */
+    where?: PrivateShiftPlanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PrivateShiftPlans to fetch.
+     */
+    orderBy?: PrivateShiftPlanOrderByWithRelationInput | PrivateShiftPlanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PrivateShiftPlans.
+     */
+    cursor?: PrivateShiftPlanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PrivateShiftPlans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PrivateShiftPlans.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PrivateShiftPlans.
+     */
+    distinct?: PrivateShiftPlanScalarFieldEnum | PrivateShiftPlanScalarFieldEnum[]
+  }
+
+  /**
+   * PrivateShiftPlan findMany
+   */
+  export type PrivateShiftPlanFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftPlan
+     */
+    select?: PrivateShiftPlanSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftPlanInclude<ExtArgs> | null
+    /**
+     * Filter, which PrivateShiftPlans to fetch.
+     */
+    where?: PrivateShiftPlanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PrivateShiftPlans to fetch.
+     */
+    orderBy?: PrivateShiftPlanOrderByWithRelationInput | PrivateShiftPlanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PrivateShiftPlans.
+     */
+    cursor?: PrivateShiftPlanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PrivateShiftPlans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PrivateShiftPlans.
+     */
+    skip?: number
+    distinct?: PrivateShiftPlanScalarFieldEnum | PrivateShiftPlanScalarFieldEnum[]
+  }
+
+  /**
+   * PrivateShiftPlan create
+   */
+  export type PrivateShiftPlanCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftPlan
+     */
+    select?: PrivateShiftPlanSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftPlanInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PrivateShiftPlan.
+     */
+    data: XOR<PrivateShiftPlanCreateInput, PrivateShiftPlanUncheckedCreateInput>
+  }
+
+  /**
+   * PrivateShiftPlan createMany
+   */
+  export type PrivateShiftPlanCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PrivateShiftPlans.
+     */
+    data: PrivateShiftPlanCreateManyInput | PrivateShiftPlanCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PrivateShiftPlan createManyAndReturn
+   */
+  export type PrivateShiftPlanCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftPlan
+     */
+    select?: PrivateShiftPlanSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many PrivateShiftPlans.
+     */
+    data: PrivateShiftPlanCreateManyInput | PrivateShiftPlanCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PrivateShiftPlan update
+   */
+  export type PrivateShiftPlanUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftPlan
+     */
+    select?: PrivateShiftPlanSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftPlanInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PrivateShiftPlan.
+     */
+    data: XOR<PrivateShiftPlanUpdateInput, PrivateShiftPlanUncheckedUpdateInput>
+    /**
+     * Choose, which PrivateShiftPlan to update.
+     */
+    where: PrivateShiftPlanWhereUniqueInput
+  }
+
+  /**
+   * PrivateShiftPlan updateMany
+   */
+  export type PrivateShiftPlanUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PrivateShiftPlans.
+     */
+    data: XOR<PrivateShiftPlanUpdateManyMutationInput, PrivateShiftPlanUncheckedUpdateManyInput>
+    /**
+     * Filter which PrivateShiftPlans to update
+     */
+    where?: PrivateShiftPlanWhereInput
+  }
+
+  /**
+   * PrivateShiftPlan upsert
+   */
+  export type PrivateShiftPlanUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftPlan
+     */
+    select?: PrivateShiftPlanSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftPlanInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PrivateShiftPlan to update in case it exists.
+     */
+    where: PrivateShiftPlanWhereUniqueInput
+    /**
+     * In case the PrivateShiftPlan found by the `where` argument doesn't exist, create a new PrivateShiftPlan with this data.
+     */
+    create: XOR<PrivateShiftPlanCreateInput, PrivateShiftPlanUncheckedCreateInput>
+    /**
+     * In case the PrivateShiftPlan was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PrivateShiftPlanUpdateInput, PrivateShiftPlanUncheckedUpdateInput>
+  }
+
+  /**
+   * PrivateShiftPlan delete
+   */
+  export type PrivateShiftPlanDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftPlan
+     */
+    select?: PrivateShiftPlanSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftPlanInclude<ExtArgs> | null
+    /**
+     * Filter which PrivateShiftPlan to delete.
+     */
+    where: PrivateShiftPlanWhereUniqueInput
+  }
+
+  /**
+   * PrivateShiftPlan deleteMany
+   */
+  export type PrivateShiftPlanDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PrivateShiftPlans to delete
+     */
+    where?: PrivateShiftPlanWhereInput
+  }
+
+  /**
+   * PrivateShiftPlan.shifts
+   */
+  export type PrivateShiftPlan$shiftsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShift
+     */
+    select?: PrivateShiftSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftInclude<ExtArgs> | null
+    where?: PrivateShiftWhereInput
+    orderBy?: PrivateShiftOrderByWithRelationInput | PrivateShiftOrderByWithRelationInput[]
+    cursor?: PrivateShiftWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PrivateShiftScalarFieldEnum | PrivateShiftScalarFieldEnum[]
+  }
+
+  /**
+   * PrivateShiftPlan without action
+   */
+  export type PrivateShiftPlanDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftPlan
+     */
+    select?: PrivateShiftPlanSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftPlanInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PrivateShift
+   */
+
+  export type AggregatePrivateShift = {
+    _count: PrivateShiftCountAggregateOutputType | null
+    _avg: PrivateShiftAvgAggregateOutputType | null
+    _sum: PrivateShiftSumAggregateOutputType | null
+    _min: PrivateShiftMinAggregateOutputType | null
+    _max: PrivateShiftMaxAggregateOutputType | null
+  }
+
+  export type PrivateShiftAvgAggregateOutputType = {
+    startLat: Decimal | null
+    startLng: Decimal | null
+    scheduledMinutes: number | null
+    lateDeductionMinutes: number | null
+    awayDeductionMinutes: number | null
+    billableMinutes: number | null
+    vendorHourlyKwd: Decimal | null
+    fleetHourlyKwd: Decimal | null
+    vendorChargeKwd: Decimal | null
+    fleetPayKwd: Decimal | null
+  }
+
+  export type PrivateShiftSumAggregateOutputType = {
+    startLat: Decimal | null
+    startLng: Decimal | null
+    scheduledMinutes: number | null
+    lateDeductionMinutes: number | null
+    awayDeductionMinutes: number | null
+    billableMinutes: number | null
+    vendorHourlyKwd: Decimal | null
+    fleetHourlyKwd: Decimal | null
+    vendorChargeKwd: Decimal | null
+    fleetPayKwd: Decimal | null
+  }
+
+  export type PrivateShiftMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    planId: string | null
+    vendorId: string | null
+    branchId: string | null
+    vehicleType: $Enums.VehicleType | null
+    date: string | null
+    startAt: Date | null
+    endAt: Date | null
+    status: $Enums.PrivateShiftStatus | null
+    source: $Enums.PrivateShiftSource | null
+    driverId: string | null
+    fleetPartnerId: string | null
+    bookedAt: Date | null
+    startedAt: Date | null
+    startLat: Decimal | null
+    startLng: Decimal | null
+    endedAt: Date | null
+    cancelledAt: Date | null
+    cancelReason: string | null
+    scheduledMinutes: number | null
+    lateDeductionMinutes: number | null
+    awayDeductionMinutes: number | null
+    billableMinutes: number | null
+    vendorHourlyKwd: Decimal | null
+    fleetHourlyKwd: Decimal | null
+    vendorChargeKwd: Decimal | null
+    fleetPayKwd: Decimal | null
+    settledAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PrivateShiftMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    planId: string | null
+    vendorId: string | null
+    branchId: string | null
+    vehicleType: $Enums.VehicleType | null
+    date: string | null
+    startAt: Date | null
+    endAt: Date | null
+    status: $Enums.PrivateShiftStatus | null
+    source: $Enums.PrivateShiftSource | null
+    driverId: string | null
+    fleetPartnerId: string | null
+    bookedAt: Date | null
+    startedAt: Date | null
+    startLat: Decimal | null
+    startLng: Decimal | null
+    endedAt: Date | null
+    cancelledAt: Date | null
+    cancelReason: string | null
+    scheduledMinutes: number | null
+    lateDeductionMinutes: number | null
+    awayDeductionMinutes: number | null
+    billableMinutes: number | null
+    vendorHourlyKwd: Decimal | null
+    fleetHourlyKwd: Decimal | null
+    vendorChargeKwd: Decimal | null
+    fleetPayKwd: Decimal | null
+    settledAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PrivateShiftCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    planId: number
+    vendorId: number
+    branchId: number
+    vehicleType: number
+    date: number
+    startAt: number
+    endAt: number
+    status: number
+    source: number
+    driverId: number
+    fleetPartnerId: number
+    bookedAt: number
+    startedAt: number
+    startLat: number
+    startLng: number
+    endedAt: number
+    cancelledAt: number
+    cancelReason: number
+    scheduledMinutes: number
+    lateDeductionMinutes: number
+    awayDeductionMinutes: number
+    billableMinutes: number
+    vendorHourlyKwd: number
+    fleetHourlyKwd: number
+    vendorChargeKwd: number
+    fleetPayKwd: number
+    settledAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PrivateShiftAvgAggregateInputType = {
+    startLat?: true
+    startLng?: true
+    scheduledMinutes?: true
+    lateDeductionMinutes?: true
+    awayDeductionMinutes?: true
+    billableMinutes?: true
+    vendorHourlyKwd?: true
+    fleetHourlyKwd?: true
+    vendorChargeKwd?: true
+    fleetPayKwd?: true
+  }
+
+  export type PrivateShiftSumAggregateInputType = {
+    startLat?: true
+    startLng?: true
+    scheduledMinutes?: true
+    lateDeductionMinutes?: true
+    awayDeductionMinutes?: true
+    billableMinutes?: true
+    vendorHourlyKwd?: true
+    fleetHourlyKwd?: true
+    vendorChargeKwd?: true
+    fleetPayKwd?: true
+  }
+
+  export type PrivateShiftMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    planId?: true
+    vendorId?: true
+    branchId?: true
+    vehicleType?: true
+    date?: true
+    startAt?: true
+    endAt?: true
+    status?: true
+    source?: true
+    driverId?: true
+    fleetPartnerId?: true
+    bookedAt?: true
+    startedAt?: true
+    startLat?: true
+    startLng?: true
+    endedAt?: true
+    cancelledAt?: true
+    cancelReason?: true
+    scheduledMinutes?: true
+    lateDeductionMinutes?: true
+    awayDeductionMinutes?: true
+    billableMinutes?: true
+    vendorHourlyKwd?: true
+    fleetHourlyKwd?: true
+    vendorChargeKwd?: true
+    fleetPayKwd?: true
+    settledAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PrivateShiftMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    planId?: true
+    vendorId?: true
+    branchId?: true
+    vehicleType?: true
+    date?: true
+    startAt?: true
+    endAt?: true
+    status?: true
+    source?: true
+    driverId?: true
+    fleetPartnerId?: true
+    bookedAt?: true
+    startedAt?: true
+    startLat?: true
+    startLng?: true
+    endedAt?: true
+    cancelledAt?: true
+    cancelReason?: true
+    scheduledMinutes?: true
+    lateDeductionMinutes?: true
+    awayDeductionMinutes?: true
+    billableMinutes?: true
+    vendorHourlyKwd?: true
+    fleetHourlyKwd?: true
+    vendorChargeKwd?: true
+    fleetPayKwd?: true
+    settledAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PrivateShiftCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    planId?: true
+    vendorId?: true
+    branchId?: true
+    vehicleType?: true
+    date?: true
+    startAt?: true
+    endAt?: true
+    status?: true
+    source?: true
+    driverId?: true
+    fleetPartnerId?: true
+    bookedAt?: true
+    startedAt?: true
+    startLat?: true
+    startLng?: true
+    endedAt?: true
+    cancelledAt?: true
+    cancelReason?: true
+    scheduledMinutes?: true
+    lateDeductionMinutes?: true
+    awayDeductionMinutes?: true
+    billableMinutes?: true
+    vendorHourlyKwd?: true
+    fleetHourlyKwd?: true
+    vendorChargeKwd?: true
+    fleetPayKwd?: true
+    settledAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PrivateShiftAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PrivateShift to aggregate.
+     */
+    where?: PrivateShiftWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PrivateShifts to fetch.
+     */
+    orderBy?: PrivateShiftOrderByWithRelationInput | PrivateShiftOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PrivateShiftWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PrivateShifts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PrivateShifts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PrivateShifts
+    **/
+    _count?: true | PrivateShiftCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PrivateShiftAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PrivateShiftSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PrivateShiftMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PrivateShiftMaxAggregateInputType
+  }
+
+  export type GetPrivateShiftAggregateType<T extends PrivateShiftAggregateArgs> = {
+        [P in keyof T & keyof AggregatePrivateShift]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePrivateShift[P]>
+      : GetScalarType<T[P], AggregatePrivateShift[P]>
+  }
+
+
+
+
+  export type PrivateShiftGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PrivateShiftWhereInput
+    orderBy?: PrivateShiftOrderByWithAggregationInput | PrivateShiftOrderByWithAggregationInput[]
+    by: PrivateShiftScalarFieldEnum[] | PrivateShiftScalarFieldEnum
+    having?: PrivateShiftScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PrivateShiftCountAggregateInputType | true
+    _avg?: PrivateShiftAvgAggregateInputType
+    _sum?: PrivateShiftSumAggregateInputType
+    _min?: PrivateShiftMinAggregateInputType
+    _max?: PrivateShiftMaxAggregateInputType
+  }
+
+  export type PrivateShiftGroupByOutputType = {
+    id: string
+    tenantId: string
+    planId: string | null
+    vendorId: string
+    branchId: string
+    vehicleType: $Enums.VehicleType
+    date: string
+    startAt: Date
+    endAt: Date
+    status: $Enums.PrivateShiftStatus
+    source: $Enums.PrivateShiftSource
+    driverId: string | null
+    fleetPartnerId: string | null
+    bookedAt: Date | null
+    startedAt: Date | null
+    startLat: Decimal | null
+    startLng: Decimal | null
+    endedAt: Date | null
+    cancelledAt: Date | null
+    cancelReason: string | null
+    scheduledMinutes: number | null
+    lateDeductionMinutes: number | null
+    awayDeductionMinutes: number | null
+    billableMinutes: number | null
+    vendorHourlyKwd: Decimal | null
+    fleetHourlyKwd: Decimal | null
+    vendorChargeKwd: Decimal | null
+    fleetPayKwd: Decimal | null
+    settledAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: PrivateShiftCountAggregateOutputType | null
+    _avg: PrivateShiftAvgAggregateOutputType | null
+    _sum: PrivateShiftSumAggregateOutputType | null
+    _min: PrivateShiftMinAggregateOutputType | null
+    _max: PrivateShiftMaxAggregateOutputType | null
+  }
+
+  type GetPrivateShiftGroupByPayload<T extends PrivateShiftGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PrivateShiftGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PrivateShiftGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PrivateShiftGroupByOutputType[P]>
+            : GetScalarType<T[P], PrivateShiftGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PrivateShiftSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    planId?: boolean
+    vendorId?: boolean
+    branchId?: boolean
+    vehicleType?: boolean
+    date?: boolean
+    startAt?: boolean
+    endAt?: boolean
+    status?: boolean
+    source?: boolean
+    driverId?: boolean
+    fleetPartnerId?: boolean
+    bookedAt?: boolean
+    startedAt?: boolean
+    startLat?: boolean
+    startLng?: boolean
+    endedAt?: boolean
+    cancelledAt?: boolean
+    cancelReason?: boolean
+    scheduledMinutes?: boolean
+    lateDeductionMinutes?: boolean
+    awayDeductionMinutes?: boolean
+    billableMinutes?: boolean
+    vendorHourlyKwd?: boolean
+    fleetHourlyKwd?: boolean
+    vendorChargeKwd?: boolean
+    fleetPayKwd?: boolean
+    settledAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    plan?: boolean | PrivateShift$planArgs<ExtArgs>
+    deductions?: boolean | PrivateShift$deductionsArgs<ExtArgs>
+    _count?: boolean | PrivateShiftCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["privateShift"]>
+
+  export type PrivateShiftSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    planId?: boolean
+    vendorId?: boolean
+    branchId?: boolean
+    vehicleType?: boolean
+    date?: boolean
+    startAt?: boolean
+    endAt?: boolean
+    status?: boolean
+    source?: boolean
+    driverId?: boolean
+    fleetPartnerId?: boolean
+    bookedAt?: boolean
+    startedAt?: boolean
+    startLat?: boolean
+    startLng?: boolean
+    endedAt?: boolean
+    cancelledAt?: boolean
+    cancelReason?: boolean
+    scheduledMinutes?: boolean
+    lateDeductionMinutes?: boolean
+    awayDeductionMinutes?: boolean
+    billableMinutes?: boolean
+    vendorHourlyKwd?: boolean
+    fleetHourlyKwd?: boolean
+    vendorChargeKwd?: boolean
+    fleetPayKwd?: boolean
+    settledAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    plan?: boolean | PrivateShift$planArgs<ExtArgs>
+  }, ExtArgs["result"]["privateShift"]>
+
+  export type PrivateShiftSelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    planId?: boolean
+    vendorId?: boolean
+    branchId?: boolean
+    vehicleType?: boolean
+    date?: boolean
+    startAt?: boolean
+    endAt?: boolean
+    status?: boolean
+    source?: boolean
+    driverId?: boolean
+    fleetPartnerId?: boolean
+    bookedAt?: boolean
+    startedAt?: boolean
+    startLat?: boolean
+    startLng?: boolean
+    endedAt?: boolean
+    cancelledAt?: boolean
+    cancelReason?: boolean
+    scheduledMinutes?: boolean
+    lateDeductionMinutes?: boolean
+    awayDeductionMinutes?: boolean
+    billableMinutes?: boolean
+    vendorHourlyKwd?: boolean
+    fleetHourlyKwd?: boolean
+    vendorChargeKwd?: boolean
+    fleetPayKwd?: boolean
+    settledAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type PrivateShiftInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    plan?: boolean | PrivateShift$planArgs<ExtArgs>
+    deductions?: boolean | PrivateShift$deductionsArgs<ExtArgs>
+    _count?: boolean | PrivateShiftCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type PrivateShiftIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    plan?: boolean | PrivateShift$planArgs<ExtArgs>
+  }
+
+  export type $PrivateShiftPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PrivateShift"
+    objects: {
+      plan: Prisma.$PrivateShiftPlanPayload<ExtArgs> | null
+      deductions: Prisma.$PrivateShiftDeductionPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      planId: string | null
+      vendorId: string
+      branchId: string
+      vehicleType: $Enums.VehicleType
+      date: string
+      startAt: Date
+      endAt: Date
+      status: $Enums.PrivateShiftStatus
+      source: $Enums.PrivateShiftSource
+      driverId: string | null
+      /**
+       * The driver's company when booked, so the pay side survives a transfer.
+       */
+      fleetPartnerId: string | null
+      bookedAt: Date | null
+      startedAt: Date | null
+      startLat: Prisma.Decimal | null
+      startLng: Prisma.Decimal | null
+      endedAt: Date | null
+      cancelledAt: Date | null
+      cancelReason: string | null
+      scheduledMinutes: number | null
+      lateDeductionMinutes: number | null
+      awayDeductionMinutes: number | null
+      billableMinutes: number | null
+      vendorHourlyKwd: Prisma.Decimal | null
+      fleetHourlyKwd: Prisma.Decimal | null
+      vendorChargeKwd: Prisma.Decimal | null
+      fleetPayKwd: Prisma.Decimal | null
+      settledAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["privateShift"]>
+    composites: {}
+  }
+
+  type PrivateShiftGetPayload<S extends boolean | null | undefined | PrivateShiftDefaultArgs> = $Result.GetResult<Prisma.$PrivateShiftPayload, S>
+
+  type PrivateShiftCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<PrivateShiftFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: PrivateShiftCountAggregateInputType | true
+    }
+
+  export interface PrivateShiftDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PrivateShift'], meta: { name: 'PrivateShift' } }
+    /**
+     * Find zero or one PrivateShift that matches the filter.
+     * @param {PrivateShiftFindUniqueArgs} args - Arguments to find a PrivateShift
+     * @example
+     * // Get one PrivateShift
+     * const privateShift = await prisma.privateShift.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PrivateShiftFindUniqueArgs>(args: SelectSubset<T, PrivateShiftFindUniqueArgs<ExtArgs>>): Prisma__PrivateShiftClient<$Result.GetResult<Prisma.$PrivateShiftPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one PrivateShift that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {PrivateShiftFindUniqueOrThrowArgs} args - Arguments to find a PrivateShift
+     * @example
+     * // Get one PrivateShift
+     * const privateShift = await prisma.privateShift.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PrivateShiftFindUniqueOrThrowArgs>(args: SelectSubset<T, PrivateShiftFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PrivateShiftClient<$Result.GetResult<Prisma.$PrivateShiftPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first PrivateShift that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftFindFirstArgs} args - Arguments to find a PrivateShift
+     * @example
+     * // Get one PrivateShift
+     * const privateShift = await prisma.privateShift.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PrivateShiftFindFirstArgs>(args?: SelectSubset<T, PrivateShiftFindFirstArgs<ExtArgs>>): Prisma__PrivateShiftClient<$Result.GetResult<Prisma.$PrivateShiftPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first PrivateShift that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftFindFirstOrThrowArgs} args - Arguments to find a PrivateShift
+     * @example
+     * // Get one PrivateShift
+     * const privateShift = await prisma.privateShift.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PrivateShiftFindFirstOrThrowArgs>(args?: SelectSubset<T, PrivateShiftFindFirstOrThrowArgs<ExtArgs>>): Prisma__PrivateShiftClient<$Result.GetResult<Prisma.$PrivateShiftPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more PrivateShifts that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PrivateShifts
+     * const privateShifts = await prisma.privateShift.findMany()
+     * 
+     * // Get first 10 PrivateShifts
+     * const privateShifts = await prisma.privateShift.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const privateShiftWithIdOnly = await prisma.privateShift.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PrivateShiftFindManyArgs>(args?: SelectSubset<T, PrivateShiftFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PrivateShiftPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a PrivateShift.
+     * @param {PrivateShiftCreateArgs} args - Arguments to create a PrivateShift.
+     * @example
+     * // Create one PrivateShift
+     * const PrivateShift = await prisma.privateShift.create({
+     *   data: {
+     *     // ... data to create a PrivateShift
+     *   }
+     * })
+     * 
+     */
+    create<T extends PrivateShiftCreateArgs>(args: SelectSubset<T, PrivateShiftCreateArgs<ExtArgs>>): Prisma__PrivateShiftClient<$Result.GetResult<Prisma.$PrivateShiftPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many PrivateShifts.
+     * @param {PrivateShiftCreateManyArgs} args - Arguments to create many PrivateShifts.
+     * @example
+     * // Create many PrivateShifts
+     * const privateShift = await prisma.privateShift.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PrivateShiftCreateManyArgs>(args?: SelectSubset<T, PrivateShiftCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PrivateShifts and returns the data saved in the database.
+     * @param {PrivateShiftCreateManyAndReturnArgs} args - Arguments to create many PrivateShifts.
+     * @example
+     * // Create many PrivateShifts
+     * const privateShift = await prisma.privateShift.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PrivateShifts and only return the `id`
+     * const privateShiftWithIdOnly = await prisma.privateShift.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PrivateShiftCreateManyAndReturnArgs>(args?: SelectSubset<T, PrivateShiftCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PrivateShiftPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a PrivateShift.
+     * @param {PrivateShiftDeleteArgs} args - Arguments to delete one PrivateShift.
+     * @example
+     * // Delete one PrivateShift
+     * const PrivateShift = await prisma.privateShift.delete({
+     *   where: {
+     *     // ... filter to delete one PrivateShift
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PrivateShiftDeleteArgs>(args: SelectSubset<T, PrivateShiftDeleteArgs<ExtArgs>>): Prisma__PrivateShiftClient<$Result.GetResult<Prisma.$PrivateShiftPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one PrivateShift.
+     * @param {PrivateShiftUpdateArgs} args - Arguments to update one PrivateShift.
+     * @example
+     * // Update one PrivateShift
+     * const privateShift = await prisma.privateShift.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PrivateShiftUpdateArgs>(args: SelectSubset<T, PrivateShiftUpdateArgs<ExtArgs>>): Prisma__PrivateShiftClient<$Result.GetResult<Prisma.$PrivateShiftPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more PrivateShifts.
+     * @param {PrivateShiftDeleteManyArgs} args - Arguments to filter PrivateShifts to delete.
+     * @example
+     * // Delete a few PrivateShifts
+     * const { count } = await prisma.privateShift.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PrivateShiftDeleteManyArgs>(args?: SelectSubset<T, PrivateShiftDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PrivateShifts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PrivateShifts
+     * const privateShift = await prisma.privateShift.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PrivateShiftUpdateManyArgs>(args: SelectSubset<T, PrivateShiftUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one PrivateShift.
+     * @param {PrivateShiftUpsertArgs} args - Arguments to update or create a PrivateShift.
+     * @example
+     * // Update or create a PrivateShift
+     * const privateShift = await prisma.privateShift.upsert({
+     *   create: {
+     *     // ... data to create a PrivateShift
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PrivateShift we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PrivateShiftUpsertArgs>(args: SelectSubset<T, PrivateShiftUpsertArgs<ExtArgs>>): Prisma__PrivateShiftClient<$Result.GetResult<Prisma.$PrivateShiftPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of PrivateShifts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftCountArgs} args - Arguments to filter PrivateShifts to count.
+     * @example
+     * // Count the number of PrivateShifts
+     * const count = await prisma.privateShift.count({
+     *   where: {
+     *     // ... the filter for the PrivateShifts we want to count
+     *   }
+     * })
+    **/
+    count<T extends PrivateShiftCountArgs>(
+      args?: Subset<T, PrivateShiftCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PrivateShiftCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PrivateShift.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PrivateShiftAggregateArgs>(args: Subset<T, PrivateShiftAggregateArgs>): Prisma.PrismaPromise<GetPrivateShiftAggregateType<T>>
+
+    /**
+     * Group by PrivateShift.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PrivateShiftGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PrivateShiftGroupByArgs['orderBy'] }
+        : { orderBy?: PrivateShiftGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PrivateShiftGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPrivateShiftGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PrivateShift model
+   */
+  readonly fields: PrivateShiftFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PrivateShift.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PrivateShiftClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    plan<T extends PrivateShift$planArgs<ExtArgs> = {}>(args?: Subset<T, PrivateShift$planArgs<ExtArgs>>): Prisma__PrivateShiftPlanClient<$Result.GetResult<Prisma.$PrivateShiftPlanPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    deductions<T extends PrivateShift$deductionsArgs<ExtArgs> = {}>(args?: Subset<T, PrivateShift$deductionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PrivateShiftDeductionPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PrivateShift model
+   */ 
+  interface PrivateShiftFieldRefs {
+    readonly id: FieldRef<"PrivateShift", 'String'>
+    readonly tenantId: FieldRef<"PrivateShift", 'String'>
+    readonly planId: FieldRef<"PrivateShift", 'String'>
+    readonly vendorId: FieldRef<"PrivateShift", 'String'>
+    readonly branchId: FieldRef<"PrivateShift", 'String'>
+    readonly vehicleType: FieldRef<"PrivateShift", 'VehicleType'>
+    readonly date: FieldRef<"PrivateShift", 'String'>
+    readonly startAt: FieldRef<"PrivateShift", 'DateTime'>
+    readonly endAt: FieldRef<"PrivateShift", 'DateTime'>
+    readonly status: FieldRef<"PrivateShift", 'PrivateShiftStatus'>
+    readonly source: FieldRef<"PrivateShift", 'PrivateShiftSource'>
+    readonly driverId: FieldRef<"PrivateShift", 'String'>
+    readonly fleetPartnerId: FieldRef<"PrivateShift", 'String'>
+    readonly bookedAt: FieldRef<"PrivateShift", 'DateTime'>
+    readonly startedAt: FieldRef<"PrivateShift", 'DateTime'>
+    readonly startLat: FieldRef<"PrivateShift", 'Decimal'>
+    readonly startLng: FieldRef<"PrivateShift", 'Decimal'>
+    readonly endedAt: FieldRef<"PrivateShift", 'DateTime'>
+    readonly cancelledAt: FieldRef<"PrivateShift", 'DateTime'>
+    readonly cancelReason: FieldRef<"PrivateShift", 'String'>
+    readonly scheduledMinutes: FieldRef<"PrivateShift", 'Int'>
+    readonly lateDeductionMinutes: FieldRef<"PrivateShift", 'Int'>
+    readonly awayDeductionMinutes: FieldRef<"PrivateShift", 'Int'>
+    readonly billableMinutes: FieldRef<"PrivateShift", 'Int'>
+    readonly vendorHourlyKwd: FieldRef<"PrivateShift", 'Decimal'>
+    readonly fleetHourlyKwd: FieldRef<"PrivateShift", 'Decimal'>
+    readonly vendorChargeKwd: FieldRef<"PrivateShift", 'Decimal'>
+    readonly fleetPayKwd: FieldRef<"PrivateShift", 'Decimal'>
+    readonly settledAt: FieldRef<"PrivateShift", 'DateTime'>
+    readonly createdAt: FieldRef<"PrivateShift", 'DateTime'>
+    readonly updatedAt: FieldRef<"PrivateShift", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PrivateShift findUnique
+   */
+  export type PrivateShiftFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShift
+     */
+    select?: PrivateShiftSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftInclude<ExtArgs> | null
+    /**
+     * Filter, which PrivateShift to fetch.
+     */
+    where: PrivateShiftWhereUniqueInput
+  }
+
+  /**
+   * PrivateShift findUniqueOrThrow
+   */
+  export type PrivateShiftFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShift
+     */
+    select?: PrivateShiftSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftInclude<ExtArgs> | null
+    /**
+     * Filter, which PrivateShift to fetch.
+     */
+    where: PrivateShiftWhereUniqueInput
+  }
+
+  /**
+   * PrivateShift findFirst
+   */
+  export type PrivateShiftFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShift
+     */
+    select?: PrivateShiftSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftInclude<ExtArgs> | null
+    /**
+     * Filter, which PrivateShift to fetch.
+     */
+    where?: PrivateShiftWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PrivateShifts to fetch.
+     */
+    orderBy?: PrivateShiftOrderByWithRelationInput | PrivateShiftOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PrivateShifts.
+     */
+    cursor?: PrivateShiftWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PrivateShifts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PrivateShifts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PrivateShifts.
+     */
+    distinct?: PrivateShiftScalarFieldEnum | PrivateShiftScalarFieldEnum[]
+  }
+
+  /**
+   * PrivateShift findFirstOrThrow
+   */
+  export type PrivateShiftFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShift
+     */
+    select?: PrivateShiftSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftInclude<ExtArgs> | null
+    /**
+     * Filter, which PrivateShift to fetch.
+     */
+    where?: PrivateShiftWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PrivateShifts to fetch.
+     */
+    orderBy?: PrivateShiftOrderByWithRelationInput | PrivateShiftOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PrivateShifts.
+     */
+    cursor?: PrivateShiftWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PrivateShifts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PrivateShifts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PrivateShifts.
+     */
+    distinct?: PrivateShiftScalarFieldEnum | PrivateShiftScalarFieldEnum[]
+  }
+
+  /**
+   * PrivateShift findMany
+   */
+  export type PrivateShiftFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShift
+     */
+    select?: PrivateShiftSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftInclude<ExtArgs> | null
+    /**
+     * Filter, which PrivateShifts to fetch.
+     */
+    where?: PrivateShiftWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PrivateShifts to fetch.
+     */
+    orderBy?: PrivateShiftOrderByWithRelationInput | PrivateShiftOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PrivateShifts.
+     */
+    cursor?: PrivateShiftWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PrivateShifts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PrivateShifts.
+     */
+    skip?: number
+    distinct?: PrivateShiftScalarFieldEnum | PrivateShiftScalarFieldEnum[]
+  }
+
+  /**
+   * PrivateShift create
+   */
+  export type PrivateShiftCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShift
+     */
+    select?: PrivateShiftSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PrivateShift.
+     */
+    data: XOR<PrivateShiftCreateInput, PrivateShiftUncheckedCreateInput>
+  }
+
+  /**
+   * PrivateShift createMany
+   */
+  export type PrivateShiftCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PrivateShifts.
+     */
+    data: PrivateShiftCreateManyInput | PrivateShiftCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PrivateShift createManyAndReturn
+   */
+  export type PrivateShiftCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShift
+     */
+    select?: PrivateShiftSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many PrivateShifts.
+     */
+    data: PrivateShiftCreateManyInput | PrivateShiftCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PrivateShift update
+   */
+  export type PrivateShiftUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShift
+     */
+    select?: PrivateShiftSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PrivateShift.
+     */
+    data: XOR<PrivateShiftUpdateInput, PrivateShiftUncheckedUpdateInput>
+    /**
+     * Choose, which PrivateShift to update.
+     */
+    where: PrivateShiftWhereUniqueInput
+  }
+
+  /**
+   * PrivateShift updateMany
+   */
+  export type PrivateShiftUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PrivateShifts.
+     */
+    data: XOR<PrivateShiftUpdateManyMutationInput, PrivateShiftUncheckedUpdateManyInput>
+    /**
+     * Filter which PrivateShifts to update
+     */
+    where?: PrivateShiftWhereInput
+  }
+
+  /**
+   * PrivateShift upsert
+   */
+  export type PrivateShiftUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShift
+     */
+    select?: PrivateShiftSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PrivateShift to update in case it exists.
+     */
+    where: PrivateShiftWhereUniqueInput
+    /**
+     * In case the PrivateShift found by the `where` argument doesn't exist, create a new PrivateShift with this data.
+     */
+    create: XOR<PrivateShiftCreateInput, PrivateShiftUncheckedCreateInput>
+    /**
+     * In case the PrivateShift was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PrivateShiftUpdateInput, PrivateShiftUncheckedUpdateInput>
+  }
+
+  /**
+   * PrivateShift delete
+   */
+  export type PrivateShiftDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShift
+     */
+    select?: PrivateShiftSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftInclude<ExtArgs> | null
+    /**
+     * Filter which PrivateShift to delete.
+     */
+    where: PrivateShiftWhereUniqueInput
+  }
+
+  /**
+   * PrivateShift deleteMany
+   */
+  export type PrivateShiftDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PrivateShifts to delete
+     */
+    where?: PrivateShiftWhereInput
+  }
+
+  /**
+   * PrivateShift.plan
+   */
+  export type PrivateShift$planArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftPlan
+     */
+    select?: PrivateShiftPlanSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftPlanInclude<ExtArgs> | null
+    where?: PrivateShiftPlanWhereInput
+  }
+
+  /**
+   * PrivateShift.deductions
+   */
+  export type PrivateShift$deductionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftDeduction
+     */
+    select?: PrivateShiftDeductionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftDeductionInclude<ExtArgs> | null
+    where?: PrivateShiftDeductionWhereInput
+    orderBy?: PrivateShiftDeductionOrderByWithRelationInput | PrivateShiftDeductionOrderByWithRelationInput[]
+    cursor?: PrivateShiftDeductionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PrivateShiftDeductionScalarFieldEnum | PrivateShiftDeductionScalarFieldEnum[]
+  }
+
+  /**
+   * PrivateShift without action
+   */
+  export type PrivateShiftDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShift
+     */
+    select?: PrivateShiftSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PrivateShiftDeduction
+   */
+
+  export type AggregatePrivateShiftDeduction = {
+    _count: PrivateShiftDeductionCountAggregateOutputType | null
+    _avg: PrivateShiftDeductionAvgAggregateOutputType | null
+    _sum: PrivateShiftDeductionSumAggregateOutputType | null
+    _min: PrivateShiftDeductionMinAggregateOutputType | null
+    _max: PrivateShiftDeductionMaxAggregateOutputType | null
+  }
+
+  export type PrivateShiftDeductionAvgAggregateOutputType = {
+    minutes: number | null
+  }
+
+  export type PrivateShiftDeductionSumAggregateOutputType = {
+    minutes: number | null
+  }
+
+  export type PrivateShiftDeductionMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    shiftId: string | null
+    kind: string | null
+    minutes: number | null
+    orderId: string | null
+    fromAt: Date | null
+    toAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type PrivateShiftDeductionMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    shiftId: string | null
+    kind: string | null
+    minutes: number | null
+    orderId: string | null
+    fromAt: Date | null
+    toAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type PrivateShiftDeductionCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    shiftId: number
+    kind: number
+    minutes: number
+    orderId: number
+    fromAt: number
+    toAt: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type PrivateShiftDeductionAvgAggregateInputType = {
+    minutes?: true
+  }
+
+  export type PrivateShiftDeductionSumAggregateInputType = {
+    minutes?: true
+  }
+
+  export type PrivateShiftDeductionMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    shiftId?: true
+    kind?: true
+    minutes?: true
+    orderId?: true
+    fromAt?: true
+    toAt?: true
+    createdAt?: true
+  }
+
+  export type PrivateShiftDeductionMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    shiftId?: true
+    kind?: true
+    minutes?: true
+    orderId?: true
+    fromAt?: true
+    toAt?: true
+    createdAt?: true
+  }
+
+  export type PrivateShiftDeductionCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    shiftId?: true
+    kind?: true
+    minutes?: true
+    orderId?: true
+    fromAt?: true
+    toAt?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type PrivateShiftDeductionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PrivateShiftDeduction to aggregate.
+     */
+    where?: PrivateShiftDeductionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PrivateShiftDeductions to fetch.
+     */
+    orderBy?: PrivateShiftDeductionOrderByWithRelationInput | PrivateShiftDeductionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PrivateShiftDeductionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PrivateShiftDeductions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PrivateShiftDeductions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PrivateShiftDeductions
+    **/
+    _count?: true | PrivateShiftDeductionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PrivateShiftDeductionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PrivateShiftDeductionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PrivateShiftDeductionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PrivateShiftDeductionMaxAggregateInputType
+  }
+
+  export type GetPrivateShiftDeductionAggregateType<T extends PrivateShiftDeductionAggregateArgs> = {
+        [P in keyof T & keyof AggregatePrivateShiftDeduction]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePrivateShiftDeduction[P]>
+      : GetScalarType<T[P], AggregatePrivateShiftDeduction[P]>
+  }
+
+
+
+
+  export type PrivateShiftDeductionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PrivateShiftDeductionWhereInput
+    orderBy?: PrivateShiftDeductionOrderByWithAggregationInput | PrivateShiftDeductionOrderByWithAggregationInput[]
+    by: PrivateShiftDeductionScalarFieldEnum[] | PrivateShiftDeductionScalarFieldEnum
+    having?: PrivateShiftDeductionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PrivateShiftDeductionCountAggregateInputType | true
+    _avg?: PrivateShiftDeductionAvgAggregateInputType
+    _sum?: PrivateShiftDeductionSumAggregateInputType
+    _min?: PrivateShiftDeductionMinAggregateInputType
+    _max?: PrivateShiftDeductionMaxAggregateInputType
+  }
+
+  export type PrivateShiftDeductionGroupByOutputType = {
+    id: string
+    tenantId: string
+    shiftId: string
+    kind: string
+    minutes: number
+    orderId: string | null
+    fromAt: Date | null
+    toAt: Date | null
+    createdAt: Date
+    _count: PrivateShiftDeductionCountAggregateOutputType | null
+    _avg: PrivateShiftDeductionAvgAggregateOutputType | null
+    _sum: PrivateShiftDeductionSumAggregateOutputType | null
+    _min: PrivateShiftDeductionMinAggregateOutputType | null
+    _max: PrivateShiftDeductionMaxAggregateOutputType | null
+  }
+
+  type GetPrivateShiftDeductionGroupByPayload<T extends PrivateShiftDeductionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PrivateShiftDeductionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PrivateShiftDeductionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PrivateShiftDeductionGroupByOutputType[P]>
+            : GetScalarType<T[P], PrivateShiftDeductionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PrivateShiftDeductionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    shiftId?: boolean
+    kind?: boolean
+    minutes?: boolean
+    orderId?: boolean
+    fromAt?: boolean
+    toAt?: boolean
+    createdAt?: boolean
+    shift?: boolean | PrivateShiftDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["privateShiftDeduction"]>
+
+  export type PrivateShiftDeductionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    shiftId?: boolean
+    kind?: boolean
+    minutes?: boolean
+    orderId?: boolean
+    fromAt?: boolean
+    toAt?: boolean
+    createdAt?: boolean
+    shift?: boolean | PrivateShiftDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["privateShiftDeduction"]>
+
+  export type PrivateShiftDeductionSelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    shiftId?: boolean
+    kind?: boolean
+    minutes?: boolean
+    orderId?: boolean
+    fromAt?: boolean
+    toAt?: boolean
+    createdAt?: boolean
+  }
+
+  export type PrivateShiftDeductionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    shift?: boolean | PrivateShiftDefaultArgs<ExtArgs>
+  }
+  export type PrivateShiftDeductionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    shift?: boolean | PrivateShiftDefaultArgs<ExtArgs>
+  }
+
+  export type $PrivateShiftDeductionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PrivateShiftDeduction"
+    objects: {
+      shift: Prisma.$PrivateShiftPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      shiftId: string
+      /**
+       * LATE_ORDER | AWAY
+       */
+      kind: string
+      minutes: number
+      orderId: string | null
+      fromAt: Date | null
+      toAt: Date | null
+      createdAt: Date
+    }, ExtArgs["result"]["privateShiftDeduction"]>
+    composites: {}
+  }
+
+  type PrivateShiftDeductionGetPayload<S extends boolean | null | undefined | PrivateShiftDeductionDefaultArgs> = $Result.GetResult<Prisma.$PrivateShiftDeductionPayload, S>
+
+  type PrivateShiftDeductionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<PrivateShiftDeductionFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: PrivateShiftDeductionCountAggregateInputType | true
+    }
+
+  export interface PrivateShiftDeductionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PrivateShiftDeduction'], meta: { name: 'PrivateShiftDeduction' } }
+    /**
+     * Find zero or one PrivateShiftDeduction that matches the filter.
+     * @param {PrivateShiftDeductionFindUniqueArgs} args - Arguments to find a PrivateShiftDeduction
+     * @example
+     * // Get one PrivateShiftDeduction
+     * const privateShiftDeduction = await prisma.privateShiftDeduction.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PrivateShiftDeductionFindUniqueArgs>(args: SelectSubset<T, PrivateShiftDeductionFindUniqueArgs<ExtArgs>>): Prisma__PrivateShiftDeductionClient<$Result.GetResult<Prisma.$PrivateShiftDeductionPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one PrivateShiftDeduction that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {PrivateShiftDeductionFindUniqueOrThrowArgs} args - Arguments to find a PrivateShiftDeduction
+     * @example
+     * // Get one PrivateShiftDeduction
+     * const privateShiftDeduction = await prisma.privateShiftDeduction.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PrivateShiftDeductionFindUniqueOrThrowArgs>(args: SelectSubset<T, PrivateShiftDeductionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PrivateShiftDeductionClient<$Result.GetResult<Prisma.$PrivateShiftDeductionPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first PrivateShiftDeduction that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftDeductionFindFirstArgs} args - Arguments to find a PrivateShiftDeduction
+     * @example
+     * // Get one PrivateShiftDeduction
+     * const privateShiftDeduction = await prisma.privateShiftDeduction.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PrivateShiftDeductionFindFirstArgs>(args?: SelectSubset<T, PrivateShiftDeductionFindFirstArgs<ExtArgs>>): Prisma__PrivateShiftDeductionClient<$Result.GetResult<Prisma.$PrivateShiftDeductionPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first PrivateShiftDeduction that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftDeductionFindFirstOrThrowArgs} args - Arguments to find a PrivateShiftDeduction
+     * @example
+     * // Get one PrivateShiftDeduction
+     * const privateShiftDeduction = await prisma.privateShiftDeduction.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PrivateShiftDeductionFindFirstOrThrowArgs>(args?: SelectSubset<T, PrivateShiftDeductionFindFirstOrThrowArgs<ExtArgs>>): Prisma__PrivateShiftDeductionClient<$Result.GetResult<Prisma.$PrivateShiftDeductionPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more PrivateShiftDeductions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftDeductionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PrivateShiftDeductions
+     * const privateShiftDeductions = await prisma.privateShiftDeduction.findMany()
+     * 
+     * // Get first 10 PrivateShiftDeductions
+     * const privateShiftDeductions = await prisma.privateShiftDeduction.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const privateShiftDeductionWithIdOnly = await prisma.privateShiftDeduction.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PrivateShiftDeductionFindManyArgs>(args?: SelectSubset<T, PrivateShiftDeductionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PrivateShiftDeductionPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a PrivateShiftDeduction.
+     * @param {PrivateShiftDeductionCreateArgs} args - Arguments to create a PrivateShiftDeduction.
+     * @example
+     * // Create one PrivateShiftDeduction
+     * const PrivateShiftDeduction = await prisma.privateShiftDeduction.create({
+     *   data: {
+     *     // ... data to create a PrivateShiftDeduction
+     *   }
+     * })
+     * 
+     */
+    create<T extends PrivateShiftDeductionCreateArgs>(args: SelectSubset<T, PrivateShiftDeductionCreateArgs<ExtArgs>>): Prisma__PrivateShiftDeductionClient<$Result.GetResult<Prisma.$PrivateShiftDeductionPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many PrivateShiftDeductions.
+     * @param {PrivateShiftDeductionCreateManyArgs} args - Arguments to create many PrivateShiftDeductions.
+     * @example
+     * // Create many PrivateShiftDeductions
+     * const privateShiftDeduction = await prisma.privateShiftDeduction.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PrivateShiftDeductionCreateManyArgs>(args?: SelectSubset<T, PrivateShiftDeductionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PrivateShiftDeductions and returns the data saved in the database.
+     * @param {PrivateShiftDeductionCreateManyAndReturnArgs} args - Arguments to create many PrivateShiftDeductions.
+     * @example
+     * // Create many PrivateShiftDeductions
+     * const privateShiftDeduction = await prisma.privateShiftDeduction.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PrivateShiftDeductions and only return the `id`
+     * const privateShiftDeductionWithIdOnly = await prisma.privateShiftDeduction.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PrivateShiftDeductionCreateManyAndReturnArgs>(args?: SelectSubset<T, PrivateShiftDeductionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PrivateShiftDeductionPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a PrivateShiftDeduction.
+     * @param {PrivateShiftDeductionDeleteArgs} args - Arguments to delete one PrivateShiftDeduction.
+     * @example
+     * // Delete one PrivateShiftDeduction
+     * const PrivateShiftDeduction = await prisma.privateShiftDeduction.delete({
+     *   where: {
+     *     // ... filter to delete one PrivateShiftDeduction
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PrivateShiftDeductionDeleteArgs>(args: SelectSubset<T, PrivateShiftDeductionDeleteArgs<ExtArgs>>): Prisma__PrivateShiftDeductionClient<$Result.GetResult<Prisma.$PrivateShiftDeductionPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one PrivateShiftDeduction.
+     * @param {PrivateShiftDeductionUpdateArgs} args - Arguments to update one PrivateShiftDeduction.
+     * @example
+     * // Update one PrivateShiftDeduction
+     * const privateShiftDeduction = await prisma.privateShiftDeduction.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PrivateShiftDeductionUpdateArgs>(args: SelectSubset<T, PrivateShiftDeductionUpdateArgs<ExtArgs>>): Prisma__PrivateShiftDeductionClient<$Result.GetResult<Prisma.$PrivateShiftDeductionPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more PrivateShiftDeductions.
+     * @param {PrivateShiftDeductionDeleteManyArgs} args - Arguments to filter PrivateShiftDeductions to delete.
+     * @example
+     * // Delete a few PrivateShiftDeductions
+     * const { count } = await prisma.privateShiftDeduction.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PrivateShiftDeductionDeleteManyArgs>(args?: SelectSubset<T, PrivateShiftDeductionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PrivateShiftDeductions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftDeductionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PrivateShiftDeductions
+     * const privateShiftDeduction = await prisma.privateShiftDeduction.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PrivateShiftDeductionUpdateManyArgs>(args: SelectSubset<T, PrivateShiftDeductionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one PrivateShiftDeduction.
+     * @param {PrivateShiftDeductionUpsertArgs} args - Arguments to update or create a PrivateShiftDeduction.
+     * @example
+     * // Update or create a PrivateShiftDeduction
+     * const privateShiftDeduction = await prisma.privateShiftDeduction.upsert({
+     *   create: {
+     *     // ... data to create a PrivateShiftDeduction
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PrivateShiftDeduction we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PrivateShiftDeductionUpsertArgs>(args: SelectSubset<T, PrivateShiftDeductionUpsertArgs<ExtArgs>>): Prisma__PrivateShiftDeductionClient<$Result.GetResult<Prisma.$PrivateShiftDeductionPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of PrivateShiftDeductions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftDeductionCountArgs} args - Arguments to filter PrivateShiftDeductions to count.
+     * @example
+     * // Count the number of PrivateShiftDeductions
+     * const count = await prisma.privateShiftDeduction.count({
+     *   where: {
+     *     // ... the filter for the PrivateShiftDeductions we want to count
+     *   }
+     * })
+    **/
+    count<T extends PrivateShiftDeductionCountArgs>(
+      args?: Subset<T, PrivateShiftDeductionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PrivateShiftDeductionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PrivateShiftDeduction.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftDeductionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PrivateShiftDeductionAggregateArgs>(args: Subset<T, PrivateShiftDeductionAggregateArgs>): Prisma.PrismaPromise<GetPrivateShiftDeductionAggregateType<T>>
+
+    /**
+     * Group by PrivateShiftDeduction.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrivateShiftDeductionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PrivateShiftDeductionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PrivateShiftDeductionGroupByArgs['orderBy'] }
+        : { orderBy?: PrivateShiftDeductionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PrivateShiftDeductionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPrivateShiftDeductionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PrivateShiftDeduction model
+   */
+  readonly fields: PrivateShiftDeductionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PrivateShiftDeduction.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PrivateShiftDeductionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    shift<T extends PrivateShiftDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PrivateShiftDefaultArgs<ExtArgs>>): Prisma__PrivateShiftClient<$Result.GetResult<Prisma.$PrivateShiftPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PrivateShiftDeduction model
+   */ 
+  interface PrivateShiftDeductionFieldRefs {
+    readonly id: FieldRef<"PrivateShiftDeduction", 'String'>
+    readonly tenantId: FieldRef<"PrivateShiftDeduction", 'String'>
+    readonly shiftId: FieldRef<"PrivateShiftDeduction", 'String'>
+    readonly kind: FieldRef<"PrivateShiftDeduction", 'String'>
+    readonly minutes: FieldRef<"PrivateShiftDeduction", 'Int'>
+    readonly orderId: FieldRef<"PrivateShiftDeduction", 'String'>
+    readonly fromAt: FieldRef<"PrivateShiftDeduction", 'DateTime'>
+    readonly toAt: FieldRef<"PrivateShiftDeduction", 'DateTime'>
+    readonly createdAt: FieldRef<"PrivateShiftDeduction", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PrivateShiftDeduction findUnique
+   */
+  export type PrivateShiftDeductionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftDeduction
+     */
+    select?: PrivateShiftDeductionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftDeductionInclude<ExtArgs> | null
+    /**
+     * Filter, which PrivateShiftDeduction to fetch.
+     */
+    where: PrivateShiftDeductionWhereUniqueInput
+  }
+
+  /**
+   * PrivateShiftDeduction findUniqueOrThrow
+   */
+  export type PrivateShiftDeductionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftDeduction
+     */
+    select?: PrivateShiftDeductionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftDeductionInclude<ExtArgs> | null
+    /**
+     * Filter, which PrivateShiftDeduction to fetch.
+     */
+    where: PrivateShiftDeductionWhereUniqueInput
+  }
+
+  /**
+   * PrivateShiftDeduction findFirst
+   */
+  export type PrivateShiftDeductionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftDeduction
+     */
+    select?: PrivateShiftDeductionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftDeductionInclude<ExtArgs> | null
+    /**
+     * Filter, which PrivateShiftDeduction to fetch.
+     */
+    where?: PrivateShiftDeductionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PrivateShiftDeductions to fetch.
+     */
+    orderBy?: PrivateShiftDeductionOrderByWithRelationInput | PrivateShiftDeductionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PrivateShiftDeductions.
+     */
+    cursor?: PrivateShiftDeductionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PrivateShiftDeductions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PrivateShiftDeductions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PrivateShiftDeductions.
+     */
+    distinct?: PrivateShiftDeductionScalarFieldEnum | PrivateShiftDeductionScalarFieldEnum[]
+  }
+
+  /**
+   * PrivateShiftDeduction findFirstOrThrow
+   */
+  export type PrivateShiftDeductionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftDeduction
+     */
+    select?: PrivateShiftDeductionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftDeductionInclude<ExtArgs> | null
+    /**
+     * Filter, which PrivateShiftDeduction to fetch.
+     */
+    where?: PrivateShiftDeductionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PrivateShiftDeductions to fetch.
+     */
+    orderBy?: PrivateShiftDeductionOrderByWithRelationInput | PrivateShiftDeductionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PrivateShiftDeductions.
+     */
+    cursor?: PrivateShiftDeductionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PrivateShiftDeductions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PrivateShiftDeductions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PrivateShiftDeductions.
+     */
+    distinct?: PrivateShiftDeductionScalarFieldEnum | PrivateShiftDeductionScalarFieldEnum[]
+  }
+
+  /**
+   * PrivateShiftDeduction findMany
+   */
+  export type PrivateShiftDeductionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftDeduction
+     */
+    select?: PrivateShiftDeductionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftDeductionInclude<ExtArgs> | null
+    /**
+     * Filter, which PrivateShiftDeductions to fetch.
+     */
+    where?: PrivateShiftDeductionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PrivateShiftDeductions to fetch.
+     */
+    orderBy?: PrivateShiftDeductionOrderByWithRelationInput | PrivateShiftDeductionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PrivateShiftDeductions.
+     */
+    cursor?: PrivateShiftDeductionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PrivateShiftDeductions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PrivateShiftDeductions.
+     */
+    skip?: number
+    distinct?: PrivateShiftDeductionScalarFieldEnum | PrivateShiftDeductionScalarFieldEnum[]
+  }
+
+  /**
+   * PrivateShiftDeduction create
+   */
+  export type PrivateShiftDeductionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftDeduction
+     */
+    select?: PrivateShiftDeductionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftDeductionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PrivateShiftDeduction.
+     */
+    data: XOR<PrivateShiftDeductionCreateInput, PrivateShiftDeductionUncheckedCreateInput>
+  }
+
+  /**
+   * PrivateShiftDeduction createMany
+   */
+  export type PrivateShiftDeductionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PrivateShiftDeductions.
+     */
+    data: PrivateShiftDeductionCreateManyInput | PrivateShiftDeductionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PrivateShiftDeduction createManyAndReturn
+   */
+  export type PrivateShiftDeductionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftDeduction
+     */
+    select?: PrivateShiftDeductionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many PrivateShiftDeductions.
+     */
+    data: PrivateShiftDeductionCreateManyInput | PrivateShiftDeductionCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftDeductionIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PrivateShiftDeduction update
+   */
+  export type PrivateShiftDeductionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftDeduction
+     */
+    select?: PrivateShiftDeductionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftDeductionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PrivateShiftDeduction.
+     */
+    data: XOR<PrivateShiftDeductionUpdateInput, PrivateShiftDeductionUncheckedUpdateInput>
+    /**
+     * Choose, which PrivateShiftDeduction to update.
+     */
+    where: PrivateShiftDeductionWhereUniqueInput
+  }
+
+  /**
+   * PrivateShiftDeduction updateMany
+   */
+  export type PrivateShiftDeductionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PrivateShiftDeductions.
+     */
+    data: XOR<PrivateShiftDeductionUpdateManyMutationInput, PrivateShiftDeductionUncheckedUpdateManyInput>
+    /**
+     * Filter which PrivateShiftDeductions to update
+     */
+    where?: PrivateShiftDeductionWhereInput
+  }
+
+  /**
+   * PrivateShiftDeduction upsert
+   */
+  export type PrivateShiftDeductionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftDeduction
+     */
+    select?: PrivateShiftDeductionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftDeductionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PrivateShiftDeduction to update in case it exists.
+     */
+    where: PrivateShiftDeductionWhereUniqueInput
+    /**
+     * In case the PrivateShiftDeduction found by the `where` argument doesn't exist, create a new PrivateShiftDeduction with this data.
+     */
+    create: XOR<PrivateShiftDeductionCreateInput, PrivateShiftDeductionUncheckedCreateInput>
+    /**
+     * In case the PrivateShiftDeduction was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PrivateShiftDeductionUpdateInput, PrivateShiftDeductionUncheckedUpdateInput>
+  }
+
+  /**
+   * PrivateShiftDeduction delete
+   */
+  export type PrivateShiftDeductionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftDeduction
+     */
+    select?: PrivateShiftDeductionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftDeductionInclude<ExtArgs> | null
+    /**
+     * Filter which PrivateShiftDeduction to delete.
+     */
+    where: PrivateShiftDeductionWhereUniqueInput
+  }
+
+  /**
+   * PrivateShiftDeduction deleteMany
+   */
+  export type PrivateShiftDeductionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PrivateShiftDeductions to delete
+     */
+    where?: PrivateShiftDeductionWhereInput
+  }
+
+  /**
+   * PrivateShiftDeduction without action
+   */
+  export type PrivateShiftDeductionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrivateShiftDeduction
+     */
+    select?: PrivateShiftDeductionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrivateShiftDeductionInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -163470,7 +169415,8 @@ export namespace Prisma {
     passportExpiry: 'passportExpiry',
     passportStatus: 'passportStatus',
     driverSelfieExpiry: 'driverSelfieExpiry',
-    driverSelfieStatus: 'driverSelfieStatus'
+    driverSelfieStatus: 'driverSelfieStatus',
+    privateShiftEligible: 'privateShiftEligible'
   };
 
   export type DriverScalarFieldEnum = (typeof DriverScalarFieldEnum)[keyof typeof DriverScalarFieldEnum]
@@ -164996,7 +170942,8 @@ export namespace Prisma {
     complianceFreezeReason: 'complianceFreezeReason',
     walletMode: 'walletMode',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    suitableVehicleTypes: 'suitableVehicleTypes'
   };
 
   export type VendorScalarFieldEnum = (typeof VendorScalarFieldEnum)[keyof typeof VendorScalarFieldEnum]
@@ -165837,6 +171784,107 @@ export namespace Prisma {
   };
 
   export type VendorBranchAllocationScalarFieldEnum = (typeof VendorBranchAllocationScalarFieldEnum)[keyof typeof VendorBranchAllocationScalarFieldEnum]
+
+
+  export const VendorVehiclePlanScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    vendorId: 'vendorId',
+    vehicleType: 'vehicleType',
+    deliveryPlanId: 'deliveryPlanId',
+    perHourKwd: 'perHourKwd',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type VendorVehiclePlanScalarFieldEnum = (typeof VendorVehiclePlanScalarFieldEnum)[keyof typeof VendorVehiclePlanScalarFieldEnum]
+
+
+  export const FleetVehicleRateScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    fleetPartnerId: 'fleetPartnerId',
+    vehicleType: 'vehicleType',
+    perOrderKwd: 'perOrderKwd',
+    perHourKwd: 'perHourKwd',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type FleetVehicleRateScalarFieldEnum = (typeof FleetVehicleRateScalarFieldEnum)[keyof typeof FleetVehicleRateScalarFieldEnum]
+
+
+  export const PrivateShiftPlanScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    vendorId: 'vendorId',
+    branchId: 'branchId',
+    vehicleType: 'vehicleType',
+    date: 'date',
+    requestedShifts: 'requestedShifts',
+    shiftHours: 'shiftHours',
+    source: 'source',
+    status: 'status',
+    basis: 'basis',
+    createdById: 'createdById',
+    confirmedAt: 'confirmedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PrivateShiftPlanScalarFieldEnum = (typeof PrivateShiftPlanScalarFieldEnum)[keyof typeof PrivateShiftPlanScalarFieldEnum]
+
+
+  export const PrivateShiftScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    planId: 'planId',
+    vendorId: 'vendorId',
+    branchId: 'branchId',
+    vehicleType: 'vehicleType',
+    date: 'date',
+    startAt: 'startAt',
+    endAt: 'endAt',
+    status: 'status',
+    source: 'source',
+    driverId: 'driverId',
+    fleetPartnerId: 'fleetPartnerId',
+    bookedAt: 'bookedAt',
+    startedAt: 'startedAt',
+    startLat: 'startLat',
+    startLng: 'startLng',
+    endedAt: 'endedAt',
+    cancelledAt: 'cancelledAt',
+    cancelReason: 'cancelReason',
+    scheduledMinutes: 'scheduledMinutes',
+    lateDeductionMinutes: 'lateDeductionMinutes',
+    awayDeductionMinutes: 'awayDeductionMinutes',
+    billableMinutes: 'billableMinutes',
+    vendorHourlyKwd: 'vendorHourlyKwd',
+    fleetHourlyKwd: 'fleetHourlyKwd',
+    vendorChargeKwd: 'vendorChargeKwd',
+    fleetPayKwd: 'fleetPayKwd',
+    settledAt: 'settledAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PrivateShiftScalarFieldEnum = (typeof PrivateShiftScalarFieldEnum)[keyof typeof PrivateShiftScalarFieldEnum]
+
+
+  export const PrivateShiftDeductionScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    shiftId: 'shiftId',
+    kind: 'kind',
+    minutes: 'minutes',
+    orderId: 'orderId',
+    fromAt: 'fromAt',
+    toAt: 'toAt',
+    createdAt: 'createdAt'
+  };
+
+  export type PrivateShiftDeductionScalarFieldEnum = (typeof PrivateShiftDeductionScalarFieldEnum)[keyof typeof PrivateShiftDeductionScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -167560,6 +173608,64 @@ export namespace Prisma {
   export type VendorBranchAllocationOrderByRelevanceFieldEnum = (typeof VendorBranchAllocationOrderByRelevanceFieldEnum)[keyof typeof VendorBranchAllocationOrderByRelevanceFieldEnum]
 
 
+  export const VendorVehiclePlanOrderByRelevanceFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    vendorId: 'vendorId',
+    deliveryPlanId: 'deliveryPlanId'
+  };
+
+  export type VendorVehiclePlanOrderByRelevanceFieldEnum = (typeof VendorVehiclePlanOrderByRelevanceFieldEnum)[keyof typeof VendorVehiclePlanOrderByRelevanceFieldEnum]
+
+
+  export const FleetVehicleRateOrderByRelevanceFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    fleetPartnerId: 'fleetPartnerId'
+  };
+
+  export type FleetVehicleRateOrderByRelevanceFieldEnum = (typeof FleetVehicleRateOrderByRelevanceFieldEnum)[keyof typeof FleetVehicleRateOrderByRelevanceFieldEnum]
+
+
+  export const PrivateShiftPlanOrderByRelevanceFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    vendorId: 'vendorId',
+    branchId: 'branchId',
+    date: 'date',
+    status: 'status',
+    createdById: 'createdById'
+  };
+
+  export type PrivateShiftPlanOrderByRelevanceFieldEnum = (typeof PrivateShiftPlanOrderByRelevanceFieldEnum)[keyof typeof PrivateShiftPlanOrderByRelevanceFieldEnum]
+
+
+  export const PrivateShiftOrderByRelevanceFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    planId: 'planId',
+    vendorId: 'vendorId',
+    branchId: 'branchId',
+    date: 'date',
+    driverId: 'driverId',
+    fleetPartnerId: 'fleetPartnerId',
+    cancelReason: 'cancelReason'
+  };
+
+  export type PrivateShiftOrderByRelevanceFieldEnum = (typeof PrivateShiftOrderByRelevanceFieldEnum)[keyof typeof PrivateShiftOrderByRelevanceFieldEnum]
+
+
+  export const PrivateShiftDeductionOrderByRelevanceFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    shiftId: 'shiftId',
+    kind: 'kind',
+    orderId: 'orderId'
+  };
+
+  export type PrivateShiftDeductionOrderByRelevanceFieldEnum = (typeof PrivateShiftDeductionOrderByRelevanceFieldEnum)[keyof typeof PrivateShiftDeductionOrderByRelevanceFieldEnum]
+
+
   /**
    * Field references 
    */
@@ -168697,6 +174803,34 @@ export namespace Prisma {
    */
   export type ListEnumShiftPlanStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ShiftPlanStatus[]'>
     
+
+
+  /**
+   * Reference to a field of type 'PrivateShiftSource'
+   */
+  export type EnumPrivateShiftSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PrivateShiftSource'>
+    
+
+
+  /**
+   * Reference to a field of type 'PrivateShiftSource[]'
+   */
+  export type ListEnumPrivateShiftSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PrivateShiftSource[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'PrivateShiftStatus'
+   */
+  export type EnumPrivateShiftStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PrivateShiftStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'PrivateShiftStatus[]'
+   */
+  export type ListEnumPrivateShiftStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PrivateShiftStatus[]'>
+    
   /**
    * Deep Input Types
    */
@@ -169633,6 +175767,7 @@ export namespace Prisma {
     passportStatus?: StringNullableFilter<"Driver"> | string | null
     driverSelfieExpiry?: DateTimeNullableFilter<"Driver"> | Date | string | null
     driverSelfieStatus?: StringNullableFilter<"Driver"> | string | null
+    privateShiftEligible?: BoolFilter<"Driver"> | boolean
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     company?: XOR<CompanyRelationFilter, CompanyWhereInput>
     supervisor?: XOR<UserNullableRelationFilter, UserWhereInput> | null
@@ -169745,6 +175880,7 @@ export namespace Prisma {
     passportStatus?: SortOrderInput | SortOrder
     driverSelfieExpiry?: SortOrderInput | SortOrder
     driverSelfieStatus?: SortOrderInput | SortOrder
+    privateShiftEligible?: SortOrder
     tenant?: TenantOrderByWithRelationInput
     company?: CompanyOrderByWithRelationInput
     supervisor?: UserOrderByWithRelationInput
@@ -169862,6 +175998,7 @@ export namespace Prisma {
     passportStatus?: StringNullableFilter<"Driver"> | string | null
     driverSelfieExpiry?: DateTimeNullableFilter<"Driver"> | Date | string | null
     driverSelfieStatus?: StringNullableFilter<"Driver"> | string | null
+    privateShiftEligible?: BoolFilter<"Driver"> | boolean
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     company?: XOR<CompanyRelationFilter, CompanyWhereInput>
     supervisor?: XOR<UserNullableRelationFilter, UserWhereInput> | null
@@ -169974,6 +176111,7 @@ export namespace Prisma {
     passportStatus?: SortOrderInput | SortOrder
     driverSelfieExpiry?: SortOrderInput | SortOrder
     driverSelfieStatus?: SortOrderInput | SortOrder
+    privateShiftEligible?: SortOrder
     _count?: DriverCountOrderByAggregateInput
     _avg?: DriverAvgOrderByAggregateInput
     _max?: DriverMaxOrderByAggregateInput
@@ -170039,6 +176177,7 @@ export namespace Prisma {
     passportStatus?: StringNullableWithAggregatesFilter<"Driver"> | string | null
     driverSelfieExpiry?: DateTimeNullableWithAggregatesFilter<"Driver"> | Date | string | null
     driverSelfieStatus?: StringNullableWithAggregatesFilter<"Driver"> | string | null
+    privateShiftEligible?: BoolWithAggregatesFilter<"Driver"> | boolean
   }
 
   export type DriverRestrictionWhereInput = {
@@ -178156,6 +184295,7 @@ export namespace Prisma {
     walletMode?: StringFilter<"Vendor"> | string
     createdAt?: DateTimeFilter<"Vendor"> | Date | string
     updatedAt?: DateTimeFilter<"Vendor"> | Date | string
+    suitableVehicleTypes?: EnumVehicleTypeNullableListFilter<"Vendor">
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     branches?: VendorBranchListRelationFilter
     documents?: FleetDocumentListRelationFilter
@@ -178193,6 +184333,7 @@ export namespace Prisma {
     walletMode?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    suitableVehicleTypes?: SortOrder
     tenant?: TenantOrderByWithRelationInput
     branches?: VendorBranchOrderByRelationAggregateInput
     documents?: FleetDocumentOrderByRelationAggregateInput
@@ -178235,6 +184376,7 @@ export namespace Prisma {
     walletMode?: StringFilter<"Vendor"> | string
     createdAt?: DateTimeFilter<"Vendor"> | Date | string
     updatedAt?: DateTimeFilter<"Vendor"> | Date | string
+    suitableVehicleTypes?: EnumVehicleTypeNullableListFilter<"Vendor">
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     branches?: VendorBranchListRelationFilter
     documents?: FleetDocumentListRelationFilter
@@ -178272,6 +184414,7 @@ export namespace Prisma {
     walletMode?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    suitableVehicleTypes?: SortOrder
     _count?: VendorCountOrderByAggregateInput
     _avg?: VendorAvgOrderByAggregateInput
     _max?: VendorMaxOrderByAggregateInput
@@ -178302,6 +184445,7 @@ export namespace Prisma {
     walletMode?: StringWithAggregatesFilter<"Vendor"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Vendor"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Vendor"> | Date | string
+    suitableVehicleTypes?: EnumVehicleTypeNullableListFilter<"Vendor">
   }
 
   export type VendorBranchWhereInput = {
@@ -182938,6 +189082,525 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"VendorBranchAllocation"> | Date | string
   }
 
+  export type VendorVehiclePlanWhereInput = {
+    AND?: VendorVehiclePlanWhereInput | VendorVehiclePlanWhereInput[]
+    OR?: VendorVehiclePlanWhereInput[]
+    NOT?: VendorVehiclePlanWhereInput | VendorVehiclePlanWhereInput[]
+    id?: StringFilter<"VendorVehiclePlan"> | string
+    tenantId?: StringFilter<"VendorVehiclePlan"> | string
+    vendorId?: StringFilter<"VendorVehiclePlan"> | string
+    vehicleType?: EnumVehicleTypeFilter<"VendorVehiclePlan"> | $Enums.VehicleType
+    deliveryPlanId?: StringNullableFilter<"VendorVehiclePlan"> | string | null
+    perHourKwd?: DecimalNullableFilter<"VendorVehiclePlan"> | Decimal | DecimalJsLike | number | string | null
+    createdAt?: DateTimeFilter<"VendorVehiclePlan"> | Date | string
+    updatedAt?: DateTimeFilter<"VendorVehiclePlan"> | Date | string
+  }
+
+  export type VendorVehiclePlanOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vendorId?: SortOrder
+    vehicleType?: SortOrder
+    deliveryPlanId?: SortOrderInput | SortOrder
+    perHourKwd?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _relevance?: VendorVehiclePlanOrderByRelevanceInput
+  }
+
+  export type VendorVehiclePlanWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    vendorId_vehicleType?: VendorVehiclePlanVendorIdVehicleTypeCompoundUniqueInput
+    AND?: VendorVehiclePlanWhereInput | VendorVehiclePlanWhereInput[]
+    OR?: VendorVehiclePlanWhereInput[]
+    NOT?: VendorVehiclePlanWhereInput | VendorVehiclePlanWhereInput[]
+    tenantId?: StringFilter<"VendorVehiclePlan"> | string
+    vendorId?: StringFilter<"VendorVehiclePlan"> | string
+    vehicleType?: EnumVehicleTypeFilter<"VendorVehiclePlan"> | $Enums.VehicleType
+    deliveryPlanId?: StringNullableFilter<"VendorVehiclePlan"> | string | null
+    perHourKwd?: DecimalNullableFilter<"VendorVehiclePlan"> | Decimal | DecimalJsLike | number | string | null
+    createdAt?: DateTimeFilter<"VendorVehiclePlan"> | Date | string
+    updatedAt?: DateTimeFilter<"VendorVehiclePlan"> | Date | string
+  }, "id" | "vendorId_vehicleType">
+
+  export type VendorVehiclePlanOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vendorId?: SortOrder
+    vehicleType?: SortOrder
+    deliveryPlanId?: SortOrderInput | SortOrder
+    perHourKwd?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: VendorVehiclePlanCountOrderByAggregateInput
+    _avg?: VendorVehiclePlanAvgOrderByAggregateInput
+    _max?: VendorVehiclePlanMaxOrderByAggregateInput
+    _min?: VendorVehiclePlanMinOrderByAggregateInput
+    _sum?: VendorVehiclePlanSumOrderByAggregateInput
+  }
+
+  export type VendorVehiclePlanScalarWhereWithAggregatesInput = {
+    AND?: VendorVehiclePlanScalarWhereWithAggregatesInput | VendorVehiclePlanScalarWhereWithAggregatesInput[]
+    OR?: VendorVehiclePlanScalarWhereWithAggregatesInput[]
+    NOT?: VendorVehiclePlanScalarWhereWithAggregatesInput | VendorVehiclePlanScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"VendorVehiclePlan"> | string
+    tenantId?: StringWithAggregatesFilter<"VendorVehiclePlan"> | string
+    vendorId?: StringWithAggregatesFilter<"VendorVehiclePlan"> | string
+    vehicleType?: EnumVehicleTypeWithAggregatesFilter<"VendorVehiclePlan"> | $Enums.VehicleType
+    deliveryPlanId?: StringNullableWithAggregatesFilter<"VendorVehiclePlan"> | string | null
+    perHourKwd?: DecimalNullableWithAggregatesFilter<"VendorVehiclePlan"> | Decimal | DecimalJsLike | number | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"VendorVehiclePlan"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"VendorVehiclePlan"> | Date | string
+  }
+
+  export type FleetVehicleRateWhereInput = {
+    AND?: FleetVehicleRateWhereInput | FleetVehicleRateWhereInput[]
+    OR?: FleetVehicleRateWhereInput[]
+    NOT?: FleetVehicleRateWhereInput | FleetVehicleRateWhereInput[]
+    id?: StringFilter<"FleetVehicleRate"> | string
+    tenantId?: StringFilter<"FleetVehicleRate"> | string
+    fleetPartnerId?: StringFilter<"FleetVehicleRate"> | string
+    vehicleType?: EnumVehicleTypeFilter<"FleetVehicleRate"> | $Enums.VehicleType
+    perOrderKwd?: DecimalNullableFilter<"FleetVehicleRate"> | Decimal | DecimalJsLike | number | string | null
+    perHourKwd?: DecimalNullableFilter<"FleetVehicleRate"> | Decimal | DecimalJsLike | number | string | null
+    createdAt?: DateTimeFilter<"FleetVehicleRate"> | Date | string
+    updatedAt?: DateTimeFilter<"FleetVehicleRate"> | Date | string
+  }
+
+  export type FleetVehicleRateOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    fleetPartnerId?: SortOrder
+    vehicleType?: SortOrder
+    perOrderKwd?: SortOrderInput | SortOrder
+    perHourKwd?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _relevance?: FleetVehicleRateOrderByRelevanceInput
+  }
+
+  export type FleetVehicleRateWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    fleetPartnerId_vehicleType?: FleetVehicleRateFleetPartnerIdVehicleTypeCompoundUniqueInput
+    AND?: FleetVehicleRateWhereInput | FleetVehicleRateWhereInput[]
+    OR?: FleetVehicleRateWhereInput[]
+    NOT?: FleetVehicleRateWhereInput | FleetVehicleRateWhereInput[]
+    tenantId?: StringFilter<"FleetVehicleRate"> | string
+    fleetPartnerId?: StringFilter<"FleetVehicleRate"> | string
+    vehicleType?: EnumVehicleTypeFilter<"FleetVehicleRate"> | $Enums.VehicleType
+    perOrderKwd?: DecimalNullableFilter<"FleetVehicleRate"> | Decimal | DecimalJsLike | number | string | null
+    perHourKwd?: DecimalNullableFilter<"FleetVehicleRate"> | Decimal | DecimalJsLike | number | string | null
+    createdAt?: DateTimeFilter<"FleetVehicleRate"> | Date | string
+    updatedAt?: DateTimeFilter<"FleetVehicleRate"> | Date | string
+  }, "id" | "fleetPartnerId_vehicleType">
+
+  export type FleetVehicleRateOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    fleetPartnerId?: SortOrder
+    vehicleType?: SortOrder
+    perOrderKwd?: SortOrderInput | SortOrder
+    perHourKwd?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: FleetVehicleRateCountOrderByAggregateInput
+    _avg?: FleetVehicleRateAvgOrderByAggregateInput
+    _max?: FleetVehicleRateMaxOrderByAggregateInput
+    _min?: FleetVehicleRateMinOrderByAggregateInput
+    _sum?: FleetVehicleRateSumOrderByAggregateInput
+  }
+
+  export type FleetVehicleRateScalarWhereWithAggregatesInput = {
+    AND?: FleetVehicleRateScalarWhereWithAggregatesInput | FleetVehicleRateScalarWhereWithAggregatesInput[]
+    OR?: FleetVehicleRateScalarWhereWithAggregatesInput[]
+    NOT?: FleetVehicleRateScalarWhereWithAggregatesInput | FleetVehicleRateScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"FleetVehicleRate"> | string
+    tenantId?: StringWithAggregatesFilter<"FleetVehicleRate"> | string
+    fleetPartnerId?: StringWithAggregatesFilter<"FleetVehicleRate"> | string
+    vehicleType?: EnumVehicleTypeWithAggregatesFilter<"FleetVehicleRate"> | $Enums.VehicleType
+    perOrderKwd?: DecimalNullableWithAggregatesFilter<"FleetVehicleRate"> | Decimal | DecimalJsLike | number | string | null
+    perHourKwd?: DecimalNullableWithAggregatesFilter<"FleetVehicleRate"> | Decimal | DecimalJsLike | number | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"FleetVehicleRate"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"FleetVehicleRate"> | Date | string
+  }
+
+  export type PrivateShiftPlanWhereInput = {
+    AND?: PrivateShiftPlanWhereInput | PrivateShiftPlanWhereInput[]
+    OR?: PrivateShiftPlanWhereInput[]
+    NOT?: PrivateShiftPlanWhereInput | PrivateShiftPlanWhereInput[]
+    id?: StringFilter<"PrivateShiftPlan"> | string
+    tenantId?: StringFilter<"PrivateShiftPlan"> | string
+    vendorId?: StringFilter<"PrivateShiftPlan"> | string
+    branchId?: StringFilter<"PrivateShiftPlan"> | string
+    vehicleType?: EnumVehicleTypeFilter<"PrivateShiftPlan"> | $Enums.VehicleType
+    date?: StringFilter<"PrivateShiftPlan"> | string
+    requestedShifts?: IntFilter<"PrivateShiftPlan"> | number
+    shiftHours?: IntFilter<"PrivateShiftPlan"> | number
+    source?: EnumPrivateShiftSourceFilter<"PrivateShiftPlan"> | $Enums.PrivateShiftSource
+    status?: StringFilter<"PrivateShiftPlan"> | string
+    basis?: JsonNullableFilter<"PrivateShiftPlan">
+    createdById?: StringNullableFilter<"PrivateShiftPlan"> | string | null
+    confirmedAt?: DateTimeNullableFilter<"PrivateShiftPlan"> | Date | string | null
+    createdAt?: DateTimeFilter<"PrivateShiftPlan"> | Date | string
+    updatedAt?: DateTimeFilter<"PrivateShiftPlan"> | Date | string
+    shifts?: PrivateShiftListRelationFilter
+  }
+
+  export type PrivateShiftPlanOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vendorId?: SortOrder
+    branchId?: SortOrder
+    vehicleType?: SortOrder
+    date?: SortOrder
+    requestedShifts?: SortOrder
+    shiftHours?: SortOrder
+    source?: SortOrder
+    status?: SortOrder
+    basis?: SortOrderInput | SortOrder
+    createdById?: SortOrderInput | SortOrder
+    confirmedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    shifts?: PrivateShiftOrderByRelationAggregateInput
+    _relevance?: PrivateShiftPlanOrderByRelevanceInput
+  }
+
+  export type PrivateShiftPlanWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: PrivateShiftPlanWhereInput | PrivateShiftPlanWhereInput[]
+    OR?: PrivateShiftPlanWhereInput[]
+    NOT?: PrivateShiftPlanWhereInput | PrivateShiftPlanWhereInput[]
+    tenantId?: StringFilter<"PrivateShiftPlan"> | string
+    vendorId?: StringFilter<"PrivateShiftPlan"> | string
+    branchId?: StringFilter<"PrivateShiftPlan"> | string
+    vehicleType?: EnumVehicleTypeFilter<"PrivateShiftPlan"> | $Enums.VehicleType
+    date?: StringFilter<"PrivateShiftPlan"> | string
+    requestedShifts?: IntFilter<"PrivateShiftPlan"> | number
+    shiftHours?: IntFilter<"PrivateShiftPlan"> | number
+    source?: EnumPrivateShiftSourceFilter<"PrivateShiftPlan"> | $Enums.PrivateShiftSource
+    status?: StringFilter<"PrivateShiftPlan"> | string
+    basis?: JsonNullableFilter<"PrivateShiftPlan">
+    createdById?: StringNullableFilter<"PrivateShiftPlan"> | string | null
+    confirmedAt?: DateTimeNullableFilter<"PrivateShiftPlan"> | Date | string | null
+    createdAt?: DateTimeFilter<"PrivateShiftPlan"> | Date | string
+    updatedAt?: DateTimeFilter<"PrivateShiftPlan"> | Date | string
+    shifts?: PrivateShiftListRelationFilter
+  }, "id">
+
+  export type PrivateShiftPlanOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vendorId?: SortOrder
+    branchId?: SortOrder
+    vehicleType?: SortOrder
+    date?: SortOrder
+    requestedShifts?: SortOrder
+    shiftHours?: SortOrder
+    source?: SortOrder
+    status?: SortOrder
+    basis?: SortOrderInput | SortOrder
+    createdById?: SortOrderInput | SortOrder
+    confirmedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PrivateShiftPlanCountOrderByAggregateInput
+    _avg?: PrivateShiftPlanAvgOrderByAggregateInput
+    _max?: PrivateShiftPlanMaxOrderByAggregateInput
+    _min?: PrivateShiftPlanMinOrderByAggregateInput
+    _sum?: PrivateShiftPlanSumOrderByAggregateInput
+  }
+
+  export type PrivateShiftPlanScalarWhereWithAggregatesInput = {
+    AND?: PrivateShiftPlanScalarWhereWithAggregatesInput | PrivateShiftPlanScalarWhereWithAggregatesInput[]
+    OR?: PrivateShiftPlanScalarWhereWithAggregatesInput[]
+    NOT?: PrivateShiftPlanScalarWhereWithAggregatesInput | PrivateShiftPlanScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"PrivateShiftPlan"> | string
+    tenantId?: StringWithAggregatesFilter<"PrivateShiftPlan"> | string
+    vendorId?: StringWithAggregatesFilter<"PrivateShiftPlan"> | string
+    branchId?: StringWithAggregatesFilter<"PrivateShiftPlan"> | string
+    vehicleType?: EnumVehicleTypeWithAggregatesFilter<"PrivateShiftPlan"> | $Enums.VehicleType
+    date?: StringWithAggregatesFilter<"PrivateShiftPlan"> | string
+    requestedShifts?: IntWithAggregatesFilter<"PrivateShiftPlan"> | number
+    shiftHours?: IntWithAggregatesFilter<"PrivateShiftPlan"> | number
+    source?: EnumPrivateShiftSourceWithAggregatesFilter<"PrivateShiftPlan"> | $Enums.PrivateShiftSource
+    status?: StringWithAggregatesFilter<"PrivateShiftPlan"> | string
+    basis?: JsonNullableWithAggregatesFilter<"PrivateShiftPlan">
+    createdById?: StringNullableWithAggregatesFilter<"PrivateShiftPlan"> | string | null
+    confirmedAt?: DateTimeNullableWithAggregatesFilter<"PrivateShiftPlan"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"PrivateShiftPlan"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PrivateShiftPlan"> | Date | string
+  }
+
+  export type PrivateShiftWhereInput = {
+    AND?: PrivateShiftWhereInput | PrivateShiftWhereInput[]
+    OR?: PrivateShiftWhereInput[]
+    NOT?: PrivateShiftWhereInput | PrivateShiftWhereInput[]
+    id?: StringFilter<"PrivateShift"> | string
+    tenantId?: StringFilter<"PrivateShift"> | string
+    planId?: StringNullableFilter<"PrivateShift"> | string | null
+    vendorId?: StringFilter<"PrivateShift"> | string
+    branchId?: StringFilter<"PrivateShift"> | string
+    vehicleType?: EnumVehicleTypeFilter<"PrivateShift"> | $Enums.VehicleType
+    date?: StringFilter<"PrivateShift"> | string
+    startAt?: DateTimeFilter<"PrivateShift"> | Date | string
+    endAt?: DateTimeFilter<"PrivateShift"> | Date | string
+    status?: EnumPrivateShiftStatusFilter<"PrivateShift"> | $Enums.PrivateShiftStatus
+    source?: EnumPrivateShiftSourceFilter<"PrivateShift"> | $Enums.PrivateShiftSource
+    driverId?: StringNullableFilter<"PrivateShift"> | string | null
+    fleetPartnerId?: StringNullableFilter<"PrivateShift"> | string | null
+    bookedAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
+    startedAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
+    startLat?: DecimalNullableFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    startLng?: DecimalNullableFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    endedAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
+    cancelledAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
+    cancelReason?: StringNullableFilter<"PrivateShift"> | string | null
+    scheduledMinutes?: IntNullableFilter<"PrivateShift"> | number | null
+    lateDeductionMinutes?: IntNullableFilter<"PrivateShift"> | number | null
+    awayDeductionMinutes?: IntNullableFilter<"PrivateShift"> | number | null
+    billableMinutes?: IntNullableFilter<"PrivateShift"> | number | null
+    vendorHourlyKwd?: DecimalNullableFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: DecimalNullableFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: DecimalNullableFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: DecimalNullableFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    settledAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
+    createdAt?: DateTimeFilter<"PrivateShift"> | Date | string
+    updatedAt?: DateTimeFilter<"PrivateShift"> | Date | string
+    plan?: XOR<PrivateShiftPlanNullableRelationFilter, PrivateShiftPlanWhereInput> | null
+    deductions?: PrivateShiftDeductionListRelationFilter
+  }
+
+  export type PrivateShiftOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    planId?: SortOrderInput | SortOrder
+    vendorId?: SortOrder
+    branchId?: SortOrder
+    vehicleType?: SortOrder
+    date?: SortOrder
+    startAt?: SortOrder
+    endAt?: SortOrder
+    status?: SortOrder
+    source?: SortOrder
+    driverId?: SortOrderInput | SortOrder
+    fleetPartnerId?: SortOrderInput | SortOrder
+    bookedAt?: SortOrderInput | SortOrder
+    startedAt?: SortOrderInput | SortOrder
+    startLat?: SortOrderInput | SortOrder
+    startLng?: SortOrderInput | SortOrder
+    endedAt?: SortOrderInput | SortOrder
+    cancelledAt?: SortOrderInput | SortOrder
+    cancelReason?: SortOrderInput | SortOrder
+    scheduledMinutes?: SortOrderInput | SortOrder
+    lateDeductionMinutes?: SortOrderInput | SortOrder
+    awayDeductionMinutes?: SortOrderInput | SortOrder
+    billableMinutes?: SortOrderInput | SortOrder
+    vendorHourlyKwd?: SortOrderInput | SortOrder
+    fleetHourlyKwd?: SortOrderInput | SortOrder
+    vendorChargeKwd?: SortOrderInput | SortOrder
+    fleetPayKwd?: SortOrderInput | SortOrder
+    settledAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    plan?: PrivateShiftPlanOrderByWithRelationInput
+    deductions?: PrivateShiftDeductionOrderByRelationAggregateInput
+    _relevance?: PrivateShiftOrderByRelevanceInput
+  }
+
+  export type PrivateShiftWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: PrivateShiftWhereInput | PrivateShiftWhereInput[]
+    OR?: PrivateShiftWhereInput[]
+    NOT?: PrivateShiftWhereInput | PrivateShiftWhereInput[]
+    tenantId?: StringFilter<"PrivateShift"> | string
+    planId?: StringNullableFilter<"PrivateShift"> | string | null
+    vendorId?: StringFilter<"PrivateShift"> | string
+    branchId?: StringFilter<"PrivateShift"> | string
+    vehicleType?: EnumVehicleTypeFilter<"PrivateShift"> | $Enums.VehicleType
+    date?: StringFilter<"PrivateShift"> | string
+    startAt?: DateTimeFilter<"PrivateShift"> | Date | string
+    endAt?: DateTimeFilter<"PrivateShift"> | Date | string
+    status?: EnumPrivateShiftStatusFilter<"PrivateShift"> | $Enums.PrivateShiftStatus
+    source?: EnumPrivateShiftSourceFilter<"PrivateShift"> | $Enums.PrivateShiftSource
+    driverId?: StringNullableFilter<"PrivateShift"> | string | null
+    fleetPartnerId?: StringNullableFilter<"PrivateShift"> | string | null
+    bookedAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
+    startedAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
+    startLat?: DecimalNullableFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    startLng?: DecimalNullableFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    endedAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
+    cancelledAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
+    cancelReason?: StringNullableFilter<"PrivateShift"> | string | null
+    scheduledMinutes?: IntNullableFilter<"PrivateShift"> | number | null
+    lateDeductionMinutes?: IntNullableFilter<"PrivateShift"> | number | null
+    awayDeductionMinutes?: IntNullableFilter<"PrivateShift"> | number | null
+    billableMinutes?: IntNullableFilter<"PrivateShift"> | number | null
+    vendorHourlyKwd?: DecimalNullableFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: DecimalNullableFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: DecimalNullableFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: DecimalNullableFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    settledAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
+    createdAt?: DateTimeFilter<"PrivateShift"> | Date | string
+    updatedAt?: DateTimeFilter<"PrivateShift"> | Date | string
+    plan?: XOR<PrivateShiftPlanNullableRelationFilter, PrivateShiftPlanWhereInput> | null
+    deductions?: PrivateShiftDeductionListRelationFilter
+  }, "id">
+
+  export type PrivateShiftOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    planId?: SortOrderInput | SortOrder
+    vendorId?: SortOrder
+    branchId?: SortOrder
+    vehicleType?: SortOrder
+    date?: SortOrder
+    startAt?: SortOrder
+    endAt?: SortOrder
+    status?: SortOrder
+    source?: SortOrder
+    driverId?: SortOrderInput | SortOrder
+    fleetPartnerId?: SortOrderInput | SortOrder
+    bookedAt?: SortOrderInput | SortOrder
+    startedAt?: SortOrderInput | SortOrder
+    startLat?: SortOrderInput | SortOrder
+    startLng?: SortOrderInput | SortOrder
+    endedAt?: SortOrderInput | SortOrder
+    cancelledAt?: SortOrderInput | SortOrder
+    cancelReason?: SortOrderInput | SortOrder
+    scheduledMinutes?: SortOrderInput | SortOrder
+    lateDeductionMinutes?: SortOrderInput | SortOrder
+    awayDeductionMinutes?: SortOrderInput | SortOrder
+    billableMinutes?: SortOrderInput | SortOrder
+    vendorHourlyKwd?: SortOrderInput | SortOrder
+    fleetHourlyKwd?: SortOrderInput | SortOrder
+    vendorChargeKwd?: SortOrderInput | SortOrder
+    fleetPayKwd?: SortOrderInput | SortOrder
+    settledAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PrivateShiftCountOrderByAggregateInput
+    _avg?: PrivateShiftAvgOrderByAggregateInput
+    _max?: PrivateShiftMaxOrderByAggregateInput
+    _min?: PrivateShiftMinOrderByAggregateInput
+    _sum?: PrivateShiftSumOrderByAggregateInput
+  }
+
+  export type PrivateShiftScalarWhereWithAggregatesInput = {
+    AND?: PrivateShiftScalarWhereWithAggregatesInput | PrivateShiftScalarWhereWithAggregatesInput[]
+    OR?: PrivateShiftScalarWhereWithAggregatesInput[]
+    NOT?: PrivateShiftScalarWhereWithAggregatesInput | PrivateShiftScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"PrivateShift"> | string
+    tenantId?: StringWithAggregatesFilter<"PrivateShift"> | string
+    planId?: StringNullableWithAggregatesFilter<"PrivateShift"> | string | null
+    vendorId?: StringWithAggregatesFilter<"PrivateShift"> | string
+    branchId?: StringWithAggregatesFilter<"PrivateShift"> | string
+    vehicleType?: EnumVehicleTypeWithAggregatesFilter<"PrivateShift"> | $Enums.VehicleType
+    date?: StringWithAggregatesFilter<"PrivateShift"> | string
+    startAt?: DateTimeWithAggregatesFilter<"PrivateShift"> | Date | string
+    endAt?: DateTimeWithAggregatesFilter<"PrivateShift"> | Date | string
+    status?: EnumPrivateShiftStatusWithAggregatesFilter<"PrivateShift"> | $Enums.PrivateShiftStatus
+    source?: EnumPrivateShiftSourceWithAggregatesFilter<"PrivateShift"> | $Enums.PrivateShiftSource
+    driverId?: StringNullableWithAggregatesFilter<"PrivateShift"> | string | null
+    fleetPartnerId?: StringNullableWithAggregatesFilter<"PrivateShift"> | string | null
+    bookedAt?: DateTimeNullableWithAggregatesFilter<"PrivateShift"> | Date | string | null
+    startedAt?: DateTimeNullableWithAggregatesFilter<"PrivateShift"> | Date | string | null
+    startLat?: DecimalNullableWithAggregatesFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    startLng?: DecimalNullableWithAggregatesFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    endedAt?: DateTimeNullableWithAggregatesFilter<"PrivateShift"> | Date | string | null
+    cancelledAt?: DateTimeNullableWithAggregatesFilter<"PrivateShift"> | Date | string | null
+    cancelReason?: StringNullableWithAggregatesFilter<"PrivateShift"> | string | null
+    scheduledMinutes?: IntNullableWithAggregatesFilter<"PrivateShift"> | number | null
+    lateDeductionMinutes?: IntNullableWithAggregatesFilter<"PrivateShift"> | number | null
+    awayDeductionMinutes?: IntNullableWithAggregatesFilter<"PrivateShift"> | number | null
+    billableMinutes?: IntNullableWithAggregatesFilter<"PrivateShift"> | number | null
+    vendorHourlyKwd?: DecimalNullableWithAggregatesFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: DecimalNullableWithAggregatesFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: DecimalNullableWithAggregatesFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: DecimalNullableWithAggregatesFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    settledAt?: DateTimeNullableWithAggregatesFilter<"PrivateShift"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"PrivateShift"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PrivateShift"> | Date | string
+  }
+
+  export type PrivateShiftDeductionWhereInput = {
+    AND?: PrivateShiftDeductionWhereInput | PrivateShiftDeductionWhereInput[]
+    OR?: PrivateShiftDeductionWhereInput[]
+    NOT?: PrivateShiftDeductionWhereInput | PrivateShiftDeductionWhereInput[]
+    id?: StringFilter<"PrivateShiftDeduction"> | string
+    tenantId?: StringFilter<"PrivateShiftDeduction"> | string
+    shiftId?: StringFilter<"PrivateShiftDeduction"> | string
+    kind?: StringFilter<"PrivateShiftDeduction"> | string
+    minutes?: IntFilter<"PrivateShiftDeduction"> | number
+    orderId?: StringNullableFilter<"PrivateShiftDeduction"> | string | null
+    fromAt?: DateTimeNullableFilter<"PrivateShiftDeduction"> | Date | string | null
+    toAt?: DateTimeNullableFilter<"PrivateShiftDeduction"> | Date | string | null
+    createdAt?: DateTimeFilter<"PrivateShiftDeduction"> | Date | string
+    shift?: XOR<PrivateShiftRelationFilter, PrivateShiftWhereInput>
+  }
+
+  export type PrivateShiftDeductionOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    shiftId?: SortOrder
+    kind?: SortOrder
+    minutes?: SortOrder
+    orderId?: SortOrderInput | SortOrder
+    fromAt?: SortOrderInput | SortOrder
+    toAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    shift?: PrivateShiftOrderByWithRelationInput
+    _relevance?: PrivateShiftDeductionOrderByRelevanceInput
+  }
+
+  export type PrivateShiftDeductionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: PrivateShiftDeductionWhereInput | PrivateShiftDeductionWhereInput[]
+    OR?: PrivateShiftDeductionWhereInput[]
+    NOT?: PrivateShiftDeductionWhereInput | PrivateShiftDeductionWhereInput[]
+    tenantId?: StringFilter<"PrivateShiftDeduction"> | string
+    shiftId?: StringFilter<"PrivateShiftDeduction"> | string
+    kind?: StringFilter<"PrivateShiftDeduction"> | string
+    minutes?: IntFilter<"PrivateShiftDeduction"> | number
+    orderId?: StringNullableFilter<"PrivateShiftDeduction"> | string | null
+    fromAt?: DateTimeNullableFilter<"PrivateShiftDeduction"> | Date | string | null
+    toAt?: DateTimeNullableFilter<"PrivateShiftDeduction"> | Date | string | null
+    createdAt?: DateTimeFilter<"PrivateShiftDeduction"> | Date | string
+    shift?: XOR<PrivateShiftRelationFilter, PrivateShiftWhereInput>
+  }, "id">
+
+  export type PrivateShiftDeductionOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    shiftId?: SortOrder
+    kind?: SortOrder
+    minutes?: SortOrder
+    orderId?: SortOrderInput | SortOrder
+    fromAt?: SortOrderInput | SortOrder
+    toAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: PrivateShiftDeductionCountOrderByAggregateInput
+    _avg?: PrivateShiftDeductionAvgOrderByAggregateInput
+    _max?: PrivateShiftDeductionMaxOrderByAggregateInput
+    _min?: PrivateShiftDeductionMinOrderByAggregateInput
+    _sum?: PrivateShiftDeductionSumOrderByAggregateInput
+  }
+
+  export type PrivateShiftDeductionScalarWhereWithAggregatesInput = {
+    AND?: PrivateShiftDeductionScalarWhereWithAggregatesInput | PrivateShiftDeductionScalarWhereWithAggregatesInput[]
+    OR?: PrivateShiftDeductionScalarWhereWithAggregatesInput[]
+    NOT?: PrivateShiftDeductionScalarWhereWithAggregatesInput | PrivateShiftDeductionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"PrivateShiftDeduction"> | string
+    tenantId?: StringWithAggregatesFilter<"PrivateShiftDeduction"> | string
+    shiftId?: StringWithAggregatesFilter<"PrivateShiftDeduction"> | string
+    kind?: StringWithAggregatesFilter<"PrivateShiftDeduction"> | string
+    minutes?: IntWithAggregatesFilter<"PrivateShiftDeduction"> | number
+    orderId?: StringNullableWithAggregatesFilter<"PrivateShiftDeduction"> | string | null
+    fromAt?: DateTimeNullableWithAggregatesFilter<"PrivateShiftDeduction"> | Date | string | null
+    toAt?: DateTimeNullableWithAggregatesFilter<"PrivateShiftDeduction"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"PrivateShiftDeduction"> | Date | string
+  }
+
   export type TenantCreateInput = {
     id?: string
     name: string
@@ -184053,6 +190716,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -184165,6 +190829,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -184267,6 +190932,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -184379,6 +191045,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -184486,6 +191153,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
   }
 
   export type DriverUpdateManyMutationInput = {
@@ -184538,6 +191206,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type DriverUncheckedUpdateManyInput = {
@@ -184595,6 +191264,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type DriverRestrictionCreateInput = {
@@ -193463,6 +200133,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant: TenantCreateNestedOneWithoutVendorsInput
     branches?: VendorBranchCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentCreateNestedManyWithoutVendorInput
@@ -193500,6 +200171,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentUncheckedCreateNestedManyWithoutVendorInput
     branchAllocations?: VendorBranchAllocationUncheckedCreateNestedManyWithoutVendorInput
@@ -193533,6 +200205,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant?: TenantUpdateOneRequiredWithoutVendorsNestedInput
     branches?: VendorBranchUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUpdateManyWithoutVendorNestedInput
@@ -193570,6 +200243,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUncheckedUpdateManyWithoutVendorNestedInput
     branchAllocations?: VendorBranchAllocationUncheckedUpdateManyWithoutVendorNestedInput
@@ -193605,6 +200279,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
   }
 
   export type VendorUpdateManyMutationInput = {
@@ -193625,6 +200300,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
   }
 
   export type VendorUncheckedUpdateManyInput = {
@@ -193647,6 +200323,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
   }
 
   export type VendorBranchCreateInput = {
@@ -198605,6 +205282,614 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type VendorVehiclePlanCreateInput = {
+    id?: string
+    tenantId: string
+    vendorId: string
+    vehicleType: $Enums.VehicleType
+    deliveryPlanId?: string | null
+    perHourKwd?: Decimal | DecimalJsLike | number | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VendorVehiclePlanUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    vendorId: string
+    vehicleType: $Enums.VehicleType
+    deliveryPlanId?: string | null
+    perHourKwd?: Decimal | DecimalJsLike | number | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VendorVehiclePlanUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
+    perHourKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VendorVehiclePlanUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
+    perHourKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VendorVehiclePlanCreateManyInput = {
+    id?: string
+    tenantId: string
+    vendorId: string
+    vehicleType: $Enums.VehicleType
+    deliveryPlanId?: string | null
+    perHourKwd?: Decimal | DecimalJsLike | number | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VendorVehiclePlanUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
+    perHourKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VendorVehiclePlanUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    deliveryPlanId?: NullableStringFieldUpdateOperationsInput | string | null
+    perHourKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FleetVehicleRateCreateInput = {
+    id?: string
+    tenantId: string
+    fleetPartnerId: string
+    vehicleType: $Enums.VehicleType
+    perOrderKwd?: Decimal | DecimalJsLike | number | string | null
+    perHourKwd?: Decimal | DecimalJsLike | number | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FleetVehicleRateUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    fleetPartnerId: string
+    vehicleType: $Enums.VehicleType
+    perOrderKwd?: Decimal | DecimalJsLike | number | string | null
+    perHourKwd?: Decimal | DecimalJsLike | number | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FleetVehicleRateUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    fleetPartnerId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    perOrderKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    perHourKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FleetVehicleRateUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    fleetPartnerId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    perOrderKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    perHourKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FleetVehicleRateCreateManyInput = {
+    id?: string
+    tenantId: string
+    fleetPartnerId: string
+    vehicleType: $Enums.VehicleType
+    perOrderKwd?: Decimal | DecimalJsLike | number | string | null
+    perHourKwd?: Decimal | DecimalJsLike | number | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FleetVehicleRateUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    fleetPartnerId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    perOrderKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    perHourKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FleetVehicleRateUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    fleetPartnerId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    perOrderKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    perHourKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrivateShiftPlanCreateInput = {
+    id?: string
+    tenantId: string
+    vendorId: string
+    branchId: string
+    vehicleType: $Enums.VehicleType
+    date: string
+    requestedShifts: number
+    shiftHours: number
+    source: $Enums.PrivateShiftSource
+    status?: string
+    basis?: NullableJsonNullValueInput | InputJsonValue
+    createdById?: string | null
+    confirmedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    shifts?: PrivateShiftCreateNestedManyWithoutPlanInput
+  }
+
+  export type PrivateShiftPlanUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    vendorId: string
+    branchId: string
+    vehicleType: $Enums.VehicleType
+    date: string
+    requestedShifts: number
+    shiftHours: number
+    source: $Enums.PrivateShiftSource
+    status?: string
+    basis?: NullableJsonNullValueInput | InputJsonValue
+    createdById?: string | null
+    confirmedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    shifts?: PrivateShiftUncheckedCreateNestedManyWithoutPlanInput
+  }
+
+  export type PrivateShiftPlanUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    branchId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    date?: StringFieldUpdateOperationsInput | string
+    requestedShifts?: IntFieldUpdateOperationsInput | number
+    shiftHours?: IntFieldUpdateOperationsInput | number
+    source?: EnumPrivateShiftSourceFieldUpdateOperationsInput | $Enums.PrivateShiftSource
+    status?: StringFieldUpdateOperationsInput | string
+    basis?: NullableJsonNullValueInput | InputJsonValue
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    shifts?: PrivateShiftUpdateManyWithoutPlanNestedInput
+  }
+
+  export type PrivateShiftPlanUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    branchId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    date?: StringFieldUpdateOperationsInput | string
+    requestedShifts?: IntFieldUpdateOperationsInput | number
+    shiftHours?: IntFieldUpdateOperationsInput | number
+    source?: EnumPrivateShiftSourceFieldUpdateOperationsInput | $Enums.PrivateShiftSource
+    status?: StringFieldUpdateOperationsInput | string
+    basis?: NullableJsonNullValueInput | InputJsonValue
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    shifts?: PrivateShiftUncheckedUpdateManyWithoutPlanNestedInput
+  }
+
+  export type PrivateShiftPlanCreateManyInput = {
+    id?: string
+    tenantId: string
+    vendorId: string
+    branchId: string
+    vehicleType: $Enums.VehicleType
+    date: string
+    requestedShifts: number
+    shiftHours: number
+    source: $Enums.PrivateShiftSource
+    status?: string
+    basis?: NullableJsonNullValueInput | InputJsonValue
+    createdById?: string | null
+    confirmedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PrivateShiftPlanUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    branchId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    date?: StringFieldUpdateOperationsInput | string
+    requestedShifts?: IntFieldUpdateOperationsInput | number
+    shiftHours?: IntFieldUpdateOperationsInput | number
+    source?: EnumPrivateShiftSourceFieldUpdateOperationsInput | $Enums.PrivateShiftSource
+    status?: StringFieldUpdateOperationsInput | string
+    basis?: NullableJsonNullValueInput | InputJsonValue
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrivateShiftPlanUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    branchId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    date?: StringFieldUpdateOperationsInput | string
+    requestedShifts?: IntFieldUpdateOperationsInput | number
+    shiftHours?: IntFieldUpdateOperationsInput | number
+    source?: EnumPrivateShiftSourceFieldUpdateOperationsInput | $Enums.PrivateShiftSource
+    status?: StringFieldUpdateOperationsInput | string
+    basis?: NullableJsonNullValueInput | InputJsonValue
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrivateShiftCreateInput = {
+    id?: string
+    tenantId: string
+    vendorId: string
+    branchId: string
+    vehicleType: $Enums.VehicleType
+    date: string
+    startAt: Date | string
+    endAt: Date | string
+    status?: $Enums.PrivateShiftStatus
+    source: $Enums.PrivateShiftSource
+    driverId?: string | null
+    fleetPartnerId?: string | null
+    bookedAt?: Date | string | null
+    startedAt?: Date | string | null
+    startLat?: Decimal | DecimalJsLike | number | string | null
+    startLng?: Decimal | DecimalJsLike | number | string | null
+    endedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    cancelReason?: string | null
+    scheduledMinutes?: number | null
+    lateDeductionMinutes?: number | null
+    awayDeductionMinutes?: number | null
+    billableMinutes?: number | null
+    vendorHourlyKwd?: Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: Decimal | DecimalJsLike | number | string | null
+    settledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    plan?: PrivateShiftPlanCreateNestedOneWithoutShiftsInput
+    deductions?: PrivateShiftDeductionCreateNestedManyWithoutShiftInput
+  }
+
+  export type PrivateShiftUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    planId?: string | null
+    vendorId: string
+    branchId: string
+    vehicleType: $Enums.VehicleType
+    date: string
+    startAt: Date | string
+    endAt: Date | string
+    status?: $Enums.PrivateShiftStatus
+    source: $Enums.PrivateShiftSource
+    driverId?: string | null
+    fleetPartnerId?: string | null
+    bookedAt?: Date | string | null
+    startedAt?: Date | string | null
+    startLat?: Decimal | DecimalJsLike | number | string | null
+    startLng?: Decimal | DecimalJsLike | number | string | null
+    endedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    cancelReason?: string | null
+    scheduledMinutes?: number | null
+    lateDeductionMinutes?: number | null
+    awayDeductionMinutes?: number | null
+    billableMinutes?: number | null
+    vendorHourlyKwd?: Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: Decimal | DecimalJsLike | number | string | null
+    settledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deductions?: PrivateShiftDeductionUncheckedCreateNestedManyWithoutShiftInput
+  }
+
+  export type PrivateShiftUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    branchId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    date?: StringFieldUpdateOperationsInput | string
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumPrivateShiftStatusFieldUpdateOperationsInput | $Enums.PrivateShiftStatus
+    source?: EnumPrivateShiftSourceFieldUpdateOperationsInput | $Enums.PrivateShiftSource
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    startLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelReason?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    lateDeductionMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    awayDeductionMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    billableMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    vendorHourlyKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    plan?: PrivateShiftPlanUpdateOneWithoutShiftsNestedInput
+    deductions?: PrivateShiftDeductionUpdateManyWithoutShiftNestedInput
+  }
+
+  export type PrivateShiftUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    planId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorId?: StringFieldUpdateOperationsInput | string
+    branchId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    date?: StringFieldUpdateOperationsInput | string
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumPrivateShiftStatusFieldUpdateOperationsInput | $Enums.PrivateShiftStatus
+    source?: EnumPrivateShiftSourceFieldUpdateOperationsInput | $Enums.PrivateShiftSource
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    startLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelReason?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    lateDeductionMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    awayDeductionMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    billableMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    vendorHourlyKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deductions?: PrivateShiftDeductionUncheckedUpdateManyWithoutShiftNestedInput
+  }
+
+  export type PrivateShiftCreateManyInput = {
+    id?: string
+    tenantId: string
+    planId?: string | null
+    vendorId: string
+    branchId: string
+    vehicleType: $Enums.VehicleType
+    date: string
+    startAt: Date | string
+    endAt: Date | string
+    status?: $Enums.PrivateShiftStatus
+    source: $Enums.PrivateShiftSource
+    driverId?: string | null
+    fleetPartnerId?: string | null
+    bookedAt?: Date | string | null
+    startedAt?: Date | string | null
+    startLat?: Decimal | DecimalJsLike | number | string | null
+    startLng?: Decimal | DecimalJsLike | number | string | null
+    endedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    cancelReason?: string | null
+    scheduledMinutes?: number | null
+    lateDeductionMinutes?: number | null
+    awayDeductionMinutes?: number | null
+    billableMinutes?: number | null
+    vendorHourlyKwd?: Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: Decimal | DecimalJsLike | number | string | null
+    settledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PrivateShiftUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    branchId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    date?: StringFieldUpdateOperationsInput | string
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumPrivateShiftStatusFieldUpdateOperationsInput | $Enums.PrivateShiftStatus
+    source?: EnumPrivateShiftSourceFieldUpdateOperationsInput | $Enums.PrivateShiftSource
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    startLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelReason?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    lateDeductionMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    awayDeductionMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    billableMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    vendorHourlyKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrivateShiftUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    planId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorId?: StringFieldUpdateOperationsInput | string
+    branchId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    date?: StringFieldUpdateOperationsInput | string
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumPrivateShiftStatusFieldUpdateOperationsInput | $Enums.PrivateShiftStatus
+    source?: EnumPrivateShiftSourceFieldUpdateOperationsInput | $Enums.PrivateShiftSource
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    startLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelReason?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    lateDeductionMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    awayDeductionMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    billableMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    vendorHourlyKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrivateShiftDeductionCreateInput = {
+    id?: string
+    tenantId: string
+    kind: string
+    minutes: number
+    orderId?: string | null
+    fromAt?: Date | string | null
+    toAt?: Date | string | null
+    createdAt?: Date | string
+    shift: PrivateShiftCreateNestedOneWithoutDeductionsInput
+  }
+
+  export type PrivateShiftDeductionUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    shiftId: string
+    kind: string
+    minutes: number
+    orderId?: string | null
+    fromAt?: Date | string | null
+    toAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type PrivateShiftDeductionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    minutes?: IntFieldUpdateOperationsInput | number
+    orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    fromAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    toAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    shift?: PrivateShiftUpdateOneRequiredWithoutDeductionsNestedInput
+  }
+
+  export type PrivateShiftDeductionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    shiftId?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    minutes?: IntFieldUpdateOperationsInput | number
+    orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    fromAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    toAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrivateShiftDeductionCreateManyInput = {
+    id?: string
+    tenantId: string
+    shiftId: string
+    kind: string
+    minutes: number
+    orderId?: string | null
+    fromAt?: Date | string | null
+    toAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type PrivateShiftDeductionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    minutes?: IntFieldUpdateOperationsInput | number
+    orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    fromAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    toAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrivateShiftDeductionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    shiftId?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    minutes?: IntFieldUpdateOperationsInput | number
+    orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    fromAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    toAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -200525,6 +207810,7 @@ export namespace Prisma {
     passportStatus?: SortOrder
     driverSelfieExpiry?: SortOrder
     driverSelfieStatus?: SortOrder
+    privateShiftEligible?: SortOrder
   }
 
   export type DriverAvgOrderByAggregateInput = {
@@ -200587,6 +207873,7 @@ export namespace Prisma {
     passportStatus?: SortOrder
     driverSelfieExpiry?: SortOrder
     driverSelfieStatus?: SortOrder
+    privateShiftEligible?: SortOrder
   }
 
   export type DriverMinOrderByAggregateInput = {
@@ -200644,6 +207931,7 @@ export namespace Prisma {
     passportStatus?: SortOrder
     driverSelfieExpiry?: SortOrder
     driverSelfieStatus?: SortOrder
+    privateShiftEligible?: SortOrder
   }
 
   export type DriverSumOrderByAggregateInput = {
@@ -206615,6 +213903,14 @@ export namespace Prisma {
     not?: NestedEnumPricingModelNullableFilter<$PrismaModel> | $Enums.PricingModel | null
   }
 
+  export type EnumVehicleTypeNullableListFilter<$PrismaModel = never> = {
+    equals?: $Enums.VehicleType[] | ListEnumVehicleTypeFieldRefInput<$PrismaModel> | null
+    has?: $Enums.VehicleType | EnumVehicleTypeFieldRefInput<$PrismaModel> | null
+    hasEvery?: $Enums.VehicleType[] | ListEnumVehicleTypeFieldRefInput<$PrismaModel>
+    hasSome?: $Enums.VehicleType[] | ListEnumVehicleTypeFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+
   export type FoodicsConnectionNullableRelationFilter = {
     is?: FoodicsConnectionWhereInput | null
     isNot?: FoodicsConnectionWhereInput | null
@@ -206656,6 +213952,7 @@ export namespace Prisma {
     walletMode?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    suitableVehicleTypes?: SortOrder
   }
 
   export type VendorAvgOrderByAggregateInput = {
@@ -210141,6 +217438,428 @@ export namespace Prisma {
 
   export type VendorBranchAllocationSumOrderByAggregateInput = {
     amountKwd?: SortOrder
+  }
+
+  export type VendorVehiclePlanOrderByRelevanceInput = {
+    fields: VendorVehiclePlanOrderByRelevanceFieldEnum | VendorVehiclePlanOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type VendorVehiclePlanVendorIdVehicleTypeCompoundUniqueInput = {
+    vendorId: string
+    vehicleType: $Enums.VehicleType
+  }
+
+  export type VendorVehiclePlanCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vendorId?: SortOrder
+    vehicleType?: SortOrder
+    deliveryPlanId?: SortOrder
+    perHourKwd?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type VendorVehiclePlanAvgOrderByAggregateInput = {
+    perHourKwd?: SortOrder
+  }
+
+  export type VendorVehiclePlanMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vendorId?: SortOrder
+    vehicleType?: SortOrder
+    deliveryPlanId?: SortOrder
+    perHourKwd?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type VendorVehiclePlanMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vendorId?: SortOrder
+    vehicleType?: SortOrder
+    deliveryPlanId?: SortOrder
+    perHourKwd?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type VendorVehiclePlanSumOrderByAggregateInput = {
+    perHourKwd?: SortOrder
+  }
+
+  export type FleetVehicleRateOrderByRelevanceInput = {
+    fields: FleetVehicleRateOrderByRelevanceFieldEnum | FleetVehicleRateOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type FleetVehicleRateFleetPartnerIdVehicleTypeCompoundUniqueInput = {
+    fleetPartnerId: string
+    vehicleType: $Enums.VehicleType
+  }
+
+  export type FleetVehicleRateCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    fleetPartnerId?: SortOrder
+    vehicleType?: SortOrder
+    perOrderKwd?: SortOrder
+    perHourKwd?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FleetVehicleRateAvgOrderByAggregateInput = {
+    perOrderKwd?: SortOrder
+    perHourKwd?: SortOrder
+  }
+
+  export type FleetVehicleRateMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    fleetPartnerId?: SortOrder
+    vehicleType?: SortOrder
+    perOrderKwd?: SortOrder
+    perHourKwd?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FleetVehicleRateMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    fleetPartnerId?: SortOrder
+    vehicleType?: SortOrder
+    perOrderKwd?: SortOrder
+    perHourKwd?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FleetVehicleRateSumOrderByAggregateInput = {
+    perOrderKwd?: SortOrder
+    perHourKwd?: SortOrder
+  }
+
+  export type EnumPrivateShiftSourceFilter<$PrismaModel = never> = {
+    equals?: $Enums.PrivateShiftSource | EnumPrivateShiftSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.PrivateShiftSource[] | ListEnumPrivateShiftSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PrivateShiftSource[] | ListEnumPrivateShiftSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumPrivateShiftSourceFilter<$PrismaModel> | $Enums.PrivateShiftSource
+  }
+
+  export type PrivateShiftListRelationFilter = {
+    every?: PrivateShiftWhereInput
+    some?: PrivateShiftWhereInput
+    none?: PrivateShiftWhereInput
+  }
+
+  export type PrivateShiftOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PrivateShiftPlanOrderByRelevanceInput = {
+    fields: PrivateShiftPlanOrderByRelevanceFieldEnum | PrivateShiftPlanOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type PrivateShiftPlanCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vendorId?: SortOrder
+    branchId?: SortOrder
+    vehicleType?: SortOrder
+    date?: SortOrder
+    requestedShifts?: SortOrder
+    shiftHours?: SortOrder
+    source?: SortOrder
+    status?: SortOrder
+    basis?: SortOrder
+    createdById?: SortOrder
+    confirmedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PrivateShiftPlanAvgOrderByAggregateInput = {
+    requestedShifts?: SortOrder
+    shiftHours?: SortOrder
+  }
+
+  export type PrivateShiftPlanMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vendorId?: SortOrder
+    branchId?: SortOrder
+    vehicleType?: SortOrder
+    date?: SortOrder
+    requestedShifts?: SortOrder
+    shiftHours?: SortOrder
+    source?: SortOrder
+    status?: SortOrder
+    createdById?: SortOrder
+    confirmedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PrivateShiftPlanMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    vendorId?: SortOrder
+    branchId?: SortOrder
+    vehicleType?: SortOrder
+    date?: SortOrder
+    requestedShifts?: SortOrder
+    shiftHours?: SortOrder
+    source?: SortOrder
+    status?: SortOrder
+    createdById?: SortOrder
+    confirmedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PrivateShiftPlanSumOrderByAggregateInput = {
+    requestedShifts?: SortOrder
+    shiftHours?: SortOrder
+  }
+
+  export type EnumPrivateShiftSourceWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PrivateShiftSource | EnumPrivateShiftSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.PrivateShiftSource[] | ListEnumPrivateShiftSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PrivateShiftSource[] | ListEnumPrivateShiftSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumPrivateShiftSourceWithAggregatesFilter<$PrismaModel> | $Enums.PrivateShiftSource
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPrivateShiftSourceFilter<$PrismaModel>
+    _max?: NestedEnumPrivateShiftSourceFilter<$PrismaModel>
+  }
+
+  export type EnumPrivateShiftStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.PrivateShiftStatus | EnumPrivateShiftStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.PrivateShiftStatus[] | ListEnumPrivateShiftStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PrivateShiftStatus[] | ListEnumPrivateShiftStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumPrivateShiftStatusFilter<$PrismaModel> | $Enums.PrivateShiftStatus
+  }
+
+  export type PrivateShiftPlanNullableRelationFilter = {
+    is?: PrivateShiftPlanWhereInput | null
+    isNot?: PrivateShiftPlanWhereInput | null
+  }
+
+  export type PrivateShiftDeductionListRelationFilter = {
+    every?: PrivateShiftDeductionWhereInput
+    some?: PrivateShiftDeductionWhereInput
+    none?: PrivateShiftDeductionWhereInput
+  }
+
+  export type PrivateShiftDeductionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PrivateShiftOrderByRelevanceInput = {
+    fields: PrivateShiftOrderByRelevanceFieldEnum | PrivateShiftOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type PrivateShiftCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    planId?: SortOrder
+    vendorId?: SortOrder
+    branchId?: SortOrder
+    vehicleType?: SortOrder
+    date?: SortOrder
+    startAt?: SortOrder
+    endAt?: SortOrder
+    status?: SortOrder
+    source?: SortOrder
+    driverId?: SortOrder
+    fleetPartnerId?: SortOrder
+    bookedAt?: SortOrder
+    startedAt?: SortOrder
+    startLat?: SortOrder
+    startLng?: SortOrder
+    endedAt?: SortOrder
+    cancelledAt?: SortOrder
+    cancelReason?: SortOrder
+    scheduledMinutes?: SortOrder
+    lateDeductionMinutes?: SortOrder
+    awayDeductionMinutes?: SortOrder
+    billableMinutes?: SortOrder
+    vendorHourlyKwd?: SortOrder
+    fleetHourlyKwd?: SortOrder
+    vendorChargeKwd?: SortOrder
+    fleetPayKwd?: SortOrder
+    settledAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PrivateShiftAvgOrderByAggregateInput = {
+    startLat?: SortOrder
+    startLng?: SortOrder
+    scheduledMinutes?: SortOrder
+    lateDeductionMinutes?: SortOrder
+    awayDeductionMinutes?: SortOrder
+    billableMinutes?: SortOrder
+    vendorHourlyKwd?: SortOrder
+    fleetHourlyKwd?: SortOrder
+    vendorChargeKwd?: SortOrder
+    fleetPayKwd?: SortOrder
+  }
+
+  export type PrivateShiftMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    planId?: SortOrder
+    vendorId?: SortOrder
+    branchId?: SortOrder
+    vehicleType?: SortOrder
+    date?: SortOrder
+    startAt?: SortOrder
+    endAt?: SortOrder
+    status?: SortOrder
+    source?: SortOrder
+    driverId?: SortOrder
+    fleetPartnerId?: SortOrder
+    bookedAt?: SortOrder
+    startedAt?: SortOrder
+    startLat?: SortOrder
+    startLng?: SortOrder
+    endedAt?: SortOrder
+    cancelledAt?: SortOrder
+    cancelReason?: SortOrder
+    scheduledMinutes?: SortOrder
+    lateDeductionMinutes?: SortOrder
+    awayDeductionMinutes?: SortOrder
+    billableMinutes?: SortOrder
+    vendorHourlyKwd?: SortOrder
+    fleetHourlyKwd?: SortOrder
+    vendorChargeKwd?: SortOrder
+    fleetPayKwd?: SortOrder
+    settledAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PrivateShiftMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    planId?: SortOrder
+    vendorId?: SortOrder
+    branchId?: SortOrder
+    vehicleType?: SortOrder
+    date?: SortOrder
+    startAt?: SortOrder
+    endAt?: SortOrder
+    status?: SortOrder
+    source?: SortOrder
+    driverId?: SortOrder
+    fleetPartnerId?: SortOrder
+    bookedAt?: SortOrder
+    startedAt?: SortOrder
+    startLat?: SortOrder
+    startLng?: SortOrder
+    endedAt?: SortOrder
+    cancelledAt?: SortOrder
+    cancelReason?: SortOrder
+    scheduledMinutes?: SortOrder
+    lateDeductionMinutes?: SortOrder
+    awayDeductionMinutes?: SortOrder
+    billableMinutes?: SortOrder
+    vendorHourlyKwd?: SortOrder
+    fleetHourlyKwd?: SortOrder
+    vendorChargeKwd?: SortOrder
+    fleetPayKwd?: SortOrder
+    settledAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PrivateShiftSumOrderByAggregateInput = {
+    startLat?: SortOrder
+    startLng?: SortOrder
+    scheduledMinutes?: SortOrder
+    lateDeductionMinutes?: SortOrder
+    awayDeductionMinutes?: SortOrder
+    billableMinutes?: SortOrder
+    vendorHourlyKwd?: SortOrder
+    fleetHourlyKwd?: SortOrder
+    vendorChargeKwd?: SortOrder
+    fleetPayKwd?: SortOrder
+  }
+
+  export type EnumPrivateShiftStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PrivateShiftStatus | EnumPrivateShiftStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.PrivateShiftStatus[] | ListEnumPrivateShiftStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PrivateShiftStatus[] | ListEnumPrivateShiftStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumPrivateShiftStatusWithAggregatesFilter<$PrismaModel> | $Enums.PrivateShiftStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPrivateShiftStatusFilter<$PrismaModel>
+    _max?: NestedEnumPrivateShiftStatusFilter<$PrismaModel>
+  }
+
+  export type PrivateShiftRelationFilter = {
+    is?: PrivateShiftWhereInput
+    isNot?: PrivateShiftWhereInput
+  }
+
+  export type PrivateShiftDeductionOrderByRelevanceInput = {
+    fields: PrivateShiftDeductionOrderByRelevanceFieldEnum | PrivateShiftDeductionOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type PrivateShiftDeductionCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    shiftId?: SortOrder
+    kind?: SortOrder
+    minutes?: SortOrder
+    orderId?: SortOrder
+    fromAt?: SortOrder
+    toAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PrivateShiftDeductionAvgOrderByAggregateInput = {
+    minutes?: SortOrder
+  }
+
+  export type PrivateShiftDeductionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    shiftId?: SortOrder
+    kind?: SortOrder
+    minutes?: SortOrder
+    orderId?: SortOrder
+    fromAt?: SortOrder
+    toAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PrivateShiftDeductionMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    shiftId?: SortOrder
+    kind?: SortOrder
+    minutes?: SortOrder
+    orderId?: SortOrder
+    fromAt?: SortOrder
+    toAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PrivateShiftDeductionSumOrderByAggregateInput = {
+    minutes?: SortOrder
   }
 
   export type CompanyCreateNestedManyWithoutTenantInput = {
@@ -223171,6 +230890,10 @@ export namespace Prisma {
     deleteMany?: ChatThreadScalarWhereInput | ChatThreadScalarWhereInput[]
   }
 
+  export type VendorCreatesuitableVehicleTypesInput = {
+    set: $Enums.VehicleType[]
+  }
+
   export type TenantCreateNestedOneWithoutVendorsInput = {
     create?: XOR<TenantCreateWithoutVendorsInput, TenantUncheckedCreateWithoutVendorsInput>
     connectOrCreate?: TenantCreateOrConnectWithoutVendorsInput
@@ -223365,6 +231088,11 @@ export namespace Prisma {
 
   export type NullableEnumPricingModelFieldUpdateOperationsInput = {
     set?: $Enums.PricingModel | null
+  }
+
+  export type VendorUpdatesuitableVehicleTypesInput = {
+    set?: $Enums.VehicleType[]
+    push?: $Enums.VehicleType | $Enums.VehicleType[]
   }
 
   export type TenantUpdateOneRequiredWithoutVendorsNestedInput = {
@@ -227143,6 +234871,128 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutVendorBranchAllocationsInput, UserUpdateWithoutVendorBranchAllocationsInput>, UserUncheckedUpdateWithoutVendorBranchAllocationsInput>
   }
 
+  export type PrivateShiftCreateNestedManyWithoutPlanInput = {
+    create?: XOR<PrivateShiftCreateWithoutPlanInput, PrivateShiftUncheckedCreateWithoutPlanInput> | PrivateShiftCreateWithoutPlanInput[] | PrivateShiftUncheckedCreateWithoutPlanInput[]
+    connectOrCreate?: PrivateShiftCreateOrConnectWithoutPlanInput | PrivateShiftCreateOrConnectWithoutPlanInput[]
+    createMany?: PrivateShiftCreateManyPlanInputEnvelope
+    connect?: PrivateShiftWhereUniqueInput | PrivateShiftWhereUniqueInput[]
+  }
+
+  export type PrivateShiftUncheckedCreateNestedManyWithoutPlanInput = {
+    create?: XOR<PrivateShiftCreateWithoutPlanInput, PrivateShiftUncheckedCreateWithoutPlanInput> | PrivateShiftCreateWithoutPlanInput[] | PrivateShiftUncheckedCreateWithoutPlanInput[]
+    connectOrCreate?: PrivateShiftCreateOrConnectWithoutPlanInput | PrivateShiftCreateOrConnectWithoutPlanInput[]
+    createMany?: PrivateShiftCreateManyPlanInputEnvelope
+    connect?: PrivateShiftWhereUniqueInput | PrivateShiftWhereUniqueInput[]
+  }
+
+  export type EnumPrivateShiftSourceFieldUpdateOperationsInput = {
+    set?: $Enums.PrivateShiftSource
+  }
+
+  export type PrivateShiftUpdateManyWithoutPlanNestedInput = {
+    create?: XOR<PrivateShiftCreateWithoutPlanInput, PrivateShiftUncheckedCreateWithoutPlanInput> | PrivateShiftCreateWithoutPlanInput[] | PrivateShiftUncheckedCreateWithoutPlanInput[]
+    connectOrCreate?: PrivateShiftCreateOrConnectWithoutPlanInput | PrivateShiftCreateOrConnectWithoutPlanInput[]
+    upsert?: PrivateShiftUpsertWithWhereUniqueWithoutPlanInput | PrivateShiftUpsertWithWhereUniqueWithoutPlanInput[]
+    createMany?: PrivateShiftCreateManyPlanInputEnvelope
+    set?: PrivateShiftWhereUniqueInput | PrivateShiftWhereUniqueInput[]
+    disconnect?: PrivateShiftWhereUniqueInput | PrivateShiftWhereUniqueInput[]
+    delete?: PrivateShiftWhereUniqueInput | PrivateShiftWhereUniqueInput[]
+    connect?: PrivateShiftWhereUniqueInput | PrivateShiftWhereUniqueInput[]
+    update?: PrivateShiftUpdateWithWhereUniqueWithoutPlanInput | PrivateShiftUpdateWithWhereUniqueWithoutPlanInput[]
+    updateMany?: PrivateShiftUpdateManyWithWhereWithoutPlanInput | PrivateShiftUpdateManyWithWhereWithoutPlanInput[]
+    deleteMany?: PrivateShiftScalarWhereInput | PrivateShiftScalarWhereInput[]
+  }
+
+  export type PrivateShiftUncheckedUpdateManyWithoutPlanNestedInput = {
+    create?: XOR<PrivateShiftCreateWithoutPlanInput, PrivateShiftUncheckedCreateWithoutPlanInput> | PrivateShiftCreateWithoutPlanInput[] | PrivateShiftUncheckedCreateWithoutPlanInput[]
+    connectOrCreate?: PrivateShiftCreateOrConnectWithoutPlanInput | PrivateShiftCreateOrConnectWithoutPlanInput[]
+    upsert?: PrivateShiftUpsertWithWhereUniqueWithoutPlanInput | PrivateShiftUpsertWithWhereUniqueWithoutPlanInput[]
+    createMany?: PrivateShiftCreateManyPlanInputEnvelope
+    set?: PrivateShiftWhereUniqueInput | PrivateShiftWhereUniqueInput[]
+    disconnect?: PrivateShiftWhereUniqueInput | PrivateShiftWhereUniqueInput[]
+    delete?: PrivateShiftWhereUniqueInput | PrivateShiftWhereUniqueInput[]
+    connect?: PrivateShiftWhereUniqueInput | PrivateShiftWhereUniqueInput[]
+    update?: PrivateShiftUpdateWithWhereUniqueWithoutPlanInput | PrivateShiftUpdateWithWhereUniqueWithoutPlanInput[]
+    updateMany?: PrivateShiftUpdateManyWithWhereWithoutPlanInput | PrivateShiftUpdateManyWithWhereWithoutPlanInput[]
+    deleteMany?: PrivateShiftScalarWhereInput | PrivateShiftScalarWhereInput[]
+  }
+
+  export type PrivateShiftPlanCreateNestedOneWithoutShiftsInput = {
+    create?: XOR<PrivateShiftPlanCreateWithoutShiftsInput, PrivateShiftPlanUncheckedCreateWithoutShiftsInput>
+    connectOrCreate?: PrivateShiftPlanCreateOrConnectWithoutShiftsInput
+    connect?: PrivateShiftPlanWhereUniqueInput
+  }
+
+  export type PrivateShiftDeductionCreateNestedManyWithoutShiftInput = {
+    create?: XOR<PrivateShiftDeductionCreateWithoutShiftInput, PrivateShiftDeductionUncheckedCreateWithoutShiftInput> | PrivateShiftDeductionCreateWithoutShiftInput[] | PrivateShiftDeductionUncheckedCreateWithoutShiftInput[]
+    connectOrCreate?: PrivateShiftDeductionCreateOrConnectWithoutShiftInput | PrivateShiftDeductionCreateOrConnectWithoutShiftInput[]
+    createMany?: PrivateShiftDeductionCreateManyShiftInputEnvelope
+    connect?: PrivateShiftDeductionWhereUniqueInput | PrivateShiftDeductionWhereUniqueInput[]
+  }
+
+  export type PrivateShiftDeductionUncheckedCreateNestedManyWithoutShiftInput = {
+    create?: XOR<PrivateShiftDeductionCreateWithoutShiftInput, PrivateShiftDeductionUncheckedCreateWithoutShiftInput> | PrivateShiftDeductionCreateWithoutShiftInput[] | PrivateShiftDeductionUncheckedCreateWithoutShiftInput[]
+    connectOrCreate?: PrivateShiftDeductionCreateOrConnectWithoutShiftInput | PrivateShiftDeductionCreateOrConnectWithoutShiftInput[]
+    createMany?: PrivateShiftDeductionCreateManyShiftInputEnvelope
+    connect?: PrivateShiftDeductionWhereUniqueInput | PrivateShiftDeductionWhereUniqueInput[]
+  }
+
+  export type EnumPrivateShiftStatusFieldUpdateOperationsInput = {
+    set?: $Enums.PrivateShiftStatus
+  }
+
+  export type PrivateShiftPlanUpdateOneWithoutShiftsNestedInput = {
+    create?: XOR<PrivateShiftPlanCreateWithoutShiftsInput, PrivateShiftPlanUncheckedCreateWithoutShiftsInput>
+    connectOrCreate?: PrivateShiftPlanCreateOrConnectWithoutShiftsInput
+    upsert?: PrivateShiftPlanUpsertWithoutShiftsInput
+    disconnect?: PrivateShiftPlanWhereInput | boolean
+    delete?: PrivateShiftPlanWhereInput | boolean
+    connect?: PrivateShiftPlanWhereUniqueInput
+    update?: XOR<XOR<PrivateShiftPlanUpdateToOneWithWhereWithoutShiftsInput, PrivateShiftPlanUpdateWithoutShiftsInput>, PrivateShiftPlanUncheckedUpdateWithoutShiftsInput>
+  }
+
+  export type PrivateShiftDeductionUpdateManyWithoutShiftNestedInput = {
+    create?: XOR<PrivateShiftDeductionCreateWithoutShiftInput, PrivateShiftDeductionUncheckedCreateWithoutShiftInput> | PrivateShiftDeductionCreateWithoutShiftInput[] | PrivateShiftDeductionUncheckedCreateWithoutShiftInput[]
+    connectOrCreate?: PrivateShiftDeductionCreateOrConnectWithoutShiftInput | PrivateShiftDeductionCreateOrConnectWithoutShiftInput[]
+    upsert?: PrivateShiftDeductionUpsertWithWhereUniqueWithoutShiftInput | PrivateShiftDeductionUpsertWithWhereUniqueWithoutShiftInput[]
+    createMany?: PrivateShiftDeductionCreateManyShiftInputEnvelope
+    set?: PrivateShiftDeductionWhereUniqueInput | PrivateShiftDeductionWhereUniqueInput[]
+    disconnect?: PrivateShiftDeductionWhereUniqueInput | PrivateShiftDeductionWhereUniqueInput[]
+    delete?: PrivateShiftDeductionWhereUniqueInput | PrivateShiftDeductionWhereUniqueInput[]
+    connect?: PrivateShiftDeductionWhereUniqueInput | PrivateShiftDeductionWhereUniqueInput[]
+    update?: PrivateShiftDeductionUpdateWithWhereUniqueWithoutShiftInput | PrivateShiftDeductionUpdateWithWhereUniqueWithoutShiftInput[]
+    updateMany?: PrivateShiftDeductionUpdateManyWithWhereWithoutShiftInput | PrivateShiftDeductionUpdateManyWithWhereWithoutShiftInput[]
+    deleteMany?: PrivateShiftDeductionScalarWhereInput | PrivateShiftDeductionScalarWhereInput[]
+  }
+
+  export type PrivateShiftDeductionUncheckedUpdateManyWithoutShiftNestedInput = {
+    create?: XOR<PrivateShiftDeductionCreateWithoutShiftInput, PrivateShiftDeductionUncheckedCreateWithoutShiftInput> | PrivateShiftDeductionCreateWithoutShiftInput[] | PrivateShiftDeductionUncheckedCreateWithoutShiftInput[]
+    connectOrCreate?: PrivateShiftDeductionCreateOrConnectWithoutShiftInput | PrivateShiftDeductionCreateOrConnectWithoutShiftInput[]
+    upsert?: PrivateShiftDeductionUpsertWithWhereUniqueWithoutShiftInput | PrivateShiftDeductionUpsertWithWhereUniqueWithoutShiftInput[]
+    createMany?: PrivateShiftDeductionCreateManyShiftInputEnvelope
+    set?: PrivateShiftDeductionWhereUniqueInput | PrivateShiftDeductionWhereUniqueInput[]
+    disconnect?: PrivateShiftDeductionWhereUniqueInput | PrivateShiftDeductionWhereUniqueInput[]
+    delete?: PrivateShiftDeductionWhereUniqueInput | PrivateShiftDeductionWhereUniqueInput[]
+    connect?: PrivateShiftDeductionWhereUniqueInput | PrivateShiftDeductionWhereUniqueInput[]
+    update?: PrivateShiftDeductionUpdateWithWhereUniqueWithoutShiftInput | PrivateShiftDeductionUpdateWithWhereUniqueWithoutShiftInput[]
+    updateMany?: PrivateShiftDeductionUpdateManyWithWhereWithoutShiftInput | PrivateShiftDeductionUpdateManyWithWhereWithoutShiftInput[]
+    deleteMany?: PrivateShiftDeductionScalarWhereInput | PrivateShiftDeductionScalarWhereInput[]
+  }
+
+  export type PrivateShiftCreateNestedOneWithoutDeductionsInput = {
+    create?: XOR<PrivateShiftCreateWithoutDeductionsInput, PrivateShiftUncheckedCreateWithoutDeductionsInput>
+    connectOrCreate?: PrivateShiftCreateOrConnectWithoutDeductionsInput
+    connect?: PrivateShiftWhereUniqueInput
+  }
+
+  export type PrivateShiftUpdateOneRequiredWithoutDeductionsNestedInput = {
+    create?: XOR<PrivateShiftCreateWithoutDeductionsInput, PrivateShiftUncheckedCreateWithoutDeductionsInput>
+    connectOrCreate?: PrivateShiftCreateOrConnectWithoutDeductionsInput
+    upsert?: PrivateShiftUpsertWithoutDeductionsInput
+    connect?: PrivateShiftWhereUniqueInput
+    update?: XOR<XOR<PrivateShiftUpdateToOneWithWhereWithoutDeductionsInput, PrivateShiftUpdateWithoutDeductionsInput>, PrivateShiftUncheckedUpdateWithoutDeductionsInput>
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -228817,6 +236667,40 @@ export namespace Prisma {
     _max?: NestedEnumShiftPlanStatusFilter<$PrismaModel>
   }
 
+  export type NestedEnumPrivateShiftSourceFilter<$PrismaModel = never> = {
+    equals?: $Enums.PrivateShiftSource | EnumPrivateShiftSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.PrivateShiftSource[] | ListEnumPrivateShiftSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PrivateShiftSource[] | ListEnumPrivateShiftSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumPrivateShiftSourceFilter<$PrismaModel> | $Enums.PrivateShiftSource
+  }
+
+  export type NestedEnumPrivateShiftSourceWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PrivateShiftSource | EnumPrivateShiftSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.PrivateShiftSource[] | ListEnumPrivateShiftSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PrivateShiftSource[] | ListEnumPrivateShiftSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumPrivateShiftSourceWithAggregatesFilter<$PrismaModel> | $Enums.PrivateShiftSource
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPrivateShiftSourceFilter<$PrismaModel>
+    _max?: NestedEnumPrivateShiftSourceFilter<$PrismaModel>
+  }
+
+  export type NestedEnumPrivateShiftStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.PrivateShiftStatus | EnumPrivateShiftStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.PrivateShiftStatus[] | ListEnumPrivateShiftStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PrivateShiftStatus[] | ListEnumPrivateShiftStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumPrivateShiftStatusFilter<$PrismaModel> | $Enums.PrivateShiftStatus
+  }
+
+  export type NestedEnumPrivateShiftStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PrivateShiftStatus | EnumPrivateShiftStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.PrivateShiftStatus[] | ListEnumPrivateShiftStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PrivateShiftStatus[] | ListEnumPrivateShiftStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumPrivateShiftStatusWithAggregatesFilter<$PrismaModel> | $Enums.PrivateShiftStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPrivateShiftStatusFilter<$PrismaModel>
+    _max?: NestedEnumPrivateShiftStatusFilter<$PrismaModel>
+  }
+
   export type CompanyCreateWithoutTenantInput = {
     id?: string
     name: string
@@ -229033,6 +236917,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutDriversInput
@@ -229143,6 +237028,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -232158,6 +240044,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentCreateNestedManyWithoutVendorInput
     branchAllocations?: VendorBranchAllocationCreateNestedManyWithoutVendorInput
@@ -232193,6 +240080,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentUncheckedCreateNestedManyWithoutVendorInput
     branchAllocations?: VendorBranchAllocationUncheckedCreateNestedManyWithoutVendorInput
@@ -234058,6 +241946,7 @@ export namespace Prisma {
     passportStatus?: StringNullableFilter<"Driver"> | string | null
     driverSelfieExpiry?: DateTimeNullableFilter<"Driver"> | Date | string | null
     driverSelfieStatus?: StringNullableFilter<"Driver"> | string | null
+    privateShiftEligible?: BoolFilter<"Driver"> | boolean
   }
 
   export type DriverBatchHistoryUpsertWithWhereUniqueWithoutTenantInput = {
@@ -236577,6 +244466,7 @@ export namespace Prisma {
     walletMode?: StringFilter<"Vendor"> | string
     createdAt?: DateTimeFilter<"Vendor"> | Date | string
     updatedAt?: DateTimeFilter<"Vendor"> | Date | string
+    suitableVehicleTypes?: EnumVehicleTypeNullableListFilter<"Vendor">
   }
 
   export type VendorBranchUpsertWithWhereUniqueWithoutTenantInput = {
@@ -238458,6 +246348,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutDriversInput
@@ -238568,6 +246459,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -240394,6 +248286,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant: TenantCreateNestedOneWithoutVendorsInput
     branches?: VendorBranchCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentCreateNestedManyWithoutVendorInput
@@ -240430,6 +248323,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentUncheckedCreateNestedManyWithoutVendorInput
     branchAllocations?: VendorBranchAllocationUncheckedCreateNestedManyWithoutVendorInput
@@ -240692,6 +248586,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutDriversInput
@@ -240802,6 +248697,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -242482,6 +250378,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant?: TenantUpdateOneRequiredWithoutVendorsNestedInput
     branches?: VendorBranchUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUpdateManyWithoutVendorNestedInput
@@ -242518,6 +250415,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUncheckedUpdateManyWithoutVendorNestedInput
     branchAllocations?: VendorBranchAllocationUncheckedUpdateManyWithoutVendorNestedInput
@@ -247921,6 +255819,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -248032,6 +255931,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -248420,6 +256320,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -248531,6 +256432,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -248632,6 +256534,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -248743,6 +256646,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutDriverInput
@@ -248860,6 +256764,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -248971,6 +256876,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutDriverNestedInput
@@ -249996,6 +257902,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -250107,6 +258014,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -250788,6 +258696,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -250899,6 +258808,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -251422,6 +259332,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -251533,6 +259444,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -251988,6 +259900,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -252099,6 +260012,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -252465,6 +260379,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -252576,6 +260491,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutDriverInput
@@ -253134,6 +261050,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -253245,6 +261162,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutDriverNestedInput
@@ -253659,6 +261577,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -253770,6 +261689,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutDriverInput
@@ -254275,6 +262195,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -254386,6 +262307,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutDriverNestedInput
@@ -254875,6 +262797,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -254986,6 +262909,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -255439,6 +263363,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -255550,6 +263475,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -255987,6 +263913,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -256098,6 +264025,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -256551,6 +264479,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -256662,6 +264591,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -257099,6 +265029,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -257210,6 +265141,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -257598,6 +265530,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -257709,6 +265642,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -258075,6 +266009,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -258186,6 +266121,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -258574,6 +266510,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -258685,6 +266622,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -259051,6 +266989,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -259162,6 +267101,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -259550,6 +267490,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -259661,6 +267602,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -260088,6 +268030,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -260199,6 +268142,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -260654,6 +268598,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -260765,6 +268710,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -261192,6 +269138,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -261303,6 +269250,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -261819,6 +269767,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -261930,6 +269879,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -262098,6 +270048,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -262209,6 +270160,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -262476,6 +270428,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -262587,6 +270540,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -263033,6 +270987,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -263144,6 +271099,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -263581,6 +271537,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -263692,6 +271649,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -263897,6 +271855,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -264008,6 +271967,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -264180,6 +272140,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -264291,6 +272252,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -264441,6 +272403,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -264552,6 +272515,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -264724,6 +272688,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -264835,6 +272800,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -264985,6 +272951,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -265096,6 +273063,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -265268,6 +273236,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -265379,6 +273348,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -266089,6 +274059,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -266200,6 +274171,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -266588,6 +274560,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -266699,6 +274672,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -267065,6 +275039,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -267176,6 +275151,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -267742,6 +275718,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -267853,6 +275830,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -269481,6 +277459,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -269592,6 +277571,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -269971,6 +277951,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -270082,6 +278063,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -270531,6 +278513,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -270642,6 +278625,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -271045,6 +279029,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -271156,6 +279141,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -271589,6 +279575,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -271700,6 +279687,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -272205,6 +280193,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -272316,6 +280305,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -272805,6 +280795,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -272916,6 +280907,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -273449,6 +281441,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -273560,6 +281553,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -274029,6 +282023,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -274140,6 +282135,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -274595,6 +282591,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -274706,6 +282703,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -274880,6 +282878,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -274991,6 +282990,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -275175,6 +283175,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -275286,6 +283287,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -275725,6 +283727,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -275836,6 +283839,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -276224,6 +284228,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -276335,6 +284340,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -277237,6 +285243,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -277348,6 +285355,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -277736,6 +285744,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -277847,6 +285856,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -278213,6 +286223,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -278324,6 +286335,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -278712,6 +286724,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -278823,6 +286836,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -280261,6 +288275,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -280372,6 +288387,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -280838,6 +288854,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -280949,6 +288966,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -284361,6 +292379,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -284472,6 +292491,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -284860,6 +292880,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -284971,6 +292992,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -285337,6 +293359,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -285448,6 +293471,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -285883,6 +293907,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -285994,6 +294019,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -287537,6 +295563,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -287648,6 +295675,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -288071,6 +296099,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -288182,6 +296211,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -288706,6 +296736,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -288817,6 +296848,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -289328,6 +297360,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -289439,6 +297472,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -290877,6 +298911,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -290988,6 +299023,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -291376,6 +299412,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -291487,6 +299524,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -291853,6 +299891,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -291964,6 +300003,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -292419,6 +300459,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -292530,6 +300571,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -292928,6 +300970,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -293039,6 +301082,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -293476,6 +301520,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -293587,6 +301632,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -295145,6 +303191,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -295256,6 +303303,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -295644,6 +303692,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -295755,6 +303804,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -297193,6 +305243,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -297304,6 +305355,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -297692,6 +305744,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -297803,6 +305856,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -300992,6 +309046,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -301103,6 +309158,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -301536,6 +309592,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -301647,6 +309704,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -307868,6 +315926,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -307979,6 +316038,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -308367,6 +316427,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -308478,6 +316539,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -313598,6 +321660,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant: TenantCreateNestedOneWithoutVendorsInput
     documents?: FleetDocumentCreateNestedManyWithoutVendorInput
     branchAllocations?: VendorBranchAllocationCreateNestedManyWithoutVendorInput
@@ -313634,6 +321697,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     documents?: FleetDocumentUncheckedCreateNestedManyWithoutVendorInput
     branchAllocations?: VendorBranchAllocationUncheckedCreateNestedManyWithoutVendorInput
     users?: UserUncheckedCreateNestedManyWithoutVendorInput
@@ -314317,6 +322381,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant?: TenantUpdateOneRequiredWithoutVendorsNestedInput
     documents?: FleetDocumentUpdateManyWithoutVendorNestedInput
     branchAllocations?: VendorBranchAllocationUpdateManyWithoutVendorNestedInput
@@ -314353,6 +322418,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     documents?: FleetDocumentUncheckedUpdateManyWithoutVendorNestedInput
     branchAllocations?: VendorBranchAllocationUncheckedUpdateManyWithoutVendorNestedInput
     users?: UserUncheckedUpdateManyWithoutVendorNestedInput
@@ -315242,6 +323308,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -315352,6 +323419,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -317624,6 +325692,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant: TenantCreateNestedOneWithoutVendorsInput
     branches?: VendorBranchCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentCreateNestedManyWithoutVendorInput
@@ -317659,6 +325728,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentUncheckedCreateNestedManyWithoutVendorInput
     branchAllocations?: VendorBranchAllocationUncheckedCreateNestedManyWithoutVendorInput
@@ -319832,6 +327902,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant: TenantCreateNestedOneWithoutVendorsInput
     branches?: VendorBranchCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentCreateNestedManyWithoutVendorInput
@@ -319868,6 +327939,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentUncheckedCreateNestedManyWithoutVendorInput
     branchAllocations?: VendorBranchAllocationUncheckedCreateNestedManyWithoutVendorInput
@@ -320027,6 +328099,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -320138,6 +328211,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -320748,6 +328822,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant?: TenantUpdateOneRequiredWithoutVendorsNestedInput
     branches?: VendorBranchUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUpdateManyWithoutVendorNestedInput
@@ -320784,6 +328859,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUncheckedUpdateManyWithoutVendorNestedInput
     branchAllocations?: VendorBranchAllocationUncheckedUpdateManyWithoutVendorNestedInput
@@ -320961,6 +329037,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -321072,6 +329149,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -321771,6 +329849,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -321882,6 +329961,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -322391,6 +330471,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -322502,6 +330583,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -324688,6 +332770,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -324799,6 +332882,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -325260,6 +333344,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -325371,6 +333456,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -326352,6 +334438,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -326463,6 +334550,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -326966,6 +335054,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -327077,6 +335166,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -327532,6 +335622,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant: TenantCreateNestedOneWithoutVendorsInput
     branches?: VendorBranchCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentCreateNestedManyWithoutVendorInput
@@ -327568,6 +335659,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentUncheckedCreateNestedManyWithoutVendorInput
     branchAllocations?: VendorBranchAllocationUncheckedCreateNestedManyWithoutVendorInput
@@ -327887,6 +335979,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant?: TenantUpdateOneRequiredWithoutVendorsNestedInput
     branches?: VendorBranchUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUpdateManyWithoutVendorNestedInput
@@ -327923,6 +336016,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUncheckedUpdateManyWithoutVendorNestedInput
     branchAllocations?: VendorBranchAllocationUncheckedUpdateManyWithoutVendorNestedInput
@@ -328220,6 +336314,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant: TenantCreateNestedOneWithoutVendorsInput
     branches?: VendorBranchCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentCreateNestedManyWithoutVendorInput
@@ -328256,6 +336351,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentUncheckedCreateNestedManyWithoutVendorInput
     branchAllocations?: VendorBranchAllocationUncheckedCreateNestedManyWithoutVendorInput
@@ -328575,6 +336671,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant?: TenantUpdateOneRequiredWithoutVendorsNestedInput
     branches?: VendorBranchUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUpdateManyWithoutVendorNestedInput
@@ -328611,6 +336708,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUncheckedUpdateManyWithoutVendorNestedInput
     branchAllocations?: VendorBranchAllocationUncheckedUpdateManyWithoutVendorNestedInput
@@ -329055,6 +337153,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -329166,6 +337265,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -329675,6 +337775,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -329786,6 +337887,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -330120,6 +338222,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant: TenantCreateNestedOneWithoutVendorsInput
     branches?: VendorBranchCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentCreateNestedManyWithoutVendorInput
@@ -330156,6 +338259,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentUncheckedCreateNestedManyWithoutVendorInput
     branchAllocations?: VendorBranchAllocationUncheckedCreateNestedManyWithoutVendorInput
@@ -330475,6 +338579,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant?: TenantUpdateOneRequiredWithoutVendorsNestedInput
     branches?: VendorBranchUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUpdateManyWithoutVendorNestedInput
@@ -330511,6 +338616,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUncheckedUpdateManyWithoutVendorNestedInput
     branchAllocations?: VendorBranchAllocationUncheckedUpdateManyWithoutVendorNestedInput
@@ -330923,6 +339029,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant: TenantCreateNestedOneWithoutVendorsInput
     branches?: VendorBranchCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentCreateNestedManyWithoutVendorInput
@@ -330959,6 +339066,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentUncheckedCreateNestedManyWithoutVendorInput
     branchAllocations?: VendorBranchAllocationUncheckedCreateNestedManyWithoutVendorInput
@@ -331399,6 +339507,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant?: TenantUpdateOneRequiredWithoutVendorsNestedInput
     branches?: VendorBranchUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUpdateManyWithoutVendorNestedInput
@@ -331435,6 +339544,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUncheckedUpdateManyWithoutVendorNestedInput
     branchAllocations?: VendorBranchAllocationUncheckedUpdateManyWithoutVendorNestedInput
@@ -331793,6 +339903,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -331903,6 +340014,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -335783,6 +343895,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant: TenantCreateNestedOneWithoutVendorsInput
     branches?: VendorBranchCreateNestedManyWithoutVendorInput
     branchAllocations?: VendorBranchAllocationCreateNestedManyWithoutVendorInput
@@ -335819,6 +343932,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedCreateNestedManyWithoutVendorInput
     branchAllocations?: VendorBranchAllocationUncheckedCreateNestedManyWithoutVendorInput
     users?: UserUncheckedCreateNestedManyWithoutVendorInput
@@ -335888,6 +344002,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -335999,6 +344114,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -336785,6 +344901,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant?: TenantUpdateOneRequiredWithoutVendorsNestedInput
     branches?: VendorBranchUpdateManyWithoutVendorNestedInput
     branchAllocations?: VendorBranchAllocationUpdateManyWithoutVendorNestedInput
@@ -336821,6 +344938,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedUpdateManyWithoutVendorNestedInput
     branchAllocations?: VendorBranchAllocationUncheckedUpdateManyWithoutVendorNestedInput
     users?: UserUncheckedUpdateManyWithoutVendorNestedInput
@@ -336896,6 +345014,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -337007,6 +345126,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -337815,6 +345935,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -337926,6 +346047,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -338627,6 +346749,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -338738,6 +346861,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -339423,6 +347547,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -339534,6 +347659,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -340235,6 +348361,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -340346,6 +348473,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -342595,6 +350723,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant: TenantCreateNestedOneWithoutVendorsInput
     branches?: VendorBranchCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentCreateNestedManyWithoutVendorInput
@@ -342631,6 +350760,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentUncheckedCreateNestedManyWithoutVendorInput
     branchAllocations?: VendorBranchAllocationUncheckedCreateNestedManyWithoutVendorInput
@@ -343073,6 +351203,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant?: TenantUpdateOneRequiredWithoutVendorsNestedInput
     branches?: VendorBranchUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUpdateManyWithoutVendorNestedInput
@@ -343109,6 +351240,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUncheckedUpdateManyWithoutVendorNestedInput
     branchAllocations?: VendorBranchAllocationUncheckedUpdateManyWithoutVendorNestedInput
@@ -345142,6 +353274,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant: TenantCreateNestedOneWithoutVendorsInput
     branches?: VendorBranchCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentCreateNestedManyWithoutVendorInput
@@ -345178,6 +353311,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentUncheckedCreateNestedManyWithoutVendorInput
     branchAllocations?: VendorBranchAllocationUncheckedCreateNestedManyWithoutVendorInput
@@ -345497,6 +353631,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant?: TenantUpdateOneRequiredWithoutVendorsNestedInput
     branches?: VendorBranchUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUpdateManyWithoutVendorNestedInput
@@ -345533,6 +353668,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUncheckedUpdateManyWithoutVendorNestedInput
     branchAllocations?: VendorBranchAllocationUncheckedUpdateManyWithoutVendorNestedInput
@@ -345830,6 +353966,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant: TenantCreateNestedOneWithoutVendorsInput
     branches?: VendorBranchCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentCreateNestedManyWithoutVendorInput
@@ -345866,6 +354003,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentUncheckedCreateNestedManyWithoutVendorInput
     branchAllocations?: VendorBranchAllocationUncheckedCreateNestedManyWithoutVendorInput
@@ -346286,6 +354424,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant?: TenantUpdateOneRequiredWithoutVendorsNestedInput
     branches?: VendorBranchUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUpdateManyWithoutVendorNestedInput
@@ -346322,6 +354461,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUncheckedUpdateManyWithoutVendorNestedInput
     branchAllocations?: VendorBranchAllocationUncheckedUpdateManyWithoutVendorNestedInput
@@ -346799,6 +354939,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant: TenantCreateNestedOneWithoutVendorsInput
     branches?: VendorBranchCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentCreateNestedManyWithoutVendorInput
@@ -346835,6 +354976,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentUncheckedCreateNestedManyWithoutVendorInput
     branchAllocations?: VendorBranchAllocationUncheckedCreateNestedManyWithoutVendorInput
@@ -347154,6 +355296,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant?: TenantUpdateOneRequiredWithoutVendorsNestedInput
     branches?: VendorBranchUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUpdateManyWithoutVendorNestedInput
@@ -347190,6 +355333,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUncheckedUpdateManyWithoutVendorNestedInput
     branchAllocations?: VendorBranchAllocationUncheckedUpdateManyWithoutVendorNestedInput
@@ -348207,6 +356351,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -348318,6 +356463,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -348943,6 +357089,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -349054,6 +357201,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -351977,6 +360125,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant: TenantCreateNestedOneWithoutVendorsInput
     branches?: VendorBranchCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentCreateNestedManyWithoutVendorInput
@@ -352013,6 +360162,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedCreateNestedManyWithoutVendorInput
     documents?: FleetDocumentUncheckedCreateNestedManyWithoutVendorInput
     users?: UserUncheckedCreateNestedManyWithoutVendorInput
@@ -352496,6 +360646,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant?: TenantUpdateOneRequiredWithoutVendorsNestedInput
     branches?: VendorBranchUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUpdateManyWithoutVendorNestedInput
@@ -352532,6 +360683,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUncheckedUpdateManyWithoutVendorNestedInput
     users?: UserUncheckedUpdateManyWithoutVendorNestedInput
@@ -352722,6 +360874,440 @@ export namespace Prisma {
     approvedShiftPlans?: ShiftPlanUncheckedUpdateManyWithoutApprovedByNestedInput
   }
 
+  export type PrivateShiftCreateWithoutPlanInput = {
+    id?: string
+    tenantId: string
+    vendorId: string
+    branchId: string
+    vehicleType: $Enums.VehicleType
+    date: string
+    startAt: Date | string
+    endAt: Date | string
+    status?: $Enums.PrivateShiftStatus
+    source: $Enums.PrivateShiftSource
+    driverId?: string | null
+    fleetPartnerId?: string | null
+    bookedAt?: Date | string | null
+    startedAt?: Date | string | null
+    startLat?: Decimal | DecimalJsLike | number | string | null
+    startLng?: Decimal | DecimalJsLike | number | string | null
+    endedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    cancelReason?: string | null
+    scheduledMinutes?: number | null
+    lateDeductionMinutes?: number | null
+    awayDeductionMinutes?: number | null
+    billableMinutes?: number | null
+    vendorHourlyKwd?: Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: Decimal | DecimalJsLike | number | string | null
+    settledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deductions?: PrivateShiftDeductionCreateNestedManyWithoutShiftInput
+  }
+
+  export type PrivateShiftUncheckedCreateWithoutPlanInput = {
+    id?: string
+    tenantId: string
+    vendorId: string
+    branchId: string
+    vehicleType: $Enums.VehicleType
+    date: string
+    startAt: Date | string
+    endAt: Date | string
+    status?: $Enums.PrivateShiftStatus
+    source: $Enums.PrivateShiftSource
+    driverId?: string | null
+    fleetPartnerId?: string | null
+    bookedAt?: Date | string | null
+    startedAt?: Date | string | null
+    startLat?: Decimal | DecimalJsLike | number | string | null
+    startLng?: Decimal | DecimalJsLike | number | string | null
+    endedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    cancelReason?: string | null
+    scheduledMinutes?: number | null
+    lateDeductionMinutes?: number | null
+    awayDeductionMinutes?: number | null
+    billableMinutes?: number | null
+    vendorHourlyKwd?: Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: Decimal | DecimalJsLike | number | string | null
+    settledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deductions?: PrivateShiftDeductionUncheckedCreateNestedManyWithoutShiftInput
+  }
+
+  export type PrivateShiftCreateOrConnectWithoutPlanInput = {
+    where: PrivateShiftWhereUniqueInput
+    create: XOR<PrivateShiftCreateWithoutPlanInput, PrivateShiftUncheckedCreateWithoutPlanInput>
+  }
+
+  export type PrivateShiftCreateManyPlanInputEnvelope = {
+    data: PrivateShiftCreateManyPlanInput | PrivateShiftCreateManyPlanInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PrivateShiftUpsertWithWhereUniqueWithoutPlanInput = {
+    where: PrivateShiftWhereUniqueInput
+    update: XOR<PrivateShiftUpdateWithoutPlanInput, PrivateShiftUncheckedUpdateWithoutPlanInput>
+    create: XOR<PrivateShiftCreateWithoutPlanInput, PrivateShiftUncheckedCreateWithoutPlanInput>
+  }
+
+  export type PrivateShiftUpdateWithWhereUniqueWithoutPlanInput = {
+    where: PrivateShiftWhereUniqueInput
+    data: XOR<PrivateShiftUpdateWithoutPlanInput, PrivateShiftUncheckedUpdateWithoutPlanInput>
+  }
+
+  export type PrivateShiftUpdateManyWithWhereWithoutPlanInput = {
+    where: PrivateShiftScalarWhereInput
+    data: XOR<PrivateShiftUpdateManyMutationInput, PrivateShiftUncheckedUpdateManyWithoutPlanInput>
+  }
+
+  export type PrivateShiftScalarWhereInput = {
+    AND?: PrivateShiftScalarWhereInput | PrivateShiftScalarWhereInput[]
+    OR?: PrivateShiftScalarWhereInput[]
+    NOT?: PrivateShiftScalarWhereInput | PrivateShiftScalarWhereInput[]
+    id?: StringFilter<"PrivateShift"> | string
+    tenantId?: StringFilter<"PrivateShift"> | string
+    planId?: StringNullableFilter<"PrivateShift"> | string | null
+    vendorId?: StringFilter<"PrivateShift"> | string
+    branchId?: StringFilter<"PrivateShift"> | string
+    vehicleType?: EnumVehicleTypeFilter<"PrivateShift"> | $Enums.VehicleType
+    date?: StringFilter<"PrivateShift"> | string
+    startAt?: DateTimeFilter<"PrivateShift"> | Date | string
+    endAt?: DateTimeFilter<"PrivateShift"> | Date | string
+    status?: EnumPrivateShiftStatusFilter<"PrivateShift"> | $Enums.PrivateShiftStatus
+    source?: EnumPrivateShiftSourceFilter<"PrivateShift"> | $Enums.PrivateShiftSource
+    driverId?: StringNullableFilter<"PrivateShift"> | string | null
+    fleetPartnerId?: StringNullableFilter<"PrivateShift"> | string | null
+    bookedAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
+    startedAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
+    startLat?: DecimalNullableFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    startLng?: DecimalNullableFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    endedAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
+    cancelledAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
+    cancelReason?: StringNullableFilter<"PrivateShift"> | string | null
+    scheduledMinutes?: IntNullableFilter<"PrivateShift"> | number | null
+    lateDeductionMinutes?: IntNullableFilter<"PrivateShift"> | number | null
+    awayDeductionMinutes?: IntNullableFilter<"PrivateShift"> | number | null
+    billableMinutes?: IntNullableFilter<"PrivateShift"> | number | null
+    vendorHourlyKwd?: DecimalNullableFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: DecimalNullableFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: DecimalNullableFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: DecimalNullableFilter<"PrivateShift"> | Decimal | DecimalJsLike | number | string | null
+    settledAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
+    createdAt?: DateTimeFilter<"PrivateShift"> | Date | string
+    updatedAt?: DateTimeFilter<"PrivateShift"> | Date | string
+  }
+
+  export type PrivateShiftPlanCreateWithoutShiftsInput = {
+    id?: string
+    tenantId: string
+    vendorId: string
+    branchId: string
+    vehicleType: $Enums.VehicleType
+    date: string
+    requestedShifts: number
+    shiftHours: number
+    source: $Enums.PrivateShiftSource
+    status?: string
+    basis?: NullableJsonNullValueInput | InputJsonValue
+    createdById?: string | null
+    confirmedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PrivateShiftPlanUncheckedCreateWithoutShiftsInput = {
+    id?: string
+    tenantId: string
+    vendorId: string
+    branchId: string
+    vehicleType: $Enums.VehicleType
+    date: string
+    requestedShifts: number
+    shiftHours: number
+    source: $Enums.PrivateShiftSource
+    status?: string
+    basis?: NullableJsonNullValueInput | InputJsonValue
+    createdById?: string | null
+    confirmedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PrivateShiftPlanCreateOrConnectWithoutShiftsInput = {
+    where: PrivateShiftPlanWhereUniqueInput
+    create: XOR<PrivateShiftPlanCreateWithoutShiftsInput, PrivateShiftPlanUncheckedCreateWithoutShiftsInput>
+  }
+
+  export type PrivateShiftDeductionCreateWithoutShiftInput = {
+    id?: string
+    tenantId: string
+    kind: string
+    minutes: number
+    orderId?: string | null
+    fromAt?: Date | string | null
+    toAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type PrivateShiftDeductionUncheckedCreateWithoutShiftInput = {
+    id?: string
+    tenantId: string
+    kind: string
+    minutes: number
+    orderId?: string | null
+    fromAt?: Date | string | null
+    toAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type PrivateShiftDeductionCreateOrConnectWithoutShiftInput = {
+    where: PrivateShiftDeductionWhereUniqueInput
+    create: XOR<PrivateShiftDeductionCreateWithoutShiftInput, PrivateShiftDeductionUncheckedCreateWithoutShiftInput>
+  }
+
+  export type PrivateShiftDeductionCreateManyShiftInputEnvelope = {
+    data: PrivateShiftDeductionCreateManyShiftInput | PrivateShiftDeductionCreateManyShiftInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PrivateShiftPlanUpsertWithoutShiftsInput = {
+    update: XOR<PrivateShiftPlanUpdateWithoutShiftsInput, PrivateShiftPlanUncheckedUpdateWithoutShiftsInput>
+    create: XOR<PrivateShiftPlanCreateWithoutShiftsInput, PrivateShiftPlanUncheckedCreateWithoutShiftsInput>
+    where?: PrivateShiftPlanWhereInput
+  }
+
+  export type PrivateShiftPlanUpdateToOneWithWhereWithoutShiftsInput = {
+    where?: PrivateShiftPlanWhereInput
+    data: XOR<PrivateShiftPlanUpdateWithoutShiftsInput, PrivateShiftPlanUncheckedUpdateWithoutShiftsInput>
+  }
+
+  export type PrivateShiftPlanUpdateWithoutShiftsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    branchId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    date?: StringFieldUpdateOperationsInput | string
+    requestedShifts?: IntFieldUpdateOperationsInput | number
+    shiftHours?: IntFieldUpdateOperationsInput | number
+    source?: EnumPrivateShiftSourceFieldUpdateOperationsInput | $Enums.PrivateShiftSource
+    status?: StringFieldUpdateOperationsInput | string
+    basis?: NullableJsonNullValueInput | InputJsonValue
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrivateShiftPlanUncheckedUpdateWithoutShiftsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    branchId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    date?: StringFieldUpdateOperationsInput | string
+    requestedShifts?: IntFieldUpdateOperationsInput | number
+    shiftHours?: IntFieldUpdateOperationsInput | number
+    source?: EnumPrivateShiftSourceFieldUpdateOperationsInput | $Enums.PrivateShiftSource
+    status?: StringFieldUpdateOperationsInput | string
+    basis?: NullableJsonNullValueInput | InputJsonValue
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrivateShiftDeductionUpsertWithWhereUniqueWithoutShiftInput = {
+    where: PrivateShiftDeductionWhereUniqueInput
+    update: XOR<PrivateShiftDeductionUpdateWithoutShiftInput, PrivateShiftDeductionUncheckedUpdateWithoutShiftInput>
+    create: XOR<PrivateShiftDeductionCreateWithoutShiftInput, PrivateShiftDeductionUncheckedCreateWithoutShiftInput>
+  }
+
+  export type PrivateShiftDeductionUpdateWithWhereUniqueWithoutShiftInput = {
+    where: PrivateShiftDeductionWhereUniqueInput
+    data: XOR<PrivateShiftDeductionUpdateWithoutShiftInput, PrivateShiftDeductionUncheckedUpdateWithoutShiftInput>
+  }
+
+  export type PrivateShiftDeductionUpdateManyWithWhereWithoutShiftInput = {
+    where: PrivateShiftDeductionScalarWhereInput
+    data: XOR<PrivateShiftDeductionUpdateManyMutationInput, PrivateShiftDeductionUncheckedUpdateManyWithoutShiftInput>
+  }
+
+  export type PrivateShiftDeductionScalarWhereInput = {
+    AND?: PrivateShiftDeductionScalarWhereInput | PrivateShiftDeductionScalarWhereInput[]
+    OR?: PrivateShiftDeductionScalarWhereInput[]
+    NOT?: PrivateShiftDeductionScalarWhereInput | PrivateShiftDeductionScalarWhereInput[]
+    id?: StringFilter<"PrivateShiftDeduction"> | string
+    tenantId?: StringFilter<"PrivateShiftDeduction"> | string
+    shiftId?: StringFilter<"PrivateShiftDeduction"> | string
+    kind?: StringFilter<"PrivateShiftDeduction"> | string
+    minutes?: IntFilter<"PrivateShiftDeduction"> | number
+    orderId?: StringNullableFilter<"PrivateShiftDeduction"> | string | null
+    fromAt?: DateTimeNullableFilter<"PrivateShiftDeduction"> | Date | string | null
+    toAt?: DateTimeNullableFilter<"PrivateShiftDeduction"> | Date | string | null
+    createdAt?: DateTimeFilter<"PrivateShiftDeduction"> | Date | string
+  }
+
+  export type PrivateShiftCreateWithoutDeductionsInput = {
+    id?: string
+    tenantId: string
+    vendorId: string
+    branchId: string
+    vehicleType: $Enums.VehicleType
+    date: string
+    startAt: Date | string
+    endAt: Date | string
+    status?: $Enums.PrivateShiftStatus
+    source: $Enums.PrivateShiftSource
+    driverId?: string | null
+    fleetPartnerId?: string | null
+    bookedAt?: Date | string | null
+    startedAt?: Date | string | null
+    startLat?: Decimal | DecimalJsLike | number | string | null
+    startLng?: Decimal | DecimalJsLike | number | string | null
+    endedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    cancelReason?: string | null
+    scheduledMinutes?: number | null
+    lateDeductionMinutes?: number | null
+    awayDeductionMinutes?: number | null
+    billableMinutes?: number | null
+    vendorHourlyKwd?: Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: Decimal | DecimalJsLike | number | string | null
+    settledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    plan?: PrivateShiftPlanCreateNestedOneWithoutShiftsInput
+  }
+
+  export type PrivateShiftUncheckedCreateWithoutDeductionsInput = {
+    id?: string
+    tenantId: string
+    planId?: string | null
+    vendorId: string
+    branchId: string
+    vehicleType: $Enums.VehicleType
+    date: string
+    startAt: Date | string
+    endAt: Date | string
+    status?: $Enums.PrivateShiftStatus
+    source: $Enums.PrivateShiftSource
+    driverId?: string | null
+    fleetPartnerId?: string | null
+    bookedAt?: Date | string | null
+    startedAt?: Date | string | null
+    startLat?: Decimal | DecimalJsLike | number | string | null
+    startLng?: Decimal | DecimalJsLike | number | string | null
+    endedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    cancelReason?: string | null
+    scheduledMinutes?: number | null
+    lateDeductionMinutes?: number | null
+    awayDeductionMinutes?: number | null
+    billableMinutes?: number | null
+    vendorHourlyKwd?: Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: Decimal | DecimalJsLike | number | string | null
+    settledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PrivateShiftCreateOrConnectWithoutDeductionsInput = {
+    where: PrivateShiftWhereUniqueInput
+    create: XOR<PrivateShiftCreateWithoutDeductionsInput, PrivateShiftUncheckedCreateWithoutDeductionsInput>
+  }
+
+  export type PrivateShiftUpsertWithoutDeductionsInput = {
+    update: XOR<PrivateShiftUpdateWithoutDeductionsInput, PrivateShiftUncheckedUpdateWithoutDeductionsInput>
+    create: XOR<PrivateShiftCreateWithoutDeductionsInput, PrivateShiftUncheckedCreateWithoutDeductionsInput>
+    where?: PrivateShiftWhereInput
+  }
+
+  export type PrivateShiftUpdateToOneWithWhereWithoutDeductionsInput = {
+    where?: PrivateShiftWhereInput
+    data: XOR<PrivateShiftUpdateWithoutDeductionsInput, PrivateShiftUncheckedUpdateWithoutDeductionsInput>
+  }
+
+  export type PrivateShiftUpdateWithoutDeductionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    branchId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    date?: StringFieldUpdateOperationsInput | string
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumPrivateShiftStatusFieldUpdateOperationsInput | $Enums.PrivateShiftStatus
+    source?: EnumPrivateShiftSourceFieldUpdateOperationsInput | $Enums.PrivateShiftSource
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    startLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelReason?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    lateDeductionMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    awayDeductionMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    billableMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    vendorHourlyKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    plan?: PrivateShiftPlanUpdateOneWithoutShiftsNestedInput
+  }
+
+  export type PrivateShiftUncheckedUpdateWithoutDeductionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    planId?: NullableStringFieldUpdateOperationsInput | string | null
+    vendorId?: StringFieldUpdateOperationsInput | string
+    branchId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    date?: StringFieldUpdateOperationsInput | string
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumPrivateShiftStatusFieldUpdateOperationsInput | $Enums.PrivateShiftStatus
+    source?: EnumPrivateShiftSourceFieldUpdateOperationsInput | $Enums.PrivateShiftSource
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    startLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelReason?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    lateDeductionMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    awayDeductionMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    billableMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    vendorHourlyKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type CompanyCreateManyTenantInput = {
     id?: string
     name: string
@@ -352813,6 +361399,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
   }
 
   export type DriverBatchHistoryCreateManyTenantInput = {
@@ -353909,6 +362496,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
   }
 
   export type VendorBranchCreateManyTenantInput = {
@@ -354733,6 +363321,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutDriversNestedInput
@@ -354843,6 +363432,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -354949,6 +363539,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type DriverBatchHistoryUpdateWithoutTenantInput = {
@@ -358272,6 +366863,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUpdateManyWithoutVendorNestedInput
     branchAllocations?: VendorBranchAllocationUpdateManyWithoutVendorNestedInput
@@ -358307,6 +366899,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUncheckedUpdateManyWithoutVendorNestedInput
     branchAllocations?: VendorBranchAllocationUncheckedUpdateManyWithoutVendorNestedInput
@@ -358341,6 +366934,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
   }
 
   export type VendorBranchUpdateWithoutTenantInput = {
@@ -360242,6 +368836,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
   }
 
   export type VehicleCreateManyCompanyInput = {
@@ -360353,6 +368948,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutDriversNestedInput
@@ -360463,6 +369059,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -360569,6 +369166,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type VehicleUpdateWithoutCompanyInput = {
@@ -361159,6 +369757,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
   }
 
   export type DeviceCommandCreateManyIssuedByInput = {
@@ -361762,6 +370361,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutDriversNestedInput
@@ -361872,6 +370472,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -361978,6 +370579,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type DeviceCommandUpdateWithoutIssuedByInput = {
@@ -370852,6 +379454,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
   }
 
   export type ShiftCapacityCreateManyZoneInput = {
@@ -371410,6 +380013,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -371520,6 +380124,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -371626,6 +380231,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type ShiftCapacityUpdateWithoutZoneInput = {
@@ -371697,6 +380303,7 @@ export namespace Prisma {
     walletMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    suitableVehicleTypes?: VendorCreatesuitableVehicleTypesInput | $Enums.VehicleType[]
   }
 
   export type VendorBranchCreateManyDeliveryPlanInput = {
@@ -371795,6 +380402,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     tenant?: TenantUpdateOneRequiredWithoutVendorsNestedInput
     branches?: VendorBranchUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUpdateManyWithoutVendorNestedInput
@@ -371830,6 +380438,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
     branches?: VendorBranchUncheckedUpdateManyWithoutVendorNestedInput
     documents?: FleetDocumentUncheckedUpdateManyWithoutVendorNestedInput
     branchAllocations?: VendorBranchAllocationUncheckedUpdateManyWithoutVendorNestedInput
@@ -371864,6 +380473,7 @@ export namespace Prisma {
     walletMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    suitableVehicleTypes?: VendorUpdatesuitableVehicleTypesInput | $Enums.VehicleType[]
   }
 
   export type VendorBranchUpdateWithoutDeliveryPlanInput = {
@@ -372204,6 +380814,7 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    privateShiftEligible?: boolean
   }
 
   export type UserCreateManyFleetPartnerInput = {
@@ -372450,6 +381061,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -372560,6 +381172,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -372666,6 +381279,7 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    privateShiftEligible?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type UserUpdateWithoutFleetPartnerInput = {
@@ -373676,6 +382290,184 @@ export namespace Prisma {
     demandOrders?: IntFieldUpdateOperationsInput | number
   }
 
+  export type PrivateShiftCreateManyPlanInput = {
+    id?: string
+    tenantId: string
+    vendorId: string
+    branchId: string
+    vehicleType: $Enums.VehicleType
+    date: string
+    startAt: Date | string
+    endAt: Date | string
+    status?: $Enums.PrivateShiftStatus
+    source: $Enums.PrivateShiftSource
+    driverId?: string | null
+    fleetPartnerId?: string | null
+    bookedAt?: Date | string | null
+    startedAt?: Date | string | null
+    startLat?: Decimal | DecimalJsLike | number | string | null
+    startLng?: Decimal | DecimalJsLike | number | string | null
+    endedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    cancelReason?: string | null
+    scheduledMinutes?: number | null
+    lateDeductionMinutes?: number | null
+    awayDeductionMinutes?: number | null
+    billableMinutes?: number | null
+    vendorHourlyKwd?: Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: Decimal | DecimalJsLike | number | string | null
+    settledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PrivateShiftUpdateWithoutPlanInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    branchId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    date?: StringFieldUpdateOperationsInput | string
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumPrivateShiftStatusFieldUpdateOperationsInput | $Enums.PrivateShiftStatus
+    source?: EnumPrivateShiftSourceFieldUpdateOperationsInput | $Enums.PrivateShiftSource
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    startLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelReason?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    lateDeductionMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    awayDeductionMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    billableMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    vendorHourlyKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deductions?: PrivateShiftDeductionUpdateManyWithoutShiftNestedInput
+  }
+
+  export type PrivateShiftUncheckedUpdateWithoutPlanInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    branchId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    date?: StringFieldUpdateOperationsInput | string
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumPrivateShiftStatusFieldUpdateOperationsInput | $Enums.PrivateShiftStatus
+    source?: EnumPrivateShiftSourceFieldUpdateOperationsInput | $Enums.PrivateShiftSource
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    startLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelReason?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    lateDeductionMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    awayDeductionMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    billableMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    vendorHourlyKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deductions?: PrivateShiftDeductionUncheckedUpdateManyWithoutShiftNestedInput
+  }
+
+  export type PrivateShiftUncheckedUpdateManyWithoutPlanInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    branchId?: StringFieldUpdateOperationsInput | string
+    vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+    date?: StringFieldUpdateOperationsInput | string
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumPrivateShiftStatusFieldUpdateOperationsInput | $Enums.PrivateShiftStatus
+    source?: EnumPrivateShiftSourceFieldUpdateOperationsInput | $Enums.PrivateShiftSource
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    fleetPartnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startLat?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    startLng?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelReason?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    lateDeductionMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    awayDeductionMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    billableMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    vendorHourlyKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    fleetHourlyKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    vendorChargeKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    fleetPayKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    settledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrivateShiftDeductionCreateManyShiftInput = {
+    id?: string
+    tenantId: string
+    kind: string
+    minutes: number
+    orderId?: string | null
+    fromAt?: Date | string | null
+    toAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type PrivateShiftDeductionUpdateWithoutShiftInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    minutes?: IntFieldUpdateOperationsInput | number
+    orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    fromAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    toAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrivateShiftDeductionUncheckedUpdateWithoutShiftInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    minutes?: IntFieldUpdateOperationsInput | number
+    orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    fromAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    toAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrivateShiftDeductionUncheckedUpdateManyWithoutShiftInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    minutes?: IntFieldUpdateOperationsInput | number
+    orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    fromAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    toAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
 
 
   /**
@@ -373817,6 +382609,14 @@ export namespace Prisma {
      * @deprecated Use ShiftPlanCountOutputTypeDefaultArgs instead
      */
     export type ShiftPlanCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ShiftPlanCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use PrivateShiftPlanCountOutputTypeDefaultArgs instead
+     */
+    export type PrivateShiftPlanCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PrivateShiftPlanCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use PrivateShiftCountOutputTypeDefaultArgs instead
+     */
+    export type PrivateShiftCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PrivateShiftCountOutputTypeDefaultArgs<ExtArgs>
     /**
      * @deprecated Use TenantDefaultArgs instead
      */
@@ -374337,6 +383137,26 @@ export namespace Prisma {
      * @deprecated Use VendorBranchAllocationDefaultArgs instead
      */
     export type VendorBranchAllocationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = VendorBranchAllocationDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use VendorVehiclePlanDefaultArgs instead
+     */
+    export type VendorVehiclePlanArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = VendorVehiclePlanDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use FleetVehicleRateDefaultArgs instead
+     */
+    export type FleetVehicleRateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = FleetVehicleRateDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use PrivateShiftPlanDefaultArgs instead
+     */
+    export type PrivateShiftPlanArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PrivateShiftPlanDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use PrivateShiftDefaultArgs instead
+     */
+    export type PrivateShiftArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PrivateShiftDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use PrivateShiftDeductionDefaultArgs instead
+     */
+    export type PrivateShiftDeductionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PrivateShiftDeductionDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

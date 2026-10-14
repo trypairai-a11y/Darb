@@ -29,6 +29,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { formatDateTime, formatKwd } from "@/i18n/format";
 import { useRole } from "@/hooks/useRole";
 import { cn } from "@/lib/cn";
+import { vehicleRatesSummary } from "@/lib/vehicleRatesSummary";
 
 type Tab = "support" | "approvals";
 const TABS: Tab[] = ["support", "approvals"];
@@ -336,7 +337,9 @@ function ApprovalsTab() {
                 bare "KD 1.400" with no sight of what it moves from is a
                 supervisor guessing at the size of the raise. */}
             <p className="text-xs text-sand-600 mt-0.5" dir="auto">
-              {r.type === "RATE_CHANGE"
+              {r.type === "RATE_CHANGE" && vehicleRatesSummary(payload, t, locale)
+                ? vehicleRatesSummary(payload, t, locale)
+                : r.type === "RATE_CHANGE"
                 ? `${t("fleetPortal.rateBaseLabel")}: ${formatKwd(
                     payload.currentKwd ?? "0",
                     locale,

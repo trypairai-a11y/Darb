@@ -29,6 +29,7 @@ import {
   ShieldCheck,
   TriangleAlert,
   UserCog,
+  CalendarClock,
 } from "lucide-react";
 
 export interface NavItem {
@@ -225,6 +226,14 @@ export const NAV_SECTIONS: NavSection[] = [
         path: "/vendor",
         icon: ClipboardList,
         owns: ["/vendor/orders/new"],
+        vendorTab: "ORDERS",
+      },
+      // Revision 24 (#9): the shop opens its own private shifts. Same tab as
+      // the board: it is about getting this shop's orders delivered.
+      {
+        i18n: "privateShifts.navTitle",
+        path: "/vendor/private-shifts",
+        icon: CalendarClock,
         vendorTab: "ORDERS",
       },
       {
