@@ -112,15 +112,23 @@ async function acceptDueOffers(tenantId: string, now: Date): Promise<number> {
   return accepted;
 }
 
-/** Collect orders that have been held at the merchant long enough. */
+/**
+ * Collect orders that have been held at the merchant long enough.
+ *
+ * ARRIVED is collected too (revision 24 #18). It was inserted between ASSIGNED
+ * and PICKED_UP in revision 8 and this pass only ever looked for ASSIGNED, so
+ * any demo order that reached the counter (a person tapping Arrived in the
+ * app, a seed, a staff action) was never picked up by anyone and sat "Arrived
+ * at shop" for months.
+ */
 async function pickUpDueOrders(tenantId: string, now: Date): Promise<number> {
   const orders = await prisma.deliveryOrder.findMany({
     where: {
       tenantId,
-      status: "ASSIGNED",
+      status: { in: ["ASSIGNED", "ARRIVED"] },
       assignedAt: { lte: new Date(now.getTime() - PICKUP_AFTER_SEC * 1000) },
     },
-    select: { id: true, orderNumber: true, vendorId: true, driverId: true },
+    select: { id: true, orderNumber: true, vendorId: true, driverId: true, status: true },
     orderBy: { assignedAt: "asc" },
     take: BATCH,
   });
@@ -135,7 +143,7 @@ async function pickUpDueOrders(tenantId: string, now: Date): Promise<number> {
         await transitionOrder(trx, {
           orderId: order.id,
           tenantId,
-          from: "ASSIGNED",
+          from: order.status === "ARRIVED" ? "ARRIVED" : "ASSIGNED",
           to: "PICKED_UP",
           actor: { type: "DRIVER", id: order.driverId ?? undefined, name: "demo courier" },
           data: { pickedUpAt: now },

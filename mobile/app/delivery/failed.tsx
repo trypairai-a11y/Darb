@@ -70,9 +70,11 @@ export default function DeliveryFailedScreen() {
       } else {
         await postOrderReturned(order.id);
       }
-      completeOrder();
+      completeOrder(order.id);
       void hydrateNow();
-      router.replace("/(tabs)/home");
+      // Another order still in hand (revision 24 #5): straight to it.
+      const next = useDriverStore.getState().activeOrder;
+      router.replace(next ? "/delivery" : "/(tabs)/home");
     } catch (e: any) {
       Alert.alert(tr("failed.return_title"), e?.message || tr("common.retry"));
     } finally {

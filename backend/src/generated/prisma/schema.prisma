@@ -3292,30 +3292,34 @@ model DistanceCache {
 
 // D5. FulfillmentSettings - one row per tenant; dispatch + pricing knobs
 model FulfillmentSettings {
-  id                     String   @id @default(uuid())
-  tenantId               String   @unique
-  intraZoneFeeKwd        Decimal  @default(1.250) @db.Decimal(10, 3)
-  driverCashCeilingKwd   Decimal  @default(100.000) @db.Decimal(10, 3)
-  offerWindowSec         Int      @default(15)
-  maxOfferRounds         Int      @default(8)
-  searchRadiusKm         Float    @default(8)
-  gpsStaleAfterSec       Int      @default(180)
+  id                       String   @id @default(uuid())
+  tenantId                 String   @unique
+  intraZoneFeeKwd          Decimal  @default(1.250) @db.Decimal(10, 3)
+  driverCashCeilingKwd     Decimal  @default(100.000) @db.Decimal(10, 3)
+  offerWindowSec           Int      @default(15)
+  maxOfferRounds           Int      @default(8)
+  searchRadiusKm           Float    @default(8)
+  gpsStaleAfterSec         Int      @default(180)
   // PRD §8 dispatch: progressive radius widening across offer rounds.
-  radiusWidenAfterRounds Int      @default(3)
-  radiusWidenFactor      Float    @default(1.5)
-  maxSearchRadiusKm      Float    @default(15)
+  radiusWidenAfterRounds   Int      @default(3)
+  radiusWidenFactor        Float    @default(1.5)
+  maxSearchRadiusKm        Float    @default(15)
   // PRD §8 dispatch: auto-batching (one pickup, multiple drops only).
-  batchingEnabled        Boolean  @default(true)
-  batchMaxDropKm         Float    @default(1.5)
-  batchMaxOrders         Int      @default(2)
+  batchingEnabled          Boolean  @default(true)
+  batchMaxDropKm           Float    @default(1.5)
+  batchMaxOrders           Int      @default(2)
   // Revision 5 (#1): every order must be served. When nobody is free, the
   // offer goes to the nearest driver who is about to finish the drop he is
   // already on. "About to finish" is this many minutes of projected remaining
   // travel; 0 disables the reserve tier and restores the old free-drivers-only
   // behaviour.
-  finishingSoonMinutes   Int      @default(10)
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  finishingSoonMinutes     Int      @default(10)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+  // Revision 24 (#5): once no free driver is left, dispatch offers the order
+  // to working drivers who already carry orders, up to this many live orders
+  // each. 1 turns the busy tier off.
+  maxActiveOrdersPerDriver Int      @default(3)
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
 }

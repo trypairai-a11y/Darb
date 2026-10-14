@@ -181,6 +181,24 @@ describe("order intake", () => {
     expect(res.body).toMatchObject({ status: "REJECTED", rejectionReason: "OUT_OF_ZONE_DROPOFF" });
   });
 
+  // Revision 24 (#4): refused at the source, nothing saved for Needs review.
+  test("a drop outside the delivery area is refused with 422 and the order is not created", async () => {
+    const { DropoffOutOfAreaError } = require("../../services/orderIntakeErrors");
+    createDeliveryOrder.mockRejectedValue(new DropoffOutOfAreaError());
+    const res = await request(makeApp())
+      .post("/api/partner/orders")
+      .set("X-Api-Key", RAW_KEY)
+      .send(GOOD_BODY);
+    expect(res.status).toBe(422);
+    expect(res.body).toMatchObject({
+      code: "DROPOFF_OUT_OF_AREA",
+      status: "REJECTED",
+      rejectionReason: "OUT_OF_ZONE_DROPOFF",
+    });
+    expect(res.body.error).toMatch(/outside the delivery area/);
+    expect(createDeliveryOrder).toHaveBeenCalledWith(expect.objectContaining({ refuseOutOfArea: true }));
+  });
+
   test("externalRef unique race: create throws P2002-ish, the existing row is fetched and returned 200", async () => {
     createDeliveryOrder.mockRejectedValue(Object.assign(new Error("dup"), { code: "P2002" }));
     prisma.deliveryOrder.findFirst

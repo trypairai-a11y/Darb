@@ -3316,6 +3316,10 @@ model FulfillmentSettings {
   finishingSoonMinutes   Int      @default(10)
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
+  // Revision 24 (#5): once no free driver is left, dispatch offers the order
+  // to working drivers who already carry orders, up to this many live orders
+  // each. 1 turns the busy tier off.
+  maxActiveOrdersPerDriver Int    @default(3)
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
 }

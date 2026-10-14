@@ -122784,6 +122784,7 @@ export namespace Prisma {
     batchMaxDropKm: number | null
     batchMaxOrders: number | null
     finishingSoonMinutes: number | null
+    maxActiveOrdersPerDriver: number | null
   }
 
   export type FulfillmentSettingsSumAggregateOutputType = {
@@ -122799,6 +122800,7 @@ export namespace Prisma {
     batchMaxDropKm: number | null
     batchMaxOrders: number | null
     finishingSoonMinutes: number | null
+    maxActiveOrdersPerDriver: number | null
   }
 
   export type FulfillmentSettingsMinAggregateOutputType = {
@@ -122819,6 +122821,7 @@ export namespace Prisma {
     finishingSoonMinutes: number | null
     createdAt: Date | null
     updatedAt: Date | null
+    maxActiveOrdersPerDriver: number | null
   }
 
   export type FulfillmentSettingsMaxAggregateOutputType = {
@@ -122839,6 +122842,7 @@ export namespace Prisma {
     finishingSoonMinutes: number | null
     createdAt: Date | null
     updatedAt: Date | null
+    maxActiveOrdersPerDriver: number | null
   }
 
   export type FulfillmentSettingsCountAggregateOutputType = {
@@ -122859,6 +122863,7 @@ export namespace Prisma {
     finishingSoonMinutes: number
     createdAt: number
     updatedAt: number
+    maxActiveOrdersPerDriver: number
     _all: number
   }
 
@@ -122876,6 +122881,7 @@ export namespace Prisma {
     batchMaxDropKm?: true
     batchMaxOrders?: true
     finishingSoonMinutes?: true
+    maxActiveOrdersPerDriver?: true
   }
 
   export type FulfillmentSettingsSumAggregateInputType = {
@@ -122891,6 +122897,7 @@ export namespace Prisma {
     batchMaxDropKm?: true
     batchMaxOrders?: true
     finishingSoonMinutes?: true
+    maxActiveOrdersPerDriver?: true
   }
 
   export type FulfillmentSettingsMinAggregateInputType = {
@@ -122911,6 +122918,7 @@ export namespace Prisma {
     finishingSoonMinutes?: true
     createdAt?: true
     updatedAt?: true
+    maxActiveOrdersPerDriver?: true
   }
 
   export type FulfillmentSettingsMaxAggregateInputType = {
@@ -122931,6 +122939,7 @@ export namespace Prisma {
     finishingSoonMinutes?: true
     createdAt?: true
     updatedAt?: true
+    maxActiveOrdersPerDriver?: true
   }
 
   export type FulfillmentSettingsCountAggregateInputType = {
@@ -122951,6 +122960,7 @@ export namespace Prisma {
     finishingSoonMinutes?: true
     createdAt?: true
     updatedAt?: true
+    maxActiveOrdersPerDriver?: true
     _all?: true
   }
 
@@ -123058,6 +123068,7 @@ export namespace Prisma {
     finishingSoonMinutes: number
     createdAt: Date
     updatedAt: Date
+    maxActiveOrdersPerDriver: number
     _count: FulfillmentSettingsCountAggregateOutputType | null
     _avg: FulfillmentSettingsAvgAggregateOutputType | null
     _sum: FulfillmentSettingsSumAggregateOutputType | null
@@ -123097,6 +123108,7 @@ export namespace Prisma {
     finishingSoonMinutes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    maxActiveOrdersPerDriver?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["fulfillmentSettings"]>
 
@@ -123118,6 +123130,7 @@ export namespace Prisma {
     finishingSoonMinutes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    maxActiveOrdersPerDriver?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["fulfillmentSettings"]>
 
@@ -123139,6 +123152,7 @@ export namespace Prisma {
     finishingSoonMinutes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    maxActiveOrdersPerDriver?: boolean
   }
 
   export type FulfillmentSettingsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -123171,6 +123185,7 @@ export namespace Prisma {
       finishingSoonMinutes: number
       createdAt: Date
       updatedAt: Date
+      maxActiveOrdersPerDriver: number
     }, ExtArgs["result"]["fulfillmentSettings"]>
     composites: {}
   }
@@ -123582,6 +123597,7 @@ export namespace Prisma {
     readonly finishingSoonMinutes: FieldRef<"FulfillmentSettings", 'Int'>
     readonly createdAt: FieldRef<"FulfillmentSettings", 'DateTime'>
     readonly updatedAt: FieldRef<"FulfillmentSettings", 'DateTime'>
+    readonly maxActiveOrdersPerDriver: FieldRef<"FulfillmentSettings", 'Int'>
   }
     
 
@@ -165145,7 +165161,8 @@ export namespace Prisma {
     batchMaxOrders: 'batchMaxOrders',
     finishingSoonMinutes: 'finishingSoonMinutes',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    maxActiveOrdersPerDriver: 'maxActiveOrdersPerDriver'
   };
 
   export type FulfillmentSettingsScalarFieldEnum = (typeof FulfillmentSettingsScalarFieldEnum)[keyof typeof FulfillmentSettingsScalarFieldEnum]
@@ -179058,6 +179075,7 @@ export namespace Prisma {
     finishingSoonMinutes?: IntFilter<"FulfillmentSettings"> | number
     createdAt?: DateTimeFilter<"FulfillmentSettings"> | Date | string
     updatedAt?: DateTimeFilter<"FulfillmentSettings"> | Date | string
+    maxActiveOrdersPerDriver?: IntFilter<"FulfillmentSettings"> | number
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
   }
 
@@ -179079,6 +179097,7 @@ export namespace Prisma {
     finishingSoonMinutes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    maxActiveOrdersPerDriver?: SortOrder
     tenant?: TenantOrderByWithRelationInput
     _relevance?: FulfillmentSettingsOrderByRelevanceInput
   }
@@ -179104,6 +179123,7 @@ export namespace Prisma {
     finishingSoonMinutes?: IntFilter<"FulfillmentSettings"> | number
     createdAt?: DateTimeFilter<"FulfillmentSettings"> | Date | string
     updatedAt?: DateTimeFilter<"FulfillmentSettings"> | Date | string
+    maxActiveOrdersPerDriver?: IntFilter<"FulfillmentSettings"> | number
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
   }, "id" | "tenantId">
 
@@ -179125,6 +179145,7 @@ export namespace Prisma {
     finishingSoonMinutes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    maxActiveOrdersPerDriver?: SortOrder
     _count?: FulfillmentSettingsCountOrderByAggregateInput
     _avg?: FulfillmentSettingsAvgOrderByAggregateInput
     _max?: FulfillmentSettingsMaxOrderByAggregateInput
@@ -179153,6 +179174,7 @@ export namespace Prisma {
     finishingSoonMinutes?: IntWithAggregatesFilter<"FulfillmentSettings"> | number
     createdAt?: DateTimeWithAggregatesFilter<"FulfillmentSettings"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"FulfillmentSettings"> | Date | string
+    maxActiveOrdersPerDriver?: IntWithAggregatesFilter<"FulfillmentSettings"> | number
   }
 
   export type DeliveryOrderWhereInput = {
@@ -194428,6 +194450,7 @@ export namespace Prisma {
     finishingSoonMinutes?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    maxActiveOrdersPerDriver?: number
     tenant: TenantCreateNestedOneWithoutFulfillmentSettingsInput
   }
 
@@ -194449,6 +194472,7 @@ export namespace Prisma {
     finishingSoonMinutes?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    maxActiveOrdersPerDriver?: number
   }
 
   export type FulfillmentSettingsUpdateInput = {
@@ -194468,6 +194492,7 @@ export namespace Prisma {
     finishingSoonMinutes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    maxActiveOrdersPerDriver?: IntFieldUpdateOperationsInput | number
     tenant?: TenantUpdateOneRequiredWithoutFulfillmentSettingsNestedInput
   }
 
@@ -194489,6 +194514,7 @@ export namespace Prisma {
     finishingSoonMinutes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    maxActiveOrdersPerDriver?: IntFieldUpdateOperationsInput | number
   }
 
   export type FulfillmentSettingsCreateManyInput = {
@@ -194509,6 +194535,7 @@ export namespace Prisma {
     finishingSoonMinutes?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    maxActiveOrdersPerDriver?: number
   }
 
   export type FulfillmentSettingsUpdateManyMutationInput = {
@@ -194528,6 +194555,7 @@ export namespace Prisma {
     finishingSoonMinutes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    maxActiveOrdersPerDriver?: IntFieldUpdateOperationsInput | number
   }
 
   export type FulfillmentSettingsUncheckedUpdateManyInput = {
@@ -194548,6 +194576,7 @@ export namespace Prisma {
     finishingSoonMinutes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    maxActiveOrdersPerDriver?: IntFieldUpdateOperationsInput | number
   }
 
   export type DeliveryOrderCreateInput = {
@@ -207266,6 +207295,7 @@ export namespace Prisma {
     finishingSoonMinutes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    maxActiveOrdersPerDriver?: SortOrder
   }
 
   export type FulfillmentSettingsAvgOrderByAggregateInput = {
@@ -207281,6 +207311,7 @@ export namespace Prisma {
     batchMaxDropKm?: SortOrder
     batchMaxOrders?: SortOrder
     finishingSoonMinutes?: SortOrder
+    maxActiveOrdersPerDriver?: SortOrder
   }
 
   export type FulfillmentSettingsMaxOrderByAggregateInput = {
@@ -207301,6 +207332,7 @@ export namespace Prisma {
     finishingSoonMinutes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    maxActiveOrdersPerDriver?: SortOrder
   }
 
   export type FulfillmentSettingsMinOrderByAggregateInput = {
@@ -207321,6 +207353,7 @@ export namespace Prisma {
     finishingSoonMinutes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    maxActiveOrdersPerDriver?: SortOrder
   }
 
   export type FulfillmentSettingsSumOrderByAggregateInput = {
@@ -207336,6 +207369,7 @@ export namespace Prisma {
     batchMaxDropKm?: SortOrder
     batchMaxOrders?: SortOrder
     finishingSoonMinutes?: SortOrder
+    maxActiveOrdersPerDriver?: SortOrder
   }
 
   export type EnumDeliveryOrderSourceFilter<$PrismaModel = never> = {
@@ -232373,6 +232407,7 @@ export namespace Prisma {
     finishingSoonMinutes?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    maxActiveOrdersPerDriver?: number
   }
 
   export type FulfillmentSettingsUncheckedCreateWithoutTenantInput = {
@@ -232392,6 +232427,7 @@ export namespace Prisma {
     finishingSoonMinutes?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    maxActiveOrdersPerDriver?: number
   }
 
   export type FulfillmentSettingsCreateOrConnectWithoutTenantInput = {
@@ -236709,6 +236745,7 @@ export namespace Prisma {
     finishingSoonMinutes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    maxActiveOrdersPerDriver?: IntFieldUpdateOperationsInput | number
   }
 
   export type FulfillmentSettingsUncheckedUpdateWithoutTenantInput = {
@@ -236728,6 +236765,7 @@ export namespace Prisma {
     finishingSoonMinutes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    maxActiveOrdersPerDriver?: IntFieldUpdateOperationsInput | number
   }
 
   export type DeliveryOrderUpsertWithWhereUniqueWithoutTenantInput = {

@@ -37,6 +37,7 @@ describe("ALLOWED transition table (§A2 legality matrix)", () => {
     ["CREATED", "REJECTED"],
     ["CREATED", "CANCELLED"],
     ["REJECTED", "CREATED"], // dropoff-fix re-entry
+    ["REJECTED", "CANCELLED"], // revision 24 (#4): closed out of Needs review
     ["DISPATCHING", "ASSIGNED"],
     ["DISPATCHING", "NO_DRIVER"],
     ["DISPATCHING", "CANCELLED"],

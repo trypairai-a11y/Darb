@@ -158,7 +158,10 @@ describe("hydrate — offers", () => {
     expect(useDriverStore.getState().activeOffer).toBe(first);
   });
 
-  test("an active order supersedes any incoming offer", () => {
+  // Revision 24 (#5): this used to assert the opposite. Dispatch now offers a
+  // busy driver a second order once nobody free is left, so the server is the
+  // judge of whether an offer belongs on a busy driver's screen.
+  test("an offer sent to a driver with an active order is shown, the order stays", () => {
     useDriverStore.setState({
       activeOrder: { id: "ord1", status: "ASSIGNED", stage: "HEADING_TO_PICKUP" } as any,
     });
@@ -168,7 +171,8 @@ describe("hydrate — offers", () => {
       activeOffer: { id: "off9", restaurantName: "X", feeKwd: 1, expiresAt: NOW_ISO() },
       serverTime: NOW_ISO(),
     });
-    expect(useDriverStore.getState().activeOffer).toBeNull();
+    expect(useDriverStore.getState().activeOffer?.id).toBe("off9");
+    expect(useDriverStore.getState().activeOrder?.id).toBe("ord1");
   });
 });
 

@@ -4,6 +4,9 @@
 // about the things that make that safe: off by default, never blocks the
 // caller, never stacks up, and never lets a failure reach the response.
 
+jest.mock("../../services/staleOrderService", () => ({
+  sweepStaleOrders: jest.fn().mockResolvedValue({ dryRun: false, closed: 0, flagged: 0, skipped: 0, orders: [] }),
+}));
 jest.mock("../../services/dispatch/dispatchEngine", () => ({
   sweepDispatch: jest.fn().mockResolvedValue({ expired: 0, advanced: 0, wedged: 0, retried: 0 }),
 }));

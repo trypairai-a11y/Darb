@@ -1650,7 +1650,8 @@ exports.Prisma.FulfillmentSettingsScalarFieldEnum = {
   batchMaxOrders: 'batchMaxOrders',
   finishingSoonMinutes: 'finishingSoonMinutes',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  maxActiveOrdersPerDriver: 'maxActiveOrdersPerDriver'
 };
 
 exports.Prisma.DeliveryOrderScalarFieldEnum = {

@@ -702,6 +702,8 @@ export interface AgentStateResponse {
   lockout?: { active: boolean; reason?: string | null } | boolean | null;
   activeOffer?: AgentOfferSummary | null;
   activeOrder?: AgentActiveOrder | null;
+  /** Revision 24 (#5): every live order, `activeOrder` first. Older backends omit it. */
+  activeOrders?: AgentActiveOrder[] | null;
   wallet?: AgentWalletSummary | null;
   supervisorPhone?: string | null;
   serverTime: string; // ISO — clockSkewMs = serverTime - Date.now()

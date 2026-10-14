@@ -67,14 +67,21 @@ export default function PodScreen() {
 
   const codGateOpen = codAmount <= 0 || codConfirmed;
 
+  // Pinned at mount: completing this order may put the driver's next one in
+  // `order` (revision 24 #5), and only this one is being delivered here.
+  const orderIdRef = useRef(order?.id);
+  if (!orderIdRef.current && order?.id) orderIdRef.current = order.id;
+
   const finish = useCallback(
     (state: Exclude<DoneState, null>) => {
       setDone(state);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-      completeOrder();
+      completeOrder(orderIdRef.current);
       setTimeout(() => {
         void hydrateNow();
-        router.replace("/(tabs)/home");
+        // Another order still in hand: straight to it, not to Home.
+        const next = useDriverStore.getState().activeOrder;
+        router.replace(next ? "/delivery" : "/(tabs)/home");
       }, 1400);
     },
     [completeOrder, router],

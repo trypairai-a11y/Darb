@@ -21,6 +21,7 @@
 import { prisma } from "../config";
 import { logger } from "../config/logger";
 import { createDeliveryOrder, assignDriverManually } from "./orderService";
+import { quoteDelivery } from "./pricingService";
 
 /** Roughly how much of the roster is on shift at once. */
 const ONLINE_SHARE = 0.45;
@@ -193,7 +194,11 @@ async function closeStaleOrders(tenantId: string): Promise<number> {
   const stale = await prisma.deliveryOrder.findMany({
     where: {
       tenantId,
-      status: { in: ["CREATED", "DISPATCHING", "NO_DRIVER", "ASSIGNED", "PICKED_UP"] },
+      // ARRIVED was missing (revision 24 #18): it was inserted between
+      // ASSIGNED and PICKED_UP in revision 8 and never added here, so every
+      // demo order a courier had tapped Arrived on stayed "Arrived at shop"
+      // forever, which is the 76-days-late column the client reported.
+      status: { in: ["CREATED", "DISPATCHING", "NO_DRIVER", "ASSIGNED", "ARRIVED", "PICKED_UP"] },
       createdAt: { lt: dayStart },
     },
     select: { id: true },
@@ -251,6 +256,19 @@ async function topUpJeopardy(
     const branch = pick(vendor.branches);
     if (branch.lat == null || branch.lng == null) continue;
 
+    const dropoff = {
+      lat: +(Number(branch.lat) + (Math.random() - 0.5) * 0.02).toFixed(7),
+      lng: +(Number(branch.lng) + (Math.random() - 0.5) * 0.02).toFixed(7),
+    };
+
+    // Revision 24 (#4): quote first and skip a drop the area cannot serve.
+    // This used to create the order and `continue` past a REJECTED result,
+    // which left that row behind in Needs review every time a random pin
+    // landed off the map or on an unpriced pair: a demo generator quietly
+    // filling the queue the client is asking to see empty.
+    const quote = await quoteDelivery(tenantId, { branchId: branch.id, dropoff });
+    if (!quote.ok) continue;
+
     const order = await createDeliveryOrder({
       tenantId,
       source: "PARTNER_API",
@@ -261,16 +279,25 @@ async function topUpJeopardy(
       customerName: `${pick(FIRST)} ${pick(LAST)}`,
       customerPhone: `+9659${rand(1000000, 9999999)}`,
       dropoffAddress: pick(STREETS),
-      dropoff: {
-        lat: +(Number(branch.lat) + (Math.random() - 0.5) * 0.02).toFixed(7),
-        lng: +(Number(branch.lng) + (Math.random() - 0.5) * 0.02).toFixed(7),
-      },
+      dropoff,
       externalRef: `JEOPARDY-${Date.now()}-${i}`,
       metadata: { seed: "darb2-demo", liveIssue: true },
       actor,
-    } as never);
+      refuseOutOfArea: true,
+    } as never).catch(() => null);
 
-    if (order.status === "REJECTED") continue;
+    // Belt and braces: a rejection the quote did not foresee (the shop's
+    // credit cap, a pause) is cancelled straight back out of Needs review.
+    if (!order) continue;
+    if (order.status === "REJECTED") {
+      await prisma.deliveryOrder
+        .updateMany({
+          where: { id: order.id, tenantId, status: "REJECTED" },
+          data: { status: "CANCELLED", cancelReason: "Demo order the generator could not place" },
+        })
+        .catch(() => {});
+      continue;
+    }
 
     // Assign roughly half, so the rail shows both "no driver yet" and "en
     // route and running out of time".

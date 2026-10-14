@@ -9,6 +9,9 @@
 import express from "express";
 import request from "supertest";
 
+jest.mock("../../services/staleOrderService", () => ({
+  sweepStaleOrders: jest.fn().mockResolvedValue({ dryRun: false, closed: 0, flagged: 0, skipped: 0, orders: [] }),
+}));
 jest.mock("../../services/dispatch/dispatchEngine", () => ({
   sweepDispatch: jest.fn().mockResolvedValue({
     expired: 2,

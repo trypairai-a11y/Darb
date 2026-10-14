@@ -7,6 +7,7 @@
  *             REJECTED by orderService — the transition exists for
  *             completeness)
  *   REJECTED → CREATED (supervisor PATCH /:id/dropoff re-quote re-entry)
+ *   REJECTED → CANCELLED (closed out of Needs review, revision 24 #4)
  *   DISPATCHING → NO_DRIVER (offer rounds exhausted)
  *   NO_DRIVER → DISPATCHING (redispatch) | ASSIGNED (manual assign)
  *   ASSIGNED | PICKED_UP → FAILED (driver, reason)
@@ -65,8 +66,10 @@ export class OrderStateConflictError extends Error {
 export const ALLOWED: Record<DeliveryOrderStatus, DeliveryOrderStatus[]> = {
   CREATED: ["DISPATCHING", "REJECTED", "CANCELLED"],
   // Supervisor PATCH /:id/dropoff fixes coords on a rejected order and
-  // re-enters the pipeline via CREATED.
-  REJECTED: ["CREATED"],
+  // re-enters the pipeline via CREATED. Revision 24 (#4): or ops closes it
+  // out of Needs review (CANCELLED with a reason), because an order refused
+  // weeks ago will never be delivered and had no way to leave the queue.
+  REJECTED: ["CREATED", "CANCELLED"],
   DISPATCHING: ["ASSIGNED", "NO_DRIVER", "CANCELLED"],
   NO_DRIVER: ["DISPATCHING", "ASSIGNED", "CANCELLED"],
   // Revision 8 (#3) inserted ARRIVED between accepting and collecting, so a
@@ -245,6 +248,7 @@ function describeTransition(
     case "FAILED":
       return `Delivery failed (reported by ${by})`;
     case "CANCELLED":
+      if (from === "REJECTED") return `Order closed from review (by ${by})`;
       return `Order cancelled (by ${by})`;
     case "NO_DRIVER":
       // "No driver accepted" reads as "couriers are turning this down", which

@@ -44,6 +44,7 @@ import { prisma } from "../config";
 import { refreshDemoData } from "../services/demoRefreshService";
 import { refreshDemoPresence } from "../services/demoPresenceService";
 import { runDemoCouriers } from "../services/demoCourierService";
+import { sweepStaleOrders } from "../services/staleOrderService";
 
 const router = Router();
 
@@ -292,6 +293,17 @@ router.get("/daily", async (req: Request, res: Response) => {
         }
       }
       out.netting = { statements, fleetStatements, errors, periodStart: period.start };
+    }
+
+    // Revision 24 (#18): orders nobody has touched for a day. Never-collected
+    // ones are closed (driver released, no money moves); anything that left
+    // the shop or is still looking for a driver is flagged to ops instead.
+    try {
+      const stale = await sweepStaleOrders();
+      out.staleOrders = { closed: stale.closed, flagged: stale.flagged, skipped: stale.skipped };
+    } catch (err) {
+      logger.error({ err }, "cron daily: stale order sweep failed");
+      out.staleOrders = { error: true };
     }
 
     // Demo data refresh — no-ops unless DEMO_REFRESH_ENABLED=true, so a real

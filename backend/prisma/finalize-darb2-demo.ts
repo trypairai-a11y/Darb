@@ -66,9 +66,13 @@ async function main() {
       } else {
         await cancelOrder({
           tenantId: tid, orderId: o.id,
-          reason: o.status === "NO_DRIVER"
-            ? "No driver accepted after 8 offer rounds"
-            : "Closed out by rider support (dispatch abandoned)",
+          // Revision 24 (#5): this used to write "No driver accepted after 8
+          // offer rounds" on every leftover NO_DRIVER order (DRB-SLTC-0173 was
+          // one), which read as dispatch cancelling for want of a driver. The
+          // live engine never does that, and the client's rule is that a
+          // cancellation means the shop or the customer called it off. A seed
+          // tidying its own history says exactly that and nothing more.
+          reason: "Demo history closed out by the seed cleanup",
           actor, allowFrom: [...LIVE_STATUSES],
         });
         cancelled++;

@@ -30,18 +30,29 @@ import { sweepDispatch } from "./dispatch/dispatchEngine";
 import { sweepScheduledOrders } from "./orderService";
 import { refreshDemoPresence } from "./demoPresenceService";
 import { runDemoCouriers } from "./demoCourierService";
+import { sweepStaleOrders } from "./staleOrderService";
 
 /** Shortest gap between two traffic-driven sweeps, per instance. */
 const MIN_INTERVAL_MS = 60_000;
 
+/**
+ * Revision 24 (#18): the stale-order pass rides along at most hourly. The
+ * daily cron is its real home; this only stops a deployment whose daily cron
+ * is not running from accumulating month-old orders again.
+ */
+const STALE_INTERVAL_MS = 60 * 60_000;
+
 /** Epoch ms of the last sweep this instance started. */
 let lastSweepAt = 0;
+/** Epoch ms of the last stale-order pass this instance ran. */
+let lastStaleSweepAt = 0;
 /** In-flight guard: a slow sweep must not stack behind the next request. */
 let running = false;
 
 /** Test seam — resets the debounce so cases do not leak into each other. */
 export function __resetSweepClock(): void {
   lastSweepAt = 0;
+  lastStaleSweepAt = 0;
   running = false;
 }
 
@@ -69,6 +80,14 @@ export async function maybeSweep(now: number = Date.now()): Promise<boolean> {
     // After dispatch, so an offer made on this tick keeps its pause and is
     // answered on the next one. No-op unless DEMO_AUTO_COURIER is on.
     const demoCouriers = await runDemoCouriers();
+    if (now - lastStaleSweepAt >= STALE_INTERVAL_MS) {
+      lastStaleSweepAt = now;
+      try {
+        await sweepStaleOrders();
+      } catch (err) {
+        logger.warn({ err }, "opportunistic stale-order sweep failed");
+      }
+    }
     logger.info({ ...result, demoCouriers, trigger: "traffic" }, "opportunistic dispatch sweep");
     return true;
   } catch (err) {

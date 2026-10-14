@@ -85,6 +85,12 @@ export interface Candidate {
    * when the branch is at or over its target price.
    */
   costKwd?: number;
+  /**
+   * Revision 24 (#5). Which pool the driver came from: FREE (no live order),
+   * FINISHING (revision 5's reserve tier, on the last leg of one drop) or BUSY
+   * (carrying work, offered only once no free driver is left to ask).
+   */
+  tier?: "FREE" | "FINISHING" | "BUSY";
 }
 
 /** Average courier speed used for the ETA estimate (plan §A3). */
@@ -112,7 +118,15 @@ export interface DispatchSettings {
   batchMaxDropKm: number;
   batchMaxOrders: number;
   finishingSoonMinutes: number;
+  /**
+   * Revision 24 (#5): the most live orders one driver may hold. A busy driver
+   * already at this count is never offered more; batching respects it too.
+   */
+  maxActiveOrdersPerDriver: number;
 }
+
+/** Default for FulfillmentSettings.maxActiveOrdersPerDriver. */
+export const DEFAULT_MAX_ACTIVE_ORDERS_PER_DRIVER = 3;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -149,6 +163,11 @@ async function getDispatchSettings(tenantId: string): Promise<DispatchSettings> 
     batchMaxDropKm: row?.batchMaxDropKm ?? 1.5,
     batchMaxOrders: row?.batchMaxOrders ?? 2,
     finishingSoonMinutes: row?.finishingSoonMinutes ?? 10,
+    maxActiveOrdersPerDriver: Math.max(
+      1,
+      (row as { maxActiveOrdersPerDriver?: number } | null)?.maxActiveOrdersPerDriver ??
+        DEFAULT_MAX_ACTIVE_ORDERS_PER_DRIVER,
+    ),
   };
 }
 
@@ -224,6 +243,13 @@ type SessionWithDriver = {
   };
 };
 
+/** Sort order of the candidate tiers (revision 24 #5). */
+const TIER_RANK: Record<NonNullable<Candidate["tier"]>, number> = {
+  FREE: 0,
+  FINISHING: 1,
+  BUSY: 2,
+};
+
 /** Latest session per driver (stale duplicate rows may exist). */
 function latestSessionPerDriver(sessions: SessionWithDriver[]): SessionWithDriver[] {
   const byDriver = new Map<string, SessionWithDriver>();
@@ -285,6 +311,25 @@ function latestSessionPerDriver(sessions: SessionWithDriver[]): SessionWithDrive
  * Revision 17 (Edit #4) removed the target-price sort that used to sit beside
  * it: the column is gone, and the client's two pricing models say cost must
  * never steer who delivers.
+ *
+ * Revision 24 (#5) — "if there is no driver available, it should send the
+ * order to other working drivers even if they have current orders". Two
+ * changes:
+ *
+ *   - the pool reads BUSY sessions as well as ONLINE ones. A driver carrying
+ *     an order has a BUSY session (markDriverBusy), so filter 1 used to drop
+ *     every one of them before the reserve tier above ever saw them, and the
+ *     reserve tier was in practice empty;
+ *   - a third tier, BUSY: any working driver holding fewer than
+ *     FulfillmentSettings.maxActiveOrdersPerDriver live orders, within the
+ *     same radius, ranked fewest live orders first, then nearest. It ranks
+ *     below every free and finishing driver, so it is only ever offered once
+ *     nobody free is left to ask. A driver taking a failed order back to the
+ *     shop is not offered anything: that trip ends at a counter, not a door.
+ *
+ * Nothing here can cancel an order. Exhaustion is still NO_DRIVER on a
+ * retry backoff (revision 4 #1), and cancelling stays the shop's, the
+ * customer's or a supervisor's decision.
  */
 export async function selectCandidates(
   tenantId: string,
@@ -310,7 +355,9 @@ export async function selectCandidates(
   const sessions = (await prisma.courierOnlineSession.findMany({
     where: {
       tenantId,
-      availability: "ONLINE",
+      // Revision 24 (#5): BUSY is a working driver with an order in hand, and
+      // may now be offered another once the free drivers are exhausted.
+      availability: { in: ["ONLINE", "BUSY"] },
       lastGpsAt: { gt: staleCutoff },
       lastGpsLat: { not: null },
       lastGpsLng: { not: null },
@@ -454,9 +501,11 @@ export async function selectCandidates(
   type BusyLeg = { status: string; dropoffLat: number | null; dropoffLng: number | null };
   const activeCountByDriver = new Map<string, number>();
   const legByDriver = new Map<string, BusyLeg>();
+  const returningDrivers = new Set<string>();
   for (const row of busyOrders) {
     if (!row.driverId) continue;
     activeCountByDriver.set(row.driverId, (activeCountByDriver.get(row.driverId) ?? 0) + 1);
+    if (row.status === "FAILED") returningDrivers.add(row.driverId);
     legByDriver.set(row.driverId, {
       status: row.status,
       dropoffLat: toNum(row.dropoffLat),
@@ -481,29 +530,47 @@ export async function selectCandidates(
     if (excludedByOffer.has(c.driverId)) return false;
     c.activeOrders = activeCountByDriver.get(c.driverId) ?? 0;
 
-    if (c.activeOrders === 0) return c.distanceKm <= radiusKm;
+    if (c.activeOrders === 0) {
+      c.tier = "FREE";
+      return c.distanceKm <= radiusKm;
+    }
+
+    // Carrying a failed order back to the shop: not offered anything.
+    if (returningDrivers.has(c.driverId)) return false;
+    // At the cap: however near, he cannot take one more.
+    if (c.activeOrders >= settings.maxActiveOrdersPerDriver) return false;
 
     // ── Revision 5 (#1): the reserve tier ──────────────────────────────────
-    if (settings.finishingSoonMinutes <= 0) return false;
-    // Two live orders is a batch mid-flight, not a driver about to be free.
-    if (c.activeOrders > 1) return false;
+    // One order, already collected, a few minutes from done. Measured from
+    // his drop-off, since that is where the next trip actually starts.
     const leg = legByDriver.get(c.driverId);
-    // Still to collect from the merchant: the whole delivery is ahead of him.
-    if (!leg || leg.status !== "PICKED_UP") return false;
-    if (leg.dropoffLat == null || leg.dropoffLng == null) return false;
+    if (
+      settings.finishingSoonMinutes > 0 &&
+      c.activeOrders === 1 &&
+      leg &&
+      leg.status === "PICKED_UP" &&
+      leg.dropoffLat != null &&
+      leg.dropoffLng != null
+    ) {
+      const toDropKm = haversineMeters(c.lat, c.lng, leg.dropoffLat, leg.dropoffLng) / 1000;
+      const finishingInMin = Math.ceil((toDropKm / AVG_SPEED_KMH) * 60) + HANDOVER_MIN;
+      const fromDropKm =
+        haversineMeters(pickupLat, pickupLng, leg.dropoffLat, leg.dropoffLng) / 1000;
+      if (finishingInMin <= settings.finishingSoonMinutes && fromDropKm <= radiusKm) {
+        c.tier = "FINISHING";
+        c.finishingInMin = finishingInMin;
+        c.distanceKm = fromDropKm;
+        c.etaMin = finishingInMin + Math.ceil((fromDropKm / AVG_SPEED_KMH) * 60);
+        return true;
+      }
+    }
 
-    const toDropKm = haversineMeters(c.lat, c.lng, leg.dropoffLat, leg.dropoffLng) / 1000;
-    const finishingInMin = Math.ceil((toDropKm / AVG_SPEED_KMH) * 60) + HANDOVER_MIN;
-    if (finishingInMin > settings.finishingSoonMinutes) return false;
-
-    // From his drop-off onward: that is where the next trip actually starts.
-    const fromDropKm =
-      haversineMeters(pickupLat, pickupLng, leg.dropoffLat, leg.dropoffLng) / 1000;
-    if (fromDropKm > radiusKm) return false;
-
-    c.finishingInMin = finishingInMin;
-    c.distanceKm = fromDropKm;
-    c.etaMin = finishingInMin + Math.ceil((fromDropKm / AVG_SPEED_KMH) * 60);
+    // ── Revision 24 (#5): the busy tier ────────────────────────────────────
+    // Any other working driver under the cap, measured from where he is now.
+    // Only reached once every free and finishing driver has been asked,
+    // because the sort below puts this tier last.
+    if (c.distanceKm > radiusKm) return false;
+    c.tier = "BUSY";
     return true;
   });
   if (filtered.length === 0) return [];
@@ -543,13 +610,19 @@ export async function selectCandidates(
     if (a.throttled !== b.throttled) return a.throttled ? 1 : -1;
     // Revision 5 (#1): a driver who is free beats one who is merely close to
     // being free, however near he is. The reserve tier is the answer to "there
-    // is nobody", not a way to load a courier who is still working.
-    const aBusy = a.finishingInMin > 0;
-    const bBusy = b.finishingInMin > 0;
-    if (aBusy !== bBusy) return aBusy ? 1 : -1;
-    if (aBusy) {
+    // is nobody", not a way to load a courier who is still working. Revision
+    // 24 (#5) puts the busy tier below both.
+    const aRank = TIER_RANK[a.tier ?? "FREE"];
+    const bRank = TIER_RANK[b.tier ?? "FREE"];
+    if (aRank !== bRank) return aRank - bRank;
+    if (a.tier === "FINISHING") {
       // Soonest free wins; distance to the new pickup breaks the tie.
       if (a.finishingInMin !== b.finishingInMin) return a.finishingInMin - b.finishingInMin;
+      return a.distanceKm - b.distanceKm;
+    }
+    if (a.tier === "BUSY") {
+      // Lightest load first, then the nearest.
+      if (a.activeOrders !== b.activeOrders) return a.activeOrders - b.activeOrders;
       return a.distanceKm - b.distanceKm;
     }
     if (a.distanceKm !== b.distanceKm) return a.distanceKm - b.distanceKm;
@@ -645,7 +718,9 @@ async function countOnlineCouriers(tenantId: string): Promise<number> {
   return prisma.courierOnlineSession.count({
     where: {
       tenantId,
-      availability: "ONLINE",
+      // A driver mid-delivery is on shift too (revision 24 #5): with busy
+      // drivers in the pool, "nobody online" must not count them out.
+      availability: { in: ["ONLINE", "BUSY"] },
       lastGpsAt: { gt: staleCutoff },
       lastGpsLat: { not: null },
       lastGpsLng: { not: null },
@@ -868,7 +943,11 @@ async function runDispatchRound(tenantId: string, orderId: string): Promise<void
   // drops) in its own tx — any race degrades to the single-order offer that
   // already committed above.
   let batch: { siblingOfferId: string; batchId: string } | null = null;
-  if (settings.batchingEnabled) {
+  // Revision 24 (#5): a batch hands the driver two more orders, so a busy
+  // driver only gets one if both fit under the cap with what he carries.
+  const batchFits =
+    (candidate.activeOrders ?? 0) + 2 <= settings.maxActiveOrdersPerDriver;
+  if (settings.batchingEnabled && batchFits) {
     try {
       const sibling = await findBatchSibling(tenantId, order, settings, now);
       if (sibling) {
