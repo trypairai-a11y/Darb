@@ -616,8 +616,13 @@ export async function selectCandidates(
   }
 
   filtered.sort((a, b) => {
-    // Revision 24 (#9): the shop's own private-shift driver goes first.
-    if (!!a.privateShift !== !!b.privateShift) return a.privateShift ? -1 : 1;
+    // Revision 24 (#9): the shop's own private-shift driver goes first, but
+    // only while free. "If none are available, the per-order drivers take it":
+    // a private driver already carrying an order waits in the busy tier (#5)
+    // like everybody else rather than outranking an idle courier.
+    const aPriv = !!a.privateShift && (a.tier ?? "FREE") === "FREE";
+    const bPriv = !!b.privateShift && (b.tier ?? "FREE") === "FREE";
+    if (aPriv !== bPriv) return aPriv ? -1 : 1;
     // PRD §9 discipline: throttled drivers rank after every non-throttled
     // candidate regardless of distance.
     if (a.throttled !== b.throttled) return a.throttled ? 1 : -1;

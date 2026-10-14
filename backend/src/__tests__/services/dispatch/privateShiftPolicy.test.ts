@@ -176,7 +176,9 @@ describe("selectCandidates with private shifts", () => {
       [{ driverId: "d-private", status: "ASSIGNED", dropoffLat: null, dropoffLng: null }],
     );
     const candidates = await selectCandidates(TENANT, "ord-1");
-    expect(candidates.map((c: any) => c.driverId)).toEqual(["d-b", "d-a"]);
+    // Free per-order drivers first; the busy private driver only in the busy
+    // tier (revision 24 #5), never ahead of an idle courier.
+    expect(candidates.map((c: any) => c.driverId)).toEqual(["d-b", "d-a", "d-private"]);
   });
 
   test("a failing lookup dispatches exactly as before (fails open)", async () => {
