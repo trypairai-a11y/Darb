@@ -496,11 +496,42 @@ export interface ShiftCapacityRow {
   dayOfWeek: number;
   startTime: string;
   maxDrivers: number;
+  /** Revision 24 (#3): 120, 180 or 240. The server reads a missing one as 180. */
+  durationMinutes?: number;
+}
+
+/** Revision 24 (#3): one driver's booked slots on a day, against the 12-hour duty. */
+export interface ShiftBookingsDay {
+  date: string;
+  targetMinutes: number;
+  summary: { drivers: number; fullDuty: number; short: number; bookedMinutes: number };
+  drivers: Array<{
+    driverId: string;
+    name: string;
+    driverCode: string | null;
+    phone: string | null;
+    area: string | null;
+    bookedMinutes: number;
+    slots: Array<{ id: string; start: string; end: string; durationMinutes: number; area: string }>;
+  }>;
+}
+
+/** One edit to a plan's slot. `remove` drops it; a key the plan lacks adds it. */
+export interface ShiftPlanEntryEdit {
+  zoneId: string;
+  dayOfWeek: number;
+  startTime: string;
+  approvedDrivers?: number;
+  durationMinutes?: number;
+  remove?: boolean;
 }
 
 export interface ShiftPlanning {
   hours: number;
   windows: string[];
+  /** Revision 24 (#3). */
+  slotDurations?: number[];
+  dutyHours?: number;
   zones: { id: string; code: string; name: string; nameAr: string | null }[];
   capacity: ShiftCapacityRow[];
   drivers: ShiftPlanningDriver[];
@@ -534,10 +565,10 @@ export const shiftPlanningApi = {
         ...(opts?.replaceApproved ? { replaceApproved: true } : {}),
       },
     ),
-  savePlanEntries: (
-    planId: string,
-    entries: Array<{ zoneId: string; dayOfWeek: number; startTime: string; approvedDrivers: number }>,
-  ) => put<unknown>(`/api/shift-planning/plan/${planId}/entries`, { entries }),
+  savePlanEntries: (planId: string, entries: ShiftPlanEntryEdit[]) =>
+    put<unknown>(`/api/shift-planning/plan/${planId}/entries`, { entries }),
+  // Revision 24 (#3): hours each driver has booked on a day, against 12.
+  bookings: (date: string) => get<ShiftBookingsDay>("/api/shift-planning/bookings", { date }),
   approvePlan: (planId: string, note?: string) =>
     post<{ planId: string; windows: number }>(`/api/shift-planning/plan/${planId}/approve`, { note }),
   discardPlan: (planId: string) =>

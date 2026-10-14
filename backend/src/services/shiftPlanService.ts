@@ -16,29 +16,44 @@
  * The method is deliberately simple and deliberately written down on the plan
  * itself (`basis`), because a planner who cannot see why a cell says 4 will
  * overwrite it with a guess. Demand is counted from the same weekday and the
- * same three-hour window over the trailing weeks, divided by what one driver
- * gets through in that window, and floored at the cover the zone needs to be
- * open at all.
+ * same hour over the trailing weeks, divided by what one driver gets through
+ * in an hour, and floored at the cover the zone needs to be open at all.
+ * Revision 24 (#3) turned that hourly need into 2, 3 and 4-hour slots placed
+ * on the peaks (see `layoutSlots` in services/shiftSlots.ts).
  */
 import { Prisma } from "../generated/prisma";
 import { prisma } from "../config";
-import { SHIFT_HOURS, SHIFT_WINDOW_STARTS } from "../routes/agent";
+import {
+  DEFAULT_SLOT_MINUTES,
+  DUTY_TARGET_MINUTES,
+  LEGACY_WINDOW_STARTS,
+  SLOT_DURATIONS_MINUTES,
+  coverageOf,
+  isSlotDuration,
+  isSlotStart,
+  layoutSlots,
+  needPerHour,
+  normaliseStart,
+  timeOfMinutes,
+} from "./shiftSlots";
 
 /** How many past weeks the proposal reads. Four is a month of the same weekday. */
 export const DEFAULT_LOOKBACK_WEEKS = 4;
 
 /**
- * Orders one driver completes in a three-hour window. Deliberately a constant
- * rather than a measured average: the measured number is dominated by how busy
- * the window was, so feeding it back in makes a quiet zone look efficient and
- * proposes fewer drivers for it, week after week.
+ * Orders one driver completes in an hour. Deliberately a constant rather than
+ * a measured average: the measured number is dominated by how busy the hour
+ * was, so feeding it back in makes a quiet zone look efficient and proposes
+ * fewer drivers for it, week after week. Two an hour is the six per
+ * three-hour window the planner has always used.
  */
-export const ORDERS_PER_DRIVER_PER_WINDOW = 6;
+export const ORDERS_PER_DRIVER_PER_HOUR = 2;
 
 /**
- * The floor for a zone Darb serves at all. A window whose demand rounds to
- * zero still needs somebody in it, or the zone is closed and no order ever
- * arrives to prove it should not have been.
+ * The floor for a zone Darb serves at all. An hour whose demand rounds to
+ * zero still needs somebody on, or the zone is closed and no order ever
+ * arrives to prove it should not have been. Client note of 2026-10-05: "we
+ * are trying to put enough drivers 24/7".
  */
 export const MIN_COVER = 1;
 
@@ -46,36 +61,26 @@ export const MIN_COVER = 1;
 export const MAX_COVER = 20;
 
 /**
- * Client note of 2026-10-05: "the drivers are working 12 hours per day so it
- * is not only about orders, also the available number of drivers. We are
- * trying to put enough drivers 24/7, it is managing the timing of duty."
- *
- * So the proposal is built per DUTY, not per window. A driver works one
- * 12-hour duty a day: day duty 07:00 to 19:00, night duty 19:00 to 07:00.
- * Each is four of the three-hour windows, and the night duty that starts on a
- * day runs into the next day's 01:00 and 04:00 windows. A duty is sized for
- * its busiest window and the same number holds across all four, because the
- * people on duty at 07:00 are the people still there at 18:59; sizing window
- * by window had proposed cover that rose and fell every three hours, which no
- * 12-hour roster can staff.
+ * Revision 24 (#3): a driver's duty is still 12 hours a day, but it is no
+ * longer one block. It is several 2, 3 or 4-hour slots stacked (4+4+4,
+ * 3+3+2+4 ...). The plan no longer sizes two fixed duties for their busiest
+ * window; it lays slots out against the hour-by-hour demand curve so the
+ * peaks get more drivers. 12 hours is what turns a day's driver-hours into
+ * the number of people an area needs.
  */
-export const DUTY_HOURS = 12;
+export const DUTY_HOURS = DUTY_TARGET_MINUTES / 60;
 
-export const DUTIES = [
-  { key: "DAY", starts: ["07:00", "10:00", "13:00", "16:00"], nextDay: [] as string[] },
-  { key: "NIGHT", starts: ["19:00", "22:00"], nextDay: ["01:00", "04:00"] },
-] as const;
+/** Kuwait is UTC+3 all year. */
+const KUWAIT_OFFSET_MS = 3 * 60 * 60 * 1000;
 
 /**
- * The (day, window) cells a duty starting on `day` covers. The night duty's
- * last two windows fall on the following day, and Saturday night wraps to the
- * plan's own Sunday, because the plan is a repeating weekly template.
+ * Weekday and hour of an instant in Kuwait. The driver app's slots are Kuwait
+ * times, so demand has to be bucketed in that frame: on a UTC host the server
+ * clock puts a 13:00 lunch order in the 10:00 hour.
  */
-export function dutyCells(duty: (typeof DUTIES)[number], day: number): Array<{ day: number; start: string }> {
-  return [
-    ...duty.starts.map((start) => ({ day, start })),
-    ...duty.nextDay.map((start) => ({ day: (day + 1) % 7, start })),
-  ];
+function kuwaitDayHour(at: Date): { day: number; hour: number } {
+  const k = new Date(at.getTime() + KUWAIT_OFFSET_MS);
+  return { day: k.getUTCDay(), hour: k.getUTCHours() };
 }
 
 /** Sunday 00:00 of the week containing `date`, in the server's own frame. */
@@ -86,36 +91,63 @@ export function weekStartOf(date: Date): Date {
   return d;
 }
 
-/** "13:00" → 13. */
-function hourOf(start: string): number {
-  return Number(start.slice(0, 2));
-}
-
-/**
- * Which of the eight windows an hour of the day falls in.
- *
- * The windows tile the full 24 hours starting at 01:00, so 00:xx belongs to
- * the 22:00 window that began the previous evening. Getting this wrong loses
- * an hour of demand a night, every night, which is a whole window's worth over
- * a lookback period.
- */
-function windowStartForHour(hour: number): string {
-  const starts = SHIFT_WINDOW_STARTS.map(hourOf);
-  let best = starts[starts.length - 1]!; // 22:00 covers 22, 23, 00
-  for (const s of starts) {
-    if (hour >= s && hour < s + SHIFT_HOURS) {
-      best = s;
-      break;
-    }
-  }
-  return `${String(best).padStart(2, "0")}:00`;
-}
-
 export interface GenerateResult {
   planId: string;
   weekStart: Date;
   entries: number;
   basis: Record<string, unknown>;
+}
+
+interface PlanRow {
+  zoneId: string;
+  dayOfWeek: number;
+  startTime: string;
+  durationMinutes: number;
+  proposedDrivers: number;
+  approvedDrivers: number;
+  suggestedDriverIds: string[];
+  demandOrders: number;
+}
+
+/**
+ * Suggest who could work each slot of one zone's day, stacking them into
+ * duties: a driver already suggested for the slot that ends where this one
+ * starts is offered first (that is how 4+4+4 reads as one person's day), no
+ * driver is offered two slots that overlap, and nobody is offered more than
+ * the 12-hour duty. History breaks ties. Advisory only, as before.
+ */
+function suggestForDay(
+  slots: Array<{ startHour: number; durationHours: number; count: number }>,
+  zoneDrivers: string[],
+  historyByHour: Array<Map<string, number>>,
+): string[][] {
+  const held = new Map<string, Array<[number, number]>>();
+  const minutes = new Map<string, number>();
+  return slots.map((slot) => {
+    const from = slot.startHour;
+    const to = slot.startHour + slot.durationHours;
+    const history = new Map<string, number>();
+    for (let h = from; h < to && h < 24; h++) {
+      for (const [id, n] of historyByHour[h] ?? []) history.set(id, (history.get(id) ?? 0) + n);
+    }
+    const free = zoneDrivers.filter((id) => {
+      if ((minutes.get(id) ?? 0) + slot.durationHours * 60 > DUTY_TARGET_MINUTES) return false;
+      return !(held.get(id) ?? []).some(([a, b]) => a < to && from < b);
+    });
+    const continues = (id: string) => (held.get(id) ?? []).some(([, b]) => b === from);
+    const picked = free
+      .sort(
+        (a, b) =>
+          Number(continues(b)) - Number(continues(a)) ||
+          (history.get(b) ?? 0) - (history.get(a) ?? 0),
+      )
+      .slice(0, slot.count);
+    for (const id of picked) {
+      held.set(id, [...(held.get(id) ?? []), [from, to]]);
+      minutes.set(id, (minutes.get(id) ?? 0) + slot.durationHours * 60);
+    }
+    return picked;
+  });
 }
 
 /**
@@ -135,6 +167,13 @@ export interface GenerateResult {
  * A rebuild that wrote through would be the generator moving bookable
  * capacity under drivers' feet, which is what the approval step exists to
  * prevent.
+ *
+ * Revision 24 (#3): the method. Past deliveries are counted per zone, per
+ * weekday, per HOUR (Kuwait time) over the lookback, averaged per week, and
+ * turned into drivers needed each hour. `layoutSlots` then places 2, 3 and
+ * 4-hour slots so every hour is covered and the busy hours get the extra
+ * drivers. The hour-by-hour demand and need travel on `basis` so the planning
+ * screen can draw the curve against the planned cover.
  */
 export async function generateShiftPlan(params: {
   tenantId: string;
@@ -180,25 +219,27 @@ export async function generateShiftPlan(params: {
     select: { pickupZoneId: true, deliveredAt: true, driverId: true },
   });
 
-  // zoneId|dayOfWeek|startTime -> count
-  const demand = new Map<string, number>();
-  // The same key -> which drivers actually worked it, and how often.
-  const worked = new Map<string, Map<string, number>>();
+  // zoneId -> day -> hour -> delivered orders over the lookback
+  const counts = new Map<string, number[][]>();
+  // zoneId -> day -> hour -> driver -> deliveries, for the suggestions.
+  const worked = new Map<string, Array<Array<Map<string, number>>>>();
+  const grid = <T,>(make: () => T) => Array.from({ length: 7 }, () => Array.from({ length: 24 }, make));
   for (const o of orders) {
     if (!o.pickupZoneId || !o.deliveredAt) continue;
-    const day = o.deliveredAt.getDay();
-    const win = windowStartForHour(o.deliveredAt.getHours());
-    const key = `${o.pickupZoneId}|${day}|${win}`;
-    demand.set(key, (demand.get(key) ?? 0) + 1);
+    const { day, hour } = kuwaitDayHour(o.deliveredAt);
+    const c = counts.get(o.pickupZoneId) ?? grid(() => 0);
+    c[day]![hour]! += 1;
+    counts.set(o.pickupZoneId, c);
     if (o.driverId) {
-      const byDriver = worked.get(key) ?? new Map<string, number>();
-      byDriver.set(o.driverId, (byDriver.get(o.driverId) ?? 0) + 1);
-      worked.set(key, byDriver);
+      const w = worked.get(o.pickupZoneId) ?? grid(() => new Map<string, number>());
+      const cell = w[day]![hour]!;
+      cell.set(o.driverId, (cell.get(o.driverId) ?? 0) + 1);
+      worked.set(o.pickupZoneId, w);
     }
   }
 
   // Drivers Darb has actually rostered to each zone. The suggestion list is
-  // drawn from these first: a driver assigned to Salmiya is who Salmiya can be
+  // drawn from these: a driver assigned to Salmiya is who Salmiya can be
   // staffed with, whatever the history says about a shift they covered once.
   const drivers = await prisma.driver.findMany({
     where: { tenantId, status: "ACTIVE", assignedZoneId: { not: null } },
@@ -211,72 +252,64 @@ export async function generateShiftPlan(params: {
     byZone.set(d.assignedZoneId!, list);
   }
 
+  // Per-week averages and the drivers they call for, kept on the plan so the
+  // screen can draw demand against cover without re-reading the orders.
+  const demandByHour: Record<string, number[][]> = {};
+  const needByHour: Record<string, number[][]> = {};
+  const rows: PlanRow[] = [];
+  for (const zone of zones) {
+    const zoneCounts = counts.get(zone.id) ?? grid(() => 0);
+    const zoneWorked = worked.get(zone.id) ?? grid(() => new Map<string, number>());
+    demandByHour[zone.id] = [];
+    needByHour[zone.id] = [];
+    for (let day = 0; day < 7; day++) {
+      const avg = zoneCounts[day]!.map((n) => Math.round((n / lookbackWeeks) * 10) / 10);
+      const need = needPerHour(
+        zoneCounts[day]!.map((n) => n / lookbackWeeks),
+        ORDERS_PER_DRIVER_PER_HOUR,
+        MIN_COVER,
+        MAX_COVER,
+      );
+      demandByHour[zone.id]!.push(avg);
+      needByHour[zone.id]!.push(need);
+
+      const slots = layoutSlots(need);
+      const suggestions = suggestForDay(slots, byZone.get(zone.id) ?? [], zoneWorked[day]!);
+      slots.forEach((slot, i) => {
+        let demandOrders = 0;
+        for (let h = slot.startHour; h < slot.startHour + slot.durationHours && h < 24; h++) {
+          demandOrders += zoneCounts[day]![h]!;
+        }
+        rows.push({
+          zoneId: zone.id,
+          dayOfWeek: day,
+          startTime: timeOfMinutes(slot.startHour * 60),
+          durationMinutes: slot.durationHours * 60,
+          proposedDrivers: slot.count,
+          approvedDrivers: slot.count,
+          suggestedDriverIds: suggestions[i] ?? [],
+          demandOrders,
+        });
+      });
+    }
+  }
+
   const basis = {
     lookbackWeeks,
     ordersSampled: orders.length,
     driversAvailable: drivers.length,
     zones: zones.length,
-    ordersPerDriverPerWindow: ORDERS_PER_DRIVER_PER_WINDOW,
+    ordersPerDriverPerHour: ORDERS_PER_DRIVER_PER_HOUR,
+    minCover: MIN_COVER,
+    maxCover: MAX_COVER,
     dutyHours: DUTY_HOURS,
+    slotHours: SLOT_DURATIONS_MINUTES.map((m) => m / 60),
     method:
-      "two 12-hour duties a day (07:00 to 19:00 and 19:00 to 07:00), every area covered around the clock, each duty sized for its busiest window over the trailing weeks",
+      "2, 3 and 4-hour slots laid against the hourly demand of the same weekday over the trailing weeks, so the busy hours get more drivers; every area covered around the clock",
+    demandByHour,
+    needByHour,
     generatedAt: new Date().toISOString(),
   };
-
-  const rows: Array<{
-    zoneId: string;
-    dayOfWeek: number;
-    startTime: string;
-    proposedDrivers: number;
-    approvedDrivers: number;
-    suggestedDriverIds: string[];
-    demandOrders: number;
-  }> = [];
-  for (const zone of zones) {
-    const zoneDrivers = byZone.get(zone.id) ?? [];
-    for (let day = 0; day < 7; day++) {
-      // One duty a day per driver: whoever is suggested for the day duty is
-      // offered for the night only once nobody else in the area is left.
-      const onDayDuty = new Set<string>();
-      for (const duty of DUTIES) {
-        const cells = dutyCells(duty, day);
-        const needs = cells.map(({ day: d, start }) => {
-          const perWeek = (demand.get(`${zone.id}|${d}|${start}`) ?? 0) / lookbackWeeks;
-          return Math.ceil(perWeek / ORDERS_PER_DRIVER_PER_WINDOW);
-        });
-        const proposed = Math.min(MAX_COVER, Math.max(MIN_COVER, ...needs));
-
-        // Rank the area's own drivers by how often they have worked any of
-        // this duty's windows, and keep the same people for all twelve hours.
-        const history = new Map<string, number>();
-        for (const { day: d, start } of cells) {
-          for (const [id, n] of worked.get(`${zone.id}|${d}|${start}`) ?? []) {
-            history.set(id, (history.get(id) ?? 0) + n);
-          }
-        }
-        const suggested = [...zoneDrivers]
-          .sort(
-            (a, b) =>
-              Number(onDayDuty.has(a)) - Number(onDayDuty.has(b)) ||
-              (history.get(b) ?? 0) - (history.get(a) ?? 0),
-          )
-          .slice(0, proposed);
-        if (duty.key === "DAY") suggested.forEach((id) => onDayDuty.add(id));
-
-        for (const { day: d, start } of cells) {
-          rows.push({
-            zoneId: zone.id,
-            dayOfWeek: d,
-            startTime: start,
-            proposedDrivers: proposed,
-            approvedDrivers: proposed,
-            suggestedDriverIds: suggested,
-            demandOrders: demand.get(`${zone.id}|${d}|${start}`) ?? 0,
-          });
-        }
-      }
-    }
-  }
 
   const plan = await prisma.$transaction(async (tx) => {
     if (existing) {
@@ -302,6 +335,19 @@ export async function generateShiftPlan(params: {
   });
 
   return { planId: plan.id, weekStart, entries: rows.length, basis };
+}
+
+/** Drivers on each hour of one zone/day, from a plan's (or the grid's) slots. */
+export function plannedCoverage(
+  entries: Array<{ startTime: string; durationMinutes?: number | null; approvedDrivers: number }>,
+): number[] {
+  return coverageOf(
+    entries.map((e) => ({
+      startHour: Number(e.startTime.slice(0, 2)),
+      durationHours: Math.round((e.durationMinutes ?? DEFAULT_SLOT_MINUTES) / 60),
+      count: e.approvedDrivers,
+    })),
+  );
 }
 
 /** One plan with its grid, the zones it covers and the drivers it names. */
@@ -356,10 +402,11 @@ export async function getShiftPlan(tenantId: string, weekStart: Date) {
     zones,
     drivers,
     availability,
-    windows: [...SHIFT_WINDOW_STARTS],
-    hours: SHIFT_HOURS,
+    windows: [...LEGACY_WINDOW_STARTS],
+    hours: DEFAULT_SLOT_MINUTES / 60,
     dutyHours: DUTY_HOURS,
-    duties: DUTIES.map((d) => ({ key: d.key, starts: [...d.starts], nextDay: [...d.nextDay] })),
+    // Revision 24 (#3): the lengths a slot may be, for the add-a-slot control.
+    slotDurations: [...SLOT_DURATIONS_MINUTES],
   };
 }
 
@@ -385,8 +432,12 @@ export async function updateShiftPlanEntries(params: {
     zoneId: string;
     dayOfWeek: number;
     startTime: string;
-    approvedDrivers: number;
+    approvedDrivers?: number;
     suggestedDriverIds?: string[];
+    /** Revision 24 (#3): change a slot's length, or give a new slot one. */
+    durationMinutes?: number;
+    /** Revision 24 (#3): take the slot out of the plan altogether. */
+    remove?: boolean;
   }>;
 }) {
   const plan = await prisma.shiftPlan.findFirst({
@@ -398,28 +449,63 @@ export async function updateShiftPlanEntries(params: {
     throw Object.assign(new Error("A discarded plan cannot be edited"), { statusCode: 409 });
   }
 
-  for (const e of params.entries) {
-    const n = Math.trunc(e.approvedDrivers);
-    if (!Number.isFinite(n) || n < 0 || n > MAX_COVER) {
-      throw Object.assign(new Error(`A window takes 0 to ${MAX_COVER} drivers`), { statusCode: 400 });
+  const clean = params.entries.map((e) => {
+    const startTime = normaliseStart(String(e.startTime ?? ""));
+    if (!startTime || !isSlotStart(startTime)) {
+      throw Object.assign(new Error("A slot starts on the hour, as HH:00"), { statusCode: 400 });
     }
-  }
+    const dayOfWeek = Math.trunc(Number(e.dayOfWeek));
+    if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) {
+      throw Object.assign(new Error("dayOfWeek is 0 (Sunday) to 6"), { statusCode: 400 });
+    }
+    if (e.durationMinutes !== undefined && !isSlotDuration(e.durationMinutes)) {
+      throw Object.assign(new Error("A slot is 2, 3 or 4 hours"), { statusCode: 400 });
+    }
+    let approved: number | undefined;
+    if (!e.remove && e.approvedDrivers !== undefined) {
+      approved = Math.trunc(Number(e.approvedDrivers));
+      if (!Number.isFinite(approved) || approved < 0 || approved > MAX_COVER) {
+        throw Object.assign(new Error(`A slot takes 0 to ${MAX_COVER} drivers`), { statusCode: 400 });
+      }
+    }
+    return { ...e, startTime, dayOfWeek, approved };
+  });
 
   await prisma.$transaction(async (tx) => {
-    for (const e of params.entries) {
-      await tx.shiftPlanEntry.updateMany({
-        where: {
-          tenantId: params.tenantId,
-          planId: params.planId,
-          zoneId: e.zoneId,
-          dayOfWeek: e.dayOfWeek,
-          startTime: e.startTime,
-        },
+    for (const e of clean) {
+      const where = {
+        tenantId: params.tenantId,
+        planId: params.planId,
+        zoneId: e.zoneId,
+        dayOfWeek: e.dayOfWeek,
+        startTime: e.startTime,
+      };
+      if (e.remove) {
+        await tx.shiftPlanEntry.deleteMany({ where });
+        continue;
+      }
+      const updated = await tx.shiftPlanEntry.updateMany({
+        where,
         data: {
-          approvedDrivers: Math.trunc(e.approvedDrivers),
+          ...(e.approved !== undefined ? { approvedDrivers: e.approved } : {}),
+          ...(e.durationMinutes !== undefined ? { durationMinutes: Number(e.durationMinutes) } : {}),
           ...(e.suggestedDriverIds ? { suggestedDriverIds: e.suggestedDriverIds } : {}),
         },
       });
+      // A slot the planner added by hand. The machine proposed nothing for
+      // it, and proposedDrivers 0 says so on screen.
+      if (updated.count === 0) {
+        await tx.shiftPlanEntry.create({
+          data: {
+            ...where,
+            durationMinutes: e.durationMinutes !== undefined ? Number(e.durationMinutes) : DEFAULT_SLOT_MINUTES,
+            proposedDrivers: 0,
+            approvedDrivers: e.approved ?? 0,
+            suggestedDriverIds: e.suggestedDriverIds ?? [],
+            demandOrders: 0,
+          },
+        });
+      }
     }
     // An amended approved week lands on the driver app at once, or the
     // planner has changed a number nobody books against.
@@ -442,7 +528,7 @@ async function writeCapacityFromPlan(
 ): Promise<number> {
   const entries = await tx.shiftPlanEntry.findMany({
     where: { tenantId, planId },
-    select: { zoneId: true, dayOfWeek: true, startTime: true, approvedDrivers: true },
+    select: { zoneId: true, dayOfWeek: true, startTime: true, approvedDrivers: true, durationMinutes: true },
   });
 
   await tx.shiftCapacity.deleteMany({ where: { tenantId } });
@@ -453,6 +539,9 @@ async function writeCapacityFromPlan(
         zoneId: e.zoneId,
         dayOfWeek: e.dayOfWeek,
         startTime: e.startTime,
+        // Revision 24 (#3): the slot's length travels with its cap. An entry
+        // from before slots came in has none and is the 3h window it was.
+        durationMinutes: e.durationMinutes ?? DEFAULT_SLOT_MINUTES,
         maxDrivers: e.approvedDrivers,
       })),
     });

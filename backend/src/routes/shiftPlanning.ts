@@ -22,6 +22,15 @@ import { tenantScope } from "../middleware/tenantScope";
 import { rbac } from "../middleware/rbac";
 import { SHIFT_HOURS, SHIFT_WINDOW_STARTS } from "./agent";
 import {
+  DEFAULT_SLOT_MINUTES,
+  DUTY_TARGET_MINUTES,
+  SLOT_DURATIONS_MINUTES,
+  isSlotDuration,
+  isSlotStart,
+  minutesBetween,
+  normaliseStart,
+} from "../services/shiftSlots";
+import {
   approveShiftPlan,
   discardShiftPlan,
   generateShiftPlan,
@@ -55,7 +64,7 @@ router.get("/", async (req: Request, res: Response) => {
       }),
       prisma.shiftCapacity.findMany({
         where: { tenantId },
-        select: { zoneId: true, dayOfWeek: true, startTime: true, maxDrivers: true },
+        select: { zoneId: true, dayOfWeek: true, startTime: true, maxDrivers: true, durationMinutes: true },
       }),
       // Terminated drivers are left out: they cannot book anything, and a
       // roster screen that lists them is a roster screen nobody trusts.
@@ -78,6 +87,9 @@ router.get("/", async (req: Request, res: Response) => {
     res.json({
       hours: SHIFT_HOURS,
       windows: SHIFT_WINDOW_STARTS,
+      // Revision 24 (#3): the lengths a slot may be, and the duty they stack to.
+      slotDurations: SLOT_DURATIONS_MINUTES,
+      dutyHours: DUTY_TARGET_MINUTES / 60,
       zones,
       capacity,
       drivers,
@@ -106,24 +118,31 @@ router.put("/capacity", rbac(...PLANNERS), async (req: Request, res: Response) =
       select: { id: true },
     });
     const zoneIds = new Set(zones.map((z) => z.id));
-    const windows = new Set<string>(SHIFT_WINDOW_STARTS);
 
     const clean: {
       tenantId: string;
       zoneId: string;
       dayOfWeek: number;
       startTime: string;
+      durationMinutes: number;
       maxDrivers: number;
     }[] = [];
     const seen = new Set<string>();
     for (const row of rows) {
       const zoneId = String(row?.zoneId ?? "");
-      const startTime = String(row?.startTime ?? "");
+      const startTime = normaliseStart(String(row?.startTime ?? ""));
       const dayOfWeek = Number(row?.dayOfWeek);
-      // A zone from another tenant, a window that is not one of ours, or a day
-      // outside 0-6 is dropped rather than saved: the grid is generated from
-      // this server's own lists, so anything else arrived by hand.
-      if (!zoneIds.has(zoneId) || !windows.has(startTime)) continue;
+      // Revision 24 (#3): a row is a slot, any hour plus a 2, 3 or 4-hour
+      // length. A row with no length is the three-hour window an older
+      // screen meant. A zone from another tenant, a start off the hour, a
+      // length that is not a slot, or a day outside 0-6 is dropped rather
+      // than saved: anything else arrived by hand.
+      const durationMinutes =
+        row?.durationMinutes === undefined || row?.durationMinutes === null
+          ? DEFAULT_SLOT_MINUTES
+          : Number(row.durationMinutes);
+      if (!zoneIds.has(zoneId) || !startTime || !isSlotStart(startTime)) continue;
+      if (!isSlotDuration(durationMinutes)) continue;
       if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) continue;
       const max = Number(row?.maxDrivers);
       if (!Number.isFinite(max) || max < 0) continue;
@@ -132,7 +151,7 @@ router.put("/capacity", rbac(...PLANNERS), async (req: Request, res: Response) =
       const key = `${zoneId}|${dayOfWeek}|${startTime}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      clean.push({ tenantId, zoneId, dayOfWeek, startTime, maxDrivers: Math.floor(max) });
+      clean.push({ tenantId, zoneId, dayOfWeek, startTime, durationMinutes, maxDrivers: Math.floor(max) });
     }
 
     await prisma.$transaction([
@@ -181,6 +200,86 @@ router.patch("/drivers/:id/zone", rbac(...PLANNERS), async (req: Request, res: R
   }
 });
 
+/**
+ * Revision 24 (#3) — who has booked what on one day, against the 12-hour duty.
+ *
+ * A duty is several 2, 3 or 4-hour slots now, and the client's reading is
+ * that a driver should reach 12 hours. Booking does not refuse a partial day
+ * (that would only teach drivers to book hours they will not work), so the
+ * gap has to be visible somewhere: this is the list ops reads it from, short
+ * days first. `?date=YYYY-MM-DD` is a Kuwait calendar day; today by default.
+ */
+router.get("/bookings", async (req: Request, res: Response) => {
+  try {
+    const tenantId = req.user!.tenantId;
+    const raw = typeof req.query.date === "string" ? req.query.date : "";
+    const iso = /^\d{4}-\d{2}-\d{2}$/.test(raw)
+      ? raw
+      : new Date(Date.now() + 3 * 3_600_000).toISOString().slice(0, 10);
+    const [y, m, d] = iso.split("-").map(Number);
+    // Kuwait midnight as stored on ShiftRequest.date (routes/agent.ts).
+    const day = new Date(Date.UTC(y!, m! - 1, d!) - 3 * 3_600_000);
+
+    const rows = await prisma.shiftRequest.findMany({
+      where: { tenantId, date: day, status: { in: ["PENDING", "APPROVED"] } },
+      select: {
+        id: true,
+        driverId: true,
+        startTime: true,
+        endTime: true,
+        zoneName: true,
+        status: true,
+        driver: { select: { name: true, driverCode: true, phone: true } },
+      },
+      orderBy: { startTime: "asc" },
+    });
+
+    const byDriver = new Map<
+      string,
+      {
+        driverId: string;
+        name: string;
+        driverCode: string | null;
+        phone: string | null;
+        area: string | null;
+        bookedMinutes: number;
+        slots: Array<{ id: string; start: string; end: string; durationMinutes: number; area: string }>;
+      }
+    >();
+    for (const r of rows) {
+      const minutes = minutesBetween(r.startTime, r.endTime);
+      const entry = byDriver.get(r.driverId) ?? {
+        driverId: r.driverId,
+        name: r.driver?.name ?? "n/a",
+        driverCode: r.driver?.driverCode ?? null,
+        phone: r.driver?.phone ?? null,
+        area: r.zoneName,
+        bookedMinutes: 0,
+        slots: [],
+      };
+      entry.bookedMinutes += minutes;
+      entry.slots.push({ id: r.id, start: r.startTime, end: r.endTime, durationMinutes: minutes, area: r.zoneName });
+      byDriver.set(r.driverId, entry);
+    }
+    const drivers = [...byDriver.values()].sort(
+      (a, b) => a.bookedMinutes - b.bookedMinutes || a.name.localeCompare(b.name),
+    );
+
+    res.json({
+      date: iso,
+      targetMinutes: DUTY_TARGET_MINUTES,
+      summary: {
+        drivers: drivers.length,
+        fullDuty: drivers.filter((x) => x.bookedMinutes >= DUTY_TARGET_MINUTES).length,
+        short: drivers.filter((x) => x.bookedMinutes < DUTY_TARGET_MINUTES).length,
+        bookedMinutes: drivers.reduce((sum, x) => sum + x.bookedMinutes, 0),
+      },
+      drivers,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // ══════════════════════════════════════════════════════════════════════════
 // Revision 20 — the proposed weekly plan.

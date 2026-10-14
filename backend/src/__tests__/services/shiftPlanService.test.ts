@@ -103,9 +103,11 @@ describe("approveShiftPlan", () => {
         });
         const written = prisma.shiftCapacity.createMany.mock.calls[0][0].data;
         expect(written).toEqual([
-          { tenantId: "t1", zoneId: "z1", dayOfWeek: 0, startTime: "10:00", maxDrivers: 5 },
+          // An entry from before revision 24 carries no length and lands as
+          // the three-hour window it always was.
+          { tenantId: "t1", zoneId: "z1", dayOfWeek: 0, startTime: "10:00", durationMinutes: 180, maxDrivers: 5 },
           // 0 is a real answer and closes the window; it is not dropped.
-          { tenantId: "t1", zoneId: "z1", dayOfWeek: 0, startTime: "13:00", maxDrivers: 0 },
+          { tenantId: "t1", zoneId: "z1", dayOfWeek: 0, startTime: "13:00", durationMinutes: 180, maxDrivers: 0 },
         ]);
       },
     );
@@ -152,7 +154,7 @@ describe("updateShiftPlanEntries", () => {
     expect(prisma.shiftPlanEntry.updateMany).toHaveBeenCalledTimes(1);
     expect(prisma.shiftCapacity.deleteMany).toHaveBeenCalledWith({ where: { tenantId: "t1" } });
     expect(prisma.shiftCapacity.createMany.mock.calls[0][0].data).toEqual([
-      { tenantId: "t1", zoneId: "z1", dayOfWeek: 0, startTime: "10:00", maxDrivers: 2 },
+      { tenantId: "t1", zoneId: "z1", dayOfWeek: 0, startTime: "10:00", durationMinutes: 180, maxDrivers: 2 },
     ]);
   });
 
@@ -236,20 +238,22 @@ describe("generateShiftPlan on an approved week", () => {
         data: expect.objectContaining({ status: "DRAFT", approvedAt: null, approvedById: null }),
       }),
     );
-    // The proposal is replaced wholesale, one zone times seven days times eight windows.
+    // The proposal is replaced wholesale. With no history every hour needs
+    // the floor of one driver, which tiles as six four-hour slots a day.
     expect(prisma.shiftPlanEntry.deleteMany).toHaveBeenCalledWith({ where: { planId: "p1" } });
-    expect(prisma.shiftPlanEntry.createMany.mock.calls[0][0].data).toHaveLength(56);
+    expect(prisma.shiftPlanEntry.createMany.mock.calls[0][0].data).toHaveLength(42);
     // Drivers keep booking against the last approved grid until the new draft is approved.
     expect(prisma.shiftCapacity.deleteMany).not.toHaveBeenCalled();
     expect(prisma.shiftCapacity.createMany).not.toHaveBeenCalled();
   });
 });
 
-describe("generateShiftPlan in 12-hour duties", () => {
-  // Client note of 2026-10-05: "the drivers are working 12 hours per day ...
-  // we are trying to put enough drivers 24/7, it is managing the timing of
-  // duty". The proposal used to size every three-hour window on its own, so
-  // cover rose and fell all day and no 12-hour roster could staff it.
+describe("generateShiftPlan in 2, 3 and 4-hour slots aimed at the peaks", () => {
+  // Revision 24 (#3): "Shifts must be either 2, 3, or 4-hour slots ... the
+  // system should optimize the shifts to handle the peak hours, so more
+  // drivers would be online at these times." The proposal used to size two
+  // fixed 12-hour duties for their busiest window, which put the same number
+  // of drivers on at 04:00 as at the lunch peak.
   beforeEach(() => {
     resetAllMocks();
     attachPlanDelegates();
@@ -257,65 +261,151 @@ describe("generateShiftPlan in 12-hour duties", () => {
     prisma.shiftPlan.findFirst.mockResolvedValue(null);
     (prisma as any).shiftPlan.create = jest.fn().mockResolvedValue({ id: "p2", status: "DRAFT" });
     prisma.deliveryZone.findMany.mockResolvedValue([{ id: "z1", code: "Z1", name: "Zone" }]);
-    // 48 deliveries in the Sunday 10:00 window over four weeks: 12 a week,
-    // two drivers' worth at six an hour-window.
-    prisma.deliveryOrder.findMany.mockResolvedValue(
-      Array.from({ length: 48 }, (_, i) => ({
-        pickupZoneId: "z1",
-        deliveredAt: new Date("2026-09-13T11:00:00"),
-        driverId: i % 2 === 0 ? "d-a" : "d-b",
+    // Sunday lunch in Kuwait, 12:00 to 14:59, over four weeks: 64 orders an
+    // hour-week across three hours, i.e. 16 a week each hour, eight drivers'
+    // worth at two an hour. Stamped in +03:00 so the test means the same thing
+    // on any machine.
+    const lunch: any[] = [];
+    for (const hour of ["12", "13", "14"]) {
+      for (let i = 0; i < 64; i++) {
+        lunch.push({
+          pickupZoneId: "z1",
+          deliveredAt: new Date(`2026-09-13T${hour}:15:00+03:00`),
+          driverId: ["d-a", "d-b", "d-c"][i % 3],
+        });
+      }
+    }
+    prisma.deliveryOrder.findMany.mockResolvedValue(lunch);
+    prisma.driver.findMany.mockResolvedValue(
+      ["d-a", "d-b", "d-c", "d-d", "d-e", "d-f", "d-g", "d-h", "d-i", "d-j"].map((id) => ({
+        id,
+        assignedZoneId: "z1",
       })),
     );
-    prisma.driver.findMany.mockResolvedValue([
-      { id: "d-a", assignedZoneId: "z1" },
-      { id: "d-b", assignedZoneId: "z1" },
-      { id: "d-c", assignedZoneId: "z1" },
-    ]);
-    prisma.shiftPlanEntry.createMany.mockResolvedValue({ count: 56 });
+    prisma.shiftPlanEntry.createMany.mockResolvedValue({ count: 1 });
   });
 
-  async function rows() {
-    await generateShiftPlan({ tenantId: "t1", weekStart: new Date("2026-09-20T00:00:00") });
-    return (prisma as any).shiftPlanEntry.createMany.mock.calls[0][0].data as Array<{
-      dayOfWeek: number;
-      startTime: string;
-      proposedDrivers: number;
-      suggestedDriverIds: string[];
-    }>;
+  type Row = {
+    dayOfWeek: number;
+    startTime: string;
+    durationMinutes: number;
+    proposedDrivers: number;
+    approvedDrivers: number;
+    suggestedDriverIds: string[];
+  };
+  async function generate() {
+    const result = await generateShiftPlan({ tenantId: "t1", weekStart: new Date("2026-09-20T00:00:00") });
+    const data = (prisma as any).shiftPlanEntry.createMany.mock.calls[0][0].data as Row[];
+    return { data, basis: result.basis as any };
+  }
+  function cover(rows: Row[], day: number): number[] {
+    const out = Array.from({ length: 24 }, () => 0);
+    for (const r of rows.filter((x) => x.dayOfWeek === day)) {
+      const h = Number(r.startTime.slice(0, 2));
+      for (let j = h; j < h + r.durationMinutes / 60 && j < 24; j++) out[j] += r.proposedDrivers;
+    }
+    return out;
   }
 
-  it("holds the busiest window's cover across the whole day duty", async () => {
-    const data = await rows();
-    const sundayDay = data.filter(
-      (r) => r.dayOfWeek === 0 && ["07:00", "10:00", "13:00", "16:00"].includes(r.startTime),
-    );
-    expect(sundayDay.map((r) => r.proposedDrivers)).toEqual([2, 2, 2, 2]);
+  it("only ever proposes 2, 3 or 4-hour slots, starting on the hour", async () => {
+    const { data } = await generate();
+    expect(data.length).toBeGreaterThan(0);
+    expect(data.every((r) => [120, 180, 240].includes(r.durationMinutes))).toBe(true);
+    expect(data.every((r) => /^\d{2}:00$/.test(r.startTime))).toBe(true);
   });
 
-  it("covers every window of every day exactly once, so the area is never dark", async () => {
-    const data = await rows();
-    expect(data).toHaveLength(56);
-    expect(new Set(data.map((r) => `${r.dayOfWeek}|${r.startTime}`)).size).toBe(56);
-    expect(data.every((r) => r.proposedDrivers >= 1)).toBe(true);
+  it("puts more drivers on at the lunch peak than in the small hours", async () => {
+    const { data } = await generate();
+    const sunday = cover(data, 0);
+    expect(sunday[13]).toBeGreaterThanOrEqual(8);
+    expect(sunday[4]).toBe(1);
+    // Not the same number spread over the day: the peak is staffed on its own.
+    expect(sunday[13]).toBeGreaterThan(sunday[9]!);
+    expect(sunday[13]).toBeGreaterThan(sunday[17]!);
   });
 
-  it("runs Sunday's night duty into Monday's 01:00 and 04:00 windows", async () => {
-    const data = await rows();
-    const sundayNight = data.filter(
-      (r) =>
-        (r.dayOfWeek === 0 && ["19:00", "22:00"].includes(r.startTime)) ||
-        (r.dayOfWeek === 1 && ["01:00", "04:00"].includes(r.startTime)),
-    );
-    expect(sundayNight).toHaveLength(4);
-    const ids = new Set(sundayNight.map((r) => r.suggestedDriverIds.join(",")));
-    expect(ids.size).toBe(1);
+  it("covers every hour of every day, so no area is ever dark", async () => {
+    const { data } = await generate();
+    for (let day = 0; day < 7; day++) {
+      expect(cover(data, day).every((n) => n >= 1)).toBe(true);
+    }
   });
 
-  it("does not suggest the same driver for both duties of a day while someone else is free", async () => {
-    const data = await rows();
-    const day = data.find((r) => r.dayOfWeek === 0 && r.startTime === "07:00")!;
-    const night = data.find((r) => r.dayOfWeek === 0 && r.startTime === "19:00")!;
-    expect(day.suggestedDriverIds).toEqual(["d-a", "d-b"]);
-    expect(night.suggestedDriverIds).toEqual(["d-c"]);
+  it("buckets demand in Kuwait time and keeps the curve on the plan for the screen", async () => {
+    const { basis } = await generate();
+    expect(basis.demandByHour.z1[0][13]).toBe(16);
+    expect(basis.needByHour.z1[0][13]).toBe(8);
+    expect(basis.needByHour.z1[0][4]).toBe(1);
+    expect(basis.ordersPerDriverPerHour).toBe(2);
+  });
+
+  it("suggests drivers as stacked duties: no overlaps and nobody past 12 hours", async () => {
+    const { data } = await generate();
+    const sunday = data.filter((r) => r.dayOfWeek === 0);
+    const byDriver = new Map<string, Array<[number, number]>>();
+    for (const r of sunday) {
+      const h = Number(r.startTime.slice(0, 2));
+      for (const id of r.suggestedDriverIds) {
+        byDriver.set(id, [...(byDriver.get(id) ?? []), [h, h + r.durationMinutes / 60]]);
+      }
+    }
+    for (const spans of byDriver.values()) {
+      const hours = spans.reduce((sum, [a, b]) => sum + (b - a), 0);
+      expect(hours).toBeLessThanOrEqual(12);
+      const sorted = [...spans].sort((x, y) => x[0] - y[0]);
+      for (let i = 1; i < sorted.length; i++) expect(sorted[i]![0]).toBeGreaterThanOrEqual(sorted[i - 1]![1]);
+    }
+  });
+});
+
+describe("updateShiftPlanEntries with slots", () => {
+  beforeEach(() => {
+    resetAllMocks();
+    attachPlanDelegates();
+    (prisma as any).shiftPlanEntry.create = jest.fn().mockResolvedValue({});
+    prisma.$transaction.mockImplementation(async (fn: any) => fn(prisma));
+    prisma.shiftPlan.findFirst.mockResolvedValue({ id: "p1", status: "DRAFT" });
+  });
+
+  it("adds a slot the planner typed in, with nothing proposed for it", async () => {
+    prisma.shiftPlanEntry.updateMany.mockResolvedValue({ count: 0 });
+    await updateShiftPlanEntries({
+      tenantId: "t1",
+      planId: "p1",
+      entries: [{ zoneId: "z1", dayOfWeek: 5, startTime: "18:00", durationMinutes: 120, approvedDrivers: 3 }],
+    });
+    expect((prisma as any).shiftPlanEntry.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        zoneId: "z1",
+        dayOfWeek: 5,
+        startTime: "18:00",
+        durationMinutes: 120,
+        proposedDrivers: 0,
+        approvedDrivers: 3,
+      }),
+    });
+  });
+
+  it("removes a slot outright rather than leaving a zero behind", async () => {
+    prisma.shiftPlanEntry.deleteMany.mockResolvedValue({ count: 1 });
+    await updateShiftPlanEntries({
+      tenantId: "t1",
+      planId: "p1",
+      entries: [{ zoneId: "z1", dayOfWeek: 5, startTime: "18:00", remove: true }],
+    });
+    expect(prisma.shiftPlanEntry.deleteMany).toHaveBeenCalledWith({
+      where: expect.objectContaining({ zoneId: "z1", dayOfWeek: 5, startTime: "18:00" }),
+    });
+    expect(prisma.shiftPlanEntry.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("refuses a slot length that is not 2, 3 or 4 hours", async () => {
+    await expect(
+      updateShiftPlanEntries({
+        tenantId: "t1",
+        planId: "p1",
+        entries: [{ zoneId: "z1", dayOfWeek: 5, startTime: "18:00", durationMinutes: 300, approvedDrivers: 1 }],
+      }),
+    ).rejects.toMatchObject({ statusCode: 400 });
   });
 });

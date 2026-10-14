@@ -86,13 +86,6 @@ function formatDuration(minutes: number): string {
   return `${h}h ${m}m`;
 }
 
-/** "10:00" plus three hours, wrapping so a 22:00 window reads 22:00-01:00. */
-function windowLabel(start: string, hours: number): string {
-  const [h, m] = start.split(":").map(Number);
-  const end = `${String((h + hours) % 24).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-  return `${start}-${end}`;
-}
-
 // ── Today: the live table, unchanged ────────────────────────────────────────
 
 function TodayPanel() {
@@ -214,11 +207,128 @@ function TodayPanel() {
           </table>
         </div>
       </div>
+
+      <DutyBookings date={date} />
     </div>
   );
 }
 
-// ── Coverage: how many drivers each area takes in each window ───────────────
+/**
+ * Revision 24 (#3): a driver's 12-hour duty is several 2, 3 or 4-hour slots
+ * now, and booking does not refuse a partial day. This is where ops sees who
+ * has booked their full 12 hours for the day and who is short.
+ */
+function DutyBookings({ date }: { date: string }) {
+  const { t, locale } = useI18n();
+  const query = useQuery({
+    queryKey: ["darb", "shift-bookings", date],
+    queryFn: () => shiftPlanningApi.bookings(date),
+  });
+  const data = query.data;
+  const target = data?.targetMinutes ?? 720;
+  const hours = (m: number) => formatNumber(Math.round((m / 60) * 10) / 10, locale);
+
+  return (
+    <div className="bg-card border border-sand-200 dark:border-border rounded-2xl shadow-soft overflow-hidden" data-testid="shift-duty-bookings">
+      <div className="px-5 py-4 border-b border-sand-200 dark:border-border">
+        <h2 className="text-sm font-medium text-sand-900 dark:text-foreground">{t("shiftSlots.bookingsTitle")}</h2>
+        <p className="text-xs text-sand-600 mt-1">{t("shiftSlots.bookingsHint")}</p>
+        {data && data.drivers.length > 0 && (
+          <p className="text-xs text-sand-700 mt-1 tabular-nums">
+            {t("shiftSlots.bookingsSummary")
+              .replace("{n}", formatNumber(data.summary.drivers, locale))
+              .replace("{full}", formatNumber(data.summary.fullDuty, locale))}
+          </p>
+        )}
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-sand-200 dark:border-border text-start text-[11px] uppercase tracking-[0.12em] text-sand-600">
+              <th className="text-start font-medium px-5 py-3">{t("shiftsPage.driver")}</th>
+              <th className="text-start font-medium px-5 py-3">{t("shiftsPage.area")}</th>
+              <th className="text-start font-medium px-5 py-3">{t("shiftSlots.slots")}</th>
+              <th className="text-start font-medium px-5 py-3">{t("shiftsPage.totalHours")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(data?.drivers ?? []).map((d) => {
+              const pct = Math.min(100, Math.round((d.bookedMinutes / target) * 100));
+              const full = d.bookedMinutes >= target;
+              return (
+                <tr key={d.driverId} className="border-b border-sand-100 dark:border-border/50 last:border-0">
+                  <td className="px-5 py-3">
+                    <div className="font-medium text-sand-900 dark:text-foreground truncate">{d.name}</div>
+                    {d.driverCode && <div className="text-xs text-sand-500">{d.driverCode}</div>}
+                  </td>
+                  <td className="px-5 py-3 text-sand-600">{d.area || "n/a"}</td>
+                  <td className="px-5 py-3">
+                    <div className="flex flex-wrap gap-1">
+                      {d.slots.map((s) => (
+                        <span
+                          key={s.id}
+                          dir="ltr"
+                          className="px-2 h-6 inline-flex items-center rounded-pill bg-sand-100 text-xs tabular-nums text-sand-700"
+                        >
+                          {s.start}-{s.end}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-5 py-3 min-w-[160px]">
+                    <div className="flex items-center gap-2">
+                      <div className="h-1.5 flex-1 rounded-pill bg-sand-100 overflow-hidden">
+                        <div
+                          className={cn("h-full rounded-pill", full ? "bg-forest-500" : "bg-amber-400")}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <span className={cn("text-xs tabular-nums whitespace-nowrap", full ? "text-forest-700" : "text-amber-700")}>
+                        {full
+                          ? t("shiftSlots.fullDuty")
+                          : t("shiftSlots.bookedOf")
+                              .replace("{booked}", hours(d.bookedMinutes))
+                              .replace("{target}", hours(target))}
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+            {!query.isLoading && (data?.drivers ?? []).length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-5 py-8 text-center text-sand-500">
+                  {t("shiftSlots.noBookings")}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ── Coverage: how many drivers each area takes in each slot ────────────────
+//
+// Revision 24 (#3): a slot is 2, 3 or 4 hours now. An area/day the approved
+// plan laid out shows exactly its slots; one still on the standard grid shows
+// the eight three-hour windows as before, where an empty box is no limit. The
+// same rule the server applies (services/shiftSlots.ts `slotsForDay`).
+
+const LEGACY_STARTS = ["01:00", "04:00", "07:00", "10:00", "13:00", "16:00", "19:00", "22:00"];
+
+interface CoverageCell {
+  value: string;
+  minutes: number;
+}
+
+function slotLabel(start: string, minutes: number): string {
+  const [h, m] = start.split(":").map(Number);
+  const endMin = (h * 60 + m + minutes) % 1440;
+  const end = `${String(Math.floor(endMin / 60)).padStart(2, "0")}:${String(endMin % 60).padStart(2, "0")}`;
+  return `${start}-${end}`;
+}
 
 function CoveragePanel() {
   const { t } = useI18n();
@@ -232,30 +342,42 @@ function CoveragePanel() {
 
   // An empty string is "no limit" and a 0 is "closed", so the draft holds text
   // rather than numbers: collapsing both onto a number would make one of the
-  // two answers impossible to type.
-  const [draft, setDraft] = useState<Record<string, string>>({});
+  // two answers impossible to type. Each cell also carries its slot length.
+  const [draft, setDraft] = useState<Record<string, CoverageCell>>({});
   const [dirty, setDirty] = useState(false);
   // Client request, revision 16 (#2): a day is edited on its own, so the grid
-  // shows one day at a time rather than growing to 7 x 8 cells per zone. The
-  // draft still holds the whole week, so switching days loses nothing.
+  // shows one day at a time. The draft still holds the whole week, so
+  // switching days loses nothing.
   const [day, setDay] = useState<number>(() => new Date().getDay());
 
   const zones = useMemo(() => query.data?.zones ?? [], [query.data]);
-  const windows = useMemo(() => query.data?.windows ?? [], [query.data]);
-  const hours = query.data?.hours ?? 3;
 
   useEffect(() => {
     if (!query.data) return;
-    const next: Record<string, string> = {};
+    const next: Record<string, CoverageCell> = {};
     for (const row of query.data.capacity) {
-      next[`${row.zoneId}|${row.dayOfWeek}|${row.startTime}`] = String(row.maxDrivers);
+      next[`${row.zoneId}|${row.dayOfWeek}|${row.startTime}`] = {
+        value: String(row.maxDrivers),
+        minutes: row.durationMinutes ?? 180,
+      };
     }
     setDraft(next);
     setDirty(false);
   }, [query.data]);
 
+  /** The slots one area offers on the open day, in either layout. */
+  function slotsFor(zoneId: string): Array<{ key: string; start: string; minutes: number }> {
+    const prefix = `${zoneId}|${day}|`;
+    const own = Object.entries(draft)
+      .filter(([key]) => key.startsWith(prefix))
+      .map(([key, cell]) => ({ key, start: key.slice(prefix.length), minutes: cell.minutes }));
+    const planned = own.some((c) => c.minutes !== 180 || !LEGACY_STARTS.includes(c.start));
+    if (planned) return own.sort((x, y) => x.start.localeCompare(y.start));
+    return LEGACY_STARTS.map((start) => ({ key: `${prefix}${start}`, start, minutes: 180 }));
+  }
+
   /**
-   * Copy the open day across the whole week.
+   * Copy the open day across the whole week, slots and all.
    *
    * Without it, a tenant whose week is the same everywhere has to type the same
    * grid seven times, which is the kind of chore that ends with six days left
@@ -263,16 +385,20 @@ function CoveragePanel() {
    */
   function copyDayToWeek() {
     setDraft((prev) => {
-      const next = { ...prev };
-      for (const zone of zones) {
-        for (const w of windows) {
-          const value = prev[`${zone.id}|${day}|${w}`] ?? "";
-          for (let d = 0; d < 7; d += 1) {
-            if (d === day) continue;
-            next[`${zone.id}|${d}|${w}`] = value;
-          }
+      const next: Record<string, CoverageCell> = {};
+      for (const [key, cell] of Object.entries(prev)) {
+        const d = Number(key.split("|")[1]);
+        if (d === day) next[key] = cell;
+      }
+      for (const [key, cell] of Object.entries(prev)) {
+        const [zoneId, d, start] = key.split("|");
+        if (Number(d) !== day) continue;
+        for (let other = 0; other < 7; other += 1) {
+          if (other === day) continue;
+          next[`${zoneId}|${other}|${start}`] = { ...cell };
         }
       }
+      // An area with nothing on the open day is copied as nothing.
       return next;
     });
     setDirty(true);
@@ -281,15 +407,15 @@ function CoveragePanel() {
   const save = useMutation({
     mutationFn: () => {
       const rows: ShiftCapacityRow[] = [];
-      for (const [key, value] of Object.entries(draft)) {
-        const trimmed = value.trim();
+      for (const [key, cell] of Object.entries(draft)) {
+        const trimmed = cell.value.trim();
         if (trimmed === "") continue;
         const n = Number(trimmed);
         if (!Number.isFinite(n) || n < 0) continue;
         const [zoneId, dayOfWeek, startTime] = key.split("|");
         const d = Number(dayOfWeek);
         if (!Number.isInteger(d) || d < 0 || d > 6) continue;
-        rows.push({ zoneId, dayOfWeek: d, startTime, maxDrivers: Math.floor(n) });
+        rows.push({ zoneId, dayOfWeek: d, startTime, maxDrivers: Math.floor(n), durationMinutes: cell.minutes });
       }
       return shiftPlanningApi.saveCapacity(rows);
     },
@@ -311,8 +437,8 @@ function CoveragePanel() {
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-sm font-medium text-sand-900">{t("shiftsPage.coverageTitle")}</h2>
-          <p className="text-xs text-sand-600 mt-1 max-w-2xl">{t("shiftsPage.coverageHint")}</p>
+          <h2 className="text-sm font-medium text-sand-900">{t("shiftSlots.coverageTitle")}</h2>
+          <p className="text-xs text-sand-600 mt-1 max-w-2xl">{t("shiftSlots.coverageHint")}</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -359,49 +485,43 @@ function CoveragePanel() {
           {t("shiftsPage.coverageNoZones")}
         </div>
       ) : (
-        <div className="bg-card border border-sand-200 rounded-2xl shadow-soft overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-sand-200 text-start text-[11px] uppercase tracking-[0.12em] text-sand-600">
-                  <th className="text-start font-medium px-5 py-3">{t("shiftsPage.area")}</th>
-                  {windows.map((w) => (
-                    <th key={w} className="text-start font-medium px-3 py-3 tabular-nums" dir="ltr">
-                      {windowLabel(w, hours)}
-                    </th>
+        <div className="bg-card border border-sand-200 rounded-2xl shadow-soft divide-y divide-sand-100">
+          {zones.map((zone) => {
+            const slots = slotsFor(zone.id);
+            const planned = slots.some((c) => c.minutes !== 180 || !LEGACY_STARTS.includes(c.start));
+            return (
+              <div key={zone.id} className="px-5 py-3 flex flex-col md:flex-row md:items-start gap-3">
+                <div className="md:w-44 shrink-0">
+                  <p className="font-medium text-sand-900 text-sm" dir="auto">{zone.name}</p>
+                  <p className="text-[11px] text-sand-500">
+                    {t(planned ? "shiftSlots.plannedLayout" : "shiftSlots.standardLayout")}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {slots.map((slot) => (
+                    <label key={slot.key} className="flex flex-col gap-1">
+                      <span className="text-[11px] text-sand-600 tabular-nums" dir="ltr">
+                        {slotLabel(slot.start, slot.minutes)}
+                      </span>
+                      <input
+                        type="number"
+                        min={0}
+                        inputMode="numeric"
+                        value={draft[slot.key]?.value ?? ""}
+                        aria-label={`${zone.name} ${t(`shiftsPage.${WEEKDAY_KEYS[day]}`)} ${slotLabel(slot.start, slot.minutes)}`}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setDraft((prev) => ({ ...prev, [slot.key]: { value, minutes: slot.minutes } }));
+                          setDirty(true);
+                        }}
+                        className="w-16 h-8 px-2 rounded-xl border border-sand-300 bg-card text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </label>
                   ))}
-                </tr>
-              </thead>
-              <tbody>
-                {zones.map((zone) => (
-                  <tr key={zone.id} className="border-b border-sand-100 last:border-0">
-                    <td className="px-5 py-2.5 font-medium text-sand-900" dir="auto">
-                      {zone.name}
-                    </td>
-                    {windows.map((w) => {
-                      const key = `${zone.id}|${day}|${w}`;
-                      return (
-                        <td key={w} className="px-3 py-2.5">
-                          <input
-                            type="number"
-                            min={0}
-                            inputMode="numeric"
-                            value={draft[key] ?? ""}
-                            aria-label={`${zone.name} ${t(`shiftsPage.${WEEKDAY_KEYS[day]}`)} ${windowLabel(w, hours)}`}
-                            onChange={(e) => {
-                              setDraft((prev) => ({ ...prev, [key]: e.target.value }));
-                              setDirty(true);
-                            }}
-                            className="w-16 h-8 px-2 rounded-xl border border-sand-300 bg-card text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-primary"
-                          />
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

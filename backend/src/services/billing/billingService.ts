@@ -8,8 +8,9 @@
 //   - isCourierActiveThisMonth(tenantId, driverId, yearMonth) -> boolean
 //
 // Math (per orchestrator decision #7 + Wave 0 RED tests):
-//   - "Active courier" = a Driver with at least one Shift in the billing month
-//     where actualHoursMinutes >= 240 (4h).
+//   - "Active courier" = a Driver who worked at least 240 minutes (4h) on one
+//     day of the billing month, summed over that day's shifts (revision 24
+//     #3: a day is several 2, 3 or 4-hour slots now).
 //   - Standard amount = activeCouriers × KD 2.000
 //   - Floor = KD 200.000 (max(standard, floor))
 //   - Override = Tenant.monthlyOverrideKd (when set, beats both — design
@@ -73,16 +74,25 @@ export async function isCourierActiveThisMonth(
   yearMonth: string,
 ): Promise<boolean> {
   const { start, end } = monthBounds(yearMonth);
-  const row = await prisma.shift.findFirst({
+  // Revision 24 (#3): a day is several 2, 3 or 4-hour slots, so "a shift of
+  // four hours" became "four hours worked on one day". A driver on 3+3+2+4
+  // never has a single slot past the threshold and would otherwise never
+  // count as active at all.
+  const rows = await prisma.shift.findMany({
     where: {
       tenantId,
       driverId,
       date: { gte: start, lt: end },
-      actualHoursMinutes: { gte: ACTIVE_HOURS_THRESHOLD_MINUTES },
+      actualHoursMinutes: { gt: 0 },
     },
-    select: { id: true },
+    select: { date: true, actualHoursMinutes: true },
   });
-  return row !== null;
+  const byDay = new Map<string, number>();
+  for (const r of rows ?? []) {
+    const key = r.date ? new Date(r.date).toISOString().slice(0, 10) : "";
+    byDay.set(key, (byDay.get(key) ?? 0) + (r.actualHoursMinutes ?? 0));
+  }
+  return [...byDay.values()].some((m) => m >= ACTIVE_HOURS_THRESHOLD_MINUTES);
 }
 
 /**
@@ -133,22 +143,32 @@ export async function computeMonthlyBill(args: ComputeArgs): Promise<MonthlyBill
     where: {
       tenantId,
       date: { gte: start, lt: end },
-      actualHoursMinutes: { gte: ACTIVE_HOURS_THRESHOLD_MINUTES },
+      // Revision 24 (#3): every worked slot is read and the threshold is
+      // applied to a driver's DAY, because a 12-hour duty is now several
+      // 2, 3 or 4-hour slots and one of them alone may sit under four hours.
+      actualHoursMinutes: { gt: 0 },
     },
-    select: { driverId: true, actualHoursMinutes: true, tenantId: true },
+    select: { driverId: true, actualHoursMinutes: true, tenantId: true, date: true },
   })) as Array<{
     driverId: string | null;
     actualHoursMinutes?: number | null;
     tenantId?: string | null;
+    date?: Date | string | null;
   }>;
 
-  const driverIds = new Set<string>();
+  const minutesByDriverDay = new Map<string, { driverId: string; minutes: number }>();
   for (const s of shifts) {
     if (!s.driverId) continue;
     if (s.tenantId != null && s.tenantId !== tenantId) continue;
-    const minutes = s.actualHoursMinutes ?? 0;
-    if (minutes < ACTIVE_HOURS_THRESHOLD_MINUTES) continue;
-    driverIds.add(s.driverId);
+    const day = s.date ? new Date(s.date).toISOString().slice(0, 10) : "";
+    const key = `${s.driverId}|${day}`;
+    const entry = minutesByDriverDay.get(key) ?? { driverId: s.driverId, minutes: 0 };
+    entry.minutes += s.actualHoursMinutes ?? 0;
+    minutesByDriverDay.set(key, entry);
+  }
+  const driverIds = new Set<string>();
+  for (const { driverId, minutes } of minutesByDriverDay.values()) {
+    if (minutes >= ACTIVE_HOURS_THRESHOLD_MINUTES) driverIds.add(driverId);
   }
   const activeCouriers = driverIds.size;
 

@@ -3148,6 +3148,10 @@ model ShiftCapacity {
   maxDrivers Int      @default(0)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  /// Revision 24 (#3): "shifts must be either 2, 3, or 4-hour slots". How long
+  /// the slot starting at startTime runs: 120, 180 or 240. Defaults to 180 so
+  /// every row written before this is still the three-hour window it was.
+  durationMinutes Int @default(180)
 
   tenant Tenant       @relation(fields: [tenantId], references: [id])
   zone   DeliveryZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
@@ -4683,6 +4687,9 @@ model ShiftPlanEntry {
   /// The demand the proposal was computed from, kept so the grid can show its
   /// own working rather than a bare number nobody can argue with.
   demandOrders       Int      @default(0)
+  /// Revision 24 (#3): the slot's length, 120, 180 or 240 minutes. 180 for
+  /// every entry written before slots came in, which were three-hour windows.
+  durationMinutes    Int      @default(180)
 
   tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   plan   ShiftPlan @relation(fields: [planId], references: [id], onDelete: Cascade)

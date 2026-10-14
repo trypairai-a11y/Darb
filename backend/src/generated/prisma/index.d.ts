@@ -116575,11 +116575,13 @@ export namespace Prisma {
   export type ShiftCapacityAvgAggregateOutputType = {
     dayOfWeek: number | null
     maxDrivers: number | null
+    durationMinutes: number | null
   }
 
   export type ShiftCapacitySumAggregateOutputType = {
     dayOfWeek: number | null
     maxDrivers: number | null
+    durationMinutes: number | null
   }
 
   export type ShiftCapacityMinAggregateOutputType = {
@@ -116591,6 +116593,7 @@ export namespace Prisma {
     maxDrivers: number | null
     createdAt: Date | null
     updatedAt: Date | null
+    durationMinutes: number | null
   }
 
   export type ShiftCapacityMaxAggregateOutputType = {
@@ -116602,6 +116605,7 @@ export namespace Prisma {
     maxDrivers: number | null
     createdAt: Date | null
     updatedAt: Date | null
+    durationMinutes: number | null
   }
 
   export type ShiftCapacityCountAggregateOutputType = {
@@ -116613,6 +116617,7 @@ export namespace Prisma {
     maxDrivers: number
     createdAt: number
     updatedAt: number
+    durationMinutes: number
     _all: number
   }
 
@@ -116620,11 +116625,13 @@ export namespace Prisma {
   export type ShiftCapacityAvgAggregateInputType = {
     dayOfWeek?: true
     maxDrivers?: true
+    durationMinutes?: true
   }
 
   export type ShiftCapacitySumAggregateInputType = {
     dayOfWeek?: true
     maxDrivers?: true
+    durationMinutes?: true
   }
 
   export type ShiftCapacityMinAggregateInputType = {
@@ -116636,6 +116643,7 @@ export namespace Prisma {
     maxDrivers?: true
     createdAt?: true
     updatedAt?: true
+    durationMinutes?: true
   }
 
   export type ShiftCapacityMaxAggregateInputType = {
@@ -116647,6 +116655,7 @@ export namespace Prisma {
     maxDrivers?: true
     createdAt?: true
     updatedAt?: true
+    durationMinutes?: true
   }
 
   export type ShiftCapacityCountAggregateInputType = {
@@ -116658,6 +116667,7 @@ export namespace Prisma {
     maxDrivers?: true
     createdAt?: true
     updatedAt?: true
+    durationMinutes?: true
     _all?: true
   }
 
@@ -116756,6 +116766,7 @@ export namespace Prisma {
     maxDrivers: number
     createdAt: Date
     updatedAt: Date
+    durationMinutes: number
     _count: ShiftCapacityCountAggregateOutputType | null
     _avg: ShiftCapacityAvgAggregateOutputType | null
     _sum: ShiftCapacitySumAggregateOutputType | null
@@ -116786,6 +116797,7 @@ export namespace Prisma {
     maxDrivers?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    durationMinutes?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     zone?: boolean | DeliveryZoneDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["shiftCapacity"]>
@@ -116799,6 +116811,7 @@ export namespace Prisma {
     maxDrivers?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    durationMinutes?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     zone?: boolean | DeliveryZoneDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["shiftCapacity"]>
@@ -116812,6 +116825,7 @@ export namespace Prisma {
     maxDrivers?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    durationMinutes?: boolean
   }
 
   export type ShiftCapacityInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -116855,6 +116869,12 @@ export namespace Prisma {
       maxDrivers: number
       createdAt: Date
       updatedAt: Date
+      /**
+       * Revision 24 (#3): "shifts must be either 2, 3, or 4-hour slots". How long
+       * the slot starting at startTime runs: 120, 180 or 240. Defaults to 180 so
+       * every row written before this is still the three-hour window it was.
+       */
+      durationMinutes: number
     }, ExtArgs["result"]["shiftCapacity"]>
     composites: {}
   }
@@ -117258,6 +117278,7 @@ export namespace Prisma {
     readonly maxDrivers: FieldRef<"ShiftCapacity", 'Int'>
     readonly createdAt: FieldRef<"ShiftCapacity", 'DateTime'>
     readonly updatedAt: FieldRef<"ShiftCapacity", 'DateTime'>
+    readonly durationMinutes: FieldRef<"ShiftCapacity", 'Int'>
   }
     
 
@@ -161238,6 +161259,7 @@ export namespace Prisma {
     proposedDrivers: number | null
     approvedDrivers: number | null
     demandOrders: number | null
+    durationMinutes: number | null
   }
 
   export type ShiftPlanEntrySumAggregateOutputType = {
@@ -161245,6 +161267,7 @@ export namespace Prisma {
     proposedDrivers: number | null
     approvedDrivers: number | null
     demandOrders: number | null
+    durationMinutes: number | null
   }
 
   export type ShiftPlanEntryMinAggregateOutputType = {
@@ -161257,6 +161280,7 @@ export namespace Prisma {
     proposedDrivers: number | null
     approvedDrivers: number | null
     demandOrders: number | null
+    durationMinutes: number | null
   }
 
   export type ShiftPlanEntryMaxAggregateOutputType = {
@@ -161269,6 +161293,7 @@ export namespace Prisma {
     proposedDrivers: number | null
     approvedDrivers: number | null
     demandOrders: number | null
+    durationMinutes: number | null
   }
 
   export type ShiftPlanEntryCountAggregateOutputType = {
@@ -161282,6 +161307,7 @@ export namespace Prisma {
     approvedDrivers: number
     suggestedDriverIds: number
     demandOrders: number
+    durationMinutes: number
     _all: number
   }
 
@@ -161291,6 +161317,7 @@ export namespace Prisma {
     proposedDrivers?: true
     approvedDrivers?: true
     demandOrders?: true
+    durationMinutes?: true
   }
 
   export type ShiftPlanEntrySumAggregateInputType = {
@@ -161298,6 +161325,7 @@ export namespace Prisma {
     proposedDrivers?: true
     approvedDrivers?: true
     demandOrders?: true
+    durationMinutes?: true
   }
 
   export type ShiftPlanEntryMinAggregateInputType = {
@@ -161310,6 +161338,7 @@ export namespace Prisma {
     proposedDrivers?: true
     approvedDrivers?: true
     demandOrders?: true
+    durationMinutes?: true
   }
 
   export type ShiftPlanEntryMaxAggregateInputType = {
@@ -161322,6 +161351,7 @@ export namespace Prisma {
     proposedDrivers?: true
     approvedDrivers?: true
     demandOrders?: true
+    durationMinutes?: true
   }
 
   export type ShiftPlanEntryCountAggregateInputType = {
@@ -161335,6 +161365,7 @@ export namespace Prisma {
     approvedDrivers?: true
     suggestedDriverIds?: true
     demandOrders?: true
+    durationMinutes?: true
     _all?: true
   }
 
@@ -161435,6 +161466,7 @@ export namespace Prisma {
     approvedDrivers: number
     suggestedDriverIds: string[]
     demandOrders: number
+    durationMinutes: number
     _count: ShiftPlanEntryCountAggregateOutputType | null
     _avg: ShiftPlanEntryAvgAggregateOutputType | null
     _sum: ShiftPlanEntrySumAggregateOutputType | null
@@ -161467,6 +161499,7 @@ export namespace Prisma {
     approvedDrivers?: boolean
     suggestedDriverIds?: boolean
     demandOrders?: boolean
+    durationMinutes?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     plan?: boolean | ShiftPlanDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["shiftPlanEntry"]>
@@ -161482,6 +161515,7 @@ export namespace Prisma {
     approvedDrivers?: boolean
     suggestedDriverIds?: boolean
     demandOrders?: boolean
+    durationMinutes?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     plan?: boolean | ShiftPlanDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["shiftPlanEntry"]>
@@ -161497,6 +161531,7 @@ export namespace Prisma {
     approvedDrivers?: boolean
     suggestedDriverIds?: boolean
     demandOrders?: boolean
+    durationMinutes?: boolean
   }
 
   export type ShiftPlanEntryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -161547,6 +161582,11 @@ export namespace Prisma {
        * own working rather than a bare number nobody can argue with.
        */
       demandOrders: number
+      /**
+       * Revision 24 (#3): the slot's length, 120, 180 or 240 minutes. 180 for
+       * every entry written before slots came in, which were three-hour windows.
+       */
+      durationMinutes: number
     }, ExtArgs["result"]["shiftPlanEntry"]>
     composites: {}
   }
@@ -161952,6 +161992,7 @@ export namespace Prisma {
     readonly approvedDrivers: FieldRef<"ShiftPlanEntry", 'Int'>
     readonly suggestedDriverIds: FieldRef<"ShiftPlanEntry", 'String[]'>
     readonly demandOrders: FieldRef<"ShiftPlanEntry", 'Int'>
+    readonly durationMinutes: FieldRef<"ShiftPlanEntry", 'Int'>
   }
     
 
@@ -165051,7 +165092,8 @@ export namespace Prisma {
     dayOfWeek: 'dayOfWeek',
     maxDrivers: 'maxDrivers',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    durationMinutes: 'durationMinutes'
   };
 
   export type ShiftCapacityScalarFieldEnum = (typeof ShiftCapacityScalarFieldEnum)[keyof typeof ShiftCapacityScalarFieldEnum]
@@ -165819,7 +165861,8 @@ export namespace Prisma {
     proposedDrivers: 'proposedDrivers',
     approvedDrivers: 'approvedDrivers',
     suggestedDriverIds: 'suggestedDriverIds',
-    demandOrders: 'demandOrders'
+    demandOrders: 'demandOrders',
+    durationMinutes: 'durationMinutes'
   };
 
   export type ShiftPlanEntryScalarFieldEnum = (typeof ShiftPlanEntryScalarFieldEnum)[keyof typeof ShiftPlanEntryScalarFieldEnum]
@@ -178574,6 +178617,7 @@ export namespace Prisma {
     maxDrivers?: IntFilter<"ShiftCapacity"> | number
     createdAt?: DateTimeFilter<"ShiftCapacity"> | Date | string
     updatedAt?: DateTimeFilter<"ShiftCapacity"> | Date | string
+    durationMinutes?: IntFilter<"ShiftCapacity"> | number
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     zone?: XOR<DeliveryZoneRelationFilter, DeliveryZoneWhereInput>
   }
@@ -178587,6 +178631,7 @@ export namespace Prisma {
     maxDrivers?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    durationMinutes?: SortOrder
     tenant?: TenantOrderByWithRelationInput
     zone?: DeliveryZoneOrderByWithRelationInput
     _relevance?: ShiftCapacityOrderByRelevanceInput
@@ -178605,6 +178650,7 @@ export namespace Prisma {
     maxDrivers?: IntFilter<"ShiftCapacity"> | number
     createdAt?: DateTimeFilter<"ShiftCapacity"> | Date | string
     updatedAt?: DateTimeFilter<"ShiftCapacity"> | Date | string
+    durationMinutes?: IntFilter<"ShiftCapacity"> | number
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     zone?: XOR<DeliveryZoneRelationFilter, DeliveryZoneWhereInput>
   }, "id" | "tenantId_zoneId_dayOfWeek_startTime">
@@ -178618,6 +178664,7 @@ export namespace Prisma {
     maxDrivers?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    durationMinutes?: SortOrder
     _count?: ShiftCapacityCountOrderByAggregateInput
     _avg?: ShiftCapacityAvgOrderByAggregateInput
     _max?: ShiftCapacityMaxOrderByAggregateInput
@@ -178637,6 +178684,7 @@ export namespace Prisma {
     maxDrivers?: IntWithAggregatesFilter<"ShiftCapacity"> | number
     createdAt?: DateTimeWithAggregatesFilter<"ShiftCapacity"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ShiftCapacity"> | Date | string
+    durationMinutes?: IntWithAggregatesFilter<"ShiftCapacity"> | number
   }
 
   export type ZoneSurchargeWhereInput = {
@@ -182783,6 +182831,7 @@ export namespace Prisma {
     approvedDrivers?: IntFilter<"ShiftPlanEntry"> | number
     suggestedDriverIds?: StringNullableListFilter<"ShiftPlanEntry">
     demandOrders?: IntFilter<"ShiftPlanEntry"> | number
+    durationMinutes?: IntFilter<"ShiftPlanEntry"> | number
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     plan?: XOR<ShiftPlanRelationFilter, ShiftPlanWhereInput>
   }
@@ -182798,6 +182847,7 @@ export namespace Prisma {
     approvedDrivers?: SortOrder
     suggestedDriverIds?: SortOrder
     demandOrders?: SortOrder
+    durationMinutes?: SortOrder
     tenant?: TenantOrderByWithRelationInput
     plan?: ShiftPlanOrderByWithRelationInput
     _relevance?: ShiftPlanEntryOrderByRelevanceInput
@@ -182818,6 +182868,7 @@ export namespace Prisma {
     approvedDrivers?: IntFilter<"ShiftPlanEntry"> | number
     suggestedDriverIds?: StringNullableListFilter<"ShiftPlanEntry">
     demandOrders?: IntFilter<"ShiftPlanEntry"> | number
+    durationMinutes?: IntFilter<"ShiftPlanEntry"> | number
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     plan?: XOR<ShiftPlanRelationFilter, ShiftPlanWhereInput>
   }, "id" | "planId_zoneId_dayOfWeek_startTime">
@@ -182833,6 +182884,7 @@ export namespace Prisma {
     approvedDrivers?: SortOrder
     suggestedDriverIds?: SortOrder
     demandOrders?: SortOrder
+    durationMinutes?: SortOrder
     _count?: ShiftPlanEntryCountOrderByAggregateInput
     _avg?: ShiftPlanEntryAvgOrderByAggregateInput
     _max?: ShiftPlanEntryMaxOrderByAggregateInput
@@ -182854,6 +182906,7 @@ export namespace Prisma {
     approvedDrivers?: IntWithAggregatesFilter<"ShiftPlanEntry"> | number
     suggestedDriverIds?: StringNullableListFilter<"ShiftPlanEntry">
     demandOrders?: IntWithAggregatesFilter<"ShiftPlanEntry"> | number
+    durationMinutes?: IntWithAggregatesFilter<"ShiftPlanEntry"> | number
   }
 
   export type VendorBranchAllocationWhereInput = {
@@ -193944,6 +193997,7 @@ export namespace Prisma {
     maxDrivers?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    durationMinutes?: number
     tenant: TenantCreateNestedOneWithoutShiftCapacitiesInput
     zone: DeliveryZoneCreateNestedOneWithoutShiftCapacitiesInput
   }
@@ -193957,6 +194011,7 @@ export namespace Prisma {
     maxDrivers?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    durationMinutes?: number
   }
 
   export type ShiftCapacityUpdateInput = {
@@ -193966,6 +194021,7 @@ export namespace Prisma {
     maxDrivers?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
     tenant?: TenantUpdateOneRequiredWithoutShiftCapacitiesNestedInput
     zone?: DeliveryZoneUpdateOneRequiredWithoutShiftCapacitiesNestedInput
   }
@@ -193979,6 +194035,7 @@ export namespace Prisma {
     maxDrivers?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
   }
 
   export type ShiftCapacityCreateManyInput = {
@@ -193990,6 +194047,7 @@ export namespace Prisma {
     maxDrivers?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    durationMinutes?: number
   }
 
   export type ShiftCapacityUpdateManyMutationInput = {
@@ -193999,6 +194057,7 @@ export namespace Prisma {
     maxDrivers?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
   }
 
   export type ShiftCapacityUncheckedUpdateManyInput = {
@@ -194010,6 +194069,7 @@ export namespace Prisma {
     maxDrivers?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
   }
 
   export type ZoneSurchargeCreateInput = {
@@ -198452,6 +198512,7 @@ export namespace Prisma {
     approvedDrivers: number
     suggestedDriverIds?: ShiftPlanEntryCreatesuggestedDriverIdsInput | string[]
     demandOrders?: number
+    durationMinutes?: number
     tenant: TenantCreateNestedOneWithoutShiftPlanEntriesInput
     plan: ShiftPlanCreateNestedOneWithoutEntriesInput
   }
@@ -198467,6 +198528,7 @@ export namespace Prisma {
     approvedDrivers: number
     suggestedDriverIds?: ShiftPlanEntryCreatesuggestedDriverIdsInput | string[]
     demandOrders?: number
+    durationMinutes?: number
   }
 
   export type ShiftPlanEntryUpdateInput = {
@@ -198478,6 +198540,7 @@ export namespace Prisma {
     approvedDrivers?: IntFieldUpdateOperationsInput | number
     suggestedDriverIds?: ShiftPlanEntryUpdatesuggestedDriverIdsInput | string[]
     demandOrders?: IntFieldUpdateOperationsInput | number
+    durationMinutes?: IntFieldUpdateOperationsInput | number
     tenant?: TenantUpdateOneRequiredWithoutShiftPlanEntriesNestedInput
     plan?: ShiftPlanUpdateOneRequiredWithoutEntriesNestedInput
   }
@@ -198493,6 +198556,7 @@ export namespace Prisma {
     approvedDrivers?: IntFieldUpdateOperationsInput | number
     suggestedDriverIds?: ShiftPlanEntryUpdatesuggestedDriverIdsInput | string[]
     demandOrders?: IntFieldUpdateOperationsInput | number
+    durationMinutes?: IntFieldUpdateOperationsInput | number
   }
 
   export type ShiftPlanEntryCreateManyInput = {
@@ -198506,6 +198570,7 @@ export namespace Prisma {
     approvedDrivers: number
     suggestedDriverIds?: ShiftPlanEntryCreatesuggestedDriverIdsInput | string[]
     demandOrders?: number
+    durationMinutes?: number
   }
 
   export type ShiftPlanEntryUpdateManyMutationInput = {
@@ -198517,6 +198582,7 @@ export namespace Prisma {
     approvedDrivers?: IntFieldUpdateOperationsInput | number
     suggestedDriverIds?: ShiftPlanEntryUpdatesuggestedDriverIdsInput | string[]
     demandOrders?: IntFieldUpdateOperationsInput | number
+    durationMinutes?: IntFieldUpdateOperationsInput | number
   }
 
   export type ShiftPlanEntryUncheckedUpdateManyInput = {
@@ -198530,6 +198596,7 @@ export namespace Prisma {
     approvedDrivers?: IntFieldUpdateOperationsInput | number
     suggestedDriverIds?: ShiftPlanEntryUpdatesuggestedDriverIdsInput | string[]
     demandOrders?: IntFieldUpdateOperationsInput | number
+    durationMinutes?: IntFieldUpdateOperationsInput | number
   }
 
   export type VendorBranchAllocationCreateInput = {
@@ -206905,11 +206972,13 @@ export namespace Prisma {
     maxDrivers?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    durationMinutes?: SortOrder
   }
 
   export type ShiftCapacityAvgOrderByAggregateInput = {
     dayOfWeek?: SortOrder
     maxDrivers?: SortOrder
+    durationMinutes?: SortOrder
   }
 
   export type ShiftCapacityMaxOrderByAggregateInput = {
@@ -206921,6 +206990,7 @@ export namespace Prisma {
     maxDrivers?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    durationMinutes?: SortOrder
   }
 
   export type ShiftCapacityMinOrderByAggregateInput = {
@@ -206932,11 +207002,13 @@ export namespace Prisma {
     maxDrivers?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    durationMinutes?: SortOrder
   }
 
   export type ShiftCapacitySumOrderByAggregateInput = {
     dayOfWeek?: SortOrder
     maxDrivers?: SortOrder
+    durationMinutes?: SortOrder
   }
 
   export type ZoneSurchargeOrderByRelevanceInput = {
@@ -210056,6 +210128,7 @@ export namespace Prisma {
     approvedDrivers?: SortOrder
     suggestedDriverIds?: SortOrder
     demandOrders?: SortOrder
+    durationMinutes?: SortOrder
   }
 
   export type ShiftPlanEntryAvgOrderByAggregateInput = {
@@ -210063,6 +210136,7 @@ export namespace Prisma {
     proposedDrivers?: SortOrder
     approvedDrivers?: SortOrder
     demandOrders?: SortOrder
+    durationMinutes?: SortOrder
   }
 
   export type ShiftPlanEntryMaxOrderByAggregateInput = {
@@ -210075,6 +210149,7 @@ export namespace Prisma {
     proposedDrivers?: SortOrder
     approvedDrivers?: SortOrder
     demandOrders?: SortOrder
+    durationMinutes?: SortOrder
   }
 
   export type ShiftPlanEntryMinOrderByAggregateInput = {
@@ -210087,6 +210162,7 @@ export namespace Prisma {
     proposedDrivers?: SortOrder
     approvedDrivers?: SortOrder
     demandOrders?: SortOrder
+    durationMinutes?: SortOrder
   }
 
   export type ShiftPlanEntrySumOrderByAggregateInput = {
@@ -210094,6 +210170,7 @@ export namespace Prisma {
     proposedDrivers?: SortOrder
     approvedDrivers?: SortOrder
     demandOrders?: SortOrder
+    durationMinutes?: SortOrder
   }
 
   export type VendorBranchAllocationOrderByRelevanceInput = {
@@ -229356,6 +229433,7 @@ export namespace Prisma {
     maxDrivers?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    durationMinutes?: number
     zone: DeliveryZoneCreateNestedOneWithoutShiftCapacitiesInput
   }
 
@@ -229367,6 +229445,7 @@ export namespace Prisma {
     maxDrivers?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    durationMinutes?: number
   }
 
   export type ShiftCapacityCreateOrConnectWithoutTenantInput = {
@@ -233852,6 +233931,7 @@ export namespace Prisma {
     approvedDrivers: number
     suggestedDriverIds?: ShiftPlanEntryCreatesuggestedDriverIdsInput | string[]
     demandOrders?: number
+    durationMinutes?: number
     plan: ShiftPlanCreateNestedOneWithoutEntriesInput
   }
 
@@ -233865,6 +233945,7 @@ export namespace Prisma {
     approvedDrivers: number
     suggestedDriverIds?: ShiftPlanEntryCreatesuggestedDriverIdsInput | string[]
     demandOrders?: number
+    durationMinutes?: number
   }
 
   export type ShiftPlanEntryCreateOrConnectWithoutTenantInput = {
@@ -234202,6 +234283,7 @@ export namespace Prisma {
     maxDrivers?: IntFilter<"ShiftCapacity"> | number
     createdAt?: DateTimeFilter<"ShiftCapacity"> | Date | string
     updatedAt?: DateTimeFilter<"ShiftCapacity"> | Date | string
+    durationMinutes?: IntFilter<"ShiftCapacity"> | number
   }
 
   export type AttendanceRecordUpsertWithWhereUniqueWithoutTenantInput = {
@@ -237965,6 +238047,7 @@ export namespace Prisma {
     approvedDrivers?: IntFilter<"ShiftPlanEntry"> | number
     suggestedDriverIds?: StringNullableListFilter<"ShiftPlanEntry">
     demandOrders?: IntFilter<"ShiftPlanEntry"> | number
+    durationMinutes?: IntFilter<"ShiftPlanEntry"> | number
   }
 
   export type VendorBranchAllocationUpsertWithWhereUniqueWithoutTenantInput = {
@@ -315421,6 +315504,7 @@ export namespace Prisma {
     maxDrivers?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    durationMinutes?: number
     tenant: TenantCreateNestedOneWithoutShiftCapacitiesInput
   }
 
@@ -315432,6 +315516,7 @@ export namespace Prisma {
     maxDrivers?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    durationMinutes?: number
   }
 
   export type ShiftCapacityCreateOrConnectWithoutZoneInput = {
@@ -350651,6 +350736,7 @@ export namespace Prisma {
     approvedDrivers: number
     suggestedDriverIds?: ShiftPlanEntryCreatesuggestedDriverIdsInput | string[]
     demandOrders?: number
+    durationMinutes?: number
     tenant: TenantCreateNestedOneWithoutShiftPlanEntriesInput
   }
 
@@ -350664,6 +350750,7 @@ export namespace Prisma {
     approvedDrivers: number
     suggestedDriverIds?: ShiftPlanEntryCreatesuggestedDriverIdsInput | string[]
     demandOrders?: number
+    durationMinutes?: number
   }
 
   export type ShiftPlanEntryCreateOrConnectWithoutPlanInput = {
@@ -352877,6 +352964,7 @@ export namespace Prisma {
     maxDrivers?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    durationMinutes?: number
   }
 
   export type AttendanceRecordCreateManyTenantInput = {
@@ -354488,6 +354576,7 @@ export namespace Prisma {
     approvedDrivers: number
     suggestedDriverIds?: ShiftPlanEntryCreatesuggestedDriverIdsInput | string[]
     demandOrders?: number
+    durationMinutes?: number
   }
 
   export type VendorBranchAllocationCreateManyTenantInput = {
@@ -355126,6 +355215,7 @@ export namespace Prisma {
     maxDrivers?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
     zone?: DeliveryZoneUpdateOneRequiredWithoutShiftCapacitiesNestedInput
   }
 
@@ -355137,6 +355227,7 @@ export namespace Prisma {
     maxDrivers?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
   }
 
   export type ShiftCapacityUncheckedUpdateManyWithoutTenantInput = {
@@ -355147,6 +355238,7 @@ export namespace Prisma {
     maxDrivers?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
   }
 
   export type AttendanceRecordUpdateWithoutTenantInput = {
@@ -360131,6 +360223,7 @@ export namespace Prisma {
     approvedDrivers?: IntFieldUpdateOperationsInput | number
     suggestedDriverIds?: ShiftPlanEntryUpdatesuggestedDriverIdsInput | string[]
     demandOrders?: IntFieldUpdateOperationsInput | number
+    durationMinutes?: IntFieldUpdateOperationsInput | number
     plan?: ShiftPlanUpdateOneRequiredWithoutEntriesNestedInput
   }
 
@@ -360144,6 +360237,7 @@ export namespace Prisma {
     approvedDrivers?: IntFieldUpdateOperationsInput | number
     suggestedDriverIds?: ShiftPlanEntryUpdatesuggestedDriverIdsInput | string[]
     demandOrders?: IntFieldUpdateOperationsInput | number
+    durationMinutes?: IntFieldUpdateOperationsInput | number
   }
 
   export type ShiftPlanEntryUncheckedUpdateManyWithoutTenantInput = {
@@ -360156,6 +360250,7 @@ export namespace Prisma {
     approvedDrivers?: IntFieldUpdateOperationsInput | number
     suggestedDriverIds?: ShiftPlanEntryUpdatesuggestedDriverIdsInput | string[]
     demandOrders?: IntFieldUpdateOperationsInput | number
+    durationMinutes?: IntFieldUpdateOperationsInput | number
   }
 
   export type VendorBranchAllocationUpdateWithoutTenantInput = {
@@ -370862,6 +370957,7 @@ export namespace Prisma {
     maxDrivers?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    durationMinutes?: number
   }
 
   export type VendorBranchUpdateWithoutZoneInput = {
@@ -371635,6 +371731,7 @@ export namespace Prisma {
     maxDrivers?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
     tenant?: TenantUpdateOneRequiredWithoutShiftCapacitiesNestedInput
   }
 
@@ -371646,6 +371743,7 @@ export namespace Prisma {
     maxDrivers?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
   }
 
   export type ShiftCapacityUncheckedUpdateManyWithoutZoneInput = {
@@ -371656,6 +371754,7 @@ export namespace Prisma {
     maxDrivers?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
   }
 
   export type DeliveryPlanZoneRateCreateManyPlanInput = {
@@ -373638,6 +373737,7 @@ export namespace Prisma {
     approvedDrivers: number
     suggestedDriverIds?: ShiftPlanEntryCreatesuggestedDriverIdsInput | string[]
     demandOrders?: number
+    durationMinutes?: number
   }
 
   export type ShiftPlanEntryUpdateWithoutPlanInput = {
@@ -373649,6 +373749,7 @@ export namespace Prisma {
     approvedDrivers?: IntFieldUpdateOperationsInput | number
     suggestedDriverIds?: ShiftPlanEntryUpdatesuggestedDriverIdsInput | string[]
     demandOrders?: IntFieldUpdateOperationsInput | number
+    durationMinutes?: IntFieldUpdateOperationsInput | number
     tenant?: TenantUpdateOneRequiredWithoutShiftPlanEntriesNestedInput
   }
 
@@ -373662,6 +373763,7 @@ export namespace Prisma {
     approvedDrivers?: IntFieldUpdateOperationsInput | number
     suggestedDriverIds?: ShiftPlanEntryUpdatesuggestedDriverIdsInput | string[]
     demandOrders?: IntFieldUpdateOperationsInput | number
+    durationMinutes?: IntFieldUpdateOperationsInput | number
   }
 
   export type ShiftPlanEntryUncheckedUpdateManyWithoutPlanInput = {
@@ -373674,6 +373776,7 @@ export namespace Prisma {
     approvedDrivers?: IntFieldUpdateOperationsInput | number
     suggestedDriverIds?: ShiftPlanEntryUpdatesuggestedDriverIdsInput | string[]
     demandOrders?: IntFieldUpdateOperationsInput | number
+    durationMinutes?: IntFieldUpdateOperationsInput | number
   }
 
 

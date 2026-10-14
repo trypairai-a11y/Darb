@@ -276,10 +276,14 @@ export async function getCockpitSummary(
   const kuwaitDay = new Date(Date.now() + 3 * 3_600_000).toISOString().slice(0, 10);
   const hm = (v: string, fallback: string) =>
     /^\d{2}:\d{2}$/.test(v) ? v : fallback;
-  const windowBounds = (startText: string, endText: string) => ({
-    start: new Date(`${kuwaitDay}T${hm(startText, "00:00")}:00.000+03:00`),
-    end: new Date(`${kuwaitDay}T${hm(endText, "23:59")}:59.999+03:00`),
-  });
+  const windowBounds = (startText: string, endText: string) => {
+    const start = new Date(`${kuwaitDay}T${hm(startText, "00:00")}:00.000+03:00`);
+    let end = new Date(`${kuwaitDay}T${hm(endText, "23:59")}:59.999+03:00`);
+    // A slot that ends at or past midnight (22:00-00:00, 22:00-01:00) ends
+    // tomorrow, not before it started, or it counts no orders at all.
+    if (end <= start) end = new Date(end.getTime() + 86_400_000);
+    return { start, end };
+  };
   const zoneDriverRows = shiftRequests
     .map((sr) => {
       const { start, end } = windowBounds(sr.startTime, sr.endTime);
