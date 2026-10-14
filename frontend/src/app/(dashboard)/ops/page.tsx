@@ -18,6 +18,7 @@ import HqTabs from "@/components/hq/HqTabs";
 import LiveControlRoom from "@/components/ops/LiveControlRoom";
 import DriverTrackingTab from "@/components/hq/DriverTrackingTab";
 import ShiftPlanTab from "@/components/hq/ShiftPlanTab";
+import ShiftPlanningKinds from "@/components/privateShifts/ShiftPlanningKinds";
 import DriverTrainingTab from "@/components/hq/DriverTrainingTab";
 import OnboardingTab from "@/components/hq/OnboardingTab";
 import { PageSkeleton } from "@/components/shared/Skeleton";
@@ -53,7 +54,7 @@ function OpsScreen() {
       {tab === "driver-tracking" ? (
         <DriverTrackingTab />
       ) : tab === "shift-planning" ? (
-        <ShiftPlanTab />
+        <ShiftPlanningKinds regular={<ShiftPlanTab />} />
       ) : tab === "driver-training" ? (
         <DriverTrainingTab />
       ) : tab === "onboarding" ? (

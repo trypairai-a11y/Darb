@@ -35,6 +35,7 @@ import {
 } from "../orderStateMachine";
 import { isDriverOverCeiling } from "../wallet/walletService";
 import { markDriverBusy } from "./driverPresence";
+import { privateShiftPolicyFor } from "./privateShiftPolicy";
 import {
   enqueueDispatchNext,
   removeOfferExpiryJob,
@@ -390,6 +391,8 @@ export async function selectCandidates(
     lat: number;
     lng: number;
     fleetPartnerId: string | null;
+    /** Revision 24 (#9): on a private shift at this order's branch. */
+    privateShift?: boolean;
   };
   let prelim: Prelim[] = [];
   for (const session of latestSessionPerDriver(sessions)) {
@@ -424,6 +427,13 @@ export async function selectCandidates(
   }
   if (prelim.length === 0) return [];
 
+  // Revision 24 (#9): private shifts fence their drivers to one branch and put
+  // them first for that branch's orders (services/dispatch/privateShiftPolicy.ts).
+  const privatePolicy = await privateShiftPolicyFor(tenantId, order, prelim.map((c) => c.driverId));
+  prelim = prelim.filter((c) => !privatePolicy.exclude.has(c.driverId));
+  for (const c of prelim) c.privateShift = privatePolicy.priority.has(c.driverId);
+  if (prelim.length === 0) return [];
+
   // ── Revision 15 (#3/#4): what each candidate's company costs Darb ─────────
   //
   // Loaded once for the whole pool. Both client rules read the same rates, so
@@ -449,6 +459,7 @@ export async function selectCandidates(
   ) {
     const before = prelim.length;
     const sameZoneOnly = prelim.filter((c) => {
+      if (c.privateShift) return true; // paid by the hour on a private shift
       if (!c.fleetPartnerId) return true; // no company behind them, no rate to break
       const rate = fleetRates.get(c.fleetPartnerId);
       return !rate || !isFlatRateFleet(rate);
@@ -605,6 +616,8 @@ export async function selectCandidates(
   }
 
   filtered.sort((a, b) => {
+    // Revision 24 (#9): the shop's own private-shift driver goes first.
+    if (!!a.privateShift !== !!b.privateShift) return a.privateShift ? -1 : 1;
     // PRD §9 discipline: throttled drivers rank after every non-throttled
     // candidate regardless of distance.
     if (a.throttled !== b.throttled) return a.throttled ? 1 : -1;
@@ -639,6 +652,7 @@ export async function selectCandidates(
       lat: _lat,
       lng: _lng,
       fleetPartnerId: _fleet,
+      privateShift: _private,
       ...candidate
     }) => candidate,
   );

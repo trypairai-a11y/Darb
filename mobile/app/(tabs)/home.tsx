@@ -11,6 +11,7 @@ import { DemandHeatMap } from "../../src/components/DemandHeatMap";
 import { DriverProfileCard } from "../../src/components/DriverProfileCard";
 import { PermissionRationale } from "../../src/components/PermissionRationale";
 import { WebShiftBanner } from "../../src/components/WebShiftBanner";
+import PrivateShiftEntry from "../../src/components/PrivateShiftEntry";
 import { hydrateNow } from "../../src/services/offerChannel";
 import { registerForPushNotifications } from "../../src/services/pushNotifications";
 import { useDriverStore } from "../../src/store/driverStore";
@@ -161,6 +162,9 @@ export default function HomeScreen() {
 
         {/* Web-only: keep-tab-open / location-blocked advisory while on shift */}
         <WebShiftBanner />
+
+        {/* Revision 24 (#11): a running private shift and where the driver stands against its rules. */}
+        <PrivateShiftEntry />
 
         {lockout.active ? (
           <View style={styles.lockout}>

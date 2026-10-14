@@ -4,6 +4,7 @@
 // tokens to /api/auth + /api/fleet + /api/events.
 
 import { REQUIRED_DRIVER_DOCS } from "../services/fleet/fleetDocumentService";
+import { registerFleetPrivateShiftRoutes } from "./fleetPrivateShifts";
 import { Router, Request, Response, NextFunction } from "express";
 import bcrypt from "bcryptjs";
 import { Prisma } from "../generated/prisma";
@@ -628,6 +629,9 @@ router.get("/rate", requireFleetTab("PAYOUTS"), async (req: Request, res: Respon
     if (!fleet) { res.status(404).json({ error: "Fleet partner not found" }); return; }
 
     const payload = (pending?.payload ?? {}) as Record<string, any>;
+    // Revision 24 (#10): an open ask for the per-vehicle rates is drawn on its
+    // own card, not here as a base price of nothing.
+    const pendingBase = pending && !Array.isArray(payload.vehicleRates) ? pending : null;
     const money = (v: unknown) => (v == null ? null : Number(v).toFixed(3));
     res.json({
       // The base half. Kept under its old name so a client built before
@@ -640,13 +644,13 @@ router.get("/rate", requireFleetTab("PAYOUTS"), async (req: Request, res: Respon
       // Only an owner may ask, so the client can hide the control instead of
       // showing a button that answers 403 (revision 13 #6, same rule as Team).
       canPropose: fleetRoleOf(req) === "ADMIN",
-      pending: pending
+      pending: pendingBase
         ? {
-            id: pending.id,
+            id: pendingBase.id,
             proposedKwd: money(payload.flatFeePerOrderKwd),
             proposedPerKmKwd: money(payload.perKmFeeKwd),
             reason: payload.reason ?? null,
-            createdAt: pending.createdAt,
+            createdAt: pendingBase.createdAt,
           }
         : null,
     });
@@ -2837,5 +2841,15 @@ router.patch(
     }
   },
 );
+
+// Revision 24 (#10): plans by vehicle type and the company's private shifts,
+// on the PAYOUTS tab beside the per-order rate they sit with.
+registerFleetPrivateShiftRoutes(router, {
+  payoutsTab: requireFleetTab("PAYOUTS"),
+  ownerOnly: requireFleetRole("ADMIN"),
+  isOwner: (req) => fleetRoleOf(req) === "ADMIN",
+  fleetContext,
+  supportingDocuments: (ctx, body, userId) => supportingDocuments(ctx, body, userId),
+});
 
 export default router;

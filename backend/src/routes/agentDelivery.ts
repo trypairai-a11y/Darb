@@ -54,6 +54,7 @@ import {
   startReturnToMerchant,
 } from "../services/orderService";
 import { forceDriverOffline } from "../services/dispatch/driverPresence";
+import { isOnPrivateShiftNow } from "../services/privateShifts/privateShiftService";
 import {
   getDriverWalletSummary,
   isDriverOverCeiling,
@@ -462,7 +463,12 @@ router.post("/availability", async (req: Request, res: Response) => {
       const lng = Number(req.body?.longitude);
       const hasFix = Number.isFinite(lat) && Number.isFinite(lng);
 
-      if (driver.assignedZoneId && hasFix) {
+      // Revision 24 (#11): a driver on a private shift works at that shop,
+      // which need not be in their own area, so the area gate stands aside.
+      const onPrivateShift = await isOnPrivateShiftNow(tenantId, driver.id).catch(() => false);
+      if (onPrivateShift) {
+        // The shift's own start check already put them at the shop.
+      } else if (driver.assignedZoneId && hasFix) {
         const here = await resolveZone(tenantId, lat, lng);
         if (here && here.id !== driver.assignedZoneId) {
           const assigned = await prisma.deliveryZone.findFirst({

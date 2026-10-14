@@ -47,6 +47,7 @@ import {
   type ShiftSlot,
 } from "../../src/api/client";
 import { Button, Card, LargeTitle, ListGroup, ListRow, Pill, Screen } from "../../src/components/hig";
+import PrivateShiftEntry from "../../src/components/PrivateShiftEntry";
 import { t as tr } from "../../src/i18n/strings";
 import { useTheme, type Palette, space, radius, continuous } from "../../src/theme";
 
@@ -326,6 +327,9 @@ export default function ShiftsScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={c.gray} />}
       >
         <LargeTitle title={tr("shifts.title")} subtitle={tr("shifts.subtitle")} />
+
+        {/* Revision 24 (#11): private shifts, optional, beside the regular ones. */}
+        <PrivateShiftEntry style={{ marginTop: space.lg }} />
 
         {/* ── Book one ── */}
         <Card style={{ marginTop: space.lg }}>

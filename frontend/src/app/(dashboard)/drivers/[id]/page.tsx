@@ -22,6 +22,7 @@ import type { TrainingSession } from "@/types/darb";
 import type { DriverFileData } from "@/types/driver-file";
 import ScoreTrendChart from "@/components/driver-file/ScoreTrendChart";
 import AskDarbWhyDrawer from "@/components/driver-file/AskDarbWhyDrawer";
+import DriverPrivateShiftToggle from "@/components/privateShifts/DriverPrivateShiftToggle";
 
 const TABS = ["Overview", "Work", "Training", "Money", "Compliance", "Notes"] as const;
 type DriverFileTab = (typeof TABS)[number];
@@ -493,6 +494,9 @@ export default function DriverFilePage() {
         <Metric label="Cash due" value={formatMoney(data.cash.outstanding)} icon={<Wallet size={18} />} />
         <Metric label="Violations" value={String(data.violations.items.length)} icon={<FileCheck2 size={18} />} />
       </div>
+
+      {/* Revision 24 (#8): eligible for private shifts. */}
+      {id && <DriverPrivateShiftToggle driverId={id} />}
 
       <nav className="rounded-lg border border-sand-200 bg-white p-1">
         <div className="grid gap-1 sm:grid-cols-6">

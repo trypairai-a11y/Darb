@@ -32,6 +32,8 @@ import shiftPlanningRoutes from "./routes/shiftPlanning";
 import attendanceRoutes from "./routes/attendance";
 import leaveRequestRoutes from "./routes/leaveRequests";
 import agentRoutes from "./routes/agent";
+import agentPrivateShiftsRouter from "./routes/agentPrivateShifts";
+import privateShiftsRouter from "./routes/privateShifts";
 import aiRoutes from "./routes/ai";
 import analyticsRoutes from "./routes/analytics";
 import userRoutes from "./routes/users";
@@ -273,8 +275,13 @@ app.use("/api/shift-requests", shiftRequestRoutes);
 // Revision 15 — the roster behind those requests: which zone a driver works
 // and how many drivers each window in each zone takes.
 app.use("/api/shift-planning", shiftPlanningRoutes);
+// Revision 24 (#8, #10): private shifts, vehicle plans and vehicle rates.
+app.use("/api/private-shifts", privateShiftsRouter);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/leave-requests", leaveRequestRoutes);
+// Revision 24 (#11): private shifts in the driver app, before the general
+// /api/agent routers so nothing there can shadow the path.
+app.use("/api/agent/private-shifts", agentPrivateShiftsRouter);
 app.use("/api/agent", agentRoutes);
 // Darb 2.0 driver agent API (device-token auth) — same mount as agent.ts,
 // AFTER it. Path sets are disjoint (verified): agent.ts owns /register,

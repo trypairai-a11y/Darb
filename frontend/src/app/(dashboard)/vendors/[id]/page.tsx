@@ -30,6 +30,7 @@ import { formatKwd, formatDateTime } from "@/i18n/format";
 import { cn } from "@/lib/cn";
 import { DirectionalIcon } from "@/i18n/directionalIcon";
 import { setupIncomplete, vendorGapKeys } from "@/lib/setupGaps";
+import VendorVehiclePlansCard from "@/components/privateShifts/VendorVehiclePlansCard";
 
 type Tab = "profile" | "branches" | "integrations" | "wallet" | "users";
 
@@ -163,7 +164,11 @@ export default function VendorDetailPage() {
       </div>
 
       {tab === "profile" && (
-        <ProfileTab vendor={vendor} onSaved={invalidateVendor} />
+        <>
+          <ProfileTab vendor={vendor} onSaved={invalidateVendor} />
+          {/* Revision 24 (#8): vehicles that suit the shop, two plans each. */}
+          <VendorVehiclePlansCard vendorId={vendor.id} onSaved={invalidateVendor} />
+        </>
       )}
       {tab === "branches" && <BranchesTab vendorId={vendor.id} />}
       {tab === "integrations" && <IntegrationsTab vendor={vendor} />}
