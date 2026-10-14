@@ -205,4 +205,32 @@ describe("Drivers route integration tests", () => {
       );
     });
   });
+
+  // ─── POST /api/drivers/state/bulk (revision 24 #6) ───────────────────────
+
+  describe("POST /api/drivers/state/bulk", () => {
+    it("refuses an unknown verb, including TERMINATE", async () => {
+      const res = await request(app)
+        .post("/api/drivers/state/bulk")
+        .send({ driverIds: ["d1"], action: "TERMINATE" });
+      expect(res.status).toBe(400);
+    });
+
+    it("answers 200 with a row per driver when one is refused", async () => {
+      const prisma = getMockPrisma();
+      prisma.driver.findMany.mockResolvedValueOnce([{ id: "d1", name: "Anil" }]);
+      prisma.driver.findFirst
+        .mockResolvedValueOnce({ id: "d1", inTraining: false, status: "ACTIVE" })
+        .mockResolvedValueOnce({ id: "d1", status: "SUSPENDED" });
+      prisma.driver.updateMany.mockResolvedValueOnce({ count: 1 });
+
+      const res = await request(app)
+        .post("/api/drivers/state/bulk")
+        .send({ driverIds: ["d1", "missing"], action: "SUSPEND" });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject({ action: "SUSPEND", succeeded: 1, failed: 1 });
+      expect(res.body.results[1]).toMatchObject({ driverId: "missing", ok: false, code: "NOT_FOUND" });
+    });
+  });
 });

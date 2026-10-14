@@ -13,8 +13,8 @@
 // The figures are the same ones the delivery company sees on its own scorecard
 // — on-time, acceptance, rating — on purpose. A driver who reads 82% here and
 // 71% on the fleet portal is a driver nobody can have a conversation about.
-import { useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, CircleCheck, CircleX, GraduationCap, Search, Snowflake, Sun, UserCheck, UserX } from "lucide-react";
 import Link from "next/link";
 import ConfirmModal from "@/components/shared/ConfirmModal";
@@ -23,10 +23,18 @@ import { PageSkeleton } from "@/components/shared/Skeleton";
 import SlidePanel from "@/components/shared/SlidePanel";
 import { useToast } from "@/components/shared/Toast";
 import { driverTrackingApi, driverTrainingApi, fleetsApi, zonesApi, unwrapList } from "@/lib/darbApi";
-import type { DriverStateAction, DriverTrackingRow, DeliveryZone, FleetProfile } from "@/types/darb";
+import type {
+  BulkDriverAction,
+  BulkDriverResponse,
+  DriverStateAction,
+  DriverTrackingRow,
+  DeliveryZone,
+  FleetProfile,
+} from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDateTime, formatNumber } from "@/i18n/format";
 import { useRole } from "@/hooks/useRole";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { cn } from "@/lib/cn";
 
 const WINDOWS = [7, 30, 90];
@@ -129,6 +137,13 @@ function StateBadge({ row }: { row: DriverTrackingRow }) {
       </span>
     );
   }
+  if (row.status === "TERMINATED" && row.terminationPending) {
+    return (
+      <span className="inline-flex items-center px-2 h-6 rounded-pill text-xs font-medium bg-red-100 text-red-700">
+        {row.status} · {t("rev24Ops.pendingClearance")}
+      </span>
+    );
+  }
   const tone =
     row.status === "ACTIVE"
       ? "bg-forest-100 text-forest-700"
@@ -167,18 +182,32 @@ export default function DriverTrackingTab() {
   const [periodDays, setPeriodDays] = useState(1);
   const [trainingReason, setTrainingReason] = useState("");
 
+  // Revision 24 #6 — "I need a checkbox to select multiple drivers to take
+  // action". The selection is ids; a bulk verb applies to the selected rows
+  // that are on screen, so a filter can never act on somebody out of sight.
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const [bulkConfirm, setBulkConfirm] = useState<Exclude<BulkDriverAction, "FREEZE" | "TRAIN"> | null>(null);
+  const [bulkFreeze, setBulkFreeze] = useState(false);
+  const [bulkTrain, setBulkTrain] = useState(false);
+  const [bulkResult, setBulkResult] = useState<BulkDriverResponse | null>(null);
+
+  // The search box filters while typing (revision 24 #12 found the same bug
+  // on Orders): the query waits for a pause and the old rows stay on screen
+  // while the next ones load, so the table never drops to a skeleton.
+  const debouncedQ = useDebouncedValue(q.trim(), 300);
   const trackingQuery = useQuery({
-    queryKey: ["darb", "driver-tracking", days, q, fleetPartnerId, zoneId, stateFilter === "TERMINATED"],
+    queryKey: ["darb", "driver-tracking", days, debouncedQ, fleetPartnerId, zoneId, stateFilter === "TERMINATED"],
     queryFn: () =>
       driverTrackingApi.list({
         days,
         // Terminated drivers are left out of the list unless asked for, so
         // the everyday view stays the people who can still work.
         ...(stateFilter === "TERMINATED" ? { status: "TERMINATED" } : {}),
-        ...(q.trim() ? { q: q.trim() } : {}),
+        ...(debouncedQ ? { q: debouncedQ } : {}),
         ...(fleetPartnerId ? { fleetPartnerId } : {}),
         ...(zoneId ? { zoneId } : {}),
       }),
+    placeholderData: keepPreviousData,
   });
 
   const fleetsQuery = useQuery({
@@ -284,6 +313,40 @@ export default function DriverTrackingTab() {
 
   const filtersActive = Object.values(metric).some(Boolean) || !!stateFilter;
 
+  const selectedRows = useMemo(() => rows.filter((r) => selected.has(r.id)), [rows, selected]);
+  const allVisibleSelected = rows.length > 0 && selectedRows.length === rows.length;
+  const someVisibleSelected = selectedRows.length > 0 && !allVisibleSelected;
+  const selectAllRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (selectAllRef.current) selectAllRef.current.indeterminate = someVisibleSelected;
+  }, [someVisibleSelected]);
+
+  function toggleRow(id: string) {
+    setSelected((cur) => {
+      const next = new Set(cur);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+  function toggleAllVisible() {
+    setSelected((cur) => {
+      const next = new Set(cur);
+      if (allVisibleSelected) rows.forEach((r) => next.delete(r.id));
+      else rows.forEach((r) => next.add(r.id));
+      return next;
+    });
+  }
+
+  const BULK_LABEL: Record<BulkDriverAction, string> = {
+    ACTIVATE: t("driverTracking.activate"),
+    DEACTIVATE: t("driverTracking.deactivate"),
+    SUSPEND: t("driverTracking.suspend"),
+    FREEZE: t("driverTracking.freeze"),
+    UNFREEZE: t("driverTracking.unfreeze"),
+    TRAIN: t("driverTracking.sendToTraining"),
+  };
+
   function toggleSort(key: SortKey) {
     setSort((cur) =>
       cur.key === key
@@ -368,6 +431,33 @@ export default function DriverTrackingTab() {
     },
   });
 
+  const bulkMutation = useMutation({
+    mutationFn: (body: { action: BulkDriverAction; reason?: string; periodDays?: number }) =>
+      driverTrackingApi.bulkSetState({ driverIds: selectedRows.map((r) => r.id), ...body }),
+    onSuccess: (result) => {
+      setBulkConfirm(null);
+      setBulkFreeze(false);
+      setBulkTrain(false);
+      setFreezeReason("");
+      setTrainingReason("");
+      setPeriodDays(1);
+      invalidate();
+      if (result.failed === 0) {
+        toast.success(t("rev24Ops.bulkAllDone").replace("{n}", formatNumber(result.succeeded, locale)));
+        setSelected(new Set());
+      } else {
+        // Keep the drivers it could not apply to selected, so a second try
+        // after fixing the cause is one click.
+        setSelected(new Set(result.results.filter((r) => !r.ok).map((r) => r.driverId)));
+        setBulkResult(result);
+      }
+    },
+    onError: (err: unknown) => {
+      const payload = (err as { response?: { data?: { error?: string } } })?.response?.data;
+      toast.error(payload?.error ?? t("errors.savingData"));
+    },
+  });
+
   const trainMutation = useMutation({
     mutationFn: (body: { driverId: string; periodDays: number; reason?: string }) =>
       driverTrainingApi.create(body),
@@ -384,8 +474,10 @@ export default function DriverTrackingTab() {
     },
   });
 
-  if (trackingQuery.isLoading) return <PageSkeleton statCards={0} tableRows={8} tableCols={8} />;
-  if (trackingQuery.error) {
+  if (trackingQuery.isLoading && !trackingQuery.data) {
+    return <PageSkeleton statCards={0} tableRows={8} tableCols={8} />;
+  }
+  if (trackingQuery.error && !trackingQuery.data) {
     return (
       <ErrorState
         error={trackingQuery.error instanceof Error ? trackingQuery.error.message : t("errors.loadingData")}
@@ -524,12 +616,79 @@ export default function DriverTrackingTab() {
         </span>
       </div>
 
+      {/* ── Bulk actions (revision 24 #6) ────────────────────────────────── */}
+      {canEdit && selectedRows.length > 0 && (
+        <div
+          data-testid="driver-bulk-bar"
+          className="flex flex-wrap items-center gap-2 rounded-2xl border border-primary/30 bg-primary/5 px-4 py-2"
+        >
+          <span className="text-sm font-medium text-sand-900 tabular-nums">
+            {t("rev24Ops.selectedCount").replace("{n}", formatNumber(selectedRows.length, locale))}
+          </span>
+          <div className="flex flex-wrap items-center gap-1 ms-2">
+            {(
+              [
+                ["ACTIVATE", UserCheck],
+                ["DEACTIVATE", UserX],
+                ["SUSPEND", UserX],
+                ["FREEZE", Snowflake],
+                ["UNFREEZE", Sun],
+                ["TRAIN", GraduationCap],
+              ] as Array<[BulkDriverAction, typeof UserCheck]>
+            ).map(([action, Icon]) => (
+              <button
+                key={action}
+                type="button"
+                data-testid={`driver-bulk-${action.toLowerCase()}`}
+                disabled={bulkMutation.isPending}
+                onClick={() => {
+                  if (action === "FREEZE") {
+                    setFreezeReason("");
+                    setBulkFreeze(true);
+                  } else if (action === "TRAIN") {
+                    setPeriodDays(1);
+                    setTrainingReason("");
+                    setBulkTrain(true);
+                  } else {
+                    setBulkConfirm(action);
+                  }
+                }}
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-pill border border-sand-200 bg-card text-xs font-medium text-sand-800 hover:bg-sand-100 disabled:opacity-40"
+              >
+                <Icon size={13} aria-hidden="true" />
+                {BULK_LABEL[action]}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setSelected(new Set())}
+            className="h-8 px-3 rounded-pill text-xs text-sand-600 hover:bg-sand-100 ms-auto"
+          >
+            {t("rev24Ops.clearSelection")}
+          </button>
+        </div>
+      )}
+
       {/* ── The table ───────────────────────────────────────────────────── */}
       <div className="bg-card border border-sand-200 rounded-2xl shadow-soft overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-sand-50 text-sand-600">
               <tr>
+                {canEdit && (
+                  <th className="w-10 ps-4 pe-0 py-3">
+                    <input
+                      ref={selectAllRef}
+                      type="checkbox"
+                      data-testid="driver-select-all"
+                      aria-label={t("rev24Ops.selectAll")}
+                      checked={allVisibleSelected}
+                      onChange={toggleAllVisible}
+                      className="h-4 w-4 rounded border-sand-300 accent-primary"
+                    />
+                  </th>
+                )}
                 {sortableTh("name", t("driverTracking.driver"), "start")}
                 <th className="text-start font-medium px-4 py-3">{t("driverTracking.company")}</th>
                 <th className="text-start font-medium px-4 py-3">{t("driverTracking.area")}</th>
@@ -550,13 +709,25 @@ export default function DriverTrackingTab() {
             <tbody className="divide-y divide-sand-100">
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={canEdit ? 13 : 12} className="px-4 py-10 text-center text-sand-500">
+                  <td colSpan={canEdit ? 14 : 12} className="px-4 py-10 text-center text-sand-500">
                     {t("driverTracking.empty")}
                   </td>
                 </tr>
               )}
               {rows.map((row) => (
-                <tr key={row.id} className="hover:bg-sand-50/60">
+                <tr key={row.id} className={cn("hover:bg-sand-50/60", selected.has(row.id) && "bg-primary/5")}>
+                  {canEdit && (
+                    <td className="w-10 ps-4 pe-0 py-3">
+                      <input
+                        type="checkbox"
+                        data-testid="driver-select"
+                        aria-label={t("rev24Ops.selectDriver").replace("{name}", row.name)}
+                        checked={selected.has(row.id)}
+                        onChange={() => toggleRow(row.id)}
+                        className="h-4 w-4 rounded border-sand-300 accent-primary"
+                      />
+                    </td>
+                  )}
                   <td className="px-4 py-3">
                     <Link href={`/drivers/${row.id}`} className="font-medium text-sand-900 hover:underline">
                       {row.name}
@@ -714,10 +885,17 @@ export default function DriverTrackingTab() {
 
       {/* ── Freeze ──────────────────────────────────────────────────────── */}
       <SlidePanel
-        open={freezing !== null}
-        onClose={() => setFreezing(null)}
-        title={t("driverTracking.freeze")}
-        subtitle={freezing?.name}
+        open={freezing !== null || bulkFreeze}
+        onClose={() => {
+          setFreezing(null);
+          setBulkFreeze(false);
+        }}
+        title={
+          bulkFreeze
+            ? t("rev24Ops.bulkFreezeTitle").replace("{n}", formatNumber(selectedRows.length, locale))
+            : t("driverTracking.freeze")
+        }
+        subtitle={bulkFreeze ? undefined : freezing?.name}
       >
         <div className="space-y-4">
           <div>
@@ -734,11 +912,16 @@ export default function DriverTrackingTab() {
           </div>
           <button
             type="button"
-            disabled={!freezeReason.trim() || stateMutation.isPending}
-            onClick={() =>
-              freezing &&
-              stateMutation.mutate({ id: freezing.id, action: "FREEZE", reason: freezeReason.trim() })
-            }
+            disabled={!freezeReason.trim() || stateMutation.isPending || bulkMutation.isPending}
+            onClick={() => {
+              if (bulkFreeze) {
+                bulkMutation.mutate({ action: "FREEZE", reason: freezeReason.trim() });
+                return;
+              }
+              if (freezing) {
+                stateMutation.mutate({ id: freezing.id, action: "FREEZE", reason: freezeReason.trim() });
+              }
+            }}
             className="h-10 px-5 rounded-pill bg-primary text-white text-sm font-medium disabled:opacity-40"
           >
             {t("driverTracking.freeze")}
@@ -767,10 +950,17 @@ export default function DriverTrackingTab() {
 
       {/* ── Send for training ───────────────────────────────────────────── */}
       <SlidePanel
-        open={training !== null}
-        onClose={() => setTraining(null)}
-        title={t("driverTracking.sendToTraining")}
-        subtitle={training?.name}
+        open={training !== null || bulkTrain}
+        onClose={() => {
+          setTraining(null);
+          setBulkTrain(false);
+        }}
+        title={
+          bulkTrain
+            ? t("rev24Ops.bulkTrainTitle").replace("{n}", formatNumber(selectedRows.length, locale))
+            : t("driverTracking.sendToTraining")
+        }
+        subtitle={bulkTrain ? undefined : training?.name}
       >
         <div className="space-y-4">
           <div>
@@ -808,20 +998,87 @@ export default function DriverTrackingTab() {
           </div>
           <button
             type="button"
-            disabled={trainMutation.isPending}
-            onClick={() =>
-              training &&
-              trainMutation.mutate({
-                driverId: training.id,
-                periodDays,
-                ...(trainingReason.trim() ? { reason: trainingReason.trim() } : {}),
-              })
-            }
+            disabled={trainMutation.isPending || bulkMutation.isPending}
+            onClick={() => {
+              if (bulkTrain) {
+                bulkMutation.mutate({
+                  action: "TRAIN",
+                  periodDays,
+                  ...(trainingReason.trim() ? { reason: trainingReason.trim() } : {}),
+                });
+                return;
+              }
+              if (training) {
+                trainMutation.mutate({
+                  driverId: training.id,
+                  periodDays,
+                  ...(trainingReason.trim() ? { reason: trainingReason.trim() } : {}),
+                });
+              }
+            }}
             className="h-10 px-5 rounded-pill bg-primary text-white text-sm font-medium disabled:opacity-40"
           >
             {t("driverTracking.sendToTraining")}
           </button>
         </div>
+      </SlidePanel>
+
+      {/* ── Bulk confirm + results (revision 24 #6) ─────────────────────── */}
+      <ConfirmModal
+        open={bulkConfirm !== null}
+        title={t("rev24Ops.bulkConfirmTitle")
+          .replace("{action}", bulkConfirm ? BULK_LABEL[bulkConfirm] : "")
+          .replace("{n}", formatNumber(selectedRows.length, locale))}
+        message={t("rev24Ops.bulkConfirmMessage")}
+        confirmLabel={bulkConfirm ? BULK_LABEL[bulkConfirm] : ""}
+        variant={bulkConfirm === "ACTIVATE" || bulkConfirm === "UNFREEZE" ? "default" : "warning"}
+        loading={bulkMutation.isPending}
+        onConfirm={() => {
+          if (bulkConfirm) bulkMutation.mutate({ action: bulkConfirm });
+        }}
+        onCancel={() => setBulkConfirm(null)}
+      />
+
+      <SlidePanel
+        open={bulkResult !== null}
+        onClose={() => setBulkResult(null)}
+        title={t("rev24Ops.bulkResultTitle")}
+        subtitle={
+          bulkResult
+            ? `${BULK_LABEL[bulkResult.action]} · ${t("rev24Ops.bulkResultSummary")
+                .replace("{ok}", formatNumber(bulkResult.succeeded, locale))
+                .replace("{failed}", formatNumber(bulkResult.failed, locale))}`
+            : undefined
+        }
+      >
+        <ul className="divide-y divide-sand-100" data-testid="driver-bulk-results">
+          {(bulkResult?.results ?? [])
+            .slice()
+            .sort((a, b) => Number(a.ok) - Number(b.ok))
+            .map((r) => (
+              <li key={r.driverId} className="flex items-start justify-between gap-3 py-2.5">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-sand-900" dir="auto">
+                    {r.name ?? r.driverId}
+                  </p>
+                  {!r.ok && (
+                    <p className="text-xs text-red-600" dir="auto">
+                      {r.code === "IN_TRAINING" ? t("driverTracking.inTrainingBlocked") : r.error}
+                    </p>
+                  )}
+                </div>
+                <span
+                  className={cn(
+                    "shrink-0 inline-flex items-center gap-1 px-2 h-6 rounded-pill text-xs font-medium",
+                    r.ok ? "bg-forest-100 text-forest-700" : "bg-red-100 text-red-700",
+                  )}
+                >
+                  {r.ok ? <CircleCheck size={12} aria-hidden="true" /> : <CircleX size={12} aria-hidden="true" />}
+                  {r.ok ? t("rev24Ops.bulkDone") : t("rev24Ops.bulkNotApplied")}
+                </span>
+              </li>
+            ))}
+        </ul>
       </SlidePanel>
     </div>
   );

@@ -1654,9 +1654,55 @@ export interface DriverTrackingRow {
   docsRequired: number;
   trainingSessionId: string | null;
   trainingEndsAt: string | null;
+  /** Revision 24 #16: TERMINATED with the equipment clearance not yet ticked. */
+  terminationPending: boolean;
 }
 
 export type DriverStateAction = "ACTIVATE" | "DEACTIVATE" | "SUSPEND" | "FREEZE" | "UNFREEZE" | "TERMINATE";
+
+/** Revision 24 #6: the verbs Driver tracking applies to a selection. */
+export type BulkDriverAction = "ACTIVATE" | "DEACTIVATE" | "SUSPEND" | "FREEZE" | "UNFREEZE" | "TRAIN";
+
+export interface BulkDriverResult {
+  driverId: string;
+  name: string | null;
+  ok: boolean;
+  error?: string;
+  code?: string;
+}
+
+export interface BulkDriverResponse {
+  action: BulkDriverAction;
+  succeeded: number;
+  failed: number;
+  results: BulkDriverResult[];
+}
+
+/** Revision 24 #13: GET /api/delivery-orders/:id/route. */
+export interface OrderRoutePoint {
+  lat: number;
+  lng: number;
+  at: string;
+  leg: "TO_PICKUP" | "TO_DROPOFF";
+}
+
+export interface OrderRoute {
+  orderId: string;
+  status: string;
+  driver: { id: string; name: string } | null;
+  pickup: { lat: number; lng: number; name: string; address: string | null } | null;
+  dropoff: { lat: number; lng: number; address: string | null } | null;
+  window: { from: string; to: string } | null;
+  path: OrderRoutePoint[];
+  thinned: boolean;
+}
+
+/** Revision 24 #16: POST /api/drivers/:id/termination-clearance. */
+export interface TerminationClearanceResponse {
+  driverId: string;
+  terminationClearedAt: string;
+  returned: Array<{ itemType: string; quantity: number }>;
+}
 
 // ── Driver training ──────────────────────────────────────────────────────
 

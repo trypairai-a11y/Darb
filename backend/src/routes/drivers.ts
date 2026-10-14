@@ -12,7 +12,14 @@ import { resolveDriverDateRange, batchLoadDriverStats, resolveTalabatStatus } fr
 import { listSnapshotsForDriver, listMemoriesByPrefix } from "../agent";
 import { explainScore } from "../services/driverFile/scoreExplainer";
 import { loadDriverAuditLog } from "../services/driverFile/decisionAuditFilter";
-import { driverTracking, setDriverOperationalState } from "../services/driverTrackingService";
+import {
+  BULK_DRIVER_ACTIONS,
+  bulkSetDriverOperationalState,
+  clearTerminatedDriver,
+  driverTracking,
+  setDriverOperationalState,
+  type BulkDriverAction,
+} from "../services/driverTrackingService";
 
 const router = Router();
 router.use(authMiddleware, tenantScope);
@@ -252,6 +259,60 @@ router.get("/tracking", async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * POST /api/drivers/state/bulk — revision 24 #6. One verb, many drivers:
+ * `{ driverIds, action, reason?, periodDays? }` where action is one of
+ * ACTIVATE | DEACTIVATE | SUSPEND | FREEZE | UNFREEZE | TRAIN. Answers 200 with
+ * a row per driver even when some were refused, so one driver in training does
+ * not cost the rest of the selection. Declared before the `/:id` routes.
+ */
+router.post("/state/bulk", rbac(...MUTATORS), async (req: Request, res: Response) => {
+  try {
+    const action = req.body?.action;
+    if (!(BULK_DRIVER_ACTIONS as readonly string[]).includes(action)) {
+      res.status(400).json({ error: `action must be one of ${BULK_DRIVER_ACTIONS.join(", ")}` });
+      return;
+    }
+    const driverIds = Array.isArray(req.body?.driverIds)
+      ? (req.body.driverIds as unknown[]).filter((id): id is string => typeof id === "string")
+      : [];
+    const periodDays = req.body?.periodDays === undefined ? undefined : Number(req.body.periodDays);
+    const result = await bulkSetDriverOperationalState({
+      tenantId: req.user!.tenantId,
+      driverIds,
+      action: action as BulkDriverAction,
+      reason: typeof req.body?.reason === "string" ? req.body.reason : null,
+      ...(periodDays !== undefined ? { periodDays } : {}),
+      actorUserId: req.user!.userId ?? null,
+    });
+    res.json(result);
+  } catch (err: any) {
+    const status = err?.statusCode ?? 400;
+    res.status(status).json({ error: err.message, ...(err?.code ? { code: err.code } : {}) });
+  }
+});
+
+/**
+ * POST /api/drivers/:id/termination-clearance — revision 24 #16. Ticks the
+ * equipment clearance on a terminated driver: every issued item is marked
+ * returned and goes back to its stock pool, and the driver is finally
+ * terminated. `{ note? }`. 409 NOT_TERMINATED / ALREADY_CLEARED.
+ */
+router.post("/:id/termination-clearance", rbac(...MUTATORS), async (req: Request, res: Response) => {
+  try {
+    const result = await clearTerminatedDriver({
+      tenantId: req.user!.tenantId,
+      driverId: req.params.id,
+      actorUserId: req.user!.userId ?? null,
+      note: typeof req.body?.note === "string" ? req.body.note : null,
+    });
+    res.json(result);
+  } catch (err: any) {
+    const status = err?.statusCode ?? 400;
+    res.status(status).json({ error: err.message, ...(err?.code ? { code: err.code } : {}) });
+  }
+});
+
 /** Activate, deactivate, suspend, freeze, unfreeze or terminate one driver. */
 router.post("/:id/state", rbac(...MUTATORS), async (req: Request, res: Response) => {
   try {
@@ -266,6 +327,7 @@ router.post("/:id/state", rbac(...MUTATORS), async (req: Request, res: Response)
       driverId: req.params.id,
       action,
       reason: typeof req.body?.reason === "string" ? req.body.reason : null,
+      actorUserId: req.user!.userId ?? null,
     });
     res.json({ ok: true, driver });
   } catch (err: any) {
@@ -889,6 +951,14 @@ router.get("/:id/file", async (req: Request, res: Response) => {
     });
     if (!driver) return res.status(404).json({ error: "Driver not found" });
 
+    // Revision 24 #16 — who ticked the equipment clearance, by name.
+    const clearedBy = driver.terminationClearedById
+      ? await prisma.user.findFirst({
+          where: { id: driver.terminationClearedById, tenantId },
+          select: { id: true, name: true },
+        })
+      : null;
+
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const weekStart = new Date(now.getTime() - 7 * 86_400_000);
@@ -1099,6 +1169,9 @@ router.get("/:id/file", async (req: Request, res: Response) => {
         status: driver.status,
         platform: driver.platform,
         platformDriverId: driver.platformDriverId,
+        // Revision 24 #14: the Darb-issued id shown in place of the inherited
+        // aggregator id ("Platform ID") on the profile.
+        driverCode: driver.driverCode ?? null,
         phone: driver.phone,
         vehicleType: driver.vehicleType,
         company: driver.company ? { id: driver.company.id, name: driver.company.name, platform: driver.company.platform } : null,
@@ -1108,6 +1181,13 @@ router.get("/:id/file", async (req: Request, res: Response) => {
         hireDate: toIso(driver.hireDate),
         monthlySalary: driver.monthlySalary ?? null,
         performanceTier: driver.performanceTier ?? null,
+        // Revision 24 #16 — two-step termination. `terminationPending` is
+        // TERMINATED with the equipment clearance not yet ticked.
+        terminatedAt: toIso(driver.terminatedAt),
+        terminationClearedAt: toIso(driver.terminationClearedAt),
+        terminationClearedBy: clearedBy ? { id: clearedBy.id, name: clearedBy.name } : null,
+        terminationClearanceNote: driver.terminationClearanceNote ?? null,
+        terminationPending: driver.status === "TERMINATED" && !driver.terminationClearedAt,
       },
       batchHistory: batchHistory.map((b) => ({
         id: b.id,

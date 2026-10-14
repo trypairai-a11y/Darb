@@ -618,10 +618,10 @@ export default function LiveControlRoom() {
 
       {/* ── Map ── */}
       <div className="relative flex-1 min-w-0">
-        {/* An emergency is the one thing you never navigate to, and the ops
-            layout already floats IncidentAlertBanner over every surface for
-            exactly that. The way in to the full console is the red Emergency
-            tile in the rail, which is why there is no second red bar here. */}
+        {/* The way in to the full emergency console is the red Emergency
+            tile in the rail. Revision 24 #1 removed the floating red incident
+            banner the ops layout used to draw ("it is annoying"), so the tile
+            is now the only red thing an incident puts on screen. */}
         {!emergencyOpen && <OpsAlertBanner gpsStale={gpsStale} onCopy={copyIrregular} />}
 
         <LiveMap

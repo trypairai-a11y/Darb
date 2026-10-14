@@ -39,6 +39,7 @@ import { selectCandidates } from "../services/dispatch/dispatchEngine";
 import { DeliveryOrderStatus } from "../generated/prisma";
 import { randomInt } from "crypto";
 import { isR2Configured, presignGetUrl } from "../services/r2Service";
+import { orderRoute } from "../services/orderRouteService";
 
 const SUPERVISOR_PLUS = ["ADMIN", "OPS_MANAGER", "SUPERVISOR"];
 
@@ -356,6 +357,21 @@ router.get("/:id/timeline", async (req: Request, res: Response) => {
       orderBy: { timestamp: "asc" },
     });
     res.json(events);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /api/delivery-orders/:id/route — revision 24 #13. The pickup and dropoff
+ * pins plus the driver's GPS path from assignment to the end of the order,
+ * thinned to at most a few hundred points. See services/orderRouteService.ts.
+ */
+router.get("/:id/route", async (req: Request, res: Response) => {
+  try {
+    const route = await orderRoute(req.user!.tenantId, req.params.id);
+    if (!route) { res.status(404).json({ error: "Order not found" }); return; }
+    res.json(route);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

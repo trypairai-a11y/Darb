@@ -13,6 +13,7 @@ import OrderStatusBadge, { ReturningPill } from "@/components/darb/OrderStatusBa
 import { isReturningToStore } from "@/lib/orderReturn";
 import { OrderOutcomeBanner, outcomeReason } from "@/components/darb/OrderOutcome";
 import OfferTimeline from "@/components/darb/OfferTimeline";
+import OrderRouteMap from "@/components/map/OrderRouteMap";
 import TrackingLink from "@/components/darb/TrackingLink";
 import SlaCountdown from "@/components/darb/SlaCountdown";
 import { deliveryOrdersApi, unwrapList } from "@/lib/darbApi";
@@ -360,6 +361,10 @@ export default function OrderOpsPanel({
                 <h3 className="text-xs uppercase tracking-wide font-medium text-sand-600 mb-2">
                   {t("dispatch.timeline")}
                 </h3>
+                {/* Revision 24 #13: the route on a map above the event list. */}
+                <div className="mb-4">
+                  <OrderRouteMap orderId={order.id} />
+                </div>
                 <ol className="space-y-0">
                   {timeline.map((ev, i) => (
                     <li key={ev.id ?? i} className="relative flex gap-3 pb-4 last:pb-0">

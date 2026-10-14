@@ -6,7 +6,9 @@
 import { useMemo, useState } from "react";
 import HqTabs from "@/components/hq/HqTabs";
 import { OPS_TABS } from "@/lib/hqTabs";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import OrderRouteMap from "@/components/map/OrderRouteMap";
 import { PackageCheck, RefreshCw, UserPlus2, XCircle } from "lucide-react";
 import DataTable from "@/components/shared/DataTable";
 import FilterBar from "@/components/shared/FilterBar";
@@ -79,6 +81,14 @@ export default function DeliveryOrdersPage() {
   const [reasonDraft, setReasonDraft] = useState("");
   const [actionBusy, setActionBusy] = useState(false);
 
+  // Revision 24 #12 ("whenever I enter a letter it refreshes"). Every
+  // keystroke used to change the query key, the new key had no data, so
+  // `isLoading` went true and the early return below swapped the whole page
+  // for a skeleton: the search box unmounted, lost focus and came back empty
+  // of the caret. The box now stays bound to the live text while the query
+  // waits for typing to pause, and the previous rows stay on screen while
+  // the next page of results is fetched.
+  const debouncedSearch = useDebouncedValue(filters.search ?? "", 300);
   const listParams = useMemo(
     () => ({
       page,
@@ -87,15 +97,16 @@ export default function DeliveryOrdersPage() {
       vendorId: filters.vendorId || undefined,
       dateFrom: filters.dateFrom || undefined,
       dateTo: filters.dateTo || undefined,
-      search: filters.search || undefined,
+      search: debouncedSearch.trim() || undefined,
     }),
-    [page, limit, filters]
+    [page, limit, filters.status, filters.vendorId, filters.dateFrom, filters.dateTo, debouncedSearch]
   );
 
   const ordersQuery = useQuery({
     queryKey: ["darb", "delivery-orders", listParams],
     queryFn: () => deliveryOrdersApi.list(listParams),
     refetchInterval: 15_000,
+    placeholderData: keepPreviousData,
   });
 
   const vendorsQuery = useQuery({
@@ -272,8 +283,13 @@ export default function DeliveryOrdersPage() {
     },
   ];
 
-  if (ordersQuery.isLoading) return <PageSkeleton statCards={0} tableRows={10} tableCols={8} />;
-  if (ordersQuery.error) {
+  // Only the very first load gets the skeleton. With keepPreviousData a later
+  // filter change keeps the old rows (isPlaceholderData) instead, so nothing
+  // above the table ever unmounts mid-typing.
+  if (ordersQuery.isLoading && !ordersQuery.data) {
+    return <PageSkeleton statCards={0} tableRows={10} tableCols={8} />;
+  }
+  if (ordersQuery.error && !ordersQuery.data) {
     return (
       <ErrorState
         error={ordersQuery.error instanceof Error ? ordersQuery.error.message : t("errors.loadingData")}
@@ -336,6 +352,10 @@ export default function DeliveryOrdersPage() {
         }}
       />
 
+      <div
+        className={ordersQuery.isPlaceholderData ? "opacity-60 transition-opacity" : "transition-opacity"}
+        aria-busy={ordersQuery.isPlaceholderData}
+      >
       <DataTable
         columns={columns}
         data={orders}
@@ -357,6 +377,7 @@ export default function DeliveryOrdersPage() {
             : undefined
         }
       />
+      </div>
 
       {/* Detail panel */}
       <SlidePanel
@@ -539,6 +560,11 @@ export default function DeliveryOrdersPage() {
               <h3 className="text-xs uppercase tracking-wide font-medium text-sand-600 mb-2">
                 {t("dispatch.timeline")}
               </h3>
+              {/* Revision 24 #13: shop pin, customer pin and the driver's
+                  path, above the event list. */}
+              <div className="mb-4">
+                <OrderRouteMap orderId={order.id} />
+              </div>
               {timeline.length === 0 ? (
                 <p className="text-sm text-sand-600">{t("errors.noData")}</p>
               ) : (

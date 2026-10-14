@@ -24530,6 +24530,10 @@ export namespace Prisma {
     passportStatus: string | null
     driverSelfieExpiry: Date | null
     driverSelfieStatus: string | null
+    terminatedAt: Date | null
+    terminationClearedAt: Date | null
+    terminationClearedById: string | null
+    terminationClearanceNote: string | null
   }
 
   export type DriverMaxAggregateOutputType = {
@@ -24587,6 +24591,10 @@ export namespace Prisma {
     passportStatus: string | null
     driverSelfieExpiry: Date | null
     driverSelfieStatus: string | null
+    terminatedAt: Date | null
+    terminationClearedAt: Date | null
+    terminationClearedById: string | null
+    terminationClearanceNote: string | null
   }
 
   export type DriverCountAggregateOutputType = {
@@ -24644,6 +24652,10 @@ export namespace Prisma {
     passportStatus: number
     driverSelfieExpiry: number
     driverSelfieStatus: number
+    terminatedAt: number
+    terminationClearedAt: number
+    terminationClearedById: number
+    terminationClearanceNote: number
     _all: number
   }
 
@@ -24713,6 +24725,10 @@ export namespace Prisma {
     passportStatus?: true
     driverSelfieExpiry?: true
     driverSelfieStatus?: true
+    terminatedAt?: true
+    terminationClearedAt?: true
+    terminationClearedById?: true
+    terminationClearanceNote?: true
   }
 
   export type DriverMaxAggregateInputType = {
@@ -24770,6 +24786,10 @@ export namespace Prisma {
     passportStatus?: true
     driverSelfieExpiry?: true
     driverSelfieStatus?: true
+    terminatedAt?: true
+    terminationClearedAt?: true
+    terminationClearedById?: true
+    terminationClearanceNote?: true
   }
 
   export type DriverCountAggregateInputType = {
@@ -24827,6 +24847,10 @@ export namespace Prisma {
     passportStatus?: true
     driverSelfieExpiry?: true
     driverSelfieStatus?: true
+    terminatedAt?: true
+    terminationClearedAt?: true
+    terminationClearedById?: true
+    terminationClearanceNote?: true
     _all?: true
   }
 
@@ -24971,6 +24995,10 @@ export namespace Prisma {
     passportStatus: string | null
     driverSelfieExpiry: Date | null
     driverSelfieStatus: string | null
+    terminatedAt: Date | null
+    terminationClearedAt: Date | null
+    terminationClearedById: string | null
+    terminationClearanceNote: string | null
     _count: DriverCountAggregateOutputType | null
     _avg: DriverAvgAggregateOutputType | null
     _sum: DriverSumAggregateOutputType | null
@@ -25047,6 +25075,10 @@ export namespace Prisma {
     passportStatus?: boolean
     driverSelfieExpiry?: boolean
     driverSelfieStatus?: boolean
+    terminatedAt?: boolean
+    terminationClearedAt?: boolean
+    terminationClearedById?: boolean
+    terminationClearanceNote?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     company?: boolean | CompanyDefaultArgs<ExtArgs>
     supervisor?: boolean | Driver$supervisorArgs<ExtArgs>
@@ -25160,6 +25192,10 @@ export namespace Prisma {
     passportStatus?: boolean
     driverSelfieExpiry?: boolean
     driverSelfieStatus?: boolean
+    terminatedAt?: boolean
+    terminationClearedAt?: boolean
+    terminationClearedById?: boolean
+    terminationClearanceNote?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     company?: boolean | CompanyDefaultArgs<ExtArgs>
     supervisor?: boolean | Driver$supervisorArgs<ExtArgs>
@@ -25222,6 +25258,10 @@ export namespace Prisma {
     passportStatus?: boolean
     driverSelfieExpiry?: boolean
     driverSelfieStatus?: boolean
+    terminatedAt?: boolean
+    terminationClearedAt?: boolean
+    terminationClearedById?: boolean
+    terminationClearanceNote?: boolean
   }
 
   export type DriverInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -25422,6 +25462,17 @@ export namespace Prisma {
        */
       driverSelfieExpiry: Date | null
       driverSelfieStatus: string | null
+      /**
+       * Revision 24 #16 — termination is two steps. TERMINATE stamps
+       * `terminatedAt` and the driver reads "Terminated (pending clearance)"
+       * until somebody ticks the equipment clearance on the profile, which marks
+       * every issued item returned and stamps the pair below. Only then is the
+       * driver finally terminated. Plain id, no relation, same as the audit log.
+       */
+      terminatedAt: Date | null
+      terminationClearedAt: Date | null
+      terminationClearedById: string | null
+      terminationClearanceNote: string | null
     }, ExtArgs["result"]["driver"]>
     composites: {}
   }
@@ -25924,6 +25975,10 @@ export namespace Prisma {
     readonly passportStatus: FieldRef<"Driver", 'String'>
     readonly driverSelfieExpiry: FieldRef<"Driver", 'DateTime'>
     readonly driverSelfieStatus: FieldRef<"Driver", 'String'>
+    readonly terminatedAt: FieldRef<"Driver", 'DateTime'>
+    readonly terminationClearedAt: FieldRef<"Driver", 'DateTime'>
+    readonly terminationClearedById: FieldRef<"Driver", 'String'>
+    readonly terminationClearanceNote: FieldRef<"Driver", 'String'>
   }
     
 
@@ -163470,7 +163525,11 @@ export namespace Prisma {
     passportExpiry: 'passportExpiry',
     passportStatus: 'passportStatus',
     driverSelfieExpiry: 'driverSelfieExpiry',
-    driverSelfieStatus: 'driverSelfieStatus'
+    driverSelfieStatus: 'driverSelfieStatus',
+    terminatedAt: 'terminatedAt',
+    terminationClearedAt: 'terminationClearedAt',
+    terminationClearedById: 'terminationClearedById',
+    terminationClearanceNote: 'terminationClearanceNote'
   };
 
   export type DriverScalarFieldEnum = (typeof DriverScalarFieldEnum)[keyof typeof DriverScalarFieldEnum]
@@ -165967,7 +166026,9 @@ export namespace Prisma {
     civilIdStatus: 'civilIdStatus',
     policeClearanceStatus: 'policeClearanceStatus',
     passportStatus: 'passportStatus',
-    driverSelfieStatus: 'driverSelfieStatus'
+    driverSelfieStatus: 'driverSelfieStatus',
+    terminationClearedById: 'terminationClearedById',
+    terminationClearanceNote: 'terminationClearanceNote'
   };
 
   export type DriverOrderByRelevanceFieldEnum = (typeof DriverOrderByRelevanceFieldEnum)[keyof typeof DriverOrderByRelevanceFieldEnum]
@@ -169633,6 +169694,10 @@ export namespace Prisma {
     passportStatus?: StringNullableFilter<"Driver"> | string | null
     driverSelfieExpiry?: DateTimeNullableFilter<"Driver"> | Date | string | null
     driverSelfieStatus?: StringNullableFilter<"Driver"> | string | null
+    terminatedAt?: DateTimeNullableFilter<"Driver"> | Date | string | null
+    terminationClearedAt?: DateTimeNullableFilter<"Driver"> | Date | string | null
+    terminationClearedById?: StringNullableFilter<"Driver"> | string | null
+    terminationClearanceNote?: StringNullableFilter<"Driver"> | string | null
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     company?: XOR<CompanyRelationFilter, CompanyWhereInput>
     supervisor?: XOR<UserNullableRelationFilter, UserWhereInput> | null
@@ -169745,6 +169810,10 @@ export namespace Prisma {
     passportStatus?: SortOrderInput | SortOrder
     driverSelfieExpiry?: SortOrderInput | SortOrder
     driverSelfieStatus?: SortOrderInput | SortOrder
+    terminatedAt?: SortOrderInput | SortOrder
+    terminationClearedAt?: SortOrderInput | SortOrder
+    terminationClearedById?: SortOrderInput | SortOrder
+    terminationClearanceNote?: SortOrderInput | SortOrder
     tenant?: TenantOrderByWithRelationInput
     company?: CompanyOrderByWithRelationInput
     supervisor?: UserOrderByWithRelationInput
@@ -169862,6 +169931,10 @@ export namespace Prisma {
     passportStatus?: StringNullableFilter<"Driver"> | string | null
     driverSelfieExpiry?: DateTimeNullableFilter<"Driver"> | Date | string | null
     driverSelfieStatus?: StringNullableFilter<"Driver"> | string | null
+    terminatedAt?: DateTimeNullableFilter<"Driver"> | Date | string | null
+    terminationClearedAt?: DateTimeNullableFilter<"Driver"> | Date | string | null
+    terminationClearedById?: StringNullableFilter<"Driver"> | string | null
+    terminationClearanceNote?: StringNullableFilter<"Driver"> | string | null
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     company?: XOR<CompanyRelationFilter, CompanyWhereInput>
     supervisor?: XOR<UserNullableRelationFilter, UserWhereInput> | null
@@ -169974,6 +170047,10 @@ export namespace Prisma {
     passportStatus?: SortOrderInput | SortOrder
     driverSelfieExpiry?: SortOrderInput | SortOrder
     driverSelfieStatus?: SortOrderInput | SortOrder
+    terminatedAt?: SortOrderInput | SortOrder
+    terminationClearedAt?: SortOrderInput | SortOrder
+    terminationClearedById?: SortOrderInput | SortOrder
+    terminationClearanceNote?: SortOrderInput | SortOrder
     _count?: DriverCountOrderByAggregateInput
     _avg?: DriverAvgOrderByAggregateInput
     _max?: DriverMaxOrderByAggregateInput
@@ -170039,6 +170116,10 @@ export namespace Prisma {
     passportStatus?: StringNullableWithAggregatesFilter<"Driver"> | string | null
     driverSelfieExpiry?: DateTimeNullableWithAggregatesFilter<"Driver"> | Date | string | null
     driverSelfieStatus?: StringNullableWithAggregatesFilter<"Driver"> | string | null
+    terminatedAt?: DateTimeNullableWithAggregatesFilter<"Driver"> | Date | string | null
+    terminationClearedAt?: DateTimeNullableWithAggregatesFilter<"Driver"> | Date | string | null
+    terminationClearedById?: StringNullableWithAggregatesFilter<"Driver"> | string | null
+    terminationClearanceNote?: StringNullableWithAggregatesFilter<"Driver"> | string | null
   }
 
   export type DriverRestrictionWhereInput = {
@@ -184053,6 +184134,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -184165,6 +184250,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -184267,6 +184356,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -184379,6 +184472,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -184486,6 +184583,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
   }
 
   export type DriverUpdateManyMutationInput = {
@@ -184538,6 +184639,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DriverUncheckedUpdateManyInput = {
@@ -184595,6 +184700,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DriverRestrictionCreateInput = {
@@ -200525,6 +200634,10 @@ export namespace Prisma {
     passportStatus?: SortOrder
     driverSelfieExpiry?: SortOrder
     driverSelfieStatus?: SortOrder
+    terminatedAt?: SortOrder
+    terminationClearedAt?: SortOrder
+    terminationClearedById?: SortOrder
+    terminationClearanceNote?: SortOrder
   }
 
   export type DriverAvgOrderByAggregateInput = {
@@ -200587,6 +200700,10 @@ export namespace Prisma {
     passportStatus?: SortOrder
     driverSelfieExpiry?: SortOrder
     driverSelfieStatus?: SortOrder
+    terminatedAt?: SortOrder
+    terminationClearedAt?: SortOrder
+    terminationClearedById?: SortOrder
+    terminationClearanceNote?: SortOrder
   }
 
   export type DriverMinOrderByAggregateInput = {
@@ -200644,6 +200761,10 @@ export namespace Prisma {
     passportStatus?: SortOrder
     driverSelfieExpiry?: SortOrder
     driverSelfieStatus?: SortOrder
+    terminatedAt?: SortOrder
+    terminationClearedAt?: SortOrder
+    terminationClearedById?: SortOrder
+    terminationClearanceNote?: SortOrder
   }
 
   export type DriverSumOrderByAggregateInput = {
@@ -229033,6 +229154,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutDriversInput
@@ -229143,6 +229268,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -234058,6 +234187,10 @@ export namespace Prisma {
     passportStatus?: StringNullableFilter<"Driver"> | string | null
     driverSelfieExpiry?: DateTimeNullableFilter<"Driver"> | Date | string | null
     driverSelfieStatus?: StringNullableFilter<"Driver"> | string | null
+    terminatedAt?: DateTimeNullableFilter<"Driver"> | Date | string | null
+    terminationClearedAt?: DateTimeNullableFilter<"Driver"> | Date | string | null
+    terminationClearedById?: StringNullableFilter<"Driver"> | string | null
+    terminationClearanceNote?: StringNullableFilter<"Driver"> | string | null
   }
 
   export type DriverBatchHistoryUpsertWithWhereUniqueWithoutTenantInput = {
@@ -238458,6 +238591,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutDriversInput
@@ -238568,6 +238705,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -240692,6 +240833,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     fleetPartner?: FleetPartnerCreateNestedOneWithoutDriversInput
@@ -240802,6 +240947,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -247921,6 +248070,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -248032,6 +248185,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -248420,6 +248577,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -248531,6 +248692,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -248632,6 +248797,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -248743,6 +248912,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutDriverInput
@@ -248860,6 +249033,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -248971,6 +249148,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutDriverNestedInput
@@ -249996,6 +250177,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -250107,6 +250292,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -250788,6 +250977,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -250899,6 +251092,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -251422,6 +251619,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -251533,6 +251734,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -251988,6 +252193,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -252099,6 +252308,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -252465,6 +252678,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -252576,6 +252793,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutDriverInput
@@ -253134,6 +253355,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -253245,6 +253470,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutDriverNestedInput
@@ -253659,6 +253888,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -253770,6 +254003,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     attendanceRecords?: AttendanceRecordUncheckedCreateNestedManyWithoutDriverInput
@@ -254275,6 +254512,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -254386,6 +254627,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     attendanceRecords?: AttendanceRecordUncheckedUpdateManyWithoutDriverNestedInput
@@ -254875,6 +255120,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -254986,6 +255235,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -255439,6 +255692,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -255550,6 +255807,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -255987,6 +256248,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -256098,6 +256363,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -256551,6 +256820,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -256662,6 +256935,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -257099,6 +257376,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -257210,6 +257491,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -257598,6 +257883,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -257709,6 +257998,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -258075,6 +258368,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -258186,6 +258483,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -258574,6 +258875,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -258685,6 +258990,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -259051,6 +259360,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -259162,6 +259475,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -259550,6 +259867,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -259661,6 +259982,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -260088,6 +260413,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -260199,6 +260528,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -260654,6 +260987,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -260765,6 +261102,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -261192,6 +261533,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -261303,6 +261648,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -261819,6 +262168,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -261930,6 +262283,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -262098,6 +262455,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -262209,6 +262570,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -262476,6 +262841,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -262587,6 +262956,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -263033,6 +263406,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -263144,6 +263521,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -263581,6 +263962,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -263692,6 +264077,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -263897,6 +264286,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -264008,6 +264401,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -264180,6 +264577,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -264291,6 +264692,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -264441,6 +264846,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -264552,6 +264961,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -264724,6 +265137,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -264835,6 +265252,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -264985,6 +265406,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -265096,6 +265521,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -265268,6 +265697,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -265379,6 +265812,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -266089,6 +266526,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -266200,6 +266641,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -266588,6 +267033,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -266699,6 +267148,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -267065,6 +267518,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -267176,6 +267633,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -267742,6 +268203,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -267853,6 +268318,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -269481,6 +269950,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -269592,6 +270065,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -269971,6 +270448,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -270082,6 +270563,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -270531,6 +271016,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -270642,6 +271131,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -271045,6 +271538,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -271156,6 +271653,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -271589,6 +272090,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -271700,6 +272205,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -272205,6 +272714,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -272316,6 +272829,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -272805,6 +273322,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -272916,6 +273437,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -273449,6 +273974,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -273560,6 +274089,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -274029,6 +274562,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -274140,6 +274677,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -274595,6 +275136,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -274706,6 +275251,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -274880,6 +275429,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -274991,6 +275544,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -275175,6 +275732,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -275286,6 +275847,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -275725,6 +276290,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -275836,6 +276405,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -276224,6 +276797,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -276335,6 +276912,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -277237,6 +277818,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -277348,6 +277933,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -277736,6 +278325,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -277847,6 +278440,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -278213,6 +278810,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -278324,6 +278925,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -278712,6 +279317,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -278823,6 +279432,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -280261,6 +280874,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -280372,6 +280989,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -280838,6 +281459,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -280949,6 +281574,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -284361,6 +284990,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -284472,6 +285105,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -284860,6 +285497,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -284971,6 +285612,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -285337,6 +285982,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -285448,6 +286097,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -285883,6 +286536,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -285994,6 +286651,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -287537,6 +288198,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -287648,6 +288313,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -288071,6 +288740,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -288182,6 +288855,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -288706,6 +289383,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -288817,6 +289498,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -289328,6 +290013,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -289439,6 +290128,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -290877,6 +291570,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -290988,6 +291685,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -291376,6 +292077,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -291487,6 +292192,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -291853,6 +292562,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -291964,6 +292677,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -292419,6 +293136,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -292530,6 +293251,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -292928,6 +293653,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -293039,6 +293768,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -293476,6 +294209,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -293587,6 +294324,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -295145,6 +295886,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -295256,6 +296001,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -295644,6 +296393,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -295755,6 +296508,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -297193,6 +297950,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -297304,6 +298065,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -297692,6 +298457,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -297803,6 +298572,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -300992,6 +301765,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -301103,6 +301880,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -301536,6 +302317,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -301647,6 +302432,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -307868,6 +308657,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -307979,6 +308772,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -308367,6 +309164,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -308478,6 +309279,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -315242,6 +316047,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -315352,6 +316161,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -320027,6 +320840,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -320138,6 +320955,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -320961,6 +321782,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -321072,6 +321897,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -321771,6 +322600,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -321882,6 +322715,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -322391,6 +323228,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -322502,6 +323343,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -324688,6 +325533,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -324799,6 +325648,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -325260,6 +326113,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -325371,6 +326228,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -326352,6 +327213,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -326463,6 +327328,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -326966,6 +327835,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -327077,6 +327950,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -329055,6 +329932,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -329166,6 +330047,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -329675,6 +330560,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -329786,6 +330675,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -331793,6 +332686,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -331903,6 +332800,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -335888,6 +336789,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -335999,6 +336904,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -336896,6 +337805,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -337007,6 +337920,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -337815,6 +338732,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -337926,6 +338847,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -338627,6 +339552,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -338738,6 +339667,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -339423,6 +340356,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -339534,6 +340471,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -340235,6 +341176,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -340346,6 +341291,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -348207,6 +349156,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     tenant: TenantCreateNestedOneWithoutDriversInput
     company: CompanyCreateNestedOneWithoutDriversInput
     supervisor?: UserCreateNestedOneWithoutSupervisedDriversInput
@@ -348318,6 +349271,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
     inventory?: DriverInventoryUncheckedCreateNestedManyWithoutDriverInput
     shifts?: ShiftUncheckedCreateNestedManyWithoutDriverInput
     shiftRequests?: ShiftRequestUncheckedCreateNestedManyWithoutDriverInput
@@ -348943,6 +349900,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -349054,6 +350015,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -352813,6 +353778,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
   }
 
   export type DriverBatchHistoryCreateManyTenantInput = {
@@ -354733,6 +355702,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutDriversNestedInput
@@ -354843,6 +355816,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -354949,6 +355926,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DriverBatchHistoryUpdateWithoutTenantInput = {
@@ -360242,6 +361223,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
   }
 
   export type VehicleCreateManyCompanyInput = {
@@ -360353,6 +361338,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutDriversNestedInput
@@ -360463,6 +361452,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -360569,6 +361562,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type VehicleUpdateWithoutCompanyInput = {
@@ -361159,6 +362156,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
   }
 
   export type DeviceCommandCreateManyIssuedByInput = {
@@ -361762,6 +362763,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     fleetPartner?: FleetPartnerUpdateOneWithoutDriversNestedInput
@@ -361872,6 +362877,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -361978,6 +362987,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DeviceCommandUpdateWithoutIssuedByInput = {
@@ -370852,6 +371865,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
   }
 
   export type ShiftCapacityCreateManyZoneInput = {
@@ -371410,6 +372427,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -371520,6 +372541,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -371626,6 +372651,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ShiftCapacityUpdateWithoutZoneInput = {
@@ -372204,6 +373233,10 @@ export namespace Prisma {
     passportStatus?: string | null
     driverSelfieExpiry?: Date | string | null
     driverSelfieStatus?: string | null
+    terminatedAt?: Date | string | null
+    terminationClearedAt?: Date | string | null
+    terminationClearedById?: string | null
+    terminationClearanceNote?: string | null
   }
 
   export type UserCreateManyFleetPartnerInput = {
@@ -372450,6 +373483,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDriversNestedInput
     company?: CompanyUpdateOneRequiredWithoutDriversNestedInput
     supervisor?: UserUpdateOneWithoutSupervisedDriversNestedInput
@@ -372560,6 +373597,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
     inventory?: DriverInventoryUncheckedUpdateManyWithoutDriverNestedInput
     shifts?: ShiftUncheckedUpdateManyWithoutDriverNestedInput
     shiftRequests?: ShiftRequestUncheckedUpdateManyWithoutDriverNestedInput
@@ -372666,6 +373707,10 @@ export namespace Prisma {
     passportStatus?: NullableStringFieldUpdateOperationsInput | string | null
     driverSelfieExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     driverSelfieStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    terminatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    terminationClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    terminationClearanceNote?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserUpdateWithoutFleetPartnerInput = {

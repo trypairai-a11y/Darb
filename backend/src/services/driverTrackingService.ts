@@ -12,6 +12,7 @@
  * company's own scorecard is a driver nobody can have a conversation about.
  */
 import { prisma } from "../config";
+import { createTrainingSession } from "./training/driverTrainingService";
 
 export interface DriverTrackingRow {
   id: string;
@@ -57,6 +58,11 @@ export interface DriverTrackingRow {
   /** An open training window, when there is one. */
   trainingSessionId: string | null;
   trainingEndsAt: string | null;
+  /**
+   * Revision 24 #16 — TERMINATED with the equipment clearance not yet ticked.
+   * Always false for any other status.
+   */
+  terminationPending: boolean;
 }
 
 /**
@@ -103,6 +109,7 @@ export async function driverTracking(params: {
       isFrozen: true,
       inTraining: true,
       complianceFreezeReason: true,
+      terminationClearedAt: true,
       vehicleType: true,
       fleetPartnerId: true,
       fleetPartner: { select: { id: true, name: true } },
@@ -288,6 +295,7 @@ export async function driverTracking(params: {
       docsRequired: DOC_COLUMNS.length,
       trainingSessionId: t?.id ?? null,
       trainingEndsAt: t?.endsAt?.toISOString() ?? null,
+      terminationPending: d.status === "TERMINATED" && !d.terminationClearedAt,
     };
   });
 
@@ -302,16 +310,20 @@ export async function driverTracking(params: {
  * button dispatch reads. Freezing does not change the status, so unfreezing
  * cannot silently promote a SUSPENDED driver back to ACTIVE.
  */
+export type DriverStateAction = "ACTIVATE" | "DEACTIVATE" | "SUSPEND" | "FREEZE" | "UNFREEZE" | "TERMINATE";
+
 export async function setDriverOperationalState(params: {
   tenantId: string;
   driverId: string;
-  action: "ACTIVATE" | "DEACTIVATE" | "SUSPEND" | "FREEZE" | "UNFREEZE" | "TERMINATE";
+  action: DriverStateAction;
   reason?: string | null;
+  /** Who pressed the button, for the audit row a termination writes. */
+  actorUserId?: string | null;
 }) {
   const { tenantId, driverId } = params;
   const driver = await prisma.driver.findFirst({
     where: { id: driverId, tenantId },
-    select: { id: true, inTraining: true },
+    select: { id: true, inTraining: true, status: true },
   });
   if (!driver) throw Object.assign(new Error("Driver not found"), { statusCode: 404 });
 
@@ -347,6 +359,14 @@ export async function setDriverOperationalState(params: {
       data.isFrozen = false;
       data.complianceFrozenAt = null;
       data.complianceFreezeReason = null;
+      // Taking a terminated driver back on starts their record clean: a
+      // later termination needs its own clearance.
+      if (driver.status === "TERMINATED") {
+        data.terminatedAt = null;
+        data.terminationClearedAt = null;
+        data.terminationClearedById = null;
+        data.terminationClearanceNote = null;
+      }
       break;
     case "DEACTIVATE":
       data.status = "INACTIVE";
@@ -362,6 +382,16 @@ export async function setDriverOperationalState(params: {
       // a window that will never be run.
       data.status = "TERMINATED";
       data.inTraining = false;
+      // Revision 24 #16: this is the first of two steps. The driver now reads
+      // "Terminated (pending clearance)" until the equipment clearance on the
+      // profile is ticked. Terminating somebody already terminated keeps the
+      // original stamp and any clearance already recorded.
+      if (driver.status !== "TERMINATED") {
+        data.terminatedAt = new Date();
+        data.terminationClearedAt = null;
+        data.terminationClearedById = null;
+        data.terminationClearanceNote = null;
+      }
       break;
     case "FREEZE":
       if (!params.reason?.trim()) {
@@ -379,6 +409,18 @@ export async function setDriverOperationalState(params: {
   }
 
   await prisma.driver.updateMany({ where: { id: driverId, tenantId }, data });
+  if (params.action === "TERMINATE" && driver.status !== "TERMINATED") {
+    await prisma.auditLog.create({
+      data: {
+        tenantId,
+        userId: params.actorUserId ?? null,
+        action: "DRIVER_TERMINATED",
+        entityType: "Driver",
+        entityId: driverId,
+        changes: { reason: params.reason ?? null, clearance: "PENDING" },
+      },
+    });
+  }
   return prisma.driver.findFirst({
     where: { id: driverId, tenantId },
     select: {
@@ -390,4 +432,209 @@ export async function setDriverOperationalState(params: {
       complianceFreezeReason: true,
     },
   });
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// Revision 24 #6 — "I need a checkbox to select multiple drivers to take
+// action". One verb applied to a selection.
+// ══════════════════════════════════════════════════════════════════════════
+
+/** The verbs the tracking table offers in bulk. TERMINATE is deliberately not
+ *  one of them, same as the row: this screen pauses people, it does not end
+ *  them, and ending a hundred at once is not a click anybody should make. */
+export const BULK_DRIVER_ACTIONS = ["ACTIVATE", "DEACTIVATE", "SUSPEND", "FREEZE", "UNFREEZE", "TRAIN"] as const;
+export type BulkDriverAction = (typeof BULK_DRIVER_ACTIONS)[number];
+export const BULK_DRIVER_MAX = 200;
+
+export interface BulkDriverResult {
+  driverId: string;
+  name: string | null;
+  ok: boolean;
+  error?: string;
+  code?: string;
+}
+
+/**
+ * Runs the single-driver logic once per driver, one after another, and
+ * reports each outcome. A refusal for one driver (in training, already has a
+ * window, not found) is that driver's row in the result, never the batch's:
+ * the client selected thirty people, and one of them being in training must
+ * not leave the other twenty-nine untouched.
+ */
+export async function bulkSetDriverOperationalState(params: {
+  tenantId: string;
+  driverIds: string[];
+  action: BulkDriverAction;
+  reason?: string | null;
+  periodDays?: number;
+  actorUserId?: string | null;
+}): Promise<{ action: BulkDriverAction; succeeded: number; failed: number; results: BulkDriverResult[] }> {
+  const { tenantId, action } = params;
+  const ids = Array.from(new Set(params.driverIds.filter((id) => typeof id === "string" && id)));
+  if (!ids.length) throw Object.assign(new Error("Select at least one driver"), { statusCode: 400 });
+  if (ids.length > BULK_DRIVER_MAX) {
+    throw Object.assign(new Error(`At most ${BULK_DRIVER_MAX} drivers at a time`), { statusCode: 400 });
+  }
+  // Checked once up front rather than failing every row with the same words.
+  if (action === "FREEZE" && !params.reason?.trim()) {
+    throw Object.assign(new Error("A freeze needs a reason"), { statusCode: 400 });
+  }
+
+  const named = await prisma.driver.findMany({
+    where: { tenantId, id: { in: ids } },
+    select: { id: true, name: true },
+  });
+  const nameBy = new Map(named.map((d) => [d.id, d.name]));
+
+  const results: BulkDriverResult[] = [];
+  for (const driverId of ids) {
+    const name = nameBy.get(driverId) ?? null;
+    if (!name) {
+      results.push({ driverId, name, ok: false, error: "Driver not found", code: "NOT_FOUND" });
+      continue;
+    }
+    try {
+      if (action === "TRAIN") {
+        await createTrainingSession({
+          tenantId,
+          driverId,
+          periodDays: params.periodDays ?? 1,
+          reason: params.reason ?? null,
+          coachId: params.actorUserId ?? null,
+        });
+      } else {
+        await setDriverOperationalState({
+          tenantId,
+          driverId,
+          action,
+          reason: params.reason ?? null,
+          actorUserId: params.actorUserId ?? null,
+        });
+      }
+      results.push({ driverId, name, ok: true });
+    } catch (err) {
+      const e = err as { message?: string; code?: string };
+      results.push({
+        driverId,
+        name,
+        ok: false,
+        error: e?.message ?? "Failed",
+        ...(typeof e?.code === "string" ? { code: e.code } : {}),
+      });
+    }
+  }
+
+  const succeeded = results.filter((r) => r.ok).length;
+  return { action, succeeded, failed: results.length - succeeded, results };
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// Revision 24 #16 — "for terminated drivers, there should be a clearance
+// checkbox confirming we received the equipment from them, after which they
+// get finally terminated".
+// ══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Ticks the equipment clearance on a TERMINATED driver.
+ *
+ * Every item still issued to the driver is marked returned (returnedDate now,
+ * issued off) and goes back into its stock pool on /assets, so the equipment
+ * screen's "issued" count and the driver's file never disagree. The stamp is a
+ * status-guarded `updateMany` on `terminationClearedAt: null`: count 0 means
+ * somebody else cleared the driver a moment ago and the answer is 409, never a
+ * second return of the same kit.
+ */
+export async function clearTerminatedDriver(params: {
+  tenantId: string;
+  driverId: string;
+  actorUserId: string | null;
+  note?: string | null;
+}) {
+  const { tenantId, driverId } = params;
+  const driver = await prisma.driver.findFirst({
+    where: { id: driverId, tenantId },
+    select: { id: true, status: true, terminatedAt: true, terminationClearedAt: true },
+  });
+  if (!driver) throw Object.assign(new Error("Driver not found"), { statusCode: 404 });
+  if (driver.status !== "TERMINATED") {
+    throw Object.assign(new Error("Only a terminated driver needs an equipment clearance"), {
+      statusCode: 409,
+      code: "NOT_TERMINATED",
+    });
+  }
+  if (driver.terminationClearedAt) {
+    throw Object.assign(new Error("This driver has already been cleared"), {
+      statusCode: 409,
+      code: "ALREADY_CLEARED",
+    });
+  }
+
+  const now = new Date();
+  const note = params.note?.trim() ? params.note.trim().slice(0, 500) : null;
+
+  const returned = await prisma.$transaction(async (tx) => {
+    const claimed = await tx.driver.updateMany({
+      where: { id: driverId, tenantId, status: "TERMINATED", terminationClearedAt: null },
+      data: {
+        terminationClearedAt: now,
+        terminationClearedById: params.actorUserId,
+        terminationClearanceNote: note,
+        // A driver terminated before revision 24 has no stamp; give them one.
+        ...(driver.terminatedAt ? {} : { terminatedAt: now }),
+      },
+    });
+    if (claimed.count === 0) {
+      throw Object.assign(new Error("This driver has already been cleared"), {
+        statusCode: 409,
+        code: "ALREADY_CLEARED",
+      });
+    }
+
+    const open = await tx.driverInventory.findMany({
+      where: { driverId, issued: true, returnedDate: null },
+      select: { id: true, itemType: true, quantity: true },
+    });
+    const items: Array<{ itemType: string; quantity: number }> = [];
+    for (const item of open) {
+      await tx.driverInventory.update({
+        where: { id: item.id },
+        data: { issued: false, returnedDate: now },
+      });
+      const qty = Math.max(0, item.quantity);
+      items.push({ itemType: item.itemType, quantity: qty });
+      if (qty === 0) continue;
+      // Back into the pool it came from. Pools are per platform; Darb is the
+      // only platform in scope, so prefer DARB and fall back to any pool of
+      // that item. Issued never goes below zero.
+      const pool =
+        (await tx.platformInventory.findFirst({
+          where: { tenantId, itemType: item.itemType, platform: "DARB" as never },
+          select: { id: true, issued: true },
+        })) ??
+        (await tx.platformInventory.findFirst({
+          where: { tenantId, itemType: item.itemType },
+          select: { id: true, issued: true },
+        }));
+      if (pool) {
+        await tx.platformInventory.update({
+          where: { id: pool.id },
+          data: { issued: Math.max(0, pool.issued - qty), available: { increment: qty } },
+        });
+      }
+    }
+
+    await tx.auditLog.create({
+      data: {
+        tenantId,
+        userId: params.actorUserId,
+        action: "DRIVER_TERMINATION_CLEARED",
+        entityType: "Driver",
+        entityId: driverId,
+        changes: { returned: items, note },
+      },
+    });
+    return items;
+  });
+
+  return { driverId, terminationClearedAt: now.toISOString(), returned };
 }
