@@ -119,10 +119,12 @@ function ProfilePricingSection({ fleet }: { fleet: FleetRow }) {
       // The list row and this page's header show the fee and the name.
       await queryClient.invalidateQueries({ queryKey: ["darb", "fleets"] });
     } catch (err) {
-      toast.error(
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
-          t("toast.failedSave"),
-      );
+      // "Validation failed" alone told the client nothing; name the field.
+      const data = (err as {
+        response?: { data?: { error?: string; details?: { field: string; message: string }[] } };
+      })?.response?.data;
+      const detail = data?.details?.[0];
+      toast.error(detail ? `${detail.field}: ${detail.message}` : data?.error ?? t("toast.failedSave"));
     } finally {
       setSaving(false);
     }

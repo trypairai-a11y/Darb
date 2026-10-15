@@ -41,18 +41,49 @@ const READ = ["ADMIN", "OPS_MANAGER", "SUPERVISOR", "ACCOUNTANT"];
 const router = Router();
 router.use(authMiddleware, tenantScope);
 
-const kwdSchema = z
-  .union([z.string(), z.number()])
-  .refine((v) => /^\d{1,5}(\.\d{1,3})?$/.test(String(v)), {
-    message: "Must be a KWD amount with up to 3 decimals",
-  });
+/**
+ * Client note, 2026-10-15 (Osama): "validation failed" on a pricing save.
+ * Amounts are typed by hand, often on an Arabic keyboard, so they are read
+ * leniently before the check: Arabic-Indic digits, the Arabic decimal mark
+ * or a comma for the point, a leading ".5", a "KD" suffix, spaces, and
+ * trailing zeros past the third decimal. A blank box is null.
+ */
+export function normaliseKwdInput(v: unknown): unknown {
+  if (typeof v !== "string") return v;
+  let s = v
+    .replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x0660))
+    .replace(/[\u06F0-\u06F9]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
+    .replace(/[\u066B,]/g, ".")
+    .replace(/(KWD|KD|د\.ك)/gi, "")
+    .replace(/\s+/g, "");
+  if (s === "") return null;
+  if (s.startsWith(".")) s = `0${s}`;
+  s = s.replace(/^(\d+\.\d{3})0+$/, "$1");
+  return s;
+}
+
+const kwdSchema = z.preprocess(
+  normaliseKwdInput,
+  z
+    .union([z.string(), z.number(), z.null()])
+    .refine((v) => v === null || /^\d{1,5}(\.\d{1,3})?$/.test(String(v)), {
+      message: "Must be a KWD amount with up to 3 decimals",
+    }),
+);
+
+const optionalEmail = z.preprocess(
+  (v) => (typeof v === "string" ? (v.trim() === "" ? null : v.trim()) : v),
+  z.string().email("Contact email is not a valid email address").max(200).nullable().optional(),
+);
 
 const createFleetSchema = z.object({
   name: z.string().trim().min(2).max(120),
   contactName: z.string().max(120).nullable().optional(),
   contactPhone: z.string().max(30).nullable().optional(),
-  contactEmail: z.string().email().max(200).nullable().optional(),
-  flatFeePerOrderKwd: kwdSchema.optional(),
+  contactEmail: optionalEmail,
+  // Nullable so a blank box is accepted; the column itself is never cleared
+  // (it keeps its value, or the default on create).
+  flatFeePerOrderKwd: kwdSchema.nullable().optional(),
   // Revision 14 (#3): the kilometre half of what Darb pays this company.
   // Nullable so a partner can be put back on a flat deal explicitly, rather
   // than only ever being able to move one way.
@@ -229,7 +260,7 @@ router.post("/", rbac(...MUTATE), validateBody(createFleetSchema), async (req: R
         contactName: body.contactName ?? null,
         contactPhone: body.contactPhone ?? null,
         contactEmail: body.contactEmail ?? null,
-        ...(body.flatFeePerOrderKwd !== undefined
+        ...(body.flatFeePerOrderKwd != null
           ? { flatFeePerOrderKwd: String(body.flatFeePerOrderKwd) }
           : {}),
         ...(body.perKmFeeKwd !== undefined
@@ -543,7 +574,7 @@ router.put("/:id", rbac(...MUTATE), validateBody(updateFleetSchema), async (req:
     for (const key of ["name", "contactName", "contactPhone", "contactEmail", "minOnlineHoursPerDay", "isActive"] as const) {
       if (body[key] !== undefined) data[key] = body[key];
     }
-    if (body.flatFeePerOrderKwd !== undefined) data.flatFeePerOrderKwd = String(body.flatFeePerOrderKwd);
+    if (body.flatFeePerOrderKwd != null) data.flatFeePerOrderKwd = String(body.flatFeePerOrderKwd);
     // null is a real value here: it puts the company back on a flat rate.
     if (body.perKmFeeKwd !== undefined) {
       data.perKmFeeKwd = body.perKmFeeKwd == null ? null : String(body.perKmFeeKwd);
