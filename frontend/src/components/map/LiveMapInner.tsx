@@ -127,16 +127,17 @@ export default function LiveMapInner({
       style={{ height: "100%", width: "100%" }}
       scrollWheelZoom
     >
-      {/* Revision #1: CARTO Positron instead of raw OpenStreetMap raster. Same
-          OSM data, but a muted low-contrast style (soft greys, quiet roads,
-          restrained labels) closer to Google Maps or Waze, so zone fills and
-          driver pins read as the foreground. Free, no API key, but the
-          attribution is required by the licence. */}
+      {/* Revision #1 asked for a muted map so zone fills and driver pins read
+          as the foreground. CARTO Positron did that until CARTO started
+          requiring an API key (Oct 2026, every tile became an "API KEY
+          REQUIRED" watermark). OpenStreetMap tiles need no key; the
+          darb-muted-tiles class in globals.css greys them down to the same
+          quiet look. The attribution is required by the licence. */}
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-        subdomains="abcd"
-        maxZoom={20}
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        className="darb-muted-tiles"
+        maxZoom={19}
       />
 
       {zones && zones.length > 0 && (

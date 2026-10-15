@@ -47,3 +47,38 @@ export function itemDisplayName(itemType?: string | null, label?: string | null)
     .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
     .join(" ");
 }
+
+/** Built-in slugs to their key in the `inventoryItems` messages namespace. */
+const ITEM_TYPE_MESSAGE_KEYS: Record<string, string> = {
+  HELMET: "helmet",
+  TSHIRT: "tshirts",
+  PANTS: "pants",
+  COOLING_VEST: "coolingVests",
+  SAFETY_VEST: "safetyVests",
+  WATER_BOTTLE: "waterBottle",
+  GLOVES: "gloves",
+  SAFETY_KIT: "safetyKit",
+  BIG_BAG: "bigBag",
+  SMALL_BAG: "smallBag",
+  CAP: "cap",
+  MOBILE_PHONE: "mobilePhone",
+  SIM_CARD: "simCard",
+  PETROL_CARD: "petrolCard",
+};
+
+/**
+ * Locale-aware display name. In Arabic a built-in item uses its
+ * `inventoryItems` translation; a custom label or a slug an ops manager
+ * invented is shown as typed. English is exactly `itemDisplayName`.
+ */
+export function localizedItemName(
+  t: (path: string) => string,
+  locale: string,
+  itemType?: string | null,
+  label?: string | null,
+): string {
+  if (locale === "ar" && !(label && label.trim()) && itemType && ITEM_TYPE_MESSAGE_KEYS[itemType]) {
+    return t(`inventoryItems.${ITEM_TYPE_MESSAGE_KEYS[itemType]}`);
+  }
+  return itemDisplayName(itemType, label);
+}

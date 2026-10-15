@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useApiQuery } from "@/hooks/useApi";
 import { driverTrackingApi, driverTrainingApi } from "@/lib/darbApi";
-import { itemDisplayName } from "@/lib/equipmentItems";
+import { localizedItemName } from "@/lib/equipmentItems";
 import { useRole } from "@/hooks/useRole";
 import { useToast } from "@/components/shared/Toast";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -27,33 +27,61 @@ import DriverPrivateShiftToggle from "@/components/privateShifts/DriverPrivateSh
 
 const TABS = ["Overview", "Work", "Training", "Money", "Compliance", "Notes"] as const;
 type DriverFileTab = (typeof TABS)[number];
+const TAB_KEYS: Record<DriverFileTab, string> = {
+  Overview: "tabOverview",
+  Work: "tabWork",
+  Training: "tabTraining",
+  Money: "tabMoney",
+  Compliance: "tabCompliance",
+  Notes: "tabNotes",
+};
 
-const fallback = "Not set";
+/**
+ * The page's formatters, in the viewer's language. Every component in this
+ * file that shows a date, an amount, a status or an empty value calls this
+ * (hooks rules: before any early return).
+ */
+function useDriverFileFormat() {
+  const { t, locale } = useI18n();
+  const d = (key: string) => t(`driverFile.${key}`);
+  const fallback = d("notSet");
+  const dateTag = locale === "ar" ? "ar-KW" : "en-GB";
 
-function formatEnum(value?: string | null) {
-  if (!value) return fallback;
-  return value
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-}
+  function formatEnum(value?: string | null) {
+    if (!value) return fallback;
+    if (locale === "ar") {
+      const path = `status.${value.toLowerCase()}`;
+      const translated = t(path);
+      if (translated !== path) return translated;
+    }
+    return value
+      .replace(/_/g, " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
 
-function formatDate(value?: string | null) {
-  if (!value) return fallback;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return fallback;
-  return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(date);
-}
+  function formatDate(value?: string | null) {
+    if (!value) return fallback;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return fallback;
+    return new Intl.DateTimeFormat(dateTag, { day: "2-digit", month: "short", year: "numeric" }).format(date);
+  }
 
-function formatTime(value?: string | null) {
-  if (!value) return fallback;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return fallback;
-  return new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit" }).format(date);
-}
+  function formatTime(value?: string | null) {
+    if (!value) return fallback;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return fallback;
+    return new Intl.DateTimeFormat(dateTag, { hour: "2-digit", minute: "2-digit" }).format(date);
+  }
 
-function formatMoney(value?: number | null) {
-  return `KD ${Number(value ?? 0).toFixed(3)}`;
+  function formatMoney(value?: number | null) {
+    const amount = Number(value ?? 0).toFixed(3);
+    return locale === "ar" ? `${amount} د.ك` : `KD ${amount}`;
+  }
+
+  const itemName = (itemType?: string | null) => localizedItemName(t, locale, itemType);
+
+  return { t, locale, d, fallback, formatEnum, formatDate, formatTime, formatMoney, itemName };
 }
 
 function memoryText(value: unknown) {
@@ -113,6 +141,7 @@ function Metric({ label, value, icon }: { label: string; value: string; icon: Re
 }
 
 function KeyValueGrid({ rows }: { rows: Array<[string, ReactNode]> }) {
+  const { fallback } = useDriverFileFormat();
   return (
     <dl className="grid gap-x-10 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
       {rows.map(([label, value]) => (
@@ -164,20 +193,21 @@ function SimpleTable<T>({
 }
 
 function ScoreBars({ data }: { data: DriverFileData }) {
+  const { d, formatEnum } = useDriverFileFormat();
   const score = data.score;
-  if (!score) return <p className="text-sm text-sand-700">Score is being prepared.</p>;
+  if (!score) return <p className="text-sm text-sand-700">{d("scorePreparing")}</p>;
   const rows = [
-    ["Attendance", score.attendanceScore],
-    ["Delivery", score.deliveryScore],
-    ["Financial", score.financialScore],
-    ["Equipment", score.equipmentScore],
-    ["Platform", score.platformScore],
+    [d("attendance"), score.attendanceScore],
+    [d("delivery"), score.deliveryScore],
+    [d("financial"), score.financialScore],
+    [d("equipment"), score.equipmentScore],
+    [d("platform"), score.platformScore],
   ] as const;
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-end gap-3">
         <div className="text-4xl font-semibold text-foreground">{score.compositeScore}</div>
-        <div className="pb-1 text-sm text-sand-700">out of 100</div>
+        <div className="pb-1 text-sm text-sand-700">{d("outOf100")}</div>
         <Pill tone={statusTone(score.trend)}>{formatEnum(score.trend)}</Pill>
       </div>
       <div className="space-y-2">
@@ -211,11 +241,12 @@ function isOutstanding(item: InventoryItem) {
  * screens cannot disagree. Outstanding items first, returned ones after.
  */
 function EquipmentPanel({ items }: { items: InventoryItem[] }) {
+  const { d, formatDate, itemName } = useDriverFileFormat();
   const sorted = [...items].sort((a, b) => Number(isOutstanding(b)) - Number(isOutstanding(a)));
   return (
-    <Panel title="Issued equipment">
+    <Panel title={d("issuedEquipment")}>
       {sorted.length === 0 ? (
-        <p className="text-sm text-sand-700">No equipment has been issued to this driver.</p>
+        <p className="text-sm text-sand-700">{d("noEquipment")}</p>
       ) : (
         <ul className="divide-y divide-sand-100" data-testid="driver-issued-equipment">
           {sorted.map((item) => {
@@ -224,17 +255,17 @@ function EquipmentPanel({ items }: { items: InventoryItem[] }) {
               <li key={item.id} className="flex items-start justify-between gap-3 py-2.5">
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground">
-                    {itemDisplayName(item.itemType)} <span className="text-sand-600">× {item.quantity}</span>
+                    {itemName(item.itemType)} <span className="text-sand-600">× {item.quantity}</span>
                   </p>
                   <p className="mt-0.5 text-xs text-sand-700">
                     {item.returnedDate
-                      ? `Returned ${formatDate(item.returnedDate)}`
+                      ? d("returnedOn").replace("{date}", formatDate(item.returnedDate))
                       : item.issuedDate
-                        ? `Issued ${formatDate(item.issuedDate)}`
-                        : "Issue date not recorded"}
+                        ? d("issuedOn").replace("{date}", formatDate(item.issuedDate))
+                        : d("issueDateMissing")}
                   </p>
                 </div>
-                <Pill tone={out ? statusTone("VALID") : statusTone("CLOSED")}>{out ? "With driver" : "Returned"}</Pill>
+                <Pill tone={out ? statusTone("VALID") : statusTone("CLOSED")}>{out ? d("withDriver") : d("returned")}</Pill>
               </li>
             );
           })}
@@ -254,7 +285,7 @@ function EquipmentPanel({ items }: { items: InventoryItem[] }) {
 function TerminationClearancePanel({ data, onCleared }: { data: DriverFileData; onCleared: () => void }) {
   const p = data.profile;
   const toast = useToast();
-  const { t } = useI18n();
+  const { t, formatDate, itemName } = useDriverFileFormat();
   const tc = (key: string) => t(`terminationClearance.${key}`);
   const { hasRole } = useRole();
   const canClear = hasRole("SUPERVISOR");
@@ -313,7 +344,7 @@ function TerminationClearancePanel({ data, onCleared }: { data: DriverFileData; 
             <ul className="space-y-1">
               {outstanding.map((item) => (
                 <li key={item.id} className="text-sm text-foreground">
-                  {itemDisplayName(item.itemType)} × {item.quantity}
+                  {itemName(item.itemType)} × {item.quantity}
                 </li>
               ))}
             </ul>
@@ -390,7 +421,7 @@ export default function DriverFilePage() {
   const id = params?.id;
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { t } = useI18n();
+  const { t, d, fallback, formatEnum, formatDate, formatTime, formatMoney } = useDriverFileFormat();
   // Revision 24 #15: "there is no back button on this page". Back to wherever
   // the user came from; a profile opened from a pasted link goes to Driver
   // tracking, which is where profiles are opened from.
@@ -427,8 +458,8 @@ export default function DriverFilePage() {
   }, [data?.snapshots90d]);
 
   if (isLoading) return <DriverFileSkeleton />;
-  if (error && (error as any).status === 404) return <ErrorState title="Driver not found" />;
-  if (error || !data) return <ErrorState title="Unable to load driver file" message={(error as any)?.message} />;
+  if (error && (error as any).status === 404) return <ErrorState title={d("notFound")} />;
+  if (error || !data) return <ErrorState title={d("loadError")} message={(error as any)?.message} />;
 
   const p = data.profile;
   const initials = p.name
@@ -452,7 +483,7 @@ export default function DriverFilePage() {
         className="inline-flex items-center gap-1.5 text-sm text-sand-700 hover:text-foreground"
       >
         <ArrowLeft size={15} aria-hidden="true" className="rtl:rotate-180" />
-        Back
+        {d("back")}
       </button>
       <header className="rounded-lg border border-sand-200 bg-white p-5">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
@@ -477,17 +508,17 @@ export default function DriverFilePage() {
           </div>
           <div className="grid gap-2 text-sm sm:grid-cols-2 lg:min-w-[360px]">
             <div className="rounded-lg border border-sand-200 px-3 py-2">
-              <div className="text-xs text-sand-700">Phone</div>
+              <div className="text-xs text-sand-700">{d("phone")}</div>
               <div className="mt-1 flex items-center gap-2 font-medium">
                 <Phone size={14} aria-hidden="true" />
                 {p.phone || fallback}
               </div>
             </div>
             <div className="rounded-lg border border-sand-200 px-3 py-2">
-              <div className="text-xs text-sand-700">Live status</div>
+              <div className="text-xs text-sand-700">{d("liveStatus")}</div>
               <div className="mt-1 flex items-center gap-2 font-medium">
                 <Radio size={14} aria-hidden="true" />
-                {data.liveStatus.onlineNow ? "Online now" : "Offline"}
+                {data.liveStatus.onlineNow ? d("onlineNow") : d("offline")}
               </div>
             </div>
           </div>
@@ -495,11 +526,11 @@ export default function DriverFilePage() {
       </header>
 
       <div className="grid gap-3 md:grid-cols-5">
-        <Metric label="Score" value={data.score ? `${data.score.compositeScore}` : fallback} icon={<ShieldCheck size={18} />} />
-        <Metric label="Today orders" value={String(data.orders.todayCount)} icon={<CheckCircle2 size={18} />} />
-        <Metric label="Week orders" value={String(data.orders.weekCount)} icon={<CalendarClock size={18} />} />
-        <Metric label="Cash due" value={formatMoney(data.cash.outstanding)} icon={<Wallet size={18} />} />
-        <Metric label="Violations" value={String(data.violations.items.length)} icon={<FileCheck2 size={18} />} />
+        <Metric label={d("score")} value={data.score ? `${data.score.compositeScore}` : fallback} icon={<ShieldCheck size={18} />} />
+        <Metric label={d("todayOrders")} value={String(data.orders.todayCount)} icon={<CheckCircle2 size={18} />} />
+        <Metric label={d("weekOrders")} value={String(data.orders.weekCount)} icon={<CalendarClock size={18} />} />
+        <Metric label={d("cashDue")} value={formatMoney(data.cash.outstanding)} icon={<Wallet size={18} />} />
+        <Metric label={d("violations")} value={String(data.violations.items.length)} icon={<FileCheck2 size={18} />} />
       </div>
 
       {/* Revision 24 (#8): eligible for private shifts. */}
@@ -516,7 +547,7 @@ export default function DriverFilePage() {
                 tab === item ? "bg-foreground text-white" : "text-sand-700 hover:bg-sand-100 hover:text-foreground"
               }`}
             >
-              {item}
+              {d(TAB_KEYS[item])}
             </button>
           ))}
         </div>
@@ -532,43 +563,45 @@ export default function DriverFilePage() {
       {tab === "Overview" && (
         <div className="grid gap-5 xl:grid-cols-[1fr_420px]">
           <div className="space-y-5">
-            <Panel title="Profile">
+            <Panel title={d("profile")}>
               <KeyValueGrid
                 rows={[
-                  ["Driver ID", p.driverCode ?? fallback],
-                  ["Company", p.company?.name ?? fallback],
-                  ["Supervisor", p.supervisor?.name ?? fallback],
-                  ["Zone", p.zone ?? fallback],
-                  ["Batch", p.batchNumber ?? fallback],
-                  ["Hire date", formatDate(p.hireDate)],
-                  ["Average monthly salary", p.monthlySalary ? formatMoney(p.monthlySalary) : fallback],
-                  ["Civil ID", formatEnum(p.civilIdStatus)],
-                  ["Civil ID expiry", formatDate(p.civilIdExpiry)],
+                  [d("driverId"), p.driverCode ?? fallback],
+                  [d("company"), p.company?.name ?? fallback],
+                  [d("supervisor"), p.supervisor?.name ?? fallback],
+                  [d("zone"), p.zone ?? fallback],
+                  [d("batch"), p.batchNumber ?? fallback],
+                  [d("hireDate"), formatDate(p.hireDate)],
+                  [d("avgMonthlySalary"), p.monthlySalary ? formatMoney(p.monthlySalary) : fallback],
+                  [d("civilId"), formatEnum(p.civilIdStatus)],
+                  [d("civilIdExpiry"), formatDate(p.civilIdExpiry)],
                 ]}
               />
             </Panel>
-            <Panel title="Batch history">
+            <Panel title={d("batchHistory")}>
               {data.batchHistory.length ? (
                 <SimpleTable
                   rows={data.batchHistory}
-                  empty="No batch changes recorded."
+                  empty={d("noBatchChanges")}
                   columns={[
-                    { key: "batch", label: "Batch", render: (row) => <Pill>{row.batchNumber ?? fallback}</Pill> },
-                    { key: "changedAt", label: "Changed", render: (row) => formatDate(row.changedAt) },
+                    { key: "batch", label: d("batch"), render: (row) => <Pill>{row.batchNumber ?? fallback}</Pill> },
+                    { key: "changedAt", label: d("changed"), render: (row) => formatDate(row.changedAt) },
                   ]}
                 />
               ) : (
                 <p className="text-sm text-sand-700">
-                  Currently in batch <span className="font-medium text-foreground">{p.batchNumber ?? fallback}</span>. No batch changes recorded yet — future changes will appear here week by week.
+                  {d("currentBatch").split("{batch}")[0]}
+                  <span className="font-medium text-foreground">{p.batchNumber ?? fallback}</span>
+                  {d("currentBatch").split("{batch}")[1] ?? ""}
                 </p>
               )}
             </Panel>
-            <Panel title="90 day score">
+            <Panel title={d("scoreTrend")}>
               <ScoreTrendChart points={trendPoints} />
             </Panel>
           </div>
           <div className="space-y-5">
-            <Panel title="Score">
+            <Panel title={d("score")}>
               <ScoreBars data={data} />
             </Panel>
             <EquipmentPanel items={data.assets.inventory} />
@@ -578,28 +611,28 @@ export default function DriverFilePage() {
 
       {tab === "Work" && (
         <div className="grid gap-5 xl:grid-cols-2">
-          <Panel title="Recent shifts">
+          <Panel title={d("recentShifts")}>
             <SimpleTable
               rows={data.shifts.recent}
-              empty="No shifts recorded for this driver."
+              empty={d("noShifts")}
               columns={[
-                { key: "date", label: "Date", render: (row) => formatDate(row.date) },
-                { key: "time", label: "Time", render: (row) => `${formatTime(row.scheduledStart)} to ${formatTime(row.scheduledEnd)}` },
-                { key: "zone", label: "Zone", render: (row) => row.deliveryArea ?? row.zone ?? fallback },
-                { key: "status", label: "Status", render: (row) => <Pill tone={statusTone(row.status)}>{formatEnum(row.status)}</Pill> },
+                { key: "date", label: d("date"), render: (row) => formatDate(row.date) },
+                { key: "time", label: d("time"), render: (row) => d("timeRange").replace("{start}", formatTime(row.scheduledStart)).replace("{end}", formatTime(row.scheduledEnd)) },
+                { key: "zone", label: d("zone"), render: (row) => row.deliveryArea ?? row.zone ?? fallback },
+                { key: "status", label: d("status"), render: (row) => <Pill tone={statusTone(row.status)}>{formatEnum(row.status)}</Pill> },
               ]}
             />
           </Panel>
-          <Panel title="Recent orders">
+          <Panel title={d("recentOrders")}>
             <SimpleTable
               rows={data.orders.recent}
-              empty="No orders recorded for this driver."
+              empty={d("noOrders")}
               columns={[
-                { key: "date", label: "Date", render: (row) => formatDate(row.date) },
-                { key: "restaurant", label: "Restaurant", render: (row) => row.restaurantName ?? fallback },
-                { key: "orders", label: "Orders", render: (row) => row.orderCount },
-                { key: "cash", label: "Cash", render: (row) => formatMoney(row.cashCollected) },
-                { key: "arrival", label: "Arrival", render: (row) => formatTime(row.arrivalTime) },
+                { key: "date", label: d("date"), render: (row) => formatDate(row.date) },
+                { key: "restaurant", label: d("restaurant"), render: (row) => row.restaurantName ?? fallback },
+                { key: "orders", label: d("orders"), render: (row) => row.orderCount },
+                { key: "cash", label: d("cash"), render: (row) => formatMoney(row.cashCollected) },
+                { key: "arrival", label: d("arrival"), render: (row) => formatTime(row.arrivalTime) },
               ]}
             />
           </Panel>
@@ -607,45 +640,45 @@ export default function DriverFilePage() {
       )}
 
       {tab === "Training" && (
-        <Panel title="Training sessions">
+        <Panel title={d("trainingSessions")}>
           {trainingQuery.isLoading ? (
-            <p className="text-sm text-sand-700">Loading training sessions.</p>
+            <p className="text-sm text-sand-700">{d("loadingTraining")}</p>
           ) : (
             <SimpleTable<TrainingSession>
               rows={trainingSessions}
-              empty="No finished training sessions for this driver."
+              empty={d("noTraining")}
               columns={[
-                { key: "ended", label: "Finished", render: (row) => formatDate(row.completedAt ?? row.endsAt) },
-                { key: "period", label: "Period", render: (row) => `${row.periodDays} ${row.periodDays === 1 ? "day" : "days"}` },
+                { key: "ended", label: d("finished"), render: (row) => formatDate(row.completedAt ?? row.endsAt) },
+                { key: "period", label: d("period"), render: (row) => d(row.periodDays === 1 ? "oneDay" : "days").replace("{n}", String(row.periodDays)) },
                 {
                   key: "result",
-                  label: "Result",
+                  label: d("result"),
                   render: (row) => (
                     <span data-testid="driver-training-result">
                       <Pill tone={statusTone(row.status === "PASSED" ? "PASS" : "FAIL")}>
-                        {row.status === "PASSED" ? "Passed" : "Did not pass"}
+                        {row.status === "PASSED" ? d("passed") : d("didNotPass")}
                       </Pill>
                     </span>
                   ),
                 },
                 {
                   key: "delivered",
-                  label: "Delivered",
-                  render: (row) => (row.scorecard ? `${row.scorecard.delivered} of ${row.scorecard.assigned}` : fallback),
+                  label: d("delivered"),
+                  render: (row) => (row.scorecard ? d("deliveredOf").replace("{delivered}", String(row.scorecard.delivered)).replace("{assigned}", String(row.scorecard.assigned)) : fallback),
                 },
                 {
                   key: "onTime",
-                  label: "On time",
+                  label: d("onTime"),
                   render: (row) =>
                     row.scorecard?.onTimeRate == null ? fallback : `${Math.round(row.scorecard.onTimeRate * 100)}%`,
                 },
                 {
                   key: "minutes",
-                  label: "Average minutes",
+                  label: d("avgMinutes"),
                   render: (row) => (row.scorecard?.avgMinutes == null ? fallback : String(row.scorecard.avgMinutes)),
                 },
-                { key: "coach", label: "Coach", render: (row) => row.coach?.name ?? fallback },
-                { key: "note", label: "Note", render: (row) => row.outcomeNote ?? fallback },
+                { key: "coach", label: d("coach"), render: (row) => row.coach?.name ?? fallback },
+                { key: "note", label: d("note"), render: (row) => row.outcomeNote ?? fallback },
               ]}
             />
           )}
@@ -654,25 +687,25 @@ export default function DriverFilePage() {
 
       {tab === "Money" && (
         <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
-          <Panel title="Cash position">
+          <Panel title={d("cashPosition")}>
             <KeyValueGrid
               rows={[
-                ["Outstanding", formatMoney(data.cash.outstanding)],
-                ["Today cash", formatMoney(data.orders.todayCash)],
-                ["Week cash", formatMoney(data.orders.weekCash)],
+                [d("outstanding"), formatMoney(data.cash.outstanding)],
+                [d("todayCash"), formatMoney(data.orders.todayCash)],
+                [d("weekCash"), formatMoney(data.orders.weekCash)],
               ]}
             />
           </Panel>
-          <Panel title="Cash records">
+          <Panel title={d("cashRecords")}>
             <SimpleTable
               rows={data.cash.records}
-              empty="No cash records for this driver."
+              empty={d("noCashRecords")}
               columns={[
-                { key: "date", label: "Date", render: (row) => formatDate(row.date) },
-                { key: "sales", label: "Sales", render: (row) => formatMoney(row.salesAmount) },
-                { key: "collection", label: "Collected", render: (row) => formatMoney(row.collectionAmount) },
-                { key: "pending", label: "Due", render: (row) => formatMoney(row.pendingDues) },
-                { key: "status", label: "Status", render: (row) => <Pill tone={statusTone(row.status)}>{formatEnum(row.status)}</Pill> },
+                { key: "date", label: d("date"), render: (row) => formatDate(row.date) },
+                { key: "sales", label: d("sales"), render: (row) => formatMoney(row.salesAmount) },
+                { key: "collection", label: d("collected"), render: (row) => formatMoney(row.collectionAmount) },
+                { key: "pending", label: d("due"), render: (row) => formatMoney(row.pendingDues) },
+                { key: "status", label: d("status"), render: (row) => <Pill tone={statusTone(row.status)}>{formatEnum(row.status)}</Pill> },
               ]}
             />
           </Panel>
@@ -681,7 +714,7 @@ export default function DriverFilePage() {
 
       {tab === "Compliance" && (
         <div className="space-y-5">
-          <Panel title="Documents">
+          <Panel title={d("documents")}>
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {data.documents.map((doc) => (
                 <div key={doc.key} className="rounded-lg border border-sand-200 p-4">
@@ -697,51 +730,51 @@ export default function DriverFilePage() {
             </div>
           </Panel>
           <div className="grid gap-5 xl:grid-cols-2">
-            <Panel title="Violations">
+            <Panel title={d("violations")}>
               <SimpleTable
                 rows={data.violations.items}
-                empty="No violations for this driver."
+                empty={d("noViolations")}
                 columns={[
-                  { key: "time", label: "Date", render: (row) => formatDate(row.violationTime) },
-                  { key: "type", label: "Type", render: (row) => formatEnum(row.violationType) },
-                  { key: "status", label: "Status", render: (row) => <Pill tone={statusTone(row.violationStatus)}>{formatEnum(row.violationStatus)}</Pill> },
-                  { key: "appeal", label: "Appeal", render: (row) => formatEnum(row.appealStatus) },
+                  { key: "time", label: d("date"), render: (row) => formatDate(row.violationTime) },
+                  { key: "type", label: d("type"), render: (row) => formatEnum(row.violationType) },
+                  { key: "status", label: d("status"), render: (row) => <Pill tone={statusTone(row.violationStatus)}>{formatEnum(row.violationStatus)}</Pill> },
+                  { key: "appeal", label: d("appeal"), render: (row) => formatEnum(row.appealStatus) },
                 ]}
               />
             </Panel>
-            <Panel title="Restrictions">
+            <Panel title={d("restrictions")}>
               <SimpleTable
                 rows={data.violations.restrictions}
-                empty="No restrictions for this driver."
+                empty={d("noRestrictions")}
                 columns={[
-                  { key: "type", label: "Type", render: (row) => formatEnum(row.type) },
-                  { key: "start", label: "Start", render: (row) => formatDate(row.startDate) },
-                  { key: "end", label: "End", render: (row) => (row.endDate ? formatDate(row.endDate) : "Permanent") },
-                  { key: "active", label: "State", render: (row) => <Pill tone={row.active ? statusTone("PENDING") : statusTone("COMPLETED")}>{row.active ? "Active" : "Closed"}</Pill> },
+                  { key: "type", label: d("type"), render: (row) => formatEnum(row.type) },
+                  { key: "start", label: d("start"), render: (row) => formatDate(row.startDate) },
+                  { key: "end", label: d("end"), render: (row) => (row.endDate ? formatDate(row.endDate) : d("permanent")) },
+                  { key: "active", label: d("state"), render: (row) => <Pill tone={row.active ? statusTone("PENDING") : statusTone("COMPLETED")}>{row.active ? d("active") : d("closed")}</Pill> },
                 ]}
               />
             </Panel>
-            <Panel title="Penalties">
+            <Panel title={d("penalties")}>
               <SimpleTable
                 rows={data.violations.penalties}
-                empty="No penalties for this driver."
+                empty={d("noPenalties")}
                 columns={[
-                  { key: "date", label: "Date", render: (row) => formatDate(row.createdAt) },
-                  { key: "type", label: "Type", render: (row) => formatEnum(row.penaltyType) },
-                  { key: "value", label: "Value", render: (row) => row.penaltyValue ?? fallback },
-                  { key: "status", label: "Status", render: (row) => <Pill tone={statusTone(row.penaltyStatus)}>{formatEnum(row.penaltyStatus)}</Pill> },
+                  { key: "date", label: d("date"), render: (row) => formatDate(row.createdAt) },
+                  { key: "type", label: d("type"), render: (row) => formatEnum(row.penaltyType) },
+                  { key: "value", label: d("value"), render: (row) => row.penaltyValue ?? fallback },
+                  { key: "status", label: d("status"), render: (row) => <Pill tone={statusTone(row.penaltyStatus)}>{formatEnum(row.penaltyStatus)}</Pill> },
                 ]}
               />
             </Panel>
-            <Panel title="Tickets">
+            <Panel title={d("tickets")}>
               <SimpleTable
                 rows={data.tickets}
-                empty="No tickets for this driver."
+                empty={d("noTickets")}
                 columns={[
-                  { key: "number", label: "Ticket", render: (row) => row.ticketNumber },
-                  { key: "title", label: "Title", render: (row) => row.title },
-                  { key: "priority", label: "Priority", render: (row) => <Pill tone={statusTone(row.priority)}>{formatEnum(row.priority)}</Pill> },
-                  { key: "status", label: "Status", render: (row) => formatEnum(row.status) },
+                  { key: "number", label: d("ticket"), render: (row) => row.ticketNumber },
+                  { key: "title", label: d("ticketTitle"), render: (row) => row.title },
+                  { key: "priority", label: d("priority"), render: (row) => <Pill tone={statusTone(row.priority)}>{formatEnum(row.priority)}</Pill> },
+                  { key: "status", label: d("status"), render: (row) => formatEnum(row.status) },
                 ]}
               />
             </Panel>
@@ -751,7 +784,7 @@ export default function DriverFilePage() {
 
       {tab === "Notes" && (
         <div className="grid gap-5 xl:grid-cols-2">
-          <Panel title="Agent notes">
+          <Panel title={d("agentNotes")}>
             <div className="space-y-3">
               {data.agentNotes.observations.length ? (
                 data.agentNotes.observations.map((note) => (
@@ -761,11 +794,11 @@ export default function DriverFilePage() {
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-sand-700">No notes for this driver.</p>
+                <p className="text-sm text-sand-700">{d("noNotes")}</p>
               )}
             </div>
           </Panel>
-          <Panel title="Recent decisions">
+          <Panel title={d("recentDecisions")}>
             <div className="space-y-3">
               {data.agentNotes.proposals.concat(data.agentNotes.audit).length ? (
                 data.agentNotes.proposals.concat(data.agentNotes.audit).map((item) => (
@@ -778,27 +811,27 @@ export default function DriverFilePage() {
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-sand-700">No decision activity for this driver.</p>
+                <p className="text-sm text-sand-700">{d("noDecisions")}</p>
               )}
             </div>
           </Panel>
-          <Panel title="Vehicle care">
+          <Panel title={d("vehicleCare")}>
             <div className="grid gap-5 lg:grid-cols-2">
               <SimpleTable
                 rows={data.assets.inspections}
-                empty="No inspections for this driver."
+                empty={d("noInspections")}
                 columns={[
-                  { key: "date", label: "Date", render: (row) => formatDate(row.date) },
-                  { key: "status", label: "Status", render: (row) => <Pill tone={statusTone(row.status)}>{formatEnum(row.status)}</Pill> },
+                  { key: "date", label: d("date"), render: (row) => formatDate(row.date) },
+                  { key: "status", label: d("status"), render: (row) => <Pill tone={statusTone(row.status)}>{formatEnum(row.status)}</Pill> },
                 ]}
               />
               <SimpleTable
                 rows={data.assets.maintenance}
-                empty="No maintenance records for this driver."
+                empty={d("noMaintenance")}
                 columns={[
-                  { key: "date", label: "Date", render: (row) => formatDate(row.createdAt) },
-                  { key: "type", label: "Work", render: (row) => row.type },
-                  { key: "cost", label: "Cost", render: (row) => formatMoney(row.cost) },
+                  { key: "date", label: d("date"), render: (row) => formatDate(row.createdAt) },
+                  { key: "type", label: d("workCol"), render: (row) => row.type },
+                  { key: "cost", label: d("cost"), render: (row) => formatMoney(row.cost) },
                 ]}
               />
             </div>

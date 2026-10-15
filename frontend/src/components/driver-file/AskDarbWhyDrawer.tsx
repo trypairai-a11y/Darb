@@ -8,6 +8,7 @@
 import { useState } from "react";
 import { Sparkles, RefreshCw, X } from "lucide-react";
 import { useApiQuery } from "@/hooks/useApi";
+import { useI18n } from "@/i18n/I18nProvider";
 import type { DriverFileScoreExplanation } from "@/types/driver-file";
 
 export interface AskDarbWhyDrawerProps {
@@ -17,6 +18,8 @@ export interface AskDarbWhyDrawerProps {
 }
 
 export default function AskDarbWhyDrawer({ driverId, preWarmed }: AskDarbWhyDrawerProps) {
+  const { t } = useI18n();
+  const d = (key: string) => t(`driverFile.${key}`);
   const [open, setOpen] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
 
@@ -43,37 +46,37 @@ export default function AskDarbWhyDrawer({ driverId, preWarmed }: AskDarbWhyDraw
         aria-expanded={open}
       >
         <Sparkles size={12} aria-hidden="true" />
-        Ask Darb why this score?
+        {d("askWhy")}
       </button>
       {open && (
         <div
           data-testid="ask-darb-why-drawer"
           role="region"
-          aria-label="Darb's read on this score"
+          aria-label={d("darbRead")}
           className="bg-primary/5 border border-primary/15 rounded-xl p-4 mt-3 relative"
         >
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] uppercase tracking-widest text-primary font-medium">
-              Darb&apos;s read on this score
+              {d("darbRead")}
             </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
               className="text-sand-700 hover:text-foreground"
-              aria-label="Close drawer"
+              aria-label={d("closeDrawer")}
             >
               <X size={14} aria-hidden="true" />
             </button>
           </div>
           {isFetching ? (
-            <div className="text-sm text-primary animate-pulse">Darb is thinking…</div>
+            <div className="text-sm text-primary animate-pulse">{d("thinking")}</div>
           ) : error ? (
             <div className="text-sm text-red-700">
-              Couldn&apos;t generate explanation — try again in a moment.
+              {d("explainError")}
             </div>
           ) : unavailable ? (
             <div className="text-sm text-sand-700 italic">
-              Score explanation is not available yet.
+              {d("explainUnavailable")}
             </div>
           ) : (
             <div className="text-sm text-foreground leading-relaxed whitespace-pre-line">
@@ -81,16 +84,16 @@ export default function AskDarbWhyDrawer({ driverId, preWarmed }: AskDarbWhyDraw
             </div>
           )}
           <div className="text-[10px] font-mono text-sand-700 mt-3 flex items-center justify-between">
-            <span>{explanation?.cached ? "cached" : "fresh"}</span>
+            <span>{explanation?.cached ? d("cached") : d("fresh")}</span>
             <button
               type="button"
               onClick={() => setRefreshTick((t) => t + 1)}
               disabled={isFetching}
               className="inline-flex items-center gap-1 text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
-              aria-label="Refresh explanation"
+              aria-label={d("refreshAria")}
             >
               <RefreshCw size={10} aria-hidden="true" />
-              Refresh
+              {d("refresh")}
             </button>
           </div>
         </div>

@@ -3,6 +3,7 @@
 // Phase 3 Wave 3 — 90-day score trend chart for the Driver File.
 // Recharts LineChart with explicit empty-state copy per RESEARCH §Pitfall 1.
 
+import { useI18n } from "@/i18n/I18nProvider";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 
 export interface ScoreTrendPoint {
@@ -15,10 +16,11 @@ export interface ScoreTrendChartProps {
 }
 
 export default function ScoreTrendChart({ points }: ScoreTrendChartProps) {
+  const { t } = useI18n();
   if (!points || points.length === 0) {
     return (
       <div className="text-sm text-sand-700 py-6 text-center">
-        No 90-day trend yet
+        {t("driverFile.noTrend")}
       </div>
     );
   }

@@ -262,3 +262,9 @@ html[dir="rtl"] i, html[lang="ar"] i {
   transition: background 250ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .btn-ghost:hover { background: rgba(255, 255, 255, 0.18); }
+
+/* OpenStreetMap tiles toned down to a quiet grey base (the CARTO Positron
+   look), so zones and driver pins stay the foreground. See LiveMapInner. */
+.darb-muted-tiles {
+  filter: grayscale(0.85) brightness(1.06) contrast(0.88);
+}
