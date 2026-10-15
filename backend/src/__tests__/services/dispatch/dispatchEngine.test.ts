@@ -413,6 +413,50 @@ describe("startDispatch", () => {
   });
 });
 
+// ─── Revision 24b: the private-shift stamp at accept ────────────────────────
+
+describe("acceptOffer stamps an order carried on the shop's own private shift", () => {
+  const OFFER = {
+    id: "off-1",
+    tenantId: TENANT,
+    orderId: ORDER_ID,
+    driverId: "drv-a",
+    round: 0,
+    status: "OFFERED",
+    expiresAt: new Date(Date.now() + 10_000),
+  };
+  afterEach(() => {
+    delete (prisma as any).privateShift;
+  });
+
+  test.each([
+    ["IN_PROGRESS on this branch", { id: "ps-1" }, "ps-1"],
+    ["not on this shop's shift", null, null],
+  ])("%s", async (_label, shift, expected) => {
+    (prisma as any).privateShift = { findFirst: jest.fn().mockResolvedValue(shift) };
+    prisma.dispatchOffer.updateMany.mockResolvedValueOnce({ count: 1 });
+    prisma.dispatchOffer.findFirst.mockResolvedValue(OFFER);
+    prisma.deliveryOrder.findFirst
+      .mockResolvedValueOnce({ ...BASE_ORDER, branchId: "b-1" })
+      .mockResolvedValueOnce({ ...BASE_ORDER, branchId: "b-1", status: "ASSIGNED", driverId: "drv-a" });
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 1 });
+    prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+
+    await acceptOffer({ tenantId: TENANT, offerId: "off-1", driverId: "drv-a" });
+
+    const lookup = (prisma as any).privateShift.findFirst.mock.calls[0][0];
+    expect(lookup.where).toMatchObject({
+      tenantId: TENANT,
+      driverId: "drv-a",
+      vendorId: BASE_ORDER.vendorId,
+      branchId: "b-1",
+      status: "IN_PROGRESS",
+    });
+    const transition = prisma.deliveryOrder.updateMany.mock.calls[0][0];
+    expect(transition.data.privateShiftId).toBe(expected);
+  });
+});
+
 // ─── accept-vs-expire race (both orders of the guarded updateMany) ──────────
 
 describe("acceptOffer vs expireOffer race", () => {

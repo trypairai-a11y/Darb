@@ -51,6 +51,10 @@ function walletColumns(row: StatementTransaction): { credit: number; fee: number
       fee: -Number(row.deliveryFeeKwd ?? 0),
     };
   }
+  // Revision 24b: a private shift's hourly charge is a fee and nothing goes in.
+  if (row.kind === "PRIVATE_SHIFT") {
+    return { credit: 0, fee: -Number(row.deliveryFeeKwd ?? 0) };
+  }
   return { credit: Number(row.codNetKwd ?? 0), fee: 0 };
 }
 
@@ -113,7 +117,9 @@ export default function StatementDetailPanel({ statement, onClose }: StatementDe
       ? t("reports.kindRefund")
       : kind === "PAYOUT"
         ? t("reports.kindPayout")
-        : t("reports.kindDelivery");
+        : kind === "PRIVATE_SHIFT"
+          ? t("reports.kindPrivateShift")
+          : t("reports.kindDelivery");
 
   return (
     <SlidePanel
@@ -225,7 +231,10 @@ export default function StatementDetailPanel({ statement, onClose }: StatementDe
                           </td>
                           <td className="py-2">
                             <span dir="ltr" className="font-mono text-xs">
-                              {row.orderNumber ?? "n/a"}
+                              {row.orderNumber ??
+                                (row.kind === "PRIVATE_SHIFT"
+                                  ? (row.reference ?? "").replace(/^Private shift\s*/, "") || "n/a"
+                                  : "n/a")}
                             </span>
                             <span
                               className={cn(
@@ -234,11 +243,18 @@ export default function StatementDetailPanel({ statement, onClose }: StatementDe
                                   ? "bg-amber-50 text-amber-700"
                                   : row.kind === "PAYOUT"
                                     ? "bg-purple-50 text-purple-600"
-                                    : "bg-sand-100 text-sand-700"
+                                    : row.kind === "PRIVATE_SHIFT"
+                                      ? "bg-forest-50 text-forest-700"
+                                      : "bg-sand-100 text-sand-700"
                               )}
                             >
                               {kindLabel(row.kind)}
                             </span>
+                            {row.kind === "DELIVERY" && row.privateShift && (
+                              <span className="ms-1 inline-flex items-center px-2 py-0.5 rounded-pill text-[10px] font-medium bg-forest-50 text-forest-700">
+                                {t("privateShifts.orderFee")}
+                              </span>
+                            )}
                           </td>
                           <td dir="ltr" className="py-2 text-end tabular-nums">
                             {row.orderTotalKwd == null
@@ -321,6 +337,9 @@ export default function StatementDetailPanel({ statement, onClose }: StatementDe
             <Foot label={t("reports.codNet")} value={statement.codNetKwd} />
             <Foot label={t("reports.prepaidFees")} value={statement.prepaidFeesKwd} />
             <Foot label={t("reports.refunds")} value={statement.refundsKwd} />
+            {Number(statement.privateShiftsKwd ?? 0) !== 0 && (
+              <Foot label={t("reports.privateShifts")} value={statement.privateShiftsKwd ?? "0"} />
+            )}
             <Foot
               label={t("reports.netBalance")}
               value={statement.closingBalanceKwd}

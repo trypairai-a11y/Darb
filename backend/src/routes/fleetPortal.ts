@@ -19,6 +19,8 @@ import {
   isSubscriptionRate,
   orderPayoutKwd,
   sumFleetPayout,
+  loadVehicleRateSnapshot,
+  vehicleBaseOf,
 } from "../services/fleetService";
 import { getFleetDriverComparison } from "../services/fleet/fleetDriverScoreService";
 import { getDriverRating } from "../services/ratingService";
@@ -521,11 +523,15 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
           status: "DELIVERED",
           deliveredAt: { gte: start, lt: end },
           driver: { fleetPartnerId: ctx.fleetPartnerId },
+          // The same orders the statement will be cut on (revision 24b):
+          // no practice orders, no orders carried on a private shift.
+          isTraining: false,
+          privateShiftId: null,
         },
         select: {
           id: true, orderNumber: true, deliveredAt: true, distanceKm: true,
           deliveryFeeKwd: true,
-          driver: { select: { id: true, name: true } },
+          driver: { select: { id: true, name: true, vehicleType: true } },
         },
         orderBy: { deliveredAt: "desc" },
         take: 1000,
@@ -542,19 +548,42 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
           status: "DELIVERED",
           deliveredAt: { gte: start, lt: end },
           driver: { fleetPartnerId: ctx.fleetPartnerId },
+          isTraining: false,
+          privateShiftId: null,
         },
-        select: { distanceKm: true, deliveryFeeKwd: true },
+        select: { distanceKm: true, deliveryFeeKwd: true, driver: { select: { vehicleType: true } } },
       }),
     ]);
 
     const rate = fleetRateOf(fleet ?? { flatFeePerOrderKwd: "1.100", perKmFeeKwd: null });
+    const subscription = isSubscriptionRate(rate);
+    // Revision 24b: a MARGIN company's running figure uses its per-vehicle
+    // per-order rates (today's, until the month is cut and snapshotted), and
+    // its completed private shifts are added by the hour.
+    const [vehicleRates, shifts] = await Promise.all([
+      subscription ? Promise.resolve(null) : loadVehicleRateSnapshot(ctx.tenantId, ctx.fleetPartnerId),
+      prisma.privateShift.findMany({
+        where: {
+          tenantId: ctx.tenantId,
+          fleetPartnerId: ctx.fleetPartnerId,
+          status: "COMPLETED",
+          startedAt: { not: null },
+          endAt: { gte: start, lt: end },
+        },
+        select: { billableMinutes: true, fleetPayKwd: true },
+      }),
+    ]);
     const deliveredCount = allDistances.length;
-    const { totalKwd, totalKm, ordersMissingDistance } = sumFleetPayout(
+    const { totalKwd: ordersKwd, totalKm, ordersMissingDistance } = sumFleetPayout(
       rate,
       allDistances.map((r) => r.distanceKm),
       allDistances.map((r) => r.deliveryFeeKwd),
+      allDistances.map((r) => vehicleBaseOf(vehicleRates, r.driver?.vehicleType)),
     );
-    const subscription = isSubscriptionRate(rate);
+    const privateShiftPayKwd = shifts
+      .reduce((acc, sh) => acc.plus(sh.fleetPayKwd ?? 0), new Prisma.Decimal(0))
+      .toDecimalPlaces(3);
+    const totalKwd = ordersKwd.plus(privateShiftPayKwd);
 
     res.json({
       periodStart: start,
@@ -581,6 +610,11 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
       ordersMissingDistance:
         rate.perKmKwd == null || subscription ? 0 : ordersMissingDistance,
       deliveredOrders: deliveredCount,
+      ordersKwd: ordersKwd.toFixed(3),
+      privateShiftCount: shifts.length,
+      privateShiftMinutes: shifts.reduce((acc, sh) => acc + (sh.billableMinutes ?? 0), 0),
+      privateShiftPayKwd: privateShiftPayKwd.toFixed(3),
+      vehicleRates,
       totalKwd: totalKwd.toFixed(3),
       // The list is capped; the figures above are not. Say so rather than let
       // a truncated table look like the whole month.
@@ -591,7 +625,15 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
         deliveredAt: o.deliveredAt,
         driverName: o.driver?.name ?? null,
         distanceKm: o.distanceKm == null ? null : Number(o.distanceKm).toFixed(3),
-        feeKwd: orderPayoutKwd(rate, o.distanceKm, o.deliveryFeeKwd).toFixed(3),
+        rateKwd: subscription
+          ? null
+          : (vehicleBaseOf(vehicleRates, o.driver?.vehicleType) ?? rate.baseKwd).toFixed(3),
+        feeKwd: orderPayoutKwd(
+          rate,
+          o.distanceKm,
+          o.deliveryFeeKwd,
+          vehicleBaseOf(vehicleRates, o.driver?.vehicleType),
+        ).toFixed(3),
       })),
     });
   } catch (err: any) {
@@ -2217,16 +2259,54 @@ router.get(
           status: "DELIVERED",
           deliveredAt: { gte: statement.periodStart, lt: statement.periodEnd },
           driver: { fleetPartnerId: ctx.fleetPartnerId },
+          // The statement never counted practice orders, and (revision 24b)
+          // never counts an order carried on a private shift: that time is
+          // paid on the shift lines below.
+          isTraining: false,
+          privateShiftId: null,
         },
         select: {
           id: true, orderNumber: true, deliveredAt: true, distanceKm: true,
           deliveryFeeKwd: true,
           vendor: { select: { name: true } },
-          driver: { select: { id: true, name: true, driverCode: true } },
+          driver: { select: { id: true, name: true, driverCode: true, vehicleType: true } },
         },
         orderBy: { deliveredAt: "asc" },
         take: 2000,
       });
+
+      // Revision 24b: the private shifts this statement paid, by the hour.
+      const shifts = await prisma.privateShift.findMany({
+        where: { tenantId: ctx.tenantId, fleetPartnerId: ctx.fleetPartnerId, fleetStatementId: statement.id },
+        select: {
+          id: true, date: true, startAt: true, endAt: true, vehicleType: true, vendorId: true, branchId: true,
+          driverId: true, scheduledMinutes: true, billableMinutes: true, fleetHourlyKwd: true, fleetPayKwd: true,
+        },
+        orderBy: { startAt: "asc" },
+      });
+      const [shiftVendors, shiftBranches, shiftDrivers] = shifts.length
+        ? await Promise.all([
+            prisma.vendor.findMany({
+              where: { tenantId: ctx.tenantId, id: { in: [...new Set(shifts.map((x) => x.vendorId))] } },
+              select: { id: true, name: true },
+            }),
+            prisma.vendorBranch.findMany({
+              where: { tenantId: ctx.tenantId, id: { in: [...new Set(shifts.map((x) => x.branchId))] } },
+              select: { id: true, name: true },
+            }),
+            prisma.driver.findMany({
+              where: {
+                tenantId: ctx.tenantId,
+                id: { in: [...new Set(shifts.map((x) => x.driverId).filter((v): v is string => !!v))] },
+              },
+              select: { id: true, name: true, driverCode: true },
+            }),
+          ])
+        : [[], [], []];
+      const nameOf = <T extends { id: string }>(rows: T[]) => new Map(rows.map((r) => [r.id, r]));
+      const vendorById = nameOf(shiftVendors);
+      const branchById = nameOf(shiftBranches);
+      const driverById = nameOf(shiftDrivers);
 
       // The rate SNAPSHOTTED on the statement, never the company's rate today:
       // a rate change approved this morning must not rewrite what a closed
@@ -2239,6 +2319,9 @@ router.get(
         commercialModel: statement.commercialModel,
       });
       const fee = statement.feePerOrderKwd;
+      // Revision 24b: the per-vehicle per-order rates the month was cut on.
+      const vehicleBase = (vehicleType: string | null | undefined) =>
+        vehicleBaseOf(statement.vehicleRates, vehicleType);
 
       // Client note: the statement should say how many each driver did. The
       // order list answers it only by counting rows by hand, which is the work
@@ -2252,6 +2335,7 @@ router.get(
           orders: number;
           km: Prisma.Decimal;
           earned: Prisma.Decimal;
+          rates: Set<string>;
         }
       >();
       for (const o of orders) {
@@ -2263,13 +2347,19 @@ router.get(
           orders: 0,
           km: new Prisma.Decimal(0),
           earned: new Prisma.Decimal(0),
+          rates: new Set<string>(),
         };
         row.orders += 1;
+        if (statement.commercialModel !== "SUBSCRIPTION") {
+          row.rates.add((vehicleBase(o.driver?.vehicleType) ?? fee).toFixed(3));
+        }
         if (o.distanceKm != null) row.km = row.km.plus(o.distanceKm);
         // Accumulated per order, not orders × fee: with a kilometre half the
         // driver who took the long runs is worth more than the one beside them
         // on the same count, and that is the whole point of showing this.
-        row.earned = row.earned.plus(orderPayoutKwd(rate, o.distanceKm, o.deliveryFeeKwd));
+        row.earned = row.earned.plus(
+          orderPayoutKwd(rate, o.distanceKm, o.deliveryFeeKwd, vehicleBase(o.driver?.vehicleType)),
+        );
         byDriver.set(id, row);
       }
 
@@ -2288,7 +2378,24 @@ router.get(
             ...d,
             amountKwd: d.amountKwd.toFixed(3),
           })),
+          ordersKwd: statement.ordersKwd == null ? null : statement.ordersKwd.toFixed(3),
+          privateShiftPayKwd: statement.privateShiftPayKwd.toFixed(3),
         },
+        privateShifts: shifts.map((x) => ({
+          id: x.id,
+          date: x.date,
+          startAt: x.startAt,
+          endAt: x.endAt,
+          vehicleType: x.vehicleType,
+          vendorName: vendorById.get(x.vendorId)?.name ?? null,
+          branchName: branchById.get(x.branchId)?.name ?? null,
+          driverName: x.driverId ? (driverById.get(x.driverId)?.name ?? null) : null,
+          driverCode: x.driverId ? (driverById.get(x.driverId)?.driverCode ?? null) : null,
+          scheduledMinutes: x.scheduledMinutes,
+          billableMinutes: x.billableMinutes,
+          hourlyKwd: x.fleetHourlyKwd == null ? null : x.fleetHourlyKwd.toFixed(3),
+          payKwd: (x.fleetPayKwd ?? new Prisma.Decimal(0)).toFixed(3),
+        })),
         orders: orders.map((o) => ({
           id: o.id,
           orderNumber: o.orderNumber,
@@ -2297,7 +2404,15 @@ router.get(
           driverName: o.driver?.name ?? null,
           driverCode: o.driver?.driverCode ?? null,
           distanceKm: o.distanceKm == null ? null : Number(o.distanceKm).toFixed(3),
-          feeKwd: orderPayoutKwd(rate, o.distanceKm, o.deliveryFeeKwd).toFixed(3),
+          // Revision 24b: the per-order rate this line was paid at: the
+          // vehicle's own rate, else the base. Null on SUBSCRIPTION, where
+          // the line is the shop fee.
+          vehicleType: o.driver?.vehicleType ?? null,
+          rateKwd:
+            statement.commercialModel === "SUBSCRIPTION"
+              ? null
+              : (vehicleBase(o.driver?.vehicleType) ?? fee).toFixed(3),
+          feeKwd: orderPayoutKwd(rate, o.distanceKm, o.deliveryFeeKwd, vehicleBase(o.driver?.vehicleType)).toFixed(3),
         })),
         // Ordered by who did the most, because that is the order the question
         // "who carried this month" is asked in.
@@ -2310,6 +2425,10 @@ router.get(
             orders: d.orders,
             totalKm: statement.perKmFeeKwd == null ? null : d.km.toFixed(3),
             totalKwd: d.earned.toFixed(3),
+            // Revision 24b: the per-order rate this driver's orders were paid
+            // at (their vehicle's rate, else the base). One driver drives one
+            // vehicle, so this is the rate of every order on the line.
+            rateKwd: d.rates.size === 1 ? [...d.rates][0] : null,
           })),
         // The count on the statement is the one that was paid on; a difference
         // here means orders were re-stated after the month closed, and the

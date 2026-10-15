@@ -2948,6 +2948,8 @@ enum WalletTxType {
   /// type rather than an ADJUSTMENT so a shop reading its ledger can tell what
   /// it paid in apart from what Darb corrected.
   TOP_UP
+  /// Revision 24b — a completed private shift charged to the shop by the hour.
+  PRIVATE_SHIFT_CHARGE
 }
 
 enum IncidentType {
@@ -3428,6 +3430,12 @@ model DeliveryOrder {
   metadata           Json?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
+  /// Revision 24b — the private shift this order was carried on: stamped at
+  /// assignment when the driver is IN_PROGRESS on a private shift for this
+  /// order's own vendor and branch, cleared when it is taken off the driver.
+  /// A stamped order carries no per-order delivery fee at delivery (the shop
+  /// pays the shift by the hour) and is not in the fleet per-order count.
+  privateShiftId     String?
 
   tenant          Tenant                 @relation(fields: [tenantId], references: [id])
   vendor          Vendor                 @relation(fields: [vendorId], references: [id])
@@ -3451,6 +3459,7 @@ model DeliveryOrder {
   @@index([tenantId, slaDeadline])
   @@index([tenantId, status, scheduledAt])
   @@index([tenantId, batchId])
+  @@index([tenantId, privateShiftId])
   @@index([tenantId, trainingSessionId])
   // The sweep's retry leg selects on exactly this pair.
   @@index([status, nextRedispatchAt])
@@ -3710,6 +3719,8 @@ model VendorStatement {
   payoutTxId        String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+  /// Revision 24b — Σ private-shift charges debited in the period.
+  privateShiftsKwd  Decimal  @default(0) @db.Decimal(10, 3)
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
   vendor Vendor @relation(fields: [vendorId], references: [id])
@@ -3812,47 +3823,59 @@ model FleetPartner {
 //      so a rate change never rewrites history. Payment posts a FLEET_PAYOUT
 //      wallet transaction.
 model FleetPayoutStatement {
-  id              String    @id @default(uuid())
-  tenantId        String
-  fleetPartnerId  String
-  periodStart     DateTime
-  periodEnd       DateTime // exclusive
-  deliveredOrders Int
+  id                  String    @id @default(uuid())
+  tenantId            String
+  fleetPartnerId      String
+  periodStart         DateTime
+  periodEnd           DateTime // exclusive
+  deliveredOrders     Int
   /// The base fee per order, snapshotted. On a flat-rate company this is still
   /// literally the price per order, which is why the column keeps its name and
   /// every statement cut before revision 14 (#3) still reads correctly.
-  feePerOrderKwd  Decimal   @db.Decimal(10, 3)
+  feePerOrderKwd      Decimal   @db.Decimal(10, 3)
   /// Revision 14 (#3) — snapshots of the kilometre half. NULL on a flat month.
-  perKmFeeKwd     Decimal?  @db.Decimal(10, 3)
-  totalKm         Decimal?  @db.Decimal(12, 3)
+  perKmFeeKwd         Decimal?  @db.Decimal(10, 3)
+  totalKm             Decimal?  @db.Decimal(12, 3)
   /// Client note, 2026-08-16: the company's commercial model, snapshotted
   /// like the rate. The order lines behind a SUBSCRIPTION month are the shop
   /// fees, not base + km, and switching the company's model later must not
   /// redraw the working of a month already cut.
-  commercialModel String    @default("MARGIN")
-  totalKwd        Decimal   @db.Decimal(10, 3)
+  commercialModel     String    @default("MARGIN")
+  totalKwd            Decimal   @db.Decimal(10, 3)
   /// Revision 13 (#8) — FINAL | CONFIRMED | DISPUTED | PAID. The delivery
   /// company confirms a statement before Darb processes it; postFleetPayout
   /// refuses anything that is not CONFIRMED, so the gate holds for the cron
   /// and a script as well as the staff button.
-  status          String    @default("FINAL")
-  payoutTxId      String?
-  confirmedAt     DateTime?
-  confirmedById   String?
-  disputedAt      DateTime?
-  disputeReason   String?
+  status              String    @default("FINAL")
+  payoutTxId          String?
+  confirmedAt         DateTime?
+  confirmedById       String?
+  disputedAt          DateTime?
+  disputeReason       String?
   /// The SupportTicket a dispute opened, so the disagreement lands in the
   /// inbox Darb already triages rather than in a WhatsApp thread.
-  disputeTicketId String?
+  disputeTicketId     String?
   /// Revision 17 (#1) — the sum of the deductions applied to this month, and
   /// what is actually payable after them. Both are snapshots: a deduction
   /// raised after the statement was cut must not silently rewrite a month the
   /// company already confirmed, so applying one recomputes these columns and
   /// is refused once the statement leaves FINAL.
-  deductionsKwd   Decimal   @default(0.000) @db.Decimal(10, 3)
-  netPayableKwd   Decimal?  @db.Decimal(10, 3)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  deductionsKwd       Decimal   @default(0.000) @db.Decimal(10, 3)
+  netPayableKwd       Decimal?  @db.Decimal(10, 3)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  /// Revision 24b — the delivered-order half of totalKwd. NULL on a statement
+  /// cut before it, where totalKwd is all orders.
+  ordersKwd           Decimal?  @db.Decimal(10, 3)
+  /// Revision 24b — the company's completed private shifts in the period,
+  /// paid by the hour on top of the orders and included in totalKwd. The
+  /// shifts carry fleetStatementId back to this row.
+  privateShiftCount   Int       @default(0)
+  privateShiftMinutes Int       @default(0)
+  privateShiftPayKwd  Decimal   @default(0.000) @db.Decimal(10, 3)
+  /// Revision 24b — per-vehicle per-order rates snapshotted at the cut,
+  /// { "MOTORCYCLE": "1.250" | null, "CAR": ... }. NULL = base fee for all.
+  vehicleRates        Json?
 
   tenant     Tenant              @relation(fields: [tenantId], references: [id])
   fleet      FleetPartner        @relation(fields: [fleetPartnerId], references: [id])
@@ -4925,6 +4948,12 @@ model PrivateShift {
   settledAt            DateTime?
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
+  /// Revision 24b — the PRIVATE_SHIFT_CHARGE posting on the shop's wallet
+  /// (idempotencyKey private-shift-charge:{id}) and when it was made.
+  chargeTxId           String?
+  chargedAt            DateTime?
+  /// Revision 24b — the FleetPayoutStatement that paid the company for it.
+  fleetStatementId     String?
 
   plan       PrivateShiftPlan?       @relation(fields: [planId], references: [id], onDelete: SetNull)
   deductions PrivateShiftDeduction[]
@@ -4933,6 +4962,8 @@ model PrivateShift {
   @@index([tenantId, vendorId, startAt])
   @@index([tenantId, driverId, status])
   @@index([tenantId, status, startAt])
+  @@index([tenantId, fleetStatementId])
+  @@index([chargeTxId])
 }
 
 /// One deduction on a settled private shift. LATE_ORDER carries the order;

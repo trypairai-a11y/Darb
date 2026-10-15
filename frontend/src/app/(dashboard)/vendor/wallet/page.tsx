@@ -581,6 +581,13 @@ export default function VendorWalletPage() {
               ),
             },
             {
+              key: "privateShiftsKwd",
+              label: t("reports.privateShifts"),
+              render: (value: string | undefined) => (
+                <span dir="ltr" className="tabular-nums">{formatKwd(value ?? "0", locale)}</span>
+              ),
+            },
+            {
               key: "closingBalanceKwd",
               label: t("vendorExtra.statementClosing"),
               render: (value: string) => (

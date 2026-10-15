@@ -36,6 +36,7 @@ import { enqueueFoodicsWriteback } from "./foodics/writebackHook";
 import { fireCustomerMilestone } from "./customerMessagingService";
 import { sendDispatchDriverPush } from "./driverAppPushService";
 import { DropoffOutOfAreaError } from "./orderIntakeErrors";
+import { privateShiftIdForAssignment } from "./privateShifts/privateShiftStamp";
 
 /**
  * v1 flat delivery promise: order placed → at the customer's door in 45
@@ -907,6 +908,16 @@ export async function completeDelivery(args: {
     throw new OrderStateConflictError(orderId, order.status, "DELIVERED");
   }
 
+  // Revision 24b — an order carried on a private shift for its own shop and
+  // branch is paid for by the hour, on the shift. The shop's per-order fee is
+  // zeroed on the order at delivery (the quote stays in the event) so every
+  // reader of the row (statement, nightly check, refund, company statement)
+  // agrees with what the ledger booked. What the customer paid is untouched:
+  // a COD order still debits the driver the full total, the shop is simply
+  // credited all of it.
+  const onPrivateShift = !!order.privateShiftId;
+  const quotedFee = new Prisma.Decimal(order.deliveryFeeKwd ?? 0);
+
   const { tx, updated } = await prisma.$transaction(async (trx) => {
     await transitionOrder(trx, {
       orderId,
@@ -920,10 +931,14 @@ export async function completeDelivery(args: {
           ? { codCollectedKwd: toDecimal(args.codCollectedKwd) }
           : {}),
         ...(args.proofPhotoUrl ? { proofPhotoUrl: args.proofPhotoUrl } : {}),
+        ...(onPrivateShift ? { deliveryFeeKwd: new Prisma.Decimal(0) } : {}),
       },
       eventMeta: {
         ...baseEventMeta(order),
         ...(args.podMethod ? { podMethod: args.podMethod } : {}),
+        ...(onPrivateShift
+          ? { privateShiftId: order.privateShiftId, quotedFeeKwd: quotedFee.toFixed(3) }
+          : {}),
       },
     });
 
@@ -939,7 +954,7 @@ export async function completeDelivery(args: {
         driverId: order.driverId as string,
         vendorId: order.vendorId,
         orderTotalKwd: new Prisma.Decimal(order.orderTotalKwd),
-        deliveryFeeKwd: new Prisma.Decimal(order.deliveryFeeKwd ?? 0),
+        deliveryFeeKwd: onPrivateShift ? new Prisma.Decimal(0) : quotedFee,
       };
       if (order.paymentMethod === "COD") {
         await postCodSettlement(trx, settlementOrder);
@@ -1089,7 +1104,21 @@ export async function assignDriverManually(args: {
       from: order.status,
       to: "ASSIGNED",
       actor,
-      data: { driverId, assignedAt: now },
+      data: {
+        driverId,
+        assignedAt: now,
+        // Revision 24b: a hand assignment to the shop's own private-shift
+        // driver is shift work too; to anybody else it is per-order work.
+        privateShiftId: order.isTraining
+          ? null
+          : await privateShiftIdForAssignment(trx, {
+              tenantId,
+              driverId,
+              vendorId: order.vendorId,
+              branchId: order.branchId,
+              at: now,
+            }),
+      },
       eventMeta: { ...baseEventMeta(order), driverId, manual: true },
     });
     // Manual assignment marks the session BUSY too (contract #2).
@@ -1160,7 +1189,7 @@ export async function reassignAwayFromDriver(args: {
       from: order.status,
       to: "DISPATCHING",
       actor,
-      data: { driverId: null, assignedAt: null, arrivedAt: null },
+      data: { driverId: null, assignedAt: null, arrivedAt: null, privateShiftId: null },
       eventMeta: {
         ...baseEventMeta(order),
         reassign: true,

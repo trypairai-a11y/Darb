@@ -94,6 +94,10 @@ export function orderPayoutKwd(
   rate: FleetRate,
   distanceKm: Prisma.Decimal | null,
   shopFeeKwd?: Prisma.Decimal | string | number | null,
+  /** Revision 24b: the per-order rate of the driver's vehicle type
+   *  (FleetVehicleRate.perOrderKwd). Replaces the base on a MARGIN company;
+   *  null/undefined = the company-wide base, as before. */
+  vehicleBaseKwd?: Prisma.Decimal | null,
 ): Prisma.Decimal {
   // Client note, 2026-08-16. On SUBSCRIPTION the company is paid what the shop
   // was charged for this order, base and kilometres do not apply. An order
@@ -103,8 +107,9 @@ export function orderPayoutKwd(
   if (rate.model === "SUBSCRIPTION") {
     return new Prisma.Decimal((shopFeeKwd ?? 0) as Prisma.Decimal.Value).toDecimalPlaces(3);
   }
-  if (rate.perKmKwd == null || distanceKm == null) return rate.baseKwd;
-  return rate.baseKwd.plus(rate.perKmKwd.mul(distanceKm)).toDecimalPlaces(3);
+  const base = vehicleBaseKwd ?? rate.baseKwd;
+  if (rate.perKmKwd == null || distanceKm == null) return base;
+  return base.plus(rate.perKmKwd.mul(distanceKm)).toDecimalPlaces(3);
 }
 
 /**
@@ -123,13 +128,16 @@ export function sumFleetPayout(
   /** Client note, 2026-08-16: the shop fee of each order, index-aligned with
    *  `distances`. Only read on a SUBSCRIPTION rate. */
   shopFees?: Array<Prisma.Decimal | string | number | null>,
+  /** Revision 24b: the per-vehicle per-order rate of each order, index-aligned.
+   *  Only read on a MARGIN rate. */
+  vehicleBases?: Array<Prisma.Decimal | null>,
 ): { totalKwd: Prisma.Decimal; totalKm: Prisma.Decimal; ordersMissingDistance: number } {
   let totalKwd = new Prisma.Decimal(0);
   let totalKm = new Prisma.Decimal(0);
   let ordersMissingDistance = 0;
   for (let i = 0; i < distances.length; i += 1) {
     const km = distances[i];
-    totalKwd = totalKwd.plus(orderPayoutKwd(rate, km, shopFees?.[i]));
+    totalKwd = totalKwd.plus(orderPayoutKwd(rate, km, shopFees?.[i], vehicleBases?.[i] ?? null));
     if (km == null) ordersMissingDistance += 1;
     else totalKm = totalKm.plus(km);
   }
@@ -138,6 +146,72 @@ export function sumFleetPayout(
     totalKm: totalKm.toDecimalPlaces(3),
     ordersMissingDistance,
   };
+}
+
+// ─── Per-vehicle rates (revision 24b) ──────────────────────────────────────
+
+/**
+ * Revision 24 (#10) gave a delivery company a per-order rate per vehicle type
+ * (`FleetVehicleRate.perOrderKwd`); revision 24b pays it. A snapshot of the
+ * company's rates, `{ MOTORCYCLE: "1.250", CAR: null }`, is what a statement
+ * stores, so a rate approved after the cut never redraws a month.
+ */
+export type VehicleRateSnapshot = Record<string, string | null>;
+
+export async function loadVehicleRateSnapshot(
+  tenantId: string,
+  fleetPartnerId: string,
+): Promise<VehicleRateSnapshot | null> {
+  const rows = await prisma.fleetVehicleRate.findMany({
+    where: { tenantId, fleetPartnerId },
+    select: { vehicleType: true, perOrderKwd: true },
+  });
+  const snapshot: VehicleRateSnapshot = {};
+  for (const r of rows) {
+    snapshot[r.vehicleType] = r.perOrderKwd == null ? null : new Prisma.Decimal(r.perOrderKwd).toFixed(3);
+  }
+  return Object.values(snapshot).some((v) => v != null) ? snapshot : null;
+}
+
+/** The per-order rate a driver of this vehicle type is paid at, or null for the base. */
+export function vehicleBaseOf(
+  snapshot: unknown,
+  vehicleType: string | null | undefined,
+): Prisma.Decimal | null {
+  if (!snapshot || typeof snapshot !== "object" || !vehicleType) return null;
+  const v = (snapshot as Record<string, unknown>)[vehicleType];
+  if (v == null || v === "") return null;
+  try {
+    return new Prisma.Decimal(v as Prisma.Decimal.Value);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Revision 24b — the private shifts a company is paid for in a period: the
+ * COMPLETED shifts it worked that ended inside it and are not on a statement
+ * yet. Paid by the hour at the rate snapshotted on the shift
+ * (`fleetPayKwd`); a shift with no rate (blank) still lists at 0 so the gap
+ * is visible and disputable rather than silently dropped.
+ */
+export async function privateShiftsForStatement(
+  tenantId: string,
+  fleetPartnerId: string,
+  period: { start: Date; end: Date },
+) {
+  return prisma.privateShift.findMany({
+    where: {
+      tenantId,
+      fleetPartnerId,
+      status: "COMPLETED",
+      settledAt: { not: null },
+      startedAt: { not: null },
+      endAt: { gte: period.start, lt: period.end },
+      fleetStatementId: null,
+    },
+    select: { id: true, billableMinutes: true, fleetPayKwd: true },
+  });
 }
 
 export interface FleetScorecard {
@@ -334,6 +408,8 @@ export async function getFleetScorecard(
       distanceKm: true,
       // Client note, 2026-08-16: a SUBSCRIPTION company earns the shop fee.
       deliveryFeeKwd: true,
+      // Revision 24b: shift work is paid by the hour, not in earnings per order.
+      privateShiftId: true,
     },
   });
 
@@ -392,10 +468,11 @@ export async function getFleetScorecard(
 
   // Revision 14 (#3): the same base + kilometre formula the statement is cut
   // on, so the scorecard's earnings line and the payout tab keep agreeing.
+  const perOrderRows = deliveredRows.filter((r) => !r.privateShiftId);
   const earnings = sumFleetPayout(
     fleetRateOf(fleet),
-    deliveredRows.map((r) => r.distanceKm),
-    deliveredRows.map((r) => r.deliveryFeeKwd),
+    perOrderRows.map((r) => r.distanceKm),
+    perOrderRows.map((r) => r.deliveryFeeKwd),
   );
   const assignedTotal = delivered + failedOrders;
 
@@ -468,16 +545,52 @@ export async function generateFleetStatements(
           // Revision 20 — a practice order is delivered work that nobody is
           // paid for. It must never reach a payout statement.
           isTraining: false,
+          // Revision 24b — an order carried on a private shift is paid by the
+          // hour on the shift line below, never ALSO per order.
+          privateShiftId: null,
         },
-        select: { distanceKm: true, deliveryFeeKwd: true },
+        select: { distanceKm: true, deliveryFeeKwd: true, driver: { select: { vehicleType: true } } },
       });
 
       const rate = fleetRateOf(fleet);
-      const { totalKwd, totalKm } = sumFleetPayout(
+      // Revision 24b — a MARGIN company is paid each order at the per-order
+      // rate of the driver's vehicle type when it has one, the base when it
+      // is blank. SUBSCRIPTION keeps paying the shop's fee (revision 23).
+      const vehicleRates = isSubscriptionRate(rate) ? null : await loadVehicleRateSnapshot(tenantId, fleet.id);
+      const { totalKwd: ordersKwd, totalKm } = sumFleetPayout(
         rate,
         rows.map((r) => r.distanceKm),
         rows.map((r) => r.deliveryFeeKwd),
+        rows.map((r) => vehicleBaseOf(vehicleRates, r.driver?.vehicleType)),
       );
+
+      // Revision 24b — the company's private shifts, paid by the hour on the
+      // same statement so they go through the same confirm-with-invoice and
+      // CONFIRMED to PAID flow as the orders. Stamped with this statement in
+      // the same transaction, so no shift is paid twice.
+      const shifts = await privateShiftsForStatement(tenantId, fleet.id, period);
+      const shiftPayKwd = shifts
+        .reduce((acc, sh) => acc.plus(sh.fleetPayKwd ?? 0), new Prisma.Decimal(0))
+        .toDecimalPlaces(3);
+      const shiftMinutes = shifts.reduce((acc, sh) => acc + (sh.billableMinutes ?? 0), 0);
+      const totalKwd = ordersKwd.plus(shiftPayKwd).toDecimalPlaces(3);
+      const shiftFields = {
+        ordersKwd,
+        privateShiftCount: shifts.length,
+        privateShiftMinutes: shiftMinutes,
+        privateShiftPayKwd: shiftPayKwd,
+      };
+      const cut = async (data: Prisma.FleetPayoutStatementUncheckedCreateInput) =>
+        prisma.$transaction(async (tx) => {
+          const statement = await tx.fleetPayoutStatement.create({ data });
+          if (shifts.length) {
+            await tx.privateShift.updateMany({
+              where: { tenantId, id: { in: shifts.map((sh) => sh.id) }, fleetStatementId: null },
+              data: { fleetStatementId: statement.id },
+            });
+          }
+          return statement;
+        });
 
       if (isSubscriptionRate(rate)) {
         // Client note, 2026-08-16 (Osama): on a subscription the company is
@@ -491,13 +604,13 @@ export async function generateFleetStatements(
         const feeKwd = new Prisma.Decimal(
           (fleet.subscriptionFeeKwd ?? 0) as Prisma.Decimal.Value,
         ).toDecimalPlaces(3);
-        await prisma.fleetPayoutStatement.create({
-          data: {
+        await cut({
             tenantId,
             fleetPartnerId: fleet.id,
             periodStart: period.start,
             periodEnd: period.end,
             deliveredOrders: rows.length,
+            ...shiftFields,
             commercialModel: "SUBSCRIPTION",
             // No base and no kilometre rate apply on a subscription month;
             // the order lines are the shop fees. 0 rather than the stale
@@ -525,14 +638,12 @@ export async function generateFleetStatements(
                   },
                 }
               : {}),
-          },
         });
         created += 1;
         continue;
       }
 
-      await prisma.fleetPayoutStatement.create({
-        data: {
+      await cut({
           tenantId,
           fleetPartnerId: fleet.id,
           periodStart: period.start,
@@ -542,7 +653,8 @@ export async function generateFleetStatements(
           perKmFeeKwd: rate.perKmKwd,
           totalKm: rate.perKmKwd == null ? null : totalKm,
           totalKwd,
-        },
+          ...shiftFields,
+          ...(vehicleRates ? { vehicleRates } : {}),
       });
       created += 1;
     } catch (err) {
@@ -625,7 +737,9 @@ export async function postFleetPayoutTx(
       memo:
         statement.commercialModel === "SUBSCRIPTION"
           ? `Fleet payout ${statementId}: ${statement.deliveredOrders} orders at shop fees ${statement.totalKwd.toFixed(3)} KWD less subscription ${statement.deductionsKwd.toFixed(3)} KWD`
-          : `Fleet payout ${statementId}: ${statement.deliveredOrders} orders x ${statement.feePerOrderKwd.toFixed(3)} KWD`,
+          : statement.privateShiftCount > 0
+            ? `Fleet payout ${statementId}: ${statement.deliveredOrders} orders ${(statement.ordersKwd ?? statement.totalKwd.minus(statement.privateShiftPayKwd)).toFixed(3)} KWD + ${statement.privateShiftCount} private shifts ${statement.privateShiftPayKwd.toFixed(3)} KWD`
+            : `Fleet payout ${statementId}: ${statement.deliveredOrders} orders x ${statement.feePerOrderKwd.toFixed(3)} KWD`,
       createdById: actorId,
       legs: [
         {

@@ -38,6 +38,8 @@ interface ComponentSums {
   codNetKwd: Prisma.Decimal;
   prepaidFeesKwd: Prisma.Decimal;
   refundsKwd: Prisma.Decimal;
+  /** Revision 24b — private shifts charged by the hour. */
+  privateShiftsKwd: Prisma.Decimal;
 }
 
 async function componentSums(
@@ -61,6 +63,7 @@ async function componentSums(
   let codNet = ZERO;
   let prepaidFees = ZERO;
   let refunds = ZERO;
+  let privateShifts = ZERO;
   for (const e of entries) {
     switch (e.transaction.type) {
       case "COD_SETTLEMENT":
@@ -73,11 +76,15 @@ async function componentSums(
       case "REFUND":
         refunds = e.direction === "DEBIT" ? refunds.plus(e.amountKwd) : refunds.minus(e.amountKwd);
         break;
+      case "PRIVATE_SHIFT_CHARGE":
+        // The charge is a DEBIT on the payable, like a prepaid fee.
+        privateShifts = e.direction === "DEBIT" ? privateShifts.plus(e.amountKwd) : privateShifts.minus(e.amountKwd);
+        break;
       default:
         break;
     }
   }
-  return { codNetKwd: codNet, prepaidFeesKwd: prepaidFees, refundsKwd: refunds };
+  return { codNetKwd: codNet, prepaidFeesKwd: prepaidFees, refundsKwd: refunds, privateShiftsKwd: privateShifts };
 }
 
 /**
@@ -147,7 +154,8 @@ export async function generateMonthlyStatements(
       const explained = opening
         .plus(sums.codNetKwd)
         .minus(sums.prepaidFeesKwd)
-        .minus(sums.refundsKwd);
+        .minus(sums.refundsKwd)
+        .minus(sums.privateShiftsKwd);
       const unexplained = closing.minus(explained);
       if (!unexplained.isZero()) {
         logger.info(
@@ -166,6 +174,7 @@ export async function generateMonthlyStatements(
           codNetKwd: sums.codNetKwd,
           prepaidFeesKwd: sums.prepaidFeesKwd,
           refundsKwd: sums.refundsKwd,
+          privateShiftsKwd: sums.privateShiftsKwd,
           closingBalanceKwd: closing,
         },
       });

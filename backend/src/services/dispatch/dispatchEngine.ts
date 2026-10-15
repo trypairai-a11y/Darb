@@ -36,6 +36,7 @@ import {
 import { isDriverOverCeiling } from "../wallet/walletService";
 import { markDriverBusy } from "./driverPresence";
 import { privateShiftPolicyFor } from "./privateShiftPolicy";
+import { privateShiftIdForAssignment } from "../privateShifts/privateShiftStamp";
 import {
   enqueueDispatchNext,
   removeOfferExpiryJob,
@@ -1499,13 +1500,30 @@ export async function acceptOffer(args: {
       });
       if (!order) throw new OfferGoneError(offerId);
 
+      // Revision 24b: the shop's own private-shift driver carries this order
+      // on the shift, not for a per-order fee.
+      const shiftId = await privateShiftIdForAssignment(trx, {
+        tenantId,
+        driverId,
+        vendorId: order.vendorId,
+        branchId: order.branchId,
+        at: now,
+      });
+
       await transitionOrder(trx, {
         orderId: order.id,
         tenantId,
         from: "DISPATCHING",
         to: "ASSIGNED",
         actor: { type: "DRIVER", id: driverId },
-        data: { driverId, assignedAt: now, ...(offer.batchId ? { batchId: offer.batchId } : {}) },
+        data: {
+          driverId,
+          assignedAt: now,
+          ...(offer.batchId ? { batchId: offer.batchId } : {}),
+          // Revision 24b: the shop's own private-shift driver carries this
+          // order on the shift, not for a per-order fee.
+          privateShiftId: shiftId,
+        },
         eventMeta: {
           orderNumber: order.orderNumber,
           vendorId: order.vendorId,
@@ -1545,7 +1563,14 @@ export async function acceptOffer(args: {
               from: "DISPATCHING",
               to: "ASSIGNED",
               actor: { type: "DRIVER", id: driverId },
-              data: { driverId, assignedAt: now, batchId: offer.batchId },
+              data: {
+                driverId,
+                assignedAt: now,
+                batchId: offer.batchId,
+                // A batch is one pickup, so the siblings share the primary's
+                // shop and branch, and with it the primary's shift.
+                privateShiftId: shiftId,
+              },
               eventMeta: { driverId, offerId: sib.id, round: sib.round, batchId: offer.batchId },
             });
             siblingOrders.push(sib.orderId);

@@ -45,6 +45,12 @@ function attach() {
   p.walletEntry = p.walletEntry ?? {};
   p.walletEntry.create = jest.fn(async ({ data }: any) => ({ id: "we", ...data }));
   p.$transaction = jest.fn(async (fn: any) => fn(p));
+  // Revision 24b: per-vehicle rates and private shifts are read on every cut.
+  p.fleetVehicleRate = p.fleetVehicleRate ?? {};
+  p.fleetVehicleRate.findMany = jest.fn().mockResolvedValue([]);
+  p.privateShift = p.privateShift ?? {};
+  p.privateShift.findMany = jest.fn().mockResolvedValue([]);
+  p.privateShift.updateMany = jest.fn().mockResolvedValue({ count: 0 });
   return p;
 }
 
@@ -87,10 +93,15 @@ describe("MARGIN is unchanged", () => {
     expect(await generateFleetStatements("t-1", PERIOD)).toBe(1);
 
     const { data } = p.fleetPayoutStatement.create.mock.calls[0][0];
+    // Revision 24b added the orders/private-shift split; with no shifts and
+    // no per-vehicle rate it is all zeros and the total is unchanged.
     expect(Object.keys(data).sort()).toEqual([
-      "deliveredOrders", "feePerOrderKwd", "fleetPartnerId", "perKmFeeKwd",
-      "periodEnd", "periodStart", "tenantId", "totalKm", "totalKwd",
+      "deliveredOrders", "feePerOrderKwd", "fleetPartnerId", "ordersKwd", "perKmFeeKwd",
+      "periodEnd", "periodStart", "privateShiftCount", "privateShiftMinutes", "privateShiftPayKwd",
+      "tenantId", "totalKm", "totalKwd",
     ]);
+    expect(data.privateShiftCount).toBe(0);
+    expect(data.privateShiftPayKwd.toFixed(3)).toBe("0.000");
     expect(data.feePerOrderKwd.toFixed(3)).toBe("0.700");
     expect(data.totalKm.toFixed(3)).toBe("10.000");
     // 2 x 0.700 + 0.150 x 10, the shop fees play no part.

@@ -32,11 +32,20 @@ import type { FleetInvoiceUpload, FleetStatementRow } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDateTime, formatKwd, formatNumber, localeTag } from "@/i18n/format";
 
+/** Revision 24b: true when any vehicle type carries its own per-order rate. */
+function hasVehicleRates(rates: Record<string, string | null> | null | undefined): boolean {
+  return !!rates && Object.values(rates).some((v) => v != null);
+}
+
 export default function FleetPayoutsPage() {
   const { t, locale } = useI18n();
   const toast = useToast();
   const queryClient = useQueryClient();
   const [openRow, setOpenRow] = useState<FleetStatementRow | null>(null);
+  // Revision 24b: a per-order rate column only when the month was cut on
+  // per-vehicle rates; otherwise every line is the base and the box says so.
+  const showRate =
+    !!openRow && openRow.commercialModel !== "SUBSCRIPTION" && hasVehicleRates(openRow.vehicleRates);
   const [disputing, setDisputing] = useState<FleetStatementRow | null>(null);
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
@@ -422,7 +431,7 @@ export default function FleetPayoutsPage() {
                     )}{" "}
                     ={" "}
                     <span className="font-medium text-sand-900" dir="ltr">
-                      {formatKwd(earnings.totalKwd, locale)}
+                      {formatKwd(earnings.ordersKwd ?? earnings.totalKwd, locale)}
                     </span>
                   </p>
                   <p className="text-xs text-sand-600 mt-0.5" dir="auto" data-testid="fleet-subscription-note">
@@ -433,9 +442,19 @@ export default function FleetPayoutsPage() {
                   </p>
                 </>
               ) : (
+              <>
+              {/* Revision 24b: with per-vehicle rates the orders are not all
+                  at one price, so the line reads "N orders" and the note
+                  below says how each is priced. */}
               <p className="text-xs text-sand-600 mt-0.5" dir="ltr">
-                {formatNumber(earnings.deliveredOrders, locale)} x{" "}
-                {formatKwd(earnings.feePerOrderKwd, locale)}
+                {hasVehicleRates(earnings.vehicleRates) ? (
+                  <>{t("fleetPortal.ordersCount").replace("{n}", formatNumber(earnings.deliveredOrders, locale))}</>
+                ) : (
+                  <>
+                    {formatNumber(earnings.deliveredOrders, locale)} x{" "}
+                    {formatKwd(earnings.feePerOrderKwd, locale)}
+                  </>
+                )}
                 {earnings.perKmFeeKwd != null && (
                   <>
                     {" + "}
@@ -445,9 +464,34 @@ export default function FleetPayoutsPage() {
                 )}{" "}
                 ={" "}
                 <span className="font-medium text-sand-900">
-                  {formatKwd(earnings.totalKwd, locale)}
+                  {formatKwd(earnings.ordersKwd ?? earnings.totalKwd, locale)}
                 </span>
               </p>
+              {hasVehicleRates(earnings.vehicleRates) && (
+                <p className="text-xs text-sand-600 mt-0.5" dir="auto">
+                  {t("fleetPortal.vehicleRateNote")}
+                </p>
+              )}
+              </>
+              )}
+              {(earnings.privateShiftCount ?? 0) > 0 && (
+                <>
+                  <p className="text-xs text-sand-600 mt-0.5" dir="auto" data-testid="fleet-earnings-private-shifts">
+                    {t("fleetPortal.privateShiftsLine")
+                      .replace("{n}", formatNumber(earnings.privateShiftCount ?? 0, locale))
+                      .replace("{hours}", formatNumber(Number(((earnings.privateShiftMinutes ?? 0) / 60).toFixed(2)), locale))}{" "}
+                    ={" "}
+                    <span className="font-medium text-sand-900" dir="ltr">
+                      {formatKwd(earnings.privateShiftPayKwd ?? "0", locale)}
+                    </span>
+                  </p>
+                  <p className="text-xs text-sand-600 mt-0.5" dir="auto">
+                    {t("fleetPortal.total")}:{" "}
+                    <span className="font-medium text-sand-900" dir="ltr">
+                      {formatKwd(earnings.totalKwd, locale)}
+                    </span>
+                  </p>
+                </>
               )}
               {/* A base-only line is a difference the company would otherwise
                   find by hand, so the count says so on the screen. */}
@@ -485,6 +529,11 @@ export default function FleetPayoutsPage() {
                     <th className="text-start text-xs font-medium text-secondary px-5 py-3">
                       {t("darbOrderStatus.delivered")}
                     </th>
+                    {hasVehicleRates(earnings.vehicleRates) && (
+                      <th className="text-start text-xs font-medium text-secondary px-5 py-3">
+                        {t("fleetPortal.rateUsed")}
+                      </th>
+                    )}
                     {earnings.perKmFeeKwd != null && (
                       <th className="text-start text-xs font-medium text-secondary px-5 py-3">
                         {t("fleetPortal.distanceKm")}
@@ -503,6 +552,11 @@ export default function FleetPayoutsPage() {
                       <td dir="ltr" className="px-5 py-3 text-sm tabular-nums">
                         {formatDateTime(o.deliveredAt, locale)}
                       </td>
+                      {hasVehicleRates(earnings.vehicleRates) && (
+                        <td dir="ltr" className="px-5 py-3 text-sm tabular-nums">
+                          {o.rateKwd == null ? "n/a" : formatKwd(o.rateKwd, locale)}
+                        </td>
+                      )}
                       {earnings.perKmFeeKwd != null && (
                         <td dir="ltr" className="px-5 py-3 text-sm tabular-nums">
                           {o.distanceKm == null
@@ -541,10 +595,18 @@ export default function FleetPayoutsPage() {
                 kilometre rate. Its working is the shop fees, the monthly fee
                 withheld as a deduction, and what is left to pay. */}
             {openRow.commercialModel === "SUBSCRIPTION" ? (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" data-testid="fleet-subscription-statement">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3" data-testid="fleet-subscription-statement">
                 {[
                   { label: t("fleetPortal.orders"), value: formatNumber(openRow.deliveredOrders, locale) },
                   { label: t("fleetPortal.total"), value: formatKwd(openRow.totalKwd, locale) },
+                  ...((openRow.privateShiftCount ?? 0) > 0
+                    ? [
+                        {
+                          label: t("fleetPortal.privateShiftsTitle"),
+                          value: formatKwd(openRow.privateShiftPayKwd ?? "0", locale),
+                        },
+                      ]
+                    : []),
                   {
                     label: t("fleetPortal.subscriptionDeducted"),
                     value: `- ${formatKwd(openRow.deductionsKwd ?? "0", locale)}`,
@@ -565,14 +627,23 @@ export default function FleetPayoutsPage() {
             ) : (
             <div
               className={
-                openRow.perKmFeeKwd == null
+                openRow.perKmFeeKwd == null && !(openRow.privateShiftCount ?? 0)
                   ? "grid grid-cols-3 gap-3"
-                  : "grid grid-cols-2 sm:grid-cols-5 gap-3"
+                  : "grid grid-cols-2 sm:grid-cols-3 gap-3"
               }
             >
               {[
                 { label: t("fleetPortal.orders"), value: formatNumber(openRow.deliveredOrders, locale) },
                 { label: t("fleetPortal.rateBaseLabel"), value: formatKwd(openRow.feePerOrderKwd, locale) },
+                // Revision 24b: completed private shifts, paid by the hour.
+                ...((openRow.privateShiftCount ?? 0) > 0
+                  ? [
+                      {
+                        label: t("fleetPortal.privateShiftsTitle"),
+                        value: formatKwd(openRow.privateShiftPayKwd ?? "0", locale),
+                      },
+                    ]
+                  : []),
                 ...(openRow.perKmFeeKwd == null
                   ? []
                   : [
@@ -677,6 +748,11 @@ export default function FleetPayoutsPage() {
                             <th className="text-end text-[11px] font-medium text-secondary px-3 py-2">
                               {t("fleetPortal.orders")}
                             </th>
+                            {showRate && (
+                              <th className="text-end text-[11px] font-medium text-secondary px-3 py-2">
+                                {t("fleetPortal.rateUsed")}
+                              </th>
+                            )}
                             {openRow.perKmFeeKwd != null && (
                               <th className="text-end text-[11px] font-medium text-secondary px-3 py-2">
                                 {t("fleetPortal.distanceKm")}
@@ -697,6 +773,11 @@ export default function FleetPayoutsPage() {
                               <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end">
                                 {formatNumber(d.orders, locale)}
                               </td>
+                              {showRate && (
+                                <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end">
+                                  {d.rateKwd == null ? "n/a" : formatKwd(d.rateKwd, locale)}
+                                </td>
+                              )}
                               {openRow.perKmFeeKwd != null && (
                                 <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end">
                                   {d.totalKm == null
@@ -719,13 +800,15 @@ export default function FleetPayoutsPage() {
                             <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end font-medium">
                               {formatNumber(openRow.deliveredOrders, locale)}
                             </td>
+                            {showRate && <td />}
                             {openRow.perKmFeeKwd != null && (
                               <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end font-medium">
                                 {formatNumber(Number(openRow.totalKm ?? 0), locale)}
                               </td>
                             )}
+                            {/* Revision 24b: the orders half; private shifts follow. */}
                             <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end font-medium">
-                              {formatKwd(openRow.totalKwd, locale)}
+                              {formatKwd(openRow.ordersKwd ?? openRow.totalKwd, locale)}
                             </td>
                           </tr>
                         </tfoot>
@@ -734,7 +817,85 @@ export default function FleetPayoutsPage() {
                   </div>
                 )}
 
-
+                {/* Revision 24b: the private shifts this month pays, by the
+                    hour, then the figure the company is signing for. */}
+                {(detailQuery.data?.privateShifts ?? []).length > 0 && (
+                  <div className="rounded-xl border border-sand-200 overflow-hidden" data-testid="fleet-statement-private-shifts">
+                    <div className="px-3 py-2 bg-sand-50 border-b border-sand-200">
+                      <p className="text-xs font-medium text-sand-700">{t("fleetPortal.privateShiftsTitle")}</p>
+                    </div>
+                    <div className="max-h-[20rem] overflow-y-auto">
+                      <table className="w-full">
+                        <thead className="sticky top-0 bg-white">
+                          <tr className="border-b border-sand-200">
+                            <th className="text-start text-[11px] font-medium text-secondary px-3 py-2">
+                              {t("fleetPortal.period")}
+                            </th>
+                            <th className="text-start text-[11px] font-medium text-secondary px-3 py-2">
+                              {t("privateShifts.shop")}
+                            </th>
+                            <th className="text-start text-[11px] font-medium text-secondary px-3 py-2">
+                              {t("fleetPortal.driverName")}
+                            </th>
+                            <th className="text-end text-[11px] font-medium text-secondary px-3 py-2">
+                              {t("fleetPortal.billableHours")}
+                            </th>
+                            <th className="text-end text-[11px] font-medium text-secondary px-3 py-2">
+                              {t("privateShifts.perHourRate")}
+                            </th>
+                            <th className="text-end text-[11px] font-medium text-secondary px-3 py-2">
+                              {t("fleetPortal.total")}
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(detailQuery.data?.privateShifts ?? []).map((ps) => (
+                            <tr key={ps.id} className="border-b border-sand-200 last:border-0">
+                              <td dir="ltr" className="px-3 py-2 text-xs tabular-nums">{ps.date}</td>
+                              <td dir="auto" className="px-3 py-2 text-xs">
+                                {ps.vendorName ?? "n/a"}
+                                {ps.branchName ? ` · ${ps.branchName}` : ""}
+                              </td>
+                              <td dir="auto" className="px-3 py-2 text-xs">
+                                {ps.driverName ?? "n/a"}
+                                {ps.driverCode ? ` (${ps.driverCode})` : ""}
+                              </td>
+                              <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end">
+                                {ps.billableMinutes == null
+                                  ? "n/a"
+                                  : formatNumber(Number((ps.billableMinutes / 60).toFixed(2)), locale)}
+                              </td>
+                              <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end">
+                                {ps.hourlyKwd == null ? "n/a" : formatKwd(ps.hourlyKwd, locale)}
+                              </td>
+                              <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end font-medium">
+                                {formatKwd(ps.payKwd, locale)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot className="sticky bottom-0 bg-sand-50">
+                          <tr className="border-t border-sand-300">
+                            <td className="px-3 py-2 text-xs font-medium" colSpan={5}>
+                              {t("fleetPortal.privateShiftsTitle")}
+                            </td>
+                            <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end font-medium">
+                              {formatKwd(openRow.privateShiftPayKwd ?? "0", locale)}
+                            </td>
+                          </tr>
+                          <tr className="border-t border-sand-200">
+                            <td className="px-3 py-2 text-xs font-medium" colSpan={5}>
+                              {t("fleetPortal.total")}
+                            </td>
+                            <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end font-semibold">
+                              {formatKwd(openRow.totalKwd, locale)}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </>
             )}
 

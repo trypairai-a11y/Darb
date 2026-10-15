@@ -78,9 +78,19 @@ export default function PrivateShiftDetailBody({
       <section className="rounded-2xl border border-sand-200 px-4 py-3">
         <div className="flex items-center justify-between mb-1">
           <h3 className="text-sm font-medium text-sand-900">{t("privateShifts.billingTitle")}</h3>
-          <span className="text-[11px] text-sand-500">
-            {settled ? t("privateShifts.settled") : t("privateShifts.runningPreview")}
-          </span>
+          {/* Revision 24b: once the shop's wallet carries the charge, say so. */}
+          {shift.charged ? (
+            <span
+              className="inline-flex items-center px-2 py-0.5 rounded-pill text-[11px] font-medium bg-forest-50 text-forest-700"
+              data-testid="private-shift-charged"
+            >
+              {t("privateShifts.charged")}
+            </span>
+          ) : (
+            <span className="text-[11px] text-sand-500">
+              {settled ? t("privateShifts.settled") : t("privateShifts.runningPreview")}
+            </span>
+          )}
         </div>
         {row(t("privateShifts.scheduled"), minutes(scheduled))}
         {row(t("privateShifts.lateDeduction"), minutes(lateMin))}
@@ -108,6 +118,14 @@ export default function PrivateShiftDetailBody({
             ),
             true,
           )}
+        {showVendorCharge && shift.charged && shift.chargedAt && (
+          <p className="text-xs text-forest-700 mt-2">
+            {t("privateShifts.chargedNote").replace("{date}", shift.chargedAt.slice(0, 10))}
+          </p>
+        )}
+        {showFleetPay && settled && (
+          <p className="text-xs text-sand-600 mt-2">{t("privateShifts.onFleetStatement")}</p>
+        )}
         <p className="text-xs text-sand-500 mt-2">{t("privateShifts.billingRule")}</p>
       </section>
 

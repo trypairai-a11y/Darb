@@ -117,6 +117,13 @@ describe("generateFleetStatements", () => {
     p.fleetPayoutStatement.create = jest.fn(async ({ data }: any) => ({ id: "fs-1", ...data }));
     p.deliveryOrder = p.deliveryOrder ?? {};
     p.deliveryOrder.findMany = jest.fn();
+    // Revision 24b: per-vehicle rates and private shifts are read on every cut.
+    p.fleetVehicleRate = p.fleetVehicleRate ?? {};
+    p.fleetVehicleRate.findMany = jest.fn().mockResolvedValue([]);
+    p.privateShift = p.privateShift ?? {};
+    p.privateShift.findMany = jest.fn().mockResolvedValue([]);
+    p.privateShift.updateMany = jest.fn().mockResolvedValue({ count: 0 });
+    p.$transaction = jest.fn(async (fn: any) => fn(p));
     return p;
   }
 

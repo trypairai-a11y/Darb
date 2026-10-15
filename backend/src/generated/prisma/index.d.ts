@@ -1415,7 +1415,8 @@ export const WalletTxType: {
   TIP: 'TIP',
   FLEET_PAYOUT: 'FLEET_PAYOUT',
   FLEET_DEPOSIT: 'FLEET_DEPOSIT',
-  TOP_UP: 'TOP_UP'
+  TOP_UP: 'TOP_UP',
+  PRIVATE_SHIFT_CHARGE: 'PRIVATE_SHIFT_CHARGE'
 };
 
 export type WalletTxType = (typeof WalletTxType)[keyof typeof WalletTxType]
@@ -124746,6 +124747,7 @@ export namespace Prisma {
     trainingSessionId: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    privateShiftId: string | null
   }
 
   export type DeliveryOrderMaxAggregateOutputType = {
@@ -124797,6 +124799,7 @@ export namespace Prisma {
     trainingSessionId: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    privateShiftId: string | null
   }
 
   export type DeliveryOrderCountAggregateOutputType = {
@@ -124849,6 +124852,7 @@ export namespace Prisma {
     metadata: number
     createdAt: number
     updatedAt: number
+    privateShiftId: number
     _all: number
   }
 
@@ -124926,6 +124930,7 @@ export namespace Prisma {
     trainingSessionId?: true
     createdAt?: true
     updatedAt?: true
+    privateShiftId?: true
   }
 
   export type DeliveryOrderMaxAggregateInputType = {
@@ -124977,6 +124982,7 @@ export namespace Prisma {
     trainingSessionId?: true
     createdAt?: true
     updatedAt?: true
+    privateShiftId?: true
   }
 
   export type DeliveryOrderCountAggregateInputType = {
@@ -125029,6 +125035,7 @@ export namespace Prisma {
     metadata?: true
     createdAt?: true
     updatedAt?: true
+    privateShiftId?: true
     _all?: true
   }
 
@@ -125168,6 +125175,7 @@ export namespace Prisma {
     metadata: JsonValue | null
     createdAt: Date
     updatedAt: Date
+    privateShiftId: string | null
     _count: DeliveryOrderCountAggregateOutputType | null
     _avg: DeliveryOrderAvgAggregateOutputType | null
     _sum: DeliveryOrderSumAggregateOutputType | null
@@ -125239,6 +125247,7 @@ export namespace Prisma {
     metadata?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    privateShiftId?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     vendor?: boolean | VendorDefaultArgs<ExtArgs>
     trainingSession?: boolean | DeliveryOrder$trainingSessionArgs<ExtArgs>
@@ -125303,6 +125312,7 @@ export namespace Prisma {
     metadata?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    privateShiftId?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     vendor?: boolean | VendorDefaultArgs<ExtArgs>
     trainingSession?: boolean | DeliveryOrder$trainingSessionArgs<ExtArgs>
@@ -125362,6 +125372,7 @@ export namespace Prisma {
     metadata?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    privateShiftId?: boolean
   }
 
   export type DeliveryOrderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -125453,6 +125464,14 @@ export namespace Prisma {
       metadata: Prisma.JsonValue | null
       createdAt: Date
       updatedAt: Date
+      /**
+       * Revision 24b — the private shift this order was carried on: stamped at
+       * assignment when the driver is IN_PROGRESS on a private shift for this
+       * order's own vendor and branch, cleared when it is taken off the driver.
+       * A stamped order carries no per-order delivery fee at delivery (the shop
+       * pays the shift by the hour) and is not in the fleet per-order count.
+       */
+      privateShiftId: string | null
     }, ExtArgs["result"]["deliveryOrder"]>
     composites: {}
   }
@@ -125906,6 +125925,7 @@ export namespace Prisma {
     readonly metadata: FieldRef<"DeliveryOrder", 'Json'>
     readonly createdAt: FieldRef<"DeliveryOrder", 'DateTime'>
     readonly updatedAt: FieldRef<"DeliveryOrder", 'DateTime'>
+    readonly privateShiftId: FieldRef<"DeliveryOrder", 'String'>
   }
     
 
@@ -137594,6 +137614,7 @@ export namespace Prisma {
     prepaidFeesKwd: Decimal | null
     refundsKwd: Decimal | null
     closingBalanceKwd: Decimal | null
+    privateShiftsKwd: Decimal | null
   }
 
   export type VendorStatementSumAggregateOutputType = {
@@ -137602,6 +137623,7 @@ export namespace Prisma {
     prepaidFeesKwd: Decimal | null
     refundsKwd: Decimal | null
     closingBalanceKwd: Decimal | null
+    privateShiftsKwd: Decimal | null
   }
 
   export type VendorStatementMinAggregateOutputType = {
@@ -137619,6 +137641,7 @@ export namespace Prisma {
     payoutTxId: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    privateShiftsKwd: Decimal | null
   }
 
   export type VendorStatementMaxAggregateOutputType = {
@@ -137636,6 +137659,7 @@ export namespace Prisma {
     payoutTxId: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    privateShiftsKwd: Decimal | null
   }
 
   export type VendorStatementCountAggregateOutputType = {
@@ -137653,6 +137677,7 @@ export namespace Prisma {
     payoutTxId: number
     createdAt: number
     updatedAt: number
+    privateShiftsKwd: number
     _all: number
   }
 
@@ -137663,6 +137688,7 @@ export namespace Prisma {
     prepaidFeesKwd?: true
     refundsKwd?: true
     closingBalanceKwd?: true
+    privateShiftsKwd?: true
   }
 
   export type VendorStatementSumAggregateInputType = {
@@ -137671,6 +137697,7 @@ export namespace Prisma {
     prepaidFeesKwd?: true
     refundsKwd?: true
     closingBalanceKwd?: true
+    privateShiftsKwd?: true
   }
 
   export type VendorStatementMinAggregateInputType = {
@@ -137688,6 +137715,7 @@ export namespace Prisma {
     payoutTxId?: true
     createdAt?: true
     updatedAt?: true
+    privateShiftsKwd?: true
   }
 
   export type VendorStatementMaxAggregateInputType = {
@@ -137705,6 +137733,7 @@ export namespace Prisma {
     payoutTxId?: true
     createdAt?: true
     updatedAt?: true
+    privateShiftsKwd?: true
   }
 
   export type VendorStatementCountAggregateInputType = {
@@ -137722,6 +137751,7 @@ export namespace Prisma {
     payoutTxId?: true
     createdAt?: true
     updatedAt?: true
+    privateShiftsKwd?: true
     _all?: true
   }
 
@@ -137826,6 +137856,7 @@ export namespace Prisma {
     payoutTxId: string | null
     createdAt: Date
     updatedAt: Date
+    privateShiftsKwd: Decimal
     _count: VendorStatementCountAggregateOutputType | null
     _avg: VendorStatementAvgAggregateOutputType | null
     _sum: VendorStatementSumAggregateOutputType | null
@@ -137862,6 +137893,7 @@ export namespace Prisma {
     payoutTxId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    privateShiftsKwd?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     vendor?: boolean | VendorDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["vendorStatement"]>
@@ -137881,6 +137913,7 @@ export namespace Prisma {
     payoutTxId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    privateShiftsKwd?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     vendor?: boolean | VendorDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["vendorStatement"]>
@@ -137900,6 +137933,7 @@ export namespace Prisma {
     payoutTxId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    privateShiftsKwd?: boolean
   }
 
   export type VendorStatementInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -137932,6 +137966,10 @@ export namespace Prisma {
       payoutTxId: string | null
       createdAt: Date
       updatedAt: Date
+      /**
+       * Revision 24b — Σ private-shift charges debited in the period.
+       */
+      privateShiftsKwd: Prisma.Decimal
     }, ExtArgs["result"]["vendorStatement"]>
     composites: {}
   }
@@ -138341,6 +138379,7 @@ export namespace Prisma {
     readonly payoutTxId: FieldRef<"VendorStatement", 'String'>
     readonly createdAt: FieldRef<"VendorStatement", 'DateTime'>
     readonly updatedAt: FieldRef<"VendorStatement", 'DateTime'>
+    readonly privateShiftsKwd: FieldRef<"VendorStatement", 'Decimal'>
   }
     
 
@@ -141236,6 +141275,10 @@ export namespace Prisma {
     totalKwd: Decimal | null
     deductionsKwd: Decimal | null
     netPayableKwd: Decimal | null
+    ordersKwd: Decimal | null
+    privateShiftCount: number | null
+    privateShiftMinutes: number | null
+    privateShiftPayKwd: Decimal | null
   }
 
   export type FleetPayoutStatementSumAggregateOutputType = {
@@ -141246,6 +141289,10 @@ export namespace Prisma {
     totalKwd: Decimal | null
     deductionsKwd: Decimal | null
     netPayableKwd: Decimal | null
+    ordersKwd: Decimal | null
+    privateShiftCount: number | null
+    privateShiftMinutes: number | null
+    privateShiftPayKwd: Decimal | null
   }
 
   export type FleetPayoutStatementMinAggregateOutputType = {
@@ -141271,6 +141318,10 @@ export namespace Prisma {
     netPayableKwd: Decimal | null
     createdAt: Date | null
     updatedAt: Date | null
+    ordersKwd: Decimal | null
+    privateShiftCount: number | null
+    privateShiftMinutes: number | null
+    privateShiftPayKwd: Decimal | null
   }
 
   export type FleetPayoutStatementMaxAggregateOutputType = {
@@ -141296,6 +141347,10 @@ export namespace Prisma {
     netPayableKwd: Decimal | null
     createdAt: Date | null
     updatedAt: Date | null
+    ordersKwd: Decimal | null
+    privateShiftCount: number | null
+    privateShiftMinutes: number | null
+    privateShiftPayKwd: Decimal | null
   }
 
   export type FleetPayoutStatementCountAggregateOutputType = {
@@ -141321,6 +141376,11 @@ export namespace Prisma {
     netPayableKwd: number
     createdAt: number
     updatedAt: number
+    ordersKwd: number
+    privateShiftCount: number
+    privateShiftMinutes: number
+    privateShiftPayKwd: number
+    vehicleRates: number
     _all: number
   }
 
@@ -141333,6 +141393,10 @@ export namespace Prisma {
     totalKwd?: true
     deductionsKwd?: true
     netPayableKwd?: true
+    ordersKwd?: true
+    privateShiftCount?: true
+    privateShiftMinutes?: true
+    privateShiftPayKwd?: true
   }
 
   export type FleetPayoutStatementSumAggregateInputType = {
@@ -141343,6 +141407,10 @@ export namespace Prisma {
     totalKwd?: true
     deductionsKwd?: true
     netPayableKwd?: true
+    ordersKwd?: true
+    privateShiftCount?: true
+    privateShiftMinutes?: true
+    privateShiftPayKwd?: true
   }
 
   export type FleetPayoutStatementMinAggregateInputType = {
@@ -141368,6 +141436,10 @@ export namespace Prisma {
     netPayableKwd?: true
     createdAt?: true
     updatedAt?: true
+    ordersKwd?: true
+    privateShiftCount?: true
+    privateShiftMinutes?: true
+    privateShiftPayKwd?: true
   }
 
   export type FleetPayoutStatementMaxAggregateInputType = {
@@ -141393,6 +141465,10 @@ export namespace Prisma {
     netPayableKwd?: true
     createdAt?: true
     updatedAt?: true
+    ordersKwd?: true
+    privateShiftCount?: true
+    privateShiftMinutes?: true
+    privateShiftPayKwd?: true
   }
 
   export type FleetPayoutStatementCountAggregateInputType = {
@@ -141418,6 +141494,11 @@ export namespace Prisma {
     netPayableKwd?: true
     createdAt?: true
     updatedAt?: true
+    ordersKwd?: true
+    privateShiftCount?: true
+    privateShiftMinutes?: true
+    privateShiftPayKwd?: true
+    vehicleRates?: true
     _all?: true
   }
 
@@ -141530,6 +141611,11 @@ export namespace Prisma {
     netPayableKwd: Decimal | null
     createdAt: Date
     updatedAt: Date
+    ordersKwd: Decimal | null
+    privateShiftCount: number
+    privateShiftMinutes: number
+    privateShiftPayKwd: Decimal
+    vehicleRates: JsonValue | null
     _count: FleetPayoutStatementCountAggregateOutputType | null
     _avg: FleetPayoutStatementAvgAggregateOutputType | null
     _sum: FleetPayoutStatementSumAggregateOutputType | null
@@ -141574,6 +141660,11 @@ export namespace Prisma {
     netPayableKwd?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    ordersKwd?: boolean
+    privateShiftCount?: boolean
+    privateShiftMinutes?: boolean
+    privateShiftPayKwd?: boolean
+    vehicleRates?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     fleet?: boolean | FleetPartnerDefaultArgs<ExtArgs>
     invoice?: boolean | FleetPayoutStatement$invoiceArgs<ExtArgs>
@@ -141604,6 +141695,11 @@ export namespace Prisma {
     netPayableKwd?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    ordersKwd?: boolean
+    privateShiftCount?: boolean
+    privateShiftMinutes?: boolean
+    privateShiftPayKwd?: boolean
+    vehicleRates?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     fleet?: boolean | FleetPartnerDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["fleetPayoutStatement"]>
@@ -141631,6 +141727,11 @@ export namespace Prisma {
     netPayableKwd?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    ordersKwd?: boolean
+    privateShiftCount?: boolean
+    privateShiftMinutes?: boolean
+    privateShiftPayKwd?: boolean
+    vehicleRates?: boolean
   }
 
   export type FleetPayoutStatementInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -141710,6 +141811,24 @@ export namespace Prisma {
       netPayableKwd: Prisma.Decimal | null
       createdAt: Date
       updatedAt: Date
+      /**
+       * Revision 24b — the delivered-order half of totalKwd. NULL on a statement
+       * cut before it, where totalKwd is all orders.
+       */
+      ordersKwd: Prisma.Decimal | null
+      /**
+       * Revision 24b — the company's completed private shifts in the period,
+       * paid by the hour on top of the orders and included in totalKwd. The
+       * shifts carry fleetStatementId back to this row.
+       */
+      privateShiftCount: number
+      privateShiftMinutes: number
+      privateShiftPayKwd: Prisma.Decimal
+      /**
+       * Revision 24b — per-vehicle per-order rates snapshotted at the cut,
+       * { "MOTORCYCLE": "1.250" | null, "CAR": ... }. NULL = base fee for all.
+       */
+      vehicleRates: Prisma.JsonValue | null
     }, ExtArgs["result"]["fleetPayoutStatement"]>
     composites: {}
   }
@@ -142129,6 +142248,11 @@ export namespace Prisma {
     readonly netPayableKwd: FieldRef<"FleetPayoutStatement", 'Decimal'>
     readonly createdAt: FieldRef<"FleetPayoutStatement", 'DateTime'>
     readonly updatedAt: FieldRef<"FleetPayoutStatement", 'DateTime'>
+    readonly ordersKwd: FieldRef<"FleetPayoutStatement", 'Decimal'>
+    readonly privateShiftCount: FieldRef<"FleetPayoutStatement", 'Int'>
+    readonly privateShiftMinutes: FieldRef<"FleetPayoutStatement", 'Int'>
+    readonly privateShiftPayKwd: FieldRef<"FleetPayoutStatement", 'Decimal'>
+    readonly vehicleRates: FieldRef<"FleetPayoutStatement", 'Json'>
   }
     
 
@@ -168272,6 +168396,9 @@ export namespace Prisma {
     settledAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
+    chargeTxId: string | null
+    chargedAt: Date | null
+    fleetStatementId: string | null
   }
 
   export type PrivateShiftMaxAggregateOutputType = {
@@ -168306,6 +168433,9 @@ export namespace Prisma {
     settledAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
+    chargeTxId: string | null
+    chargedAt: Date | null
+    fleetStatementId: string | null
   }
 
   export type PrivateShiftCountAggregateOutputType = {
@@ -168340,6 +168470,9 @@ export namespace Prisma {
     settledAt: number
     createdAt: number
     updatedAt: number
+    chargeTxId: number
+    chargedAt: number
+    fleetStatementId: number
     _all: number
   }
 
@@ -168402,6 +168535,9 @@ export namespace Prisma {
     settledAt?: true
     createdAt?: true
     updatedAt?: true
+    chargeTxId?: true
+    chargedAt?: true
+    fleetStatementId?: true
   }
 
   export type PrivateShiftMaxAggregateInputType = {
@@ -168436,6 +168572,9 @@ export namespace Prisma {
     settledAt?: true
     createdAt?: true
     updatedAt?: true
+    chargeTxId?: true
+    chargedAt?: true
+    fleetStatementId?: true
   }
 
   export type PrivateShiftCountAggregateInputType = {
@@ -168470,6 +168609,9 @@ export namespace Prisma {
     settledAt?: true
     createdAt?: true
     updatedAt?: true
+    chargeTxId?: true
+    chargedAt?: true
+    fleetStatementId?: true
     _all?: true
   }
 
@@ -168591,6 +168733,9 @@ export namespace Prisma {
     settledAt: Date | null
     createdAt: Date
     updatedAt: Date
+    chargeTxId: string | null
+    chargedAt: Date | null
+    fleetStatementId: string | null
     _count: PrivateShiftCountAggregateOutputType | null
     _avg: PrivateShiftAvgAggregateOutputType | null
     _sum: PrivateShiftSumAggregateOutputType | null
@@ -168644,6 +168789,9 @@ export namespace Prisma {
     settledAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    chargeTxId?: boolean
+    chargedAt?: boolean
+    fleetStatementId?: boolean
     plan?: boolean | PrivateShift$planArgs<ExtArgs>
     deductions?: boolean | PrivateShift$deductionsArgs<ExtArgs>
     _count?: boolean | PrivateShiftCountOutputTypeDefaultArgs<ExtArgs>
@@ -168681,6 +168829,9 @@ export namespace Prisma {
     settledAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    chargeTxId?: boolean
+    chargedAt?: boolean
+    fleetStatementId?: boolean
     plan?: boolean | PrivateShift$planArgs<ExtArgs>
   }, ExtArgs["result"]["privateShift"]>
 
@@ -168716,6 +168867,9 @@ export namespace Prisma {
     settledAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    chargeTxId?: boolean
+    chargedAt?: boolean
+    fleetStatementId?: boolean
   }
 
   export type PrivateShiftInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -168768,6 +168922,16 @@ export namespace Prisma {
       settledAt: Date | null
       createdAt: Date
       updatedAt: Date
+      /**
+       * Revision 24b — the PRIVATE_SHIFT_CHARGE posting on the shop's wallet
+       * (idempotencyKey private-shift-charge:{id}) and when it was made.
+       */
+      chargeTxId: string | null
+      chargedAt: Date | null
+      /**
+       * Revision 24b — the FleetPayoutStatement that paid the company for it.
+       */
+      fleetStatementId: string | null
     }, ExtArgs["result"]["privateShift"]>
     composites: {}
   }
@@ -169194,6 +169358,9 @@ export namespace Prisma {
     readonly settledAt: FieldRef<"PrivateShift", 'DateTime'>
     readonly createdAt: FieldRef<"PrivateShift", 'DateTime'>
     readonly updatedAt: FieldRef<"PrivateShift", 'DateTime'>
+    readonly chargeTxId: FieldRef<"PrivateShift", 'String'>
+    readonly chargedAt: FieldRef<"PrivateShift", 'DateTime'>
+    readonly fleetStatementId: FieldRef<"PrivateShift", 'String'>
   }
     
 
@@ -172463,7 +172630,8 @@ export namespace Prisma {
     trainingSessionId: 'trainingSessionId',
     metadata: 'metadata',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    privateShiftId: 'privateShiftId'
   };
 
   export type DeliveryOrderScalarFieldEnum = (typeof DeliveryOrderScalarFieldEnum)[keyof typeof DeliveryOrderScalarFieldEnum]
@@ -172657,7 +172825,8 @@ export namespace Prisma {
     status: 'status',
     payoutTxId: 'payoutTxId',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    privateShiftsKwd: 'privateShiftsKwd'
   };
 
   export type VendorStatementScalarFieldEnum = (typeof VendorStatementScalarFieldEnum)[keyof typeof VendorStatementScalarFieldEnum]
@@ -172729,7 +172898,12 @@ export namespace Prisma {
     deductionsKwd: 'deductionsKwd',
     netPayableKwd: 'netPayableKwd',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    ordersKwd: 'ordersKwd',
+    privateShiftCount: 'privateShiftCount',
+    privateShiftMinutes: 'privateShiftMinutes',
+    privateShiftPayKwd: 'privateShiftPayKwd',
+    vehicleRates: 'vehicleRates'
   };
 
   export type FleetPayoutStatementScalarFieldEnum = (typeof FleetPayoutStatementScalarFieldEnum)[keyof typeof FleetPayoutStatementScalarFieldEnum]
@@ -173207,7 +173381,10 @@ export namespace Prisma {
     fleetPayKwd: 'fleetPayKwd',
     settledAt: 'settledAt',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    chargeTxId: 'chargeTxId',
+    chargedAt: 'chargedAt',
+    fleetStatementId: 'fleetStatementId'
   };
 
   export type PrivateShiftScalarFieldEnum = (typeof PrivateShiftScalarFieldEnum)[keyof typeof PrivateShiftScalarFieldEnum]
@@ -174486,7 +174663,8 @@ export namespace Prisma {
     batchId: 'batchId',
     trackingToken: 'trackingToken',
     externalRef: 'externalRef',
-    trainingSessionId: 'trainingSessionId'
+    trainingSessionId: 'trainingSessionId',
+    privateShiftId: 'privateShiftId'
   };
 
   export type DeliveryOrderOrderByRelevanceFieldEnum = (typeof DeliveryOrderOrderByRelevanceFieldEnum)[keyof typeof DeliveryOrderOrderByRelevanceFieldEnum]
@@ -175009,7 +175187,9 @@ export namespace Prisma {
     date: 'date',
     driverId: 'driverId',
     fleetPartnerId: 'fleetPartnerId',
-    cancelReason: 'cancelReason'
+    cancelReason: 'cancelReason',
+    chargeTxId: 'chargeTxId',
+    fleetStatementId: 'fleetStatementId'
   };
 
   export type PrivateShiftOrderByRelevanceFieldEnum = (typeof PrivateShiftOrderByRelevanceFieldEnum)[keyof typeof PrivateShiftOrderByRelevanceFieldEnum]
@@ -186742,6 +186922,7 @@ export namespace Prisma {
     metadata?: JsonNullableFilter<"DeliveryOrder">
     createdAt?: DateTimeFilter<"DeliveryOrder"> | Date | string
     updatedAt?: DateTimeFilter<"DeliveryOrder"> | Date | string
+    privateShiftId?: StringNullableFilter<"DeliveryOrder"> | string | null
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     vendor?: XOR<VendorRelationFilter, VendorWhereInput>
     trainingSession?: XOR<DriverTrainingSessionNullableRelationFilter, DriverTrainingSessionWhereInput> | null
@@ -186805,6 +186986,7 @@ export namespace Prisma {
     metadata?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    privateShiftId?: SortOrderInput | SortOrder
     tenant?: TenantOrderByWithRelationInput
     vendor?: VendorOrderByWithRelationInput
     trainingSession?: DriverTrainingSessionOrderByWithRelationInput
@@ -186875,6 +187057,7 @@ export namespace Prisma {
     metadata?: JsonNullableFilter<"DeliveryOrder">
     createdAt?: DateTimeFilter<"DeliveryOrder"> | Date | string
     updatedAt?: DateTimeFilter<"DeliveryOrder"> | Date | string
+    privateShiftId?: StringNullableFilter<"DeliveryOrder"> | string | null
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     vendor?: XOR<VendorRelationFilter, VendorWhereInput>
     trainingSession?: XOR<DriverTrainingSessionNullableRelationFilter, DriverTrainingSessionWhereInput> | null
@@ -186938,6 +187121,7 @@ export namespace Prisma {
     metadata?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    privateShiftId?: SortOrderInput | SortOrder
     _count?: DeliveryOrderCountOrderByAggregateInput
     _avg?: DeliveryOrderAvgOrderByAggregateInput
     _max?: DeliveryOrderMaxOrderByAggregateInput
@@ -186998,6 +187182,7 @@ export namespace Prisma {
     metadata?: JsonNullableWithAggregatesFilter<"DeliveryOrder">
     createdAt?: DateTimeWithAggregatesFilter<"DeliveryOrder"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"DeliveryOrder"> | Date | string
+    privateShiftId?: StringNullableWithAggregatesFilter<"DeliveryOrder"> | string | null
   }
 
   export type DispatchOfferWhereInput = {
@@ -187953,6 +188138,7 @@ export namespace Prisma {
     payoutTxId?: StringNullableFilter<"VendorStatement"> | string | null
     createdAt?: DateTimeFilter<"VendorStatement"> | Date | string
     updatedAt?: DateTimeFilter<"VendorStatement"> | Date | string
+    privateShiftsKwd?: DecimalFilter<"VendorStatement"> | Decimal | DecimalJsLike | number | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     vendor?: XOR<VendorRelationFilter, VendorWhereInput>
   }
@@ -187972,6 +188158,7 @@ export namespace Prisma {
     payoutTxId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    privateShiftsKwd?: SortOrder
     tenant?: TenantOrderByWithRelationInput
     vendor?: VendorOrderByWithRelationInput
     _relevance?: VendorStatementOrderByRelevanceInput
@@ -187996,6 +188183,7 @@ export namespace Prisma {
     payoutTxId?: StringNullableFilter<"VendorStatement"> | string | null
     createdAt?: DateTimeFilter<"VendorStatement"> | Date | string
     updatedAt?: DateTimeFilter<"VendorStatement"> | Date | string
+    privateShiftsKwd?: DecimalFilter<"VendorStatement"> | Decimal | DecimalJsLike | number | string
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     vendor?: XOR<VendorRelationFilter, VendorWhereInput>
   }, "id" | "tenantId_vendorId_periodStart">
@@ -188015,6 +188203,7 @@ export namespace Prisma {
     payoutTxId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    privateShiftsKwd?: SortOrder
     _count?: VendorStatementCountOrderByAggregateInput
     _avg?: VendorStatementAvgOrderByAggregateInput
     _max?: VendorStatementMaxOrderByAggregateInput
@@ -188040,6 +188229,7 @@ export namespace Prisma {
     payoutTxId?: StringNullableWithAggregatesFilter<"VendorStatement"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"VendorStatement"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"VendorStatement"> | Date | string
+    privateShiftsKwd?: DecimalWithAggregatesFilter<"VendorStatement"> | Decimal | DecimalJsLike | number | string
   }
 
   export type RefundWhereInput = {
@@ -188339,6 +188529,11 @@ export namespace Prisma {
     netPayableKwd?: DecimalNullableFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFilter<"FleetPayoutStatement"> | Date | string
     updatedAt?: DateTimeFilter<"FleetPayoutStatement"> | Date | string
+    ordersKwd?: DecimalNullableFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: IntFilter<"FleetPayoutStatement"> | number
+    privateShiftMinutes?: IntFilter<"FleetPayoutStatement"> | number
+    privateShiftPayKwd?: DecimalFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string
+    vehicleRates?: JsonNullableFilter<"FleetPayoutStatement">
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     fleet?: XOR<FleetPartnerRelationFilter, FleetPartnerWhereInput>
     invoice?: XOR<FleetPayoutInvoiceNullableRelationFilter, FleetPayoutInvoiceWhereInput> | null
@@ -188368,6 +188563,11 @@ export namespace Prisma {
     netPayableKwd?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    ordersKwd?: SortOrderInput | SortOrder
+    privateShiftCount?: SortOrder
+    privateShiftMinutes?: SortOrder
+    privateShiftPayKwd?: SortOrder
+    vehicleRates?: SortOrderInput | SortOrder
     tenant?: TenantOrderByWithRelationInput
     fleet?: FleetPartnerOrderByWithRelationInput
     invoice?: FleetPayoutInvoiceOrderByWithRelationInput
@@ -188402,6 +188602,11 @@ export namespace Prisma {
     netPayableKwd?: DecimalNullableFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFilter<"FleetPayoutStatement"> | Date | string
     updatedAt?: DateTimeFilter<"FleetPayoutStatement"> | Date | string
+    ordersKwd?: DecimalNullableFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: IntFilter<"FleetPayoutStatement"> | number
+    privateShiftMinutes?: IntFilter<"FleetPayoutStatement"> | number
+    privateShiftPayKwd?: DecimalFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string
+    vehicleRates?: JsonNullableFilter<"FleetPayoutStatement">
     tenant?: XOR<TenantRelationFilter, TenantWhereInput>
     fleet?: XOR<FleetPartnerRelationFilter, FleetPartnerWhereInput>
     invoice?: XOR<FleetPayoutInvoiceNullableRelationFilter, FleetPayoutInvoiceWhereInput> | null
@@ -188431,6 +188636,11 @@ export namespace Prisma {
     netPayableKwd?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    ordersKwd?: SortOrderInput | SortOrder
+    privateShiftCount?: SortOrder
+    privateShiftMinutes?: SortOrder
+    privateShiftPayKwd?: SortOrder
+    vehicleRates?: SortOrderInput | SortOrder
     _count?: FleetPayoutStatementCountOrderByAggregateInput
     _avg?: FleetPayoutStatementAvgOrderByAggregateInput
     _max?: FleetPayoutStatementMaxOrderByAggregateInput
@@ -188464,6 +188674,11 @@ export namespace Prisma {
     netPayableKwd?: DecimalNullableWithAggregatesFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeWithAggregatesFilter<"FleetPayoutStatement"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"FleetPayoutStatement"> | Date | string
+    ordersKwd?: DecimalNullableWithAggregatesFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: IntWithAggregatesFilter<"FleetPayoutStatement"> | number
+    privateShiftMinutes?: IntWithAggregatesFilter<"FleetPayoutStatement"> | number
+    privateShiftPayKwd?: DecimalWithAggregatesFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string
+    vehicleRates?: JsonNullableWithAggregatesFilter<"FleetPayoutStatement">
   }
 
   export type DeliveryPhotoWhereInput = {
@@ -190882,6 +191097,9 @@ export namespace Prisma {
     settledAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
     createdAt?: DateTimeFilter<"PrivateShift"> | Date | string
     updatedAt?: DateTimeFilter<"PrivateShift"> | Date | string
+    chargeTxId?: StringNullableFilter<"PrivateShift"> | string | null
+    chargedAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
+    fleetStatementId?: StringNullableFilter<"PrivateShift"> | string | null
     plan?: XOR<PrivateShiftPlanNullableRelationFilter, PrivateShiftPlanWhereInput> | null
     deductions?: PrivateShiftDeductionListRelationFilter
   }
@@ -190918,6 +191136,9 @@ export namespace Prisma {
     settledAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    chargeTxId?: SortOrderInput | SortOrder
+    chargedAt?: SortOrderInput | SortOrder
+    fleetStatementId?: SortOrderInput | SortOrder
     plan?: PrivateShiftPlanOrderByWithRelationInput
     deductions?: PrivateShiftDeductionOrderByRelationAggregateInput
     _relevance?: PrivateShiftOrderByRelevanceInput
@@ -190958,6 +191179,9 @@ export namespace Prisma {
     settledAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
     createdAt?: DateTimeFilter<"PrivateShift"> | Date | string
     updatedAt?: DateTimeFilter<"PrivateShift"> | Date | string
+    chargeTxId?: StringNullableFilter<"PrivateShift"> | string | null
+    chargedAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
+    fleetStatementId?: StringNullableFilter<"PrivateShift"> | string | null
     plan?: XOR<PrivateShiftPlanNullableRelationFilter, PrivateShiftPlanWhereInput> | null
     deductions?: PrivateShiftDeductionListRelationFilter
   }, "id">
@@ -190994,6 +191218,9 @@ export namespace Prisma {
     settledAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    chargeTxId?: SortOrderInput | SortOrder
+    chargedAt?: SortOrderInput | SortOrder
+    fleetStatementId?: SortOrderInput | SortOrder
     _count?: PrivateShiftCountOrderByAggregateInput
     _avg?: PrivateShiftAvgOrderByAggregateInput
     _max?: PrivateShiftMaxOrderByAggregateInput
@@ -191036,6 +191263,9 @@ export namespace Prisma {
     settledAt?: DateTimeNullableWithAggregatesFilter<"PrivateShift"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"PrivateShift"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"PrivateShift"> | Date | string
+    chargeTxId?: StringNullableWithAggregatesFilter<"PrivateShift"> | string | null
+    chargedAt?: DateTimeNullableWithAggregatesFilter<"PrivateShift"> | Date | string | null
+    fleetStatementId?: StringNullableWithAggregatesFilter<"PrivateShift"> | string | null
   }
 
   export type PrivateShiftDeductionWhereInput = {
@@ -202827,6 +203057,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     tenant: TenantCreateNestedOneWithoutDeliveryOrdersInput
     vendor: VendorCreateNestedOneWithoutOrdersInput
     trainingSession?: DriverTrainingSessionCreateNestedOneWithoutOrdersInput
@@ -202890,6 +203121,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     offers?: DispatchOfferUncheckedCreateNestedManyWithoutOrderInput
     incidents?: IncidentUncheckedCreateNestedManyWithoutOrderInput
     rating?: OrderRatingUncheckedCreateNestedOneWithoutOrderInput
@@ -202939,6 +203171,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDeliveryOrdersNestedInput
     vendor?: VendorUpdateOneRequiredWithoutOrdersNestedInput
     trainingSession?: DriverTrainingSessionUpdateOneWithoutOrdersNestedInput
@@ -203002,6 +203235,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     offers?: DispatchOfferUncheckedUpdateManyWithoutOrderNestedInput
     incidents?: IncidentUncheckedUpdateManyWithoutOrderNestedInput
     rating?: OrderRatingUncheckedUpdateOneWithoutOrderNestedInput
@@ -203058,6 +203292,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
   }
 
   export type DeliveryOrderUpdateManyMutationInput = {
@@ -203103,6 +203338,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DeliveryOrderUncheckedUpdateManyInput = {
@@ -203155,6 +203391,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DispatchOfferCreateInput = {
@@ -204143,6 +204380,7 @@ export namespace Prisma {
     payoutTxId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftsKwd?: Decimal | DecimalJsLike | number | string
     tenant: TenantCreateNestedOneWithoutVendorStatementsInput
     vendor: VendorCreateNestedOneWithoutStatementsInput
   }
@@ -204162,6 +204400,7 @@ export namespace Prisma {
     payoutTxId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftsKwd?: Decimal | DecimalJsLike | number | string
   }
 
   export type VendorStatementUpdateInput = {
@@ -204177,6 +204416,7 @@ export namespace Prisma {
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftsKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     tenant?: TenantUpdateOneRequiredWithoutVendorStatementsNestedInput
     vendor?: VendorUpdateOneRequiredWithoutStatementsNestedInput
   }
@@ -204196,6 +204436,7 @@ export namespace Prisma {
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftsKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
   export type VendorStatementCreateManyInput = {
@@ -204213,6 +204454,7 @@ export namespace Prisma {
     payoutTxId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftsKwd?: Decimal | DecimalJsLike | number | string
   }
 
   export type VendorStatementUpdateManyMutationInput = {
@@ -204228,6 +204470,7 @@ export namespace Prisma {
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftsKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
   export type VendorStatementUncheckedUpdateManyInput = {
@@ -204245,6 +204488,7 @@ export namespace Prisma {
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftsKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
   export type RefundCreateInput = {
@@ -204577,6 +204821,11 @@ export namespace Prisma {
     netPayableKwd?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    ordersKwd?: Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: number
+    privateShiftMinutes?: number
+    privateShiftPayKwd?: Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     tenant: TenantCreateNestedOneWithoutFleetPayoutStatementsInput
     fleet: FleetPartnerCreateNestedOneWithoutStatementsInput
     invoice?: FleetPayoutInvoiceCreateNestedOneWithoutStatementInput
@@ -204606,6 +204855,11 @@ export namespace Prisma {
     netPayableKwd?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    ordersKwd?: Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: number
+    privateShiftMinutes?: number
+    privateShiftPayKwd?: Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     invoice?: FleetPayoutInvoiceUncheckedCreateNestedOneWithoutStatementInput
     deductions?: FleetDeductionUncheckedCreateNestedManyWithoutStatementInput
   }
@@ -204631,6 +204885,11 @@ export namespace Prisma {
     netPayableKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ordersKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: IntFieldUpdateOperationsInput | number
+    privateShiftMinutes?: IntFieldUpdateOperationsInput | number
+    privateShiftPayKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     tenant?: TenantUpdateOneRequiredWithoutFleetPayoutStatementsNestedInput
     fleet?: FleetPartnerUpdateOneRequiredWithoutStatementsNestedInput
     invoice?: FleetPayoutInvoiceUpdateOneWithoutStatementNestedInput
@@ -204660,6 +204919,11 @@ export namespace Prisma {
     netPayableKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ordersKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: IntFieldUpdateOperationsInput | number
+    privateShiftMinutes?: IntFieldUpdateOperationsInput | number
+    privateShiftPayKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     invoice?: FleetPayoutInvoiceUncheckedUpdateOneWithoutStatementNestedInput
     deductions?: FleetDeductionUncheckedUpdateManyWithoutStatementNestedInput
   }
@@ -204687,6 +204951,11 @@ export namespace Prisma {
     netPayableKwd?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    ordersKwd?: Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: number
+    privateShiftMinutes?: number
+    privateShiftPayKwd?: Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type FleetPayoutStatementUpdateManyMutationInput = {
@@ -204710,6 +204979,11 @@ export namespace Prisma {
     netPayableKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ordersKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: IntFieldUpdateOperationsInput | number
+    privateShiftMinutes?: IntFieldUpdateOperationsInput | number
+    privateShiftPayKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type FleetPayoutStatementUncheckedUpdateManyInput = {
@@ -204735,6 +205009,11 @@ export namespace Prisma {
     netPayableKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ordersKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: IntFieldUpdateOperationsInput | number
+    privateShiftMinutes?: IntFieldUpdateOperationsInput | number
+    privateShiftPayKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type DeliveryPhotoCreateInput = {
@@ -207308,6 +207587,9 @@ export namespace Prisma {
     settledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    chargeTxId?: string | null
+    chargedAt?: Date | string | null
+    fleetStatementId?: string | null
     plan?: PrivateShiftPlanCreateNestedOneWithoutShiftsInput
     deductions?: PrivateShiftDeductionCreateNestedManyWithoutShiftInput
   }
@@ -207344,6 +207626,9 @@ export namespace Prisma {
     settledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    chargeTxId?: string | null
+    chargedAt?: Date | string | null
+    fleetStatementId?: string | null
     deductions?: PrivateShiftDeductionUncheckedCreateNestedManyWithoutShiftInput
   }
 
@@ -207378,6 +207663,9 @@ export namespace Prisma {
     settledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chargeTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    chargedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fleetStatementId?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: PrivateShiftPlanUpdateOneWithoutShiftsNestedInput
     deductions?: PrivateShiftDeductionUpdateManyWithoutShiftNestedInput
   }
@@ -207414,6 +207702,9 @@ export namespace Prisma {
     settledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chargeTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    chargedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fleetStatementId?: NullableStringFieldUpdateOperationsInput | string | null
     deductions?: PrivateShiftDeductionUncheckedUpdateManyWithoutShiftNestedInput
   }
 
@@ -207449,6 +207740,9 @@ export namespace Prisma {
     settledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    chargeTxId?: string | null
+    chargedAt?: Date | string | null
+    fleetStatementId?: string | null
   }
 
   export type PrivateShiftUpdateManyMutationInput = {
@@ -207482,6 +207776,9 @@ export namespace Prisma {
     settledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chargeTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    chargedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fleetStatementId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type PrivateShiftUncheckedUpdateManyInput = {
@@ -207516,6 +207813,9 @@ export namespace Prisma {
     settledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chargeTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    chargedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fleetStatementId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type PrivateShiftDeductionCreateInput = {
@@ -216481,6 +216781,7 @@ export namespace Prisma {
     metadata?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    privateShiftId?: SortOrder
   }
 
   export type DeliveryOrderAvgOrderByAggregateInput = {
@@ -216544,6 +216845,7 @@ export namespace Prisma {
     trainingSessionId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    privateShiftId?: SortOrder
   }
 
   export type DeliveryOrderMinOrderByAggregateInput = {
@@ -216595,6 +216897,7 @@ export namespace Prisma {
     trainingSessionId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    privateShiftId?: SortOrder
   }
 
   export type DeliveryOrderSumOrderByAggregateInput = {
@@ -217375,6 +217678,7 @@ export namespace Prisma {
     payoutTxId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    privateShiftsKwd?: SortOrder
   }
 
   export type VendorStatementAvgOrderByAggregateInput = {
@@ -217383,6 +217687,7 @@ export namespace Prisma {
     prepaidFeesKwd?: SortOrder
     refundsKwd?: SortOrder
     closingBalanceKwd?: SortOrder
+    privateShiftsKwd?: SortOrder
   }
 
   export type VendorStatementMaxOrderByAggregateInput = {
@@ -217400,6 +217705,7 @@ export namespace Prisma {
     payoutTxId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    privateShiftsKwd?: SortOrder
   }
 
   export type VendorStatementMinOrderByAggregateInput = {
@@ -217417,6 +217723,7 @@ export namespace Prisma {
     payoutTxId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    privateShiftsKwd?: SortOrder
   }
 
   export type VendorStatementSumOrderByAggregateInput = {
@@ -217425,6 +217732,7 @@ export namespace Prisma {
     prepaidFeesKwd?: SortOrder
     refundsKwd?: SortOrder
     closingBalanceKwd?: SortOrder
+    privateShiftsKwd?: SortOrder
   }
 
   export type RefundOrderByRelevanceInput = {
@@ -217618,6 +217926,11 @@ export namespace Prisma {
     netPayableKwd?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    ordersKwd?: SortOrder
+    privateShiftCount?: SortOrder
+    privateShiftMinutes?: SortOrder
+    privateShiftPayKwd?: SortOrder
+    vehicleRates?: SortOrder
   }
 
   export type FleetPayoutStatementAvgOrderByAggregateInput = {
@@ -217628,6 +217941,10 @@ export namespace Prisma {
     totalKwd?: SortOrder
     deductionsKwd?: SortOrder
     netPayableKwd?: SortOrder
+    ordersKwd?: SortOrder
+    privateShiftCount?: SortOrder
+    privateShiftMinutes?: SortOrder
+    privateShiftPayKwd?: SortOrder
   }
 
   export type FleetPayoutStatementMaxOrderByAggregateInput = {
@@ -217653,6 +217970,10 @@ export namespace Prisma {
     netPayableKwd?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    ordersKwd?: SortOrder
+    privateShiftCount?: SortOrder
+    privateShiftMinutes?: SortOrder
+    privateShiftPayKwd?: SortOrder
   }
 
   export type FleetPayoutStatementMinOrderByAggregateInput = {
@@ -217678,6 +217999,10 @@ export namespace Prisma {
     netPayableKwd?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    ordersKwd?: SortOrder
+    privateShiftCount?: SortOrder
+    privateShiftMinutes?: SortOrder
+    privateShiftPayKwd?: SortOrder
   }
 
   export type FleetPayoutStatementSumOrderByAggregateInput = {
@@ -217688,6 +218013,10 @@ export namespace Prisma {
     totalKwd?: SortOrder
     deductionsKwd?: SortOrder
     netPayableKwd?: SortOrder
+    ordersKwd?: SortOrder
+    privateShiftCount?: SortOrder
+    privateShiftMinutes?: SortOrder
+    privateShiftPayKwd?: SortOrder
   }
 
   export type BytesFilter<$PrismaModel = never> = {
@@ -219520,6 +219849,9 @@ export namespace Prisma {
     settledAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    chargeTxId?: SortOrder
+    chargedAt?: SortOrder
+    fleetStatementId?: SortOrder
   }
 
   export type PrivateShiftAvgOrderByAggregateInput = {
@@ -219567,6 +219899,9 @@ export namespace Prisma {
     settledAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    chargeTxId?: SortOrder
+    chargedAt?: SortOrder
+    fleetStatementId?: SortOrder
   }
 
   export type PrivateShiftMinOrderByAggregateInput = {
@@ -219601,6 +219936,9 @@ export namespace Prisma {
     settledAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    chargeTxId?: SortOrder
+    chargedAt?: SortOrder
+    fleetStatementId?: SortOrder
   }
 
   export type PrivateShiftSumOrderByAggregateInput = {
@@ -242161,6 +242499,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     vendor: VendorCreateNestedOneWithoutOrdersInput
     trainingSession?: DriverTrainingSessionCreateNestedOneWithoutOrdersInput
     branch: VendorBranchCreateNestedOneWithoutOrdersInput
@@ -242222,6 +242561,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     offers?: DispatchOfferUncheckedCreateNestedManyWithoutOrderInput
     incidents?: IncidentUncheckedCreateNestedManyWithoutOrderInput
     rating?: OrderRatingUncheckedCreateNestedOneWithoutOrderInput
@@ -242635,6 +242975,7 @@ export namespace Prisma {
     payoutTxId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftsKwd?: Decimal | DecimalJsLike | number | string
     vendor: VendorCreateNestedOneWithoutStatementsInput
   }
 
@@ -242652,6 +242993,7 @@ export namespace Prisma {
     payoutTxId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftsKwd?: Decimal | DecimalJsLike | number | string
   }
 
   export type VendorStatementCreateOrConnectWithoutTenantInput = {
@@ -242801,6 +243143,11 @@ export namespace Prisma {
     netPayableKwd?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    ordersKwd?: Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: number
+    privateShiftMinutes?: number
+    privateShiftPayKwd?: Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     fleet: FleetPartnerCreateNestedOneWithoutStatementsInput
     invoice?: FleetPayoutInvoiceCreateNestedOneWithoutStatementInput
     deductions?: FleetDeductionCreateNestedManyWithoutStatementInput
@@ -242828,6 +243175,11 @@ export namespace Prisma {
     netPayableKwd?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    ordersKwd?: Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: number
+    privateShiftMinutes?: number
+    privateShiftPayKwd?: Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     invoice?: FleetPayoutInvoiceUncheckedCreateNestedOneWithoutStatementInput
     deductions?: FleetDeductionUncheckedCreateNestedManyWithoutStatementInput
   }
@@ -246529,6 +246881,7 @@ export namespace Prisma {
     metadata?: JsonNullableFilter<"DeliveryOrder">
     createdAt?: DateTimeFilter<"DeliveryOrder"> | Date | string
     updatedAt?: DateTimeFilter<"DeliveryOrder"> | Date | string
+    privateShiftId?: StringNullableFilter<"DeliveryOrder"> | string | null
   }
 
   export type DispatchOfferUpsertWithWhereUniqueWithoutTenantInput = {
@@ -246920,6 +247273,7 @@ export namespace Prisma {
     payoutTxId?: StringNullableFilter<"VendorStatement"> | string | null
     createdAt?: DateTimeFilter<"VendorStatement"> | Date | string
     updatedAt?: DateTimeFilter<"VendorStatement"> | Date | string
+    privateShiftsKwd?: DecimalFilter<"VendorStatement"> | Decimal | DecimalJsLike | number | string
   }
 
   export type RefundUpsertWithWhereUniqueWithoutTenantInput = {
@@ -247040,6 +247394,11 @@ export namespace Prisma {
     netPayableKwd?: DecimalNullableFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFilter<"FleetPayoutStatement"> | Date | string
     updatedAt?: DateTimeFilter<"FleetPayoutStatement"> | Date | string
+    ordersKwd?: DecimalNullableFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: IntFilter<"FleetPayoutStatement"> | number
+    privateShiftMinutes?: IntFilter<"FleetPayoutStatement"> | number
+    privateShiftPayKwd?: DecimalFilter<"FleetPayoutStatement"> | Decimal | DecimalJsLike | number | string
+    vehicleRates?: JsonNullableFilter<"FleetPayoutStatement">
   }
 
   export type FleetPayoutInvoiceUpsertWithWhereUniqueWithoutTenantInput = {
@@ -255332,6 +255691,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     tenant: TenantCreateNestedOneWithoutDeliveryOrdersInput
     vendor: VendorCreateNestedOneWithoutOrdersInput
     trainingSession?: DriverTrainingSessionCreateNestedOneWithoutOrdersInput
@@ -255393,6 +255753,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     offers?: DispatchOfferUncheckedCreateNestedManyWithoutOrderInput
     incidents?: IncidentUncheckedCreateNestedManyWithoutOrderInput
     rating?: OrderRatingUncheckedCreateNestedOneWithoutOrderInput
@@ -322938,6 +323299,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     tenant: TenantCreateNestedOneWithoutDeliveryOrdersInput
     trainingSession?: DriverTrainingSessionCreateNestedOneWithoutOrdersInput
     branch: VendorBranchCreateNestedOneWithoutOrdersInput
@@ -322999,6 +323361,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     offers?: DispatchOfferUncheckedCreateNestedManyWithoutOrderInput
     incidents?: IncidentUncheckedCreateNestedManyWithoutOrderInput
     rating?: OrderRatingUncheckedCreateNestedOneWithoutOrderInput
@@ -323093,6 +323456,7 @@ export namespace Prisma {
     payoutTxId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftsKwd?: Decimal | DecimalJsLike | number | string
     tenant: TenantCreateNestedOneWithoutVendorStatementsInput
   }
 
@@ -323110,6 +323474,7 @@ export namespace Prisma {
     payoutTxId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftsKwd?: Decimal | DecimalJsLike | number | string
   }
 
   export type VendorStatementCreateOrConnectWithoutVendorInput = {
@@ -324365,6 +324730,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     tenant: TenantCreateNestedOneWithoutDeliveryOrdersInput
     vendor: VendorCreateNestedOneWithoutOrdersInput
     trainingSession?: DriverTrainingSessionCreateNestedOneWithoutOrdersInput
@@ -324426,6 +324792,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     offers?: DispatchOfferUncheckedCreateNestedManyWithoutOrderInput
     incidents?: IncidentUncheckedCreateNestedManyWithoutOrderInput
     rating?: OrderRatingUncheckedCreateNestedOneWithoutOrderInput
@@ -325514,6 +325881,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     tenant: TenantCreateNestedOneWithoutDeliveryOrdersInput
     vendor: VendorCreateNestedOneWithoutOrdersInput
     trainingSession?: DriverTrainingSessionCreateNestedOneWithoutOrdersInput
@@ -325575,6 +325943,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     offers?: DispatchOfferUncheckedCreateNestedManyWithoutOrderInput
     incidents?: IncidentUncheckedCreateNestedManyWithoutOrderInput
     rating?: OrderRatingUncheckedCreateNestedOneWithoutOrderInput
@@ -325634,6 +326003,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     tenant: TenantCreateNestedOneWithoutDeliveryOrdersInput
     vendor: VendorCreateNestedOneWithoutOrdersInput
     trainingSession?: DriverTrainingSessionCreateNestedOneWithoutOrdersInput
@@ -325695,6 +326065,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     offers?: DispatchOfferUncheckedCreateNestedManyWithoutOrderInput
     incidents?: IncidentUncheckedCreateNestedManyWithoutOrderInput
     rating?: OrderRatingUncheckedCreateNestedOneWithoutOrderInput
@@ -332266,6 +332637,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     tenant: TenantCreateNestedOneWithoutDeliveryOrdersInput
     vendor: VendorCreateNestedOneWithoutOrdersInput
     trainingSession?: DriverTrainingSessionCreateNestedOneWithoutOrdersInput
@@ -332328,6 +332700,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     incidents?: IncidentUncheckedCreateNestedManyWithoutOrderInput
     rating?: OrderRatingUncheckedCreateNestedOneWithoutOrderInput
     refund?: RefundUncheckedCreateNestedOneWithoutOrderInput
@@ -332890,6 +333263,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDeliveryOrdersNestedInput
     vendor?: VendorUpdateOneRequiredWithoutOrdersNestedInput
     trainingSession?: DriverTrainingSessionUpdateOneWithoutOrdersNestedInput
@@ -332952,6 +333326,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     incidents?: IncidentUncheckedUpdateManyWithoutOrderNestedInput
     rating?: OrderRatingUncheckedUpdateOneWithoutOrderNestedInput
     refund?: RefundUncheckedUpdateOneWithoutOrderNestedInput
@@ -337229,6 +337604,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     tenant: TenantCreateNestedOneWithoutDeliveryOrdersInput
     vendor: VendorCreateNestedOneWithoutOrdersInput
     trainingSession?: DriverTrainingSessionCreateNestedOneWithoutOrdersInput
@@ -337291,6 +337667,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     offers?: DispatchOfferUncheckedCreateNestedManyWithoutOrderInput
     rating?: OrderRatingUncheckedCreateNestedOneWithoutOrderInput
     refund?: RefundUncheckedCreateNestedOneWithoutOrderInput
@@ -337859,6 +338236,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDeliveryOrdersNestedInput
     vendor?: VendorUpdateOneRequiredWithoutOrdersNestedInput
     trainingSession?: DriverTrainingSessionUpdateOneWithoutOrdersNestedInput
@@ -337921,6 +338299,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     offers?: DispatchOfferUncheckedUpdateManyWithoutOrderNestedInput
     rating?: OrderRatingUncheckedUpdateOneWithoutOrderNestedInput
     refund?: RefundUncheckedUpdateOneWithoutOrderNestedInput
@@ -339618,6 +339997,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     tenant: TenantCreateNestedOneWithoutDeliveryOrdersInput
     vendor: VendorCreateNestedOneWithoutOrdersInput
     trainingSession?: DriverTrainingSessionCreateNestedOneWithoutOrdersInput
@@ -339680,6 +340060,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     offers?: DispatchOfferUncheckedCreateNestedManyWithoutOrderInput
     incidents?: IncidentUncheckedCreateNestedManyWithoutOrderInput
     refund?: RefundUncheckedCreateNestedOneWithoutOrderInput
@@ -340242,6 +340623,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDeliveryOrdersNestedInput
     vendor?: VendorUpdateOneRequiredWithoutOrdersNestedInput
     trainingSession?: DriverTrainingSessionUpdateOneWithoutOrdersNestedInput
@@ -340304,6 +340686,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     offers?: DispatchOfferUncheckedUpdateManyWithoutOrderNestedInput
     incidents?: IncidentUncheckedUpdateManyWithoutOrderNestedInput
     refund?: RefundUncheckedUpdateOneWithoutOrderNestedInput
@@ -341542,6 +341925,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     tenant: TenantCreateNestedOneWithoutDeliveryOrdersInput
     vendor: VendorCreateNestedOneWithoutOrdersInput
     trainingSession?: DriverTrainingSessionCreateNestedOneWithoutOrdersInput
@@ -341604,6 +341988,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     offers?: DispatchOfferUncheckedCreateNestedManyWithoutOrderInput
     incidents?: IncidentUncheckedCreateNestedManyWithoutOrderInput
     rating?: OrderRatingUncheckedCreateNestedOneWithoutOrderInput
@@ -342014,6 +342399,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDeliveryOrdersNestedInput
     vendor?: VendorUpdateOneRequiredWithoutOrdersNestedInput
     trainingSession?: DriverTrainingSessionUpdateOneWithoutOrdersNestedInput
@@ -342076,6 +342462,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     offers?: DispatchOfferUncheckedUpdateManyWithoutOrderNestedInput
     incidents?: IncidentUncheckedUpdateManyWithoutOrderNestedInput
     rating?: OrderRatingUncheckedUpdateOneWithoutOrderNestedInput
@@ -342831,6 +343218,11 @@ export namespace Prisma {
     netPayableKwd?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    ordersKwd?: Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: number
+    privateShiftMinutes?: number
+    privateShiftPayKwd?: Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     tenant: TenantCreateNestedOneWithoutFleetPayoutStatementsInput
     invoice?: FleetPayoutInvoiceCreateNestedOneWithoutStatementInput
     deductions?: FleetDeductionCreateNestedManyWithoutStatementInput
@@ -342858,6 +343250,11 @@ export namespace Prisma {
     netPayableKwd?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    ordersKwd?: Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: number
+    privateShiftMinutes?: number
+    privateShiftPayKwd?: Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     invoice?: FleetPayoutInvoiceUncheckedCreateNestedOneWithoutStatementInput
     deductions?: FleetDeductionUncheckedCreateNestedManyWithoutStatementInput
   }
@@ -345461,6 +345858,11 @@ export namespace Prisma {
     netPayableKwd?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    ordersKwd?: Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: number
+    privateShiftMinutes?: number
+    privateShiftPayKwd?: Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     tenant: TenantCreateNestedOneWithoutFleetPayoutStatementsInput
     fleet: FleetPartnerCreateNestedOneWithoutStatementsInput
     deductions?: FleetDeductionCreateNestedManyWithoutStatementInput
@@ -345489,6 +345891,11 @@ export namespace Prisma {
     netPayableKwd?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    ordersKwd?: Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: number
+    privateShiftMinutes?: number
+    privateShiftPayKwd?: Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     deductions?: FleetDeductionUncheckedCreateNestedManyWithoutStatementInput
   }
 
@@ -345996,6 +346403,11 @@ export namespace Prisma {
     netPayableKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ordersKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: IntFieldUpdateOperationsInput | number
+    privateShiftMinutes?: IntFieldUpdateOperationsInput | number
+    privateShiftPayKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     tenant?: TenantUpdateOneRequiredWithoutFleetPayoutStatementsNestedInput
     fleet?: FleetPartnerUpdateOneRequiredWithoutStatementsNestedInput
     deductions?: FleetDeductionUpdateManyWithoutStatementNestedInput
@@ -346024,6 +346436,11 @@ export namespace Prisma {
     netPayableKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ordersKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: IntFieldUpdateOperationsInput | number
+    privateShiftMinutes?: IntFieldUpdateOperationsInput | number
+    privateShiftPayKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     deductions?: FleetDeductionUncheckedUpdateManyWithoutStatementNestedInput
   }
 
@@ -355201,6 +355618,11 @@ export namespace Prisma {
     netPayableKwd?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    ordersKwd?: Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: number
+    privateShiftMinutes?: number
+    privateShiftPayKwd?: Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     tenant: TenantCreateNestedOneWithoutFleetPayoutStatementsInput
     fleet: FleetPartnerCreateNestedOneWithoutStatementsInput
     invoice?: FleetPayoutInvoiceCreateNestedOneWithoutStatementInput
@@ -355229,6 +355651,11 @@ export namespace Prisma {
     netPayableKwd?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    ordersKwd?: Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: number
+    privateShiftMinutes?: number
+    privateShiftPayKwd?: Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     invoice?: FleetPayoutInvoiceUncheckedCreateNestedOneWithoutStatementInput
   }
 
@@ -355619,6 +356046,11 @@ export namespace Prisma {
     netPayableKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ordersKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: IntFieldUpdateOperationsInput | number
+    privateShiftMinutes?: IntFieldUpdateOperationsInput | number
+    privateShiftPayKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     tenant?: TenantUpdateOneRequiredWithoutFleetPayoutStatementsNestedInput
     fleet?: FleetPartnerUpdateOneRequiredWithoutStatementsNestedInput
     invoice?: FleetPayoutInvoiceUpdateOneWithoutStatementNestedInput
@@ -355647,6 +356079,11 @@ export namespace Prisma {
     netPayableKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ordersKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: IntFieldUpdateOperationsInput | number
+    privateShiftMinutes?: IntFieldUpdateOperationsInput | number
+    privateShiftPayKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     invoice?: FleetPayoutInvoiceUncheckedUpdateOneWithoutStatementNestedInput
   }
 
@@ -359347,6 +359784,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     tenant: TenantCreateNestedOneWithoutDeliveryOrdersInput
     vendor: VendorCreateNestedOneWithoutOrdersInput
     branch: VendorBranchCreateNestedOneWithoutOrdersInput
@@ -359408,6 +359846,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
     offers?: DispatchOfferUncheckedCreateNestedManyWithoutOrderInput
     incidents?: IncidentUncheckedCreateNestedManyWithoutOrderInput
     rating?: OrderRatingUncheckedCreateNestedOneWithoutOrderInput
@@ -363582,6 +364021,9 @@ export namespace Prisma {
     settledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    chargeTxId?: string | null
+    chargedAt?: Date | string | null
+    fleetStatementId?: string | null
     deductions?: PrivateShiftDeductionCreateNestedManyWithoutShiftInput
   }
 
@@ -363616,6 +364058,9 @@ export namespace Prisma {
     settledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    chargeTxId?: string | null
+    chargedAt?: Date | string | null
+    fleetStatementId?: string | null
     deductions?: PrivateShiftDeductionUncheckedCreateNestedManyWithoutShiftInput
   }
 
@@ -363680,6 +364125,9 @@ export namespace Prisma {
     settledAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
     createdAt?: DateTimeFilter<"PrivateShift"> | Date | string
     updatedAt?: DateTimeFilter<"PrivateShift"> | Date | string
+    chargeTxId?: StringNullableFilter<"PrivateShift"> | string | null
+    chargedAt?: DateTimeNullableFilter<"PrivateShift"> | Date | string | null
+    fleetStatementId?: StringNullableFilter<"PrivateShift"> | string | null
   }
 
   export type PrivateShiftPlanCreateWithoutShiftsInput = {
@@ -363864,6 +364312,9 @@ export namespace Prisma {
     settledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    chargeTxId?: string | null
+    chargedAt?: Date | string | null
+    fleetStatementId?: string | null
     plan?: PrivateShiftPlanCreateNestedOneWithoutShiftsInput
   }
 
@@ -363899,6 +364350,9 @@ export namespace Prisma {
     settledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    chargeTxId?: string | null
+    chargedAt?: Date | string | null
+    fleetStatementId?: string | null
   }
 
   export type PrivateShiftCreateOrConnectWithoutDeductionsInput = {
@@ -363948,6 +364402,9 @@ export namespace Prisma {
     settledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chargeTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    chargedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fleetStatementId?: NullableStringFieldUpdateOperationsInput | string | null
     plan?: PrivateShiftPlanUpdateOneWithoutShiftsNestedInput
   }
 
@@ -363983,6 +364440,9 @@ export namespace Prisma {
     settledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chargeTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    chargedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fleetStatementId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type CompanyCreateManyTenantInput = {
@@ -365272,6 +365732,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
   }
 
   export type DispatchOfferCreateManyTenantInput = {
@@ -365423,6 +365884,7 @@ export namespace Prisma {
     payoutTxId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftsKwd?: Decimal | DecimalJsLike | number | string
   }
 
   export type RefundCreateManyTenantInput = {
@@ -365483,6 +365945,11 @@ export namespace Prisma {
     netPayableKwd?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    ordersKwd?: Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: number
+    privateShiftMinutes?: number
+    privateShiftPayKwd?: Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type FleetPayoutInvoiceCreateManyTenantInput = {
@@ -369828,6 +370295,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     vendor?: VendorUpdateOneRequiredWithoutOrdersNestedInput
     trainingSession?: DriverTrainingSessionUpdateOneWithoutOrdersNestedInput
     branch?: VendorBranchUpdateOneRequiredWithoutOrdersNestedInput
@@ -369889,6 +370357,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     offers?: DispatchOfferUncheckedUpdateManyWithoutOrderNestedInput
     incidents?: IncidentUncheckedUpdateManyWithoutOrderNestedInput
     rating?: OrderRatingUncheckedUpdateOneWithoutOrderNestedInput
@@ -369944,6 +370413,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DispatchOfferUpdateWithoutTenantInput = {
@@ -370368,6 +370838,7 @@ export namespace Prisma {
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftsKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     vendor?: VendorUpdateOneRequiredWithoutStatementsNestedInput
   }
 
@@ -370385,6 +370856,7 @@ export namespace Prisma {
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftsKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
   export type VendorStatementUncheckedUpdateManyWithoutTenantInput = {
@@ -370401,6 +370873,7 @@ export namespace Prisma {
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftsKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
   export type RefundUpdateWithoutTenantInput = {
@@ -370556,6 +371029,11 @@ export namespace Prisma {
     netPayableKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ordersKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: IntFieldUpdateOperationsInput | number
+    privateShiftMinutes?: IntFieldUpdateOperationsInput | number
+    privateShiftPayKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     fleet?: FleetPartnerUpdateOneRequiredWithoutStatementsNestedInput
     invoice?: FleetPayoutInvoiceUpdateOneWithoutStatementNestedInput
     deductions?: FleetDeductionUpdateManyWithoutStatementNestedInput
@@ -370583,6 +371061,11 @@ export namespace Prisma {
     netPayableKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ordersKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: IntFieldUpdateOperationsInput | number
+    privateShiftMinutes?: IntFieldUpdateOperationsInput | number
+    privateShiftPayKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     invoice?: FleetPayoutInvoiceUncheckedUpdateOneWithoutStatementNestedInput
     deductions?: FleetDeductionUncheckedUpdateManyWithoutStatementNestedInput
   }
@@ -370609,6 +371092,11 @@ export namespace Prisma {
     netPayableKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ordersKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: IntFieldUpdateOperationsInput | number
+    privateShiftMinutes?: IntFieldUpdateOperationsInput | number
+    privateShiftPayKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type FleetPayoutInvoiceUpdateWithoutTenantInput = {
@@ -375514,6 +376002,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
   }
 
   export type DispatchOfferCreateManyDriverInput = {
@@ -377616,6 +378105,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDeliveryOrdersNestedInput
     vendor?: VendorUpdateOneRequiredWithoutOrdersNestedInput
     trainingSession?: DriverTrainingSessionUpdateOneWithoutOrdersNestedInput
@@ -377677,6 +378167,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     offers?: DispatchOfferUncheckedUpdateManyWithoutOrderNestedInput
     incidents?: IncidentUncheckedUpdateManyWithoutOrderNestedInput
     rating?: OrderRatingUncheckedUpdateOneWithoutOrderNestedInput
@@ -377732,6 +378223,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DispatchOfferUpdateWithoutDriverInput = {
@@ -380707,6 +381199,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
   }
 
   export type ApiKeyCreateManyVendorInput = {
@@ -380736,6 +381229,7 @@ export namespace Prisma {
     payoutTxId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftsKwd?: Decimal | DecimalJsLike | number | string
   }
 
   export type RefundCreateManyVendorInput = {
@@ -381155,6 +381649,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDeliveryOrdersNestedInput
     trainingSession?: DriverTrainingSessionUpdateOneWithoutOrdersNestedInput
     branch?: VendorBranchUpdateOneRequiredWithoutOrdersNestedInput
@@ -381216,6 +381711,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     offers?: DispatchOfferUncheckedUpdateManyWithoutOrderNestedInput
     incidents?: IncidentUncheckedUpdateManyWithoutOrderNestedInput
     rating?: OrderRatingUncheckedUpdateOneWithoutOrderNestedInput
@@ -381271,6 +381767,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ApiKeyUpdateWithoutVendorInput = {
@@ -381325,6 +381822,7 @@ export namespace Prisma {
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftsKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     tenant?: TenantUpdateOneRequiredWithoutVendorStatementsNestedInput
   }
 
@@ -381342,6 +381840,7 @@ export namespace Prisma {
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftsKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
   export type VendorStatementUncheckedUpdateManyWithoutVendorInput = {
@@ -381358,6 +381857,7 @@ export namespace Prisma {
     payoutTxId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftsKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
   export type RefundUpdateWithoutVendorInput = {
@@ -381612,6 +382112,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
   }
 
   export type UserCreateManyBranchInput = {
@@ -381691,6 +382192,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDeliveryOrdersNestedInput
     vendor?: VendorUpdateOneRequiredWithoutOrdersNestedInput
     trainingSession?: DriverTrainingSessionUpdateOneWithoutOrdersNestedInput
@@ -381752,6 +382254,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     offers?: DispatchOfferUncheckedUpdateManyWithoutOrderNestedInput
     incidents?: IncidentUncheckedUpdateManyWithoutOrderNestedInput
     rating?: OrderRatingUncheckedUpdateOneWithoutOrderNestedInput
@@ -381807,6 +382310,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserUpdateWithoutBranchInput = {
@@ -382060,6 +382564,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
   }
 
   export type DeliveryOrderCreateManyDropoffZoneInput = {
@@ -382111,6 +382616,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
   }
 
   export type DeliveryPlanZoneRateCreateManyOriginZoneInput = {
@@ -382362,6 +382868,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDeliveryOrdersNestedInput
     vendor?: VendorUpdateOneRequiredWithoutOrdersNestedInput
     trainingSession?: DriverTrainingSessionUpdateOneWithoutOrdersNestedInput
@@ -382423,6 +382930,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     offers?: DispatchOfferUncheckedUpdateManyWithoutOrderNestedInput
     incidents?: IncidentUncheckedUpdateManyWithoutOrderNestedInput
     rating?: OrderRatingUncheckedUpdateOneWithoutOrderNestedInput
@@ -382478,6 +382986,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DeliveryOrderUpdateWithoutDropoffZoneInput = {
@@ -382523,6 +383032,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDeliveryOrdersNestedInput
     vendor?: VendorUpdateOneRequiredWithoutOrdersNestedInput
     trainingSession?: DriverTrainingSessionUpdateOneWithoutOrdersNestedInput
@@ -382584,6 +383094,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     offers?: DispatchOfferUncheckedUpdateManyWithoutOrderNestedInput
     incidents?: IncidentUncheckedUpdateManyWithoutOrderNestedInput
     rating?: OrderRatingUncheckedUpdateOneWithoutOrderNestedInput
@@ -382639,6 +383150,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DeliveryPlanZoneRateUpdateWithoutOriginZoneInput = {
@@ -383620,6 +384132,11 @@ export namespace Prisma {
     netPayableKwd?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    ordersKwd?: Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: number
+    privateShiftMinutes?: number
+    privateShiftPayKwd?: Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type FleetDocumentCreateManyFleetInput = {
@@ -384208,6 +384725,11 @@ export namespace Prisma {
     netPayableKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ordersKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: IntFieldUpdateOperationsInput | number
+    privateShiftMinutes?: IntFieldUpdateOperationsInput | number
+    privateShiftPayKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     tenant?: TenantUpdateOneRequiredWithoutFleetPayoutStatementsNestedInput
     invoice?: FleetPayoutInvoiceUpdateOneWithoutStatementNestedInput
     deductions?: FleetDeductionUpdateManyWithoutStatementNestedInput
@@ -384235,6 +384757,11 @@ export namespace Prisma {
     netPayableKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ordersKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: IntFieldUpdateOperationsInput | number
+    privateShiftMinutes?: IntFieldUpdateOperationsInput | number
+    privateShiftPayKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
     invoice?: FleetPayoutInvoiceUncheckedUpdateOneWithoutStatementNestedInput
     deductions?: FleetDeductionUncheckedUpdateManyWithoutStatementNestedInput
   }
@@ -384261,6 +384788,11 @@ export namespace Prisma {
     netPayableKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ordersKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    privateShiftCount?: IntFieldUpdateOperationsInput | number
+    privateShiftMinutes?: IntFieldUpdateOperationsInput | number
+    privateShiftPayKwd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    vehicleRates?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type FleetDocumentUpdateWithoutFleetInput = {
@@ -384848,6 +385380,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    privateShiftId?: string | null
   }
 
   export type DeliveryOrderUpdateWithoutTrainingSessionInput = {
@@ -384893,6 +385426,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     tenant?: TenantUpdateOneRequiredWithoutDeliveryOrdersNestedInput
     vendor?: VendorUpdateOneRequiredWithoutOrdersNestedInput
     branch?: VendorBranchUpdateOneRequiredWithoutOrdersNestedInput
@@ -384954,6 +385488,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
     offers?: DispatchOfferUncheckedUpdateManyWithoutOrderNestedInput
     incidents?: IncidentUncheckedUpdateManyWithoutOrderNestedInput
     rating?: OrderRatingUncheckedUpdateOneWithoutOrderNestedInput
@@ -385009,6 +385544,7 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    privateShiftId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ShiftPlanEntryCreateManyPlanInput = {
@@ -385094,6 +385630,9 @@ export namespace Prisma {
     settledAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    chargeTxId?: string | null
+    chargedAt?: Date | string | null
+    fleetStatementId?: string | null
   }
 
   export type PrivateShiftUpdateWithoutPlanInput = {
@@ -385127,6 +385666,9 @@ export namespace Prisma {
     settledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chargeTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    chargedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fleetStatementId?: NullableStringFieldUpdateOperationsInput | string | null
     deductions?: PrivateShiftDeductionUpdateManyWithoutShiftNestedInput
   }
 
@@ -385161,6 +385703,9 @@ export namespace Prisma {
     settledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chargeTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    chargedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fleetStatementId?: NullableStringFieldUpdateOperationsInput | string | null
     deductions?: PrivateShiftDeductionUncheckedUpdateManyWithoutShiftNestedInput
   }
 
@@ -385195,6 +385740,9 @@ export namespace Prisma {
     settledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chargeTxId?: NullableStringFieldUpdateOperationsInput | string | null
+    chargedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fleetStatementId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type PrivateShiftDeductionCreateManyShiftInput = {

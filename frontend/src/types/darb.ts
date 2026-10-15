@@ -42,7 +42,9 @@ export type WalletTxType =
   | "VENDOR_PAYOUT"
   // Revision 10 (#2) — a merchant paying into their own wallet. Its own type so
   // a shop can tell what it paid in apart from what Darb corrected.
-  | "TOP_UP";
+  | "TOP_UP"
+  // Revision 24b — a completed private shift, charged to the shop by the hour.
+  | "PRIVATE_SHIFT_CHARGE";
 
 export type WalletEntryDirection = "DEBIT" | "CREDIT";
 
@@ -337,6 +339,8 @@ export interface DeliveryOrder {
   paymentMethod: PaymentMethod;
   orderTotalKwd: Kwd;
   deliveryFeeKwd: Kwd;
+  /** Revision 24b — carried on the shop's own private shift: no per-order fee. */
+  privateShiftId?: string | null;
   customerName?: string | null;
   customerPhone?: string | null;
   dropoffAddress?: string | null;
@@ -775,6 +779,8 @@ export interface VendorStatementRow {
   codNetKwd: string;
   prepaidFeesKwd: string;
   refundsKwd: string;
+  /** Revision 24b — private shifts charged by the hour in the period. */
+  privateShiftsKwd?: string;
   closingBalanceKwd: string;
   status: "FINAL" | "PAID";
   // Present on the finance-wide list (/api/wallets/vendor-statements), absent
@@ -789,7 +795,12 @@ export interface VendorStatementRow {
  * behind the row, for anyone reconciling against the ledger.
  */
 export interface StatementTransaction {
-  kind: "DELIVERY" | "REFUND" | "PAYOUT";
+  /** Revision 24b: PRIVATE_SHIFT is a completed private shift's hourly charge. */
+  kind: "DELIVERY" | "REFUND" | "PAYOUT" | "PRIVATE_SHIFT";
+  /** Revision 24b: a delivery carried on a private shift (no per-order fee). */
+  privateShift?: boolean;
+  privateShiftId?: string;
+  billableMinutes?: number | null;
   date: string | null;
   orderId: string | null;
   orderNumber: string | null;
@@ -1280,6 +1291,14 @@ export interface FleetStatementRow {
   disputedAt?: string | null;
   disputeReason?: string | null;
   disputeTicketId?: string | null;
+  /** Revision 24b — the delivered-order half of totalKwd (null before it). */
+  ordersKwd?: string | null;
+  /** Revision 24b — completed private shifts, paid by the hour, inside totalKwd. */
+  privateShiftCount?: number;
+  privateShiftMinutes?: number;
+  privateShiftPayKwd?: string;
+  /** Revision 24b — per-vehicle per-order rates the month was cut on. */
+  vehicleRates?: Record<string, string | null> | null;
 }
 
 /**
@@ -1302,7 +1321,27 @@ export interface FleetStatementDetail {
     driverCode: string | null;
     /** Revision 14 (#3) — what the payout for this line was built on. */
     distanceKm: string | null;
+    /** Revision 24b — the per-order rate used (vehicle rate, else the base).
+     *  Null on a SUBSCRIPTION month, where the line is the shop fee. */
+    vehicleType?: string | null;
+    rateKwd?: string | null;
     feeKwd: string;
+  }>;
+  /** Revision 24b — the private shifts this statement pays, by the hour. */
+  privateShifts?: Array<{
+    id: string;
+    date: string;
+    startAt: string;
+    endAt: string;
+    vehicleType: string;
+    vendorName: string | null;
+    branchName: string | null;
+    driverName: string | null;
+    driverCode: string | null;
+    scheduledMinutes: number | null;
+    billableMinutes: number | null;
+    hourlyKwd: string | null;
+    payKwd: string;
   }>;
   /** How many each driver did, most first. The question a statement gets
    *  asked as soon as somebody sees the total. */
@@ -1313,6 +1352,8 @@ export interface FleetStatementDetail {
     orders: number;
     totalKm: string | null;
     totalKwd: string;
+    /** Revision 24b — the per-order rate this driver's orders were paid at. */
+    rateKwd?: string | null;
   }>;
   /** What the statement was cut on, and what the query returns today. A gap
    *  means orders were re-stated after the month closed. */
@@ -1380,6 +1421,12 @@ export interface FleetEarnings {
    *  count on screen rather than a discrepancy to find by hand. */
   ordersMissingDistance: number;
   deliveredOrders: number;
+  /** Revision 24b — orders half, and the completed private shifts by the hour. */
+  ordersKwd?: string;
+  privateShiftCount?: number;
+  privateShiftMinutes?: number;
+  privateShiftPayKwd?: string;
+  vehicleRates?: Record<string, string | null> | null;
   totalKwd: string;
   listTruncated?: boolean;
   orders: Array<{
@@ -1388,6 +1435,7 @@ export interface FleetEarnings {
     deliveredAt: string;
     driverName: string | null;
     distanceKm: string | null;
+    rateKwd?: string | null;
     feeKwd: string;
   }>;
 }

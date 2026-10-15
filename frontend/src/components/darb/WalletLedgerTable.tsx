@@ -14,6 +14,7 @@ const TX_STYLES: Record<WalletTxType, string> = {
   ADJUSTMENT: "bg-amber-50 text-amber-700",
   VENDOR_PAYOUT: "bg-indigo-50 text-indigo-600",
   TOP_UP: "bg-teal-50 text-teal-700",
+  PRIVATE_SHIFT_CHARGE: "bg-forest-50 text-forest-700",
 };
 
 /** Exported: the wallet page names the same transaction types outside a table. */
@@ -24,7 +25,19 @@ export const TX_I18N: Record<WalletTxType, string> = {
   ADJUSTMENT: "wallet.txAdjustment",
   VENDOR_PAYOUT: "wallet.txVendorPayout",
   TOP_UP: "wallet.txTopUp",
+  PRIVATE_SHIFT_CHARGE: "wallet.txPrivateShiftCharge",
 };
+
+/**
+ * Revision 24b — a private-shift charge has no order to point at. Its memo is
+ * "Private shift <date> <hours>h"; the chip already says Private shift (in the
+ * reader's language), so the reference column carries the date and hours.
+ */
+function privateShiftRef(row: WalletEntry): string | null {
+  if (row.transaction?.type !== "PRIVATE_SHIFT_CHARGE") return null;
+  const memo = row.transaction.memo ?? "";
+  return memo.replace(/^Private shift\s*/, "") || null;
+}
 
 interface WalletLedgerTableProps {
   entries: WalletEntry[];
@@ -82,11 +95,14 @@ export default function WalletLedgerTable({
       sortable: false,
       render: (_: unknown, row: WalletEntry) => (
         <span dir="ltr" className="font-mono text-xs text-sand-700">
-          {row.transaction?.order?.orderNumber ?? row.transaction?.orderId ?? t("common.notAvailable")}
+          {row.transaction?.order?.orderNumber ??
+            row.transaction?.orderId ??
+            privateShiftRef(row) ??
+            t("common.notAvailable")}
         </span>
       ),
       exportValue: (_: unknown, row: WalletEntry) =>
-        row.transaction?.order?.orderNumber ?? row.transaction?.orderId ?? "",
+        row.transaction?.order?.orderNumber ?? row.transaction?.orderId ?? row.transaction?.memo ?? "",
     },
     {
       key: "debit",
