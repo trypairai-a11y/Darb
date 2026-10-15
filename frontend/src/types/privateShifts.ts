@@ -40,6 +40,10 @@ export interface PrivateShift {
   vendorChargeKwd: string | null;
   fleetPayKwd: string | null;
   settledAt: string | null;
+  /** Revision 24b — posted to the shop's wallet, and the company statement that paid it. */
+  chargedAt?: string | null;
+  charged?: boolean;
+  fleetStatementId?: string | null;
   vendor: Named | null;
   branch: Named | null;
   driver: { id: string; name: string; driverCode: string | null; phone: string | null } | null;

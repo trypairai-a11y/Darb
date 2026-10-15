@@ -1710,7 +1710,8 @@ exports.Prisma.DeliveryOrderScalarFieldEnum = {
   trainingSessionId: 'trainingSessionId',
   metadata: 'metadata',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  privateShiftId: 'privateShiftId'
 };
 
 exports.Prisma.DispatchOfferScalarFieldEnum = {
@@ -1868,7 +1869,8 @@ exports.Prisma.VendorStatementScalarFieldEnum = {
   status: 'status',
   payoutTxId: 'payoutTxId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  privateShiftsKwd: 'privateShiftsKwd'
 };
 
 exports.Prisma.RefundScalarFieldEnum = {
@@ -1931,7 +1933,12 @@ exports.Prisma.FleetPayoutStatementScalarFieldEnum = {
   deductionsKwd: 'deductionsKwd',
   netPayableKwd: 'netPayableKwd',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  ordersKwd: 'ordersKwd',
+  privateShiftCount: 'privateShiftCount',
+  privateShiftMinutes: 'privateShiftMinutes',
+  privateShiftPayKwd: 'privateShiftPayKwd',
+  vehicleRates: 'vehicleRates'
 };
 
 exports.Prisma.DeliveryPhotoScalarFieldEnum = {
@@ -2334,7 +2341,10 @@ exports.Prisma.PrivateShiftScalarFieldEnum = {
   fleetPayKwd: 'fleetPayKwd',
   settledAt: 'settledAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  chargeTxId: 'chargeTxId',
+  chargedAt: 'chargedAt',
+  fleetStatementId: 'fleetStatementId'
 };
 
 exports.Prisma.PrivateShiftDeductionScalarFieldEnum = {
@@ -3307,7 +3317,8 @@ exports.Prisma.DeliveryOrderOrderByRelevanceFieldEnum = {
   batchId: 'batchId',
   trackingToken: 'trackingToken',
   externalRef: 'externalRef',
-  trainingSessionId: 'trainingSessionId'
+  trainingSessionId: 'trainingSessionId',
+  privateShiftId: 'privateShiftId'
 };
 
 exports.Prisma.DispatchOfferOrderByRelevanceFieldEnum = {
@@ -3710,7 +3721,9 @@ exports.Prisma.PrivateShiftOrderByRelevanceFieldEnum = {
   date: 'date',
   driverId: 'driverId',
   fleetPartnerId: 'fleetPartnerId',
-  cancelReason: 'cancelReason'
+  cancelReason: 'cancelReason',
+  chargeTxId: 'chargeTxId',
+  fleetStatementId: 'fleetStatementId'
 };
 
 exports.Prisma.PrivateShiftDeductionOrderByRelevanceFieldEnum = {
@@ -4144,7 +4157,8 @@ exports.WalletTxType = exports.$Enums.WalletTxType = {
   TIP: 'TIP',
   FLEET_PAYOUT: 'FLEET_PAYOUT',
   FLEET_DEPOSIT: 'FLEET_DEPOSIT',
-  TOP_UP: 'TOP_UP'
+  TOP_UP: 'TOP_UP',
+  PRIVATE_SHIFT_CHARGE: 'PRIVATE_SHIFT_CHARGE'
 };
 
 exports.IncidentType = exports.$Enums.IncidentType = {

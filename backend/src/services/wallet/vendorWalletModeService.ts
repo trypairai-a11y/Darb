@@ -316,10 +316,24 @@ export async function vendorWalletStatement(params: {
           direction: true,
           amountKwd: true,
           createdAt: true,
-          transaction: { select: { type: true, orderId: true, memo: true } },
+          transaction: { select: { id: true, type: true, orderId: true, memo: true } },
         },
       })
     : [];
+
+  // Revision 24b: a private-shift charge has no order; it belongs to the
+  // shift's branch, the same answer the branch balance derivation gives.
+  const shiftTxIds = entries
+    .filter((e) => e.transaction.type === "PRIVATE_SHIFT_CHARGE")
+    .map((e) => e.transaction.id);
+  const shiftBranchOf = new Map<string, string>();
+  if (shiftTxIds.length) {
+    const shifts = await prisma.privateShift.findMany({
+      where: { tenantId, vendorId, chargeTxId: { in: shiftTxIds } },
+      select: { chargeTxId: true, branchId: true },
+    });
+    for (const sh of shifts) if (sh.chargeTxId) shiftBranchOf.set(sh.chargeTxId, sh.branchId);
+  }
 
   const orderIds = [...new Set(entries.map((e) => e.transaction.orderId).filter((id): id is string => !!id))];
   const orders = orderIds.length
@@ -333,7 +347,7 @@ export async function vendorWalletStatement(params: {
   const rows: Array<{ at: Date; kind: "POSTING" | "TRANSFER"; type: string; reference: string | null; signed: Prisma.Decimal }> = [];
   for (const e of entries) {
     const order = e.transaction.orderId ? orderOf.get(e.transaction.orderId) : undefined;
-    const branchId = order?.branchId ?? null;
+    const branchId = order?.branchId ?? shiftBranchOf.get(e.transaction.id) ?? null;
     const mine = isMain ? mode === "SINGLE" || branchId === null : branchId === params.wallet;
     if (!mine) continue;
     const amount = dec(e.amountKwd);

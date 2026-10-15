@@ -1841,6 +1841,7 @@ export interface Messages {
     viewRemittances: string;
     viewLedger: string;
     txTopUp: string;
+    txPrivateShiftCharge: string;
   };
   reports: {
     statementDetail: string;
@@ -1886,6 +1887,8 @@ export interface Messages {
     noRows: string;
     noStatements: string;
     noRuns: string;
+    kindPrivateShift: string;
+    privateShifts: string;
   };
   incidents: {
     sosAlert: string;
@@ -2425,6 +2428,12 @@ export interface Messages {
     deactivated: string;
     activated: string;
     deactivatedOk: string;
+    privateShiftsTitle: string;
+    privateShiftsLine: string;
+    billableHours: string;
+    rateUsed: string;
+    ordersCount: string;
+    vehicleRateNote: string;
   };
   /** Revision 13 (#6) — the delivery company's own team. */
   fleetTeam: {
@@ -2609,7 +2618,7 @@ export interface Messages {
     cannotEditSelf: string;
   };
   /** Revision 24 (#8 to #11): private shifts. */
-  privateShifts: { title: string; navTitle: string; kindRegular: string; kindPrivate: string; subtitleStaff: string; subtitleVendor: string; prevDay: string; nextDay: string; day: string; planShifts: string; planHint: string; draftsTitle: string; openDraft: string; shiftsCount: string; fromShop: string; time: string; shop: string; branch: string; vehicle: string; status: string; driver: string; company: string; vendorCharge: string; fleetPay: string; noneOnDay: string; cancelShift: string; cancelTitle: string; cancelConfirm: string; cancelled: string; detailTitle: string; choose: string; noVehiclesStaff: string; noVehiclesVendor: string; howMany: string; hoursEach: string; hoursN: string; propose: string; draftTitle: string; draftHint: string; basisDefault: string; basisOrders: string; shiftN: string; startTime: string; removeShift: string; addShift: string; confirmWarning: string; confirm: string; saveDraft: string; discard: string; confirmed: string; saved: string; timeRange: string; minutes: string; billingTitle: string; settled: string; runningPreview: string; scheduled: string; lateDeduction: string; awayDeduction: string; billable: string; noRate: string; perHour: string; billingRule: string; deductionsTitle: string; noDeductions: string; kind_LATE_START: string; kind_LATE_ORDER: string; kind_AWAY: string; kind_EARLY_END: string; ordersTitle: string; kpiLine: string; status_PROPOSED: string; status_OPEN: string; status_BOOKED: string; status_IN_PROGRESS: string; status_COMPLETED: string; status_CANCELLED: string; vehicle_MOTORCYCLE: string; vehicle_CAR: string; vehiclePlansTitle: string; vehiclePlansHint: string; perOrderPlan: string; shopOwnPlan: string; perHourRate: string; perOrder: string; singleVehicleNote: string; plansSaved: string; fleetRatesTitle: string; fleetRatesMargin: string; fleetRatesSubscription: string; shopFee: string; ratesSaved: string; ratesProposed: string; ratesAwaiting: string; otherRateAwaiting: string; proposeRates: string; fleetShiftsTitle: string; fleetShiftsHint: string; fleetShiftsTotal: string; fleetShiftsNone: string; eligibleLabel: string; eligibleHint: string; eligibleOn: string; eligibleOff: string };
+  privateShifts: { title: string; navTitle: string; kindRegular: string; kindPrivate: string; subtitleStaff: string; subtitleVendor: string; prevDay: string; nextDay: string; day: string; planShifts: string; planHint: string; draftsTitle: string; openDraft: string; shiftsCount: string; fromShop: string; time: string; shop: string; branch: string; vehicle: string; status: string; driver: string; company: string; vendorCharge: string; fleetPay: string; noneOnDay: string; cancelShift: string; cancelTitle: string; cancelConfirm: string; cancelled: string; detailTitle: string; choose: string; noVehiclesStaff: string; noVehiclesVendor: string; howMany: string; hoursEach: string; hoursN: string; propose: string; draftTitle: string; draftHint: string; basisDefault: string; basisOrders: string; shiftN: string; startTime: string; removeShift: string; addShift: string; confirmWarning: string; confirm: string; saveDraft: string; discard: string; confirmed: string; saved: string; timeRange: string; minutes: string; billingTitle: string; settled: string; runningPreview: string; scheduled: string; lateDeduction: string; awayDeduction: string; billable: string; noRate: string; perHour: string; billingRule: string; deductionsTitle: string; noDeductions: string; kind_LATE_START: string; kind_LATE_ORDER: string; kind_AWAY: string; kind_EARLY_END: string; ordersTitle: string; kpiLine: string; status_PROPOSED: string; status_OPEN: string; status_BOOKED: string; status_IN_PROGRESS: string; status_COMPLETED: string; status_CANCELLED: string; vehicle_MOTORCYCLE: string; vehicle_CAR: string; vehiclePlansTitle: string; vehiclePlansHint: string; perOrderPlan: string; shopOwnPlan: string; perHourRate: string; perOrder: string; singleVehicleNote: string; plansSaved: string; fleetRatesTitle: string; fleetRatesMargin: string; fleetRatesSubscription: string; shopFee: string; ratesSaved: string; ratesProposed: string; ratesAwaiting: string; otherRateAwaiting: string; proposeRates: string; fleetShiftsTitle: string; fleetShiftsHint: string; fleetShiftsTotal: string; fleetShiftsNone: string; eligibleLabel: string; eligibleHint: string; eligibleOn: string; eligibleOff: string; charged: string; chargedNote: string; onFleetStatement: string; orderFee: string; orderFeeHint: string; };
   vendorExtra: {
     analyticsTitle: string;
     analyticsSubtitle: string;
@@ -5066,6 +5075,7 @@ export const en: Messages = {
     viewRemittances: "View cash hand-ins",
     viewLedger: "View fee ledger",
     txTopUp: "Top up",
+    txPrivateShiftCharge: "Private shift",
   },
   reports: {
     statementDetail: "Statement detail",
@@ -5110,6 +5120,8 @@ export const en: Messages = {
     noRows: "No rows for this period.",
     noStatements: "No shop statements yet.",
     noRuns: "No reconciliation runs recorded yet.",
+    kindPrivateShift: "Private shift",
+    privateShifts: "Private shifts",
   },
   incidents: {
     sosAlert: "SOS alert",
@@ -5632,6 +5644,12 @@ export const en: Messages = {
     deactivated: "Access updated.",
     activated: "Login switched on.",
     deactivatedOk: "Login switched off.",
+    privateShiftsTitle: "Private shifts",
+    privateShiftsLine: "{n} private shifts, {hours} h",
+    billableHours: "Billable hours",
+    rateUsed: "Rate per order",
+    ordersCount: "{n} orders",
+    vehicleRateNote: "Each order is paid at the per-order rate of the driver's vehicle where one is set, otherwise at the base fee.",
   },
   fleetTeam: {
     title: "Team",
@@ -5918,6 +5936,11 @@ export const en: Messages = {
     eligibleHint: "The driver app offers private shifts only when this is ticked.",
     eligibleOn: "The driver can now book private shifts",
     eligibleOff: "The driver can no longer book private shifts",
+    charged: "Charged",
+    chargedNote: "Charged to the shop's wallet on {date}.",
+    onFleetStatement: "The company is paid for it on its monthly statement.",
+    orderFee: "Private shift",
+    orderFeeHint: "Delivered on the shop's private shift and paid by the hour, so there is no delivery fee on this order.",
   },
   vendorExtra: {
     analyticsTitle: "Analytics",
@@ -8370,6 +8393,7 @@ export const ar: Messages = {
     viewRemittances: "عرض التوريدات النقدية",
     viewLedger: "عرض دفتر الرسوم",
     txTopUp: "إيداع",
+    txPrivateShiftCharge: "وردية خاصة",
   },
   reports: {
     statementDetail: "تفاصيل كشف الحساب",
@@ -8414,6 +8438,8 @@ export const ar: Messages = {
     noRows: "لا توجد صفوف لهذه الفترة.",
     noStatements: "لا توجد كشوف متاجر بعد.",
     noRuns: "لا توجد عمليات مطابقة مسجلة بعد.",
+    kindPrivateShift: "وردية خاصة",
+    privateShifts: "الورديات الخاصة",
   },
   incidents: {
     sosAlert: "نداء استغاثة",
@@ -8921,6 +8947,12 @@ export const ar: Messages = {
     deactivated: "تم تحديث الصلاحية.",
     activated: "تم تفعيل الحساب.",
     deactivatedOk: "تم إيقاف الحساب.",
+    privateShiftsTitle: "الورديات الخاصة",
+    privateShiftsLine: "{n} ورديات خاصة، {hours} ساعة",
+    billableHours: "الساعات المحتسبة",
+    rateUsed: "السعر للطلب",
+    ordersCount: "{n} طلب",
+    vehicleRateNote: "كل طلب ينحسب بسعر الطلب لنوع مركبة السايق إذا محدد، وإلا بالرسوم الأساسية.",
   },
   fleetTeam: {
     title: "الفريق",
@@ -9207,6 +9239,11 @@ export const ar: Messages = {
     eligibleHint: "تطبيق السائق يعرض الورديات الخاصة بس إذا هذا محدد.",
     eligibleOn: "السائق يقدر الحين يحجز ورديات خاصة",
     eligibleOff: "السائق ما يقدر يحجز ورديات خاصة",
+    charged: "تم الخصم",
+    chargedNote: "انخصمت من محفظة المحل بتاريخ {date}.",
+    onFleetStatement: "تنحسب للشركة في كشفها الشهري.",
+    orderFee: "وردية خاصة",
+    orderFeeHint: "توصلت على الوردية الخاصة للمحل وتنحسب بالساعة، فما عليها رسوم توصيل.",
   },
   vendorExtra: {
     analyticsTitle: "التحليلات",

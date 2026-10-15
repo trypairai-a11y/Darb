@@ -66,6 +66,10 @@ beforeEach(() => {
   delegates.shift = fns("findFirst");
   delegates.locationLog = fns("findMany");
   delegates.deliveryPlan = fns("count");
+  // Revision 24b: completing a shift charges the shop through the wallet.
+  delegates.walletAccount = fns("upsert", "update");
+  delegates.walletTransaction = fns("create");
+  delegates.walletEntry = fns("create");
   for (const [k, v] of Object.entries(delegates)) prisma[k] = v;
   prisma.vendor = { ...(prisma.vendor ?? {}), ...fns("findFirst", "findMany", "update") };
   prisma.deliveryOrder = { ...(prisma.deliveryOrder ?? {}), ...fns("findMany") };
@@ -77,6 +81,13 @@ beforeEach(() => {
   delegates.vendorBranch.findFirst.mockResolvedValue({ id: "br-1", name: "Salmiya", lat: D(SHOP.lat), lng: D(SHOP.lng) });
   delegates.vendorBranch.findMany.mockResolvedValue([]);
   prisma.vendor.findMany.mockResolvedValue([]);
+  delegates.walletAccount.upsert.mockImplementation(async ({ where }: any) => ({
+    id: `acc:${where.tenantId_ownerKey.ownerKey}`,
+    balanceKwd: D(0),
+  }));
+  delegates.walletAccount.update.mockImplementation(async ({ where }: any) => ({ id: where.id, balanceKwd: D(0) }));
+  delegates.walletTransaction.create.mockImplementation(async ({ data }: any) => ({ id: "wtx-ps", ...data }));
+  delegates.walletEntry.create.mockImplementation(async ({ data }: any) => ({ id: "we", ...data }));
 });
 
 describe("starting at the shop (#11)", () => {
@@ -192,6 +203,81 @@ describe("ending writes the settlement (#8)", () => {
     expect(update.data.billableMinutes).toBe(200);
     expect(update.data.vendorChargeKwd.toFixed(3)).toBe("10.000");
     expect(update.data.fleetPayKwd.toFixed(3)).toBe("6.667");
+  });
+});
+
+// Revision 24b — the shop is charged through the real double-entry flow.
+describe("completing a shift charges the shop (24b)", () => {
+  function primeCompleted(over: Record<string, unknown> = {}) {
+    delegates.privateShift.updateMany.mockResolvedValue({ count: 1 });
+    delegates.privateShift.findFirst.mockResolvedValue(
+      shift({ status: "COMPLETED", startedAt: at(0), endedAt: at(240), ...over }),
+    );
+    prisma.deliveryOrder.findMany.mockResolvedValue([]);
+    delegates.locationLog.findMany.mockResolvedValue([]);
+    delegates.vendorVehiclePlan.findFirst.mockResolvedValue({ perHourKwd: D("3.000") });
+    delegates.fleetVehicleRate.findFirst.mockResolvedValue({ perHourKwd: D("2.000") });
+  }
+
+  test("posts vendor payable DEBIT / platform revenue CREDIT under private-shift-charge:{id}, labelled for the shop", async () => {
+    primeCompleted();
+    await endPrivateShift(DRIVER, "ps-1", at(240));
+
+    const header = delegates.walletTransaction.create.mock.calls[0][0].data;
+    expect(header).toMatchObject({
+      tenantId: "t-1",
+      type: "PRIVATE_SHIFT_CHARGE",
+      idempotencyKey: "private-shift-charge:ps-1",
+      memo: "Private shift 2026-10-14 4h",
+      orderId: null,
+    });
+    const legs = delegates.walletEntry.create.mock.calls.map((c: any) => c[0].data);
+    expect(legs).toHaveLength(2);
+    const byAccount = Object.fromEntries(legs.map((l: any) => [l.accountId, l]));
+    expect(byAccount["acc:VENDOR:v-1"]).toMatchObject({ direction: "DEBIT" });
+    expect(byAccount["acc:VENDOR:v-1"].amountKwd.toFixed(3)).toBe("12.000");
+    expect(byAccount["acc:PLATFORM_REVENUE"]).toMatchObject({ direction: "CREDIT" });
+    expect(byAccount["acc:PLATFORM_REVENUE"].amountKwd.toFixed(3)).toBe("12.000");
+
+    // The shift keeps the posting, which is what puts it on its branch.
+    const stamped = delegates.privateShift.update.mock.calls.find((c: any) => c[0].data.chargeTxId);
+    expect(stamped[0].data.chargeTxId).toBe("wtx-ps");
+  });
+
+  test("the company is NOT paid here: no fleet leg, only the shop charge", async () => {
+    primeCompleted();
+    await endPrivateShift(DRIVER, "ps-1", at(240));
+    expect(delegates.walletTransaction.create).toHaveBeenCalledTimes(1);
+    const keys = delegates.walletAccount.upsert.mock.calls.map((c: any) => c[0].where.tenantId_ownerKey.ownerKey);
+    expect(keys.some((k: string) => k.startsWith("FLEET:"))).toBe(false);
+  });
+
+  test("a replay posts nothing (the key already exists)", async () => {
+    primeCompleted();
+    delegates.walletTransaction.create.mockRejectedValue(Object.assign(new Error("dup"), { code: "P2002" }));
+    await endPrivateShift(DRIVER, "ps-1", at(240));
+    expect(delegates.walletAccount.update).not.toHaveBeenCalled();
+    expect(delegates.privateShift.update.mock.calls.some((c: any) => c[0].data.chargeTxId)).toBe(false);
+  });
+
+  test("an already charged shift is not re-snapshotted or re-posted", async () => {
+    primeCompleted({ chargeTxId: "wtx-old" });
+    await endPrivateShift(DRIVER, "ps-1", at(240));
+    expect(delegates.walletTransaction.create).not.toHaveBeenCalled();
+    expect(delegates.privateShift.update).not.toHaveBeenCalled();
+  });
+
+  test("no per-hour plan on that vehicle: the figure stays blank and nothing is charged", async () => {
+    primeCompleted();
+    delegates.vendorVehiclePlan.findFirst.mockResolvedValue(null);
+    await endPrivateShift(DRIVER, "ps-1", at(240));
+    expect(delegates.walletTransaction.create).not.toHaveBeenCalled();
+  });
+
+  test("a no-show (never started) bills 0 minutes and charges nothing", async () => {
+    primeCompleted({ startedAt: null, endedAt: null });
+    await endPrivateShift(DRIVER, "ps-1", at(240));
+    expect(delegates.walletTransaction.create).not.toHaveBeenCalled();
   });
 });
 

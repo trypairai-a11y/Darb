@@ -40,6 +40,9 @@
 //     driver cash    CREDIT amount        (the driver no longer owes it)
 //     fleet cash     DEBIT amount         (the company spent its deposit)
 //     — clearing does not move: we took the money at deposit confirmation.
+//   Private shift   ("private-shift-charge:{shiftId}", revision 24b):
+//     vendor payable DEBIT charge         (billable hours x the shop's rate)
+//     platform revenue CREDIT charge      — the prepaid-fee shape, no order.
 //   Adjustment      ("adjust:{uuid}", ADMIN only, reason required):
 //     compensating transaction against PLATFORM_CLEARING — never an edit.
 //
@@ -80,7 +83,9 @@ export type WalletTxTypeLiteral =
   // Revision 10 (#2) — a merchant paying into their own wallet.
   | "TOP_UP"
   // Revision 14 — a delivery company paying into its own cash account.
-  | "FLEET_DEPOSIT";
+  | "FLEET_DEPOSIT"
+  // Revision 24b — a completed private shift, charged to the shop by the hour.
+  | "PRIVATE_SHIFT_CHARGE";
 
 /** Domain error — routes map instances to HTTP 400. */
 export class WalletError extends Error {}
@@ -395,6 +400,47 @@ export async function postPrepaidSettlement(
       },
     ],
   });
+}
+
+/**
+ * Revision 24b — charge the shop for a completed private shift. Idempotent via
+ * "private-shift-charge:{shiftId}". The same two legs as a prepaid order's
+ * fee (vendor payable DEBIT, platform revenue CREDIT, the payable may go
+ * negative), with no order behind it: the shift IS the service the shop
+ * bought. Returns null on a replay or a zero charge.
+ */
+export async function postPrivateShiftCharge(
+  tx: Tx,
+  shift: {
+    id: string;
+    tenantId: string;
+    vendorId: string;
+    chargeKwd: Prisma.Decimal.Value;
+    memo: string;
+  }
+): Promise<PostResult | null> {
+  const charge = new Prisma.Decimal(shift.chargeKwd).toDecimalPlaces(3);
+  if (charge.lte(0)) return null;
+
+  const vendorAccount = await ensureAccount(tx, shift.tenantId, "VENDOR_PAYABLE", {
+    vendorId: shift.vendorId,
+  });
+  const revenueAccount = await ensureAccount(tx, shift.tenantId, "PLATFORM_REVENUE");
+
+  return postLedgerTransaction(tx, {
+    tenantId: shift.tenantId,
+    type: "PRIVATE_SHIFT_CHARGE",
+    idempotencyKey: privateShiftChargeKey(shift.id),
+    memo: shift.memo,
+    legs: [
+      { accountId: vendorAccount.id, ownerType: "VENDOR_PAYABLE", direction: "DEBIT", amountKwd: charge },
+      { accountId: revenueAccount.id, ownerType: "PLATFORM_REVENUE", direction: "CREDIT", amountKwd: charge },
+    ],
+  });
+}
+
+export function privateShiftChargeKey(shiftId: string): string {
+  return `private-shift-charge:${shiftId}`;
 }
 
 // ─── Tips (PRD §11 — driver keeps 100%) ────────────────────────────────────

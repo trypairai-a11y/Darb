@@ -572,11 +572,18 @@ export default function VendorBoardPage() {
       {
         key: "deliveryFeeKwd",
         label: t("dispatch.fee"),
-        render: (v: DeliveryOrder["deliveryFeeKwd"]) => (
-          <span dir="ltr" className="tabular-nums">
-            {formatKwd(v, locale)}
-          </span>
-        ),
+        // Revision 24b: an order carried on the shop's own private shift is
+        // paid by the hour on the shift, so it carries no per-order fee.
+        render: (v: DeliveryOrder["deliveryFeeKwd"], row: DeliveryOrder) =>
+          row.privateShiftId ? (
+            <span className="text-xs text-forest-700" title={t("privateShifts.orderFeeHint")}>
+              {t("privateShifts.orderFee")}
+            </span>
+          ) : (
+            <span dir="ltr" className="tabular-nums">
+              {formatKwd(v, locale)}
+            </span>
+          ),
       },
       {
         key: "slaDeadline",

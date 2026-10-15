@@ -13,6 +13,10 @@
  * reached that branch through the order it settled. Credits raise it, debits
  * lower it, exactly as they do on the account itself.
  *
+ * Revision 24b: a private-shift charge has no order but does have a branch,
+ * the shift's own (`PrivateShift.chargeTxId` points at the posting), so it
+ * lands on that branch exactly as the orders the shift replaced would have.
+ *
  * Postings with no order behind them — a payout, a top-up, a correction — belong
  * to the shop as a whole and land in no branch. They are reported separately as
  * `unallocatedKwd` so the branch figures and the account total reconcile out
@@ -68,7 +72,7 @@ export async function getVendorBranchBalances(
   const rows = await prisma.$queryRaw<
     Array<{ branchId: string | null; direction: string; type: string; total: Prisma.Decimal }>
   >`
-    SELECT o."branchId" AS "branchId",
+    SELECT COALESCE(o."branchId", ps."branchId") AS "branchId",
            e."direction" AS "direction",
            tx."type" AS "type",
            SUM(e."amountKwd") AS "total"
@@ -78,9 +82,13 @@ export async function getVendorBranchBalances(
              ON o."id" = tx."orderId"
             AND o."tenantId" = ${tenantId}
             AND o."vendorId" = ${vendorId}
+      LEFT JOIN "PrivateShift" ps
+             ON ps."chargeTxId" = tx."id"
+            AND ps."tenantId" = ${tenantId}
+            AND ps."vendorId" = ${vendorId}
      WHERE e."accountId" = ${account.id}
        AND e."tenantId" = ${tenantId}
-     GROUP BY o."branchId", e."direction", tx."type"
+     GROUP BY COALESCE(o."branchId", ps."branchId"), e."direction", tx."type"
   `;
 
   // VENDOR_PAYABLE is liability-like: a CREDIT raises the balance, a DEBIT

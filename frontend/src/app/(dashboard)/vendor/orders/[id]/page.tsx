@@ -295,9 +295,15 @@ export default function VendorOrderDetailPage() {
             {formatKwd(order.orderTotalKwd, locale)}
           </dd>
           <dt className="text-sand-600">{t("dispatch.deliveryFee")}</dt>
-          <dd dir="ltr" className="tabular-nums">
-            {formatKwd(order.deliveryFeeKwd, locale)}
-          </dd>
+          {order.privateShiftId ? (
+            <dd className="text-forest-700" title={t("privateShifts.orderFeeHint")}>
+              {t("privateShifts.orderFee")}
+            </dd>
+          ) : (
+            <dd dir="ltr" className="tabular-nums">
+              {formatKwd(order.deliveryFeeKwd, locale)}
+            </dd>
+          )}
         </dl>
       </section>
 

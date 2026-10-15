@@ -33,6 +33,9 @@ prisma.user = prisma.user ?? {};
 prisma.user.findMany = prisma.user.findMany ?? jest.fn();
 prisma.notification = prisma.notification ?? {};
 prisma.notification.createMany = prisma.notification.createMany ?? jest.fn();
+// Revision 24b: assignment looks up the driver's running private shift.
+prisma.privateShift = prisma.privateShift ?? {};
+prisma.privateShift.findFirst = prisma.privateShift.findFirst ?? jest.fn();
 
 jest.mock("../../services/pricingService", () => ({
   quoteDelivery: jest.fn(),
@@ -148,6 +151,7 @@ beforeEach(() => {
   resetAllMocks();
   jest.clearAllMocks();
   prisma.$transaction.mockImplementation(async (fn: any) => fn(prisma));
+  prisma.privateShift.findFirst.mockResolvedValue(null);
 });
 
 // ─── createDeliveryOrder ────────────────────────────────────────────────────
@@ -522,6 +526,44 @@ describe("completeDelivery", () => {
     expect(postCodSettlement).not.toHaveBeenCalled();
   });
 
+  // Revision 24b — an order carried on the shop's own private shift.
+  test("private shift, PREPAID: no per-order fee is posted and the fee is zeroed on the order", async () => {
+    primeDeliver({ ...PICKED_UP_ORDER, paymentMethod: "PREPAID", privateShiftId: "ps-1" });
+
+    await completeDelivery({ tenantId: TENANT, orderId: "ord-1", actor: { type: "DRIVER", id: "drv-1" } });
+
+    const transition = prisma.deliveryOrder.updateMany.mock.calls[0][0];
+    expect(transition.data.deliveryFeeKwd.toFixed(3)).toBe("0.000");
+    // postPrepaidSettlement is still called, with a zero fee it posts nothing.
+    const [, orderArg] = postPrepaidSettlement.mock.calls[0];
+    expect(orderArg.deliveryFeeKwd.toFixed(3)).toBe("0.000");
+    const event = prisma.orderEvent.create.mock.calls[0][0].data;
+    expect(JSON.stringify(event)).toContain("ps-1");
+    expect(JSON.stringify(event)).toContain("1.000");
+  });
+
+  test("private shift, COD: the customer's cash still flows in full, the shop is credited all of it", async () => {
+    primeDeliver({ ...PICKED_UP_ORDER, privateShiftId: "ps-1" });
+
+    await completeDelivery({
+      tenantId: TENANT,
+      orderId: "ord-1",
+      actor: { type: "DRIVER", id: "drv-1" },
+      codCollectedKwd: "5.000",
+    });
+
+    const [, orderArg] = postCodSettlement.mock.calls[0];
+    expect(orderArg.orderTotalKwd.toFixed(3)).toBe("5.000");
+    expect(orderArg.deliveryFeeKwd.toFixed(3)).toBe("0.000");
+  });
+
+  test("an unstamped order keeps its fee and the row is not rewritten", async () => {
+    primeDeliver(PICKED_UP_ORDER);
+    await completeDelivery({ tenantId: TENANT, orderId: "ord-1", actor: { type: "DRIVER", id: "drv-1" }, codCollectedKwd: "5.000" });
+    const transition = prisma.deliveryOrder.updateMany.mock.calls[0][0];
+    expect(transition.data.deliveryFeeKwd).toBeUndefined();
+  });
+
   test("guarded-transition loss (count 0) aborts the tx — no settlement is posted", async () => {
     prisma.deliveryOrder.findFirst.mockResolvedValue(PICKED_UP_ORDER);
     prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 0 });
@@ -620,6 +662,46 @@ describe("assignDriverManually", () => {
     await expect(
       assignDriverManually({ tenantId: TENANT, orderId: "ord-1", driverId: "drv-2", actor: ACTOR }),
     ).resolves.toBeTruthy();
+  });
+
+  // Revision 24b — the stamp that keeps the per-order fee off shift work.
+  test("a driver IN_PROGRESS on this shop's branch shift stamps the order; the lookup is scoped to vendor and branch", async () => {
+    prisma.deliveryOrder.findFirst.mockResolvedValue({ ...PICKED_UP_ORDER, status: "NO_DRIVER", driverId: null });
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 1 });
+    prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+    prisma.driver.findFirst.mockResolvedValue({ id: "drv-2", name: "Hamad" });
+    prisma.dispatchOffer.findMany.mockResolvedValue([]);
+    prisma.dispatchOffer.updateMany.mockResolvedValue({ count: 0 });
+    prisma.dispatchOffer.upsert.mockResolvedValue({ id: "off-manual" });
+    prisma.privateShift.findFirst.mockResolvedValue({ id: "ps-9" });
+
+    await assignDriverManually({ tenantId: TENANT, orderId: "ord-1", driverId: "drv-2", actor: ACTOR });
+
+    const lookup = prisma.privateShift.findFirst.mock.calls[0][0];
+    expect(lookup.where).toMatchObject({
+      tenantId: TENANT,
+      driverId: "drv-2",
+      vendorId: PICKED_UP_ORDER.vendorId,
+      branchId: PICKED_UP_ORDER.branchId,
+      status: "IN_PROGRESS",
+    });
+    const transition = prisma.deliveryOrder.updateMany.mock.calls.find((c: any) => c[0].data.status === "ASSIGNED")[0];
+    expect(transition.data.privateShiftId).toBe("ps-9");
+  });
+
+  test("any other driver clears the stamp (privateShiftId null)", async () => {
+    prisma.deliveryOrder.findFirst.mockResolvedValue({ ...PICKED_UP_ORDER, status: "NO_DRIVER", driverId: null, privateShiftId: "old" });
+    prisma.deliveryOrder.updateMany.mockResolvedValue({ count: 1 });
+    prisma.orderEvent.create.mockResolvedValue({ id: "evt" });
+    prisma.driver.findFirst.mockResolvedValue({ id: "drv-2", name: "Hamad" });
+    prisma.dispatchOffer.findMany.mockResolvedValue([]);
+    prisma.dispatchOffer.updateMany.mockResolvedValue({ count: 0 });
+    prisma.dispatchOffer.upsert.mockResolvedValue({ id: "off-manual" });
+
+    await assignDriverManually({ tenantId: TENANT, orderId: "ord-1", driverId: "drv-2", actor: ACTOR });
+
+    const transition = prisma.deliveryOrder.updateMany.mock.calls.find((c: any) => c[0].data.status === "ASSIGNED")[0];
+    expect(transition.data.privateShiftId).toBeNull();
   });
 });
 

@@ -914,7 +914,7 @@ async function loadStatementDetail(tenantId: string, statementId: string) {
         lt: statement.periodEnd, // periodEnd is exclusive, per the model
       };
 
-      const [orders, refunds, payoutTx] = await Promise.all([
+      const [orders, refunds, payoutTx, shifts] = await Promise.all([
         prisma.deliveryOrder.findMany({
           where: {
             tenantId,
@@ -932,6 +932,7 @@ async function loadStatementDetail(tenantId: string, statementId: string) {
             deliveryFeeKwd: true,
             codCollectedKwd: true,
             customerName: true,
+            privateShiftId: true,
           },
         }),
         prisma.refund.findMany({
@@ -950,17 +951,39 @@ async function loadStatementDetail(tenantId: string, statementId: string) {
               include: { entries: true },
             })
           : Promise.resolve(null),
+        // Revision 24b: the private shifts charged in the period, one row each.
+        prisma.privateShift.findMany({
+          where: {
+            tenantId,
+            vendorId: statement.vendorId,
+            chargeTxId: { not: null },
+            chargedAt: period,
+          },
+          orderBy: { chargedAt: "asc" },
+          select: {
+            id: true, date: true, chargedAt: true, chargeTxId: true,
+            billableMinutes: true, vendorChargeKwd: true,
+          },
+        }),
       ]);
 
       // The postings behind the order rows, fetched in one query and grouped
       // rather than one query per order.
       const orderIds = orders.map((o) => o.id);
-      const txs = orderIds.length
+      const shiftTxIds = shifts.map((s) => s.chargeTxId).filter((id): id is string => !!id);
+      const txs = orderIds.length || shiftTxIds.length
         ? await prisma.walletTransaction.findMany({
-            where: { tenantId, orderId: { in: orderIds } },
+            where: {
+              tenantId,
+              OR: [
+                ...(orderIds.length ? [{ orderId: { in: orderIds } }] : []),
+                ...(shiftTxIds.length ? [{ id: { in: shiftTxIds } }] : []),
+              ],
+            },
             include: { entries: { include: { account: { select: { ownerType: true } } } } },
           })
         : [];
+      const txById = new Map(txs.map((tx) => [tx.id, tx]));
       const txByOrder = new Map<string, typeof txs>();
       for (const tx of txs) {
         if (!tx.orderId) continue;
@@ -998,7 +1021,31 @@ async function loadStatementDetail(tenantId: string, statementId: string) {
             // What the shop is owed for this order: COD collected less our fee.
             // Prepaid orders collect nothing, so the shop owes us the fee.
             codNetKwd: (Number(o.codCollectedKwd ?? 0) - fee).toFixed(3),
+            // Revision 24b: carried on a private shift, so no per-order fee;
+            // the shift's own row below carries the charge.
+            privateShift: !!o.privateShiftId,
             entries: serialiseEntries(txByOrder.get(o.id) ?? []),
+          };
+        }),
+        ...shifts.map((sh) => {
+          const charge = Number(sh.vendorChargeKwd ?? 0);
+          const tx = sh.chargeTxId ? txById.get(sh.chargeTxId) : undefined;
+          return {
+            kind: "PRIVATE_SHIFT" as const,
+            date: sh.chargedAt,
+            orderId: null,
+            orderNumber: null,
+            reference: tx?.memo ?? `Private shift ${sh.date}`,
+            paymentMethod: null,
+            orderTotalKwd: null,
+            // The hourly charge sits in the fee column, where a shop looks for
+            // what Darb charged it.
+            deliveryFeeKwd: charge.toFixed(3),
+            codNetKwd: (-charge).toFixed(3),
+            privateShift: true,
+            privateShiftId: sh.id,
+            billableMinutes: sh.billableMinutes,
+            entries: tx ? serialiseEntries([tx]) : [],
           };
         }),
         ...refunds.map((r) => ({
@@ -1042,6 +1089,7 @@ async function loadStatementDetail(tenantId: string, statementId: string) {
           codNetKwd: toKwdString(statement.codNetKwd),
           prepaidFeesKwd: toKwdString(statement.prepaidFeesKwd),
           refundsKwd: toKwdString(statement.refundsKwd),
+          privateShiftsKwd: toKwdString(statement.privateShiftsKwd),
           closingBalanceKwd: toKwdString(statement.closingBalanceKwd),
           status: statement.status,
         },
@@ -1104,6 +1152,10 @@ function walletColumns(row: StatementRow): { credit: number; fee: number } {
       fee: -Number(row.deliveryFeeKwd ?? 0),
     };
   }
+  // Revision 24b: a private shift is a charge and nothing goes in.
+  if (row.kind === "PRIVATE_SHIFT") {
+    return { credit: 0, fee: -Number(row.deliveryFeeKwd ?? 0) };
+  }
   // A refund reverses money out of the wallet and a payout empties it; both are
   // already signed on codNetKwd, and neither carries a delivery fee.
   return { credit: Number(row.codNetKwd ?? 0), fee: 0 };
@@ -1160,7 +1212,16 @@ async function writeStatementSheet(
     sheet.addRow({
       date: row.date ? new Date(row.date).toISOString().slice(0, 10) : "n/a",
       order: row.orderNumber ?? "n/a",
-      type: row.kind === "DELIVERY" ? "Delivery" : row.kind === "REFUND" ? "Refund" : "Payout",
+      type:
+        row.kind === "DELIVERY"
+          ? row.privateShift
+            ? "Delivery (private shift)"
+            : "Delivery"
+          : row.kind === "REFUND"
+            ? "Refund"
+            : row.kind === "PRIVATE_SHIFT"
+              ? "Private shift"
+              : "Payout",
       payment: row.paymentMethod === "COD" ? "Cash" : row.paymentMethod ? "Card" : "n/a",
       reference: row.reference ?? "n/a",
       total: row.orderTotalKwd == null ? "n/a" : Number(row.orderTotalKwd),

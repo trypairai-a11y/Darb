@@ -31,6 +31,7 @@ import {
   type ShiftOrder,
 } from "./privateShiftBilling";
 import { haversineMeters } from "../../utils/geo";
+import { postPrivateShiftCharge } from "../wallet/walletService";
 import {
   MAX_SHIFTS_PER_PLAN,
   MAX_SHIFT_HOURS,
@@ -388,6 +389,10 @@ export function serializeShift(s: ShiftRow, joins: Record<string, unknown> = {})
     vendorChargeKwd: money(s.vendorChargeKwd),
     fleetPayKwd: money(s.fleetPayKwd),
     settledAt: s.settledAt?.toISOString() ?? null,
+    // Revision 24b: posted to the shop's wallet, and on which company statement.
+    chargedAt: s.chargedAt?.toISOString() ?? null,
+    charged: !!s.chargeTxId,
+    fleetStatementId: s.fleetStatementId ?? null,
     vendor: null as unknown,
     branch: null as unknown,
     driver: null as unknown,
@@ -613,14 +618,35 @@ async function computeForShift(shift: ShiftRow, now: Date) {
   return { settlement, rates, inputs };
 }
 
+/** "4h", "3.5h", "2.75h": the hours a shop is charged for, as it reads them. */
+export function hoursLabel(minutes: number): string {
+  return `${Number((minutes / 60).toFixed(2))}h`;
+}
+
+/** The ledger memo the shop reads on its wallet and statement. */
+export function privateShiftChargeMemo(shift: { date: string }, billableMinutes: number): string {
+  return `Private shift ${shift.date} ${hoursLabel(billableMinutes)}`;
+}
+
 /**
- * Snapshot the money on a finished shift. Idempotent: the deduction rows are
- * replaced wholesale, so running it twice writes the same answer once.
+ * Snapshot the money on a finished shift and charge the shop for it.
+ * Idempotent: the deduction rows are replaced wholesale, so running it twice
+ * writes the same answer once, and once the shop has been charged the
+ * snapshot is frozen (the ledger is append-only; a different second answer
+ * would disagree with what was posted).
+ *
+ * Revision 24b: the charge posts in the SAME transaction as the snapshot,
+ * through `postPrivateShiftCharge` (vendor payable DEBIT, platform revenue
+ * CREDIT, key private-shift-charge:{id}), and the shift keeps the posting's
+ * id so the branch derivation can put it on the shift's branch. The company's
+ * pay is NOT posted here: it reaches the company on its monthly
+ * FleetPayoutStatement and is paid through CONFIRMED to PAID like the orders.
  */
 export async function settlePrivateShift(tenantId: string, id: string, now = new Date()) {
   const shift = await prisma.privateShift.findFirst({ where: { id, tenantId } });
   if (!shift) throw fail(404, "SHIFT_NOT_FOUND", "Private shift not found");
   const { settlement, rates } = await computeForShift(shift, new Date(Math.max(now.getTime(), shift.endAt.getTime())));
+  if (shift.chargeTxId) return settlement;
   await prisma.$transaction(async (tx) => {
     await tx.privateShiftDeduction.deleteMany({ where: { tenantId, shiftId: id } });
     if (settlement.deductions.length) {
@@ -650,6 +676,24 @@ export async function settlePrivateShift(tenantId: string, id: string, now = new
         settledAt: now,
       },
     });
+    // A shift that never started bills 0 minutes and posts nothing; neither
+    // does a shop with no per-hour rate on that vehicle (the figure is blank
+    // on the shift, and charging a guessed rate is worse than charging none).
+    if (shift.driverId && settlement.vendorChargeKwd != null && new Prisma.Decimal(settlement.vendorChargeKwd).gt(0)) {
+      const posted = await postPrivateShiftCharge(tx, {
+        id: shift.id,
+        tenantId,
+        vendorId: shift.vendorId,
+        chargeKwd: settlement.vendorChargeKwd,
+        memo: privateShiftChargeMemo(shift, settlement.billableMinutes),
+      });
+      if (posted) {
+        await tx.privateShift.update({
+          where: { id },
+          data: { chargeTxId: posted.transactionId, chargedAt: now },
+        });
+      }
+    }
   });
   return settlement;
 }

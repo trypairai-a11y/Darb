@@ -66,6 +66,32 @@ describe("private shift detail", () => {
   });
 });
 
+// Revision 24b — the charge reaches the shop's wallet, and the detail says so.
+describe("charged private shift", () => {
+  it("reads Charged, with the day the wallet was charged, on the shop's side", () => {
+    render(
+      <PrivateShiftDetailBody
+        shift={{ ...SHIFT, charged: true, chargedAt: "2026-10-14T13:01:00.000Z" }}
+        showVendorCharge
+        showFleetPay={false}
+      />,
+    );
+    expect(screen.getByTestId("private-shift-charged")).toHaveTextContent("privateShifts.charged");
+    expect(screen.getByText("privateShifts.chargedNote")).toBeInTheDocument();
+  });
+
+  it("a settled shift that was not charged keeps the Settled label", () => {
+    render(<PrivateShiftDetailBody shift={{ ...SHIFT, charged: false }} showVendorCharge showFleetPay={false} />);
+    expect(screen.queryByTestId("private-shift-charged")).toBeNull();
+    expect(screen.getByText("privateShifts.settled")).toBeInTheDocument();
+  });
+
+  it("the company is told it is paid on its monthly statement", () => {
+    render(<PrivateShiftDetailBody shift={SHIFT} showVendorCharge={false} showFleetPay />);
+    expect(screen.getByText("privateShifts.onFleetStatement")).toBeInTheDocument();
+  });
+});
+
 describe("vehicle rate proposal on the approval desk", () => {
   it("names each vehicle with what it moves from and to", () => {
     const line = vehicleRatesSummary(

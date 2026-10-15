@@ -512,7 +512,8 @@ router.get("/orders/export.xlsx", requireVendorTab("ORDERS"), async (req: Reques
         zone: o.dropoffZone?.name ?? "",
         paymentMethod: o.paymentMethod,
         orderTotalKwd: Number(o.orderTotalKwd ?? 0),
-        deliveryFeeKwd: Number(o.deliveryFeeKwd ?? 0),
+        // Revision 24b: carried on the shop's own private shift, paid by the hour.
+        deliveryFeeKwd: o.privateShiftId ? "Private shift" : Number(o.deliveryFeeKwd ?? 0),
         driver: o.driver?.name ?? "",
         deliveredAt: stamp(o.deliveredAt),
       });
@@ -1480,14 +1481,33 @@ router.get("/wallet/entries", requireVendorTab("WALLET"), async (req: Request, r
     // and "everything not belonging to a branch" are different documents.
     const scope = typeof req.query.scope === "string" ? req.query.scope : "";
     const branchId = scopedBranchId(req);
+    // Revision 24b: a private-shift charge has no order but belongs to the
+    // shift's branch, so it is listed under that branch and not the pool.
     if (scope === "main") {
-      where.transaction = { orderId: null };
+      where.transaction = {
+        orderId: null,
+        NOT: { idempotencyKey: { startsWith: "private-shift-charge:" } },
+      };
     } else if (branchId) {
-      const branchOrders = await prisma.deliveryOrder.findMany({
-        where: { tenantId, vendorId: vendorId!, branchId },
-        select: { id: true },
-      });
-      where.transaction = { orderId: { in: branchOrders.map((o) => o.id) } };
+      const [branchOrders, branchShifts] = await Promise.all([
+        prisma.deliveryOrder.findMany({
+          where: { tenantId, vendorId: vendorId!, branchId },
+          select: { id: true },
+        }),
+        prisma.privateShift.findMany({
+          where: { tenantId, vendorId: vendorId!, branchId, chargeTxId: { not: null } },
+          select: { chargeTxId: true },
+        }),
+      ]);
+      const shiftTxIds = branchShifts.map((s) => s.chargeTxId).filter((id): id is string => !!id);
+      where.transaction = shiftTxIds.length
+        ? {
+            OR: [
+              { orderId: { in: branchOrders.map((o) => o.id) } },
+              { id: { in: shiftTxIds } },
+            ],
+          }
+        : { orderId: { in: branchOrders.map((o) => o.id) } };
     }
 
     const month = typeof req.query.month === "string" ? req.query.month : undefined;
