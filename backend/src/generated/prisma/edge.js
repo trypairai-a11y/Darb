@@ -4436,7 +4436,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/mac/Developer/darb-rev24b-billing/backend/src/generated/prisma",
+      "value": "/Users/mac/Developer/Darb/backend/src/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -4461,11 +4461,12 @@ const config = {
       "fullTextSearch",
       "postgresqlExtensions"
     ],
-    "sourceFilePath": "/Users/mac/Developer/darb-rev24b-billing/backend/prisma/schema.prisma",
+    "sourceFilePath": "/Users/mac/Developer/Darb/backend/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null
+    "rootEnvPath": null,
+    "schemaEnvPath": "../../../.env"
   },
   "relativePath": "../../../prisma",
   "clientVersion": "5.22.0",
