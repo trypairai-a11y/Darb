@@ -278,6 +278,19 @@ exports.Prisma.DriverInventoryScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.DriverEquipmentEventScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  driverId: 'driverId',
+  itemType: 'itemType',
+  action: 'action',
+  quantity: 'quantity',
+  condition: 'condition',
+  note: 'note',
+  actorUserId: 'actorUserId',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.RecruitmentPipelineScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -2476,6 +2489,16 @@ exports.Prisma.DriverInventoryOrderByRelevanceFieldEnum = {
   conditionNote: 'conditionNote'
 };
 
+exports.Prisma.DriverEquipmentEventOrderByRelevanceFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  driverId: 'driverId',
+  itemType: 'itemType',
+  condition: 'condition',
+  note: 'note',
+  actorUserId: 'actorUserId'
+};
+
 exports.Prisma.RecruitmentPipelineOrderByRelevanceFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -3793,6 +3816,13 @@ exports.EquipmentCondition = exports.$Enums.EquipmentCondition = {
   CHANGE_REQUESTED: 'CHANGE_REQUESTED'
 };
 
+exports.EquipmentEventAction = exports.$Enums.EquipmentEventAction = {
+  ISSUED: 'ISSUED',
+  RETURNED: 'RETURNED',
+  REPLACED: 'REPLACED',
+  CLEARED: 'CLEARED'
+};
+
 exports.RecruitmentStage = exports.$Enums.RecruitmentStage = {
   AGENCY_REFERRAL: 'AGENCY_REFERRAL',
   CV_DOCS: 'CV_DOCS',
@@ -4327,6 +4357,7 @@ exports.Prisma.ModelName = {
   Driver: 'Driver',
   DriverRestriction: 'DriverRestriction',
   DriverInventory: 'DriverInventory',
+  DriverEquipmentEvent: 'DriverEquipmentEvent',
   RecruitmentPipeline: 'RecruitmentPipeline',
   Vehicle: 'Vehicle',
   VehicleDriverAssignment: 'VehicleDriverAssignment',

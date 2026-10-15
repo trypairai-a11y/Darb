@@ -317,6 +317,13 @@ describe("clearTerminatedDriver (revision 24 #16)", () => {
       { itemType: "BIG_BAG", quantity: 1 },
       { itemType: "HELMET", quantity: 2 },
     ]);
+    // One CLEARED line per item on the driver's equipment log.
+    expect(p.driverEquipmentEvent.createMany).toHaveBeenCalledWith({
+      data: [
+        expect.objectContaining({ driverId: "d1", itemType: "BIG_BAG", action: "CLEARED", quantity: 1, note: "all back", actorUserId: "u1" }),
+        expect.objectContaining({ driverId: "d1", itemType: "HELMET", action: "CLEARED", quantity: 2 }),
+      ],
+    });
   });
 
   it("refuses a driver who is not terminated", async () => {

@@ -13,6 +13,7 @@
  */
 import { prisma } from "../config";
 import { createTrainingSession } from "./training/driverTrainingService";
+import { logEquipmentEvents } from "./equipment/driverEquipmentService";
 
 export interface DriverTrackingRow {
   id: string;
@@ -622,6 +623,20 @@ export async function clearTerminatedDriver(params: {
         });
       }
     }
+
+    // The equipment log on the driver file: one CLEARED line per item.
+    await logEquipmentEvents(
+      tx,
+      items.map((item) => ({
+        tenantId,
+        driverId,
+        itemType: item.itemType,
+        action: "CLEARED" as const,
+        quantity: item.quantity,
+        note,
+        actorUserId: params.actorUserId,
+      })),
+    );
 
     await tx.auditLog.create({
       data: {

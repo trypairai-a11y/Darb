@@ -215,6 +215,9 @@ export interface DriverFileAssets {
     quantity: number;
     issuedDate: string | null;
     returnedDate: string | null;
+    /** Driver-reported condition from the agent app (OK, DAMAGED, CHANGED, CHANGE_REQUESTED). */
+    condition?: string | null;
+    conditionNote?: string | null;
   }>;
   inspections: Array<{
     id: string;
@@ -287,4 +290,34 @@ export interface DriverFileData {
     approved: DriverFileAuditEntry[];
     pending: DriverFileAuditEntry[];
   };
+}
+
+/** Osama, 2026-10-15: return or replace kit, with a log of past equipment. */
+export type EquipmentReturnCondition = "OK" | "DAMAGED" | "LOST";
+export type EquipmentEventAction = "ISSUED" | "RETURNED" | "REPLACED" | "CLEARED";
+
+export interface DriverEquipmentEvent {
+  id: string;
+  itemType: string;
+  action: EquipmentEventAction;
+  quantity: number;
+  condition: string | null;
+  note: string | null;
+  createdAt: string;
+  actor: { id: string; name: string | null } | null;
+}
+
+export interface EquipmentReturnResponse {
+  inventoryId: string;
+  itemType: string;
+  returned: number;
+  remaining: number;
+  condition: EquipmentReturnCondition;
+}
+
+export interface EquipmentReplaceResponse {
+  inventoryId: string;
+  itemType: string;
+  replaced: number;
+  condition: EquipmentReturnCondition;
 }

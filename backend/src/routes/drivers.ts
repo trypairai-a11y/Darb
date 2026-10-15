@@ -20,6 +20,12 @@ import {
   setDriverOperationalState,
   type BulkDriverAction,
 } from "../services/driverTrackingService";
+import {
+  listDriverEquipmentHistory,
+  logEquipmentEvents,
+  replaceDriverEquipment,
+  returnDriverEquipment,
+} from "../services/equipment/driverEquipmentService";
 
 const router = Router();
 router.use(authMiddleware, tenantScope);
@@ -310,6 +316,69 @@ router.post("/:id/termination-clearance", rbac(...MUTATORS), async (req: Request
   } catch (err: any) {
     const status = err?.statusCode ?? 400;
     res.status(status).json({ error: err.message, ...(err?.code ? { code: err.code } : {}) });
+  }
+});
+
+// Osama, 2026-10-15: "for the driver equipment must be able to remove it from
+// the driver or replace it with a new one with a log of past equipment".
+function sendEquipmentError(res: Response, err: any) {
+  const status = err?.statusCode ?? 400;
+  res.status(status).json({ error: err.message, ...(err?.code ? { code: err.code } : {}) });
+}
+
+/**
+ * POST /api/drivers/:id/equipment/:inventoryId/return
+ * `{ quantity?, condition: "OK"|"DAMAGED"|"LOST", note? }`. OK goes back in
+ * stock; DAMAGED and LOST are written off. Quantity defaults to all held.
+ */
+router.post("/:id/equipment/:inventoryId/return", rbac(...MUTATORS), async (req: Request, res: Response) => {
+  try {
+    const result = await returnDriverEquipment({
+      tenantId: req.user!.tenantId,
+      driverId: req.params.id,
+      inventoryId: req.params.inventoryId,
+      quantity: req.body?.quantity,
+      condition: req.body?.condition,
+      note: req.body?.note,
+      actorUserId: req.user!.userId ?? null,
+    });
+    res.json(result);
+  } catch (err: any) {
+    sendEquipmentError(res, err);
+  }
+});
+
+/**
+ * POST /api/drivers/:id/equipment/:inventoryId/replace
+ * `{ condition (of the old unit), note? }`. One unit swapped for a new one
+ * from stock; 409 NO_STOCK when the shelf is empty, and nothing changes.
+ */
+router.post("/:id/equipment/:inventoryId/replace", rbac(...MUTATORS), async (req: Request, res: Response) => {
+  try {
+    const result = await replaceDriverEquipment({
+      tenantId: req.user!.tenantId,
+      driverId: req.params.id,
+      inventoryId: req.params.inventoryId,
+      condition: req.body?.condition,
+      note: req.body?.note,
+      actorUserId: req.user!.userId ?? null,
+    });
+    res.json(result);
+  } catch (err: any) {
+    sendEquipmentError(res, err);
+  }
+});
+
+/** GET /api/drivers/:id/equipment/history — the equipment log, newest first. */
+router.get("/:id/equipment/history", async (req: Request, res: Response) => {
+  try {
+    const data = await listDriverEquipmentHistory({
+      tenantId: req.user!.tenantId,
+      driverId: req.params.id,
+    });
+    res.json({ data });
+  } catch (err: any) {
+    sendEquipmentError(res, err);
   }
 });
 
@@ -944,7 +1013,7 @@ router.get("/:id/file", async (req: Request, res: Response) => {
           },
         },
         inventory: {
-          select: { id: true, itemType: true, issued: true, quantity: true, issuedDate: true, returnedDate: true },
+          select: { id: true, itemType: true, issued: true, quantity: true, issuedDate: true, returnedDate: true, condition: true, conditionNote: true },
           orderBy: { itemType: "asc" },
         },
       },
@@ -1480,6 +1549,19 @@ router.post("/", rbac(...MUTATORS), validateBody(createDriverSchema.passthrough(
             issuedDate: item.issued ? new Date() : null,
           })),
         });
+        await logEquipmentEvents(
+          tx,
+          inventory
+            .filter((item: { issued: boolean; quantity: number }) => item.issued)
+            .map((item: { itemType: string; quantity: number }) => ({
+              tenantId: req.user!.tenantId,
+              driverId: created.id,
+              itemType: item.itemType,
+              action: "ISSUED" as const,
+              quantity: Number(item.quantity) || 0,
+              actorUserId: req.user!.userId ?? null,
+            })),
+        );
       }
 
       return tx.driver.findUnique({

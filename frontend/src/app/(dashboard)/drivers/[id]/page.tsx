@@ -20,7 +20,7 @@ import { useRole } from "@/hooks/useRole";
 import { useToast } from "@/components/shared/Toast";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { TrainingSession } from "@/types/darb";
-import type { DriverFileData } from "@/types/driver-file";
+import type { DriverFileData, EquipmentReturnCondition } from "@/types/driver-file";
 import ScoreTrendChart from "@/components/driver-file/ScoreTrendChart";
 import AskDarbWhyDrawer from "@/components/driver-file/AskDarbWhyDrawer";
 import DriverPrivateShiftToggle from "@/components/privateShifts/DriverPrivateShiftToggle";
@@ -235,14 +235,45 @@ function isOutstanding(item: InventoryItem) {
   return item.issued && !item.returnedDate && item.quantity > 0;
 }
 
+type EquipmentFormMode = "return" | "replace";
+
+function apiErrorOf(err: unknown) {
+  return (err as { response?: { data?: { error?: string; code?: string } } })?.response?.data ?? {};
+}
+
 /**
  * Revision 24 #15 — "the issued equipment must show in the driver profile".
  * The same DriverInventory rows /assets writes when kit is issued, so the two
  * screens cannot disagree. Outstanding items first, returned ones after.
+ *
+ * Osama, 2026-10-15: "for the driver equipment must be able to remove it from
+ * the driver or replace it with a new one with a log of past equipment".
+ * Supervisors and up get Return and Replace on every item still out, and the
+ * equipment history below the list shows every hand-over, return, swap and
+ * clearance.
  */
-function EquipmentPanel({ items }: { items: InventoryItem[] }) {
+function EquipmentPanel({ driverId, items, onChanged }: { driverId: string; items: InventoryItem[]; onChanged: () => void }) {
   const { d, formatDate, itemName } = useDriverFileFormat();
+  const { hasRole } = useRole();
+  const canAct = hasRole("SUPERVISOR");
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState<{ id: string; mode: EquipmentFormMode } | null>(null);
+  const historyKey = ["darb", "driver-equipment-history", driverId];
   const sorted = [...items].sort((a, b) => Number(isOutstanding(b)) - Number(isOutstanding(a)));
+
+  function reportedLabel(condition?: string | null) {
+    if (condition === "DAMAGED") return d("reportedDamaged");
+    if (condition === "CHANGED") return d("reportedChanged");
+    if (condition === "CHANGE_REQUESTED") return d("reportedChangeRequested");
+    return null;
+  }
+
+  function done() {
+    setOpen(null);
+    onChanged();
+    void queryClient.invalidateQueries({ queryKey: historyKey });
+  }
+
   return (
     <Panel title={d("issuedEquipment")}>
       {sorted.length === 0 ? (
@@ -251,27 +282,254 @@ function EquipmentPanel({ items }: { items: InventoryItem[] }) {
         <ul className="divide-y divide-sand-100" data-testid="driver-issued-equipment">
           {sorted.map((item) => {
             const out = isOutstanding(item);
+            const reported = out ? reportedLabel(item.condition) : null;
+            const formOpen = open?.id === item.id ? open.mode : null;
             return (
-              <li key={item.id} className="flex items-start justify-between gap-3 py-2.5">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-foreground">
-                    {itemName(item.itemType)} <span className="text-sand-600">× {item.quantity}</span>
-                  </p>
-                  <p className="mt-0.5 text-xs text-sand-700">
-                    {item.returnedDate
-                      ? d("returnedOn").replace("{date}", formatDate(item.returnedDate))
-                      : item.issuedDate
-                        ? d("issuedOn").replace("{date}", formatDate(item.issuedDate))
-                        : d("issueDateMissing")}
-                  </p>
+              <li key={item.id} className="py-2.5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {itemName(item.itemType)} <span className="text-sand-600">× {item.quantity}</span>
+                    </p>
+                    <p className="mt-0.5 text-xs text-sand-700">
+                      {item.returnedDate
+                        ? d("returnedOn").replace("{date}", formatDate(item.returnedDate))
+                        : item.issuedDate
+                          ? d("issuedOn").replace("{date}", formatDate(item.issuedDate))
+                          : d("issueDateMissing")}
+                    </p>
+                    {reported ? (
+                      <p className="mt-0.5 text-xs text-amber-700">
+                        {reported}
+                        {item.conditionNote ? `: ${item.conditionNote}` : ""}
+                      </p>
+                    ) : null}
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end gap-2">
+                    <Pill tone={out ? statusTone("VALID") : statusTone("CLOSED")}>{out ? d("withDriver") : d("returned")}</Pill>
+                    {out && canAct && !formOpen ? (
+                      <div className="flex gap-1.5">
+                        <button
+                          type="button"
+                          data-testid={`equipment-return-${item.id}`}
+                          onClick={() => setOpen({ id: item.id, mode: "return" })}
+                          className="h-7 rounded-full border border-sand-200 px-3 text-xs font-medium text-foreground hover:bg-sand-100"
+                        >
+                          {d("equipmentReturn")}
+                        </button>
+                        <button
+                          type="button"
+                          data-testid={`equipment-replace-${item.id}`}
+                          onClick={() => setOpen({ id: item.id, mode: "replace" })}
+                          className="h-7 rounded-full border border-sand-200 px-3 text-xs font-medium text-foreground hover:bg-sand-100"
+                        >
+                          {d("equipmentReplace")}
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
-                <Pill tone={out ? statusTone("VALID") : statusTone("CLOSED")}>{out ? d("withDriver") : d("returned")}</Pill>
+                {formOpen ? (
+                  <EquipmentActionForm
+                    driverId={driverId}
+                    item={item}
+                    mode={formOpen}
+                    onCancel={() => setOpen(null)}
+                    onDone={done}
+                  />
+                ) : null}
               </li>
             );
           })}
         </ul>
       )}
+      <EquipmentHistory driverId={driverId} />
     </Panel>
+  );
+}
+
+/** The inline Return / Replace form under one item. */
+function EquipmentActionForm({
+  driverId,
+  item,
+  mode,
+  onCancel,
+  onDone,
+}: {
+  driverId: string;
+  item: InventoryItem;
+  mode: EquipmentFormMode;
+  onCancel: () => void;
+  onDone: () => void;
+}) {
+  const { d, itemName } = useDriverFileFormat();
+  const toast = useToast();
+  const [condition, setCondition] = useState<EquipmentReturnCondition>(mode === "replace" ? "DAMAGED" : "OK");
+  const [quantity, setQuantity] = useState(item.quantity);
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const name = itemName(item.itemType);
+
+  async function submit() {
+    setBusy(true);
+    try {
+      const trimmed = note.trim() || undefined;
+      if (mode === "return") {
+        await driverTrackingApi.returnEquipment(driverId, item.id, { condition, quantity, note: trimmed });
+        toast.success(d("equipmentReturnedToast"));
+      } else {
+        await driverTrackingApi.replaceEquipment(driverId, item.id, { condition, note: trimmed });
+        toast.success(d("equipmentReplacedToast"));
+      }
+      onDone();
+    } catch (err: unknown) {
+      const { code, error } = apiErrorOf(err);
+      if (code === "NO_STOCK") toast.error(d("equipmentNoStock"));
+      else if (code === "CHANGED" || code === "NOT_HELD") toast.error(d("equipmentChanged"));
+      else toast.error(error ?? d("equipmentActionError"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const options: Array<[EquipmentReturnCondition, string]> = [
+    ["OK", d("conditionOkOption")],
+    ["DAMAGED", d("conditionDamagedOption")],
+    ["LOST", d("conditionLostOption")],
+  ];
+
+  return (
+    <div className="mt-3 space-y-3 rounded-lg border border-sand-200 bg-sand-50 p-3" data-testid={`equipment-form-${item.id}`}>
+      <p className="text-sm font-medium text-foreground">
+        {(mode === "return" ? d("equipmentReturnTitle") : d("equipmentReplaceTitle")).replace("{item}", name)}
+      </p>
+      {mode === "return" && item.quantity > 1 ? (
+        <label className="flex items-center gap-2 text-sm text-foreground">
+          <span>{d("equipmentQuantity")}</span>
+          <input
+            type="number"
+            min={1}
+            max={item.quantity}
+            value={quantity}
+            onChange={(e) => {
+              const n = Math.round(Number(e.target.value));
+              setQuantity(Number.isFinite(n) ? Math.min(item.quantity, Math.max(1, n)) : 1);
+            }}
+            className="h-8 w-20 rounded-md border border-sand-200 bg-white px-2 text-sm"
+          />
+          <span className="text-sand-700">{d("equipmentQuantityOf").replace("{n}", String(item.quantity))}</span>
+        </label>
+      ) : null}
+      <fieldset>
+        <legend className="mb-1 text-xs text-sand-700">
+          {mode === "return" ? d("equipmentConditionReturned") : d("equipmentConditionOld")}
+        </legend>
+        <div className="flex flex-wrap gap-x-4 gap-y-1">
+          {options.map(([value, label]) => (
+            <label key={value} className="flex items-center gap-1.5 text-sm text-foreground">
+              <input
+                type="radio"
+                name={`equipment-condition-${item.id}`}
+                value={value}
+                checked={condition === value}
+                onChange={() => setCondition(value)}
+                className="accent-primary"
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <textarea
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        rows={2}
+        maxLength={500}
+        placeholder={d("equipmentNotePlaceholder")}
+        className="w-full rounded-lg border border-sand-200 bg-white p-2 text-sm"
+      />
+      <div className="flex gap-2">
+        <button
+          type="button"
+          data-testid={`equipment-confirm-${item.id}`}
+          disabled={busy}
+          onClick={() => void submit()}
+          className="h-8 rounded-full bg-primary px-4 text-xs font-medium text-white disabled:opacity-40"
+        >
+          {busy ? d("equipmentSaving") : mode === "return" ? d("equipmentConfirmReturn") : d("equipmentConfirmReplace")}
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={onCancel}
+          className="h-8 rounded-full border border-sand-200 px-4 text-xs font-medium text-foreground hover:bg-sand-100"
+        >
+          {d("equipmentCancel")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** Every hand-over, return, swap and clearance for this driver, newest first. */
+function EquipmentHistory({ driverId }: { driverId: string }) {
+  const { d, fallback, formatDate, itemName } = useDriverFileFormat();
+  const query = useQuery({
+    queryKey: ["darb", "driver-equipment-history", driverId],
+    queryFn: () => driverTrackingApi.equipmentHistory(driverId),
+  });
+  const events = query.data?.data ?? [];
+
+  const actionLabel: Record<string, string> = {
+    ISSUED: d("eventIssued"),
+    RETURNED: d("eventReturned"),
+    REPLACED: d("eventReplaced"),
+    CLEARED: d("eventCleared"),
+  };
+  const conditionLabel: Record<string, string> = {
+    OK: d("conditionOk"),
+    DAMAGED: d("conditionDamaged"),
+    LOST: d("conditionLost"),
+  };
+
+  return (
+    <div className="mt-4 border-t border-sand-100 pt-4" data-testid="driver-equipment-history">
+      <h3 className="mb-2 text-sm font-semibold text-foreground">{d("equipmentHistory")}</h3>
+      {query.isLoading ? (
+        <p className="text-sm text-sand-700">{d("loadingEquipmentHistory")}</p>
+      ) : events.length === 0 ? (
+        <p className="text-sm text-sand-700">{d("noEquipmentHistory")}</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-start text-xs">
+            <thead className="text-sand-700">
+              <tr>
+                <th className="py-1.5 pe-3 text-start font-medium">{d("date")}</th>
+                <th className="py-1.5 pe-3 text-start font-medium">{d("historyItem")}</th>
+                <th className="py-1.5 pe-3 text-start font-medium">{d("historyAction")}</th>
+                <th className="py-1.5 pe-3 text-start font-medium">{d("historyQuantity")}</th>
+                <th className="py-1.5 pe-3 text-start font-medium">{d("historyCondition")}</th>
+                <th className="py-1.5 pe-3 text-start font-medium">{d("note")}</th>
+                <th className="py-1.5 text-start font-medium">{d("historyBy")}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-sand-100 text-foreground">
+              {events.map((event) => (
+                <tr key={event.id}>
+                  <td className="whitespace-nowrap py-1.5 pe-3">{formatDate(event.createdAt)}</td>
+                  <td className="py-1.5 pe-3">{itemName(event.itemType)}</td>
+                  <td className="py-1.5 pe-3">{actionLabel[event.action] ?? event.action}</td>
+                  <td className="py-1.5 pe-3">{event.quantity}</td>
+                  <td className="py-1.5 pe-3">{event.condition ? conditionLabel[event.condition] ?? event.condition : fallback}</td>
+                  <td className="py-1.5 pe-3 text-sand-700">{event.note ?? fallback}</td>
+                  <td className="py-1.5">{event.actor?.name ?? fallback}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -604,7 +862,11 @@ export default function DriverFilePage() {
             <Panel title={d("score")}>
               <ScoreBars data={data} />
             </Panel>
-            <EquipmentPanel items={data.assets.inventory} />
+            <EquipmentPanel
+              driverId={p.id}
+              items={data.assets.inventory}
+              onChanged={() => void queryClient.invalidateQueries({ queryKey: ["driver-file", id ?? ""] })}
+            />
           </div>
         </div>
       )}

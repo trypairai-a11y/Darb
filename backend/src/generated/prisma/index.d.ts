@@ -49,6 +49,11 @@ export type DriverRestriction = $Result.DefaultSelection<Prisma.$DriverRestricti
  */
 export type DriverInventory = $Result.DefaultSelection<Prisma.$DriverInventoryPayload>
 /**
+ * Model DriverEquipmentEvent
+ * 
+ */
+export type DriverEquipmentEvent = $Result.DefaultSelection<Prisma.$DriverEquipmentEventPayload>
+/**
  * Model RecruitmentPipeline
  * 
  */
@@ -916,6 +921,16 @@ export const EquipmentCondition: {
 export type EquipmentCondition = (typeof EquipmentCondition)[keyof typeof EquipmentCondition]
 
 
+export const EquipmentEventAction: {
+  ISSUED: 'ISSUED',
+  RETURNED: 'RETURNED',
+  REPLACED: 'REPLACED',
+  CLEARED: 'CLEARED'
+};
+
+export type EquipmentEventAction = (typeof EquipmentEventAction)[keyof typeof EquipmentEventAction]
+
+
 export const RecruitmentStage: {
   AGENCY_REFERRAL: 'AGENCY_REFERRAL',
   CV_DOCS: 'CV_DOCS',
@@ -1679,6 +1694,10 @@ export type EquipmentCondition = $Enums.EquipmentCondition
 
 export const EquipmentCondition: typeof $Enums.EquipmentCondition
 
+export type EquipmentEventAction = $Enums.EquipmentEventAction
+
+export const EquipmentEventAction: typeof $Enums.EquipmentEventAction
+
 export type RecruitmentStage = $Enums.RecruitmentStage
 
 export const RecruitmentStage: typeof $Enums.RecruitmentStage
@@ -2143,6 +2162,16 @@ export class PrismaClient<
     * ```
     */
   get driverInventory(): Prisma.DriverInventoryDelegate<ExtArgs>;
+
+  /**
+   * `prisma.driverEquipmentEvent`: Exposes CRUD operations for the **DriverEquipmentEvent** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more DriverEquipmentEvents
+    * const driverEquipmentEvents = await prisma.driverEquipmentEvent.findMany()
+    * ```
+    */
+  get driverEquipmentEvent(): Prisma.DriverEquipmentEventDelegate<ExtArgs>;
 
   /**
    * `prisma.recruitmentPipeline`: Exposes CRUD operations for the **RecruitmentPipeline** model.
@@ -3881,6 +3910,7 @@ export namespace Prisma {
     Driver: 'Driver',
     DriverRestriction: 'DriverRestriction',
     DriverInventory: 'DriverInventory',
+    DriverEquipmentEvent: 'DriverEquipmentEvent',
     RecruitmentPipeline: 'RecruitmentPipeline',
     Vehicle: 'Vehicle',
     VehicleDriverAssignment: 'VehicleDriverAssignment',
@@ -4025,7 +4055,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "tenant" | "company" | "ownerGroup" | "user" | "driver" | "driverRestriction" | "driverInventory" | "recruitmentPipeline" | "vehicle" | "vehicleDriverAssignment" | "shift" | "shiftRequest" | "attendanceRecord" | "orderLog" | "cashRecord" | "cashTransaction" | "pendingDuesLedger" | "vehicleInspection" | "maintenanceRecord" | "device" | "sim" | "capturedOrder" | "locationLog" | "appUsageLog" | "deviceCommand" | "aiScore" | "alert" | "aiDigest" | "auditLog" | "ticket" | "leaveRequest" | "talabatSession" | "talabatViolationEvent" | "talabatDelivery" | "keetaDailyMetrics" | "ingestRun" | "deliverooDailyMetrics" | "talabatDailyMetrics" | "platformSettings" | "platformInventory" | "americanaDailyOrders" | "americanaChain" | "americanaStore" | "americanaContract" | "americanaChainRate" | "driverBatchHistory" | "americanaStoreAssignment" | "americanaDailyIngestion" | "kpiDefinition" | "kpiRecord" | "notification" | "notificationDelivery" | "notificationRule" | "courierOnlineSession" | "violation" | "penalty" | "appeal" | "orderEvent" | "aiInsight" | "demandHeatmap" | "deliveryArea" | "courierAttendanceSlot" | "keetaAvailableShiftSlot" | "shiftComplianceConfig" | "partner" | "partnerBankAccount" | "incentiveTargetRound" | "incentiveGoal" | "incentiveTier" | "courierIncentivePayout" | "billing" | "taxInvoice" | "paymentWithdrawal" | "agentRunLog" | "agentToolCall" | "pendingAgentAction" | "agentAction" | "agentMemory" | "pinnedView" | "performanceSnapshot" | "metricEvent" | "chatThread" | "chatMessage" | "scheduledBriefing" | "vendor" | "vendorBranch" | "deliveryZone" | "shiftCapacity" | "zoneSurcharge" | "deliveryPlan" | "deliveryPlanZoneRate" | "deliveryPlanKmTier" | "distanceCache" | "fulfillmentSettings" | "deliveryOrder" | "dispatchOffer" | "walletAccount" | "walletTransaction" | "walletEntry" | "remittance" | "walletReconciliationRun" | "incident" | "foodicsConnection" | "webhookEvent" | "apiKey" | "orderRating" | "vendorStatement" | "refund" | "fleetPartner" | "fleetPayoutStatement" | "deliveryPhoto" | "fleetPayoutInvoice" | "fleetDocument" | "fleetChangeRequest" | "fleetIssue" | "userInvite" | "userSurfacePermission" | "accountManagerVendor" | "accountManagerFleet" | "fleetDeduction" | "vendorIntegration" | "supportTicket" | "supportTicketMessage" | "vendorTopUp" | "fleetCashDeposit" | "driverTrainingSession" | "onboardingRequest" | "shiftPlan" | "shiftPlanEntry" | "vendorBranchAllocation" | "accountSettlement" | "vendorVehiclePlan" | "fleetVehicleRate" | "privateShiftPlan" | "privateShift" | "privateShiftDeduction"
+      modelProps: "tenant" | "company" | "ownerGroup" | "user" | "driver" | "driverRestriction" | "driverInventory" | "driverEquipmentEvent" | "recruitmentPipeline" | "vehicle" | "vehicleDriverAssignment" | "shift" | "shiftRequest" | "attendanceRecord" | "orderLog" | "cashRecord" | "cashTransaction" | "pendingDuesLedger" | "vehicleInspection" | "maintenanceRecord" | "device" | "sim" | "capturedOrder" | "locationLog" | "appUsageLog" | "deviceCommand" | "aiScore" | "alert" | "aiDigest" | "auditLog" | "ticket" | "leaveRequest" | "talabatSession" | "talabatViolationEvent" | "talabatDelivery" | "keetaDailyMetrics" | "ingestRun" | "deliverooDailyMetrics" | "talabatDailyMetrics" | "platformSettings" | "platformInventory" | "americanaDailyOrders" | "americanaChain" | "americanaStore" | "americanaContract" | "americanaChainRate" | "driverBatchHistory" | "americanaStoreAssignment" | "americanaDailyIngestion" | "kpiDefinition" | "kpiRecord" | "notification" | "notificationDelivery" | "notificationRule" | "courierOnlineSession" | "violation" | "penalty" | "appeal" | "orderEvent" | "aiInsight" | "demandHeatmap" | "deliveryArea" | "courierAttendanceSlot" | "keetaAvailableShiftSlot" | "shiftComplianceConfig" | "partner" | "partnerBankAccount" | "incentiveTargetRound" | "incentiveGoal" | "incentiveTier" | "courierIncentivePayout" | "billing" | "taxInvoice" | "paymentWithdrawal" | "agentRunLog" | "agentToolCall" | "pendingAgentAction" | "agentAction" | "agentMemory" | "pinnedView" | "performanceSnapshot" | "metricEvent" | "chatThread" | "chatMessage" | "scheduledBriefing" | "vendor" | "vendorBranch" | "deliveryZone" | "shiftCapacity" | "zoneSurcharge" | "deliveryPlan" | "deliveryPlanZoneRate" | "deliveryPlanKmTier" | "distanceCache" | "fulfillmentSettings" | "deliveryOrder" | "dispatchOffer" | "walletAccount" | "walletTransaction" | "walletEntry" | "remittance" | "walletReconciliationRun" | "incident" | "foodicsConnection" | "webhookEvent" | "apiKey" | "orderRating" | "vendorStatement" | "refund" | "fleetPartner" | "fleetPayoutStatement" | "deliveryPhoto" | "fleetPayoutInvoice" | "fleetDocument" | "fleetChangeRequest" | "fleetIssue" | "userInvite" | "userSurfacePermission" | "accountManagerVendor" | "accountManagerFleet" | "fleetDeduction" | "vendorIntegration" | "supportTicket" | "supportTicketMessage" | "vendorTopUp" | "fleetCashDeposit" | "driverTrainingSession" | "onboardingRequest" | "shiftPlan" | "shiftPlanEntry" | "vendorBranchAllocation" | "accountSettlement" | "vendorVehiclePlan" | "fleetVehicleRate" | "privateShiftPlan" | "privateShift" | "privateShiftDeduction"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -4516,6 +4546,76 @@ export namespace Prisma {
           count: {
             args: Prisma.DriverInventoryCountArgs<ExtArgs>
             result: $Utils.Optional<DriverInventoryCountAggregateOutputType> | number
+          }
+        }
+      }
+      DriverEquipmentEvent: {
+        payload: Prisma.$DriverEquipmentEventPayload<ExtArgs>
+        fields: Prisma.DriverEquipmentEventFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DriverEquipmentEventFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverEquipmentEventPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DriverEquipmentEventFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverEquipmentEventPayload>
+          }
+          findFirst: {
+            args: Prisma.DriverEquipmentEventFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverEquipmentEventPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DriverEquipmentEventFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverEquipmentEventPayload>
+          }
+          findMany: {
+            args: Prisma.DriverEquipmentEventFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverEquipmentEventPayload>[]
+          }
+          create: {
+            args: Prisma.DriverEquipmentEventCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverEquipmentEventPayload>
+          }
+          createMany: {
+            args: Prisma.DriverEquipmentEventCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DriverEquipmentEventCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverEquipmentEventPayload>[]
+          }
+          delete: {
+            args: Prisma.DriverEquipmentEventDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverEquipmentEventPayload>
+          }
+          update: {
+            args: Prisma.DriverEquipmentEventUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverEquipmentEventPayload>
+          }
+          deleteMany: {
+            args: Prisma.DriverEquipmentEventDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DriverEquipmentEventUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.DriverEquipmentEventUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DriverEquipmentEventPayload>
+          }
+          aggregate: {
+            args: Prisma.DriverEquipmentEventAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDriverEquipmentEvent>
+          }
+          groupBy: {
+            args: Prisma.DriverEquipmentEventGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DriverEquipmentEventGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DriverEquipmentEventCountArgs<ExtArgs>
+            result: $Utils.Optional<DriverEquipmentEventCountAggregateOutputType> | number
           }
         }
       }
@@ -30035,6 +30135,978 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: DriverInventoryInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model DriverEquipmentEvent
+   */
+
+  export type AggregateDriverEquipmentEvent = {
+    _count: DriverEquipmentEventCountAggregateOutputType | null
+    _avg: DriverEquipmentEventAvgAggregateOutputType | null
+    _sum: DriverEquipmentEventSumAggregateOutputType | null
+    _min: DriverEquipmentEventMinAggregateOutputType | null
+    _max: DriverEquipmentEventMaxAggregateOutputType | null
+  }
+
+  export type DriverEquipmentEventAvgAggregateOutputType = {
+    quantity: number | null
+  }
+
+  export type DriverEquipmentEventSumAggregateOutputType = {
+    quantity: number | null
+  }
+
+  export type DriverEquipmentEventMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    driverId: string | null
+    itemType: string | null
+    action: $Enums.EquipmentEventAction | null
+    quantity: number | null
+    condition: string | null
+    note: string | null
+    actorUserId: string | null
+    createdAt: Date | null
+  }
+
+  export type DriverEquipmentEventMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    driverId: string | null
+    itemType: string | null
+    action: $Enums.EquipmentEventAction | null
+    quantity: number | null
+    condition: string | null
+    note: string | null
+    actorUserId: string | null
+    createdAt: Date | null
+  }
+
+  export type DriverEquipmentEventCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    driverId: number
+    itemType: number
+    action: number
+    quantity: number
+    condition: number
+    note: number
+    actorUserId: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type DriverEquipmentEventAvgAggregateInputType = {
+    quantity?: true
+  }
+
+  export type DriverEquipmentEventSumAggregateInputType = {
+    quantity?: true
+  }
+
+  export type DriverEquipmentEventMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    driverId?: true
+    itemType?: true
+    action?: true
+    quantity?: true
+    condition?: true
+    note?: true
+    actorUserId?: true
+    createdAt?: true
+  }
+
+  export type DriverEquipmentEventMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    driverId?: true
+    itemType?: true
+    action?: true
+    quantity?: true
+    condition?: true
+    note?: true
+    actorUserId?: true
+    createdAt?: true
+  }
+
+  export type DriverEquipmentEventCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    driverId?: true
+    itemType?: true
+    action?: true
+    quantity?: true
+    condition?: true
+    note?: true
+    actorUserId?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type DriverEquipmentEventAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DriverEquipmentEvent to aggregate.
+     */
+    where?: DriverEquipmentEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DriverEquipmentEvents to fetch.
+     */
+    orderBy?: DriverEquipmentEventOrderByWithRelationInput | DriverEquipmentEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DriverEquipmentEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DriverEquipmentEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DriverEquipmentEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned DriverEquipmentEvents
+    **/
+    _count?: true | DriverEquipmentEventCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: DriverEquipmentEventAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: DriverEquipmentEventSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DriverEquipmentEventMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DriverEquipmentEventMaxAggregateInputType
+  }
+
+  export type GetDriverEquipmentEventAggregateType<T extends DriverEquipmentEventAggregateArgs> = {
+        [P in keyof T & keyof AggregateDriverEquipmentEvent]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDriverEquipmentEvent[P]>
+      : GetScalarType<T[P], AggregateDriverEquipmentEvent[P]>
+  }
+
+
+
+
+  export type DriverEquipmentEventGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DriverEquipmentEventWhereInput
+    orderBy?: DriverEquipmentEventOrderByWithAggregationInput | DriverEquipmentEventOrderByWithAggregationInput[]
+    by: DriverEquipmentEventScalarFieldEnum[] | DriverEquipmentEventScalarFieldEnum
+    having?: DriverEquipmentEventScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DriverEquipmentEventCountAggregateInputType | true
+    _avg?: DriverEquipmentEventAvgAggregateInputType
+    _sum?: DriverEquipmentEventSumAggregateInputType
+    _min?: DriverEquipmentEventMinAggregateInputType
+    _max?: DriverEquipmentEventMaxAggregateInputType
+  }
+
+  export type DriverEquipmentEventGroupByOutputType = {
+    id: string
+    tenantId: string
+    driverId: string
+    itemType: string
+    action: $Enums.EquipmentEventAction
+    quantity: number
+    condition: string | null
+    note: string | null
+    actorUserId: string | null
+    createdAt: Date
+    _count: DriverEquipmentEventCountAggregateOutputType | null
+    _avg: DriverEquipmentEventAvgAggregateOutputType | null
+    _sum: DriverEquipmentEventSumAggregateOutputType | null
+    _min: DriverEquipmentEventMinAggregateOutputType | null
+    _max: DriverEquipmentEventMaxAggregateOutputType | null
+  }
+
+  type GetDriverEquipmentEventGroupByPayload<T extends DriverEquipmentEventGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DriverEquipmentEventGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DriverEquipmentEventGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DriverEquipmentEventGroupByOutputType[P]>
+            : GetScalarType<T[P], DriverEquipmentEventGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DriverEquipmentEventSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    driverId?: boolean
+    itemType?: boolean
+    action?: boolean
+    quantity?: boolean
+    condition?: boolean
+    note?: boolean
+    actorUserId?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["driverEquipmentEvent"]>
+
+  export type DriverEquipmentEventSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    driverId?: boolean
+    itemType?: boolean
+    action?: boolean
+    quantity?: boolean
+    condition?: boolean
+    note?: boolean
+    actorUserId?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["driverEquipmentEvent"]>
+
+  export type DriverEquipmentEventSelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    driverId?: boolean
+    itemType?: boolean
+    action?: boolean
+    quantity?: boolean
+    condition?: boolean
+    note?: boolean
+    actorUserId?: boolean
+    createdAt?: boolean
+  }
+
+
+  export type $DriverEquipmentEventPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "DriverEquipmentEvent"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      driverId: string
+      itemType: string
+      action: $Enums.EquipmentEventAction
+      quantity: number
+      condition: string | null
+      note: string | null
+      actorUserId: string | null
+      createdAt: Date
+    }, ExtArgs["result"]["driverEquipmentEvent"]>
+    composites: {}
+  }
+
+  type DriverEquipmentEventGetPayload<S extends boolean | null | undefined | DriverEquipmentEventDefaultArgs> = $Result.GetResult<Prisma.$DriverEquipmentEventPayload, S>
+
+  type DriverEquipmentEventCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<DriverEquipmentEventFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: DriverEquipmentEventCountAggregateInputType | true
+    }
+
+  export interface DriverEquipmentEventDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['DriverEquipmentEvent'], meta: { name: 'DriverEquipmentEvent' } }
+    /**
+     * Find zero or one DriverEquipmentEvent that matches the filter.
+     * @param {DriverEquipmentEventFindUniqueArgs} args - Arguments to find a DriverEquipmentEvent
+     * @example
+     * // Get one DriverEquipmentEvent
+     * const driverEquipmentEvent = await prisma.driverEquipmentEvent.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DriverEquipmentEventFindUniqueArgs>(args: SelectSubset<T, DriverEquipmentEventFindUniqueArgs<ExtArgs>>): Prisma__DriverEquipmentEventClient<$Result.GetResult<Prisma.$DriverEquipmentEventPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one DriverEquipmentEvent that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {DriverEquipmentEventFindUniqueOrThrowArgs} args - Arguments to find a DriverEquipmentEvent
+     * @example
+     * // Get one DriverEquipmentEvent
+     * const driverEquipmentEvent = await prisma.driverEquipmentEvent.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DriverEquipmentEventFindUniqueOrThrowArgs>(args: SelectSubset<T, DriverEquipmentEventFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DriverEquipmentEventClient<$Result.GetResult<Prisma.$DriverEquipmentEventPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first DriverEquipmentEvent that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DriverEquipmentEventFindFirstArgs} args - Arguments to find a DriverEquipmentEvent
+     * @example
+     * // Get one DriverEquipmentEvent
+     * const driverEquipmentEvent = await prisma.driverEquipmentEvent.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DriverEquipmentEventFindFirstArgs>(args?: SelectSubset<T, DriverEquipmentEventFindFirstArgs<ExtArgs>>): Prisma__DriverEquipmentEventClient<$Result.GetResult<Prisma.$DriverEquipmentEventPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first DriverEquipmentEvent that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DriverEquipmentEventFindFirstOrThrowArgs} args - Arguments to find a DriverEquipmentEvent
+     * @example
+     * // Get one DriverEquipmentEvent
+     * const driverEquipmentEvent = await prisma.driverEquipmentEvent.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DriverEquipmentEventFindFirstOrThrowArgs>(args?: SelectSubset<T, DriverEquipmentEventFindFirstOrThrowArgs<ExtArgs>>): Prisma__DriverEquipmentEventClient<$Result.GetResult<Prisma.$DriverEquipmentEventPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more DriverEquipmentEvents that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DriverEquipmentEventFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all DriverEquipmentEvents
+     * const driverEquipmentEvents = await prisma.driverEquipmentEvent.findMany()
+     * 
+     * // Get first 10 DriverEquipmentEvents
+     * const driverEquipmentEvents = await prisma.driverEquipmentEvent.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const driverEquipmentEventWithIdOnly = await prisma.driverEquipmentEvent.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends DriverEquipmentEventFindManyArgs>(args?: SelectSubset<T, DriverEquipmentEventFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DriverEquipmentEventPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a DriverEquipmentEvent.
+     * @param {DriverEquipmentEventCreateArgs} args - Arguments to create a DriverEquipmentEvent.
+     * @example
+     * // Create one DriverEquipmentEvent
+     * const DriverEquipmentEvent = await prisma.driverEquipmentEvent.create({
+     *   data: {
+     *     // ... data to create a DriverEquipmentEvent
+     *   }
+     * })
+     * 
+     */
+    create<T extends DriverEquipmentEventCreateArgs>(args: SelectSubset<T, DriverEquipmentEventCreateArgs<ExtArgs>>): Prisma__DriverEquipmentEventClient<$Result.GetResult<Prisma.$DriverEquipmentEventPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many DriverEquipmentEvents.
+     * @param {DriverEquipmentEventCreateManyArgs} args - Arguments to create many DriverEquipmentEvents.
+     * @example
+     * // Create many DriverEquipmentEvents
+     * const driverEquipmentEvent = await prisma.driverEquipmentEvent.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DriverEquipmentEventCreateManyArgs>(args?: SelectSubset<T, DriverEquipmentEventCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many DriverEquipmentEvents and returns the data saved in the database.
+     * @param {DriverEquipmentEventCreateManyAndReturnArgs} args - Arguments to create many DriverEquipmentEvents.
+     * @example
+     * // Create many DriverEquipmentEvents
+     * const driverEquipmentEvent = await prisma.driverEquipmentEvent.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many DriverEquipmentEvents and only return the `id`
+     * const driverEquipmentEventWithIdOnly = await prisma.driverEquipmentEvent.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DriverEquipmentEventCreateManyAndReturnArgs>(args?: SelectSubset<T, DriverEquipmentEventCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DriverEquipmentEventPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a DriverEquipmentEvent.
+     * @param {DriverEquipmentEventDeleteArgs} args - Arguments to delete one DriverEquipmentEvent.
+     * @example
+     * // Delete one DriverEquipmentEvent
+     * const DriverEquipmentEvent = await prisma.driverEquipmentEvent.delete({
+     *   where: {
+     *     // ... filter to delete one DriverEquipmentEvent
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DriverEquipmentEventDeleteArgs>(args: SelectSubset<T, DriverEquipmentEventDeleteArgs<ExtArgs>>): Prisma__DriverEquipmentEventClient<$Result.GetResult<Prisma.$DriverEquipmentEventPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one DriverEquipmentEvent.
+     * @param {DriverEquipmentEventUpdateArgs} args - Arguments to update one DriverEquipmentEvent.
+     * @example
+     * // Update one DriverEquipmentEvent
+     * const driverEquipmentEvent = await prisma.driverEquipmentEvent.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DriverEquipmentEventUpdateArgs>(args: SelectSubset<T, DriverEquipmentEventUpdateArgs<ExtArgs>>): Prisma__DriverEquipmentEventClient<$Result.GetResult<Prisma.$DriverEquipmentEventPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more DriverEquipmentEvents.
+     * @param {DriverEquipmentEventDeleteManyArgs} args - Arguments to filter DriverEquipmentEvents to delete.
+     * @example
+     * // Delete a few DriverEquipmentEvents
+     * const { count } = await prisma.driverEquipmentEvent.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DriverEquipmentEventDeleteManyArgs>(args?: SelectSubset<T, DriverEquipmentEventDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DriverEquipmentEvents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DriverEquipmentEventUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many DriverEquipmentEvents
+     * const driverEquipmentEvent = await prisma.driverEquipmentEvent.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DriverEquipmentEventUpdateManyArgs>(args: SelectSubset<T, DriverEquipmentEventUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one DriverEquipmentEvent.
+     * @param {DriverEquipmentEventUpsertArgs} args - Arguments to update or create a DriverEquipmentEvent.
+     * @example
+     * // Update or create a DriverEquipmentEvent
+     * const driverEquipmentEvent = await prisma.driverEquipmentEvent.upsert({
+     *   create: {
+     *     // ... data to create a DriverEquipmentEvent
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the DriverEquipmentEvent we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DriverEquipmentEventUpsertArgs>(args: SelectSubset<T, DriverEquipmentEventUpsertArgs<ExtArgs>>): Prisma__DriverEquipmentEventClient<$Result.GetResult<Prisma.$DriverEquipmentEventPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of DriverEquipmentEvents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DriverEquipmentEventCountArgs} args - Arguments to filter DriverEquipmentEvents to count.
+     * @example
+     * // Count the number of DriverEquipmentEvents
+     * const count = await prisma.driverEquipmentEvent.count({
+     *   where: {
+     *     // ... the filter for the DriverEquipmentEvents we want to count
+     *   }
+     * })
+    **/
+    count<T extends DriverEquipmentEventCountArgs>(
+      args?: Subset<T, DriverEquipmentEventCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DriverEquipmentEventCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a DriverEquipmentEvent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DriverEquipmentEventAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DriverEquipmentEventAggregateArgs>(args: Subset<T, DriverEquipmentEventAggregateArgs>): Prisma.PrismaPromise<GetDriverEquipmentEventAggregateType<T>>
+
+    /**
+     * Group by DriverEquipmentEvent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DriverEquipmentEventGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DriverEquipmentEventGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DriverEquipmentEventGroupByArgs['orderBy'] }
+        : { orderBy?: DriverEquipmentEventGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DriverEquipmentEventGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDriverEquipmentEventGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the DriverEquipmentEvent model
+   */
+  readonly fields: DriverEquipmentEventFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for DriverEquipmentEvent.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DriverEquipmentEventClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the DriverEquipmentEvent model
+   */ 
+  interface DriverEquipmentEventFieldRefs {
+    readonly id: FieldRef<"DriverEquipmentEvent", 'String'>
+    readonly tenantId: FieldRef<"DriverEquipmentEvent", 'String'>
+    readonly driverId: FieldRef<"DriverEquipmentEvent", 'String'>
+    readonly itemType: FieldRef<"DriverEquipmentEvent", 'String'>
+    readonly action: FieldRef<"DriverEquipmentEvent", 'EquipmentEventAction'>
+    readonly quantity: FieldRef<"DriverEquipmentEvent", 'Int'>
+    readonly condition: FieldRef<"DriverEquipmentEvent", 'String'>
+    readonly note: FieldRef<"DriverEquipmentEvent", 'String'>
+    readonly actorUserId: FieldRef<"DriverEquipmentEvent", 'String'>
+    readonly createdAt: FieldRef<"DriverEquipmentEvent", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * DriverEquipmentEvent findUnique
+   */
+  export type DriverEquipmentEventFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverEquipmentEvent
+     */
+    select?: DriverEquipmentEventSelect<ExtArgs> | null
+    /**
+     * Filter, which DriverEquipmentEvent to fetch.
+     */
+    where: DriverEquipmentEventWhereUniqueInput
+  }
+
+  /**
+   * DriverEquipmentEvent findUniqueOrThrow
+   */
+  export type DriverEquipmentEventFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverEquipmentEvent
+     */
+    select?: DriverEquipmentEventSelect<ExtArgs> | null
+    /**
+     * Filter, which DriverEquipmentEvent to fetch.
+     */
+    where: DriverEquipmentEventWhereUniqueInput
+  }
+
+  /**
+   * DriverEquipmentEvent findFirst
+   */
+  export type DriverEquipmentEventFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverEquipmentEvent
+     */
+    select?: DriverEquipmentEventSelect<ExtArgs> | null
+    /**
+     * Filter, which DriverEquipmentEvent to fetch.
+     */
+    where?: DriverEquipmentEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DriverEquipmentEvents to fetch.
+     */
+    orderBy?: DriverEquipmentEventOrderByWithRelationInput | DriverEquipmentEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DriverEquipmentEvents.
+     */
+    cursor?: DriverEquipmentEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DriverEquipmentEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DriverEquipmentEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DriverEquipmentEvents.
+     */
+    distinct?: DriverEquipmentEventScalarFieldEnum | DriverEquipmentEventScalarFieldEnum[]
+  }
+
+  /**
+   * DriverEquipmentEvent findFirstOrThrow
+   */
+  export type DriverEquipmentEventFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverEquipmentEvent
+     */
+    select?: DriverEquipmentEventSelect<ExtArgs> | null
+    /**
+     * Filter, which DriverEquipmentEvent to fetch.
+     */
+    where?: DriverEquipmentEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DriverEquipmentEvents to fetch.
+     */
+    orderBy?: DriverEquipmentEventOrderByWithRelationInput | DriverEquipmentEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DriverEquipmentEvents.
+     */
+    cursor?: DriverEquipmentEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DriverEquipmentEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DriverEquipmentEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DriverEquipmentEvents.
+     */
+    distinct?: DriverEquipmentEventScalarFieldEnum | DriverEquipmentEventScalarFieldEnum[]
+  }
+
+  /**
+   * DriverEquipmentEvent findMany
+   */
+  export type DriverEquipmentEventFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverEquipmentEvent
+     */
+    select?: DriverEquipmentEventSelect<ExtArgs> | null
+    /**
+     * Filter, which DriverEquipmentEvents to fetch.
+     */
+    where?: DriverEquipmentEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DriverEquipmentEvents to fetch.
+     */
+    orderBy?: DriverEquipmentEventOrderByWithRelationInput | DriverEquipmentEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing DriverEquipmentEvents.
+     */
+    cursor?: DriverEquipmentEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DriverEquipmentEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DriverEquipmentEvents.
+     */
+    skip?: number
+    distinct?: DriverEquipmentEventScalarFieldEnum | DriverEquipmentEventScalarFieldEnum[]
+  }
+
+  /**
+   * DriverEquipmentEvent create
+   */
+  export type DriverEquipmentEventCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverEquipmentEvent
+     */
+    select?: DriverEquipmentEventSelect<ExtArgs> | null
+    /**
+     * The data needed to create a DriverEquipmentEvent.
+     */
+    data: XOR<DriverEquipmentEventCreateInput, DriverEquipmentEventUncheckedCreateInput>
+  }
+
+  /**
+   * DriverEquipmentEvent createMany
+   */
+  export type DriverEquipmentEventCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many DriverEquipmentEvents.
+     */
+    data: DriverEquipmentEventCreateManyInput | DriverEquipmentEventCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DriverEquipmentEvent createManyAndReturn
+   */
+  export type DriverEquipmentEventCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverEquipmentEvent
+     */
+    select?: DriverEquipmentEventSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many DriverEquipmentEvents.
+     */
+    data: DriverEquipmentEventCreateManyInput | DriverEquipmentEventCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DriverEquipmentEvent update
+   */
+  export type DriverEquipmentEventUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverEquipmentEvent
+     */
+    select?: DriverEquipmentEventSelect<ExtArgs> | null
+    /**
+     * The data needed to update a DriverEquipmentEvent.
+     */
+    data: XOR<DriverEquipmentEventUpdateInput, DriverEquipmentEventUncheckedUpdateInput>
+    /**
+     * Choose, which DriverEquipmentEvent to update.
+     */
+    where: DriverEquipmentEventWhereUniqueInput
+  }
+
+  /**
+   * DriverEquipmentEvent updateMany
+   */
+  export type DriverEquipmentEventUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update DriverEquipmentEvents.
+     */
+    data: XOR<DriverEquipmentEventUpdateManyMutationInput, DriverEquipmentEventUncheckedUpdateManyInput>
+    /**
+     * Filter which DriverEquipmentEvents to update
+     */
+    where?: DriverEquipmentEventWhereInput
+  }
+
+  /**
+   * DriverEquipmentEvent upsert
+   */
+  export type DriverEquipmentEventUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverEquipmentEvent
+     */
+    select?: DriverEquipmentEventSelect<ExtArgs> | null
+    /**
+     * The filter to search for the DriverEquipmentEvent to update in case it exists.
+     */
+    where: DriverEquipmentEventWhereUniqueInput
+    /**
+     * In case the DriverEquipmentEvent found by the `where` argument doesn't exist, create a new DriverEquipmentEvent with this data.
+     */
+    create: XOR<DriverEquipmentEventCreateInput, DriverEquipmentEventUncheckedCreateInput>
+    /**
+     * In case the DriverEquipmentEvent was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DriverEquipmentEventUpdateInput, DriverEquipmentEventUncheckedUpdateInput>
+  }
+
+  /**
+   * DriverEquipmentEvent delete
+   */
+  export type DriverEquipmentEventDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverEquipmentEvent
+     */
+    select?: DriverEquipmentEventSelect<ExtArgs> | null
+    /**
+     * Filter which DriverEquipmentEvent to delete.
+     */
+    where: DriverEquipmentEventWhereUniqueInput
+  }
+
+  /**
+   * DriverEquipmentEvent deleteMany
+   */
+  export type DriverEquipmentEventDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DriverEquipmentEvents to delete
+     */
+    where?: DriverEquipmentEventWhereInput
+  }
+
+  /**
+   * DriverEquipmentEvent without action
+   */
+  export type DriverEquipmentEventDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DriverEquipmentEvent
+     */
+    select?: DriverEquipmentEventSelect<ExtArgs> | null
   }
 
 
@@ -170937,6 +172009,22 @@ export namespace Prisma {
   export type DriverInventoryScalarFieldEnum = (typeof DriverInventoryScalarFieldEnum)[keyof typeof DriverInventoryScalarFieldEnum]
 
 
+  export const DriverEquipmentEventScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    driverId: 'driverId',
+    itemType: 'itemType',
+    action: 'action',
+    quantity: 'quantity',
+    condition: 'condition',
+    note: 'note',
+    actorUserId: 'actorUserId',
+    createdAt: 'createdAt'
+  };
+
+  export type DriverEquipmentEventScalarFieldEnum = (typeof DriverEquipmentEventScalarFieldEnum)[keyof typeof DriverEquipmentEventScalarFieldEnum]
+
+
   export const RecruitmentPipelineScalarFieldEnum: {
     id: 'id',
     tenantId: 'tenantId',
@@ -173561,6 +174649,19 @@ export namespace Prisma {
   export type DriverInventoryOrderByRelevanceFieldEnum = (typeof DriverInventoryOrderByRelevanceFieldEnum)[keyof typeof DriverInventoryOrderByRelevanceFieldEnum]
 
 
+  export const DriverEquipmentEventOrderByRelevanceFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    driverId: 'driverId',
+    itemType: 'itemType',
+    condition: 'condition',
+    note: 'note',
+    actorUserId: 'actorUserId'
+  };
+
+  export type DriverEquipmentEventOrderByRelevanceFieldEnum = (typeof DriverEquipmentEventOrderByRelevanceFieldEnum)[keyof typeof DriverEquipmentEventOrderByRelevanceFieldEnum]
+
+
   export const RecruitmentPipelineOrderByRelevanceFieldEnum: {
     id: 'id',
     tenantId: 'tenantId',
@@ -175404,6 +176505,20 @@ export namespace Prisma {
    * Reference to a field of type 'EquipmentCondition[]'
    */
   export type ListEnumEquipmentConditionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EquipmentCondition[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'EquipmentEventAction'
+   */
+  export type EnumEquipmentEventActionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EquipmentEventAction'>
+    
+
+
+  /**
+   * Reference to a field of type 'EquipmentEventAction[]'
+   */
+  export type ListEnumEquipmentEventActionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EquipmentEventAction[]'>
     
 
 
@@ -177915,6 +179030,86 @@ export namespace Prisma {
     conditionReportedAt?: DateTimeNullableWithAggregatesFilter<"DriverInventory"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"DriverInventory"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"DriverInventory"> | Date | string
+  }
+
+  export type DriverEquipmentEventWhereInput = {
+    AND?: DriverEquipmentEventWhereInput | DriverEquipmentEventWhereInput[]
+    OR?: DriverEquipmentEventWhereInput[]
+    NOT?: DriverEquipmentEventWhereInput | DriverEquipmentEventWhereInput[]
+    id?: StringFilter<"DriverEquipmentEvent"> | string
+    tenantId?: StringFilter<"DriverEquipmentEvent"> | string
+    driverId?: StringFilter<"DriverEquipmentEvent"> | string
+    itemType?: StringFilter<"DriverEquipmentEvent"> | string
+    action?: EnumEquipmentEventActionFilter<"DriverEquipmentEvent"> | $Enums.EquipmentEventAction
+    quantity?: IntFilter<"DriverEquipmentEvent"> | number
+    condition?: StringNullableFilter<"DriverEquipmentEvent"> | string | null
+    note?: StringNullableFilter<"DriverEquipmentEvent"> | string | null
+    actorUserId?: StringNullableFilter<"DriverEquipmentEvent"> | string | null
+    createdAt?: DateTimeFilter<"DriverEquipmentEvent"> | Date | string
+  }
+
+  export type DriverEquipmentEventOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    driverId?: SortOrder
+    itemType?: SortOrder
+    action?: SortOrder
+    quantity?: SortOrder
+    condition?: SortOrderInput | SortOrder
+    note?: SortOrderInput | SortOrder
+    actorUserId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _relevance?: DriverEquipmentEventOrderByRelevanceInput
+  }
+
+  export type DriverEquipmentEventWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: DriverEquipmentEventWhereInput | DriverEquipmentEventWhereInput[]
+    OR?: DriverEquipmentEventWhereInput[]
+    NOT?: DriverEquipmentEventWhereInput | DriverEquipmentEventWhereInput[]
+    tenantId?: StringFilter<"DriverEquipmentEvent"> | string
+    driverId?: StringFilter<"DriverEquipmentEvent"> | string
+    itemType?: StringFilter<"DriverEquipmentEvent"> | string
+    action?: EnumEquipmentEventActionFilter<"DriverEquipmentEvent"> | $Enums.EquipmentEventAction
+    quantity?: IntFilter<"DriverEquipmentEvent"> | number
+    condition?: StringNullableFilter<"DriverEquipmentEvent"> | string | null
+    note?: StringNullableFilter<"DriverEquipmentEvent"> | string | null
+    actorUserId?: StringNullableFilter<"DriverEquipmentEvent"> | string | null
+    createdAt?: DateTimeFilter<"DriverEquipmentEvent"> | Date | string
+  }, "id">
+
+  export type DriverEquipmentEventOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    driverId?: SortOrder
+    itemType?: SortOrder
+    action?: SortOrder
+    quantity?: SortOrder
+    condition?: SortOrderInput | SortOrder
+    note?: SortOrderInput | SortOrder
+    actorUserId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: DriverEquipmentEventCountOrderByAggregateInput
+    _avg?: DriverEquipmentEventAvgOrderByAggregateInput
+    _max?: DriverEquipmentEventMaxOrderByAggregateInput
+    _min?: DriverEquipmentEventMinOrderByAggregateInput
+    _sum?: DriverEquipmentEventSumOrderByAggregateInput
+  }
+
+  export type DriverEquipmentEventScalarWhereWithAggregatesInput = {
+    AND?: DriverEquipmentEventScalarWhereWithAggregatesInput | DriverEquipmentEventScalarWhereWithAggregatesInput[]
+    OR?: DriverEquipmentEventScalarWhereWithAggregatesInput[]
+    NOT?: DriverEquipmentEventScalarWhereWithAggregatesInput | DriverEquipmentEventScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"DriverEquipmentEvent"> | string
+    tenantId?: StringWithAggregatesFilter<"DriverEquipmentEvent"> | string
+    driverId?: StringWithAggregatesFilter<"DriverEquipmentEvent"> | string
+    itemType?: StringWithAggregatesFilter<"DriverEquipmentEvent"> | string
+    action?: EnumEquipmentEventActionWithAggregatesFilter<"DriverEquipmentEvent"> | $Enums.EquipmentEventAction
+    quantity?: IntWithAggregatesFilter<"DriverEquipmentEvent"> | number
+    condition?: StringNullableWithAggregatesFilter<"DriverEquipmentEvent"> | string | null
+    note?: StringNullableWithAggregatesFilter<"DriverEquipmentEvent"> | string | null
+    actorUserId?: StringNullableWithAggregatesFilter<"DriverEquipmentEvent"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"DriverEquipmentEvent"> | Date | string
   }
 
   export type RecruitmentPipelineWhereInput = {
@@ -193231,6 +194426,97 @@ export namespace Prisma {
     conditionReportedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DriverEquipmentEventCreateInput = {
+    id?: string
+    tenantId: string
+    driverId: string
+    itemType: string
+    action: $Enums.EquipmentEventAction
+    quantity: number
+    condition?: string | null
+    note?: string | null
+    actorUserId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type DriverEquipmentEventUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    driverId: string
+    itemType: string
+    action: $Enums.EquipmentEventAction
+    quantity: number
+    condition?: string | null
+    note?: string | null
+    actorUserId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type DriverEquipmentEventUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    driverId?: StringFieldUpdateOperationsInput | string
+    itemType?: StringFieldUpdateOperationsInput | string
+    action?: EnumEquipmentEventActionFieldUpdateOperationsInput | $Enums.EquipmentEventAction
+    quantity?: IntFieldUpdateOperationsInput | number
+    condition?: NullableStringFieldUpdateOperationsInput | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    actorUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DriverEquipmentEventUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    driverId?: StringFieldUpdateOperationsInput | string
+    itemType?: StringFieldUpdateOperationsInput | string
+    action?: EnumEquipmentEventActionFieldUpdateOperationsInput | $Enums.EquipmentEventAction
+    quantity?: IntFieldUpdateOperationsInput | number
+    condition?: NullableStringFieldUpdateOperationsInput | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    actorUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DriverEquipmentEventCreateManyInput = {
+    id?: string
+    tenantId: string
+    driverId: string
+    itemType: string
+    action: $Enums.EquipmentEventAction
+    quantity: number
+    condition?: string | null
+    note?: string | null
+    actorUserId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type DriverEquipmentEventUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    driverId?: StringFieldUpdateOperationsInput | string
+    itemType?: StringFieldUpdateOperationsInput | string
+    action?: EnumEquipmentEventActionFieldUpdateOperationsInput | $Enums.EquipmentEventAction
+    quantity?: IntFieldUpdateOperationsInput | number
+    condition?: NullableStringFieldUpdateOperationsInput | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    actorUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DriverEquipmentEventUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    driverId?: StringFieldUpdateOperationsInput | string
+    itemType?: StringFieldUpdateOperationsInput | string
+    action?: EnumEquipmentEventActionFieldUpdateOperationsInput | $Enums.EquipmentEventAction
+    quantity?: IntFieldUpdateOperationsInput | number
+    condition?: NullableStringFieldUpdateOperationsInput | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    actorUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RecruitmentPipelineCreateInput = {
@@ -210139,6 +211425,76 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumEquipmentConditionFilter<$PrismaModel>
     _max?: NestedEnumEquipmentConditionFilter<$PrismaModel>
+  }
+
+  export type EnumEquipmentEventActionFilter<$PrismaModel = never> = {
+    equals?: $Enums.EquipmentEventAction | EnumEquipmentEventActionFieldRefInput<$PrismaModel>
+    in?: $Enums.EquipmentEventAction[] | ListEnumEquipmentEventActionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EquipmentEventAction[] | ListEnumEquipmentEventActionFieldRefInput<$PrismaModel>
+    not?: NestedEnumEquipmentEventActionFilter<$PrismaModel> | $Enums.EquipmentEventAction
+  }
+
+  export type DriverEquipmentEventOrderByRelevanceInput = {
+    fields: DriverEquipmentEventOrderByRelevanceFieldEnum | DriverEquipmentEventOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type DriverEquipmentEventCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    driverId?: SortOrder
+    itemType?: SortOrder
+    action?: SortOrder
+    quantity?: SortOrder
+    condition?: SortOrder
+    note?: SortOrder
+    actorUserId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type DriverEquipmentEventAvgOrderByAggregateInput = {
+    quantity?: SortOrder
+  }
+
+  export type DriverEquipmentEventMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    driverId?: SortOrder
+    itemType?: SortOrder
+    action?: SortOrder
+    quantity?: SortOrder
+    condition?: SortOrder
+    note?: SortOrder
+    actorUserId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type DriverEquipmentEventMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    driverId?: SortOrder
+    itemType?: SortOrder
+    action?: SortOrder
+    quantity?: SortOrder
+    condition?: SortOrder
+    note?: SortOrder
+    actorUserId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type DriverEquipmentEventSumOrderByAggregateInput = {
+    quantity?: SortOrder
+  }
+
+  export type EnumEquipmentEventActionWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.EquipmentEventAction | EnumEquipmentEventActionFieldRefInput<$PrismaModel>
+    in?: $Enums.EquipmentEventAction[] | ListEnumEquipmentEventActionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EquipmentEventAction[] | ListEnumEquipmentEventActionFieldRefInput<$PrismaModel>
+    not?: NestedEnumEquipmentEventActionWithAggregatesFilter<$PrismaModel> | $Enums.EquipmentEventAction
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumEquipmentEventActionFilter<$PrismaModel>
+    _max?: NestedEnumEquipmentEventActionFilter<$PrismaModel>
   }
 
   export type EnumRecruitmentStageFilter<$PrismaModel = never> = {
@@ -228837,6 +230193,10 @@ export namespace Prisma {
     update?: XOR<XOR<DriverUpdateToOneWithWhereWithoutInventoryInput, DriverUpdateWithoutInventoryInput>, DriverUncheckedUpdateWithoutInventoryInput>
   }
 
+  export type EnumEquipmentEventActionFieldUpdateOperationsInput = {
+    set?: $Enums.EquipmentEventAction
+  }
+
   export type TenantCreateNestedOneWithoutRecruitmentPipelineInput = {
     create?: XOR<TenantCreateWithoutRecruitmentPipelineInput, TenantUncheckedCreateWithoutRecruitmentPipelineInput>
     connectOrCreate?: TenantCreateOrConnectWithoutRecruitmentPipelineInput
@@ -237560,6 +238920,23 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumEquipmentConditionFilter<$PrismaModel>
     _max?: NestedEnumEquipmentConditionFilter<$PrismaModel>
+  }
+
+  export type NestedEnumEquipmentEventActionFilter<$PrismaModel = never> = {
+    equals?: $Enums.EquipmentEventAction | EnumEquipmentEventActionFieldRefInput<$PrismaModel>
+    in?: $Enums.EquipmentEventAction[] | ListEnumEquipmentEventActionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EquipmentEventAction[] | ListEnumEquipmentEventActionFieldRefInput<$PrismaModel>
+    not?: NestedEnumEquipmentEventActionFilter<$PrismaModel> | $Enums.EquipmentEventAction
+  }
+
+  export type NestedEnumEquipmentEventActionWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.EquipmentEventAction | EnumEquipmentEventActionFieldRefInput<$PrismaModel>
+    in?: $Enums.EquipmentEventAction[] | ListEnumEquipmentEventActionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EquipmentEventAction[] | ListEnumEquipmentEventActionFieldRefInput<$PrismaModel>
+    not?: NestedEnumEquipmentEventActionWithAggregatesFilter<$PrismaModel> | $Enums.EquipmentEventAction
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumEquipmentEventActionFilter<$PrismaModel>
+    _max?: NestedEnumEquipmentEventActionFilter<$PrismaModel>
   }
 
   export type NestedEnumRecruitmentStageFilter<$PrismaModel = never> = {
@@ -385966,6 +387343,10 @@ export namespace Prisma {
      * @deprecated Use DriverInventoryDefaultArgs instead
      */
     export type DriverInventoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DriverInventoryDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use DriverEquipmentEventDefaultArgs instead
+     */
+    export type DriverEquipmentEventArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DriverEquipmentEventDefaultArgs<ExtArgs>
     /**
      * @deprecated Use RecruitmentPipelineDefaultArgs instead
      */

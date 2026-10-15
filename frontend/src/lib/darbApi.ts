@@ -4,6 +4,12 @@
 // and the standard paginatedResponse { data, pagination } shape.
 import api from "@/lib/api";
 import type {
+  DriverEquipmentEvent,
+  EquipmentReplaceResponse,
+  EquipmentReturnCondition,
+  EquipmentReturnResponse,
+} from "@/types/driver-file";
+import type {
   DeliveryOrder,
   DeliveryOrderEvent,
   DeliveryZone,
@@ -686,6 +692,18 @@ export const driverTrackingApi = {
   /** Revision 24 #16: tick the equipment clearance on a terminated driver. */
   clearTermination: (driverId: string, note?: string) =>
     post<TerminationClearanceResponse>(`/api/drivers/${driverId}/termination-clearance`, note ? { note } : {}),
+  /** Osama, 2026-10-15: take kit back from a driver. OK goes back in stock. */
+  returnEquipment: (
+    driverId: string,
+    inventoryId: string,
+    body: { condition: EquipmentReturnCondition; quantity?: number; note?: string },
+  ) => post<EquipmentReturnResponse>(`/api/drivers/${driverId}/equipment/${inventoryId}/return`, body),
+  /** Swap one unit for a new one from stock. 409 when there is no stock. */
+  replaceEquipment: (driverId: string, inventoryId: string, body: { condition: EquipmentReturnCondition; note?: string }) =>
+    post<EquipmentReplaceResponse>(`/api/drivers/${driverId}/equipment/${inventoryId}/replace`, body),
+  /** The driver's equipment log, newest first. */
+  equipmentHistory: (driverId: string) =>
+    get<{ data: DriverEquipmentEvent[] }>(`/api/drivers/${driverId}/equipment/history`),
 };
 
 // ── /api/vendor (vendor-portal scope — vendorId comes from the JWT) ──────

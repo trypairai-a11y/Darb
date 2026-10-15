@@ -4,6 +4,7 @@ import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
 import { rbac } from "../middleware/rbac";
 import { encryptCred, hasEncryptedShape } from "../utils/portalCreds";
+import { logEquipmentEvents } from "../services/equipment/driverEquipmentService";
 
 const router = Router();
 router.use(authMiddleware, tenantScope);
@@ -230,6 +231,10 @@ router.post(
           });
         }
 
+        await logEquipmentEvents(tx, [
+          { tenantId, driverId, itemType, action: "ISSUED", quantity: 1, actorUserId: req.user!.userId ?? null },
+        ]);
+
         return tx.platformInventory.update({
           where: { id: pool.id },
           data: { issued: pool.issued + 1, available: pool.available - 1 },
@@ -336,6 +341,10 @@ router.post(
           data: { available: { decrement: quantity }, issued: { increment: quantity } },
         });
         if (claimed.count === 0) return null;
+
+        await logEquipmentEvents(tx, [
+          { tenantId, driverId: driver.id, itemType, action: "ISSUED", quantity, actorUserId: req.user!.userId ?? null },
+        ]);
 
         // One row per driver per item type, so issuing a second of the same
         // thing tops up the quantity rather than leaving two half-rows that

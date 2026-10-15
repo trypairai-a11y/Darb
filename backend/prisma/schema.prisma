@@ -279,6 +279,13 @@ enum EquipmentCondition {
   CHANGE_REQUESTED
 }
 
+enum EquipmentEventAction {
+  ISSUED
+  RETURNED
+  REPLACED
+  CLEARED
+}
+
 enum TicketCategory {
   VEHICLE_REPAIR
   EQUIPMENT_REQUEST
@@ -911,6 +918,27 @@ model DriverInventory {
   driver Driver @relation(fields: [driverId], references: [id])
 
   @@index([driverId])
+}
+
+// 6b. DriverEquipmentEvent
+// Osama, 2026-10-15: "for the driver equipment must be able to remove it from
+// the driver or replace it with a new one with a log of past equipment".
+// Append-only: one row per hand-over, return, swap or clearance, so the driver
+// file can show what the driver had and what happened to it.
+model DriverEquipmentEvent {
+  id          String               @id @default(uuid())
+  tenantId    String
+  driverId    String
+  itemType    String
+  action      EquipmentEventAction
+  quantity    Int
+  // OK | DAMAGED | LOST for a return, and for the old unit in a replacement.
+  condition   String?
+  note        String?
+  actorUserId String?
+  createdAt   DateTime             @default(now())
+
+  @@index([tenantId, driverId, createdAt])
 }
 
 // 6. RecruitmentPipeline

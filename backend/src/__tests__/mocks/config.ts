@@ -39,6 +39,11 @@ export const prisma = {
   driverInventory: {
     createMany: jest.fn(),
   },
+  driverEquipmentEvent: {
+    create: jest.fn(),
+    createMany: jest.fn(),
+    findMany: jest.fn(),
+  },
   company: {
     findMany: jest.fn(),
     findFirst: jest.fn(),
